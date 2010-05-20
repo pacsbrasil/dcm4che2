@@ -109,8 +109,8 @@ public class InstanceModel extends AbstractDicomModel implements Serializable {
 
     public Date getDatetime() {
         return isPresentationState(getSopClassUID())
-                ? dataset.getDate(Tag.PresentationCreationDate, Tag.PresentationCreationTime)
-                : dataset.getDate(Tag.ContentDate, Tag.ContentTime);
+                ? toDate(Tag.PresentationCreationDate, Tag.PresentationCreationTime)
+                : toDate(Tag.ContentDate, Tag.ContentTime);
     }
 
     private boolean isPresentationState(String cuid) {

@@ -39,11 +39,14 @@
 package org.dcm4chee.web.war.common.model;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -67,6 +70,8 @@ public abstract class AbstractDicomModel implements Serializable {
     private boolean details;
     protected DicomObject dataset;
     
+    protected static Logger log = LoggerFactory.getLogger(AbstractDicomModel.class);
+            
     public long getPk() {
         return pk;
     }
@@ -119,6 +124,24 @@ public abstract class AbstractDicomModel implements Serializable {
         sb.append(item.getString(Tag.CodeMeaning))
             .append('[').append(item.getString(Tag.CodeValue)).append(']');
         return sb.toString();
+    }
+    
+    public Date toDate(int tag) {
+        try {
+            return dataset.getDate(tag);
+        } catch (Exception x) {
+            log.warn("DicomObject contains wrong value in date attribute!:"+dataset);
+            return null;
+        }
+    }
+
+    public Date toDate(int dateTag, int timeTag) {
+        try {
+            return dataset.getDate(dateTag, timeTag);
+        } catch (Exception x) {
+            log.warn("DicomObject contains wrong value in date attribute!:"+dataset);
+            return null;
+        }
     }
 
     public abstract void update(DicomObject dicomObject);

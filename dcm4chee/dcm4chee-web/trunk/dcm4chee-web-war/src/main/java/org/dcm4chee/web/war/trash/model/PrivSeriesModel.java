@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.trash.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -48,7 +49,6 @@ import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.PrivateInstance;
 import org.dcm4chee.archive.entity.PrivateSeries;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.common.util.DateUtils;
 import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
@@ -74,10 +74,8 @@ public class PrivSeriesModel extends AbstractDicomModel implements Serializable 
         return dataset.getString(Tag.SeriesInstanceUID);
     }
     
-    public String getDatetime() {
-        return DateUtils.datm2str(
-                dataset.getString(Tag.SeriesDate, ""),
-                dataset.getString(Tag.SeriesTime, ""));
+    public Date getDatetime() {
+        return toDate(Tag.SeriesDate, Tag.SeriesTime);
     }
 
     public String getSeriesDate() {
@@ -124,10 +122,8 @@ public class PrivSeriesModel extends AbstractDicomModel implements Serializable 
         return dataset.getInt(Tag.NumberOfSeriesRelatedInstances);
     }
 
-    public String getPPSStartDatetime() {
-        return DateUtils.datm2str(
-                dataset.getString(Tag.PerformedProcedureStepStartDate, ""),
-                dataset.getString(Tag.PerformedProcedureStepStartTime, ""));
+    public Date getPPSStartDatetime() {
+        return toDate(Tag.PerformedProcedureStepStartDate, Tag.PerformedProcedureStepStartTime);
     }
 
     public String getPPSId() {

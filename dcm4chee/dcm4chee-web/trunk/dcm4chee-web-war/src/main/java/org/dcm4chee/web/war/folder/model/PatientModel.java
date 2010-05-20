@@ -88,7 +88,7 @@ public class PatientModel extends AbstractDicomModel implements Serializable {
     }
 
     public Date getBirthdate() {
-        return dataset.getDate(Tag.PatientBirthDate);
+        return toDate(Tag.PatientBirthDate);
     }
 
     public String getComments() {

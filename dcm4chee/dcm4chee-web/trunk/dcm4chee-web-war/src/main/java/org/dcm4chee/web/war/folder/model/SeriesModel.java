@@ -88,7 +88,7 @@ public class SeriesModel extends AbstractDicomModel implements Serializable {
     }
     
     public Date getDatetime() {
-        return dataset.getDate(Tag.SeriesDate, Tag.SeriesTime);
+        return toDate(Tag.SeriesDate, Tag.SeriesTime);
     }
 
     public String getSeriesDate() {
@@ -136,7 +136,7 @@ public class SeriesModel extends AbstractDicomModel implements Serializable {
     }
 
     public Date getPPSStartDatetime() {
-        return dataset.getDate(Tag.PerformedProcedureStepStartDate, Tag.PerformedProcedureStepStartTime);
+        return toDate(Tag.PerformedProcedureStepStartDate, Tag.PerformedProcedureStepStartTime);
     }
 
     public String getPPSId() {

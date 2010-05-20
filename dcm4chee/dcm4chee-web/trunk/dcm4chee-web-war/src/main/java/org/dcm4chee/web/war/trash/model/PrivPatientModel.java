@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.trash.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -48,7 +49,6 @@ import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.PrivatePatient;
 import org.dcm4chee.archive.entity.PrivateStudy;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.common.util.DateUtils;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
@@ -85,8 +85,8 @@ public class PrivPatientModel extends AbstractDicomModel implements Serializable
         return dataset.getString(Tag.PatientSex);
     }
 
-    public String getBirthdate() {
-        return DateUtils.da2str(dataset.getString(Tag.PatientBirthDate));
+    public Date getBirthdate() {
+        return toDate(Tag.PatientBirthDate);
     }
 
     public String getComments() {

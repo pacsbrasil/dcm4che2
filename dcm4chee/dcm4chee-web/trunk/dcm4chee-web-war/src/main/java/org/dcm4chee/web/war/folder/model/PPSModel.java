@@ -98,7 +98,7 @@ public class PPSModel extends AbstractDicomModel implements Serializable {
 
     public Date getDatetime() {
         return dataset != null 
-                ? dataset.getDate(Tag.PerformedProcedureStepStartDate, Tag.PerformedProcedureStepStartTime)
+                ? toDate(Tag.PerformedProcedureStepStartDate, Tag.PerformedProcedureStepStartTime)
                 : series1.getPPSStartDatetime();
     }
 

@@ -86,7 +86,7 @@ public class StudyModel extends AbstractDicomModel implements Serializable {
     }
 
     public Date getDatetime() {
-        return dataset.getDate(Tag.StudyDate, Tag.StudyTime);
+        return toDate(Tag.StudyDate, Tag.StudyTime);
     }
 
     public void setDatetime(Date datetime) {

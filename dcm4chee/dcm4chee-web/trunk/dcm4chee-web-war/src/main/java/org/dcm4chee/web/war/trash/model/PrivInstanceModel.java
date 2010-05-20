@@ -39,12 +39,12 @@
 package org.dcm4chee.web.war.trash.model;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.PrivateInstance;
-import org.dcm4chee.web.common.util.DateUtils;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
 /**
@@ -91,14 +91,10 @@ public class PrivInstanceModel extends AbstractDicomModel implements Serializabl
                 new int[] { Tag.ConceptNameCodeSequence, 0, Tag.CodeMeaning });
     }
 
-    public String getDatetime() {
+    public Date getDatetime() {
         return isPresentationState(getSopClassUID())
-                ? DateUtils.datm2str(
-                        dataset.getString(Tag.PresentationCreationDate, ""),
-                        dataset.getString(Tag.PresentationCreationDate, ""))
-                : DateUtils.datm2str(
-                        dataset.getString(Tag.ContentDate, ""),
-                        dataset.getString(Tag.ContentTime, ""));
+                ? toDate(Tag.PresentationCreationDate, Tag.PresentationCreationDate)
+                : toDate(Tag.ContentDate, Tag.ContentTime);
     }
 
     private boolean isPresentationState(String cuid) {

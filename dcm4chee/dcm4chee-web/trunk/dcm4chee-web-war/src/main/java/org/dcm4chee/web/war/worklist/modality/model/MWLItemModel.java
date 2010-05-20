@@ -95,11 +95,16 @@ public class MWLItemModel extends AbstractDicomModel implements Serializable {
     }
 
     public Date getStartDate() {
-        Date d = spsItem.getDate(Tag.ScheduledProcedureStepStartDateTime);
-        if (d == null) {
-            d = spsItem.getDate(Tag.ScheduledProcedureStepStartDate, Tag.ScheduledProcedureStepStartTime);
+        try {
+            Date d = spsItem.getDate(Tag.ScheduledProcedureStepStartDateTime);
+            if (d == null) {
+                d = spsItem.getDate(Tag.ScheduledProcedureStepStartDate, Tag.ScheduledProcedureStepStartTime);
+            }
+            return d;
+        } catch (Exception x) {
+            log.warn("DicomObject contains wrong value in date attribute!:"+dataset);
+            return null;
         }
-        return d;
     }
 
     public String getScheduledProcedureStepID() {

@@ -78,6 +78,7 @@ import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
@@ -473,7 +474,7 @@ public class TrashListPage extends Panel {
             item.add(new Label("name").add(tooltipBehaviour));
             item.add(new Label("id").add(tooltipBehaviour));
             item.add(new Label("issuer").add(tooltipBehaviour));
-            item.add(new Label("birthdate").add(tooltipBehaviour));
+            item.add(new DateTimeLabel("birthdate").setWithoutTime(true).add(tooltipBehaviour));
             item.add(new Label("sex").add(tooltipBehaviour));
             item.add(new Label("comments").add(tooltipBehaviour));
             item.add(new Label("pk").add(new TooltipBehaviour("trash.","patPk")));
@@ -544,7 +545,7 @@ public class TrashListPage extends Panel {
             };
             cell.add(new ExpandCollapseLink("expand", studyModel, patientListItem));
             item.add(cell);
-            item.add(new Label("datetime").add(new TooltipBehaviour("trash.study","DateTime")));
+            item.add(new DateTimeLabel("datetime").add(new TooltipBehaviour("trash.study","DateTime")));
             item.add(new Label("id").add(new TooltipBehaviour("trash.study","Id")));
             item.add(new Label("accessionNumber").add(new TooltipBehaviour("trash.","accessionNumber")));
             item.add(new Label("modalities").add(new TooltipBehaviour("trash.","modalities")));
@@ -619,7 +620,7 @@ public class TrashListPage extends Panel {
             };
             cell.add(new ExpandCollapseLink("expand", seriesModel, patientListItem));
             item.add(cell);
-            item.add(new Label("datetime").add(new TooltipBehaviour("trash.series","DateTime")));
+            item.add(new DateTimeLabel("datetime").add(new TooltipBehaviour("trash.series","DateTime")));
             item.add(new Label("seriesNumber").add(new TooltipBehaviour("trash.","seriesNumber")));
             item.add(new Label("sourceAET").add(new TooltipBehaviour("trash.","sourceAET")));
             item.add(new Label("modality").add(new TooltipBehaviour("trash.series","Modality")));
@@ -683,7 +684,7 @@ public class TrashListPage extends Panel {
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
             final PrivInstanceModel instModel = (PrivInstanceModel) item.getModelObject();
-            item.add(new Label("datetime").add(new TooltipBehaviour("trash.instance","DateTime")));
+            item.add(new DateTimeLabel("datetime").add(new TooltipBehaviour("trash.instance","DateTime")));
             item.add(new Label("instanceNumber").add(new TooltipBehaviour("trash.","instanceNumber")));
             item.add(new Label("sopClassUID").add(new TooltipBehaviour("trash.","sopClassUID")));
             item.add(new Label("description").add(new TooltipBehaviour("trash.instance","Description")));

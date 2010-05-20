@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.trash.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -49,7 +50,6 @@ import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.entity.PrivateSeries;
 import org.dcm4chee.archive.entity.PrivateStudy;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.common.util.DateUtils;
 import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
@@ -73,18 +73,16 @@ public class PrivStudyModel extends AbstractDicomModel implements Serializable {
         return dataset.getString(Tag.StudyInstanceUID, "");
     }
 
-    public String getDatetime() {
-        return DateUtils.datm2str(
-                dataset.getString(Tag.StudyDate, ""),
-                dataset.getString(Tag.StudyTime, ""));
+    public Date getDatetime() {
+        return toDate(Tag.StudyDate, Tag.StudyTime);
     }
 
-    public void setDatetime(String datetime) {
-        String[] datm = DateUtils.str2datm(datetime);
-        dataset.putString(Tag.StudyDate, VR.DA, datm[0]);
-        dataset.putString(Tag.StudyTime, VR.TM, datm[1]);
+    public void setDatetime(Date datetime) {
+        
+        dataset.putDate(Tag.StudyDate, VR.DA, datetime);
+        dataset.putDate(Tag.StudyTime, VR.TM, datetime);
     }
-
+    
     public String getId() {
         return dataset.getString(Tag.StudyID);
     }
