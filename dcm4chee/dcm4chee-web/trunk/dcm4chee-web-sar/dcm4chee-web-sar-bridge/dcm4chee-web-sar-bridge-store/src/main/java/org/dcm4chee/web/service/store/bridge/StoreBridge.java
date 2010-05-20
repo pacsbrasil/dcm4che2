@@ -52,6 +52,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.io.DicomOutputStream;
+import org.dcm4chee.archive.common.PrivateTag;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.web.service.common.FileImportOrder;
 import org.dcm4chee.web.service.common.FileImportOrder.FileAndHeader;
@@ -87,6 +88,7 @@ public class StoreBridge extends ServiceMBeanSupport {
         DicomObject attrs;
         for (FileAndHeader file : files) {
             attrs = file.getHeaderAttributes();
+            log.info("########### srcAET:"+attrs.getString(attrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID)));
             importFile(toFileDTO(file.getFile()), toDataset(attrs), prevSeriesIuid, --len == 0);
             prevSeriesIuid = attrs.getString(Tag.SeriesInstanceUID);
         }
@@ -115,7 +117,11 @@ public class StoreBridge extends ServiceMBeanSupport {
         DicomOutputStream dos = new DicomOutputStream(baos);
         dos.writeDataset(attrs, TransferSyntax.ExplicitVRLittleEndian);
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
+        String srcAet = attrs.getString(attrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID));
         ds.readDataset(new ByteArrayInputStream(baos.toByteArray()), DcmDecodeParam.EVR_LE, -1);
+        ds.setPrivateCreatorID(PrivateTag.CreatorID);
+        ds.putAE(PrivateTag.CallingAET, srcAet);
+        ds.setPrivateCreatorID(null);
         return ds;
     }
 
