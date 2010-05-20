@@ -88,7 +88,6 @@ public class StoreBridge extends ServiceMBeanSupport {
         DicomObject attrs;
         for (FileAndHeader file : files) {
             attrs = file.getHeaderAttributes();
-            log.info("########### srcAET:"+attrs.getString(attrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID)));
             importFile(toFileDTO(file.getFile()), toDataset(attrs), prevSeriesIuid, --len == 0);
             prevSeriesIuid = attrs.getString(Tag.SeriesInstanceUID);
         }
