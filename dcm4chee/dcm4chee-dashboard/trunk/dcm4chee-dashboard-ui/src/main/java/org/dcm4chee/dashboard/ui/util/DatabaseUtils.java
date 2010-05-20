@@ -55,9 +55,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
-import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.model.StringResourceModel;
-
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
