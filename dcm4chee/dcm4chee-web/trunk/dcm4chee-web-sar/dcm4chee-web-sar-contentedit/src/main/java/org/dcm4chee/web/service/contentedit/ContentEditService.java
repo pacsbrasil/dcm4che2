@@ -77,6 +77,7 @@ import org.dcm4che2.data.VR;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.common.Availability;
+import org.dcm4chee.archive.common.PrivateTag;
 import org.dcm4chee.archive.entity.Code;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
@@ -459,6 +460,8 @@ public class ContentEditService extends ServiceMBeanSupport {
                     } else {
                         seriesAttrs = seriesEntry.getKey().getAttributes(false);
                         seriesAttrs.putString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
+                        seriesAttrs.putString(seriesAttrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), 
+                                VR.AE, seriesEntry.getKey().getSourceAET());
                     }
                     for ( Instance i : seriesEntry.getValue()) {
                         if ( i.getFiles().size() < 1)

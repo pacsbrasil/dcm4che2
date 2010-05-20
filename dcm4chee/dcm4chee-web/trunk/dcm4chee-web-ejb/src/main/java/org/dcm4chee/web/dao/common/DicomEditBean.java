@@ -56,6 +56,8 @@ import javax.persistence.Query;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
+import org.dcm4chee.archive.common.PrivateTag;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
@@ -286,7 +288,10 @@ public class DicomEditBean implements DicomEditLocal {
             series.getStudy().getPatient().getPk();
         } catch (NoResultException nre) {
             pSeries = new PrivateSeries();//we need parents initialized.
-            pSeries.setAttributes(series.getAttributes(true));
+            DicomObject attrs = series.getAttributes(true);
+            attrs.putString(attrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), 
+                    VR.AE, series.getSourceAET());
+            pSeries.setAttributes(attrs);
             pSeries.setPrivateType(DELETED);
             Study study = series.getStudy();
             PrivateStudy pStudy = moveStudyToTrash(study);
@@ -390,6 +395,7 @@ public class DicomEditBean implements DicomEditLocal {
             .setParameter("iuid", iuid.trim());
         Series s = (Series) q.getSingleResult();
         DicomObject attrs = s.getAttributes(false);
+        attrs.putString(attrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), VR.AE, s.getSourceAET());
         s.getStudy().getAttributes(false).copyTo(attrs);
         s.getStudy().getPatient().getAttributes().copyTo(attrs);
         return attrs;

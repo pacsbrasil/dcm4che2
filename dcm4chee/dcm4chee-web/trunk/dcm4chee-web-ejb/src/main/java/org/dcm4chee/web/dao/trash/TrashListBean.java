@@ -47,6 +47,8 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.VR;
+import org.dcm4chee.archive.common.PrivateTag;
 import org.dcm4chee.archive.entity.BaseEntity;
 import org.dcm4chee.archive.entity.PrivateFile;
 import org.dcm4chee.archive.entity.PrivateInstance;
@@ -408,9 +410,9 @@ public class TrashListBean implements TrashListLocal {
             if (clazz.equals(PrivateSeries.class))
                 query += "WHERE se.pk = :pk";
             else {
-                query += "LEFT JOIN se.study st";
+                query += "LEFT JOIN se.study st ";
                 if (clazz.equals(PrivateStudy.class))
-                    query += " WHERE st.pk = :pk";
+                    query += "WHERE st.pk = :pk";
                 else if (clazz.equals(PrivatePatient.class))
                     query += "LEFT JOIN st.patient p WHERE p.pk = :pk";
                 else return null;
@@ -428,6 +430,8 @@ public class TrashListBean implements TrashListLocal {
         pf.getInstance().getSeries().getAttributes().copyTo(dio);
         pf.getInstance().getSeries().getStudy().getAttributes().copyTo(dio);
         pf.getInstance().getSeries().getStudy().getPatient().getAttributes().copyTo(dio);
+        dio.putString(dio.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), 
+                VR.AE, pf.getInstance().getSeries().getSourceAET());
         return dio;
     }
 }

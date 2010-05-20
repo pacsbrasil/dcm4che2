@@ -46,6 +46,8 @@ import java.util.List;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
+import org.dcm4chee.archive.common.PrivateTag;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -211,6 +213,8 @@ public class SeriesModel extends AbstractDicomModel implements Serializable {
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        dicomObject.putString(dicomObject.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), 
+                VR.AE, getSourceAET());
         dataset = dao.updateSeries(getPk(), dicomObject).getAttributes(true);
     }
 
