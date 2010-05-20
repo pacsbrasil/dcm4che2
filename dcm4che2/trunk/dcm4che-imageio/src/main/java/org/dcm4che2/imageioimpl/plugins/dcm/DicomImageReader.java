@@ -543,8 +543,7 @@ public class DicomImageReader extends ImageReader {
                 || sourceRegion!=null ) {
             useParam = getDefaultReadParam();
         }
-        BufferedImage bi;
-        System.out.println("Reading 422/420 image");
+        BufferedImage bi;        
         WritableRaster wr = (WritableRaster) readRaster(imageIndex, useParam);
         bi = new BufferedImage(ColorModelFactory.createColorModel(ds),
                 wr, false, null);
