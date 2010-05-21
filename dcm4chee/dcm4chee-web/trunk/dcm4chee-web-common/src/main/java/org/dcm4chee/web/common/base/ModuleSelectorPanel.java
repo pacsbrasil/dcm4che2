@@ -43,6 +43,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
@@ -99,20 +100,24 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
     }
 
     public void addModule(final Class<? extends Panel> clazz) {
-        ITab tab = new ModuleTab(clazz);
-        super.getTabs().add(tab);
-        if (clazz.getResource("style.css") != null)
-            add(CSSPackageResource.getHeaderContribution(clazz, "style.css"));
+        if (Session.get().getAuthorizationStrategy().isInstantiationAuthorized(clazz)) {
+            ITab tab = new ModuleTab(clazz);
+            super.getTabs().add(tab);
+            if (clazz.getResource("style.css") != null)
+                add(CSSPackageResource.getHeaderContribution(clazz, "style.css"));
+        }
     }
 
     public void addInstance(Panel instance) {
         addInstance(instance, null);
     }
     public void addInstance(Panel instance, IModel<String> titleModel) {
-        ITab tab = new ModuleTab(instance, titleModel);
-        super.getTabs().add(tab);
-        if (instance.getClass().getResource("style.css") != null)
-            add(CSSPackageResource.getHeaderContribution(instance.getClass(), "style.css"));
+        if (Session.get().getAuthorizationStrategy().isInstantiationAuthorized(instance.getClass())) {
+            ITab tab = new ModuleTab(instance, titleModel);
+            super.getTabs().add(tab);
+            if (instance.getClass().getResource("style.css") != null)
+                add(CSSPackageResource.getHeaderContribution(instance.getClass(), "style.css"));
+        }
     }
     
     public void setShowLogoutLink(boolean show) {
