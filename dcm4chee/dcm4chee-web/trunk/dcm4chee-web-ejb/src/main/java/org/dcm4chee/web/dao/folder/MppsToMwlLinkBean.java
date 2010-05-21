@@ -39,6 +39,7 @@
 package org.dcm4chee.web.dao.folder;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -190,22 +191,24 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         DicomObject item = null;
         DicomObject mwlAttrs;
         MWLItem mwlItem = null;
+        HashSet<String> rpspsIDs = new HashSet<String>(ssaSQ.countItems());
         Query qMwl = em.createQuery("select object(m) from MWLItem m where requestedProcedureID = :rpId and scheduledProcedureStepID = :spsId");
         for ( int i = 0, len = ssaSQ.countItems() ; i < len ; i++) {
             item = ssaSQ.getDicomObject(i);
             rpId = item.getString(Tag.RequestedProcedureID);
             spsId = item.getString(Tag.ScheduledProcedureStepID);
             if (spsId != null) {
+                rpspsIDs.add(rpId+"_"+spsId);
                 try {
                     qMwl.setParameter("rpId", rpId).setParameter("spsId", spsId);
                     mwlItem = (MWLItem)qMwl.getSingleResult();
                     mwlAttrs = mwlItem.getAttributes();
-                    mwlAttrs.get(Tag.ScheduledStepAttributesSequence).getDicomObject()
+                    mwlAttrs.get(Tag.ScheduledProcedureStepSequence).getDicomObject()
                         .putString(Tag.ScheduledProcedureStepStatus, VR.CS, "SCHEDULED");
                     mwlItem.setAttributes(mwlAttrs);
                     em.merge(mwlItem);
                 } catch (Exception ignore) {
-                    log.warn("Can't update MWLItem status to SCHEDULED! MWL:"+mwlItem);
+                    log.warn("Can't update MWLItem status to SCHEDULED! MWL:"+mwlItem, ignore);
                 }
             }
         }
@@ -221,6 +224,40 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         mppsAttrs.putSequence(Tag.ScheduledStepAttributesSequence).addDicomObject(item);
         mpps.setAttributes(mppsAttrs);
         em.merge(mpps);
+        if (rpspsIDs.size() > 0) {
+            DicomObject seriesAttrs, rqAttrSqItem;
+            DicomElement reqAttrSQ;
+            DicomElement newReqAttrSQ;
+            Series s = null;
+            for ( Iterator<Series> iter = mpps.getSeries().iterator() ; iter.hasNext() ; ) {
+                s = iter.next();
+                seriesAttrs = s.getAttributes(true);
+                reqAttrSQ = seriesAttrs.get(Tag.RequestAttributesSequence);
+                if (reqAttrSQ == null)
+                    continue;
+                newReqAttrSQ = seriesAttrs.putSequence(Tag.RequestAttributesSequence);
+                for (int i = 0, len = reqAttrSQ.countItems() ; i < len ; i++) {
+                    rqAttrSqItem = reqAttrSQ.getDicomObject(i);
+                    rpId = rqAttrSqItem.getString(Tag.RequestedProcedureID); 
+                    spsId = rqAttrSqItem.getString(Tag.ScheduledProcedureStepID);
+                    if (!rpspsIDs.contains(rpId+"_"+spsId)) {
+                        newReqAttrSQ.addDicomObject(rqAttrSqItem);
+                    }
+                }
+                if (newReqAttrSQ.isEmpty())
+                    seriesAttrs.remove(Tag.RequestAttributesSequence);
+                seriesAttrs.putString(Tag.AccessionNumber, VR.SH, null);
+                s.setAttributes(seriesAttrs);
+                em.merge(s);
+            }
+            if (s != null) {
+                Study study = s.getStudy();
+                DicomObject studyAttrs = study.getAttributes(false);
+                studyAttrs.putString(Tag.AccessionNumber, VR.SH, null);
+                study.setAttributes(studyAttrs);
+                em.merge(study);
+            }
+        }
         return mppsSav;
     }
     
@@ -231,13 +268,14 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         Query qS = em.createQuery(sb.toString());
         QueryUtil.setParametersForIN(qS, mppsIuids);
         List<Series> seriess = (List<Series>) qS.getResultList();
+        log.info("Coerce SeriesAndStudy: nr of series:"+seriess);
         if (seriess.size() > 0) {
             DicomObject seriesAndStudyAttrs = null;
             Study study = null;
             for (Series s : seriess) {
-                seriesAndStudyAttrs = s.getAttributes(false);
+                seriesAndStudyAttrs = s.getAttributes(true);
                 study = s.getStudy();
-                seriesAndStudyAttrs.setParent(study.getAttributes(false));
+                study.getAttributes(true).copyTo(seriesAndStudyAttrs);
                 seriesAndStudyAttrs.remove(Tag.RequestAttributesSequence);
                 log.info("Coerce SeriesAndStudy: orig:"+seriesAndStudyAttrs);
                 log.info("Coerce SeriesAndStudy: coerce:"+coerce);
@@ -245,9 +283,11 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
                 log.info("Set coerced SeriesAndStudy: "+seriesAndStudyAttrs);
                 s.setAttributes(seriesAndStudyAttrs);
                 em.merge(s);
+                log.info("new Series Attrs: "+s.getAttributes(true));
             }
-            if (seriesAndStudyAttrs.containsValue(Tag.StudyInstanceUID))
-                study.setAttributes(seriesAndStudyAttrs);
+            study.setAttributes(seriesAndStudyAttrs);
+            em.merge(study);
+            log.info("new Study Attrs: "+study.getAttributes(true));
         }
     }
 

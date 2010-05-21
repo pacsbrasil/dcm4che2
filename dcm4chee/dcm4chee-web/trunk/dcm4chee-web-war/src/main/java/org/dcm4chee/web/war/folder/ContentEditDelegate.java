@@ -180,9 +180,12 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
     }
     
     public boolean unlink(PPSModel mpps)  throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
-        return (Boolean) server.invoke(serviceObjectName, "unlinkMpps", 
+        boolean status = (Boolean) server.invoke(serviceObjectName, "unlinkMpps", 
                 new Object[]{mpps.getPk()}, 
                 new String[]{long.class.getName()});
+        mpps.getParent().collapse();
+        mpps.getParent().expand();
+        return status;
     }
     
     private long[] toPks(Collection<? extends AbstractDicomModel> models) {

@@ -364,7 +364,7 @@ public class StudyListPage extends Panel {
                 } catch (Exception x) {
                     log.error("Unlink of MPPS failed:"+ppsModel, x);
                 }
-                this.setStatus(new StringResourceModel("folder.moveFailed", StudyListPage.this,null));
+                this.setStatus(new StringResourceModel("folder.unlinkFailed", StudyListPage.this,null));
 
             }
             @Override

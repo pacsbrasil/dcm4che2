@@ -96,8 +96,10 @@ public class XSLTUtils {
             xslt(attrs, tpls[0], out, parameter);
         }
         TransformerHandler[] thChain = toTransformerHandlerChain(tpls);
-        for ( int i=0 ; i<thChain.length ; i++) {
-            setParameter(parameter, thChain[i].getTransformer());
+        if (parameter != null) {
+            for ( int i=0 ; i<thChain.length ; i++) {
+                setParameter(parameter, thChain[i].getTransformer());
+            }
         }
         xslt(attrs, thChain, out);
     }
@@ -107,8 +109,10 @@ public class XSLTUtils {
             xslt(attrs, tpls[0], out, parameter);
         }
         TransformerHandler[] thChain = toTransformerHandlerChain(tpls);
-        for ( int i=0 ; i<thChain.length ; i++) {
-            setParameter(parameter, thChain[i].getTransformer());
+        if (parameter != null) {
+            for ( int i=0 ; i<thChain.length ; i++) {
+                setParameter(parameter, thChain[i].getTransformer());
+            }
         }
         xslt(attrs, thChain, out);
     }

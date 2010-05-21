@@ -507,7 +507,9 @@ public class ContentEditService extends ServiceMBeanSupport {
         logMppsLinkRecord(result);
         updateSeriesAttributes(result);
         this.sendJMXNotification(result);
-        if (result.getStudiesToMove().size() < 1) {
+        log.info("MppsToMwlLinkResult:"+result);
+        log.info("MppsToMwlLinkResult: studiesToMove:"+result.getStudiesToMove().size());
+        if (result.getStudiesToMove().size() > 0) {
             Patient pat = result.getMwl().getPatient();
             log.info("Patient of some MPPS are not identical to patient of MWL! Move studies to Patient of MWL:"+
                     pat.getPatientID());
@@ -532,7 +534,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         logMppsLinkRecord(result);
         updateSeriesAttributes(result);
         this.sendJMXNotification(result);
-        if (result.getStudiesToMove().size() < 1) {
+        if (result.getStudiesToMove().size() > 0) {
             Patient pat = result.getMwl().getPatient();
             log.info("Patient of some MPPS are not identical to patient of MWL! Move studies to Patient of MWL:"+
                     pat.getPatientID());
@@ -566,17 +568,25 @@ public class ContentEditService extends ServiceMBeanSupport {
     
     private void updateSeriesAttributes(MppsToMwlLinkResult result) throws InstanceNotFoundException, MBeanException, ReflectionException {
         DicomObject coerce = getCoercionAttrs(result.getMwl().getAttributes());
-        if ( coerce != null) {
+        if ( coerce != null && !coerce.isEmpty()) {
             String[] mppsIuids = new String[result.getMppss().size()];
             int i = 0;
             for (MPPS m : result.getMppss()) {
                 mppsIuids[i++] = m.getSopInstanceUID();
             }
             this.lookupMppsToMwlLinkLocal().updateSeriesAndStudyAttributes(mppsIuids, coerce);
-        }        
+        } else {
+            log.warn("No Coercion attributes to update Study and Series Attributes after linking MPPS to MWL! coerce:"+coerce);
+        }
     }
     private DicomObject getCoercionAttrs(DicomObject ds) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        if ( ds == null ) return null;        
+        if ( ds == null ) return null;
+        log.info("Dataset to get coercion ds:"+ds);
+        try {
+            XSLTUtils.dump(ds, null, "/tmp/mpps2mwl_coerce.xml", true);
+        } catch (Exception x) {
+            log.warn("Can't dump dicom object!", x);
+        }
         DicomObject sps = ds.get(Tag.ScheduledProcedureStepSequence).getDicomObject();
         String aet = sps == null ? null : sps.getString(Tag.ScheduledStationAETitle);
         Templates tpl = templates.getTemplatesForAET(aet, MWL2STORE_XSL);
