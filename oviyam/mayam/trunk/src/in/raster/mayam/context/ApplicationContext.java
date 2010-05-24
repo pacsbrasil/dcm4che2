@@ -143,9 +143,5 @@ public class ApplicationContext {
             } catch (IOException ex) {
             }
         }
-    }
-    public static void exit()
-    {
-
-    }
+    }    
 }

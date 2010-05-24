@@ -1,41 +1,41 @@
 /* ***** BEGIN LICENSE BLOCK *****
-* Version: MPL 1.1/GPL 2.0/LGPL 2.1
-*
-* The contents of this file are subject to the Mozilla Public License Version
-* 1.1 (the "License"); you may not use this file except in compliance with
-* the License. You may obtain a copy of the License at
-* http://www.mozilla.org/MPL/
-*
-* Software distributed under the License is distributed on an "AS IS" basis,
-* WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-* for the specific language governing rights and limitations under the
-* License.
-*
-*
-* The Initial Developer of the Original Code is
-* Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2009-2010
-* the Initial Developer. All Rights Reserved.
-*
-* Contributor(s):
-* Babu Hussain A
-* Meer Asgar Hussain B
-* Prakash J
-* Suresh V
-*
-* Alternatively, the contents of this file may be used under the terms of
-* either the GNU General Public License Version 2 or later (the "GPL"), or
-* the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
-* in which case the provisions of the GPL or the LGPL are applicable instead
-* of those above. If you wish to allow use of your version of this file only
-* under the terms of either the GPL or the LGPL, and not to allow others to
-* use your version of this file under the terms of the MPL, indicate your
-* decision by deleting the provisions above and replace them with the notice
-* and other provisions required by the GPL or the LGPL. If you do not delete
-* the provisions above, a recipient may use your version of this file under
-* the terms of any one of the MPL, the GPL or the LGPL.
-*
-* ***** END LICENSE BLOCK ***** */
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ *
+ * The Initial Developer of the Original Code is
+ * Raster Images
+ * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ * Babu Hussain A
+ * Meer Asgar Hussain B
+ * Prakash J
+ * Suresh V
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
@@ -74,33 +74,29 @@ import org.dcm4che.imageio.plugins.DcmMetadata;
 public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
 
     /** Creates new form SeriesPanel */
-
     //Image Reading variables.
     private Iterator iter;
     private ImageReader reader;
     private ImageInputStream iis;
-
     //Variables to store series details.
-
     private String studyUID = "";
     private String seriesUID = "";
     private String seriesDesc = "";
     private String modality = "";
     private String institutionName = "";
-    private int totalInstace; 
+    private int totalInstace;
     private Dataset dataset;
-    
     //Variables to store the series thumbnail image file path.
     private String fileUrl;
-
-     //Variables to store the buffered image
+    //Variables to store the buffered image
     private Image loadedImage;
     private ImageIcon imageIcon;
     private BufferedImage currentbufferedimage;
     private BufferedImage image;
     private Thumbnail imageLabel;
-
     private boolean instanceListAdded = false;
+    private int nFrames = 0;
+    private boolean mulitiFrame = false;
 
     public SeriesPanel() {
         initComponents();
@@ -115,8 +111,10 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
         }
         initComponents();
         this.addListeners();
+        setTotalInstacne();
         setHeaders();
         setNoSelectionColoring();
+
 
     }
 
@@ -127,7 +125,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
         imageLabel = new Thumbnail(image);
         imageLabel.setSize(96, 96);
         this.add(imageLabel);
-        imageLabel.addMouseListener(this);       
+        imageLabel.addMouseListener(this);
         imageLabel.setBounds(1, 1, 96, 96);
     }
 
@@ -142,13 +140,13 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
      * This routine used to retrieve the dicom related details
      */
     private void retrieveInfo() {
-       
+
         studyUID = dataset.getString(Tags.StudyInstanceUID);
         seriesUID = dataset.getString(Tags.SeriesInstanceUID);
         totalInstace = ApplicationContext.databaseRef.getSeriesLevelInstance(studyUID, seriesUID);
         seriesDesc = dataset.getString(Tags.SeriesDescription);
         modality = dataset.getString(Tags.Modality);
-        institutionName = dataset.getString(Tags.InstitutionName);       
+        institutionName = dataset.getString(Tags.InstitutionName);
 
     }
 
@@ -157,7 +155,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
      */
     public void updateInstanceList() {
         SeriesListUpdator series = new SeriesListUpdator(studyUID, seriesUID, false);
-       // series.addSeriesToStudyList(studyUID, seriesUID, false);
+        // series.addSeriesToStudyList(studyUID, seriesUID, false);
     }
 
     /**
@@ -173,6 +171,10 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
             dataset = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
             try {
                 currentbufferedimage = reader.read(0);
+                nFrames = reader.getNumImages(true);
+                if (nFrames - 1 > 0) {
+                    mulitiFrame = true;
+                }
                 imageIcon = new ImageIcon();
                 imageIcon.setImage(currentbufferedimage);
                 loadedImage = imageIcon.getImage();
@@ -220,7 +222,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
         totalImagesText.setForeground(Color.black);
         modalityText.setForeground(Color.black);
         institutionText.setForeground(Color.black);
-    }  
+    }
 
     /**
      * This routine used to remove the selection coloring.
@@ -231,6 +233,24 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
         totalImagesText.setForeground(Color.CYAN);
         modalityText.setForeground(Color.CYAN);
         institutionText.setForeground(Color.CYAN);
+    }
+
+    private void setTotalInstacne() {
+//        Known issue:
+//        If first instance of the series is multiframe instance then it would set the total number of images as number of frames of the first instance.
+//        Resolution:
+//        In future multiframe instance will listed as new series.
+
+        if (!isMulitiFrame()) {
+            totalInstace = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
+
+        } else {
+            totalInstace = nFrames;
+        }
+    }
+
+    public boolean isMulitiFrame() {
+        return mulitiFrame;
     }
 
     /**
@@ -250,10 +270,10 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
     }
 
     private void setHeaders() {
-        seriesDescriptionText.setText("" + seriesDesc!=null? seriesDesc:"");
+        seriesDescriptionText.setText("" + seriesDesc != null ? seriesDesc : "");
         totalImagesText.setText(this.totalInstace + " Images");
-        modalityText.setText("" + modality!=null?modality:"");
-        institutionText.setText(institutionName!=null?institutionName:"");
+        modalityText.setText("" + modality != null ? modality : "");
+        institutionText.setText(institutionName != null ? institutionName : "");
 
     }
 
@@ -302,11 +322,12 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
         loadedImage = null;
         imageIcon = null;
         currentbufferedimage = null;
-        if(image!=null)
-        image.flush();
-        
+        if (image != null) {
+            image.flush();
+        }
+
         image = null;
-        fileUrl = null;             
+        fileUrl = null;
     }
 
     /** This method is called from within the constructor to
