@@ -42,6 +42,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -96,7 +97,9 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
         add(new LocaleSelectorLink("lang_fr","fr").add(new Image("img_fr", 
                 new ResourceReference(ModuleSelectorPanel.class, "images/lang_fr.gif"))));
         add(new Image("img_logo", new ResourceReference(ModuleSelectorPanel.class, 
-                "images/logo.gif")));
+                "images/logo.gif"))
+            .add(new AttributeModifier("title", true, new Model<String>(getClass().getPackage().getImplementationVersion())))
+        );
     }
 
     public void addModule(final Class<? extends Panel> clazz) {

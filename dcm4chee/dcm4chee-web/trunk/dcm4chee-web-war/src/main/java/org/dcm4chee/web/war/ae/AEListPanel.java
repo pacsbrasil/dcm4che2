@@ -56,6 +56,7 @@ import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 
 /**
@@ -153,6 +154,7 @@ public class AEListPanel extends Panel {
                 };
                 editAET.add(new Image("img-editAET",ImageManager.IMAGE_EDIT)
                 .add(new ImageSizeBehaviour()));
+                editAET.add(new TooltipBehaviour("aet."));
                 item.add(editAET);
                 MetaDataRoleAuthorizationStrategy.authorize(editAET, RENDER, "WebAdmin");
                 AjaxLink<?> removeAET = new AjaxLink<Object>("removeAET") {
@@ -167,6 +169,7 @@ public class AEListPanel extends Panel {
                 };
                 removeAET.add(new Image("img-removeAET", ImageManager.IMAGE_DELETE)
                 .add(new ImageSizeBehaviour()));
+                removeAET.add(new TooltipBehaviour("aet."));
                 item.add(removeAET);
                 MetaDataRoleAuthorizationStrategy.authorize(removeAET, RENDER, "WebAdmin");
                 item.add(new AjaxLink<Object>("echo") {
@@ -179,6 +182,7 @@ public class AEListPanel extends Panel {
                     }
                 }.add(new Image("img-echoAET", ImageManager.IMAGE_ECHO)
                 .add(new ImageSizeBehaviour()))
+                .add(new TooltipBehaviour("aet."))
                 );
             }
             
@@ -192,6 +196,7 @@ public class AEListPanel extends Panel {
                 page.setEditPage(new AE());
             }
         };
+        newAET.add(new TooltipBehaviour("aet."));
         add(newAET);
         MetaDataRoleAuthorizationStrategy.authorize(newAET, RENDER, "WebAdmin");
     }

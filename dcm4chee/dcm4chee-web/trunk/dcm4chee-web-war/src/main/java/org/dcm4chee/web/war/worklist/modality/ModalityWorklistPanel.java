@@ -97,6 +97,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     private static final String MODULE_NAME = "mw";
     private ViewPort viewport;
     private boolean notSearched = true;
+    private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("mw.");
     
     private transient ModalityWorklist dao;
 
@@ -109,6 +110,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         final ModalityWorklistFilter filter = viewport.getFilter();
         BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
         form.setResourceIdPrefix("mw.");
+        form.setTooltipBehaviour(tooltipBehaviour);
         add(form);
         addQueryFields(filter, form);
         addExtendedStudySearch(form);
@@ -235,7 +237,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         extendedStudyFilter.add( new Label("studyInstanceUIDLabel", new ResourceModel("mw.studyInstanceUID")));
         extendedStudyFilter.add( new TextField<String>("studyInstanceUID"));
         form.add(extendedStudyFilter);
-        AjaxFallbackLink<?> l = new AjaxFallbackLink<Object>("showExtendedStudyFilter") {
+        AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedStudyFilter") {
 
             private static final long serialVersionUID = 1L;
 
@@ -244,7 +246,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 filter.setExtendedQuery(!filter.isExtendedQuery());
                 target.addComponent(form);
             }};
-        l.add(new Image("showExtendedStudyFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
+        link.add(new Image("showExtendedStudyFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
 
             private static final long serialVersionUID = 1L;
 
@@ -255,7 +257,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
         })
         .add(new ImageSizeBehaviour()));
-        form.add(l);
+        
+        form.add(link);
         return extendedStudyFilter;
     }
 

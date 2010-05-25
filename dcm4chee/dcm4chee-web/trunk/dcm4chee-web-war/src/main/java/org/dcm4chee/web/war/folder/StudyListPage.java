@@ -339,7 +339,6 @@ public class StudyListPage extends Panel {
             public void onClick(AjaxRequestTarget target) {
                 selected.update(viewport.getPatients());
                 selected.deselectChildsOfSelectedEntities();
-                log.info("Selected Entities: :"+selected);
                 if (selected.hasDicomSelection()) {
                     confirmDelete.confirm(target, new StringResourceModel("folder.confirmDelete",this, null,new Object[]{selected}), selected);
                 } else {
@@ -373,7 +372,6 @@ public class StudyListPage extends Panel {
             }
         };
         form.add(confirmUnlinkMpps);
-
     }
 
     private WebMarkupContainer addExtendedPatientSearch(final Form<?> form) {
@@ -393,7 +391,7 @@ public class StudyListPage extends Panel {
         extendedPatFilter.add( new TextField<String>("birthDateMin"));
         extendedPatFilter.add( new TextField<String>("birthDateMax"));
         form.add(extendedPatFilter);
-        AjaxFallbackLink<?> l = new AjaxFallbackLink<Object>("showExtendedPatFilter") {
+        AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedPatFilter") {
 
             private static final long serialVersionUID = 1L;
 
@@ -401,8 +399,9 @@ public class StudyListPage extends Panel {
             public void onClick(AjaxRequestTarget target) {
                 filter.setExtendedPatQuery(!filter.isExtendedPatQuery());
                 target.addComponent(form);
-            }};
-        l.add(new Image("showExtendedPatFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
+            }
+        };
+        link.add(new Image("showExtendedPatFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
 
                 private static final long serialVersionUID = 1L;
 
@@ -411,9 +410,10 @@ public class StudyListPage extends Panel {
                     return filter.isExtendedPatQuery() ? ImageManager.IMAGE_COLLAPSE : 
                         ImageManager.IMAGE_EXPAND;
                 }
-            })
+        })
         .add(new ImageSizeBehaviour()));
-        form.add(l);
+        
+        form.add(link);
         return extendedPatFilter;
     }
     private WebMarkupContainer addExtendedStudySearch(final Form<?> form) {
@@ -430,7 +430,7 @@ public class StudyListPage extends Panel {
         extendedStudyFilter.add( new Label("studyInstanceUIDLabel", new ResourceModel("folder.studyInstanceUID")));
         extendedStudyFilter.add( new TextField<String>("studyInstanceUID"));
         form.add(extendedStudyFilter);
-        AjaxFallbackLink<?> l = new AjaxFallbackLink<Object>("showExtendedStudyFilter") {
+        AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedStudyFilter") {
 
             private static final long serialVersionUID = 1L;
 
@@ -438,8 +438,9 @@ public class StudyListPage extends Panel {
             public void onClick(AjaxRequestTarget target) {
                 filter.setExtendedStudyQuery(!filter.isExtendedStudyQuery());
                 target.addComponent(form);
-            }};
-        l.add(new Image("showExtendedStudyFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
+            }
+        };
+        link.add(new Image("showExtendedStudyFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
 
             private static final long serialVersionUID = 1L;
 
@@ -450,10 +451,11 @@ public class StudyListPage extends Panel {
             }
         })
         .add(new ImageSizeBehaviour()));
-
-        form.add(l);
+        
+        form.add(link);
         return extendedStudyFilter;
     }
+    
     private WebMarkupContainer addExtendedSeriesSearch(final Form<?> form) {
         final StudyListFilter filter = viewport.getFilter();
         final WebMarkupContainer extendedSeriesFilter = new WebMarkupContainer("extendedSeriesFilter") {
@@ -476,7 +478,7 @@ public class StudyListPage extends Panel {
             }
         });
         form.add(extendedSeriesFilter);
-        AjaxFallbackLink<?> l = new AjaxFallbackLink<Object>("showExtendedSeriesFilter") {
+        AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedSeriesFilter") {
 
             private static final long serialVersionUID = 1L;
 
@@ -484,8 +486,9 @@ public class StudyListPage extends Panel {
             public void onClick(AjaxRequestTarget target) {
                 filter.setExtendedSeriesQuery(!filter.isExtendedSeriesQuery());
                 target.addComponent(form);
-            }};
-        l.add(new Image("showExtendedSeriesFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
+            }
+        };
+        link.add(new Image("showExtendedSeriesFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
 
             private static final long serialVersionUID = 1L;
 
@@ -496,8 +499,8 @@ public class StudyListPage extends Panel {
             }
         })
         .add(new ImageSizeBehaviour()));
-
-        form.add(l);
+        
+        form.add(link);
         return extendedSeriesFilter;
     }
 
