@@ -127,6 +127,8 @@ public class DicomImageReader extends ImageReader {
 
     private boolean monochrome;
 
+    private boolean paletteColor;
+
     private boolean banded;
 
     private boolean bigEndian;
@@ -281,6 +283,7 @@ public class DicomImageReader extends ImageReader {
         dataType = allocated <= 8 ? DataBuffer.TYPE_BYTE
                 : DataBuffer.TYPE_USHORT;
         samples = ds.getInt(Tag.SamplesPerPixel, 1);
+        paletteColor = ColorModelFactory.isPaletteColor(ds);
         monochrome = ColorModelFactory.isMonochrome(ds);
         pmi = ds.getString(Tag.PhotometricInterpretation);
 
@@ -488,6 +491,10 @@ public class DicomImageReader extends ImageReader {
             copyReadParam(param, param1);
             bi = reader.read(0, param1);
             postDecompress();
+            if (paletteColor && bi.getColorModel().getNumComponents() == 1) {
+                bi = new BufferedImage(ColorModelFactory.createColorModel(ds),
+                        bi.getRaster(), false, null);
+            }
         } else if( pmi.endsWith("422") || pmi.endsWith("420") ) {
             bi = readYbr400(imageIndex, param);
         } else {
