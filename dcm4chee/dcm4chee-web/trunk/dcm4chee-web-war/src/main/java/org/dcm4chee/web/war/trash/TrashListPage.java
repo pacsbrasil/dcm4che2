@@ -328,7 +328,7 @@ public class TrashListPage extends Panel {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                confirmDelete.confirm(target, new StringResourceModel("trash.confirmDelete",this, null,new Object[]{new StringResourceModel("trash.all", this, null).getObject()}), null);
+                confirmDelete.confirm(target, new StringResourceModel("trash.confirmDeleteAll",this, null), null);
             }
         };
         deleteAllBtn.add(new Image("deleteAllImg", ImageManager.IMAGE_TRASH_REMOVE_ALL)

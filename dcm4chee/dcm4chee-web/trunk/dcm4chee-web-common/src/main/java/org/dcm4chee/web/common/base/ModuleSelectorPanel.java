@@ -103,8 +103,8 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
         if (Session.get().getAuthorizationStrategy().isInstantiationAuthorized(clazz)) {
             ITab tab = new ModuleTab(clazz);
             super.getTabs().add(tab);
-            if (clazz.getResource("style.css") != null)
-                add(CSSPackageResource.getHeaderContribution(clazz, "style.css"));
+            if (clazz.getResource("base-style.css") != null)
+                add(CSSPackageResource.getHeaderContribution(clazz, "base-style.css"));
         }
     }
 
@@ -115,8 +115,8 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
         if (Session.get().getAuthorizationStrategy().isInstantiationAuthorized(instance.getClass())) {
             ITab tab = new ModuleTab(instance, titleModel);
             super.getTabs().add(tab);
-            if (instance.getClass().getResource("style.css") != null)
-                add(CSSPackageResource.getHeaderContribution(instance.getClass(), "style.css"));
+            if (instance.getClass().getResource("base-style.css") != null)
+                add(CSSPackageResource.getHeaderContribution(instance.getClass(), "base-style.css"));
         }
     }
     

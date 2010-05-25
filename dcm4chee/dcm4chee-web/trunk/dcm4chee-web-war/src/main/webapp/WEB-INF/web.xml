@@ -118,7 +118,6 @@
 	      <param-name>hashAlgorithm</param-name>
 	      <param-value>SHA-1</param-value>
 	    </init-param>	
-
  	</filter>
 
  <filter-mapping>

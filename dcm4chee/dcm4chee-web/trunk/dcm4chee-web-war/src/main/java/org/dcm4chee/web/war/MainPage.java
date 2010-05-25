@@ -38,23 +38,25 @@
 
 package org.dcm4chee.web.war;
 
+import org.apache.wicket.authorization.strategies.role.RoleAuthorizationStrategy;
+import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.usr.ui.usermanagement.UserListPanel;
+import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.base.ModuleSelectorPanel;
 import org.dcm4chee.web.war.ae.AEMgtPanel;
 import org.dcm4chee.web.war.folder.StudyListPage;
 import org.dcm4chee.web.war.fs.FileSystemPage;
 import org.dcm4chee.web.war.trash.TrashListPage;
 import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
-import org.dcm4chee.web.common.base.BaseWicketPage;
-import org.dcm4chee.web.common.base.ModuleSelectorPanel;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
  * @since July 7, 2009
  */
-@AuthorizeInstantiation({"user","WebUser"})
+@AuthorizeInstantiation({Roles.USER, "WebUser"})
 public class MainPage extends BaseWicketPage {
     
     public MainPage() {
@@ -67,8 +69,11 @@ public class MainPage extends BaseWicketPage {
         selectorPanel.addModule(TrashListPage.class);
         selectorPanel.addModule(AEMgtPanel.class);
         selectorPanel.addModule(FileSystemPage.class);
-        selectorPanel.addInstance(new UserListPanel("panel", ((WicketSession) getSession()).getUsername()));
-        selectorPanel.addInstance(new DashboardPanel("panel"));
-        selectorPanel.addInstance(new ModalityWorklistPanel("panel"));
+
+        if (new RoleAuthorizationStrategy((WicketApplication) this.getApplication()).isInstantiationAuthorized(UserListPanel.class))           
+            selectorPanel.addInstance(new UserListPanel("panel", ((WicketSession) getSession()).getUsername()));
+
+        selectorPanel.addModule(DashboardPanel.class);
+        selectorPanel.addModule(ModalityWorklistPanel.class);
     }
 }
