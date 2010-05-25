@@ -111,7 +111,6 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
         }
         initComponents();
         this.addListeners();
-        setTotalInstacne();
         setHeaders();
         setNoSelectionColoring();
 
@@ -236,10 +235,6 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
     }
 
     private void setTotalInstacne() {
-//        Known issue:
-//        If first instance of the series is multiframe instance then it would set the total number of images as number of frames of the first instance.
-//        Resolution:
-//        In future multiframe instance will listed as new series.
 
         if (!isMulitiFrame()) {
             totalInstace = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);

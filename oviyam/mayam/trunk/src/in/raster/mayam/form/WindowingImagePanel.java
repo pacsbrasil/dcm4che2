@@ -1,41 +1,41 @@
 /* ***** BEGIN LICENSE BLOCK *****
-* Version: MPL 1.1/GPL 2.0/LGPL 2.1
-*
-* The contents of this file are subject to the Mozilla Public License Version
-* 1.1 (the "License"); you may not use this file except in compliance with
-* the License. You may obtain a copy of the License at
-* http://www.mozilla.org/MPL/
-*
-* Software distributed under the License is distributed on an "AS IS" basis,
-* WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-* for the specific language governing rights and limitations under the
-* License.
-*
-*
-* The Initial Developer of the Original Code is
-* Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2009-2010
-* the Initial Developer. All Rights Reserved.
-*
-* Contributor(s):
-* Babu Hussain A
-* Meer Asgar Hussain B
-* Prakash J
-* Suresh V
-*
-* Alternatively, the contents of this file may be used under the terms of
-* either the GNU General Public License Version 2 or later (the "GPL"), or
-* the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
-* in which case the provisions of the GPL or the LGPL are applicable instead
-* of those above. If you wish to allow use of your version of this file only
-* under the terms of either the GPL or the LGPL, and not to allow others to
-* use your version of this file under the terms of the MPL, indicate your
-* decision by deleting the provisions above and replace them with the notice
-* and other provisions required by the GPL or the LGPL. If you do not delete
-* the provisions above, a recipient may use your version of this file under
-* the terms of any one of the MPL, the GPL or the LGPL.
-*
-* ***** END LICENSE BLOCK ***** */
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ *
+ * The Initial Developer of the Original Code is
+ * Raster Images
+ * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ * Babu Hussain A
+ * Meer Asgar Hussain B
+ * Prakash J
+ * Suresh V
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
@@ -160,13 +160,13 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             setTotalInstacne();
             //setSizing();
         } catch (Exception e) {
-            e.printStackTrace();            
+            e.printStackTrace();
         }
     }
-    public void setSizing()
-    {
-        this.thumbHeight=this.getSize().height;
-        this.thumbWidth=this.getSize().width;
+
+    public void setSizing() {
+        this.thumbHeight = this.getSize().height;
+        this.thumbWidth = this.getSize().width;
     }
 
     /**
@@ -183,7 +183,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             retrieveInstanceInformation();
             setTotalInstacne();
         } catch (Exception e) {
-            e.printStackTrace();            
+            e.printStackTrace();
         }
     }
 
@@ -207,7 +207,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         instanceUID = dataset.getString(Tags.SOPInstanceUID);
         aspectRatio = dataset.getStrings(Tags.PixelAspectRatio);
         try {
-            currentInstanceNo = Integer.parseInt(dataset.getString(Tags.InstanceNumber));           
+            currentInstanceNo = Integer.parseInt(dataset.getString(Tags.InstanceNumber));
         } catch (NumberFormatException e) {
             System.out.println("Instance Number format error");
         } catch (NullPointerException e) {
@@ -247,11 +247,9 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             if (nWindow > 0) {
                 windowLevel = c = (int) cmParam.getWindowCenter(0);
                 windowWidth = w = (int) cmParam.getWindowWidth(0);
-            }
-             else
-            {
-                WW = windowWidth = w = (int) Math.pow(2, bits) ;
-                WC = windowLevel = c = (int) w/2;
+            } else {
+                WW = windowWidth = w = (int) Math.pow(2, bits);
+                WC = windowLevel = c = (int) w / 2;
             }
         }
     }
@@ -295,9 +293,9 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             try {
                 currentbufferedimage = reader.read(0);
                 nFrames = reader.getNumImages(true);
-                 if (nFrames - 1 > 0) {
-                     mulitiFrame=true;                
-                 this.totalInstance=nFrames;       
+                if (nFrames - 1 > 0) {
+                    mulitiFrame = true;
+                    this.totalInstance = nFrames;
                 }
                 imageIcon = new ImageIcon();
                 imageIcon.setImage(currentbufferedimage);
@@ -307,7 +305,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
                 g2.drawImage(loadedImage, 0, 0, null);
                 repaint();
             } catch (RuntimeException e) {
-                e.printStackTrace();                
+                e.printStackTrace();
             } finally {
                 if (!isMulitiFrame()) {
                     iis.close();
@@ -330,7 +328,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             currentbufferedimage = newImg;
             windowChanged(this.windowLevel, this.windowWidth);
         } catch (ImageReadingException e) {
-            e.printStackTrace();           
+            e.printStackTrace();
         }
     }
 
@@ -391,14 +389,14 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
      */
     @Override
     public void paintComponent(Graphics gs) {
-        Graphics2D g = (Graphics2D) gs;       
+        Graphics2D g = (Graphics2D) gs;
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        if (image != null) {        
+        if (image != null) {
             if (aspectRatio != null) {
                 calculateNewHeightAndWidthBasedonAspectRatio(Integer.parseInt(aspectRatio[0]), Integer.parseInt(aspectRatio[1]));
             } else {
-                calculateNewHeightAndWidthBasedonAspectRatio(1,1);
+                calculateNewHeightAndWidthBasedonAspectRatio(1, 1);
             }
             g.drawImage(image, startX, startY, thumbWidth, thumbHeight, null);
 
@@ -419,7 +417,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         int imageHeight = image.getHeight();
         float widthARatio = widthRatio;
         float heightARatio = heightRatio;
-        float aspectRatio = widthARatio / heightARatio;       
+        float aspectRatio = widthARatio / heightARatio;
         double imageRatio = (double) imageWidth / (double) imageHeight;
         if (thumbRatio < imageRatio) {
             thumbHeight = (int) (thumbWidth / imageRatio);
@@ -649,40 +647,71 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
     }
     private void formMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
     }//GEN-LAST:event_formMouseClicked
+    /*
+
+    In future multiframe instance will listed as new series so the following lines of code will be useful.
+
+    private void setTotalInstacne() {
+    currentInstanceNo--;
+    if(!isMulitiFrame())
+    totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
+    else
+    {
+    totalInstance=nFrames;
+    currentInstanceNo=0;
+    }
+    }
+
+    public void mouseWheelMoved(MouseWheelEvent e) {
+    int notches = e.getWheelRotation();
+    if (notches < 0) {
+    if (isMulitiFrame()) {
+    showPreviousFrame();
+    } else {
+    if (instanceArray == null) {
+    previousInstance();
+    } else {
+    selectPreviousInstance();
+    }
+    }
+    } else {
+    if (isMulitiFrame()) {
+    showNextFrame();
+    } else {
+    if (instanceArray == null) {
+    nextInstance();
+    } else {
+    selectNextInstance();
+    }
+    }
+    }
+    }*/
+
     private void setTotalInstacne() {
         currentInstanceNo--;
-        if(!isMulitiFrame())
         totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
-        else
-        {
-            totalInstance=nFrames;
-            currentInstanceNo=0;
-        }
+
     }
 
     public void mouseWheelMoved(MouseWheelEvent e) {
         int notches = e.getWheelRotation();
         if (notches < 0) {
-            if (isMulitiFrame()) {               
-                showPreviousFrame();
+
+            if (instanceArray == null) {
+                previousInstance();
             } else {
-                if (instanceArray == null) {
-                    previousInstance();
-                } else {
-                    selectPreviousInstance();
-                }
+                selectPreviousInstance();
             }
+
         } else {
-            if (isMulitiFrame()) {               
-                showNextFrame();
+
+            if (instanceArray == null) {
+                nextInstance();
             } else {
-                if (instanceArray == null) {
-                    nextInstance();
-                } else {
-                    selectNextInstance();
-                }
+                selectNextInstance();
             }
         }
+
     }
 
     public boolean isMulitiFrame() {
@@ -733,6 +762,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         }
         currentInstanceNo--;
         Instance instance = instanceArray.get(currentInstanceNo);
+        dicomFileUrl=instance.getFilepath();
         setImage(instance.getPixelData());
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
     }
@@ -743,6 +773,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             currentInstanceNo = 0;
         }
         Instance instance = instanceArray.get(currentInstanceNo);
+        dicomFileUrl=instance.getFilepath();
         setImage(instance.getPixelData());
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
     }
@@ -779,9 +810,9 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         this.firstTime = firstTime;
     }
 
-    public void mouseClicked(MouseEvent e) {       
+    public void mouseClicked(MouseEvent e) {
         if (e.getClickCount() == 2) {
-            openSingleImage(dicomFileUrl);           
+            openSingleImage(dicomFileUrl);
         }
     }
 
