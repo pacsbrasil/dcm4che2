@@ -134,8 +134,12 @@ public class ColorModelFactory {
 
     public static boolean isMonochrome(DicomObject ds) {
         return ds.getInt(Tag.SamplesPerPixel, 1) == 1
-                && !PALETTE_COLOR.equals(
-                        ds.getString(Tag.PhotometricInterpretation));
+                && !isPaletteColor(ds);
+    }
+
+    public static boolean isPaletteColor(DicomObject ds) {
+        return PALETTE_COLOR.equals(
+                ds.getString(Tag.PhotometricInterpretation));
     }
 
     
