@@ -31,6 +31,7 @@
         <include>dcm4che.tool:dcm4che-tool-dcmqr</include>
         <include>dcm4che.tool:dcm4che-tool-dcmrcv</include>
         <include>dcm4che.tool:dcm4che-tool-dcmsnd</include>
+        <include>dcm4che.tool:dcm4che-tool-dcmups</include>
         <include>dcm4che.tool:dcm4che-tool-dcmwado</include>   
         <include>dcm4che.tool:dcm4che-tool-logger</include>
         <include>dcm4che.tool:dcm4che-tool-jpg2dcm</include>
@@ -324,6 +325,23 @@
     </fileSet>
     <fileSet>
       <directory>dcm4che-tool/dcm4che-tool-dcmsnd/src/bin</directory>
+      <excludes>
+        <exclude>*.bat</exclude>
+      </excludes>
+      <lineEnding>unix</lineEnding>
+      <fileMode>0755</fileMode>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>dcm4che-tool/dcm4che-tool-dcmups/src/bin</directory>
+      <includes>
+        <include>*.bat</include>
+      </includes>
+      <lineEnding>dos</lineEnding>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>dcm4che-tool/dcm4che-tool-dcmups/src/bin</directory>
       <excludes>
         <exclude>*.bat</exclude>
       </excludes>
