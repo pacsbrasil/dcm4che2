@@ -11,6 +11,7 @@ import org.dcm4chee.web.common.base.BaseWicketApplication;
  * @see wicket.myproject.Start#main(String[])
  */
 public class WicketApplication extends BaseWicketApplication {
+    
     @Override
     public Class<? extends Page> getHomePage() {
         return MainPage.class;

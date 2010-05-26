@@ -38,11 +38,16 @@
 
 package org.dcm4chee.web.war;
 
+import java.util.Properties;
+
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.authorization.strategies.role.RoleAuthorizationStrategy;
 import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.model.Model;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.usr.ui.usermanagement.UserListPanel;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.base.ModuleSelectorPanel;
 import org.dcm4chee.web.war.ae.AEMgtPanel;
@@ -75,5 +80,11 @@ public class MainPage extends BaseWicketPage {
 
         selectorPanel.addModule(DashboardPanel.class);
         selectorPanel.addModule(ModalityWorklistPanel.class);
+        
+        try {
+            Properties properties = new Properties();
+            properties.load(((BaseWicketApplication) getApplication()).getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));
+            selectorPanel.get("img_logo").add(new AttributeModifier("title", true, new Model<String>("dcm4chee-web version: " + (properties.getProperty("Implementation-Build") == null ? "" : properties.getProperty("Implementation-Build")))));            
+        } catch (Exception ignore) {}
     }
 }
