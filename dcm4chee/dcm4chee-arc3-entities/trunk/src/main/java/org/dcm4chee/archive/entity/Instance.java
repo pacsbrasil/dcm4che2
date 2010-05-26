@@ -343,7 +343,7 @@ public class Instance extends BaseEntity implements Serializable {
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             try {
-                Study.class.getField(filter.getField(fieldTags[i])).set(this,
+                Instance.class.getField(filter.getField(fieldTags[i])).set(this,
                         attrs.getString(fieldTags[i], ""));
             } catch (Exception e) {
                 throw new ConfigurationException(e);

@@ -410,8 +410,10 @@ public class Series extends BaseEntity implements Serializable {
                 Tag.InstitutionalDepartmentName, "");
         this.institutionName = attrs.getString(Tag.InstitutionName, "");
         this.stationName = attrs.getString(Tag.StationName, "");
-        this.sourceAET = attrs.getString(attrs.resolveTag(
+        String srcAET = attrs.getString(attrs.resolveTag(
                 PrivateTag.CallingAET, PrivateTag.CreatorID));
+        if (srcAET != null && srcAET.trim().length() > 1)
+            this.sourceAET = srcAET;
         this.bodyPartExamined = attrs.getString(Tag.BodyPartExamined, "");
         this.laterality = attrs.getString(Tag.Laterality, "");
         PersonName pn = new PersonName(attrs
@@ -432,7 +434,7 @@ public class Series extends BaseEntity implements Serializable {
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             try {
-                Study.class.getField(filter.getField(fieldTags[i])).set(this,
+                Series.class.getField(filter.getField(fieldTags[i])).set(this,
                         attrs.getString(fieldTags[i], ""));
             } catch (Exception e) {
                 throw new ConfigurationException(e);
