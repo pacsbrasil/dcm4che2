@@ -44,8 +44,9 @@ import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
-import org.apache.wicket.authentication.AuthenticatedWebSession;
+import org.apache.wicket.authorization.Action;
 import org.apache.wicket.authorization.strategies.role.Roles;
+import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeAction;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.IHeaderContributor;
@@ -87,19 +88,20 @@ public class DynamicLinkPanel extends Panel {
         this.window = window;
 
         try {
-            if ((className.endsWith("CreateOrEditReportLink") || className.endsWith("RemoveLink"))
-                  && !((AuthenticatedWebSession) getSession()).getRoles().hasRole(Roles.ADMIN)) {
-                add(new Link("report-table-link") {
-
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    public void onClick() {                               
-                    }
-                }
-                .add(new Image("image")));
-                return;
-            }
+//            if ((className.endsWith("CreateOrEditReportLink") || className.endsWith("RemoveLink"))
+//                  && !((AuthenticatedWebSession) getSession()).getRoles().hasRole(Roles.ADMIN)
+//                  && !((AuthenticatedWebSession) getSession()).getRoles().hasRole("WebAdmin")) {
+//                add(new Link("report-table-link") {
+//
+//                    private static final long serialVersionUID = 1L;
+//
+//                    @Override
+//                    public void onClick() {                               
+//                    }
+//                }
+//                .add(new Image("image")));
+//                return;
+//            }
 
             add((this.link = (Link<Object>) ((Class<? extends Link<Object>>) Class.forName(this.getClass().getName() + "$" + className)).getConstructors()[0].newInstance(new Object[] {
                  this, 
@@ -234,6 +236,7 @@ public class DynamicLinkPanel extends Panel {
         }
     }
 
+    @AuthorizeAction(action = Action.RENDER, roles = { Roles.ADMIN, "WebAdmin" })
     private class CreateOrEditReportLink extends AjaxDisplayLink {
         
         private static final long serialVersionUID = 1L;
@@ -264,6 +267,7 @@ public class DynamicLinkPanel extends Panel {
         }
     }    
 
+    @AuthorizeAction(action = Action.RENDER, roles = { Roles.ADMIN, "WebAdmin" })
     private class RemoveLink extends DisplayLink {
         
         private static final long serialVersionUID = 1L;
