@@ -429,6 +429,19 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
         return entityTree.getAllInstances().size();
     }
+    
+    public Study createStudy(DicomObject studyAttrs, long patPk) {
+        return lookupDicomEditLocal().createStudy(studyAttrs, patPk);
+    }
+    public Study updateStudy(Study study) {
+        return lookupDicomEditLocal().updateStudy(study);
+    }
+    public Series createSeries(DicomObject seriesAttrs, long studyPk) {
+        return lookupDicomEditLocal().createSeries(seriesAttrs, studyPk);
+    }
+    public Series updateSeries(Series series) {
+        return lookupDicomEditLocal().updateSeries(series);
+    }
 
     private void processAfterMoveEntities(EntityTree entityTree, DicomObject targetAttrs)
         throws InstanceNotFoundException, MBeanException,ReflectionException {
@@ -495,7 +508,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
 
-    public void linkMppsToMwl(long[] mppsPks, long mwlPk, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {
+    public MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, long mwlPk, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {
         if ( system == null || system.trim().length() < 1) {
             system = modifyingSystem;
         }
@@ -520,6 +533,7 @@ public class ContentEditService extends ServiceMBeanSupport {
             }
             this.moveStudiesToPatient(studyPks, pat.getPk());
         }
+        return result;
     }
     
     public void linkMppsToMwl(String mppsIUID, String rpId, String spsId, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {

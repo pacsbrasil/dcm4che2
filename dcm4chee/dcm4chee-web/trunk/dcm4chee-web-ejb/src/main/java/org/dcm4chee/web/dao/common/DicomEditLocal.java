@@ -41,6 +41,9 @@ package org.dcm4chee.web.dao.common;
 import javax.ejb.Local;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4chee.archive.entity.Patient;
+import org.dcm4chee.archive.entity.Series;
+import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.dao.vo.EntityTree;
 
 /**
@@ -72,4 +75,9 @@ public interface DicomEditLocal {
     DicomObject getCompositeObjectforStudy(long pk);
     DicomObject getPatientAttributes(String patId, String issuer);
     DicomObject getPatientAttributes(long pk);
+    
+    Series updateSeries(Series series);
+    Series createSeries(DicomObject seriesAttrs, long studyPk);
+    Study updateStudy(Study study);
+    Study createStudy(DicomObject studyAttrs, long patPk);
 }

@@ -69,8 +69,6 @@ public class WADODelegate extends BaseMBeanDelegate {
     public static final int VIDEO = 3;
     public static final int ENCAPSULATED = 4;
     
-    private String wadoBaseURL;
-    
     private static WADODelegate delegate;
     private List<String> imageCuids = Arrays.asList( 
             UID.CTImageStorage, UID.ComputedRadiographyImageStorage, 
@@ -129,11 +127,10 @@ public class WADODelegate extends BaseMBeanDelegate {
 
     private WADODelegate() {
         super();
-        initWadoBaseUrl();
     }
 
-    private void initWadoBaseUrl() {
-        wadoBaseURL = ((WebApplication)Application.get()).getInitParameter("wadoBaseURL");
+    private String getWadoBaseUrl() {
+        String wadoBaseURL = ((WebApplication)Application.get()).getInitParameter("wadoBaseURL");
         if (wadoBaseURL==null) {
             HttpServletRequest request = ((WebRequestCycle)RequestCycle.get()).getWebRequest()
             .getHttpServletRequest();
@@ -146,6 +143,7 @@ public class WADODelegate extends BaseMBeanDelegate {
                 wadoBaseURL = "http://localhost:8080/wado?requestType=WADO";
             }
         }
+        return wadoBaseURL;
     }
 
     public int getRenderType(String sopClassUid) {
@@ -161,16 +159,12 @@ public class WADODelegate extends BaseMBeanDelegate {
         return NOT_RENDERABLE;
     }
     
-    public String getWADOBaseURL() {
-        return wadoBaseURL;
-    }
-
     public String getURL(InstanceModel instModel) {
         SeriesModel seriesModel = instModel.getParent();
         log.info("seriesModel:"+seriesModel);
         log.info("ppsModel:"+seriesModel.getParent());
         log.info("studyModel:"+seriesModel.getParent().getParent());
-        return wadoBaseURL+"&studyUID="+seriesModel.getParent().getParent().getStudyInstanceUID()+"&seriesUID="+
+        return getWadoBaseUrl()+"&studyUID="+seriesModel.getParent().getParent().getStudyInstanceUID()+"&seriesUID="+
             seriesModel.getSeriesInstanceUID()+"&objectUID="+instModel.getSOPInstanceUID();
     }
     

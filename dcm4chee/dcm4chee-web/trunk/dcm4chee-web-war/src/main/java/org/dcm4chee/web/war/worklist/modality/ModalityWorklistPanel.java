@@ -46,6 +46,7 @@ import java.util.List;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -99,7 +100,15 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     private boolean notSearched = true;
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("mw.");
     
+    private WebMarkupContainer listPanel; 
+    
     private transient ModalityWorklist dao;
+
+    private AjaxButton nextBtn;
+
+    private AjaxButton prevBtn;
+
+    private Label viewportLabel;
 
     public ModalityWorklistPanel(final String id) {
         super(id);
@@ -116,11 +125,19 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         addExtendedStudySearch(form);
         addQueryOptions(form);
         addNavigation(form);
-        form.add(new MWLItemListView("mwlitems", viewport.getMWLItemModels(), this));
+        listPanel = new WebMarkupContainer("listPanel");
+        listPanel.add(new MWLItemListView("mwlitems", viewport.getMWLItemModels(), this));
+        listPanel.setOutputMarkupId(true);
+        this.setOutputMarkupId(true);
+        add(listPanel);
     }
     
     protected ViewPort initViewPort() {
         return ((WicketSession) getSession()).getMwViewPort();
+    }
+    
+    protected ViewPort getViewPort() {
+        return viewport;
     }
 
     protected void addQueryFields(final ModalityWorklistFilter filter, BaseForm form) {
@@ -154,16 +171,17 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     }
 
     protected void addNavigation(BaseForm form) {
-        form.add(new Button("search", new ResourceModel("searchBtn")) {
+        AjaxButton searchBtn = new AjaxButton("search", new ResourceModel("searchBtn")) {
 
             private static final long serialVersionUID = 1L;
-
             @Override
-            public void onSubmit() {
+            public void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 viewport.setOffset(0);
-                queryMWLItems();
-            }});
-        form.add(new Button("prev", new ResourceModel("mw.prev")) {
+                queryAndUpdate(target);
+            }};
+        form.add(searchBtn);
+        form.setDefaultButton(searchBtn);
+        form.add(prevBtn = new AjaxButton("prev", new ResourceModel("mw.prev")) {
 
             private static final long serialVersionUID = 1L;
 
@@ -176,11 +194,11 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
 
             @Override
-            public void onSubmit() {
+            public void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 viewport.setOffset(Math.max(0, viewport.getOffset() - PAGESIZE));
-                queryMWLItems();
+                queryAndUpdate(target);
             }});
-        form.add(new Button("next", new ResourceModel("nextBtn")) {
+        form.add(nextBtn = new AjaxButton("next", new ResourceModel("nextBtn")) {
 
             private static final long serialVersionUID = 1L;
 
@@ -193,9 +211,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
 
             @Override
-            public void onSubmit() {
+            public void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 viewport.setOffset(viewport.getOffset() + PAGESIZE);
-                queryMWLItems();
+                queryAndUpdate(target);
             }});
         //viewport label: use StringResourceModel with key substitution to select 
         //property key according notSearched and getTotal.
@@ -210,7 +228,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                             "mw.mppsFound";
             }
         };
-        form.add(new Label("viewport", new StringResourceModel("${}", ModalityWorklistPanel.this, keySelectModel,new Object[]{"dummy"}){
+        form.add(viewportLabel = new Label("viewport", new StringResourceModel("${}", ModalityWorklistPanel.this, keySelectModel,new Object[]{"dummy"}){
 
             private static final long serialVersionUID = 1L;
 
@@ -221,6 +239,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                         viewport.getTotal()};
             }
         }));
+        prevBtn.setOutputMarkupId(true);
+        nextBtn.setOutputMarkupId(true);
+        viewportLabel.setOutputMarkupId(true);
     }
 
     protected WebMarkupContainer addExtendedStudySearch(final Form<?> form) {
@@ -263,7 +284,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     }
 
     protected void queryMWLItems() {
-
         ModalityWorklist dao = lookupMwlDAO();
         viewport.getMWLItemModels().clear();
         viewport.setTotal(dao.countMWLItems(viewport.getFilter()));
@@ -271,7 +291,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         List<MWLItemModel> current = viewport.getMWLItemModels();
         for (MWLItem mwlItem : dao.findMWLItems(viewport.getFilter(), PAGESIZE, viewport.getOffset()))
             current.add(new MWLItemModel(mwlItem, new Model<Boolean>(false)));
-        
         notSearched = false;
     }
 
@@ -356,5 +375,13 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         }
         .add(new DicomObjectPanel("dicomobject", mwlItemModel.getDataset(), false)))
         .setOutputMarkupId(true);
+    }
+
+    private void queryAndUpdate(AjaxRequestTarget target) {
+        queryMWLItems();
+        target.addComponent(prevBtn);
+        target.addComponent(nextBtn);
+        target.addComponent(viewportLabel);
+        target.addComponent(listPanel);
     }
 }

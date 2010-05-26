@@ -57,7 +57,9 @@ import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
+import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.PrivateTag;
+import org.dcm4chee.archive.common.StorageStatus;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
@@ -429,6 +431,53 @@ public class DicomEditBean implements DicomEditLocal {
     public DicomObject getPatientAttributes(long pk) {
         Query q = em.createQuery("SELECT OBJECT(p) FROM Patient p WHERE pk = :pk").setParameter("pk", pk);
         return ((Patient)q.getSingleResult()).getAttributes();
+    }
+    
+    public Series updateSeries(Series series) {
+        if (series.getPk() == -1) {
+            if (series.getStudy().getPk() == -1) {
+                updateStudy(series.getStudy());
+            }
+            em.persist(series);
+        } else {
+            em.merge(series);
+        }
+        return series;
+    }
+    public Series createSeries(DicomObject seriesAttrs, long studyPk) {
+        Study study = em.find(Study.class, studyPk);
+        Series series = new Series();
+        series.setAvailability(Availability.ONLINE);
+        series.setNumberOfSeriesRelatedInstances(0);
+        series.setStorageStatus(StorageStatus.STORED);
+        series.setAttributes(seriesAttrs);
+        series.setStudy(study);
+        em.persist(series);
+        return series;
+    }
+    
+    public Study updateStudy(Study study) {
+        if (study.getPk() == -1) {
+            if (study.getPatient().getPk() == -1) {
+                em.persist(study.getPatient());
+            }
+            em.persist(study);
+        } else {
+            em.merge(study);
+        }
+        return study;
+    }
+    public Study createStudy(DicomObject studyAttrs, long patPk) {
+        Patient patient = em.find(Patient.class, patPk);
+        Study study = new Study();
+        study.setAttributes(studyAttrs);
+        study.setAvailability(Availability.ONLINE);
+        study.setNumberOfStudyRelatedInstances(0);
+        study.setNumberOfStudyRelatedSeries(0);
+        study.setStudyStatus(0);
+        study.setPatient(patient);
+        em.persist(study);
+        return study;
     }
  
     private void removeSeriesFromMPPS(MPPS mpps, String seriesIUID) {

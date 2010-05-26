@@ -122,8 +122,10 @@ public class StudyListPage extends Panel {
     private List<String> sourceAETs = new ArrayList<String>();
     private List<String> modalities = new ArrayList<String>();
     private boolean notSearched = true;
+    private BaseForm form;
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("folder.");
     private MessageWindow msgWin = new MessageWindow("msgWin");
+    private Mpps2MwlLinkPage linkPage = new Mpps2MwlLinkPage("linkPage");
     private ConfirmationWindow<PPSModel> confirmUnlinkMpps;
     
     private WebviewerLinkProvider webviewerLinkProvider;
@@ -134,7 +136,7 @@ public class StudyListPage extends Panel {
         add(CSSPackageResource.getHeaderContribution(StudyListPage.class, "folder-style.css"));
         
         final StudyListFilter filter = viewport.getFilter();
-        BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
+        form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
         form.setResourceIdPrefix("folder.");
         form.setTooltipBehaviour(tooltipBehaviour);
         add(form);
@@ -146,6 +148,9 @@ public class StudyListPage extends Panel {
         form.add(new PatientListView("patients", viewport.getPatients()));
         msgWin.setTitle(MessageWindow.TITLE_WARNING);
         add(msgWin);
+        linkPage.setMinimalWidth(700);
+        linkPage.setMinimalHeight(400);
+        add(linkPage);
         initModalitiesAndSourceAETs();
     }
 
@@ -849,23 +854,19 @@ public class StudyListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
             .add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","ppsDetail")));
-            item.add(getEditLink(ppsModel, "ppsDetail"));
+            item.add(getEditLink(ppsModel, "ppsEdit"));
             
-            PopupLink linkBtn = new PopupLink("linkBtn", "linkPage") {
+            AjaxFallbackLink linkBtn = new AjaxFallbackLink("linkBtn") {
                 private static final long serialVersionUID = 1L;
                 @Override
-                public void onClick() {
-                    Mpps2MwlLinkPage page = new Mpps2MwlLinkPage(ppsModel);
-                    setResponsePage(page);
+                public void onClick(AjaxRequestTarget target) {
+                    linkPage.show(target, ppsModel, form);
                 }
                 @Override
                 public boolean isVisible() {
                     return ppsModel.getDataset() != null && ppsModel.getAccessionNumber()==null;
                 }
             };
-            linkBtn.setPopupHeight(600);
-            linkBtn.setPopupWidth(850);
-            linkBtn.setPopupDisplayFlag(PopupSettings.SCROLLBARS, true);
             linkBtn.add(new Image("linkImg", ImageManager.IMAGE_INSERT_LINK)
             .add(new ImageSizeBehaviour())).add(new TooltipBehaviour("folder.","ppsLink"));
             item.add(linkBtn);
@@ -1183,6 +1184,10 @@ public class StudyListPage extends Panel {
             public void onClick() {
                 setResponsePage(
                         new EditDicomObjectPage(StudyListPage.this.getPage(), model));
+            }
+            @Override
+            public boolean isVisible() {
+                return model.getDataset() != null;
             }
         };
         link.add(new Image("editImg",ImageManager.IMAGE_EDIT).add(new ImageSizeBehaviour()));

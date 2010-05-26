@@ -134,7 +134,7 @@ public class UpdateDerivedFieldsUtil {
             availability = (Availability) qA.getSingleResult();
         } 
         if (availability == null) {
-            availability = Availability.OFFLINE;
+            availability = Availability.ONLINE;
         }
         Availability prevAvailability = study.getAvailability();
         if (availability.equals(prevAvailability)) {
@@ -159,7 +159,7 @@ public class UpdateDerivedFieldsUtil {
             log.info("found availabilty for series from instances"+availability);
         }
         if (availability == null) {
-            availability = Availability.OFFLINE;
+            availability = Availability.ONLINE;
         }
         Availability prevAvailability = series.getAvailability();
         log.info("availabilty:"+availability.name()+" prevAvailability:"+prevAvailability.name()+" prevAvailability:"+prevAvailability);

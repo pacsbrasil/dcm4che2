@@ -194,9 +194,6 @@ public class TrashListBean implements TrashListLocal {
             while (padcarets-- > 0) {
                 param.append("^%");
             }
-            System.out.println("T: HAVE patientName FILTER VALUE: " + patientName);
-            System.out.println("T: SETTING patientName PARAMETER TO: " + param.toString());
-
             query.setParameter("patientName", param.toString());
         }
     }

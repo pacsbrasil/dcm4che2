@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<head>
+<title>	
+	<wicket:message key="application.browser_title">DCM4CHEE WEB</wicket:message>
+</title>
+</head>
+<body>  
+<wicket:panel>
+	<div class="mpps-info"><div wicket:id="mppsInfo">
+		<div class="info-title"><span wicket:id="mppsInfoTitle" >[INFO]</span></div>
+		<span class="info-desc" wicket:id="patNameLabel" >Patient name:</span>
+		<div class="info-value">
+			<span wicket:id="patName" >[PatientName]</span><span> (</span>
+			<span wicket:id="patIdLabel" >patId:</span>
+			<span wicket:id="patId" >[PatId]</span><span>/</span>
+			<span wicket:id="patIssuerLabel" >Issuer:</span>
+			<span wicket:id="patIssuer" >[Issuer]</span><span>)</span>
+		</div>
+		<span class="info-desc" wicket:id="modalityLabel" >Modality:</span>
+		<span class="info-value" wicket:id="modality" >[MODALITY]</span>
+		<span class="info-desc" wicket:id="startDateLabel" >SPS start date:</span>
+		<span class="info-value" wicket:id="datetime" >[SPS_STARTDATE]</span>
+		
+	</div> </div>
+	<form style="clear: both" wicket:id="form">
+        <div class="filterPanel">
+            <div class="filter">
+                <div class="filterHeader2Lines" wicket:id="patientNameLabel">Patient Name</div>
+                <div class="filterValue">
+                    <input wicket:id="patientName" id="patientName" type="text"/>
+                </div>
+            </div>
+            <div class="filter">
+                <div class="filterHeader" wicket:id="patientIDDescr">Patient ID</div>
+                <div class="filterValue2Lines">
+                    <div class="filterLabeledValueFirst">
+                        <div class="filterHeader" wicket:id="patientIDLabel">ID</div>
+                        <div class="filterValue">
+                            <input wicket:id="patientID" id="patientID" type="text" title="ID" />
+                        </div>
+                    </div>
+                    <div class="filterLabeledValue">
+                        <div class="filterHeader" wicket:id="issuerOfPatientIDLabel">Issuer</div>
+                        <div class="filterValue">
+                            <input wicket:id="issuerOfPatientID" id="issuerOfPatientID" type="text" title="Issuer" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter" >
+                <div class="filterHeader" wicket:id="startDate">Start Date</div>
+                <div class="filterValue2Lines">
+                    <div class="filterLabeledValueFirst">
+                        <div class="filterHeader" wicket:id="startDateMinLabel">from</div>
+                        <div class="filterValue">
+                            <div wicket:id="startDateMin" id="startDateMin" />
+                        </div>
+                    </div>
+                    <div class="filterLabeledValue">
+                        <div class="filterHeader" wicket:id="startDateMaxLabel">to</div>
+                        <div class="filterValue">
+                            <div wicket:id="startDateMax" id="startDateMax" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter">
+                <div class="filterHeader2Lines" wicket:id="accessionNumberLabel">Accession Number</div>
+                <div class="filterValue">
+                    <input wicket:id="accessionNumber" id="accessionNumber" type="text" />
+                </div>
+            </div>
+            <div class="filter">
+                <div class="filterHeader2Lines" wicket:id="modalityLabel" />
+                <div class="filterValue">
+			      <select wicket:id="modality">
+			        <option>*</option>
+			        <option>CR</option>
+			        <option>CT</option>
+			        <option>MR</option>
+			      </select>
+                </div>
+            </div>
+            <div class="filter">
+                <div class="filterHeader2Lines" wicket:id="scheduledStationAETLabel" />
+                <div class="filterValue">
+			      <select wicket:id="scheduledStationAET">
+					<option>*</option>
+			      </select>
+                </div>
+            </div>
+            <div class="filter">
+                <div class="filterHeader2Lines" wicket:id="scheduledStationNameLabel" />
+                <div class="filterValue">
+			      <select wicket:id="scheduledStationName">
+					<option>*</option>
+			      </select>
+                </div>
+            </div>
+            <div class="filter">
+                <div class="filterHeader2Lines" wicket:id="scheduledProcedureStepStatusLabel" />
+                <div class="filterValue">
+			      <select wicket:id="scheduledProcedureStepStatus" />
+                </div>
+            </div>
+        </div>
+		<div class="queryoptions">
+		  <input type="checkbox" id="latestItemsFirst" wicket:id="latestItemsFirst" />
+		  <label for="latestItemsFirst" wicket:id="latestItemsFirstLabel">latest items first</label>
+		</div>
+		<div class="NavAndAction">
+			<div class="query_nav">
+				<div class="querybuttons">
+				  <input type="submit" wicket:id="search"/>
+				  <input type="submit" wicket:id="prev"/>
+				  <input type="submit" wicket:id="next"/>
+				</div>
+				<div wicket:id="viewport" class="viewport">Displaying entries 1 to 20 from 1234 matching entries</div>
+			</div>
+		</div>
+	</form>
+	<div wicket:id="listPanel">
+	  <table>
+		<thead>
+			<tr class="mwlitem">
+	      		<th><wicket:message key="mw.patientName" /></th>
+				<th><wicket:message key="mw.spsDescription" /></th>
+	      		<th><wicket:message key="mw.modality" /></th>
+				<th><wicket:message key="mw.startDate" /></th>
+				<th><wicket:message key="mw.spsID" /></th>
+				<th><wicket:message key="mw.requestedProcedureID" /></th>
+	      		<th><wicket:message key="mw.accessionNumber" /></th>
+	      		<th></th>
+	    	</tr>
+		</thead>
+		<tbody wicket:id="mwlitems">
+	    	<tr class="mwlitem">
+				<td wicket:id="patientName">[PatientName]</td>
+	      		<td wicket:id="scheduledProcedureStepDescription">[Scheduled Procedure Step Description]</td>
+				<td wicket:id="modality">[Modality]</td>
+				<td wicket:id="startDate">[Start Date]</td>
+				<td wicket:id="scheduledProcedureStepID">[Scheduled Procedure Step ID]</td>
+				<td wicket:id="requestedProcedureID">[Requested Procedure ID]</td>
+				<td wicket:id="accessionNumber">[Accession Number]</td>
+				<td>
+					<a wicket:id="link" href="#">
+						<img wicket:id="linkImg" alt="L" />
+					</a>
+				</td>
+	    	</tr>
+		</tbody>
+	   </table>
+	</div>
+</wicket:panel>	
+</body>
+</html>

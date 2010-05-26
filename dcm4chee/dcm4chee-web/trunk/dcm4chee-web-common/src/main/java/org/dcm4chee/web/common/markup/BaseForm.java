@@ -146,8 +146,14 @@ public class BaseForm extends Form<Object> {
     }
 
     public DateTimeField addLabeledDateTimeField(String id, IModel<Date> model, final IModel<Boolean> enabledModel, final boolean max) {
-        DateTimeField dtf;
-        add((dtf = new DateTimeField(id, model) {
+        DateTimeField dtf = addDateTimeField(id, model, enabledModel, max);
+        addInternalLabel(id);
+        return dtf;
+    }
+
+    public DateTimeField addDateTimeField(String id, IModel<Date> model,
+            final IModel<Boolean> enabledModel, final boolean max) {
+        DateTimeField dtf = new DateTimeField(id, model) {
 
             private static final long serialVersionUID = 1L;
 
@@ -199,8 +205,8 @@ public class BaseForm extends Form<Object> {
             public boolean isEnabled() {
                 return enabledModel.getObject();
             }
-        }));
-        addInternalLabel(id);
+        };
+        add(dtf);
         return dtf;
     }
 

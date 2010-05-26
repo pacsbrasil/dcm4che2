@@ -498,7 +498,7 @@
         <name>reason</name>
         <type>java.lang.String</type>
       </parameter>
-      <return-type>void</return-type>
+      <return-type>org.dcm4chee.web.dao.vo.MppsToMwlLinkResult</return-type>
    </operation>
 
    <operation impact="ACTION">
@@ -511,6 +511,39 @@
         <type>long</type>
       </parameter>
       <return-type>boolean</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Create a new Study.
+      		]]> </description>
+      <name>createStudy</name>
+      <parameter>
+        <description>Study Attributes</description>
+        <name>studyAttrs</name>
+        <type>org.dcm4che2.data.DicomObject</type>
+      </parameter>
+      <parameter>
+        <description>Patient primary key</description>
+        <name>patPk</name>
+        <type>long</type>
+      </parameter>
+      <return-type>org.dcm4chee.archive.entity.Study</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Create a new Series.
+      		]]> </description>
+      <name>createSeries</name>
+      <parameter>
+        <description>Series Attributes</description>
+        <name>seriesAttrs</name>
+        <type>org.dcm4che2.data.DicomObject</type>
+      </parameter>
+      <parameter>
+        <description>Study primary key</description>
+        <name>studyPk</name>
+        <type>long</type>
+      </parameter>
+      <return-type>org.dcm4chee.archive.entity.Series</return-type>
    </operation>
 
     </xmbean>

@@ -69,6 +69,16 @@ public class StudyListFilter implements Serializable {
     private boolean latestStudiesFirst;
     private boolean ppsWithoutMwl;
 
+    public void clear() {
+        patientName = patientID = issuerOfPatientID = birthDateMin = birthDateMax = accessionNumber = 
+            studyInstanceUID = modality = sourceAET = seriesInstanceUID = null;
+        studyDateMin = studyDateMax = null;
+        extendedPatQuery = extendedStudyQuery = extendedSeriesQuery = false;
+        patientsWithoutStudies = false;
+        latestStudiesFirst = false;
+        ppsWithoutMwl = false;
+    }
+
     public String getPatientName() {
         return patientName;
     }

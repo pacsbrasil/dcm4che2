@@ -82,4 +82,10 @@ public class ViewPort implements Serializable {
     public List<PatientModel> getPatients() {
         return patients;
     }
+    
+    public void clear() {
+        offset = total = 0;
+        filter.clear();
+        patients.clear();
+    }
 }

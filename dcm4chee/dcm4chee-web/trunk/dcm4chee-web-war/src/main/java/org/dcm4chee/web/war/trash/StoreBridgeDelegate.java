@@ -78,11 +78,6 @@ public class StoreBridgeDelegate {
     public void importFile(FileImportOrder order) throws 
         InstanceNotFoundException, MBeanException, ReflectionException, IOException {
         
-System.out.println("SERVICE NAME: " + serviceObjectName);
-System.out.println("FileImportOrder: " + order);
-System.out.println("CLASSNAME: " + org.dcm4chee.web.service.common.FileImportOrder.class.getName());
-
-        
         server.invoke(serviceObjectName, "importFile", new Object[] {order}, 
                 new String[] {org.dcm4chee.web.service.common.FileImportOrder.class.getName()});
     }

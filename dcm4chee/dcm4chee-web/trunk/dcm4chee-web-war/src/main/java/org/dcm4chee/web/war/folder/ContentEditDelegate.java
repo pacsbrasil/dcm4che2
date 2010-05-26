@@ -45,10 +45,23 @@ import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
+import org.dcm4che2.util.UIDUtils;
+import org.dcm4chee.archive.common.Availability;
+import org.dcm4chee.archive.entity.Patient;
+import org.dcm4chee.archive.entity.Series;
+import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
 import org.dcm4chee.web.common.exceptions.SelectionException;
+import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
+import org.dcm4chee.web.war.folder.model.SeriesModel;
+import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +83,8 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
     private static final String MSG_ERR_SELECTION_MOVE_NO_SOURCE = "Selection for move entities wrong! No source entities selected!";
     private static final String MSGID_ERR_SELECTION_MOVE_PPS = "folder.err_movePPS";
     private static final String MSG_ERR_SELECTION_MOVE_PPS = "Selection for move entities wrong! PPS entities are not allowed!";
+    private static final String MSGID_ERR_SELECTION_MOVE_NOT_ONLINE = "folder.err_moveNotOnline";
+    private static final String MSG_ERR_SELECTION_MOVENOT_ONLINE = "Selection for move entities must have ONLINE availability!";
 
     private static ContentEditDelegate delegate;
 
@@ -116,22 +131,33 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
             if (selected.getPpss().size() > 0) {
                 throw new SelectionException(MSG_ERR_SELECTION_MOVE_PPS, MSGID_ERR_SELECTION_MOVE_PPS);
             } 
-            // study -> pat
+            checkAllOnline(selected);
+            // study(series,inst) -> pat
             int pats = selected.getPatients().size();
             if (pats > 1) {
                 throw new SelectionException(MSG_ERR_SELECTION_MOVE_DESTINATION, MSGID_ERR_SELECTION_MOVE_DESTINATION);
             } 
             if( pats == 1) {
+                long patPk = selected.getPatients().iterator().next().getPk();
                 if (selected.getStudies().size() < 1) {
-                    if ( selected.hasSeries() || selected.hasInstances()) {
+                    if ( selected.hasSeries() && selected.hasInstances()) {
                         throw new SelectionException(MSG_ERR_SELECTION_MOVE_SOURCE_LEVEL, MSGID_ERR_SELECTION_MOVE_SOURCE_LEVEL);
+                    } else if (selected.hasSeries()) {
+                        Study st = createNewStudy(selected.getSeries().iterator().next().getParent().getParent(), patPk);
+                        return moveEntities("moveSeriesToStudy", st.getPk(), toPks(selected.getSeries()));
+                    } else if (selected.hasInstances()) {
+                        SeriesModel sModel = selected.getInstances().iterator().next().getParent();
+                        Study st = createNewStudy(sModel.getParent().getParent(), patPk);
+                        Series series = createNewSeries(sModel, st.getPk());
+                        return moveEntities("moveInstancesToSeries", series.getPk(), toPks(selected.getInstances()));
                     } else {
                         throw new SelectionException(MSG_ERR_SELECTION_MOVE_NO_SOURCE, MSGID_ERR_SELECTION_MOVE_NO_SOURCE);
                     }
+                } else {
+                    return moveEntities("moveStudiesToPatient", patPk, toPks(selected.getStudies()));
                 }
-                return moveEntities("moveStudiesToPatient", toPks(selected.getPatients())[0], toPks(selected.getStudies()));
             }
-            // series -> study
+            // series(inst) -> study
             int nrOfStudies = selected.getStudies().size();
             if ( nrOfStudies > 1) {
                 throw new SelectionException(MSG_ERR_SELECTION_MOVE_DESTINATION, MSGID_ERR_SELECTION_MOVE_DESTINATION);
@@ -139,7 +165,9 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
             if( nrOfStudies == 1) {
                 if (selected.getSeries().size() < 1) {
                     if ( selected.hasInstances()) {
-                        throw new SelectionException(MSG_ERR_SELECTION_MOVE_SOURCE_LEVEL, MSGID_ERR_SELECTION_MOVE_SOURCE_LEVEL);
+                        SeriesModel sModel = selected.getInstances().iterator().next().getParent();
+                        Series series = createNewSeries(sModel, selected.getStudies().iterator().next().getPk());
+                        return moveEntities("moveInstancesToSeries", series.getPk(), toPks(selected.getInstances()));
                     } else {
                         throw new SelectionException(MSG_ERR_SELECTION_MOVE_NO_SOURCE, MSGID_ERR_SELECTION_MOVE_NO_SOURCE);
                     }
@@ -165,7 +193,48 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
             return -1;
         }
     }
- 
+
+    private void checkAllOnline(SelectedEntities selected) throws SelectionException {
+        for ( StudyModel m : selected.getStudies()) {
+            if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE)
+                throw new SelectionException(MSGID_ERR_SELECTION_MOVE_NOT_ONLINE, MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
+        }
+        for ( SeriesModel m : selected.getSeries()) {
+            if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE)
+                throw new SelectionException(MSGID_ERR_SELECTION_MOVE_NOT_ONLINE, MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
+        }
+        for ( InstanceModel m : selected.getInstances()) {
+            if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE)
+                throw new SelectionException(MSGID_ERR_SELECTION_MOVE_NOT_ONLINE, MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
+        }
+    }
+
+    private Study createNewStudy(StudyModel baseStudy, long patPk) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+        DicomObject studyAttrs = baseStudy == null ? new BasicDicomObject() : baseStudy.getDataset();
+        DicomObject newStudyAttrs = new BasicDicomObject();
+        newStudyAttrs.putString(Tag.StudyInstanceUID, VR.UI, UIDUtils.createUID());
+        newStudyAttrs.putString(Tag.StudyDescription, VR.LO, studyAttrs.getString(Tag.StudyDescription));
+        newStudyAttrs.putDate(Tag.StudyDate, VR.DA, studyAttrs.getDate(Tag.StudyDate));
+        newStudyAttrs.putDate(Tag.StudyTime, VR.TM, studyAttrs.getDate(Tag.StudyTime));
+        Study study = (Study) server.invoke(serviceObjectName, "createStudy", 
+                new Object[]{newStudyAttrs, patPk}, 
+                new String[]{DicomObject.class.getName(), long.class.getName()});
+        return study;
+    }
+
+    private Series createNewSeries(SeriesModel baseSeries, long studyPk) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+        DicomObject seriesAttrs = baseSeries == null ? new BasicDicomObject() : baseSeries.getDataset();
+        DicomObject newSeriesAttrs = new BasicDicomObject();
+        newSeriesAttrs.putString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
+        newSeriesAttrs.putString(Tag.SeriesDescription, VR.LO, seriesAttrs.getString(Tag.SeriesDescription));
+        newSeriesAttrs.putDate(Tag.SeriesDate, VR.DA, seriesAttrs.getDate(Tag.SeriesDate));
+        newSeriesAttrs.putDate(Tag.SeriesTime, VR.TM, seriesAttrs.getDate(Tag.SeriesTime));
+        Series series = (Series) server.invoke(serviceObjectName, "createSeries", 
+                new Object[]{newSeriesAttrs, studyPk}, 
+                new String[]{DicomObject.class.getName(), long.class.getName()});
+        return series;
+    }
+    
     private int  moveEntities(String op, long pk, long[] pks)
             throws InstanceNotFoundException, MBeanException,
             ReflectionException, IOException {
@@ -173,10 +242,11 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         new String[]{long[].class.getName(), long.class.getName()});
     }
     
-    public void linkMppsToMwl(Collection<PPSModel> mppss, MWLItemModel mwl) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
-        server.invoke(serviceObjectName, "linkMppsToMwl", 
-                new Object[]{toPks(mppss), mwl.getPk(), null, null}, 
+    public MppsToMwlLinkResult linkMppsToMwl(Collection<PPSModel> ppsModels, MWLItemModel mwl) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+        MppsToMwlLinkResult result = (MppsToMwlLinkResult) server.invoke(serviceObjectName, "linkMppsToMwl", 
+                new Object[]{toPks(ppsModels), mwl.getPk(), null, null}, 
                 new String[]{long[].class.getName(), long.class.getName(), String.class.getName(), String.class.getName()});
+        return result;
     }
     
     public boolean unlink(PPSModel mpps)  throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
