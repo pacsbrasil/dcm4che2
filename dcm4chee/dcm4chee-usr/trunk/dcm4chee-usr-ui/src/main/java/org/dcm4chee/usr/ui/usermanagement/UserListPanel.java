@@ -127,8 +127,6 @@ public class UserListPanel extends Panel {
                 allUsers = new ListModel<User>(getAllUsers());
             }
 
-            @Override
-            public void onDecline(AjaxRequestTarget target, User userObject) {}                
         });
         
         addOrReplace(new ToggleFormLink("toggle-user-form-link", 
