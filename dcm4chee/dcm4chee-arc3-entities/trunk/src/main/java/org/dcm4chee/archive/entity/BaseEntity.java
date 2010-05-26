@@ -55,6 +55,10 @@ public class BaseEntity implements Serializable {
     // JPA definition (to handle differences between RDBMS) in orm.xml
     protected long pk;
 
+    public BaseEntity() {
+        pk = -1l;
+    }
+    
     public long getPk() {
         return pk;
     }

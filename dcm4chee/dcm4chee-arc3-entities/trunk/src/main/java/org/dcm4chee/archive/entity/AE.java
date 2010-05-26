@@ -64,10 +64,6 @@ public class AE extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -3132017392325052134L;
 
-    public AE() {
-        pk = -1l;
-    }
-    
     @Column(name = "aet", nullable = false)
     private String title;
 
