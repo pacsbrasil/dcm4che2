@@ -70,9 +70,9 @@ public class StudyListFilter implements Serializable {
     private boolean ppsWithoutMwl;
 
     public void clear() {
-        patientName = patientID = issuerOfPatientID = birthDateMin = birthDateMax = accessionNumber = 
+        patientName = patientID = issuerOfPatientID = accessionNumber = 
             studyInstanceUID = modality = sourceAET = seriesInstanceUID = null;
-        studyDateMin = studyDateMax = null;
+        studyDateMin = studyDateMax = birthDateMin = birthDateMax = null;
         extendedPatQuery = extendedStudyQuery = extendedSeriesQuery = false;
         patientsWithoutStudies = false;
         latestStudiesFirst = false;
