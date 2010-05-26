@@ -54,8 +54,8 @@ public class StudyListFilter implements Serializable {
     private String patientID;
     private String issuerOfPatientID;
     private boolean extendedPatQuery;
-    private String birthDateMin;
-    private String birthDateMax;
+    private Date birthDateMin;
+    private Date birthDateMax;
     private String accessionNumber;
     private Date studyDateMin;
     private Date studyDateMax;
@@ -101,19 +101,19 @@ public class StudyListFilter implements Serializable {
         this.extendedPatQuery = extendedPatQuery;
     }
 
-    public String getBirthDateMin() {
+    public Date getBirthDateMin() {
         return birthDateMin;
     }
 
-    public void setBirthDateMin(String birthdateMin) {
+    public void setBirthDateMin(Date birthdateMin) {
         this.birthDateMin = birthdateMin;
     }
 
-    public String getBirthDateMax() {
+    public Date getBirthDateMax() {
         return birthDateMax;
     }
 
-    public void setBirthDateMax(String birthdateMax) {
+    public void setBirthDateMax(Date birthdateMax) {
         this.birthDateMax = birthdateMax;
     }
 

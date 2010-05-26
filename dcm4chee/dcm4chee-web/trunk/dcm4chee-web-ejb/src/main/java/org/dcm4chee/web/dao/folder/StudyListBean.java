@@ -264,8 +264,7 @@ public class StudyListBean implements StudyListLocal {
         }
     }
 
-    private static void appendPatientBirthDateFilter(StringBuilder ql,
-            String minDate, String maxDate) {
+    private static void appendPatientBirthDateFilter(StringBuilder ql, Date minDate, Date maxDate) {
         if (minDate!=null) {
             if (maxDate==null) {
                 ql.append(" AND p.patientBirthDate >= :birthdateMin");
@@ -277,16 +276,11 @@ public class StudyListBean implements StudyListLocal {
             ql.append(" AND p.patientBirthDate <= :birthdateMax");
         }
     }
-    private static void setPatientBirthDateQueryParameter(Query query,
-            String minDate, String maxDate) {
+    private static void setPatientBirthDateQueryParameter(Query query, Date minDate, Date maxDate) {
         if ( minDate!=null)
-            query.setParameter("birthdateMin", normalizeDate(minDate));
+            query.setParameter("birthdateMin", minDate, TemporalType.TIMESTAMP);
         if ( maxDate!=null)
-            query.setParameter("birthdateMax", normalizeDate(maxDate));
-    }
-
-    private static String normalizeDate(String date) {
-        return date.substring(0,4)+date.substring(5,7)+date.substring(8);
+            query.setParameter("birthdateMax", maxDate, TemporalType.TIMESTAMP);
     }
 
     private static void appendStudyDateMinFilter(StringBuilder ql, Date date) {
