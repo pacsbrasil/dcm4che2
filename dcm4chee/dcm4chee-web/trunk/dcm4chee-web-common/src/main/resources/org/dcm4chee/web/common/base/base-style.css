@@ -1,6 +1,6 @@
-#
-# Base CSS
-#
+/*
+	Base CSS
+*/
 
 body,h1,h2,h3,h4,p,ul,ol,li,dl,dt,dd,div,td,th { font-family:Verdana,sans-serif; }
 h1 { font-size:26px; margin-bottom:18px; }
@@ -8,6 +8,7 @@ h1.ph1 { font-size:21px; margin-bottom:18px; }
 h2 { font-size:21px; margin-bottom:18px; }
 h3 { font-size:16px; }
 h4 { font-size:13.4px; }
+
 p,ul,ol,li,dl,dt,dd,div,td,th { font-size:13.4px; }
 
 img {border: none;}
