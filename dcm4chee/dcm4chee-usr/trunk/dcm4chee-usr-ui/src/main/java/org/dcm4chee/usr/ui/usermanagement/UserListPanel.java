@@ -50,6 +50,8 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
+import org.apache.wicket.authorization.strategies.role.Roles;
+import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
@@ -88,6 +90,7 @@ import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
  * @version $Revision$ $Date$
  * @since 28.09.2009
  */
+@AuthorizeInstantiation({Roles.ADMIN, "WebAdmin"})
 public class UserListPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
