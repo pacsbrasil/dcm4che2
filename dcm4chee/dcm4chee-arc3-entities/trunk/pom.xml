@@ -2,7 +2,8 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
   <groupId>dcm4che.dcm4chee</groupId>
-  <artifactId>dcm4chee-arc-entities-${db}</artifactId>
+  <artifactId>dcm4chee-arc-entities</artifactId>
+  <packaging>ejb</packaging>
   <version>3.0.0-SNAPSHOT</version>
   <description>EJB3 Entities for DCM4CHEE Archive</description>
   <properties>
@@ -43,6 +44,14 @@
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-ejb-plugin</artifactId>
+        <version>2.2</version>
+        <configuration>
+          <classifier>${db}</classifier>
+          <ejbVersion>3.0</ejbVersion>
         </configuration>
       </plugin>
       <plugin>
