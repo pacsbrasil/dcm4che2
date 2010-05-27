@@ -12,6 +12,7 @@
   <groupId>dcm4che.dcm4chee</groupId>
   <artifactId>dcm4chee-usr-entity</artifactId>
   <version>0.0.1</version>
+  <packaging>ejb</packaging>
   <properties>
     <hibernate.hbm2ddl.auto>update</hibernate.hbm2ddl.auto>
     <hibernate.show_sql>false</hibernate.show_sql>
@@ -31,6 +32,14 @@
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-ejb-plugin</artifactId>
+        <version>2.2</version>
+        <configuration>
+          <classifier>${db}</classifier>
+          <ejbVersion>3.0</ejbVersion>
         </configuration>
       </plugin>
       <plugin>

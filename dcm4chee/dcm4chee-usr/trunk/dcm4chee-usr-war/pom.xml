@@ -35,6 +35,8 @@
 		<dependency>
 			<groupId>dcm4che.dcm4chee</groupId>
 			<artifactId>dcm4chee-usr-entity</artifactId>
+			<type>ejb</type>
+			<classifier>${db}</classifier>
 			<version>0.0.1</version>
 			<scope>provided</scope>
 		</dependency>

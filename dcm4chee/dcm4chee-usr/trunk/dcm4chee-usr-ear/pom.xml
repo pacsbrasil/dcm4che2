@@ -18,6 +18,7 @@
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-usr-entity</artifactId>
       <type>ejb</type>
+      <classifier>${db}</classifier>
       <version>0.0.1</version>
     </dependency>
     <dependency>
@@ -40,12 +41,13 @@
         <artifactId>maven-ear-plugin</artifactId>
         <version>2.4</version>
         <configuration>
+          <classifier>${db}</classifier>
           <defaultJavaBundleDir>lib</defaultJavaBundleDir>
           <modules>
             <ejbModule>
               <groupId>dcm4che.dcm4chee</groupId>
               <artifactId>dcm4chee-usr-entity</artifactId>
-              <uri>dcm4chee-usr-entity-0.0.1.jar</uri>
+    		  <classifier>${db}</classifier>
             </ejbModule>
             <ejbModule>
               <groupId>dcm4che.dcm4chee</groupId>
