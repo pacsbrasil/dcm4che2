@@ -111,5 +111,14 @@ public class QueryUtil {
     public static boolean isUniversalMatch(String s) {
         return s == null || s.length() == 0  || s.equals("*");
     }
+    public static boolean isUniversalMatch(String[] sa) {
+        if (sa == null || sa.length == 0)
+            return true;
+        for (int i = 0 ; i < sa.length ; i++) {
+            if (sa[i] == null || sa[i].equals("*"))
+                return true;
+        }
+        return false;
+    }
 
 }

@@ -40,6 +40,8 @@ package org.dcm4chee.web.dao.worklist.modality;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -58,12 +60,17 @@ public class ModalityWorklistFilter implements Serializable {
     private String studyInstanceUID;
     private String modality;
     private String scheduledStationAET;
+    private Map<String,List<String>> stationAetGroups;
     private String scheduledStationName;
     private boolean latestItemsFirst;
     private String scheduledProcedureStepStatus;
     
     private Date startDateMin;
     private Date startDateMax;
+    
+    public ModalityWorklistFilter(Map<String,List<String>> stationAetGroups) {
+        this.stationAetGroups = stationAetGroups;
+    }
 
     public String getPatientName() {
         return patientName;
@@ -137,6 +144,17 @@ public class ModalityWorklistFilter implements Serializable {
         this.scheduledStationAET = scheduledStationAET;
     }
 
+    public String[] getScheduledStationAETs() {
+        if (stationAetGroups != null) {
+            List<String> l = stationAetGroups.get(scheduledStationAET);
+            if (l != null) {
+                return l.toArray(new String[l.size()]);
+            }
+        }
+        return new String[]{scheduledStationAET};
+    }
+    
+    
     public String getScheduledStationName() {
         return scheduledStationName;
     }

@@ -118,7 +118,7 @@ public class ModalityWorklistBean implements ModalityWorklist {
             appendStartDateMinFilter(ql, filter.getStartDateMin());
             appendStartDateMaxFilter(ql, filter.getStartDateMax());
             appendModalityFilter(ql, filter.getModality());
-            appendScheduledStationAETFilter(ql, filter.getScheduledStationAET());
+            appendScheduledStationAETFilter(ql, filter.getScheduledStationAETs());
             appendScheduledStationNameFilter(ql, filter.getScheduledStationName());
             appendScheduledProcedureStepStatus(ql, filter.getScheduledProcedureStepStatus());
         } else {
@@ -137,7 +137,7 @@ public class ModalityWorklistBean implements ModalityWorklist {
             setStartDateMinQueryParameter(query, filter.getStartDateMin());
             setStartDateMaxQueryParameter(query, filter.getStartDateMax());
             setModalityQueryParameter(query, filter.getModality());
-            setScheduledStationAETQueryParameter(query, filter.getScheduledStationAET());
+            setScheduledStationAETQueryParameter(query, filter.getScheduledStationAETs());
             setScheduledStationNameQueryParameter(query, filter.getScheduledStationName());
             setScheduledProcedureStepStatusQueryParameter(query, filter.getScheduledProcedureStepStatus());
         } else {        
@@ -338,16 +338,25 @@ public class ModalityWorklistBean implements ModalityWorklist {
     }
 
     private static void appendScheduledStationAETFilter(StringBuilder ql,
-            String scheduledStationAET) {
-        if (!QueryUtil.isUniversalMatch(scheduledStationAET)) {
-            ql.append(" AND m.scheduledStationAET = :scheduledStationAET");
+            String[] scheduledStationAETs) {
+        if (!QueryUtil.isUniversalMatch(scheduledStationAETs)) {
+            if (scheduledStationAETs.length == 1) {
+                ql.append(" AND m.scheduledStationAET = :scheduledStationAET");
+            } else {
+                ql.append(" AND m.scheduledStationAET");
+                QueryUtil.appendIN(ql, scheduledStationAETs.length);
+            }
         }
     }
 
     private static void setScheduledStationAETQueryParameter(Query query,
-            String scheduledStationAET) {
-        if (!QueryUtil.isUniversalMatch(scheduledStationAET)) {
-            query.setParameter("scheduledStationAET", scheduledStationAET);
+            String[] scheduledStationAETs) {
+        if (!QueryUtil.isUniversalMatch(scheduledStationAETs)) {
+            if (scheduledStationAETs.length == 1) {
+                query.setParameter("scheduledStationAET", scheduledStationAETs[0]);
+            } else {
+                QueryUtil.setParametersForIN(query, scheduledStationAETs);
+            }
         }
     }
 

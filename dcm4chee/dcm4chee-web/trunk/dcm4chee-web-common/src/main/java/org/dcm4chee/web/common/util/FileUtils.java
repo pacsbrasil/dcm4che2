@@ -36,50 +36,28 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.worklist.modality;
+package org.dcm4chee.web.common.util;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
 
-import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
-import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
+import org.jboss.system.server.ServerConfigLocator;
 
 /**
- * @author Robert David <robert.david@agfa.com>
+ * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since 20.04.2010
+ * @since May 27, 2010
  */
-public class ViewPort implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class FileUtils {
     
-    private int offset = 0;
-    private int total = 0;
-    private final ModalityWorklistFilter filter = new ModalityWorklistFilter(StationAetGroups.get().getAllGroups());
-    private final List<MWLItemModel> mwlItemModels = new ArrayList<MWLItemModel>();
-
-    public int getOffset() {
-        return offset;
+    public static File resolve(File f) {
+        if (f.isAbsolute())
+            return f;
+        try {
+            File serverHomeDir = ServerConfigLocator.locate().getServerHomeDir();
+            return new File(serverHomeDir, f.getPath());
+        } catch (Throwable t) {
+            return f;
+        }
     }
 
-    public void setOffset(int offset) {
-        this.offset = offset;
-    }
-
-    public int getTotal() {
-        return total;
-    }
-
-    public void setTotal(int total) {
-        this.total = total;
-    }
-
-    public ModalityWorklistFilter getFilter() {
-        return filter;
-    }
-
-    public List<MWLItemModel> getMWLItemModels() {
-        return mwlItemModels;
-    }
 }

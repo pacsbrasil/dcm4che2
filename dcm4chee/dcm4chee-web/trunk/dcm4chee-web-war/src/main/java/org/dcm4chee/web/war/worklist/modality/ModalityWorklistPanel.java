@@ -161,7 +161,10 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
         form.addLabeledTextField("accessionNumber", enabledModel);
         form.addLabeledDropDownChoice("modality", null, getModalityChoices(), enabledModel);
-        form.addLabeledDropDownChoice("scheduledStationAET", null, getStationAETChoices(), enabledModel);
+        List<String> choices = StationAetGroups.get().getChoices(getStationAETChoices());
+        if (choices.size() > 0)
+            filter.setScheduledStationAET(choices.get(0));
+        form.addLabeledDropDownChoice("scheduledStationAET", null, choices, enabledModel);
         form.addLabeledDropDownChoice("scheduledStationName", null, getStationNameChoices(), enabledModel);
         form.addLabeledDropDownChoice("scheduledProcedureStepStatus", null, getSpsStatusChoices(), enabledModel);
     }
@@ -315,7 +318,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     protected List<String> getStationAETChoices() {
         ModalityWorklist dao = lookupMwlDAO();
         List<String> scheduledStationAETs = new ArrayList<String>();
-        scheduledStationAETs.add("*");
         scheduledStationAETs.addAll(dao.selectDistinctStationAETs());
         return scheduledStationAETs;
     }
