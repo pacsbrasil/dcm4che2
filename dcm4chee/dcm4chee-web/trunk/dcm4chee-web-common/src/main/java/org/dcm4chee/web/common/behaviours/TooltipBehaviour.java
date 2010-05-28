@@ -43,6 +43,7 @@ import org.apache.wicket.Component;
 import org.apache.wicket.Localizer;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.model.IModel;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -58,7 +59,7 @@ public class TooltipBehaviour extends AbstractBehavior {
     
     private transient Localizer localizer;
 
-    private String textAddition;
+    private IModel substitutionModel;
     
     /*
      * Create a TooltipBehaviour with given prefix.
@@ -79,13 +80,13 @@ public class TooltipBehaviour extends AbstractBehavior {
         this.id = id;
     }
 
-    public TooltipBehaviour(String prefix, String id, String textAddition) {
+    public TooltipBehaviour(String prefix, String id, IModel substitutionModel) {
         this(prefix, id);
-        this.textAddition = textAddition;
+        this.substitutionModel = substitutionModel;
     }
 
     public void onComponentTag(Component c, ComponentTag tag) {
-        tag.put("title", getLocalizer().getStringIgnoreSettings(getResourceKey(c), c, null, "") + (textAddition==null ? "" : textAddition));
+        tag.put("title", getLocalizer().getStringIgnoreSettings(getResourceKey(c), c, substitutionModel, ""));
     }
 
     private String getResourceKey(Component c) {
@@ -100,5 +101,13 @@ public class TooltipBehaviour extends AbstractBehavior {
         if ( localizer == null )
             localizer = Application.get().getResourceSettings().getLocalizer();
         return localizer;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+    
+    public TooltipBehaviour newWithSubstitution(IModel model) {
+        return new TooltipBehaviour(prefix, id, model);
     }
 }
