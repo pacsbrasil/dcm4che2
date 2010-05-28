@@ -38,6 +38,7 @@
 
 package org.dcm4chee.web.dao.folder;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -66,6 +67,8 @@ import org.jboss.annotation.ejb.LocalBinding;
 @Stateless
 @LocalBinding (jndiBinding=StudyListLocal.JNDI_NAME)
 public class StudyListBean implements StudyListLocal {
+    
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 
     @PersistenceContext(unitName="dcm4chee-arc")
     private EntityManager em;
@@ -278,9 +281,9 @@ public class StudyListBean implements StudyListLocal {
     }
     private static void setPatientBirthDateQueryParameter(Query query, Date minDate, Date maxDate) {
         if ( minDate!=null)
-            query.setParameter("birthdateMin", minDate, TemporalType.TIMESTAMP);
+            query.setParameter("birthdateMin", sdf.format(minDate));
         if ( maxDate!=null)
-            query.setParameter("birthdateMax", maxDate, TemporalType.TIMESTAMP);
+            query.setParameter("birthdateMax", sdf.format(maxDate));
     }
 
     private static void appendStudyDateMinFilter(StringBuilder ql, Date date) {

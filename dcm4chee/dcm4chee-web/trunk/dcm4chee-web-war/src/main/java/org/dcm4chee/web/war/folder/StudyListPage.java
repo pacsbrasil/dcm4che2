@@ -52,6 +52,8 @@ import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
+import org.apache.wicket.datetime.markup.html.form.DateTextField;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -148,11 +150,6 @@ public class StudyListPage extends Panel {
         form.add(new PatientListView("patients", viewport.getPatients()));
         msgWin.setTitle(MessageWindow.TITLE_WARNING);
         add(msgWin);
-        linkPage.setResizable(true);
-        linkPage.setCookieName("linkpage");
-        linkPage.setUseInitialHeight(false);
-        linkPage.setInitialWidth(700);
-        linkPage.setInitialHeight(400);
         add(linkPage);
         initModalitiesAndSourceAETs();
     }
@@ -385,7 +382,7 @@ public class StudyListPage extends Panel {
         form.add(confirmUnlinkMpps);
     }
 
-    private WebMarkupContainer addExtendedPatientSearch(final Form<?> form) {
+    private WebMarkupContainer addExtendedPatientSearch(final BaseForm form) {
         final StudyListFilter filter = viewport.getFilter();
         final WebMarkupContainer extendedPatFilter = new WebMarkupContainer("extendedPatFilter") {
 
@@ -399,8 +396,8 @@ public class StudyListPage extends Panel {
         extendedPatFilter.add( new Label("birthDateLabel", new ResourceModel("folder.birthDate")));
         extendedPatFilter.add( new Label("birthDateMinLabel", new ResourceModel("folder.birthDateMin")));
         extendedPatFilter.add( new Label("birthDateMaxLabel", new ResourceModel("folder.birthDateMax")));
-        extendedPatFilter.add( new TextField<String>("birthDateMin"));
-        extendedPatFilter.add( new TextField<String>("birthDateMax"));
+        extendedPatFilter.add(form.getDateTextField("birthDateMin", null, true));
+        extendedPatFilter.add(form.getDateTextField("birthDateMax", null, true));
         form.add(extendedPatFilter);
         AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedPatFilter") {
 
@@ -638,7 +635,9 @@ public class StudyListPage extends Panel {
             item.add(new Label("name").add(tooltipBehaviour));
             item.add(new Label("id").add(tooltipBehaviour));
             item.add(new Label("issuer").add(tooltipBehaviour));
-            item.add(new DateTimeLabel("birthdate").setWithoutTime(true).add(tooltipBehaviour));
+            DateTimeLabel dtl = new DateTimeLabel("birthdate").setWithoutTime(true);
+            dtl.add(tooltipBehaviour.newWithSubstitution(new PropertyModel(dtl, "textFormat")));
+            item.add(dtl);
             item.add(new Label("sex").add(tooltipBehaviour));
             item.add(new Label("comments").add(tooltipBehaviour));
             item.add(new Label("pk").add(new TooltipBehaviour("folder.","patPk")));
@@ -863,11 +862,29 @@ public class StudyListPage extends Panel {
             .add(new TooltipBehaviour("folder.","ppsDetail")));
             item.add(getEditLink(ppsModel, "ppsEdit"));
             
-            AjaxFallbackLink linkBtn = new AjaxFallbackLink("linkBtn") {
+            AjaxFallbackLink<?> linkBtn = new AjaxFallbackLink<Object>("linkBtn") {
+                
                 private static final long serialVersionUID = 1L;
+
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    linkPage.show(target, ppsModel, form);
+
+                    linkPage.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
+                        
+                        private static final long serialVersionUID = 1L;
+
+                        @Override
+                        public void onClose(AjaxRequestTarget target) {
+                            linkPage.setOutputMarkupId(true);
+                            target.addComponent(linkPage);
+                        }
+                    });
+                    
+                    ((Mpps2MwlLinkPage) linkPage
+                            .setInitialWidth(new Integer(new ResourceModel("folder.mpps2mwl.window.width","800").wrapOnAssignment(this).getObject().toString()))
+                            .setInitialHeight(new Integer(new ResourceModel("folder.mpps2mwl.window.height","600").wrapOnAssignment(this).getObject().toString()))
+                    )
+                    .show(target, ppsModel, form);
                 }
                 @Override
                 public boolean isVisible() {

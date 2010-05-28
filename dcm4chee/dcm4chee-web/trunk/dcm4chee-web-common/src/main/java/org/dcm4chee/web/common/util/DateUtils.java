@@ -38,6 +38,9 @@
 
 package org.dcm4chee.web.common.util;
 
+import org.apache.wicket.Component;
+import org.joda.time.format.DateTimeFormat;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
@@ -123,4 +126,18 @@ public class DateUtils {
         }
         return datm;
     }
+    
+    public static String getDatePattern(Component c) {
+        String pattern = DateTimeFormat.patternForStyle("S-", c.getLocale());
+        int pos1 = pattern.indexOf('y');
+        if (pos1 != -1) {
+            if (pattern.length() <= pos1+2) {
+                pattern = pattern + "yy";
+            } else if ( pattern.charAt(pos1+2)!='y') {
+                pattern = pattern.substring(0,pos1)+"yyyy"+pattern.substring(pos1+2);
+            }
+        }
+        return pattern;
+    }
+
 }

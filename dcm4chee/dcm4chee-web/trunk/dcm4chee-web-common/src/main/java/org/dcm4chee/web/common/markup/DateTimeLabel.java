@@ -45,11 +45,13 @@ import java.util.Locale;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.util.convert.IConverter;
+import org.dcm4chee.web.common.util.DateUtils;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
  * @since Jan 22, 2009
  */
@@ -90,18 +92,15 @@ public class DateTimeLabel extends Label {
                 
                 if (value == null) return null;
                 Date d = (Date) value;
-                String pattern = DateTimeFormat.patternForStyle("S-", getLocale());
-                int pos1 = pattern.indexOf('y');
-                if (pos1 != -1) {
-                    if (pattern.length() <= pos1+2) {
-                        pattern = pattern + "yy";
-                    } else if ( pattern.charAt(pos1+2)!='y') {
-                        pattern = pattern.substring(0,pos1)+"yyyy"+pattern.substring(pos1+2);
-                    }
-                }
+                String pattern = getTextFormat();
                 DateTimeFormatter dtf = DateTimeFormat.forPattern(pattern)
                 .withLocale(getLocale()).withPivotYear(2000);
                 return withoutTime ? dtf.print(d.getTime()) : dtf.print(d.getTime())+" "+df.format(d);
-            }};
+            }
+
+            };
+    }
+    public String getTextFormat() {
+        return DateUtils.getDatePattern(this);
     }
 }

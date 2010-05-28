@@ -59,11 +59,13 @@ import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.web.common.behaviours.MarkInvalidBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.util.DateUtils;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -153,8 +155,7 @@ public class BaseForm extends Form<Object> {
 
     public DateTimeField addDateTimeField(String id, IModel<Date> model,
             final IModel<Boolean> enabledModel, final boolean max) {
-        DateTimeField dtf = new DateTimeField(id, model) {
-
+        final DateTimeField dtf = new DateTimeField(id, model) {
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -182,23 +183,7 @@ public class BaseForm extends Form<Object> {
             @SuppressWarnings("unchecked")
             @Override
             protected DateTextField newDateTextField(String id, PropertyModel dateFieldModel) {
-                return new DateTextField(id, dateFieldModel, 
-                    new StyleDateConverter("S-", false){
-                        @Override
-                        protected DateTimeFormatter getFormat() {
-                            String pattern = getDatePattern();
-                            int pos1 = pattern.indexOf('y');
-                            if (pos1 != -1) {
-                                if (pattern.length() <= pos1+2) {
-                                    pattern = pattern + "yy";
-                                } else if ( pattern.charAt(pos1+2)!='y') {
-                                    pattern = pattern.substring(0,pos1)+"yyyy"+pattern.substring(pos1+2);
-                                }
-                            }
-                            return DateTimeFormat.forPattern(pattern).withLocale(getLocale())
-                                            .withPivotYear(2000);
-                        }
-                });
+                return getDateTextField(id, dateFieldModel, false);
             }
 
             @Override
@@ -206,8 +191,34 @@ public class BaseForm extends Form<Object> {
                 return enabledModel.getObject();
             }
         };
+        dtf.add(new TooltipBehaviour(tooltipBehaviour == null ? null : tooltipBehaviour.getPrefix(), 
+                id, new AbstractReadOnlyModel<String>(){
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    public String getObject() {
+                        return DateUtils.getDatePattern(dtf);
+                    }
+        }));
         add(dtf);
         return dtf;
+    }
+    
+    public DateTextField getDateTextField(String id, IModel model, boolean addTooltip) {
+        DateTextField dt = new DateTextField(id, model, 
+                new StyleDateConverter("S-", false){
+                    @Override
+                    protected DateTimeFormatter getFormat() {
+                        String pattern = DateUtils.getDatePattern(getComponent());
+                        return DateTimeFormat.forPattern(pattern).withLocale(getLocale())
+                                        .withPivotYear(2000);
+                    }
+            });
+        if (addTooltip) {
+            dt.add(new TooltipBehaviour(tooltipBehaviour == null ? null : tooltipBehaviour.getPrefix(), 
+                    id, new PropertyModel(dt,"textFormat")));
+        }
+        return dt;
     }
 
     public DropDownChoice<?> addLabeledDropDownChoice(String id, IModel<Object> model, List<String> values) {
