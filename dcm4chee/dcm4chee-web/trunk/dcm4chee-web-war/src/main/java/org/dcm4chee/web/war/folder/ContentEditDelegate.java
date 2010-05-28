@@ -197,15 +197,15 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
     private void checkAllOnline(SelectedEntities selected) throws SelectionException {
         for ( StudyModel m : selected.getStudies()) {
             if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE)
-                throw new SelectionException(MSGID_ERR_SELECTION_MOVE_NOT_ONLINE, MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
+                throw new SelectionException(MSG_ERR_SELECTION_MOVENOT_ONLINE, MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
         }
         for ( SeriesModel m : selected.getSeries()) {
             if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE)
-                throw new SelectionException(MSGID_ERR_SELECTION_MOVE_NOT_ONLINE, MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
+                throw new SelectionException(MSG_ERR_SELECTION_MOVENOT_ONLINE, MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
         }
         for ( InstanceModel m : selected.getInstances()) {
             if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE)
-                throw new SelectionException(MSGID_ERR_SELECTION_MOVE_NOT_ONLINE, MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
+                throw new SelectionException(MSG_ERR_SELECTION_MOVENOT_ONLINE, MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
         }
     }
 
