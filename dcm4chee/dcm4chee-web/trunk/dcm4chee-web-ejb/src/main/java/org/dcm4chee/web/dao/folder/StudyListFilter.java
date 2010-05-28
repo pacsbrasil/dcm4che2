@@ -40,6 +40,8 @@ package org.dcm4chee.web.dao.folder;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -63,11 +65,16 @@ public class StudyListFilter implements Serializable {
     private String studyInstanceUID;
     private String modality;
     private String sourceAET;
+    private Map<String,List<String>> sourceAetGroups;
     private boolean extendedSeriesQuery;
     private String seriesInstanceUID;
     private boolean patientsWithoutStudies;
     private boolean latestStudiesFirst;
     private boolean ppsWithoutMwl;
+
+    public StudyListFilter(Map<String, List<String>> sourceAetGroups) {
+        this.sourceAetGroups = sourceAetGroups;
+    }
 
     public void clear() {
         patientName = patientID = issuerOfPatientID = accessionNumber = 
@@ -191,6 +198,16 @@ public class StudyListFilter implements Serializable {
         this.sourceAET = sourceAET;
     }
 
+    public String[] getSourceAETs() {
+        if (sourceAetGroups != null) {
+            List<String> l = sourceAetGroups.get(sourceAET);
+            if (l != null) {
+                return l.toArray(new String[l.size()]);
+            }
+        }
+        return new String[]{sourceAET};
+    }
+    
     public boolean isExtendedSeriesQuery() {
         return extendedSeriesQuery;
     }

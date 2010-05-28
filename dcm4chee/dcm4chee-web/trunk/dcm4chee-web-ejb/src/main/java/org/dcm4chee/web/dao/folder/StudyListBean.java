@@ -120,7 +120,7 @@ public class StudyListBean implements StudyListLocal {
             appendStudyDateMinFilter(ql, filter.getStudyDateMin());
             appendStudyDateMaxFilter(ql, filter.getStudyDateMax());
             appendModalityFilter(ql, filter.getModality());
-            appendSourceAETFilter(ql, filter.getSourceAET());
+            appendSourceAETFilter(ql, filter.getSourceAETs());
         }
     }
 
@@ -140,7 +140,7 @@ public class StudyListBean implements StudyListLocal {
             setStudyDateMinQueryParameter(query, filter.getStudyDateMin());
             setStudyDateMaxQueryParameter(query, filter.getStudyDateMax());
             setModalityQueryParameter(query, filter.getModality());
-            setSourceAETQueryParameter(query, filter.getSourceAET());
+            setSourceAETQueryParameter(query, filter.getSourceAETs());
         }
     }
 
@@ -364,16 +364,26 @@ public class StudyListBean implements StudyListLocal {
     }
 
     private static void appendSourceAETFilter(StringBuilder ql,
-            String sourceAET) {
-        if (!QueryUtil.isUniversalMatch(sourceAET)) {
-            ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE ser.sourceAET = :sourceAET)");
+            String[] sourceAETs) {
+        if (!QueryUtil.isUniversalMatch(sourceAETs)) {
+            if (sourceAETs.length == 1) {
+                ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE ser.sourceAET = :sourceAET)");
+            } else {
+                ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE ser.sourceAET");
+                QueryUtil.appendIN(ql, sourceAETs.length);
+                ql.append(")");
+            }
         }
     }
 
     private static void setSourceAETQueryParameter(Query query,
-            String sourceAET) {
-        if (!QueryUtil.isUniversalMatch(sourceAET)) {
-            query.setParameter("sourceAET", sourceAET);
+            String[] sourceAETs) {
+        if (!QueryUtil.isUniversalMatch(sourceAETs)) {
+            if (sourceAETs.length == 1) {
+                query.setParameter("sourceAET", sourceAETs[0]);
+            } else {
+                QueryUtil.setParametersForIN(query, sourceAETs);
+            }
         }
     }
 

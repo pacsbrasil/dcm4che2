@@ -42,6 +42,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.dcm4chee.web.common.util.GroupedChoices;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 
@@ -53,10 +54,12 @@ import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 public class ViewPort implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
+    private String STATION_AETS_PROPERTIES_FILENAME = "station_aets.properties";
+
     private int offset = 0;
     private int total = 0;
-    private final ModalityWorklistFilter filter = new ModalityWorklistFilter(StationAetGroups.get().getAllGroups());
+    private final ModalityWorklistFilter filter = new ModalityWorklistFilter(GroupedChoices.get(STATION_AETS_PROPERTIES_FILENAME).getAllGroups());
     private final List<MWLItemModel> mwlItemModels = new ArrayList<MWLItemModel>();
 
     public int getOffset() {
@@ -81,5 +84,9 @@ public class ViewPort implements Serializable {
 
     public List<MWLItemModel> getMWLItemModels() {
         return mwlItemModels;
+    }
+    
+    public List<String> getStationAetChoices(List<String> availableChoices) {
+        return GroupedChoices.get(STATION_AETS_PROPERTIES_FILENAME).getChoices(availableChoices);
     }
 }

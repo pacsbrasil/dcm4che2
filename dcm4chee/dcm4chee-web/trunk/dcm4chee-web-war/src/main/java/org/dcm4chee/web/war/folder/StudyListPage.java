@@ -119,8 +119,8 @@ public class StudyListPage extends Panel {
             return viewport.getFilter().isLatestStudiesFirst();
         }
     };
-    private List<String> sourceAETs = new ArrayList<String>();
-    private List<String> modalities = new ArrayList<String>();
+    private static List<String> sourceAETs = new ArrayList<String>();
+    private static List<String> modalities = new ArrayList<String>();
     private boolean notSearched = true;
     private BaseForm form;
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("folder.");
@@ -148,8 +148,11 @@ public class StudyListPage extends Panel {
         form.add(new PatientListView("patients", viewport.getPatients()));
         msgWin.setTitle(MessageWindow.TITLE_WARNING);
         add(msgWin);
-        linkPage.setMinimalWidth(700);
-        linkPage.setMinimalHeight(400);
+        linkPage.setResizable(true);
+        linkPage.setCookieName("linkpage");
+        linkPage.setUseInitialHeight(false);
+        linkPage.setInitialWidth(700);
+        linkPage.setInitialHeight(400);
         add(linkPage);
         initModalitiesAndSourceAETs();
     }
@@ -179,7 +182,10 @@ public class StudyListPage extends Panel {
         form.addLabeledTextField("accessionNumber", enabledModel);
         addExtendedStudySearch(form);
         form.addLabeledDropDownChoice("modality", null, modalities, enabledModel);
-        form.addLabeledDropDownChoice("sourceAET", null, sourceAETs, enabledModel);
+        List<String> choices = viewport.getSourceAetChoices(sourceAETs);
+        if (choices.size() > 0)
+            filter.setSourceAET(choices.get(0));
+        form.addLabeledDropDownChoice("sourceAET", null, choices, enabledModel);
         addExtendedSeriesSearch(form);
     }
 
@@ -510,14 +516,15 @@ public class StudyListPage extends Panel {
     }
 
     private void initModalitiesAndSourceAETs() {
-        StudyListLocal dao = (StudyListLocal)
-                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        modalities.clear();
-        modalities.add("*");
-        modalities.addAll(dao.selectDistinctModalities());
-        sourceAETs.clear();
-        sourceAETs.add("*");
-        sourceAETs.addAll(dao.selectDistinctSourceAETs());
+        if (modalities.isEmpty() || sourceAETs.isEmpty()) {
+            StudyListLocal dao = (StudyListLocal)
+                    JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+            modalities.clear();
+            modalities.add("*");
+            modalities.addAll(dao.selectDistinctModalities());
+            sourceAETs.clear();
+            sourceAETs.addAll(dao.selectDistinctSourceAETs());
+        }
     }
 
     private void queryStudies() {

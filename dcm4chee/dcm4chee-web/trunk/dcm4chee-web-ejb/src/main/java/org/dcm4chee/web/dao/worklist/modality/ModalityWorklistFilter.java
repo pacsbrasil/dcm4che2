@@ -154,7 +154,6 @@ public class ModalityWorklistFilter implements Serializable {
         return new String[]{scheduledStationAET};
     }
     
-    
     public String getScheduledStationName() {
         return scheduledStationName;
     }

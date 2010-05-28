@@ -95,6 +95,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     // TODO: put this into .properties file
     private static int PAGESIZE = 10;
     
+    private static List<String> scheduledStationAETs;
+    
     private static final String MODULE_NAME = "mw";
     private ViewPort viewport;
     private boolean notSearched = true;
@@ -161,7 +163,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
         form.addLabeledTextField("accessionNumber", enabledModel);
         form.addLabeledDropDownChoice("modality", null, getModalityChoices(), enabledModel);
-        List<String> choices = StationAetGroups.get().getChoices(getStationAETChoices());
+        List<String> choices = viewport.getStationAetChoices(getStationAETChoices());
         if (choices.size() > 0)
             filter.setScheduledStationAET(choices.get(0));
         form.addLabeledDropDownChoice("scheduledStationAET", null, choices, enabledModel);
@@ -316,9 +318,11 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     }
 
     protected List<String> getStationAETChoices() {
-        ModalityWorklist dao = lookupMwlDAO();
-        List<String> scheduledStationAETs = new ArrayList<String>();
-        scheduledStationAETs.addAll(dao.selectDistinctStationAETs());
+        if (scheduledStationAETs == null) {
+            ModalityWorklist dao = lookupMwlDAO();
+            scheduledStationAETs = new ArrayList<String>();
+            scheduledStationAETs.addAll(dao.selectDistinctStationAETs());
+        }
         return scheduledStationAETs;
     }
 
