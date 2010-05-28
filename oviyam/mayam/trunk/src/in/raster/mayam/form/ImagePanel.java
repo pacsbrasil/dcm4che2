@@ -274,9 +274,11 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         try {
             currentInstanceNo = Integer.parseInt(dataset.getString(Tags.InstanceNumber));
         } catch (NumberFormatException e) {
-            System.out.println("Number format error");
+            System.out.println("Instance Number format error " );
+            currentInstanceNo=1;
         } catch (NullPointerException e) {
-            System.out.println("Instance Number is null");
+            System.out.println("Instance Number is null, set to 1");
+            currentInstanceNo=1;
         }
     }
 

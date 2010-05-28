@@ -209,9 +209,11 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         try {
             currentInstanceNo = Integer.parseInt(dataset.getString(Tags.InstanceNumber));
         } catch (NumberFormatException e) {
-            System.out.println("Instance Number format error");
+            System.out.println("Instance Number format error currentInstanceNo: " + currentInstanceNo);
+            currentInstanceNo=1; // if Number error correct and put a correct number (1)
         } catch (NullPointerException e) {
             System.out.println("Instance number Null pointer error");
+            currentInstanceNo=1; // if Number error correct and put a correct number (1)
         }
     }
 
