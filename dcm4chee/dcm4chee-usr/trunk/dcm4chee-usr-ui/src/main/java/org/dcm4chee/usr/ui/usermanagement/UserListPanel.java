@@ -68,6 +68,7 @@ import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.icons.ImageManager;
@@ -157,12 +158,12 @@ public class UserListPanel extends Panel {
             final User user = this.allUsers.getObject().get(i);
             
             WebMarkupContainer row_parent = new WebMarkupContainer(roleRows.newChildId());
-            Label userIDLabel = new Label("userID", user.getUserID().toString());
+            Label userIDLabel = new Label("userID", user.getUserID());
             row_parent.add(userIDLabel);
             roleRows.add(row_parent);
 
             RemoveUserLink removeUserLink = new RemoveUserLink("remove-user-link", user);
-            removeUserLink.add(new TooltipBehaviour("userlist.", "remove-user-link", user.getUserID()));
+            removeUserLink.add(new TooltipBehaviour("userlist.", "remove-user-link", new PropertyModel<String>(user,"userID")));
             removeUserLink.add(new Image("img-delete", ImageManager.IMAGE_DELETE)
             .add(new ImageSizeBehaviour()));
 
