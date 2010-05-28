@@ -139,6 +139,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
         otRadio.addItemListener(this);
         pxRadio.addItemListener(this);
         rfRadio.addItemListener(this);
+        drRadio.addItemListener(this);
     }
 
     private void addSearchDateitemListener() {
@@ -222,6 +223,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
         otRadio = new javax.swing.JRadioButton();
         pxRadio = new javax.swing.JRadioButton();
         rfRadio = new javax.swing.JRadioButton();
+        drRadio = new javax.swing.JRadioButton();
         serverlistScroll = new javax.swing.JScrollPane();
         serverListTable = new javax.swing.JTable();
         jPanel8 = new javax.swing.JPanel();
@@ -295,11 +297,9 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
                 .add(11, 11, 11)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(betweenRadio)
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .add(18, 18, 18)
-                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(toSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
-                            .add(fromSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)))))
+                    .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(toSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
+                        .add(fromSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -363,7 +363,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
         nmRadio.setText("NM");
 
         modalityGroup.add(otRadio);
-        otRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
+        otRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10)); // NOI18N
         otRadio.setText("OT");
 
         modalityGroup.add(pxRadio);
@@ -373,6 +373,15 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
         modalityGroup.add(rfRadio);
         rfRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
         rfRadio.setText("RF");
+
+        modalityGroup.add(drRadio);
+        drRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10)); // NOI18N
+        drRadio.setText("DR");
+        drRadio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                drRadioActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -404,7 +413,8 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
                         .addContainerGap())
                     .add(usRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)
                     .add(otRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, pxRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, pxRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)
+                    .add(drRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)))
         );
 
         jPanel2Layout.linkSize(new java.awt.Component[] {crRadio, nmRadio, rfRadio, scRadio}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -430,7 +440,10 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                         .add(rfRadio)
-                        .add(otRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(jPanel2Layout.createSequentialGroup()
+                            .add(otRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(drRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .add(xaRadio))
                 .addContainerGap())
         );
@@ -454,7 +467,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -534,7 +547,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
                 .addContainerGap()
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel9Layout.createSequentialGroup()
-                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 957, Short.MAX_VALUE)
+                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 963, Short.MAX_VALUE)
                         .addContainerGap())
                     .add(jPanel9Layout.createSequentialGroup()
                         .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -563,7 +576,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
                             .add(jPanel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(serverNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 483, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -749,6 +762,10 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
             }
         }
     }//GEN-LAST:event_studyListTableMouseClicked
+
+    private void drRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drRadioActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_drRadioActionPerformed
     public void itemStateChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
             if (searchDaysGroup.getSelection() == ((JRadioButton) e.getItem()).getModel()) {
@@ -815,6 +832,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
     private javax.swing.JSpinner birthDateSpinner;
     private javax.swing.JRadioButton crRadio;
     private javax.swing.JRadioButton ctRadio;
+    private javax.swing.JRadioButton drRadio;
     private javax.swing.JRadioButton dxRadio;
     private javax.swing.JSpinner fromSpinner;
     private javax.swing.JLabel headerLabel;

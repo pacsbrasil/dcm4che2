@@ -388,7 +388,7 @@ public class DatabaseHandler {
     }
 
     public void insertModalities() {
-        String modality[] = {"CT", "MR", "XA", "CR", "SC", "NM", "RF", "DX", "US", "PX", "OT"};
+        String modality[] = {"CT", "MR", "XA", "CR", "SC", "NM", "RF", "DX", "US", "PX", "OT", "DR"};
         for (int i = 0; i < modality.length; i++) {
             try {
                 conn.createStatement().execute("insert into modality(logicalname,shortname) values('Dummy','" + modality[i] + "')");

@@ -88,7 +88,7 @@
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane2" pref="499" max="32767" attributes="0"/>
+                  <Component id="jScrollPane2" pref="483" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -115,7 +115,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jPanel2" max="32767" attributes="1"/>
-                          <Component id="jPanel1" alignment="0" max="32767" attributes="1"/>
+                          <Component id="jPanel1" alignment="0" pref="145" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -230,12 +230,9 @@
                           <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="betweenRadio" min="-2" max="-2" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace type="separate" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="toSpinner" alignment="0" pref="138" max="32767" attributes="1"/>
-                                      <Component id="fromSpinner" alignment="0" pref="138" max="32767" attributes="1"/>
-                                  </Group>
+                              <Group type="103" alignment="0" groupAlignment="0" attributes="0">
+                                  <Component id="toSpinner" alignment="0" pref="156" max="32767" attributes="1"/>
+                                  <Component id="fromSpinner" alignment="0" pref="156" max="32767" attributes="1"/>
                               </Group>
                           </Group>
                       </Group>
@@ -371,6 +368,7 @@
                               <Component id="usRadio" alignment="0" pref="57" max="32767" attributes="0"/>
                               <Component id="otRadio" alignment="0" pref="57" max="32767" attributes="0"/>
                               <Component id="pxRadio" alignment="1" pref="57" max="32767" attributes="0"/>
+                              <Component id="drRadio" alignment="0" pref="57" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -399,7 +397,11 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="rfRadio" linkSize="4" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="otRadio" alignment="3" max="32767" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Component id="otRadio" alignment="3" max="32767" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="drRadio" alignment="3" max="32767" attributes="0"/>
+                                  </Group>
                               </Group>
                               <Component id="xaRadio" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -541,6 +543,20 @@
                     </Property>
                     <Property name="text" type="java.lang.String" value="RF"/>
                   </Properties>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="drRadio">
+                  <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="modalityGroup"/>
+                    </Property>
+                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                      <Font name="Lucida Grande" size="10" style="1"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="DR"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="drRadioActionPerformed"/>
+                  </Events>
                 </Component>
               </SubComponents>
             </Container>
