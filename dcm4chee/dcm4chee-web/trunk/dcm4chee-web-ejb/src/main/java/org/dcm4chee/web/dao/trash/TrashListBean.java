@@ -397,12 +397,12 @@ public class TrashListBean implements TrashListLocal {
     @SuppressWarnings("unchecked")
     public List<PrivateFile> getFilesForEntity(long pk, Class<? extends BaseEntity> clazz) {
         
-        String query = "SELECT DISTINCT f FROM PrivateFile f LEFT JOIN FETCH f.fileSystem fs LEFT JOIN FETCH f.instance i ";
+        String query = "SELECT DISTINCT f FROM PrivateFile f LEFT JOIN FETCH f.fileSystem fs ";
 
         if (clazz.equals(PrivateInstance.class))
-            query += "WHERE i.pk = :pk";
+            query += "WHERE f.instance.pk = :pk";
         else {
-            query += "LEFT JOIN i.series se ";
+            query += "LEFT JOIN f.instance.series se ";
             
             if (clazz.equals(PrivateSeries.class))
                 query += "WHERE se.pk = :pk";

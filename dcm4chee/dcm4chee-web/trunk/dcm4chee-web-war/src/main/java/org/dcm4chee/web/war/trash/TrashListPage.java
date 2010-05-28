@@ -262,7 +262,6 @@ public class TrashListPage extends Panel {
             
             @Override
             public void onConfirmation(AjaxRequestTarget target, PrivSelectedEntities selected) {
-
                 try {
                     FileImportOrder fio = new FileImportOrder();
                     List<PrivateFile> files = getFilesToRestore();
@@ -278,7 +277,6 @@ public class TrashListPage extends Panel {
                         file.setMD5Sum(privateFile.getFileMD5());
                         file.setTransferSyntaxUID(privateFile.getTransferSyntaxUID());
                         Instance instance = new Instance();
-                        instance.setAttributes(privateFile.getInstance().getAttributes());
                         file.setInstance(instance);
                         fio.addFile(file, dio);
                     }
@@ -288,7 +286,7 @@ public class TrashListPage extends Panel {
                             
                     this.setStatus(new StringResourceModel("trash.restoreDone", TrashListPage.this,null));
                 } catch (Exception e) {
-                    log.error("Exception restoring entry: :"+e.getMessage());
+                    log.error("Exception restoring entry:"+e.getMessage(), e);
                     this.setStatus(new StringResourceModel("trash.restoreFailed", TrashListPage.this,null));
                 }
                 viewport.getPatients().clear();
