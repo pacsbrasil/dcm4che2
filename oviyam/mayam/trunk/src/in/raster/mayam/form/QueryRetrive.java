@@ -1,41 +1,41 @@
 /* ***** BEGIN LICENSE BLOCK *****
-* Version: MPL 1.1/GPL 2.0/LGPL 2.1
-*
-* The contents of this file are subject to the Mozilla Public License Version
-* 1.1 (the "License"); you may not use this file except in compliance with
-* the License. You may obtain a copy of the License at
-* http://www.mozilla.org/MPL/
-*
-* Software distributed under the License is distributed on an "AS IS" basis,
-* WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-* for the specific language governing rights and limitations under the
-* License.
-*
-*
-* The Initial Developer of the Original Code is
-* Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2009-2010
-* the Initial Developer. All Rights Reserved.
-*
-* Contributor(s):
-* Babu Hussain A
-* Meer Asgar Hussain B
-* Prakash J
-* Suresh V
-*
-* Alternatively, the contents of this file may be used under the terms of
-* either the GNU General Public License Version 2 or later (the "GPL"), or
-* the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
-* in which case the provisions of the GPL or the LGPL are applicable instead
-* of those above. If you wish to allow use of your version of this file only
-* under the terms of either the GPL or the LGPL, and not to allow others to
-* use your version of this file under the terms of the MPL, indicate your
-* decision by deleting the provisions above and replace them with the notice
-* and other provisions required by the GPL or the LGPL. If you do not delete
-* the provisions above, a recipient may use your version of this file under
-* the terms of any one of the MPL, the GPL or the LGPL.
-*
-* ***** END LICENSE BLOCK ***** */
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ *
+ * The Initial Developer of the Original Code is
+ * Raster Images
+ * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ * Babu Hussain A
+ * Meer Asgar Hussain B
+ * Prakash J
+ * Suresh V
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
@@ -80,50 +80,14 @@ import javax.swing.event.ListSelectionListener;
  * @version 0.5
  *
  */
-public class QueryRetrive extends javax.swing.JFrame implements ItemListener,ServerChangeListener,ListSelectionListener {
+public class QueryRetrive extends javax.swing.JFrame implements ItemListener, ServerChangeListener, ListSelectionListener {
 
     /** Creates new form QueryRetrive */
     public QueryRetrive() {
-        setSystemLookAndFeel();
         initComponents();
         refreshModels();
         addModalityItemListener();
         addSearchDateitemListener();
-        osSpecifics();     
-              
-    }
-    /**
-     * This routine used to set the system look and feel
-     */
-    private void setSystemLookAndFeel() {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());           
-        } catch (Exception ex) {
-            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    private void osSpecifics() {
-        this.setSize(1030,750);       
-        if (System.getProperty("os.name").startsWith("Mac")) {
-            Border border = UIManager.getBorder("InsetBorder.aquaVariant");
-            if (border == null) {
-                border = new BevelBorder(1);
-            }
-            jPanel1.setBorder(border);
-            jPanel2.setBorder(border);
-            jPanel9.setBackground(new Color(216, 216, 216));
-            jTabbedPane1.setBackground(new Color(216, 216, 216));
-            jPanel1.setBackground(new Color(216, 216, 216));
-            jPanel2.setBackground(new Color(216, 216, 216));
-            jPanel3.setBackground(new Color(216, 216, 216));
-            jPanel4.setBackground(new Color(216, 216, 216));
-            jPanel5.setBackground(new Color(216, 216, 216));
-            jPanel6.setBackground(new Color(216, 216, 216));
-            jPanel7.setBackground(new Color(216, 216, 216));
-            jPanel8.setBackground(new Color(216, 216, 216));
-            serverlistScroll.setBackground(new Color(216, 216, 216));
-
-        }
     }
 
     private void addModalityItemListener() {
@@ -149,7 +113,8 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
         yesterdayRadio.addItemListener(this);
         todayRadio.addItemListener(this);
         anydateRadio.addItemListener(this);
-    }  
+    }
+
     public void refreshModels() {
         setServerTableModel();
         setServerName();
@@ -363,7 +328,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
         nmRadio.setText("NM");
 
         modalityGroup.add(otRadio);
-        otRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10)); // NOI18N
+        otRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
         otRadio.setText("OT");
 
         modalityGroup.add(pxRadio);
@@ -375,7 +340,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
         rfRadio.setText("RF");
 
         modalityGroup.add(drRadio);
-        drRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10)); // NOI18N
+        drRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
         drRadio.setText("DR");
         drRadio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -438,13 +403,12 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
                     .add(usRadio))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(rfRadio)
-                        .add(jPanel2Layout.createSequentialGroup()
-                            .add(otRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(drRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .add(xaRadio))
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(otRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(drRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(xaRadio)
+                    .add(rfRadio))
                 .addContainerGap())
         );
 
@@ -467,7 +431,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE))
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -601,12 +565,13 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
         Date d1 = (Date) birthDateSpinner.getModel().getValue();
         String dateOfBirth = sdf.format(d1);
-        queryParam.setBirthDate(dateOfBirth);     
-        if(!queryParam.getSearchDays().equalsIgnoreCase("Between"))            
+        queryParam.setBirthDate(dateOfBirth);
+        if (!queryParam.getSearchDays().equalsIgnoreCase("Between")) {
             resetFromAndToDate();
-        else
+        } else {
             setFromToDate();
-        
+        }
+
     }
     private boolean startSearch = false;
     private void queryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queryButtonActionPerformed
@@ -616,8 +581,8 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
             AEModel ae = ApplicationContext.databaseRef.getServerDetail(serverName);
             DcmURL url = new DcmURL("dicom://" + ae.getAeTitle() + "@" + ae.getHostName() + ":" + ae.getPort());
             QueryService qs = new QueryService();
-            setPatientInfoToQueryParam();            
-            qs.callFindWithQuery(queryParam.getPatientId(), queryParam.getPatientName(), "", queryParam.getSearchDate(), queryParam.getModality(),queryParam.getAccessionNo(), url);
+            setPatientInfoToQueryParam();
+            qs.callFindWithQuery(queryParam.getPatientId(), queryParam.getPatientName(), "", queryParam.getSearchDate(), queryParam.getModality(), queryParam.getAccessionNo(), url);
             Vector studyList = new Vector();
             for (int dataSetCount = 0; dataSetCount < qs.getDatasetVector().size(); dataSetCount++) {
                 try {
@@ -664,7 +629,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
                 if (dicomServerArray.get(i).getName().equalsIgnoreCase(serverName)) {
                     String tem[] = new String[]{
                         "dicom" + "://" + dicomServerArray.get(i).getAe().getAeTitle() + "@" + dicomServerArray.get(i).getAe().getHostName() + ":" + dicomServerArray.get(i).getAe().getPort(),
-                        "--dest",s[0], "--pid", dicomServerArray.get(i).getStudyListModel().getValueAt(studyListTable.getSelectedRow(), 0), "--suid",
+                        "--dest", s[0], "--pid", dicomServerArray.get(i).getStudyListModel().getValueAt(studyListTable.getSelectedRow(), 0), "--suid",
                         dicomServerArray.get(i).getStudyListModel().getValueAt(studyListTable.getSelectedRow(), 8)};
                     try {
                         if (ApplicationContext.databaseRef.checkRecordExists("study", "StudyInstanceUID", dicomServerArray.get(i).getStudyListModel().getValueAt(studyListTable.getSelectedRow(), 8))) {
@@ -719,8 +684,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
         }
     }//GEN-LAST:event_verifyButtonActionPerformed
 
-     private void serverSelectionPerformed()
-     {
+    private void serverSelectionPerformed() {
         setServerName();
         StudyListModel studyList = new StudyListModel();
         studyListTable.setModel(studyList);
@@ -733,7 +697,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
                 }
             }
         }
-     }
+    }
     private void studyListTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studyListTableMouseClicked
         String serverName = ((ServerTableModel) serverListTable.getModel()).getValueAt(serverListTable.getSelectedRow(), 0);
         if (evt.getClickCount() == 2) {
@@ -770,8 +734,8 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
         if (e.getStateChange() == ItemEvent.SELECTED) {
             if (searchDaysGroup.getSelection() == ((JRadioButton) e.getItem()).getModel()) {
                 if (((JRadioButton) e.getItem()).getActionCommand().equalsIgnoreCase("Between")) {
-                  fromSpinner.setEnabled(true);
-                  toSpinner.setEnabled(true);
+                    fromSpinner.setEnabled(true);
+                    toSpinner.setEnabled(true);
                 } else {
                     fromSpinner.setEnabled(false);
                     toSpinner.setEnabled(false);
@@ -782,6 +746,31 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
             }
         }
     }
+
+    private void osSpecifics() {
+        this.setSize(1030, 750);
+        if (System.getProperty("os.name").startsWith("Mac")) {
+            Border border = UIManager.getBorder("InsetBorder.aquaVariant");
+            if (border == null) {
+                border = new BevelBorder(1);
+            }
+            jPanel1.setBorder(border);
+            jPanel2.setBorder(border);
+            jPanel9.setBackground(new Color(216, 216, 216));
+            jTabbedPane1.setBackground(new Color(216, 216, 216));
+            jPanel1.setBackground(new Color(216, 216, 216));
+            jPanel2.setBackground(new Color(216, 216, 216));
+            jPanel3.setBackground(new Color(216, 216, 216));
+            jPanel4.setBackground(new Color(216, 216, 216));
+            jPanel5.setBackground(new Color(216, 216, 216));
+            jPanel6.setBackground(new Color(216, 216, 216));
+            jPanel7.setBackground(new Color(216, 216, 216));
+            jPanel8.setBackground(new Color(216, 216, 216));
+            serverlistScroll.setBackground(new Color(216, 216, 216));
+
+        }
+    }
+
     /**
      * This is implemented handler method for ServerChangeListener.
      */
@@ -794,9 +783,8 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
         serverSelectionPerformed();
     }
 
-    public void setFromToDate()
-    {
-         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+    public void setFromToDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
         Date d1 = (Date) fromSpinner.getModel().getValue();
         Date d2 = (Date) toSpinner.getModel().getValue();
         String from = sdf.format(d1);
@@ -804,11 +792,11 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
         queryParam.setFrom(from);
         queryParam.setTo(to);
     }
+
     /**
      *This routine used to reset the from and to date.
      */
-    public void resetFromAndToDate()
-    {
+    public void resetFromAndToDate() {
         queryParam.setFrom(null);
         queryParam.setTo(null);
     }
@@ -873,5 +861,5 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener,Ser
     private javax.swing.JRadioButton yesterdayRadio;
     // End of variables declaration//GEN-END:variables
     public ArrayList<DicomServerDelegate> dicomServerArray = new ArrayList<DicomServerDelegate>();
-    private QueryParam queryParam = new QueryParam();        
+    private QueryParam queryParam = new QueryParam();
 }

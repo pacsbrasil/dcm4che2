@@ -1,43 +1,45 @@
 /* ***** BEGIN LICENSE BLOCK *****
-* Version: MPL 1.1/GPL 2.0/LGPL 2.1
-*
-* The contents of this file are subject to the Mozilla Public License Version
-* 1.1 (the "License"); you may not use this file except in compliance with
-* the License. You may obtain a copy of the License at
-* http://www.mozilla.org/MPL/
-*
-* Software distributed under the License is distributed on an "AS IS" basis,
-* WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-* for the specific language governing rights and limitations under the
-* License.
-*
-*
-* The Initial Developer of the Original Code is
-* Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2009-2010
-* the Initial Developer. All Rights Reserved.
-*
-* Contributor(s):
-* Babu Hussain A
-* Meer Asgar Hussain B
-* Prakash J
-* Suresh V
-*
-* Alternatively, the contents of this file may be used under the terms of
-* either the GNU General Public License Version 2 or later (the "GPL"), or
-* the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
-* in which case the provisions of the GPL or the LGPL are applicable instead
-* of those above. If you wish to allow use of your version of this file only
-* under the terms of either the GPL or the LGPL, and not to allow others to
-* use your version of this file under the terms of the MPL, indicate your
-* decision by deleting the provisions above and replace them with the notice
-* and other provisions required by the GPL or the LGPL. If you do not delete
-* the provisions above, a recipient may use your version of this file under
-* the terms of any one of the MPL, the GPL or the LGPL.
-*
-* ***** END LICENSE BLOCK ***** */
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ *
+ * The Initial Developer of the Original Code is
+ * Raster Images
+ * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ * Babu Hussain A
+ * Meer Asgar Hussain B
+ * Prakash J
+ * Suresh V
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
+import com.nilo.plaf.nimrod.NimRODLookAndFeel;
+import com.sun.java.swing.plaf.motif.MotifLookAndFeel;
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegate.ImportDcmDirDelegate;
 import in.raster.mayam.delegate.ReceiveDelegate;
@@ -69,7 +71,9 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.MatteBorder;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -80,39 +84,10 @@ import javax.swing.border.MatteBorder;
 public class MainScreen extends javax.swing.JFrame {
 
     /** Creates new form MainScreen */
-   
-    public MainScreen() {
-        setSystemLookAndFeel();
+    public MainScreen() {       
         initComponents();
         initAppDefaults();
-        osSpecificColoring();
     }
-
-    /**
-     * This routine used to set the system look and feel
-     */
-    private void setSystemLookAndFeel() {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            //If any specific icon for this application then uncomment the follwoing line and set the icon path.
-            //  this.setIconImage( Toolkit.getDefaultToolkit().getImage(getClass().getResource("/in/raster/viewer/form/images/1Erase.png")));
-        } catch (Exception ex) {
-            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    /**
-     * This routine used to set the os specific properties
-     */
-    private void osSpecificColoring() {
-        if (System.getProperty("os.name").startsWith("Mac")) {
-            headerPanel.setBorder(new MatteBorder(0, 0, 1, 0, Color.DARK_GRAY));
-            contentArea.setBackground(new Color(216, 216, 216));
-            studyAndSeriesDisplayPanel.setBackground(new Color(216, 216, 216));
-            thumbnailDisplay.setBackground(new Color(216, 216, 216));
-        }
-    }
-
     private void initAppDefaults() {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         ApplicationContext.mainScreen = this;
@@ -124,7 +99,19 @@ public class MainScreen extends javax.swing.JFrame {
         showThumbnails();
         initNetworkQueue();
         initSendingProgress();
-        setTableHeaders();
+        setTheme();
+        //setTableHeaders();
+    }
+
+    private void setTheme() {
+        String activeTheme = ApplicationContext.databaseRef.getActiveTheme();
+        if (activeTheme.equalsIgnoreCase("Nimrod")) {
+            setNimrodTheme();
+        } else if (activeTheme.equalsIgnoreCase("Motif")) {
+            setMotifTheme();
+        } else if (activeTheme.equalsIgnoreCase("System")) {
+            setSystemTheme();
+        }
     }
 
     private void setTableHeaders() {
@@ -227,10 +214,11 @@ public class MainScreen extends javax.swing.JFrame {
         studyListModel.setData(ApplicationContext.databaseRef.listAllStudiesOfDB());
         studyListTable.setModel(studyListModel);
         if (studyListTable.getRowCount() > 0) {
-            if(i<studyListTable.getRowCount())
-            studyListTable.setRowSelectionInterval(i, i);
-            else
-             studyListTable.setRowSelectionInterval(i-1, i-1);
+            if (i < studyListTable.getRowCount()) {
+                studyListTable.setRowSelectionInterval(i, i);
+            } else {
+                studyListTable.setRowSelectionInterval(i - 1, i - 1);
+            }
         }
     }
 
@@ -278,6 +266,10 @@ public class MainScreen extends javax.swing.JFrame {
         preferenceMenuItem = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         queueMenuItem = new javax.swing.JMenuItem();
+        jMenu5 = new javax.swing.JMenu();
+        nimrodLFMenu = new javax.swing.JMenuItem();
+        motifLFMenu = new javax.swing.JMenuItem();
+        systemLFmenu = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
         userManualItem = new javax.swing.JMenuItem();
         aboutMenu = new javax.swing.JMenuItem();
@@ -301,10 +293,7 @@ public class MainScreen extends javax.swing.JFrame {
         );
 
         studyListTable.setModel(new StudyListModel());
-        studyListTable.setGridColor(java.awt.Color.lightGray);
         studyListTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        studyListTable.setShowHorizontalLines(false);
-        studyListTable.setSurrendersFocusOnKeystroke(true);
         studyListTable.getTableHeader().setDefaultRenderer(new HeaderRenderer());
         studyListTable.setDefaultRenderer(Object.class, new CellRenderer());
         studyListTable.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -649,6 +638,34 @@ public class MainScreen extends javax.swing.JFrame {
 
         menuBar.add(jMenu3);
 
+        jMenu5.setText("Theme");
+
+        nimrodLFMenu.setText("Nimrod");
+        nimrodLFMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                nimrodLFMenuActionPerformed(evt);
+            }
+        });
+        jMenu5.add(nimrodLFMenu);
+
+        motifLFMenu.setText("Motif");
+        motifLFMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                motifLFMenuActionPerformed(evt);
+            }
+        });
+        jMenu5.add(motifLFMenu);
+
+        systemLFmenu.setText("System L&F");
+        systemLFmenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                systemLFmenuActionPerformed(evt);
+            }
+        });
+        jMenu5.add(systemLFmenu);
+
+        menuBar.add(jMenu5);
+
         jMenu4.setText("Help");
 
         userManualItem.setText("User Manual");
@@ -736,20 +753,17 @@ public class MainScreen extends javax.swing.JFrame {
     private void viewerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewerButtonActionPerformed
         if (studyListTable.getSelectedRow() != -1) {
             String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(studyListTable.getSelectedRow(), 8);
-            int rowColumnArray[]=new int[2];
-            try
-           {
-             rowColumnArray = ApplicationContext.databaseRef.getRowColumnBasedStudyUID(siuid);
-           }
-           catch(Exception e)
-           {
-               rowColumnArray[0]=1;
-               rowColumnArray[1]=1;
-           }
+            int rowColumnArray[] = new int[2];
+            try {
+                rowColumnArray = ApplicationContext.databaseRef.getRowColumnBasedStudyUID(siuid);
+            } catch (Exception e) {
+                rowColumnArray[0] = 1;
+                rowColumnArray[1] = 1;
+            }
             ArrayList tempRef = ApplicationContext.databaseRef.getUrlBasedOnStudyIUID(siuid);
             StudyListUpdator studyListUpdator = new StudyListUpdator();
             studyListUpdator.addStudyToStudyList(siuid, studyList);
-            openImageView(siuid,tempRef, rowColumnArray[0], rowColumnArray[1]);
+            openImageView(siuid, tempRef, rowColumnArray[0], rowColumnArray[1]);
         }
     }//GEN-LAST:event_viewerButtonActionPerformed
     /**
@@ -794,7 +808,7 @@ public class MainScreen extends javax.swing.JFrame {
                 ArrayList tempRef = ApplicationContext.databaseRef.getUrlBasedOnStudyIUID(siuid);
                 StudyListUpdator studyListUpdator = new StudyListUpdator();
                 studyListUpdator.addStudyToStudyList(siuid, studyList);
-                openImageView(siuid,tempRef, rowColumnArray[0], rowColumnArray[1]);
+                openImageView(siuid, tempRef, rowColumnArray[0], rowColumnArray[1]);
             }
         } else {
             showThumbnails();
@@ -864,6 +878,82 @@ public class MainScreen extends javax.swing.JFrame {
         ImportDcmDirDelegate importDcmDirDelegate = new ImportDcmDirDelegate();
         importDcmDirDelegate.findAndRun();
     }//GEN-LAST:event_cdImportButtonActionPerformed
+
+    private void systemLFmenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_systemLFmenuActionPerformed
+        setSystemTheme();
+        updateThemeStatus("System");
+    }//GEN-LAST:event_systemLFmenuActionPerformed
+
+    private void motifLFMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_motifLFMenuActionPerformed
+        setMotifTheme();
+        updateThemeStatus("Motif");
+    }//GEN-LAST:event_motifLFMenuActionPerformed
+
+    private void nimrodLFMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nimrodLFMenuActionPerformed
+        setNimrodTheme();
+        updateThemeStatus("Nimrod");
+
+    }//GEN-LAST:event_nimrodLFMenuActionPerformed
+
+    private void setNimrodTheme() {
+        try {
+            UIManager.setLookAndFeel(new NimRODLookAndFeel());
+            updateComponentsTreeUI();
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void setMotifTheme() {
+        try {
+            UIManager.setLookAndFeel(new MotifLookAndFeel());
+            updateComponentsTreeUI();
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void setSystemTheme() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            updateComponentsTreeUI();
+            //osSpecificColoring();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * This routine used to set the os specific properties
+     */
+    private void osSpecificColoring() {
+        if (System.getProperty("os.name").startsWith("Mac")) {
+            headerPanel.setBorder(new MatteBorder(0, 0, 1, 0, Color.DARK_GRAY));
+            contentArea.setBackground(new Color(216, 216, 216));
+            studyAndSeriesDisplayPanel.setBackground(new Color(216, 216, 216));
+            thumbnailDisplay.setBackground(new Color(216, 216, 216));
+        }
+    }
+
+    private void updateComponentsTreeUI() {
+        SwingUtilities.updateComponentTreeUI(this);
+        SwingUtilities.updateComponentTreeUI(queryRetrieve);
+        if (ApplicationContext.imageViewExist()) {
+            SwingUtilities.updateComponentTreeUI(ApplicationContext.imgView);
+        }
+        SwingUtilities.updateComponentTreeUI(sndRcvFrm);
+        SwingUtilities.updateComponentTreeUI(dicomTagsViewer);
+    }
+
+    private void updateThemeStatus(String themeName) {
+        ApplicationContext.databaseRef.updateThemeStatus(themeName);
+    }
     SeriesThumbUpdator thumbUpdator;
 
     public void showThumbnails() {
@@ -877,11 +967,11 @@ public class MainScreen extends javax.swing.JFrame {
         }
     }
 
-    public void openImageView(String studyUID,ArrayList tempRef, int gridRowCount, int gridColCount) {
+    public void openImageView(String studyUID, ArrayList tempRef, int gridRowCount, int gridColCount) {
         if (!ApplicationContext.imageViewExist()) {
             ApplicationContext.createImageView();
         }
-        ShowViewerDelegate showViewer = new ShowViewerDelegate(studyUID,tempRef, gridRowCount, gridColCount);
+        ShowViewerDelegate showViewer = new ShowViewerDelegate(studyUID, tempRef, gridRowCount, gridColCount);
     }
 
     private void removeThumbnailComponents() {
@@ -961,12 +1051,15 @@ public class MainScreen extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
+    private javax.swing.JMenu jMenu5;
     private javax.swing.JMenuItem jMenuItem8;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JButton metaDataButton;
+    private javax.swing.JMenuItem motifLFMenu;
+    private javax.swing.JMenuItem nimrodLFMenu;
     private javax.swing.JMenuItem preferenceMenuItem;
     private javax.swing.JButton queryRetrieveButton;
     private javax.swing.JButton queueButton;
@@ -976,6 +1069,7 @@ public class MainScreen extends javax.swing.JFrame {
     private javax.swing.JPanel studyAndSeriesDisplayPanel;
     public static javax.swing.JTable studyListTable;
     private javax.swing.JScrollPane studyTableScroll;
+    private javax.swing.JMenuItem systemLFmenu;
     private javax.swing.JPanel thumbnailDisplay;
     private javax.swing.JScrollPane thumbnailScroll;
     private javax.swing.JMenuItem userManualItem;

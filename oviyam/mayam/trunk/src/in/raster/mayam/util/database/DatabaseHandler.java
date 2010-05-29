@@ -171,6 +171,7 @@ public class DatabaseHandler {
                 insertDefaultListenerDetail();
                 insertDefaultLayoutDetail();
                 insertDefaultPresets();
+                insertDefaultThemes();
             }          
             conn.setAutoCommit(false);
         } catch (SQLException e) {
@@ -326,6 +327,9 @@ public class DatabaseHandler {
 
             sql = "create table listener(pk integer primary key GENERATED ALWAYS AS IDENTITY,aetitle varchar(255),port integer,storagelocation varchar(255))";
             statement.executeUpdate(sql);
+
+            sql = "create table theme(pk integer primary key GENERATED ALWAYS AS IDENTITY,name varchar(255),status varchar(255))";
+            statement.executeUpdate(sql);
         } catch (SQLException ex) {
             // Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -423,6 +427,47 @@ public class DatabaseHandler {
         }
     }
 
+     private void insertDefaultThemes() {
+        try {
+            String sql1 = "insert into theme(name,status)values('Nimrod','active')";
+            String sql2 = "insert into theme(name,status)values('Motif','idle')";
+            String sql3 = "insert into theme(name,status)values('System','idle')";
+
+            conn.createStatement().execute(sql1);
+            conn.createStatement().execute(sql2);
+            conn.createStatement().execute(sql3);
+
+            conn.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+    }
+      public void updateThemeStatus(String themeName) {
+        try {
+            String str = "select name from theme where status='active'";
+            ResultSet rs = conn.createStatement().executeQuery(str);
+            rs.next();
+            int n = conn.createStatement().executeUpdate("update theme set status='idle' where name='"+rs.getString("name")+"'");
+            int m = conn.createStatement().executeUpdate("update theme set status='active' where name='"+themeName+"'");
+            conn.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+      public String getActiveTheme()
+      {
+        String activeTheme = "";
+        try {
+            String str = "select name from theme where status='active'";
+            ResultSet rs = conn.createStatement().executeQuery(str);
+            rs.next();
+            activeTheme = rs.getString("name");
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return activeTheme;
+      }
     public String[] getModalities() {
         String[] modalities = null;
         try {
