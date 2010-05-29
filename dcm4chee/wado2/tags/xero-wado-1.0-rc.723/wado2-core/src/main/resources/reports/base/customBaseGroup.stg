@@ -1,0 +1,10 @@
+group customBaseGroup;
+
+logos ::= [
+        default:"/icon/logo.gif" // Any other creators.
+]
+
+
+institutionTemplate ::= [
+	default:"logoByName" // Just display a logo otherwise
+]
