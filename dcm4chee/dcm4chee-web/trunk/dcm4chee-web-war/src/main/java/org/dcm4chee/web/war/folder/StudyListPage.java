@@ -886,6 +886,7 @@ public class StudyListPage extends Panel {
                     )
                     .show(target, ppsModel, form);
                 }
+
                 @Override
                 public boolean isVisible() {
                     return ppsModel.getDataset() != null && ppsModel.getAccessionNumber()==null;

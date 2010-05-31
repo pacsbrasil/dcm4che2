@@ -59,7 +59,7 @@ public class TooltipBehaviour extends AbstractBehavior {
     
     private transient Localizer localizer;
 
-    private IModel substitutionModel;
+    private IModel<?> substitutionModel;
     
     /*
      * Create a TooltipBehaviour with given prefix.
@@ -80,7 +80,7 @@ public class TooltipBehaviour extends AbstractBehavior {
         this.id = id;
     }
 
-    public TooltipBehaviour(String prefix, String id, IModel substitutionModel) {
+    public TooltipBehaviour(String prefix, String id, IModel<?> substitutionModel) {
         this(prefix, id);
         this.substitutionModel = substitutionModel;
     }
@@ -107,7 +107,7 @@ public class TooltipBehaviour extends AbstractBehavior {
         return prefix;
     }
     
-    public TooltipBehaviour newWithSubstitution(IModel model) {
+    public TooltipBehaviour newWithSubstitution(IModel<?> model) {
         return new TooltipBehaviour(prefix, id, model);
     }
 }

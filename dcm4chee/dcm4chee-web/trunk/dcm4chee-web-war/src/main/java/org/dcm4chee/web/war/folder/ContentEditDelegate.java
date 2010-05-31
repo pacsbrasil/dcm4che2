@@ -51,7 +51,6 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.common.Availability;
-import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;

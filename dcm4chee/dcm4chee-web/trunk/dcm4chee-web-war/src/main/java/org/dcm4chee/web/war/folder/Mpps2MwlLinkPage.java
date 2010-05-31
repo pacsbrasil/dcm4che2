@@ -41,25 +41,19 @@ package org.dcm4chee.web.war.folder;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.IHeaderContributor;
-import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
-import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
@@ -68,21 +62,19 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
 import org.dcm4chee.web.war.WicketSession;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
-import org.dcm4chee.archive.entity.Patient;
-import org.dcm4chee.archive.entity.Study;
-import org.dcm4chee.icons.ImageManager;
-import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
-import org.dcm4chee.web.common.markup.BaseForm;
-import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.war.worklist.modality.MWLItemListView;
 import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
-import org.dcm4chee.web.war.worklist.modality.Mpps2MwlLinkPanel;
 import org.dcm4chee.web.war.worklist.modality.ViewPort;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 import org.slf4j.Logger;
@@ -123,7 +115,6 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     public class Mpps2MwlLinkPanelM extends ModalityWorklistPanel {
 
         private static final long serialVersionUID = 1L;
-        private TextField<String> tfPatName;
         private DropDownChoice<?> tfModality;
 
         public Mpps2MwlLinkPanelM(final String id) {
@@ -145,7 +136,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                     return !filter.isExtendedQuery() || "*".equals(filter.getStudyInstanceUID());
                 }
             };
-            tfPatName = form.addLabeledTextField("patientName", enabledModel);
+            form.addLabeledTextField("patientName", enabledModel);
             form.addLabel("patientIDDescr");
             form.addLabeledTextField("patientID", enabledModel);
             form.addLabeledTextField("issuerOfPatientID", enabledModel);
@@ -167,7 +158,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
 
         public void addMwlActions(final ListItem<MWLItemModel> item, final MWLItemListView mwlListView) {
             final MWLItemModel mwlItemModel = item.getModelObject();
-            item.add(new AjaxFallbackLink("link") {
+            item.add(new AjaxFallbackLink<Object>("link") {
                 private static final long serialVersionUID = 1L;
                 @Override
                 public void onClick(AjaxRequestTarget target) {
@@ -244,18 +235,23 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         private PPSModel ppsModel;
         private PatientModel patModel;
 
+        @SuppressWarnings("unused")
         public String getPatName() {
             return getPatientModel().getName();
         }
+        @SuppressWarnings("unused")
         public String getPatId() {
             return getPatientModel().getId();
         }
+        @SuppressWarnings("unused")
         public String getPatIssuer() {
             return getPatientModel().getIssuer();
         }
+        @SuppressWarnings("unused")
         public String getModality() {
             return getPpsModel().getModality();
         }
+        @SuppressWarnings("unused")
         public Date getDatetime() {
             return getPpsModel().getDatetime();
         }
