@@ -88,21 +88,6 @@ public class DynamicLinkPanel extends Panel {
         this.window = window;
 
         try {
-//            if ((className.endsWith("CreateOrEditReportLink") || className.endsWith("RemoveLink"))
-//                  && !((AuthenticatedWebSession) getSession()).getRoles().hasRole(Roles.ADMIN)
-//                  && !((AuthenticatedWebSession) getSession()).getRoles().hasRole("WebAdmin")) {
-//                add(new Link("report-table-link") {
-//
-//                    private static final long serialVersionUID = 1L;
-//
-//                    @Override
-//                    public void onClick() {                               
-//                    }
-//                }
-//                .add(new Image("image")));
-//                return;
-//            }
-
             add((this.link = (Link<Object>) ((Class<? extends Link<Object>>) Class.forName(this.getClass().getName() + "$" + className)).getConstructors()[0].newInstance(new Object[] {
                  this, 
                  "report-table-link", 

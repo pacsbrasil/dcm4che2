@@ -118,7 +118,7 @@ public abstract class DashboardTreeTable extends TreeTable {
                                 : node.getParent().getChildAt(node.getParent().getChildCount() - 1).equals(node)) ? 
                                         "junction-last" 
                                         : "junction")
-                        + "\"><span width=\"16\" height=\"16\" class=\"" +
+                        + "\"><span class=\"" +
                             (!node.isLeaf() ? "plus" : "corner") 
                                 + "\""
                                 +  (!node.isLeaf() ? 

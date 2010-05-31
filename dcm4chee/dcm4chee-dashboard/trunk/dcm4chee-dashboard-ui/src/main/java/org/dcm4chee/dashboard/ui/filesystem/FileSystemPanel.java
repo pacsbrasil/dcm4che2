@@ -196,7 +196,7 @@ public class FileSystemPanel extends Panel {
                                 "dashboard.filesystem.table.column.name").wrapOnAssignment(this).getObject(), 
                                 "userObject.directoryPath"),
                 new ImageRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 30, Unit.PERCENT), 
+                        Alignment.MIDDLE, 30, Unit.PROPORTIONAL), 
                         new ResourceModel(
                                 "dashboard.filesystem.table.column.image").wrapOnAssignment(this).getObject(),
                                 "userObject.directoryPath"),
@@ -313,7 +313,8 @@ public class FileSystemPanel extends Panel {
             renderer.setBaseItemLabelsVisible(false);
             plot.setRenderer(renderer);
 
-            return new JFreeChartImage("image", chart, 350, 40) {
+            return 
+            new JFreeChartImage("image", chart, 350, 40) {
 
                 private static final long serialVersionUID = 1L;
 
