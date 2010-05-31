@@ -196,7 +196,7 @@ public class FileSystemPanel extends Panel {
                                 "dashboard.filesystem.table.column.name").wrapOnAssignment(this).getObject(), 
                                 "userObject.directoryPath"),
                 new ImageRenderableColumn(new ColumnLocation(
-                        Alignment.MIDDLE, 30, Unit.PROPORTIONAL), 
+                        Alignment.MIDDLE, 33, Unit.PROPORTIONAL), 
                         new ResourceModel(
                                 "dashboard.filesystem.table.column.image").wrapOnAssignment(this).getObject(),
                                 "userObject.directoryPath"),
@@ -226,7 +226,7 @@ public class FileSystemPanel extends Panel {
                                 "dashboard.filesystem.table.column.usable").wrapOnAssignment(this).getObject(),
                                 "userObject.usableDiskSpaceString"), 
                 new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 13, Unit.PERCENT),
+                        Alignment.RIGHT, 10, Unit.PERCENT),
                         new ResourceModel(
                                 "dashboard.filesystem.table.column.remainingtime").wrapOnAssignment(this).getObject(),
                                 "userObject.remainingTimeString")
