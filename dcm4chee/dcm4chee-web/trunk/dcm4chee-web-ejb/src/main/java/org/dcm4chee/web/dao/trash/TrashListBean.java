@@ -331,35 +331,35 @@ public class TrashListBean implements TrashListLocal {
         return em.find(PrivateInstance.class, pk);
     }
     
-    public void removeTrashEntities(List<Long> pks, Class<? extends BaseEntity> clazz) {
+    public void removeTrashEntities(List<Long> pks, Class<? extends BaseEntity> clazz, boolean removeFile) {
         
         if (clazz.equals(PrivatePatient.class)) {
             for (Long pk : pks)
-                removeTrashEntity(getPatient(pk));
+                removeTrashEntity(getPatient(pk), removeFile);
         } else if (clazz.equals(PrivateStudy.class)) {
             for (Long pk : pks)
-                removeTrashEntity(getStudy(pk));
+                removeTrashEntity(getStudy(pk), removeFile);
         } else if (clazz.equals(PrivateSeries.class)) {
             for (Long pk : pks)
-                removeTrashEntity(getSeries(pk));
+                removeTrashEntity(getSeries(pk), removeFile);
         } else if (clazz.equals(PrivateInstance.class)) {
             for (Long pk : pks)
-                removeTrashEntity(getInstance(pk));
+                removeTrashEntity(getInstance(pk), removeFile);
         }
     }
     
-    private void removeTrashEntity(BaseEntity entity) {
+    private void removeTrashEntity(BaseEntity entity, boolean removeFile) {
         if (entity == null) return;
         else {
             if (entity instanceof PrivatePatient) {
                 PrivatePatient pp = (PrivatePatient) entity;
                 for (PrivateStudy pst : pp.getStudies())
-                    removeTrashEntity(pst);
+                    removeTrashEntity(pst, removeFile);
                 em.remove(pp);
             } else if (entity instanceof PrivateStudy) {
                 PrivateStudy pst = (PrivateStudy) entity;
                 for (PrivateSeries pse : pst.getSeries())
-                    removeTrashEntity(pse);
+                    removeTrashEntity(pse, removeFile);
                 PrivatePatient p = pst.getPatient();
                 em.remove(pst);
                 if (p.getStudies().size() <= 1)
@@ -367,7 +367,7 @@ public class TrashListBean implements TrashListLocal {
             } else if (entity instanceof PrivateSeries) {
                 PrivateSeries pse = (PrivateSeries) entity;
                 for (PrivateInstance pi : pse.getInstances())
-                    removeTrashEntity(pi);
+                    removeTrashEntity(pi, removeFile);
                 PrivateStudy pst = pse.getStudy();
                 em.remove(pse);
                 if (pst.getSeries().size() <= 1)
@@ -375,8 +375,12 @@ public class TrashListBean implements TrashListLocal {
             } else if (entity instanceof PrivateInstance) {
                 PrivateInstance pi = (PrivateInstance) entity;
                 for (PrivateFile pf : pi.getFiles()) {
-                    pf.setInstance(null);
-                    em.merge(pf);
+                    if (removeFile) {
+                        em.remove(pf);
+                    } else {
+                        pf.setInstance(null);
+                        em.merge(pf);
+                    }
                 }
                 PrivateSeries pse = pi.getSeries();
                 em.remove(pi);

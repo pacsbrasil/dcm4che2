@@ -769,22 +769,22 @@ public class TrashListPage extends Panel {
             List<Long> pks = new ArrayList<Long>();
             for (PrivInstanceModel instanceModel : selected.getInstances())
                 pks.add(instanceModel.getPk());
-            dao.removeTrashEntities(pks, PrivateInstance.class);
+            dao.removeTrashEntities(pks, PrivateInstance.class, false);
 
             pks = new ArrayList<Long>();
             for (PrivSeriesModel seriesModel : selected.getSeries())
                 pks.add(seriesModel.getPk());
-            dao.removeTrashEntities(pks, PrivateSeries.class);
+            dao.removeTrashEntities(pks, PrivateSeries.class, false);
             
             pks = new ArrayList<Long>();
             for (PrivStudyModel studyModel : selected.getStudies())
                 pks.add(studyModel.getPk());
-            dao.removeTrashEntities(pks, PrivateStudy.class);
+            dao.removeTrashEntities(pks, PrivateStudy.class, false);
 
             pks = new ArrayList<Long>();
             for (PrivPatientModel patientModel : selected.getPatients())
                 pks.add(patientModel.getPk());
-            dao.removeTrashEntities(pks, PrivatePatient.class);
+            dao.removeTrashEntities(pks, PrivatePatient.class, false);
         } catch (Exception x) {
             log.error("Delete failed! Reason:"+x.getMessage(),x);
             return false;
@@ -834,25 +834,25 @@ public class TrashListPage extends Panel {
             List<Long> pks = new ArrayList<Long>();
             for (PrivInstanceModel pi : selected.getInstances())
                 pks.add(pi.getPk());
-            dao.removeTrashEntities(pks, PrivateInstance.class);
+            dao.removeTrashEntities(pks, PrivateInstance.class, true);
         }
         if (selected.hasSeries()) {
             List<Long> pks = new ArrayList<Long>();
             for (PrivSeriesModel pse : selected.getSeries())
                 pks.add(pse.getPk());
-            dao.removeTrashEntities(pks, PrivateSeries.class);
+            dao.removeTrashEntities(pks, PrivateSeries.class, true);
         }
         if (selected.hasStudies()) {
             List<Long> pks = new ArrayList<Long>();
             for (PrivStudyModel pst : selected.getStudies())
                 pks.add(pst.getPk());
-            dao.removeTrashEntities(pks, PrivateStudy.class);
+            dao.removeTrashEntities(pks, PrivateStudy.class, true);
         }
         if (selected.hasPatients()) {
             List<Long> pks = new ArrayList<Long>();
             for (PrivPatientModel pp : selected.getPatients())
                 pks.add(pp.getPk());
-            dao.removeTrashEntities(pks, PrivatePatient.class);
+            dao.removeTrashEntities(pks, PrivatePatient.class, true);
         }
     }
 }

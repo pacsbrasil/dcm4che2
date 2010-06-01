@@ -72,7 +72,7 @@ public interface TrashListLocal {
     PrivateSeries getSeries(long pk);
     PrivateInstance getInstance(long pk);
     
-    public void removeTrashEntities(List<Long> pks, Class<? extends BaseEntity> clazz);
+    public void removeTrashEntities(List<Long> pks, Class<? extends BaseEntity> clazz, boolean removeFile);
 
     public void removeTrashAll();
     
