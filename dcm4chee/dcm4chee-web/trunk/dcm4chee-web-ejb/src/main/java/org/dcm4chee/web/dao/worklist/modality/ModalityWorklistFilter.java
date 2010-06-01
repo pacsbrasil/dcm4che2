@@ -72,6 +72,13 @@ public class ModalityWorklistFilter implements Serializable {
         this.stationAetGroups = stationAetGroups;
     }
 
+    public void clear() {
+        patientName = patientID = issuerOfPatientID = accessionNumber = 
+            studyInstanceUID = modality = scheduledStationAET = 
+                scheduledStationName = scheduledProcedureStepStatus = null;
+        extendedQuery = latestItemsFirst = false;
+    }
+
     public String getPatientName() {
         return patientName;
     }

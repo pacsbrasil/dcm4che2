@@ -204,9 +204,12 @@ public class BaseForm extends Form<Object> {
         return dtf;
     }
     
-    public DateTextField getDateTextField(String id, IModel model, boolean addTooltip) {
+    public DateTextField getDateTextField(String id, IModel<Date> model, boolean addTooltip) {
         DateTextField dt = new DateTextField(id, model, 
                 new StyleDateConverter("S-", false){
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     protected DateTimeFormatter getFormat() {
                         String pattern = DateUtils.getDatePattern(getComponent());
@@ -216,7 +219,7 @@ public class BaseForm extends Form<Object> {
             });
         if (addTooltip) {
             dt.add(new TooltipBehaviour(tooltipBehaviour == null ? null : tooltipBehaviour.getPrefix(), 
-                    id, new PropertyModel(dt,"textFormat")));
+                    id, new PropertyModel<Object>(dt,"textFormat")));
         }
         return dt;
     }

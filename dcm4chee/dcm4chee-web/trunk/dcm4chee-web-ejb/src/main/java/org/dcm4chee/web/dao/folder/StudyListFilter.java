@@ -79,7 +79,8 @@ public class StudyListFilter implements Serializable {
     public void clear() {
         patientName = patientID = issuerOfPatientID = accessionNumber = 
             studyInstanceUID = modality = sourceAET = seriesInstanceUID = null;
-        studyDateMin = studyDateMax = birthDateMin = birthDateMax = null;
+        studyDateMin = studyDateMax = null; 
+        birthDateMin = birthDateMax = null;
         extendedPatQuery = extendedStudyQuery = extendedSeriesQuery = false;
         patientsWithoutStudies = false;
         latestStudiesFirst = false;

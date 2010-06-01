@@ -175,7 +175,21 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     }
 
     protected void addNavigation(BaseForm form) {
-        AjaxButton searchBtn = new AjaxButton("search", new ResourceModel("searchBtn")) {
+        
+        form.add(new AjaxButton("reset", new ResourceModel("mw.reset")) {
+            
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                viewport.clear();
+                form.clearInput();
+                form.setOutputMarkupId(true);
+                target.addComponent(form);
+            }
+        }.setDefaultFormProcessing(false));
+
+        AjaxButton searchBtn = new AjaxButton("search", new ResourceModel("mw.search")) {
 
             private static final long serialVersionUID = 1L;
             @Override
@@ -185,6 +199,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }};
         form.add(searchBtn);
         form.setDefaultButton(searchBtn);
+        
         form.add(prevBtn = new AjaxButton("prev", new ResourceModel("mw.prev")) {
 
             private static final long serialVersionUID = 1L;
@@ -202,7 +217,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 viewport.setOffset(Math.max(0, viewport.getOffset() - PAGESIZE));
                 queryAndUpdate(target);
             }});
-        form.add(nextBtn = new AjaxButton("next", new ResourceModel("nextBtn")) {
+        
+        form.add(nextBtn = new AjaxButton("next", new ResourceModel("mw.next")) {
 
             private static final long serialVersionUID = 1L;
 

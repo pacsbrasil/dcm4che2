@@ -86,6 +86,11 @@ public class ViewPort implements Serializable {
         return mwlItemModels;
     }
     
+    public void clear() {
+        offset = total = 0;
+        filter.clear();
+    }
+
     public List<String> getStationAetChoices(List<String> availableChoices) {
         return GroupedChoices.get(STATION_AETS_PROPERTIES_FILENAME).getChoices(availableChoices);
     }

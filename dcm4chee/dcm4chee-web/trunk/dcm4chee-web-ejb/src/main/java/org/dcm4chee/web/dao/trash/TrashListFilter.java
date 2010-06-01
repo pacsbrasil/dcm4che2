@@ -57,6 +57,12 @@ public class TrashListFilter implements Serializable {
     private String sourceAET;
     private boolean patientsWithoutStudies;
 
+    public void clear() {
+        patientName = patientID = issuerOfPatientID = accessionNumber = 
+            studyInstanceUID = sourceAET = null;
+        patientsWithoutStudies = false;
+    }
+
     public String getPatientName() {
         return patientName;
     }

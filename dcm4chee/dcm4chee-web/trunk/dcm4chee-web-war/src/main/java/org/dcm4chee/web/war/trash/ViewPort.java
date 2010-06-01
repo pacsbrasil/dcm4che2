@@ -50,7 +50,7 @@ import org.dcm4chee.web.war.trash.model.PrivPatientModel;
  * @version $Revision$ $Date$
  * @since Jan 14, 2009
  */
-public class TrashViewPort implements Serializable {
+public class ViewPort implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
@@ -81,5 +81,11 @@ public class TrashViewPort implements Serializable {
 
     public List<PrivPatientModel> getPatients() {
         return patients;
+    }
+    
+    public void clear() {
+        offset = total = 0;
+        filter.clear();
+        patients.clear();
     }
 }

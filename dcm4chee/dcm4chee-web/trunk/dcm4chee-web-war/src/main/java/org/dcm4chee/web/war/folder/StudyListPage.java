@@ -50,16 +50,19 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
 import org.apache.wicket.datetime.markup.html.form.DateTextField;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.yui.calendar.DateTimeField;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.ExternalLink;
@@ -76,6 +79,8 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.protocol.http.WebApplication;
+import org.apache.wicket.validation.IValidatable;
+import org.apache.wicket.validation.IValidator;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -193,7 +198,21 @@ public class StudyListPage extends Panel {
     }
 
     private void addNavigation(BaseForm form) {
-        Button searchBtn = new Button("search", new ResourceModel("searchBtn")) {
+        
+        form.add(new AjaxButton("reset", new ResourceModel("folder.reset")) {
+            
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                viewport.clear();
+                form.clearInput();
+                form.setOutputMarkupId(true);
+                target.addComponent(form);
+            }
+        }.setDefaultFormProcessing(false));
+        
+        Button searchBtn = new Button("search", new ResourceModel("folder.search")) {
 
             private static final long serialVersionUID = 1L;
 
@@ -221,7 +240,7 @@ public class StudyListPage extends Panel {
                 viewport.setOffset(Math.max(0, viewport.getOffset() - PAGESIZE));
                 queryStudies();
             }});
-        form.add(new Button("next", new ResourceModel("nextBtn")) {
+        form.add(new Button("next", new ResourceModel("folder.next")) {
 
             private static final long serialVersionUID = 1L;
 
@@ -636,7 +655,7 @@ public class StudyListPage extends Panel {
             item.add(new Label("id").add(tooltipBehaviour));
             item.add(new Label("issuer").add(tooltipBehaviour));
             DateTimeLabel dtl = new DateTimeLabel("birthdate").setWithoutTime(true);
-            dtl.add(tooltipBehaviour.newWithSubstitution(new PropertyModel(dtl, "textFormat")));
+            dtl.add(tooltipBehaviour.newWithSubstitution(new PropertyModel<String>(dtl, "textFormat")));
             item.add(dtl);
             item.add(new Label("sex").add(tooltipBehaviour));
             item.add(new Label("comments").add(tooltipBehaviour));

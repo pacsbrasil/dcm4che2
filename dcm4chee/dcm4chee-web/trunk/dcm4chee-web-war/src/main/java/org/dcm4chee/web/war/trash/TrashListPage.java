@@ -47,12 +47,14 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
@@ -110,7 +112,7 @@ public class TrashListPage extends Panel {
     private static final String MODULE_NAME = "trash";
     private static final long serialVersionUID = 1L;
     private static int PAGESIZE = 10;
-    private TrashViewPort viewport = new TrashViewPort();
+    private ViewPort viewport = new ViewPort();
     private TrashListHeader header = new TrashListHeader("thead");
     private PrivSelectedEntities selected = new PrivSelectedEntities();
     
@@ -162,7 +164,21 @@ public class TrashListPage extends Panel {
     }
 
     private void addNavigation(BaseForm form) {
-        Button searchBtn = new Button("search", new ResourceModel("searchBtn")) {
+        
+        form.add(new AjaxButton("reset", new ResourceModel("trash.reset")) {
+            
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                viewport.clear();
+                form.clearInput();
+                form.setOutputMarkupId(true);
+                target.addComponent(form);
+            }
+        }.setDefaultFormProcessing(false));
+
+        Button searchBtn = new Button("search", new ResourceModel("trash.search")) {
 
             private static final long serialVersionUID = 1L;
 
@@ -190,7 +206,7 @@ public class TrashListPage extends Panel {
                 viewport.setOffset(Math.max(0, viewport.getOffset() - PAGESIZE));
                 queryStudies();
             }});
-        form.add(new Button("next", new ResourceModel("nextBtn")) {
+        form.add(new Button("next", new ResourceModel("trash.next")) {
 
             private static final long serialVersionUID = 1L;
 
