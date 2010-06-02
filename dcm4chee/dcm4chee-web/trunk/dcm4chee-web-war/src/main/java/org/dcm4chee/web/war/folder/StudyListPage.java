@@ -339,7 +339,7 @@ public class StudyListPage extends Panel {
         moveBtn.add(new Image("moveImg",ImageManager.IMAGE_MOVE)
         .add(new ImageSizeBehaviour()));
         form.add(moveBtn);
-        final ConfirmationWindow<SelectedEntities> confirmDelete = new ConfirmationWindow<SelectedEntities>("confirmDelete"){
+        final ConfirmationWindow<SelectedEntities> confirmDelete = new ConfirmationWindow<SelectedEntities>("confirmDelete") {
             private static final long serialVersionUID = 1L;
             @Override
             public void onConfirmation(AjaxRequestTarget target, SelectedEntities selected) {

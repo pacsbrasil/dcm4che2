@@ -191,7 +191,6 @@ public class SelectedEntities implements Serializable {
     
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Selected Entities:");
         if (patients.size()>0) sb.append(" Patients:").append(patients.size());
         if (studies.size()>0) sb.append(" Studies:").append(studies.size());
         if (ppss.size()>0) sb.append(" PPS:").append(ppss.size());
