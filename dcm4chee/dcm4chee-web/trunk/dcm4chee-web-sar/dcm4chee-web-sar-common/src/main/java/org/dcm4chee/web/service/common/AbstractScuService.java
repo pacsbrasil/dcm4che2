@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Feb 11, 2010
  */
-public class AbstractScuService extends ServiceMBeanSupport {
+public abstract class AbstractScuService extends ServiceMBeanSupport {
 
     private Device device;
     protected NetworkConnection localConn;
