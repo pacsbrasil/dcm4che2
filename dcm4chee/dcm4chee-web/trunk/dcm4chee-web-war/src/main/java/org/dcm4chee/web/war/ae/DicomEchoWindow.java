@@ -41,6 +41,7 @@ package org.dcm4chee.web.war.ae;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
@@ -56,12 +57,13 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.util.time.Duration;
 import org.apache.wicket.validation.validator.RangeValidator;
 import org.apache.wicket.validation.validator.StringValidator;
 import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.war.ae.model.CipherModel;
 
 /**
@@ -76,14 +78,24 @@ public class DicomEchoWindow extends ModalWindow {
     private boolean echoOnShow;
     private AE aeOri;
     private final AE aeEcho = new AE();
+    private boolean echoRunning = false;
 
     public DicomEchoWindow(String id, boolean echoOnShow) {
         super(id);
         this.echoOnShow = echoOnShow;
         setTitle(new ResourceModel("aet.echoPanelTitle"));
         setContent(new DicomEchoPanel("content"));
+
+        setCloseButtonCallback(new CloseButtonCallback() {
+
+            private static final long serialVersionUID = 1L;
+
+            public boolean onCloseButtonClicked(AjaxRequestTarget target) {
+                return !echoRunning;
+            }
+        });
     }
-    
+
     public void show(AjaxRequestTarget target, AE ae) {
         setAE(ae);
         super.show(target);
@@ -131,6 +143,7 @@ public class DicomEchoWindow extends ModalWindow {
     private static final long serialVersionUID = 1L;
     
     private Integer nrOfTests = 1;
+    private boolean echoPerformed = false;
     private String result;
     private boolean saveFailed;
     
@@ -162,10 +175,11 @@ public class DicomEchoWindow extends ModalWindow {
 
         @Override
         public void onComponentTag(ComponentTag tag) {
-            tag.getAttributes().put("class", saveFailed ? "ae_save_failed" :
-                     result.indexOf("success") != -1 ?
-                    "ae_echo_succeed" : "ae_echo_failed");
+            tag.getAttributes().put("class", saveFailed ? "ae_save_failed" : 
+                     (!echoPerformed ? "ae_echo_pending" : (result.indexOf("success") != -1 ?
+                    "ae_echo_succeed" : "ae_echo_failed")));
             saveFailed = false;
+            echoPerformed = false;
             super.onComponentTag(tag);
         }
     };
@@ -215,10 +229,25 @@ public class DicomEchoWindow extends ModalWindow {
 
     @Override
     protected void onBeforeRender() {
-        if (echoOnShow) {
-            doEcho(aeOri);
-        }
         super.onBeforeRender();
+        
+        if (echoOnShow) {
+            result = new ResourceModel("aet.echoResult.default").wrapOnAssignment(this).getObject();
+            resultLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+               
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onTimer(AjaxRequestTarget target) {
+                    echoRunning = true;
+                    doEcho(aeOri);
+                    this.stop();
+                    echoPerformed = true;
+                    echoRunning = false;
+                    target.addComponent(resultLabel);
+                }
+            });
+        }
     }
     
     public void doEcho(AE ae) {
