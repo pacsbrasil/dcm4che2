@@ -55,6 +55,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
@@ -82,6 +83,8 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  */
 
 public abstract class MPPSEmulatorBean implements SessionBean {
+
+    private static Logger LOG = Logger.getLogger(MPPSEmulatorBean.class);
 
     private static final int[] PATIENT_TAGS = { Tags.SpecificCharacterSet,
             Tags.PatientName, Tags.PatientID, Tags.IssuerOfPatientID,
@@ -210,6 +213,11 @@ public abstract class MPPSEmulatorBean implements SessionBean {
             final Dataset studyAttrs = study.getAttributes(false);
             mpps.putAll(patAttrs.subSet(PATIENT_TAGS));
             mpps.putAll(studyAttrs.subSet(STUDY_TAGS));
+            DcmElement procCodeSeq = mpps.get(Tags.ProcedureCodeSeq);
+            if (procCodeSeq != null && procCodeSeq.countItems() > 1) {
+                LOG.warn("Study with multiple Procedure Codes - only include first in emulated MPPS");
+                mpps.putSQ(Tags.ProcedureCodeSeq).addItem(procCodeSeq.getItem());
+            }
             DcmElement rqaSq = seriesAttrs.get(Tags.RequestAttributesSeq);
             int rqaSqSize = rqaSq != null ? rqaSq.countItems() : 0;
             DcmElement ssaSq = mpps.putSQ(Tags.ScheduledStepAttributesSeq);
