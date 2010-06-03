@@ -267,14 +267,20 @@ public class ImportDcmDirDelegate {
             }
             // search for dicomdir in system roots
             for (int i = 0; i < drives.length; i++) {
-                File dicomDir = new File(drives[i] + File.separator + "DICOMDIR");
-                if (dicomDir.canRead()) {
-                    dcmDirFile = dicomDir;
+                File dicomDirCD = new File(drives[i] + File.separator + "DICOMDIR");
+                if (dicomDirCD.canRead()) {
+                    dcmDirFile = dicomDirCD;
                     break;
                 }
-                dicomDir = new File(drives[i] + File.separator + "dicomdir");
-                if (dicomDir.canRead()) {
-                    dcmDirFile = dicomDir;
+                dicomDirCD = new File(drives[i] + File.separator + "dicomdir");
+                if (dicomDirCD.canRead()) {
+                    dcmDirFile = dicomDirCD;
+                    break;
+                }
+                //Some Unix needs the point at the end
+                dicomDirCD = new File(drives[i] + File.separator + "dicomdir.");
+                if (dicomDirCD.canRead()) {
+                    dcmDirFile = dicomDirCD;
                     break;
                 }
             }
