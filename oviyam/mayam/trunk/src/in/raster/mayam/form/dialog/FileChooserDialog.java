@@ -131,7 +131,8 @@ public class FileChooserDialog extends javax.swing.JDialog {
             }
             else
             {
-                if(openedFile.getName().equalsIgnoreCase("DICOMDIR")){
+                if(openedFile.getName().toLowerCase().startsWith("DICOMDIR")){
+                    // add less restrictive check on name DICOMDIR
                                    
                 ImportDcmDirDelegate importDcmDirDelegate=new ImportDcmDirDelegate(openedFile);
                 importDcmDirDelegate.run();
