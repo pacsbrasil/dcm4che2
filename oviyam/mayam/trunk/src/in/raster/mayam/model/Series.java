@@ -57,6 +57,7 @@ public class Series implements Serializable {
     private String institutionName;
     private List<Instance> imageList;
     private String seriesDesc;
+    private String bodyPartExamined;
     private int seriesRelatedInstance;
 
     public Series() {
@@ -161,6 +162,14 @@ public class Series implements Serializable {
 
     public void setSeriesRelatedInstance(int seriesRelatedInstance) {
         this.seriesRelatedInstance = seriesRelatedInstance;
+    }
+
+    public String getBodyPartExamined() {
+        return bodyPartExamined;
+    }
+
+    public void setBodyPartExamined(String bodyPartExamined) {
+        this.bodyPartExamined = bodyPartExamined;
     }
 
 }

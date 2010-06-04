@@ -306,7 +306,7 @@ public class DatabaseHandler {
             statement.executeUpdate(sql);
 
             //creating series table if it is not exist already
-            sql = "create table " + seriesTable + " (SeriesInstanceUID varchar(255) NOT NULL CONSTRAINT SeriesInstanceUID_pk PRIMARY KEY ," + "SeriesNo varchar(50)," + "Modality varchar(10)," + "SeriesDescription varchar(100)," + "InstitutionName varchar(255)," + "NoOfSeriesRelatedInstances integer," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255), foreign key (StudyInstanceUID) references Study(StudyInstanceUID))";
+            sql = "create table " + seriesTable + " (SeriesInstanceUID varchar(255) NOT NULL CONSTRAINT SeriesInstanceUID_pk PRIMARY KEY ," + "SeriesNo varchar(50)," + "Modality varchar(10)," + "SeriesDescription varchar(100)," +"BodyPartExamined varchar(100)," + "InstitutionName varchar(255)," + "NoOfSeriesRelatedInstances integer," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255), foreign key (StudyInstanceUID) references Study(StudyInstanceUID))";
             statement.executeUpdate(sql);
 
             //creating is instance table if it is not exist already
@@ -377,6 +377,7 @@ public class DatabaseHandler {
             while (rs.next()) {
                 Series series = new Series();
                 series.setSeriesDesc(rs.getString("SeriesDescription"));
+                series.setBodyPartExamined(rs.getString("BodyPartExamined"));
                 series.setSeriesInstanceUID(rs.getString("SeriesInstanceUID"));
                 series.setModality(rs.getString("Modality"));
                 series.setSeriesNumber(rs.getString("SeriesNo"));
@@ -820,6 +821,7 @@ public class DatabaseHandler {
                 String seriesNo = "null";
                 String modality = "null";
                 String studyDesc = "null";
+                String bodyPartExamined="null";
                 if (dataset.getString(Tag.SeriesDate) != null && dataset.getString(Tag.SeriesDate).length() > 0) {
                     dat = "date('" + dateFormat.format(dataset.getDate(Tag.SeriesDate)) + "')";
                 }
@@ -838,7 +840,10 @@ public class DatabaseHandler {
                 if (dataset.getString(Tag.SeriesDescription) != null && dataset.getString(Tag.SeriesDescription).length() > 0) {
                     studyDesc = dataset.getString(Tag.SeriesDescription).replace('\'', ' ');
                 }
-                conn.createStatement().execute("insert into " + seriesTable + " values('" + dataset.getString(Tag.SeriesInstanceUID) + "','" + seriesNo + "','" + modality + "','" + studyDesc + "','" + institution + "'," + noSeries + ",'" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "')");
+                if (dataset.getString(Tag.BodyPartExamined) != null && dataset.getString(Tag.BodyPartExamined).length() > 0) {
+                    bodyPartExamined = dataset.getString(Tag.BodyPartExamined).replace('\'', ' ');
+                }
+                conn.createStatement().execute("insert into " + seriesTable + " values('" + dataset.getString(Tag.SeriesInstanceUID) + "','" + seriesNo + "','" + modality + "','" + studyDesc + "','" +bodyPartExamined + "','" + institution + "'," + noSeries + ",'" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "')");
                 conn.commit();
             } catch (SQLException ex) {
                  Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -1024,7 +1029,7 @@ public class DatabaseHandler {
     public ArrayList<Series> getSeriesList(String siuid) {
         ArrayList<Series> arr = new ArrayList();
         try {
-            String sql = "select SeriesInstanceUID,SeriesNo,SeriesDescription from series where StudyInstanceUID='" + siuid + "'";
+            String sql = "select SeriesInstanceUID,SeriesNo,SeriesDescription,BodyPartExamined from series where StudyInstanceUID='" + siuid + "'";
             ResultSet rs = null;
             rs = conn.createStatement().executeQuery(sql);
             while (rs.next()) {
@@ -1033,6 +1038,7 @@ public class DatabaseHandler {
                 series.setSeriesInstanceUID(rs.getString("SeriesInstanceUID"));
                 series.setSeriesNumber(rs.getString("SeriesNo"));
                 series.setSeriesDesc(rs.getString("SeriesDescription"));
+                series.setBodyPartExamined(rs.getString("BodyPartExamined"));
                 ResultSet rs1 = null;
                 String sql1 = "select FileStoreUrl,SopUID,InstanceNo from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'";
                 rs1 = conn.createStatement().executeQuery(sql1);
@@ -1054,7 +1060,7 @@ public class DatabaseHandler {
     public Series getSeries(String studyUID, String seriesUID) {
         Series series = null;
         try {
-            String sql = "select SeriesInstanceUID,SeriesNo,SeriesDescription from series where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + seriesUID + "'";
+            String sql = "select SeriesInstanceUID,SeriesNo,SeriesDescription,BodyPartExamined from series where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + seriesUID + "'";
             ResultSet rs = null;
             rs = conn.createStatement().executeQuery(sql);
             while (rs.next()) {
@@ -1063,6 +1069,7 @@ public class DatabaseHandler {
                 series.setSeriesInstanceUID(rs.getString("SeriesInstanceUID"));
                 series.setSeriesNumber(rs.getString("SeriesNo"));
                 series.setSeriesDesc(rs.getString("SeriesDescription"));
+                series.setBodyPartExamined(rs.getString("BodyPartExamined"));
                 ResultSet rs1 = null;
                 String sql1 = "select FileStoreUrl,SopUID,InstanceNo from image where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'";
                 rs1 = conn.createStatement().executeQuery(sql1);

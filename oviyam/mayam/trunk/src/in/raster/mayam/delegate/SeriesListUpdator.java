@@ -183,9 +183,7 @@ public class SeriesListUpdator extends Thread{
                 img.setColumn(column);
                 img.setReferenceSOPInstanceUID(referencedSOPInstanceUID);
                 img.setFrameOfReferenceUID(frameOfReferenceUID);
-            } catch (RuntimeException e) {
-                e.printStackTrace();               
-            }
+            } catch (RuntimeException e) {}
         } catch (Exception e) {
             e.printStackTrace();           
         } finally {

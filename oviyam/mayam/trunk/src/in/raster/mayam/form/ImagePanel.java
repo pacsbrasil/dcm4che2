@@ -1,41 +1,41 @@
 /* ***** BEGIN LICENSE BLOCK *****
-* Version: MPL 1.1/GPL 2.0/LGPL 2.1
-*
-* The contents of this file are subject to the Mozilla Public License Version
-* 1.1 (the "License"); you may not use this file except in compliance with
-* the License. You may obtain a copy of the License at
-* http://www.mozilla.org/MPL/
-*
-* Software distributed under the License is distributed on an "AS IS" basis,
-* WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-* for the specific language governing rights and limitations under the
-* License.
-*
-*
-* The Initial Developer of the Original Code is
-* Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2009-2010
-* the Initial Developer. All Rights Reserved.
-*
-* Contributor(s):
-* Babu Hussain A
-* Meer Asgar Hussain B
-* Prakash J
-* Suresh V
-*
-* Alternatively, the contents of this file may be used under the terms of
-* either the GNU General Public License Version 2 or later (the "GPL"), or
-* the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
-* in which case the provisions of the GPL or the LGPL are applicable instead
-* of those above. If you wish to allow use of your version of this file only
-* under the terms of either the GPL or the LGPL, and not to allow others to
-* use your version of this file under the terms of the MPL, indicate your
-* decision by deleting the provisions above and replace them with the notice
-* and other provisions required by the GPL or the LGPL. If you do not delete
-* the provisions above, a recipient may use your version of this file under
-* the terms of any one of the MPL, the GPL or the LGPL.
-*
-* ***** END LICENSE BLOCK ***** */
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ *
+ * The Initial Developer of the Original Code is
+ * Raster Images
+ * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ * Babu Hussain A
+ * Meer Asgar Hussain B
+ * Prakash J
+ * Suresh V
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
@@ -274,11 +274,11 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         try {
             currentInstanceNo = Integer.parseInt(dataset.getString(Tags.InstanceNumber));
         } catch (NumberFormatException e) {
-            System.out.println("Instance Number format error " );
-            currentInstanceNo=1;
+            System.out.println("Instance Number format error ");
+            currentInstanceNo = 1;
         } catch (NullPointerException e) {
             System.out.println("Instance Number is null, set to 1");
-            currentInstanceNo=1;
+            currentInstanceNo = 1;
         }
     }
 
@@ -306,7 +306,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();           
+            e.printStackTrace();
         }
 
     }
@@ -344,11 +344,9 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             if (nWindow > 0) {
                 WC = windowLevel = c = (int) cmParam.getWindowCenter(0);
                 WW = windowWidth = w = (int) cmParam.getWindowWidth(0);
-            }
-            else
-            {
-                WW = windowWidth = w = (int) Math.pow(2, bits) ;
-                WC = windowLevel = c = (int) w/2;
+            } else {
+                WW = windowWidth = w = (int) Math.pow(2, bits);
+                WC = windowLevel = c = (int) w / 2;
             }
         }
     }
@@ -461,9 +459,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 Graphics2D g2 = image.createGraphics();
                 g2.drawImage(loadedImage, 0, 0, null);
                 repaint();
-            } catch (RuntimeException e) {
-                e.printStackTrace();                
-            }
+            } catch (RuntimeException e) {}
         } catch (Exception e) {
             System.out.println("io exception");
         }
@@ -518,7 +514,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             currentbufferedimage = newImg;
             windowChanged(this.windowLevel, this.windowWidth);
         } catch (RuntimeException e) {
-            e.printStackTrace();            
+            e.printStackTrace();
         }
     }
 
@@ -732,7 +728,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         scaleFactor = 1;
         isRotate = false;
         rotateLeftAngle = 0;
-        rotateRightAngle = 0;       
+        rotateRightAngle = 0;
         currentInstanceNo = 0;
         canvas.setBackground(Color.BLACK);
         canvas.setForeground(Color.WHITE);
@@ -740,7 +736,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         if (!firstTime) {
             repaint();
         }
-        selectFirstInstance();        
+        selectFirstInstance();
     }
 
     /**
@@ -928,7 +924,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 calculateNewHeightAndWidthBasedonAspectRatio(1, 1);
             }
 
-            g.drawImage(image, startX, startY, thumbWidth, thumbHeight, null);          
+            g.drawImage(image, startX, startY, thumbWidth, thumbHeight, null);
 
             if (displayScout) {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -1143,7 +1139,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 changeTextOverlay();
             }
         } catch (Exception e) {
-            e.printStackTrace();            
+            e.printStackTrace();
         }
     }
 
@@ -1337,7 +1333,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         selectSeries(e);
     }
 
-    private void selectSeries(MouseEvent e) {        
+    private void selectSeries(MouseEvent e) {
         this.canvas.setSelection();
         mouseLocX1 = e.getX();
         mouseLocY1 = e.getY();
@@ -1494,7 +1490,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         for (Study study : MainScreen.studyList) {
             if (study.getStudyInstanceUID().equalsIgnoreCase(studyUID)) {
                 for (Series series : study.getSeriesList()) {
-                    if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {                       
+                    if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
                         totalInstance = series.getImageList().size();
                         instanceArray = (ArrayList<Instance>) series.getImageList();
                         borderArray = prepareScoutBorder();
@@ -1639,12 +1635,24 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
 
     private void designContext() {
         ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList(this.studyUID);
-        JMenu menu = new JMenu(this.studyDesc);
+        JMenu menu;
+        if ((this.studyDesc == null) || (this.studyDesc.equalsIgnoreCase(""))) {
+            menu = new JMenu(this.studyUID);
+        } else {
+            menu = new JMenu(this.studyDesc);
+        }
         for (final Series series : seriesList) {
-            JMenuItem menuitem = new JMenuItem(series.getSeriesDesc());
+            JMenuItem menuitem;
+            if (!series.getSeriesDesc().equalsIgnoreCase("null")) {
+                menuitem = new JMenuItem(series.getSeriesDesc());
+            } else if(!series.getBodyPartExamined().equalsIgnoreCase("null")){
+                menuitem = new JMenuItem(series.getBodyPartExamined());
+            }
+            else {
+                menuitem = new JMenuItem(series.getSeriesInstanceUID());
+            }
             menu.add(menuitem);
             menuitem.addActionListener(new java.awt.event.ActionListener() {
-
                 public void actionPerformed(ActionEvent arg0) {
                     changeSeries(arg0, series.getStudyInstanceUID(), series.getSeriesInstanceUID());
                 }
