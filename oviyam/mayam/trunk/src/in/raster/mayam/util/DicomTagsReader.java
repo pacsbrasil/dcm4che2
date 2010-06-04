@@ -72,15 +72,15 @@ public class DicomTagsReader {
             e.printStackTrace();
         }
 
-        //Call to Parsing Tags in an Array List
-        listTags(dcmObject);
-
+        //Call to Parsing Tags in an Array List        
+        listTags(dcmObject);       
     }
 
     //Method to parse tags from a DICOM Object
-    public static void listTags(DicomObject dcmObject) {
-
-        Iterator<DicomElement> tagsIterator = dcmObject.datasetIterator();
+    public static void listTags(DicomObject dcmObject){
+        Iterator<DicomElement> tagsIterator=null;
+        if(dcmObject!=null){
+        tagsIterator= dcmObject.datasetIterator();   
 
         while (tagsIterator.hasNext()) {
             DicomElement dcmElement = tagsIterator.next();
@@ -126,6 +126,7 @@ public class DicomTagsReader {
             //Adding DicomTags object to Tags ArrayList
             tagsArray.add(dcmTags);
 
+        }
         }
 
     }
