@@ -205,7 +205,7 @@ public class MainScreen extends javax.swing.JFrame {
     /**
      * This routine used to refresh the local database study list.
      */
-    public static void refreshLocalDBStorage() {
+    public synchronized static void refreshLocalDBStorage() {
         int i = 0;
         if (studyListTable.getRowCount() > 2) {
             i = studyListTable.getSelectedRow();
@@ -213,6 +213,7 @@ public class MainScreen extends javax.swing.JFrame {
         StudyListModel studyListModel = new StudyListModel();
         studyListModel.setData(ApplicationContext.databaseRef.listAllStudiesOfDB());
         studyListTable.setModel(studyListModel);
+        studyListModel.fireTableRowsInserted(0,studyListModel.getStudyList().size()-1);
         if (studyListTable.getRowCount() > 0) {
             if (i < studyListTable.getRowCount()) {
                 studyListTable.setRowSelectionInterval(i, i);

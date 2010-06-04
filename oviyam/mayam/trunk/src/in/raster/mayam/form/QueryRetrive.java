@@ -627,21 +627,22 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
         if (dicomServerArray != null) {
             for (int i = 0; i < dicomServerArray.size(); i++) {
                 if (dicomServerArray.get(i).getName().equalsIgnoreCase(serverName)) {
-                    String tem[] = new String[]{
-                        "dicom" + "://" + dicomServerArray.get(i).getAe().getAeTitle() + "@" + dicomServerArray.get(i).getAe().getHostName() + ":" + dicomServerArray.get(i).getAe().getPort(),
-                        "--dest", s[0], "--pid", dicomServerArray.get(i).getStudyListModel().getValueAt(studyListTable.getSelectedRow(), 0), "--suid",
-                        dicomServerArray.get(i).getStudyListModel().getValueAt(studyListTable.getSelectedRow(), 8)};
-                    try {
-                        if (ApplicationContext.databaseRef.checkRecordExists("study", "StudyInstanceUID", dicomServerArray.get(i).getStudyListModel().getValueAt(studyListTable.getSelectedRow(), 8))) {
-                            StudyAvailabilityStatus studyStatus = new StudyAvailabilityStatus(this, true);
-                            Display.alignScreen(studyStatus);
-                            studyStatus.setVisible(true);
-                        } else {
-                            MainScreen.sndRcvFrm.setVisible(true);
-                            MoveDelegate moveDelegate = new MoveDelegate(tem);
+                    int index[] = studyListTable.getSelectedRows();
+                    for (int tempI = 0; tempI < index.length; tempI++) {
+                        String tem[] = new String[]{
+                            "dicom" + "://" + dicomServerArray.get(i).getAe().getAeTitle() + "@" + dicomServerArray.get(i).getAe().getHostName() + ":" + dicomServerArray.get(i).getAe().getPort(),
+                            "--dest", s[0], "--pid", dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), "--suid",
+                            dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8)};
+                        try {
+                            if (!ApplicationContext.databaseRef.checkRecordExists("study", "StudyInstanceUID", dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8))) {
+                                MainScreen.sndRcvFrm.setVisible(true);
+                                MoveDelegate moveDelegate = new MoveDelegate(tem);
+                            } else {
+                                MainScreen.sndRcvFrm.setVisible(true);
+                            }
+                        } catch (Exception ex) {
+                            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                    } catch (Exception ex) {
-                        Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }
