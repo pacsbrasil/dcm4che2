@@ -1139,7 +1139,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 changeTextOverlay();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Windowing can't be applied");
         }
     }
 

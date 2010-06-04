@@ -498,6 +498,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             repaint();
             changeTextOverlay();
         } catch (Exception e) {
+            System.out.println("Windowing can't be changed");
         }
 
     }
