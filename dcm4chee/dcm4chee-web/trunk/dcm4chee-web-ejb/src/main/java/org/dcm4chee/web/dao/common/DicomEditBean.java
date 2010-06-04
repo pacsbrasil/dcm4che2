@@ -185,18 +185,19 @@ public class DicomEditBean implements DicomEditLocal {
     }
 
     @SuppressWarnings("unchecked")
-    public EntityTree movePpsToTrash(long[] pks)
+    public EntityTree moveSeriesOfPpsToTrash(long[] pks)
     {
         Query q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(p) FROM MPPS p WHERE pk ", pks);
-        EntityTree tree = null;
+        Query qs = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Series s WHERE s.modalityPerformedProcedureStep.pk ", pks);
+        List<Series> seriess = qs.getResultList();
+        EntityTree tree = moveSeriesToTrash(seriess, true, null);
         List<MPPS> mppss = q.getResultList();
         for(MPPS mpps : mppss) {
-            tree = moveSeriesToTrash(mpps.getSeries(), true, null);
             em.remove(mpps);
         }
-
         return tree;
     }
+    
     @SuppressWarnings("unchecked")
     public EntityTree moveStudiesToTrash(long[] pks) {
         Query q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Study s WHERE pk ", pks);
@@ -254,6 +255,7 @@ public class DicomEditBean implements DicomEditLocal {
             } else {
                 entityTree = moveStudiesToTrash(studies, entityTree);
             }
+            deletePatient(p);
         }
         return entityTree == null ? new EntityTree() : entityTree;
     }
@@ -357,11 +359,38 @@ public class DicomEditBean implements DicomEditLocal {
         return pPat;
     }
 
+    private void deletePatient(Patient patient) {
+        log.debug("Delete Patient:{}",patient);
+        for (MPPS mpps : patient.getModalityPerformedProcedureSteps()) {
+            em.remove(mpps);
+            log.debug("  MPPS deleted:{}",mpps);
+        }
+        em.remove(patient);
+    }
+
+    public List<MPPS> deletePps(long[] pks) {
+        Query q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(p) FROM MPPS p WHERE pk ", pks);
+        List<MPPS> mppss = q.getResultList();
+        DicomObject seriesAttrs;
+        for(MPPS mpps : mppss) {
+           for (Series series : mpps.getSeries()) {
+                seriesAttrs = series.getAttributes(true);
+                seriesAttrs.remove(Tag.ReferencedPerformedProcedureStepSequence);
+                seriesAttrs.remove(Tag.PerformedProcedureStepStartDate);
+                seriesAttrs.remove(Tag.PerformedProcedureStepStartTime);
+                series.setAttributes(seriesAttrs);
+                series.setModalityPerformedProcedureStep(null);
+                em.merge(series);
+            }
+            mpps.getPatient().getPatientID();
+            em.remove(mpps);
+        }
+        return mppss;
+    }
+    
     @SuppressWarnings("unchecked")
     public EntityTree moveStudiesToPatient(long pks[], long pk)
     {
-        log.info("############pks:"+pks);
-        if (pks != null) log.info("######pks.length:"+pks.length);
         Query qP = em.createQuery("SELECT OBJECT(p) FROM Patient p WHERE pk = :pk").setParameter("pk", Long.valueOf(pk));
         Query qS = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Study s WHERE pk ", pks);
         return moveStudiesToPatient(qS.getResultList(), (Patient)qP.getSingleResult());
@@ -500,8 +529,7 @@ public class DicomEditBean implements DicomEditLocal {
                 break;
             }
             DicomElement refImgSq = psItem.get(Tag.ReferencedImageSequence);
-            int j = refImgSq.countItems() - 1;
-            for(; i >= 0; i--) {
+            for(int j = refImgSq.countItems() - 1 ; j >= 0 ; j--) {
                 DicomObject refImgItem = refImgSq.getDicomObject(j);
                 if(sopIUIDs.contains(refImgItem.getString(Tag.ReferencedSOPInstanceUID)))
                     refImgSq.removeDicomObject(j);
@@ -531,7 +559,11 @@ public class DicomEditBean implements DicomEditLocal {
                 DicomObject mppsAttrs = mpps.getAttributes();
                 removeFromMPPS(mppsAttrs, s.getSeriesInstanceUID(), entry.getValue());
                 mpps.setAttributes(mppsAttrs);
-                em.merge(mpps);
+                try {
+                    em.merge(mpps);
+                } catch (Throwable x) {
+                    log.warn("MPPS update failed! mpps:"+mpps);
+                }
             }
         }
     }

@@ -38,10 +38,12 @@
 
 package org.dcm4chee.web.dao.common;
 
+import java.util.List;
+
 import javax.ejb.Local;
 
 import org.dcm4che2.data.DicomObject;
-import org.dcm4chee.archive.entity.Patient;
+import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.dao.vo.EntityTree;
@@ -60,11 +62,13 @@ public interface DicomEditLocal {
     EntityTree moveInstanceToTrash(String iuid);
     EntityTree moveSeriesToTrash(long[] pk);
     EntityTree moveSeriesToTrash(String iuid);
-    EntityTree movePpsToTrash(long[] pks);
+    EntityTree moveSeriesOfPpsToTrash(long[] pks);
     EntityTree moveStudiesToTrash(long[] pk);
     EntityTree moveStudyToTrash(String iuid);
     EntityTree movePatientsToTrash(long[] pk);
     EntityTree movePatientToTrash(String patId, String issuer);
+    
+    List<MPPS> deletePps(long[] pks);
     
     EntityTree moveStudiesToPatient(long al[], long l);
     EntityTree moveStudyToPatient(String s, String s1, String s2);
