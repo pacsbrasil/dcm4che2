@@ -41,6 +41,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -145,13 +146,13 @@ public class GPSPS extends BaseEntity implements Serializable {
         )
     private Set<Code> scheduledStationGeographicLocationCodes;
 
-    @OneToMany(mappedBy = "gpsps", fetch=FetchType.LAZY)
+    @OneToMany(mappedBy = "gpsps", fetch=FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<GPSPSRequest> referencedRequests;
 
-    @OneToMany(mappedBy = "gpsps", fetch=FetchType.LAZY)
+    @OneToMany(mappedBy = "gpsps", fetch=FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<GPSPSPerformer> scheduledHumanPerformers;
 
-    @ManyToMany(mappedBy = "scheduledProcedureSteps", fetch=FetchType.LAZY)
+    @ManyToMany(mappedBy = "scheduledProcedureSteps", fetch=FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<GPPPS> performedProcedureSteps;
 
     public String getSOPInstanceUID() {

@@ -41,6 +41,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -92,7 +93,7 @@ public class GPPPS extends BaseEntity implements Serializable {
     @JoinColumn(name = "patient_fk")
     private Patient patient;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, cascade=CascadeType.REMOVE)
     @JoinTable(
             name = "rel_gpsps_gppps", 
             joinColumns = @JoinColumn(name = "gppps_fk", referencedColumnName = "pk"), 
