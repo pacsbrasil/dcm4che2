@@ -38,9 +38,9 @@
 
 package org.dcm4chee.web.dao.worklist.modality;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -63,6 +63,8 @@ import org.jboss.annotation.ejb.LocalBinding;
 @Stateless
 @LocalBinding (jndiBinding=ModalityWorklist.JNDI_NAME)
 public class ModalityWorklistBean implements ModalityWorklist {
+
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 
     @PersistenceContext(unitName="dcm4chee-arc")
     private EntityManager em;
@@ -114,6 +116,7 @@ public class ModalityWorklistBean implements ModalityWorklist {
             appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
             appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID()));
             appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
+            appendPatientBirthDateFilter(ql, filter.getBirthDateMin(), filter.getBirthDateMax());
             appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
             appendStartDateMinFilter(ql, filter.getStartDateMin());
             appendStartDateMaxFilter(ql, filter.getStartDateMax());
@@ -133,6 +136,7 @@ public class ModalityWorklistBean implements ModalityWorklist {
             setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
             setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID()));
             setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
+            setPatientBirthDateQueryParameter(query, filter.getBirthDateMin(), filter.getBirthDateMax());
             setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
             setStartDateMinQueryParameter(query, filter.getStartDateMin());
             setStartDateMaxQueryParameter(query, filter.getStartDateMax());
@@ -146,122 +150,53 @@ public class ModalityWorklistBean implements ModalityWorklist {
         }
     }
 
-    private static boolean containsWildcard(String s) {
-        return s.indexOf('*') != -1 || s.indexOf('?') != -1;
+    private static void appendPatientNameFilter(StringBuilder ql,
+            String patientName) {
+        QueryUtil.appendPatientName(ql, "p.patientName", ":patientName", patientName);
     }
 
-    private static boolean isMustNotNull(String s) {
-        return "?*".equals(s) || "*?".equals(s);
-    }
-
-    private static String toLike(String s) {
-        StringBuilder param = new StringBuilder();
-        StringTokenizer tokens = new StringTokenizer(s, "*?_%", true);
-        while (tokens.hasMoreTokens()) {
-            String token = tokens.nextToken();
-            switch (token.charAt(0)) {
-            case '%':
-                param.append("\\%");
-                break;
-            case '*':
-                param.append('%');
-                break;
-            case '?':
-                param.append('_');
-                break;
-            case '_':
-                param.append("\\_");
-                break;
-            default:
-                param.append(token);
-            }
-        }
-        return param.toString();
-    }
-
-    private static void appendPatientNameFilter(StringBuilder ql, String patientName) {
-        if (patientName!=null) {
-            ql.append(" AND p.patientName LIKE :patientName");
-        }
-    }
-
-    private static void setPatientNameQueryParameter(Query query, String patientName) {
-        if (patientName!=null) {
-            int padcarets = 4;
-            StringBuilder param = new StringBuilder();
-            StringTokenizer tokens = new StringTokenizer(patientName.toUpperCase(),
-                    "^*?_%", true);
-            while (tokens.hasMoreTokens()) {
-                String token = tokens.nextToken();
-                switch (token.charAt(0)) {
-                case '%':
-                    param.append("\\%");
-                    break;
-                case '*':
-                    param.append('%');
-                    break;
-                case '?':
-                    param.append('_');
-                    break;
-                case '^':
-                    padcarets--;
-                    param.append('^');
-                    break;
-                case '_':
-                    param.append("\\_");
-                    break;
-                default:
-                    param.append(token);
-                }
-            }
-            while (padcarets-- > 0) {
-                param.append("^%");
-            }
-            query.setParameter("patientName", param.toString());
-        }
+    private static void setPatientNameQueryParameter(Query query,
+            String patientName) {
+        QueryUtil.setPatientNameQueryParameter(query, "patientName", patientName);
     }
 
     private static void appendPatientIDFilter(StringBuilder ql,
             String patientID) {
-        if (patientID!=null) {
-            ql.append(containsWildcard(patientID)
-                    ? " AND p.patientID LIKE :patientID"
-                    : " AND p.patientID = :patientID");
-        }
+        QueryUtil.appendANDwithTextValue(ql, "p.patientID", "patientID", patientID);
     }
 
     private static void setPatientIDQueryParameter(Query query,
             String patientID) {
-        if (patientID!=null) {
-            query.setParameter("patientID", containsWildcard(patientID) 
-                    ? toLike(patientID)
-                    : patientID);
-        }
+        QueryUtil.setTextQueryParameter(query, "patientID", patientID);
     }
 
     private static void appendIssuerOfPatientIDFilter(StringBuilder ql,
             String issuerOfPatientID) {
-        if (issuerOfPatientID!=null) {
-            ql.append("-".equals(issuerOfPatientID)
-                    ? " AND p.issuerOfPatientID IS NULL" 
-                    : isMustNotNull(issuerOfPatientID)
-                    ? " AND p.issuerOfPatientID IS NOT NULL" 
-                    : containsWildcard(issuerOfPatientID)
-                    ? " AND p.issuerOfPatientID LIKE :issuerOfPatientID"
-                    : " AND p.issuerOfPatientID = :issuerOfPatientID");
-        }
+        QueryUtil.appendANDwithTextValue(ql, "p.issuerOfPatientID", "issuerOfPatientID", issuerOfPatientID);
     }
 
     private static void setIssuerOfPatientIDQueryParameter(Query query,
             String issuerOfPatientID) {
-        if (issuerOfPatientID!=null
-                && !"-".equals(issuerOfPatientID)
-                && !isMustNotNull(issuerOfPatientID)) {
-            query.setParameter("issuerOfPatientID",
-                    containsWildcard(issuerOfPatientID)
-                            ? toLike(issuerOfPatientID)
-                            : issuerOfPatientID);
+        QueryUtil.setTextQueryParameter(query, "issuerOfPatientID", issuerOfPatientID);
+    }
+
+    private static void appendPatientBirthDateFilter(StringBuilder ql, Date minDate, Date maxDate) {
+        if (minDate!=null) {
+            if (maxDate==null) {
+                ql.append(" AND p.patientBirthDate >= :birthdateMin");
+            } else {
+                ql.append(" AND p.patientBirthDate BETWEEN :birthdateMin AND :birthdateMax");
+                
+            }
+        } else if (maxDate!=null) {
+            ql.append(" AND p.patientBirthDate <= :birthdateMax");
         }
+    }
+    private static void setPatientBirthDateQueryParameter(Query query, Date minDate, Date maxDate) {
+        if ( minDate!=null)
+            query.setParameter("birthdateMin", sdf.format(minDate));
+        if ( maxDate!=null)
+            query.setParameter("birthdateMax", sdf.format(maxDate));
     }
 
     private static void appendStartDateMinFilter(StringBuilder ql, Date date) {
@@ -293,27 +228,12 @@ public class ModalityWorklistBean implements ModalityWorklist {
 
     private static void appendAccessionNumberFilter(StringBuilder ql,
             String accessionNumber) {
-        if (accessionNumber!=null) {
-            ql.append("-".equals(accessionNumber)
-                    ? " AND m.accessionNumber IS NULL"
-                    : isMustNotNull(accessionNumber)
-                    ? " AND m.accessionNumber IS NOT NULL" 
-                    : containsWildcard(accessionNumber)
-                    ? " AND m.accessionNumber LIKE :accessionNumber"
-                    : " AND m.accessionNumber = :accessionNumber");
-        }
+        QueryUtil.appendANDwithTextValue(ql, "m.accessionNumber", "accessionNumber", accessionNumber);
     }
 
     private static void setAccessionNumberQueryParameter(Query query,
             String accessionNumber) {
-        if (accessionNumber!=null
-                && !"-".equals(accessionNumber)
-                && !isMustNotNull(accessionNumber)) {
-            query.setParameter("accessionNumber",
-                    containsWildcard(accessionNumber) 
-                            ? toLike(accessionNumber)
-                            : accessionNumber);
-        }
+        QueryUtil.setTextQueryParameter(query, "accessionNumber", accessionNumber);
     }
 
     private static void setStudyInstanceUIDQueryParameter(Query query,

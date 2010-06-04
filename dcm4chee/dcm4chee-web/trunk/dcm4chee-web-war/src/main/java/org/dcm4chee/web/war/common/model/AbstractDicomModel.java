@@ -145,4 +145,5 @@ public abstract class AbstractDicomModel implements Serializable {
     }
 
     public abstract void update(DicomObject dicomObject);
+    public abstract void refresh();
 }

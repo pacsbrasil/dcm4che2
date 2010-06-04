@@ -137,7 +137,6 @@ public class RejectionNoteScuService extends AbstractScheduledScuService impleme
                 break;
             default:
                 LOG.error("Sending Rejection Note KOS failed with Status {}H at calledAET:{}", StringUtils.shortToHex(status), as.getCalledAET());
-                System.out.print('F');
             }
         }
     }

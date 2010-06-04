@@ -233,19 +233,19 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
                 s = iter.next();
                 seriesAttrs = s.getAttributes(true);
                 reqAttrSQ = seriesAttrs.get(Tag.RequestAttributesSequence);
-                if (reqAttrSQ == null)
-                    continue;
-                newReqAttrSQ = seriesAttrs.putSequence(Tag.RequestAttributesSequence);
-                for (int i = 0, len = reqAttrSQ.countItems() ; i < len ; i++) {
-                    rqAttrSqItem = reqAttrSQ.getDicomObject(i);
-                    rpId = rqAttrSqItem.getString(Tag.RequestedProcedureID); 
-                    spsId = rqAttrSqItem.getString(Tag.ScheduledProcedureStepID);
-                    if (!rpspsIDs.contains(rpId+"_"+spsId)) {
-                        newReqAttrSQ.addDicomObject(rqAttrSqItem);
+                if (reqAttrSQ != null) {
+                    newReqAttrSQ = seriesAttrs.putSequence(Tag.RequestAttributesSequence);
+                    for (int i = 0, len = reqAttrSQ.countItems() ; i < len ; i++) {
+                        rqAttrSqItem = reqAttrSQ.getDicomObject(i);
+                        rpId = rqAttrSqItem.getString(Tag.RequestedProcedureID); 
+                        spsId = rqAttrSqItem.getString(Tag.ScheduledProcedureStepID);
+                        if (!rpspsIDs.contains(rpId+"_"+spsId)) {
+                            newReqAttrSQ.addDicomObject(rqAttrSqItem);
+                        }
                     }
+                    if (newReqAttrSQ.isEmpty())
+                        seriesAttrs.remove(Tag.RequestAttributesSequence);
                 }
-                if (newReqAttrSQ.isEmpty())
-                    seriesAttrs.remove(Tag.RequestAttributesSequence);
                 seriesAttrs.putString(Tag.AccessionNumber, VR.SH, null);
                 s.setAttributes(seriesAttrs);
                 em.merge(s);

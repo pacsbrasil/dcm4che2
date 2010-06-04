@@ -38,6 +38,8 @@
 
 package org.dcm4chee.web.dao.util;
 
+import java.util.StringTokenizer;
+
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
@@ -120,5 +122,135 @@ public class QueryUtil {
         }
         return false;
     }
+    public static boolean containsWildcard(String s) {
+        return s.indexOf('*') != -1 || s.indexOf('?') != -1;
+    }
+    public static boolean needEscape(String s) {
+        return s.indexOf('%') != -1 || s.indexOf('_') != -1;
+    }
 
+    public static boolean isMustNotNull(String s) {
+        return "?*".equals(s) || "*?".equals(s);
+    }
+
+    public static String toLike(String s) {
+        StringBuilder param = new StringBuilder();
+        StringTokenizer tokens = new StringTokenizer(s, "*?_%", true);
+        while (tokens.hasMoreTokens()) {
+            String token = tokens.nextToken();
+            switch (token.charAt(0)) {
+            case '%':
+                param.append("\\%");
+                break;
+            case '*':
+                param.append('%');
+                break;
+            case '?':
+                param.append('_');
+                break;
+            case '_':
+                param.append("\\_");
+                break;
+            default:
+                param.append(token);
+            }
+        }
+        return param.toString();
+    }
+
+    public static void appendANDwithTextValue(StringBuilder ql, String fieldName, String varName, String value) {
+        if (value!=null) {
+            ql.append(" AND ").append(fieldName);
+            if ("-".equals(value)) {
+                ql.append(" IS NULL");
+            } else if (isMustNotNull(value)) {
+                ql.append(" IS NOT NULL");
+            } else if (QueryUtil.containsWildcard(value)) {
+                ql.append(" LIKE ");
+                if (needEscape(value)) {
+                    ql.append("'").append(toLike(value)).append("' ESCAPE '\\'");
+                } else {
+                    ql.append(toVarName(fieldName,varName));
+                }
+            } else {
+                ql.append(" = ").append(toVarName(fieldName, varName));
+            }
+        }
+    }
+
+    public static void setTextQueryParameter(Query query, String varName, String value) {
+        if (value!=null
+                && !"-".equals(value)
+                && !QueryUtil.isMustNotNull(value)
+                && !needEscape(value)) {
+            query.setParameter(varName,
+                    QueryUtil.containsWildcard(value)
+                            ? toLike(value)
+                            : value);
+        }
+    }
+
+    public static void appendPatientName(StringBuilder ql, String fieldName, String varName, String patientName) {
+        if (patientName!=null) {
+            ql.append(" AND ").append(fieldName).append(" LIKE ");
+            if (needEscape(patientName)) {
+                ql.append("'").append(toPatientNameQueryString(patientName)).append("' ESCAPE '\\'");
+            } else {
+                ql.append(toVarName(fieldName, varName));
+            }
+        }
+    }
+    
+    public static void setPatientNameQueryParameter(Query query, String varName, String patientName) {
+        if (patientName!=null && !needEscape(patientName)) {
+            query.setParameter(varName, toPatientNameQueryString(patientName));
+        }
+    }
+
+    public static String toPatientNameQueryString(String patientName) {
+        int padcarets = 4;
+        StringBuilder param = new StringBuilder();
+        StringTokenizer tokens = new StringTokenizer(patientName.toUpperCase(),
+                "^*?_%", true);
+        while (tokens.hasMoreTokens()) {
+            String token = tokens.nextToken();
+            switch (token.charAt(0)) {
+            case '%':
+                param.append("\\%");
+                break;
+            case '*':
+                param.append('%');
+                break;
+            case '?':
+                param.append('_');
+                break;
+            case '^':
+                padcarets--;
+                param.append('^');
+                break;
+            case '_':
+                param.append("\\_");
+                break;
+            default:
+                param.append(token);
+            }
+        }
+        while (padcarets-- > 0) {
+            param.append("^%");
+        }
+        return param.toString();
+    }
+
+    private static Object toVarName(String fieldName, String varName) {
+        if (varName == null) {
+            if (fieldName == null)
+                throw new IllegalArgumentException("toVarName: filedName must not be null if varName is null");
+            int pos = fieldName.lastIndexOf('.');
+            varName = ":"+fieldName.substring(++pos);
+        } else if (varName.charAt(0) != ':') {
+            varName = ":"+varName;
+        }
+        return varName;
+    }
+    
 }

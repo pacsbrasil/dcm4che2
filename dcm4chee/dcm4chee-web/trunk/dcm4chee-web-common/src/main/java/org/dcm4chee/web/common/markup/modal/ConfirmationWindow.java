@@ -45,8 +45,6 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -59,23 +57,24 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     
     public static final String FOCUS_ON_CONFIRM = "content:confirm";
     public static final String FOCUS_ON_DECLINE = "content:decline";
+    public static final String FOCUS_ON_CANCEL = "content:cancel";
 
     private T userObject;
     private String focusElementId;
-    private IModel<?> msg, confirm, decline;
+    private IModel<?> msg, confirm, decline, cancel;
     
     private boolean hasStatus;
+    private boolean showCancel = false;
     
-    private static Logger log = LoggerFactory.getLogger(ConfirmationWindow.class);
-
     public ConfirmationWindow(String id) {
-        this(id, new ResourceModel("yesBtn"), new ResourceModel("noBtn"));
+        this(id, new ResourceModel("yesBtn"), new ResourceModel("noBtn"), new ResourceModel("cancelBtn"));
     }
     
-    public ConfirmationWindow(String id, IModel<?> confirm, IModel<?> decline) {
+    public ConfirmationWindow(String id, IModel<?> confirm, IModel<?> decline, IModel<?> cancel) {
         super(id);
         this.confirm = confirm;
         this.decline = decline;
+        this.cancel = cancel;
         initContent();
     }
 
@@ -88,6 +87,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     
     public abstract void onConfirmation(AjaxRequestTarget target, T userObject);
     public void onDecline(AjaxRequestTarget target, T userObject){}
+    public void onCancel(AjaxRequestTarget target, T userObject){}
     public void onOk(AjaxRequestTarget target) {}
     
     @Override
@@ -101,12 +101,19 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject) {
         confirm(target, msg, userObject, FOCUS_ON_DECLINE);
     }
-    
-    public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject, String focusElementId){
+    public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject, String focusElementId) {
+        confirm(target, msg, userObject, focusElementId, false);
+    }
+    public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject, String focusElementId, boolean showCancel){
         this.msg = msg;
         this.userObject = userObject;
         this.focusElementId = focusElementId;
+        this.showCancel = showCancel;
         show(target);
+    }
+
+    public void confirmWithCancel(AjaxRequestTarget target, IModel<?> msg, T userObject) {
+        confirm(target, msg, userObject, FOCUS_ON_CANCEL, true);
     }
     
     public void setStatus(IModel<?> statusMsg) {
@@ -141,7 +148,6 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     onConfirmation(target, userObject);
-                    log.info("hasStatus:"+hasStatus+" msg:"+msg.getObject());
                     if (hasStatus) {
                         target.addComponent(MessageWindowPanel.this);
                     } else {
@@ -164,14 +170,32 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     onDecline(target, userObject);
-                    msg = null;
-                    close(target);
+                    if (hasStatus) {
+                        target.addComponent(MessageWindowPanel.this);
+                    } else {
+                        msg = null;
+                        close(target);
+                    }
                 }
                 @Override
                 public boolean isVisible() {
                     return !hasStatus;
                 }
             }.add(new Label("declineLabel", decline)) );
+            add(new AjaxFallbackLink<Object>("cancel"){
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    onCancel(target, userObject);
+                    msg = null;
+                    close(target);
+                }
+                @Override
+                public boolean isVisible() {
+                    return !hasStatus && showCancel;
+                }
+            }.add(new Label("cancelLabel", cancel)) );
             add(new AjaxFallbackLink<Object>("ok"){
 
                 private static final long serialVersionUID = 1L;

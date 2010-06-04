@@ -55,6 +55,8 @@ public class ModalityWorklistFilter implements Serializable {
     private String patientName;
     private String patientID;
     private String issuerOfPatientID;
+    private Date birthDateMin;
+    private Date birthDateMax;
     private String accessionNumber;
     private boolean extendedQuery;
     private String studyInstanceUID;
@@ -101,6 +103,22 @@ public class ModalityWorklistFilter implements Serializable {
 
     public String getIssuerOfPatientID() {
         return issuerOfPatientID;
+    }
+
+    public Date getBirthDateMin() {
+        return birthDateMin;
+    }
+
+    public void setBirthDateMin(Date birthdateMin) {
+        this.birthDateMin = birthdateMin;
+    }
+
+    public Date getBirthDateMax() {
+        return birthDateMax;
+    }
+
+    public void setBirthDateMax(Date birthdateMax) {
+        this.birthDateMax = birthdateMax;
     }
 
     public String getAccessionNumber() {

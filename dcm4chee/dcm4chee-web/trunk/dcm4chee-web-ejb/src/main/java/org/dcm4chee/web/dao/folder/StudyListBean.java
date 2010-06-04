@@ -41,7 +41,6 @@ package org.dcm4chee.web.dao.folder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -147,124 +146,35 @@ public class StudyListBean implements StudyListLocal {
         }
     }
 
-    private static boolean containsWildcard(String s) {
-        return s.indexOf('*') != -1 || s.indexOf('?') != -1;
-    }
-
-    private static boolean isMustNotNull(String s) {
-        return "?*".equals(s) || "*?".equals(s);
-    }
-
-    private static String toLike(String s) {
-        StringBuilder param = new StringBuilder();
-        StringTokenizer tokens = new StringTokenizer(s, "*?_%", true);
-        while (tokens.hasMoreTokens()) {
-            String token = tokens.nextToken();
-            switch (token.charAt(0)) {
-            case '%':
-                param.append("\\%");
-                break;
-            case '*':
-                param.append('%');
-                break;
-            case '?':
-                param.append('_');
-                break;
-            case '_':
-                param.append("\\_");
-                break;
-            default:
-                param.append(token);
-            }
-        }
-        return param.toString();
-    }
 
     private static void appendPatientNameFilter(StringBuilder ql,
             String patientName) {
-        if (patientName!=null) {
-            ql.append(" AND p.patientName LIKE :patientName");
-        }
+        QueryUtil.appendPatientName(ql, "p.patientName", ":patientName", patientName);
     }
 
     private static void setPatientNameQueryParameter(Query query,
             String patientName) {
-        if (patientName!=null) {
-            int padcarets = 4;
-            StringBuilder param = new StringBuilder();
-            StringTokenizer tokens = new StringTokenizer(patientName.toUpperCase(),
-                    "^*?_%", true);
-            while (tokens.hasMoreTokens()) {
-                String token = tokens.nextToken();
-                switch (token.charAt(0)) {
-                case '%':
-                    param.append("\\%");
-                    break;
-                case '*':
-                    param.append('%');
-                    break;
-                case '?':
-                    param.append('_');
-                    break;
-                case '^':
-                    padcarets--;
-                    param.append('^');
-                    break;
-                case '_':
-                    param.append("\\_");
-                    break;
-                default:
-                    param.append(token);
-                }
-            }
-            while (padcarets-- > 0) {
-                param.append("^%");
-            }
-            query.setParameter("patientName", param.toString());
-        }
+        QueryUtil.setPatientNameQueryParameter(query, "patientName", patientName);
     }
 
     private static void appendPatientIDFilter(StringBuilder ql,
             String patientID) {
-        if (patientID!=null) {
-            ql.append(containsWildcard(patientID)
-                    ? " AND p.patientID LIKE :patientID"
-                    : " AND p.patientID = :patientID");
-        }
+        QueryUtil.appendANDwithTextValue(ql, "p.patientID", "patientID", patientID);
     }
 
     private static void setPatientIDQueryParameter(Query query,
             String patientID) {
-        if (patientID!=null) {
-            query.setParameter("patientID", containsWildcard(patientID) 
-                    ? toLike(patientID)
-                    : patientID);
-        }
+        QueryUtil.setTextQueryParameter(query, "patientID", patientID);
     }
 
     private static void appendIssuerOfPatientIDFilter(StringBuilder ql,
             String issuerOfPatientID) {
-        if (issuerOfPatientID!=null) {
-            ql.append("-".equals(issuerOfPatientID)
-                    ? " AND p.issuerOfPatientID IS NULL" 
-                    : isMustNotNull(issuerOfPatientID)
-                    ? " AND p.issuerOfPatientID IS NOT NULL" 
-                    : containsWildcard(issuerOfPatientID)
-                    ? " AND p.issuerOfPatientID LIKE :issuerOfPatientID"
-                    : " AND p.issuerOfPatientID = :issuerOfPatientID");
-        }
+        QueryUtil.appendANDwithTextValue(ql, "p.issuerOfPatientID", "issuerOfPatientID", issuerOfPatientID);
     }
 
     private static void setIssuerOfPatientIDQueryParameter(Query query,
             String issuerOfPatientID) {
-        if (issuerOfPatientID!=null
-                && !"-".equals(issuerOfPatientID)
-                && !isMustNotNull(issuerOfPatientID)) {
-            query.setParameter("issuerOfPatientID",
-                    containsWildcard(issuerOfPatientID)
-                            ? toLike(issuerOfPatientID)
-                            : issuerOfPatientID);
-        }
+        QueryUtil.setTextQueryParameter(query, "issuerOfPatientID", issuerOfPatientID);
     }
 
     private static void appendPatientBirthDateFilter(StringBuilder ql, Date minDate, Date maxDate) {
@@ -315,27 +225,12 @@ public class StudyListBean implements StudyListLocal {
 
     private static void appendAccessionNumberFilter(StringBuilder ql,
             String accessionNumber) {
-        if (accessionNumber!=null) {
-            ql.append("-".equals(accessionNumber)
-                    ? " AND s.accessionNumber IS NULL"
-                    : isMustNotNull(accessionNumber)
-                    ? " AND s.accessionNumber IS NOT NULL" 
-                    : containsWildcard(accessionNumber)
-                    ? " AND s.accessionNumber LIKE :accessionNumber"
-                    : " AND s.accessionNumber = :accessionNumber");
-        }
+        QueryUtil.appendANDwithTextValue(ql, "s.accessionNumber", "accessionNumber", accessionNumber);
     }
 
     private static void setAccessionNumberQueryParameter(Query query,
             String accessionNumber) {
-        if (accessionNumber!=null
-                && !"-".equals(accessionNumber)
-                && !isMustNotNull(accessionNumber)) {
-            query.setParameter("accessionNumber",
-                    containsWildcard(accessionNumber) 
-                            ? toLike(accessionNumber)
-                            : accessionNumber);
-        }
+        QueryUtil.setTextQueryParameter(query, "accessionNumber", accessionNumber);
     }
 
     private static void appendPpsWithoutMwlFilter(StringBuilder ql, boolean ppsWithoutMwl) {
