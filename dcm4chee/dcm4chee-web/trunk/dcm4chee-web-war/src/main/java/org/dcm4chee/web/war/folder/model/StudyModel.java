@@ -216,4 +216,11 @@ public class StudyModel extends AbstractDicomModel implements Serializable {
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         dataset = dao.updateStudy(getPk(), dicomObject).getAttributes(true);
     }
+    
+    @Override
+    public void refresh() {
+        StudyListLocal dao = (StudyListLocal)
+        JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        dataset = dao.getStudy(getPk()).getAttributes(true);
+    }    
 }

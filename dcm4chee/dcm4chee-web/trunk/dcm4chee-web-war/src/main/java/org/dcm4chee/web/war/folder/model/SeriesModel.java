@@ -217,7 +217,14 @@ public class SeriesModel extends AbstractDicomModel implements Serializable {
                 VR.AE, getSourceAET());
         dataset = dao.updateSeries(getPk(), dicomObject).getAttributes(true);
     }
-
+    
+    @Override
+    public void refresh() {
+        StudyListLocal dao = (StudyListLocal)
+        JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        dataset = dao.getSeries(getPk()).getAttributes(true);
+    }
+    
     public boolean containedBySamePPS(SeriesModel series) {
         String ppsuid1 = getPPSUid();
         String ppsuid2 = series.getPPSUid();

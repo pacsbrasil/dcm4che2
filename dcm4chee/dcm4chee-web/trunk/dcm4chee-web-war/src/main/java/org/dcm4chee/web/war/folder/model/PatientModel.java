@@ -152,4 +152,11 @@ public class PatientModel extends AbstractDicomModel implements Serializable {
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         dataset = dao.updatePatient(getPk(), dicomObject).getAttributes();
     }
+    
+    @Override
+    public void refresh() {
+        StudyListLocal dao = (StudyListLocal)
+        JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        dataset = dao.getPatient(getPk()).getAttributes();
+    }
 }

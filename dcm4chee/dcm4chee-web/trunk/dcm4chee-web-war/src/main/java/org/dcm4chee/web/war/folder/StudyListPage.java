@@ -289,11 +289,12 @@ public class StudyListPage extends Panel {
             @Override
             public void onClick() {
                 ExportPage page = new ExportPage(viewport.getPatients());
+                SelectedEntities.deselectAll(viewport.getPatients());
                 this.setResponsePage(page);
             }
         };
-        exportBtn.setPopupHeight(400);
-        exportBtn.setPopupWidth(550);
+        exportBtn.setPopupHeight(new Integer(new ResourceModel("folder.exportpage.window.height","500").wrapOnAssignment(this).getObject().toString()));
+        exportBtn.setPopupWidth(new Integer(new ResourceModel("folder.exportpage.window.width","650").wrapOnAssignment(this).getObject().toString()));
         exportBtn.add(new Image("exportImg", ImageManager.IMAGE_EXPORT)
         .add(new ImageSizeBehaviour()));
         form.add(exportBtn);
@@ -345,11 +346,26 @@ public class StudyListPage extends Panel {
             public void onConfirmation(AjaxRequestTarget target, SelectedEntities selected) {
                 if (ContentEditDelegate.getInstance().moveToTrash(selected)) {
                     this.setStatus(new StringResourceModel("folder.deleteDone", StudyListPage.this,null));
-                    viewport.getPatients().clear();
+                    if (selected.hasPatients()) {
+                        viewport.getPatients().clear();
+                        queryStudies();
+                    } else {
+                        selected.refreshView(true);
+                    }
                 } else {
                     this.setStatus(new StringResourceModel("folder.deleteFailed", StudyListPage.this,null));
                 }
-                queryStudies();
+            }
+            @Override
+            public void onDecline(AjaxRequestTarget target, SelectedEntities selected) {
+                if (selected.getPpss().size() != 0) {
+                    if (ContentEditDelegate.getInstance().deletePps(selected)) {
+                        this.setStatus(new StringResourceModel("folder.deleteDone", StudyListPage.this,null));
+                        selected.refreshView(true);
+                    } else {
+                        this.setStatus(new StringResourceModel("folder.deleteFailed", StudyListPage.this,null));
+                    }
+                }
             }
             @Override
             public void onOk(AjaxRequestTarget target) {
@@ -366,7 +382,9 @@ public class StudyListPage extends Panel {
             public void onClick(AjaxRequestTarget target) {
                 selected.update(viewport.getPatients());
                 selected.deselectChildsOfSelectedEntities();
-                if (selected.hasDicomSelection()) {
+                if (selected.hasPPS()) {
+                    confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.confirmPpsDelete",this, null,new Object[]{selected}), selected);
+                } else if (selected.hasDicomSelection()) {
                     confirmDelete.confirm(target, new StringResourceModel("folder.confirmDelete",this, null,new Object[]{selected}), selected);
                 } else {
                     msgWin.show(target, getString("folder.noSelection"));
@@ -900,8 +918,8 @@ public class StudyListPage extends Panel {
                     });
                     
                     ((Mpps2MwlLinkPage) linkPage
-                            .setInitialWidth(new Integer(new ResourceModel("folder.mpps2mwl.window.width","800").wrapOnAssignment(this).getObject().toString()))
-                            .setInitialHeight(new Integer(new ResourceModel("folder.mpps2mwl.window.height","600").wrapOnAssignment(this).getObject().toString()))
+                            .setInitialWidth(new Integer(getString("folder.mpps2mwl.window.width")))
+                            .setInitialHeight(new Integer(getString("folder.mpps2mwl.window.height")))
                     )
                     .show(target, ppsModel, form);
                 }
@@ -931,9 +949,13 @@ public class StudyListPage extends Panel {
             }.add(new Image("unlinkImg",ImageManager.IMAGE_STATUS_UNLINKED).add(new ImageSizeBehaviour())));
             
             item.add(new AjaxCheckBox("selected"){
-
                 private static final long serialVersionUID = 1L;
 
+                @Override
+                public boolean isVisible() {
+                    return ppsModel.getDataset() != null;
+                }
+                
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
@@ -1025,7 +1047,7 @@ public class StudyListPage extends Panel {
                 }
                 
             };
-            item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForStudy(seriesModel.getSeriesInstanceUID())) {
+            item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForSeries(seriesModel.getSeriesInstanceUID())) {
                 private static final long serialVersionUID = 1L;
                 @Override
                 public boolean isVisible() {
@@ -1104,25 +1126,6 @@ public class StudyListPage extends Panel {
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
             .add(new Image("webviewImg",ImageManager.IMAGE_WEBVIEWER).add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","instanceWebviewer")));
-/*            item.add( new PopupLink("wado", "wadoPage") {
-                private static final long serialVersionUID = 1L;
-                @Override
-                public void onClick() {
-                    setResponsePage(
-                            new WadoPage(new AbstractReadOnlyModel<String>(){
-                                public String getObject() {
-                                    return WADODelegate.getInstance().getURL(instModel);
-                                }
-                            }) );
-                }
-                @Override
-                public boolean isVisible() {
-                    return WADODelegate.getInstance().getRenderType(instModel.getSopClassUID()) != WADODelegate.NOT_RENDERABLE;
-                }
-            }.add(new Image("wadoImg",ImageManager.IMAGE_WADO)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","wado")));
-*/
             item.add(new ExternalLink("wado", WADODelegate.getInstance().getURL(instModel)){
 
                 private static final long serialVersionUID = 1L;
@@ -1197,9 +1200,12 @@ public class StudyListPage extends Panel {
             .add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","fileDetail")));
             item.add(new AjaxCheckBox("selected"){
-
                 private static final long serialVersionUID = 1L;
 
+                @Override
+                public boolean isVisible() {
+                    return false;//no action on file level at the moment
+                }
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);

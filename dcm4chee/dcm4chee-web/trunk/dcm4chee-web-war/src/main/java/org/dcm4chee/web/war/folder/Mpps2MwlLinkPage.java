@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.folder;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -90,6 +91,8 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     private static final long serialVersionUID = 1L;
     private Mpps2MwlLinkPanelM panel = new Mpps2MwlLinkPanelM("content");
     private List<PPSModel> ppsModels;
+    private PPSModel ppsModelForInfo;
+    private PatientModel ppsPatModelForInfo;
     private Component comp;
 
     private static final ResourceReference CSS = new CompressedResourceReference(Mpps2MwlLinkPage.class, "mpps-link-style.css");
@@ -102,6 +105,8 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     }
     public void show(AjaxRequestTarget target, PPSModel ppsModel, Component c) {
         ppsModels  = toList(ppsModel);
+        ppsModelForInfo = ppsModels.get(0);
+        ppsPatModelForInfo = ppsModelForInfo.getParent().getParent();
         panel.presetSearchfields();
         comp = c;
         super.show(target);
@@ -215,14 +220,44 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         @SuppressWarnings("unchecked")
         private void presetSearchfields() {
             PPSModel ppsModel = ppsModels.get(0);
-            PatientModel patModel = ppsModel.getParent().getParent();
-            String name = patModel.getName();
-            if (name != null && name.length() > 3)
-                name = name.substring(0,4);
-            getViewPort().getFilter().setPatientName(name);
-            String mod = ppsModel.getModality();
-            if(tfModality.getChoices().contains(mod)) {
-                ((IModel<String>)tfModality.getModel()).setObject(ppsModel.getModality());
+            String patPreset = this.getString("folder.mpps2mwl.preset.patientname");
+            if ("delete".equals(patPreset)) {
+                getViewPort().getFilter().setPatientName(null);
+            } else if (patPreset != null) {
+                PatientModel patModel = ppsModel.getParent().getParent();
+                String name = patModel.getName();
+                if ( !"*".equals(patPreset)) {
+                    int nrofChars = Integer.parseInt(patPreset);
+                    if (name != null && name.length() > nrofChars)
+                        name = name.substring(0,nrofChars);
+                }
+                getViewPort().getFilter().setPatientName(name);
+            }
+            String modPreset = this.getString("folder.mpps2mwl.preset.modality");
+            if ("delete".equals(modPreset)) {
+                getViewPort().getFilter().setModality(null);
+            } else if ("mpps".equals(modPreset)){
+                String mod = ppsModel.getModality();
+                if(tfModality.getChoices().contains(mod))
+                    getViewPort().getFilter().setModality(mod);
+            }
+            String startPreset = this.getString("folder.mpps2mwl.preset.startdate");
+            if ("delete".equals(modPreset)) {
+                getViewPort().getFilter().setStartDateMin(null);
+                getViewPort().getFilter().setStartDateMax(null);
+            } else if (startPreset != null) {
+                Calendar cal = Calendar.getInstance();
+                if ("mpps".equals(modPreset)) {
+                    cal.setTime(ppsModel.getDatetime());
+                }
+                cal.set(Calendar.HOUR_OF_DAY, 0);
+                cal.set(Calendar.MINUTE, 0);
+                cal.set(Calendar.MILLISECOND, 0);
+                getViewPort().getFilter().setStartDateMin(cal.getTime());
+                cal.set(Calendar.HOUR_OF_DAY, 23);
+                cal.set(Calendar.MINUTE, 59);
+                cal.set(Calendar.MILLISECOND, 999);
+                getViewPort().getFilter().setStartDateMax(ppsModel.getDatetime());
             }
             queryMWLItems();
         }
@@ -232,42 +267,26 @@ public class Mpps2MwlLinkPage extends ModalWindow {
 
     private class PpsInfoModel implements Serializable{
         private static final long serialVersionUID = 1L;
-        private PPSModel ppsModel;
-        private PatientModel patModel;
 
         @SuppressWarnings("unused")
         public String getPatName() {
-            return getPatientModel().getName();
+            return ppsPatModelForInfo.getName();
         }
         @SuppressWarnings("unused")
         public String getPatId() {
-            return getPatientModel().getId();
+            return ppsPatModelForInfo.getId();
         }
         @SuppressWarnings("unused")
         public String getPatIssuer() {
-            return getPatientModel().getIssuer();
+            return ppsPatModelForInfo.getIssuer();
         }
         @SuppressWarnings("unused")
         public String getModality() {
-            return getPpsModel().getModality();
+            return ppsModelForInfo.getModality();
         }
         @SuppressWarnings("unused")
         public Date getDatetime() {
-            return getPpsModel().getDatetime();
+            return ppsModelForInfo.getDatetime();
         }
-        
-        private PPSModel getPpsModel() {
-            if (ppsModel == null)
-                ppsModel = ppsModels.get(0);
-            return ppsModel;
-        }
-        private PatientModel getPatientModel() {
-            if ( patModel == null) {
-                patModel = getPpsModel().getParent().getParent();
-            }
-            return patModel;
-        }
-        
     }
-    
 }

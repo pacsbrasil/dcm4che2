@@ -251,4 +251,14 @@ public class PPSModel extends AbstractDicomModel implements Serializable {
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         dataset = dao.updateMPPS(getPk(), dicomObject).getAttributes();
     }
+    
+    @Override
+    public void refresh() {
+        if (dataset != null) {
+            StudyListLocal dao = (StudyListLocal)
+            JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+            dataset = dao.getMPPS(getPk()).getAttributes();
+        }
+        numberOfInstances = 0;
+    }
 }

@@ -189,4 +189,11 @@ public class InstanceModel extends AbstractDicomModel implements Serializable {
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         dataset = dao.updateInstance(getPk(), dicomObject).getAttributes(true);
     }
+    
+    @Override
+    public void refresh() {
+        StudyListLocal dao = (StudyListLocal)
+        JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        dataset = dao.getInstance(getPk()).getAttributes(true);
+    }
 }

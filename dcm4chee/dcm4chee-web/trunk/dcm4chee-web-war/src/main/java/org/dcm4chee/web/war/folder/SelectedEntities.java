@@ -39,6 +39,7 @@
 package org.dcm4chee.web.war.folder;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -72,9 +73,6 @@ public class SelectedEntities implements Serializable {
     
     private static Logger log = LoggerFactory.getLogger(SelectedEntities.class);
             
-    public SelectedEntities() {
-    }
-    
     public void update(List<PatientModel> allPatients) {
         clear();
         for ( PatientModel p : allPatients ) {
@@ -166,29 +164,80 @@ public class SelectedEntities implements Serializable {
         instances.clear();
     }
 
+    public static void deselectAll(Collection<? extends AbstractDicomModel> models) {
+        deselectChilds(models);
+    }
     public void deselectChildsOfSelectedEntities() {
         deselectChilds(patients);
     }
     
-    private void deselectChilds(Collection<? extends AbstractDicomModel> models) {
+    private static void deselectChilds(Collection<? extends AbstractDicomModel> models) {
         for (AbstractDicomModel p : models) {
             deselectChildsOf(p, p.levelOfModel());
         }
     }
-    private void deselectChildsOf(AbstractDicomModel p, int parentLevel) {
+    private static void deselectChildsOf(AbstractDicomModel p, int parentLevel) {
         List<? extends AbstractDicomModel> childs = p.getDicomModelsOfNextLevel();
         if ( childs == null || childs.isEmpty())
             return;
         for (AbstractDicomModel c : childs) {
             if ( c.isSelected() ) {
                 c.setSelected(false);
-                log.info("######");
-                log.info("Deselect entity {} because parent is already selected! selected parent level: {}", c, parentLevel);
             }
             deselectChildsOf(c, parentLevel);
         }
     }
     
+    public static void setSelectionAtLevel(Collection<? extends AbstractDicomModel> all, int level, boolean select, boolean expand) {
+        for ( AbstractDicomModel m : all ) {
+            if ( m.levelOfModel() == level ) {
+                m.setSelected(select);
+            } else if (m.levelOfModel() < level) {
+                Collection<? extends AbstractDicomModel> modelsOfNextLevel = m.getDicomModelsOfNextLevel();
+                if (modelsOfNextLevel.size() == 0 && expand) {
+                    m.expand();
+                    modelsOfNextLevel = m.getDicomModelsOfNextLevel();
+                }
+                setSelectionAtLevel(modelsOfNextLevel, level, select, expand);
+            }
+        }
+    }
+    
+    public void refreshView(boolean deselect) {
+        for (InstanceModel m : instances) {
+            refreshChilds(m.getParent());
+            m.getParent().getParent().refresh();
+            m.getParent().getParent().getParent().refresh();//refresh study
+            if (deselect) 
+                m.setSelected(false);
+        }
+        for (SeriesModel m : seriess) {
+            refreshChilds(m.getParent().getParent());
+            if (deselect) 
+                m.setSelected(false);
+        }
+        for (PPSModel m : ppss) {
+            refreshChilds(m.getParent());
+            if (deselect) 
+                m.setSelected(false);
+        }
+        for (StudyModel m : studies) {
+            refreshChilds(m.getParent());
+            if (deselect) 
+                m.setSelected(false);
+        }
+        if (deselect) {
+            for (PatientModel m : patients) {
+                m.setSelected(false);
+            }
+        }
+    }
+    
+    private void refreshChilds(AbstractDicomModel m) {
+        m.collapse();
+        m.expand();
+        m.refresh();
+    }
     public String toString() {
         StringBuilder sb = new StringBuilder();
         if (patients.size()>0) sb.append(" Patients:").append(patients.size());

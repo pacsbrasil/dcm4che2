@@ -53,6 +53,7 @@ import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
+import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.link.PopupCloseLink.ClosePopupPage;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
@@ -65,6 +66,7 @@ import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.util.StringUtils;
+import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
@@ -85,7 +87,7 @@ import org.slf4j.LoggerFactory;
  * @since Jan 11, 2010
  */
 public class ExportPage extends BaseWicketPage {
-    private static final MetaDataKey<String> LAST_DESTINATION_AET_ATTRIBUTE = new MetaDataKey<String>(){
+    private static final MetaDataKey<AE> LAST_DESTINATION_AET_ATTRIBUTE = new MetaDataKey<AE>(){
 
         private static final long serialVersionUID = 1L;
     };
@@ -94,23 +96,23 @@ public class ExportPage extends BaseWicketPage {
         private static final long serialVersionUID = 1L;
     };
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss,SSS");
-    private String destinationAET;
+    private AE destinationAET;
     private boolean closeOnFinished;
     private static int id_count = 0;
     private static int id_req_count = 0;
 
-    private List<String> destinationAETs = new ArrayList<String>();
+    private List<AE> destinationAETs = new ArrayList<AE>();
     private int resultId;
     private ExportInfo exportInfo;
     
-    private IModel<String> destinationModel = new IModel<String>(){
+    private IModel<AE> destinationModel = new IModel<AE>(){
 
         private static final long serialVersionUID = 1L;
         
-        public String getObject() {
+        public AE getObject() {
             return destinationAET;
         }
-        public void setObject(String dest) {
+        public void setObject(AE dest) {
             destinationAET = dest;
         }
         public void detach() {}
@@ -145,8 +147,21 @@ public class ExportPage extends BaseWicketPage {
         form.add( new Label("selectedSeriesValue", new PropertyModel<Integer>(exportInfo, "nrOfSeries")));
         form.addLabel("selectedInstances");
         form.add( new Label("selectedInstancesValue", new PropertyModel<Integer>(exportInfo, "nrOfInstances")));
-        form.add(new DropDownChoice<String>("destinationAETs", destinationModel, destinationAETs){
+        form.add(new DropDownChoice<AE>("destinationAETs", destinationModel, destinationAETs, new IChoiceRenderer<AE>(){
+            private static final long serialVersionUID = 1L;
 
+            public Object getDisplayValue(AE ae) {
+                if (ae.getDescription() == null) {
+                    return ae.getTitle();
+                } else {
+                    return ae.getTitle()+"("+ae.getDescription()+")";
+                }
+            }
+
+            public String getIdValue(AE ae, int idx) {
+                return String.valueOf(idx);
+            }
+        }){
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -245,7 +260,7 @@ public class ExportPage extends BaseWicketPage {
     private void initDestinationAETs() {
         destinationAETs.clear();
         AEHomeLocal dao = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
-        destinationAETs.addAll(dao.listAETitles());
+        destinationAETs.addAll(dao.findAll());
         if ( destinationAET == null && destinationAETs.size() > 0) {
             destinationAET = destinationAETs.get(0);
         }
@@ -265,7 +280,7 @@ public class ExportPage extends BaseWicketPage {
             getExportResults().get(resultId).clear();
         }
         for (MoveRequest rq : exportInfo.getMoveRequests()) {
-            export(destinationAET, rq.patId, rq.studyIUIDs, rq.seriesIUIDs, rq.sopIUIDs, rq.toString(), result);
+            export(destinationAET.getTitle(), rq.patId, rq.studyIUIDs, rq.seriesIUIDs, rq.sopIUIDs, rq.toString(), result);
         }
     }
 

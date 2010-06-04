@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.folder;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -102,7 +103,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
                 moveToTrash("moveStudiesToTrash", toPks(selected.getStudies()));
             }
             if ( selected.hasPPS()) {
-                moveToTrash("movePpsToTrash", toPks(selected.getPpss()));
+                moveToTrash("moveSeriesOfPpsToTrash", toPks(selected.getPpss()));
             }
             if ( selected.hasSeries()) {
                 moveToTrash("moveSeriesToTrash", toPks(selected.getSeries()));
@@ -112,6 +113,19 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
             }
         } catch (Exception x) {
             String msg = "Move to trash failed! Reason:"+x.getMessage();
+            log.error(msg,x);
+            return false;
+        }
+        return true;
+    }
+    
+    public boolean deletePps(SelectedEntities selected) {
+        try {
+            server.invoke(serviceObjectName, "deletePps", 
+                new Object[]{toPks(selected.getPpss())}, 
+                new String[]{long[].class.getName()});
+        } catch (Exception x) {
+            String msg = "Delete PPS failed! Reason:"+x.getMessage();
             log.error(msg,x);
             return false;
         }
