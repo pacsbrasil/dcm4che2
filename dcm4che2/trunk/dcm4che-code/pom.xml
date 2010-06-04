@@ -10,10 +10,10 @@
   <name>dcm4che-codeBase</name>
   <description></description>
   <dependencies>
-  	<dependency>
-  		<groupId>dcm4che</groupId>
-  		<artifactId>dcm4che-core</artifactId>
-  		<version>2.0.23-SNAPSHOT</version>
-  	</dependency>
+    <dependency>
+      <groupId>dcm4che</groupId>
+      <artifactId>dcm4che-core</artifactId>
+      <version>2.0.23-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 </project>
