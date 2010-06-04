@@ -43,6 +43,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -324,8 +325,8 @@ public class ContentEditService extends ServiceMBeanSupport {
         return rejNotes;
     }
 
-    public DicomObject[] movePpsToTrash(long[] pks) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree entityTree = lookupDicomEditLocal().movePpsToTrash(pks);
+    public DicomObject[] moveSeriesOfPpsToTrash(long[] pks) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        EntityTree entityTree = lookupDicomEditLocal().moveSeriesOfPpsToTrash(pks);
         if (entityTree.isEmpty())
             return null;
         DicomObject[] rejNotes = getRejectionNotes(entityTree);
@@ -335,6 +336,19 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
         processIANs(entityTree, Availability.UNAVAILABLE);
         return rejNotes;
+    }
+    
+    public List<MPPS> deletePps(long[] ppsPks) {
+        log.info("********* nrOf ppsPks:"+ppsPks.length);
+        List<MPPS> mppss = lookupDicomEditLocal().deletePps(ppsPks);
+        log.info("********* nrOf pps deleted:"+mppss.size());
+        for (MPPS mpps : mppss) {
+            logProcedureRecord(mpps.getPatient().getAttributes(), 
+                mpps.getAttributes().getString(new int[]{Tag.ScheduledStepAttributesSequence,0,Tag.StudyInstanceUID}),
+                mpps.getAccessionNumber(), 
+                ProcedureRecordMessage.UPDATE, "MPPS deleted");
+        }
+        return mppss;
     }
     
     public DicomObject moveStudyToTrash(String iuid) throws InstanceNotFoundException, MBeanException, ReflectionException {

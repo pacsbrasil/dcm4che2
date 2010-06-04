@@ -277,15 +277,26 @@
       <return-type>[Lorg.dcm4che2.data.DicomObject;</return-type>
    </operation>
    <operation impact="ACTION">
-      <description><![CDATA[ Delete MPPS (and Series) with given list of primary keys.
+      <description><![CDATA[ Delete MPPS (and referenced Series) with given list of primary keys.
       		]]> </description>
-      <name>movePpsToTrash</name>
+      <name>moveSeriesOfPpsToTrash</name>
       <parameter>
         <description>Array of pk's</description>
         <name>pks</name>
         <type>[J</type>
       </parameter>
       <return-type>[Lorg.dcm4che2.data.DicomObject;</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Delete MPPS with given list of primary keys (remove PPS info from series).
+      		]]> </description>
+      <name>deletePps</name>
+      <parameter>
+        <description>Array of pk's</description>
+        <name>pks</name>
+        <type>[J</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
    </operation>
    <operation impact="ACTION">
       <description><![CDATA[ Deletes the study with given StudyInstanceUID.
