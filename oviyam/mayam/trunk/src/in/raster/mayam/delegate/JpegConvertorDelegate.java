@@ -147,6 +147,7 @@ public class JpegConvertorDelegate {
             }
             }catch(StringIndexOutOfBoundsException e)
             {
+                e.printStackTrace();
             }            
             File outputJpegFile = new File(outputPath, outputFileName+".jpg");
             ImageInputStream iis = ImageIO.createImageInputStream(inputDicomFile);

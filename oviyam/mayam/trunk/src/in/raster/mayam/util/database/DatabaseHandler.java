@@ -249,7 +249,7 @@ public class DatabaseHandler {
             conn.createStatement().execute("insert into" + "ae values('" + serverName + "','" + host + "','" + location + "','" + aeTitle + "'," + port + "," + headerPort + "," + imagePort + ")");
             conn.commit();
         } catch (SQLException ex) {
-            //  Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+              Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
     }
 
@@ -331,7 +331,7 @@ public class DatabaseHandler {
             sql = "create table theme(pk integer primary key GENERATED ALWAYS AS IDENTITY,name varchar(255),status varchar(255))";
             statement.executeUpdate(sql);
         } catch (SQLException ex) {
-            // Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }    
 
@@ -363,7 +363,7 @@ public class DatabaseHandler {
                 studyList.addElement(st);
             }
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
         return studyList;
     }
@@ -568,6 +568,7 @@ public class DatabaseHandler {
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return presetList;
 
@@ -636,6 +637,7 @@ public class DatabaseHandler {
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return serverList;
     }
@@ -656,8 +658,7 @@ public class DatabaseHandler {
 
         } catch (SQLException ex) {
             rowColumn[0] = 1;
-            rowColumn[1] = 1;
-            // Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+            rowColumn[1] = 1;            
         }
         return rowColumn;
     }
@@ -725,6 +726,7 @@ public class DatabaseHandler {
             try {
                 data = dis.readDicomObject();
             } catch (EOFException e) {
+                e.printStackTrace();
             }
             if (data != null) {
                 writeDataToDatabase(data);
@@ -765,7 +767,7 @@ public class DatabaseHandler {
                 conn.createStatement().execute("insert into " + patientTable + " values('" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.PatientName) + "'," + dat + ",'" + dataset.getString(Tag.PatientSex) + "')");
                 conn.commit();
             } catch (SQLException ex) {
-                // Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+                 Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -802,7 +804,7 @@ public class DatabaseHandler {
                 conn.createStatement().execute("insert into " + studyTable + " values('" + dataset.getString(Tag.StudyInstanceUID) + "'," + dat + ",'" + accessionno + "','" + refName + "','" + studyDescription.replace('\'', ' ') + "','" + dataset.getString(Tag.Modality) + "'," + noSeries + "," + noInstance + "," + 0 + "," + 1 + ",'" + retAe + "','" + dataset.getString(Tag.PatientID) + "')");
                 conn.commit();
             } catch (SQLException ex) {
-                //Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
 
         }
@@ -839,7 +841,7 @@ public class DatabaseHandler {
                 conn.createStatement().execute("insert into " + seriesTable + " values('" + dataset.getString(Tag.SeriesInstanceUID) + "','" + seriesNo + "','" + modality + "','" + studyDesc + "','" + institution + "'," + noSeries + ",'" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "')");
                 conn.commit();
             } catch (SQLException ex) {
-                // Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+                 Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
 
         }
@@ -890,7 +892,7 @@ public class DatabaseHandler {
                 list.add(value);
             }
         } catch (Exception e) {
-            System.out.println(e);
+           e.printStackTrace();
         }
         Root = list.toArray();
         return Root;
@@ -908,7 +910,7 @@ public class DatabaseHandler {
                 list.add(value);
             }
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
         Root = list.toArray();
         return Root;
@@ -923,7 +925,7 @@ public class DatabaseHandler {
                 ae = new AEModel(rs.getString("logicalname"), rs.getString("hostname"), rs.getString("aetitle"), rs.getInt("port"));
             }
         } catch (Exception ex) {
-            // Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+             ex.printStackTrace();
         }
         return ae;
 
@@ -943,6 +945,7 @@ public class DatabaseHandler {
                 presetList.add(presetModel);
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return presetList;
     }
@@ -965,6 +968,7 @@ public class DatabaseHandler {
             presetModel.setWindowLevel(rs.getString("windowlevel"));
             presetModel.setWindowWidth(rs.getString("windowwidth"));
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return presetModel;
     }
@@ -1012,6 +1016,7 @@ public class DatabaseHandler {
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return fileArray;
     }
@@ -1100,6 +1105,7 @@ public class DatabaseHandler {
         try {
             String sql = "select studyDesc from Study where StudyInstanceUID='" + studyUID + "'";
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return studyDesc;
     }
@@ -1112,6 +1118,7 @@ public class DatabaseHandler {
             rs.next();
             seriesDesc = rs.getString("SeriesDescription");
         } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return seriesDesc;
@@ -1125,6 +1132,7 @@ public class DatabaseHandler {
             rs.next();
             size = rs.getInt(1);
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return size;
     }
@@ -1216,7 +1224,7 @@ public class DatabaseHandler {
             statement.execute("drop table modality");
             conn.commit();
         } catch (SQLException e) {
-           // e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -1229,7 +1237,7 @@ public class DatabaseHandler {
             conn.commit();
 
         } catch (SQLException e) {
-            // e.printStackTrace();            
+             e.printStackTrace();            
         }
     }
 
@@ -1307,7 +1315,7 @@ public class DatabaseHandler {
             boolean b = conn.createStatement().execute(sql);
             conn.commit();
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 
@@ -1323,7 +1331,7 @@ public class DatabaseHandler {
             }
             conn.commit();
         } catch (Exception e) {
-           // e.printStackTrace();
+            e.printStackTrace();
             }
     }
 
@@ -1333,7 +1341,7 @@ public class DatabaseHandler {
             boolean b = conn.createStatement().execute(sql);
             conn.commit();
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 

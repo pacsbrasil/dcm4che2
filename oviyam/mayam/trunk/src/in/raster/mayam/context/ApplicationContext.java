@@ -141,6 +141,7 @@ public class ApplicationContext {
             try {
                 fileOutputStream.close();
             } catch (IOException ex) {
+                ex.printStackTrace();
             }
         }
     }    

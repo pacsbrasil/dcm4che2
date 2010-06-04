@@ -69,6 +69,7 @@ public class DicomTagsReader {
             dcmObject = dcmInputStream.readDicomObject();
             dcmInputStream.close();
         } catch (Exception e) {
+            e.printStackTrace();
         }
 
         //Call to Parsing Tags in an Array List
@@ -119,6 +120,7 @@ public class DicomTagsReader {
                 dcmTags.setTagValue(dcmObject.getString(tag));
 
             } catch (Exception e) {
+                e.printStackTrace();
             }
 
             //Adding DicomTags object to Tags ArrayList

@@ -825,6 +825,7 @@ public class MainScreen extends javax.swing.JFrame {
                 dicomTagsViewer.setVisible(true);
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }//GEN-LAST:event_metaDataButtonActionPerformed
     private void aboutMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuActionPerformed

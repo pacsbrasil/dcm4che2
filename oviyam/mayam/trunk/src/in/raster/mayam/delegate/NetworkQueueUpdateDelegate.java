@@ -91,6 +91,7 @@ public class NetworkQueueUpdateDelegate {
             try {
                 data = dis.readDicomObject();
             } catch (EOFException e) {
+                e.printStackTrace();
             }
             if (data != null) {
                 ApplicationContext.databaseRef.writeDataToDatabase(data);
@@ -121,6 +122,7 @@ public class NetworkQueueUpdateDelegate {
             }
             dis.close();
         } catch (IOException ex) {
+            ex.printStackTrace();
             //  Logger.getLogger(NetworkQueueUpdate.clas   s.getName()).log(Level.SEVERE, null, ex);
         }
 

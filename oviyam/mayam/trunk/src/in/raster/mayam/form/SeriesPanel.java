@@ -108,6 +108,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
             readDicomFile(new File(dicomFileUrl));
             retrieveInfo();
         } catch (Exception e) {
+            e.printStackTrace();
         }
         initComponents();
         this.addListeners();

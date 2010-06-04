@@ -39,7 +39,6 @@
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
-import java.awt.Color;
 import javax.swing.JFrame;
 
 /**

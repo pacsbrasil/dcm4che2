@@ -614,6 +614,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
             }
         } catch (Exception e) {
             System.out.println("Select a Server");
+            e.printStackTrace();
         }
         startSearch = false;
 }//GEN-LAST:event_queryButtonActionPerformed
