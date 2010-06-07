@@ -57,7 +57,8 @@ public class StudyModel {
     private String studyDate;
     private String studyDescription;
     private String modalitiesInStudy;
-    private String studyUID;    
+    private String studyUID;
+    private String []modality;
     
     public StudyModel() {
     }
@@ -65,7 +66,16 @@ public class StudyModel {
         studyUID = dataSet.getString(Tags.StudyInstanceUID);
         studyDescription = dataSet.getString(Tags.StudyDescription) != null ? dataSet.getString(Tags.StudyDescription) : "";
         studyDate = dataSet.getString(Tags.StudyDate) != null ? dataSet.getString(Tags.StudyDate) : "unknown";
-        modalitiesInStudy = dataSet.getString(Tags.ModalitiesInStudy) != null ? dataSet.getString(Tags.ModalitiesInStudy) : "";
+        modality=dataSet.getStrings(Tags.ModalitiesInStudy) != null ? dataSet.getStrings(Tags.ModalitiesInStudy):null ;
+        if(modality!=null)
+        for(int i=0;i<modality.length;i++)
+        {
+            if(i==0)
+            modalitiesInStudy=modality[i];
+            else
+            modalitiesInStudy+="\\"+modality[i];
+        }
+       // modalitiesInStudy = dataSet.getString(Tags.ModalitiesInStudy) != null ? dataSet.getString(Tags.ModalitiesInStudy) : "";
         patientName = dataSet.getString(Tags.PatientName) != null ? dataSet.getString(Tags.PatientName) : "";
         patientId= dataSet.getString(Tags.PatientID) != null ? dataSet.getString(Tags.PatientID) : "";
         dob= dataSet.getString(Tags.PatientBirthDate) != null ? dataSet.getString(Tags.PatientBirthDate) : "";

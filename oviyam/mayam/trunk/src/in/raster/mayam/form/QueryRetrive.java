@@ -80,41 +80,44 @@ import javax.swing.event.ListSelectionListener;
  * @version 0.5
  *
  */
-public class QueryRetrive extends javax.swing.JFrame implements ItemListener, ServerChangeListener, ListSelectionListener {
+public class QueryRetrive extends javax.swing.JFrame implements ServerChangeListener, ListSelectionListener {
 
     /** Creates new form QueryRetrive */
     public QueryRetrive() {
         initComponents();
-        refreshModels();
-        addModalityItemListener();
+        refreshModels();       
         addSearchDateitemListener();
-    }
-
-    private void addModalityItemListener() {
-        allRadio.addItemListener(this);
-        ctRadio.addItemListener(this);
-        crRadio.addItemListener(this);
-        xaRadio.addItemListener(this);
-        mrRadio.addItemListener(this);
-        usRadio.addItemListener(this);
-        scRadio.addItemListener(this);
-        dxRadio.addItemListener(this);
-        nmRadio.addItemListener(this);
-        otRadio.addItemListener(this);
-        pxRadio.addItemListener(this);
-        rfRadio.addItemListener(this);
-        drRadio.addItemListener(this);
+        addModalityitemListener();
     }
 
     private void addSearchDateitemListener() {
-        betweenRadio.addItemListener(this);
-        lastmonthRadio.addItemListener(this);
-        lastweekRadio.addItemListener(this);
-        yesterdayRadio.addItemListener(this);
-        todayRadio.addItemListener(this);
-        anydateRadio.addItemListener(this);
+        SearchDaysHandler searchDaysHandler=new SearchDaysHandler();
+        betweenRadio.addItemListener(searchDaysHandler);
+        lastmonthRadio.addItemListener(searchDaysHandler);
+        lastweekRadio.addItemListener(searchDaysHandler);
+        yesterdayRadio.addItemListener(searchDaysHandler);
+        todayRadio.addItemListener(searchDaysHandler);
+        anydateRadio.addItemListener(searchDaysHandler);
     }
 
+    private void addModalityitemListener() {
+        ModalityHandler modalityHandler=new ModalityHandler();
+        ctCheckBox.addItemListener(modalityHandler);
+        mrCheckBox.addItemListener(modalityHandler);
+        xaCheckBox.addItemListener(modalityHandler);
+        crCheckBox.addItemListener(modalityHandler);
+        scCheckBox.addItemListener(modalityHandler);
+        nmCheckBox.addItemListener(modalityHandler);
+        rfCheckBox.addItemListener(modalityHandler);
+        dxCheckBox.addItemListener(modalityHandler);
+        pxCheckBox.addItemListener(modalityHandler);
+        usCheckBox.addItemListener(modalityHandler);
+        otCheckBox.addItemListener(modalityHandler);
+        drCheckBox.addItemListener(modalityHandler);
+        srCheckBox.addItemListener(modalityHandler);
+        mgCheckBox.addItemListener(modalityHandler);
+        rgCheckBox.addItemListener(modalityHandler);
+    }
     public void refreshModels() {
         setServerTableModel();
         setServerName();
@@ -157,15 +160,6 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
         modalityGroup = new javax.swing.ButtonGroup();
         jPanel9 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel3 = new javax.swing.JPanel();
-        patientNameText = new javax.swing.JTextField();
-        jPanel4 = new javax.swing.JPanel();
-        patientIDText = new javax.swing.JTextField();
-        jPanel5 = new javax.swing.JPanel();
-        accessionNoText = new javax.swing.JTextField();
-        jPanel6 = new javax.swing.JPanel();
-        birthDateSpinner = new javax.swing.JSpinner();
         jPanel1 = new javax.swing.JPanel();
         anydateRadio = new javax.swing.JRadioButton();
         todayRadio = new javax.swing.JRadioButton();
@@ -175,20 +169,32 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
         betweenRadio = new javax.swing.JRadioButton();
         fromSpinner = new javax.swing.JSpinner();
         toSpinner = new javax.swing.JSpinner();
+        jPanel10 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        patientNameText = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        patientIDText = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        accessionNoText = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        birthDateSpinner = new javax.swing.JSpinner();
         jPanel2 = new javax.swing.JPanel();
-        allRadio = new javax.swing.JRadioButton();
-        ctRadio = new javax.swing.JRadioButton();
-        crRadio = new javax.swing.JRadioButton();
-        xaRadio = new javax.swing.JRadioButton();
-        mrRadio = new javax.swing.JRadioButton();
-        usRadio = new javax.swing.JRadioButton();
-        scRadio = new javax.swing.JRadioButton();
-        dxRadio = new javax.swing.JRadioButton();
-        nmRadio = new javax.swing.JRadioButton();
-        otRadio = new javax.swing.JRadioButton();
-        pxRadio = new javax.swing.JRadioButton();
-        rfRadio = new javax.swing.JRadioButton();
-        drRadio = new javax.swing.JRadioButton();
+        ctCheckBox = new javax.swing.JCheckBox();
+        mrCheckBox = new javax.swing.JCheckBox();
+        xaCheckBox = new javax.swing.JCheckBox();
+        crCheckBox = new javax.swing.JCheckBox();
+        scCheckBox = new javax.swing.JCheckBox();
+        nmCheckBox = new javax.swing.JCheckBox();
+        rfCheckBox = new javax.swing.JCheckBox();
+        dxCheckBox = new javax.swing.JCheckBox();
+        pxCheckBox = new javax.swing.JCheckBox();
+        usCheckBox = new javax.swing.JCheckBox();
+        otCheckBox = new javax.swing.JCheckBox();
+        drCheckBox = new javax.swing.JCheckBox();
+        srCheckBox = new javax.swing.JCheckBox();
+        mgCheckBox = new javax.swing.JCheckBox();
+        rgCheckBox = new javax.swing.JCheckBox();
+        modalityText = new javax.swing.JTextField();
         serverlistScroll = new javax.swing.JScrollPane();
         serverListTable = new javax.swing.JTable();
         jPanel8 = new javax.swing.JPanel();
@@ -199,29 +205,15 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
         studyListTable = new javax.swing.JTable();
         serverNameLabel = new javax.swing.JLabel();
         headerLabel = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
 
         setTitle("Query/Retrieve");
 
-        jPanel3.setLayout(new java.awt.BorderLayout());
-        jPanel3.add(patientNameText, java.awt.BorderLayout.CENTER);
+        jPanel9.setMaximumSize(new java.awt.Dimension(1200, 1400));
 
-        jTabbedPane1.addTab("Patient Name", jPanel3);
+        jPanel7.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
 
-        jPanel4.setLayout(new java.awt.BorderLayout());
-        jPanel4.add(patientIDText, java.awt.BorderLayout.CENTER);
-
-        jTabbedPane1.addTab("Patient ID", jPanel4);
-
-        jPanel5.setLayout(new java.awt.BorderLayout());
-        jPanel5.add(accessionNoText, java.awt.BorderLayout.CENTER);
-
-        jTabbedPane1.addTab("Accession #", jPanel5);
-
-        jPanel6.add(birthDateSpinner);
-
-        jTabbedPane1.addTab("Birthdate", jPanel6);
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
         searchDaysGroup.add(anydateRadio);
         anydateRadio.setSelected(true);
@@ -251,24 +243,25 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .add(anydateRadio)
-                .addContainerGap(183, Short.MAX_VALUE))
-            .add(jPanel1Layout.createSequentialGroup()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(todayRadio)
+                    .add(anydateRadio)
                     .add(yesterdayRadio)
                     .add(lastweekRadio)
-                    .add(todayRadio)
-                    .add(lastmonthRadio))
-                .add(11, 11, 11)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(lastmonthRadio)
                     .add(betweenRadio)
-                    .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(toSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
-                        .add(fromSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE))))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .add(25, 25, 25)
+                        .add(fromSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addContainerGap(25, Short.MAX_VALUE)
+                        .add(toSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
                 .add(anydateRadio, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(todayRadio, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -277,142 +270,173 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lastweekRadio)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(lastmonthRadio, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-            .add(jPanel1Layout.createSequentialGroup()
+                .add(lastmonthRadio, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(betweenRadio, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(fromSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(toSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(toSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(26, 26, 26))
         );
 
         jPanel1Layout.linkSize(new java.awt.Component[] {betweenRadio, yesterdayRadio}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jPanel10.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
-        modalityGroup.add(allRadio);
-        allRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
-        allRadio.setSelected(true);
-        allRadio.setText("All");
+        jLabel2.setText("Patient Name");
 
-        modalityGroup.add(ctRadio);
-        ctRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
-        ctRadio.setText("CT");
+        jLabel3.setText("Patient ID");
 
-        modalityGroup.add(crRadio);
-        crRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
-        crRadio.setText("CR");
+        jLabel4.setText("Acession #");
 
-        modalityGroup.add(xaRadio);
-        xaRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
-        xaRadio.setText("XA");
+        jLabel5.setText("Date Of Birth");
 
-        modalityGroup.add(mrRadio);
-        mrRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
-        mrRadio.setText("MR");
+        org.jdesktop.layout.GroupLayout jPanel10Layout = new org.jdesktop.layout.GroupLayout(jPanel10);
+        jPanel10.setLayout(jPanel10Layout);
+        jPanel10Layout.setHorizontalGroup(
+            jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel10Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel2)
+                    .add(jLabel3)
+                    .add(jLabel4)
+                    .add(jLabel5))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 23, Short.MAX_VALUE)
+                .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(patientNameText)
+                    .add(patientIDText)
+                    .add(accessionNoText)
+                    .add(birthDateSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel10Layout.setVerticalGroup(
+            jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel10Layout.createSequentialGroup()
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(patientNameText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(patientIDText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(accessionNoText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel4))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel5)
+                    .add(birthDateSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
 
-        modalityGroup.add(usRadio);
-        usRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
-        usRadio.setText("US");
+        jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
-        modalityGroup.add(scRadio);
-        scRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
-        scRadio.setText("SC");
+        ctCheckBox.setText("CT");
 
-        modalityGroup.add(dxRadio);
-        dxRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
-        dxRadio.setText("DX");
+        mrCheckBox.setText("MR");
 
-        modalityGroup.add(nmRadio);
-        nmRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
-        nmRadio.setText("NM");
+        xaCheckBox.setText("XA");
 
-        modalityGroup.add(otRadio);
-        otRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
-        otRadio.setText("OT");
+        crCheckBox.setText("CR");
 
-        modalityGroup.add(pxRadio);
-        pxRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
-        pxRadio.setText("PX");
+        scCheckBox.setText("SC");
 
-        modalityGroup.add(rfRadio);
-        rfRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
-        rfRadio.setText("RF");
+        nmCheckBox.setText("NM");
 
-        modalityGroup.add(drRadio);
-        drRadio.setFont(new java.awt.Font("Lucida Grande", 1, 10));
-        drRadio.setText("DR");
-        drRadio.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                drRadioActionPerformed(evt);
-            }
-        });
+        rfCheckBox.setText("RF");
+
+        dxCheckBox.setText("DX");
+
+        pxCheckBox.setText("PX");
+
+        usCheckBox.setText("US");
+
+        otCheckBox.setText("OT");
+
+        drCheckBox.setText("DR");
+
+        srCheckBox.setText("SR");
+
+        mgCheckBox.setText("MG");
+
+        rgCheckBox.setText("RG");
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel2Layout.createSequentialGroup()
-                        .add(allRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 49, Short.MAX_VALUE)
-                        .add(10, 10, 10)
-                        .add(crRadio, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 49, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(xaRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 53, Short.MAX_VALUE)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(ctCheckBox)
+                            .add(mrCheckBox)
+                            .add(xaCheckBox)
+                            .add(crCheckBox)
+                            .add(scCheckBox))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(rfRadio, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 49, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(ctRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 53, Short.MAX_VALUE)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(nmCheckBox)
+                            .add(rfCheckBox)
+                            .add(dxCheckBox)
+                            .add(pxCheckBox)
+                            .add(usCheckBox))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(scRadio, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 49, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(otCheckBox)
+                            .add(drCheckBox)
+                            .add(srCheckBox)
+                            .add(mgCheckBox)
+                            .add(rgCheckBox)))
                     .add(jPanel2Layout.createSequentialGroup()
-                        .add(mrRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 53, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(nmRadio)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(dxRadio)
-                        .addContainerGap())
-                    .add(usRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)
-                    .add(otRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, pxRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)
-                    .add(drRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)))
+                        .add(6, 6, 6)
+                        .add(modalityText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)))
+                .addContainerGap())
         );
-
-        jPanel2Layout.linkSize(new java.awt.Component[] {crRadio, nmRadio, rfRadio, scRadio}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(allRadio)
-                    .add(dxRadio)
-                    .add(crRadio))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(ctRadio)
-                    .add(scRadio)
-                    .add(pxRadio))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(mrRadio)
-                    .add(nmRadio)
-                    .add(usRadio))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .addContainerGap()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(jPanel2Layout.createSequentialGroup()
-                        .add(otRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(otCheckBox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(drRadio, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(xaRadio)
-                    .add(rfRadio))
-                .addContainerGap())
+                        .add(drCheckBox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(srCheckBox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(mgCheckBox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(rgCheckBox))
+                    .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(jPanel2Layout.createSequentialGroup()
+                            .add(nmCheckBox)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(rfCheckBox)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(dxCheckBox)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(pxCheckBox)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                .add(usCheckBox)
+                                .add(scCheckBox)))
+                        .add(jPanel2Layout.createSequentialGroup()
+                            .add(ctCheckBox)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(mrCheckBox)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(xaCheckBox)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(crCheckBox))))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(modalityText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(41, Short.MAX_VALUE))
         );
-
-        jPanel2Layout.linkSize(new java.awt.Component[] {crRadio, nmRadio, rfRadio, scRadio}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         org.jdesktop.layout.GroupLayout jPanel7Layout = new org.jdesktop.layout.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
@@ -421,18 +445,19 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
             .add(jPanel7Layout.createSequentialGroup()
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE)
+                .add(jPanel10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel7Layout.createSequentialGroup()
-                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 74, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE))
-                .addContainerGap())
+                .addContainerGap()
+                .add(jPanel10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE))
         );
 
         serverListTable.setModel(new ServerTableModel());
@@ -469,7 +494,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
                 .add(queryButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(retrieveButton)
-                .addContainerGap(189, Short.MAX_VALUE))
+                .addContainerGap(338, Short.MAX_VALUE))
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -490,57 +515,62 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
         jScrollPane2.setViewportView(studyListTable);
 
         serverNameLabel.setBackground(new java.awt.Color(41, 116, 217));
-        serverNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
+        serverNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         serverNameLabel.setForeground(new java.awt.Color(255, 255, 255));
         serverNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         serverNameLabel.setText(" Server Name");
         serverNameLabel.setOpaque(true);
 
         headerLabel.setBackground(new java.awt.Color(41, 116, 217));
-        headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
+        headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         headerLabel.setForeground(new java.awt.Color(255, 255, 255));
         headerLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         headerLabel.setText(" DICOM Nodes ");
         headerLabel.setOpaque(true);
 
+        jLabel1.setBackground(new java.awt.Color(41, 116, 217));
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("Query Filter");
+        jLabel1.setOpaque(true);
+
         org.jdesktop.layout.GroupLayout jPanel9Layout = new org.jdesktop.layout.GroupLayout(jPanel9);
         jPanel9.setLayout(jPanel9Layout);
         jPanel9Layout.setHorizontalGroup(
             jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel9Layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel9Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel9Layout.createSequentialGroup()
-                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 963, Short.MAX_VALUE)
-                        .addContainerGap())
+                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1194, Short.MAX_VALUE)
                     .add(jPanel9Layout.createSequentialGroup()
                         .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(serverlistScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
-                            .add(headerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, serverNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, headerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, serverlistScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE)
+                            .add(serverNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 583, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(jPanel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
+                            .add(jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .add(12, 12, 12))
         );
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel9Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(headerLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jPanel9Layout.createSequentialGroup()
-                        .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jPanel7, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jPanel9Layout.createSequentialGroup()
-                                .add(29, 29, 29)
-                                .add(serverlistScroll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 182, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jPanel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(serverNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(headerLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 483, Short.MAX_VALUE)
+                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
+                    .add(serverlistScroll, 0, 236, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(serverNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jPanel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -552,7 +582,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel9, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(jPanel9, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 844, Short.MAX_VALUE)
         );
 
         pack();
@@ -582,7 +612,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
             DcmURL url = new DcmURL("dicom://" + ae.getAeTitle() + "@" + ae.getHostName() + ":" + ae.getPort());
             QueryService qs = new QueryService();
             setPatientInfoToQueryParam();
-            qs.callFindWithQuery(queryParam.getPatientId(), queryParam.getPatientName(), "", queryParam.getSearchDate(), queryParam.getModality(), queryParam.getAccessionNo(), url);
+            qs.callFindWithQuery(queryParam.getPatientId(), queryParam.getPatientName(), "", queryParam.getSearchDate(),getModality(), queryParam.getAccessionNo(), url);
             Vector studyList = new Vector();
             for (int dataSetCount = 0; dataSetCount < qs.getDatasetVector().size(); dataSetCount++) {
                 try {
@@ -729,9 +759,8 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
         }
     }//GEN-LAST:event_studyListTableMouseClicked
 
-    private void drRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drRadioActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_drRadioActionPerformed
+    private class SearchDaysHandler implements ItemListener
+    {
     public void itemStateChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
             if (searchDaysGroup.getSelection() == ((JRadioButton) e.getItem()).getModel()) {
@@ -743,12 +772,55 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
                     toSpinner.setEnabled(false);
                 }
                 queryParam.setSearchDays(((JRadioButton) e.getItem()).getActionCommand());
-            } else {
-                queryParam.setModality(((JRadioButton) e.getItem()).getActionCommand());
-            }
+            }          
         }
     }
+    }
+    private class ModalityHandler implements ItemListener
+    {
+    public void itemStateChanged(ItemEvent e) {
+        String selectedModality=getModality();        
+        if(selectedModality.startsWith("\\"))
+         selectedModality= selectedModality.substring(1);
+        modalityText.setText(selectedModality);
+    }
+    }
+    private String getModality()
+    {
+        String modalityString="";
+        if(ctCheckBox.isSelected())
+            modalityString=ctCheckBox.getActionCommand();
+        if(mrCheckBox.isSelected())
+            modalityString+="\\"+mrCheckBox.getActionCommand();
+        if(xaCheckBox.isSelected())
+            modalityString+="\\"+xaCheckBox.getActionCommand();
+        if(crCheckBox.isSelected())
+            modalityString+="\\"+crCheckBox.getActionCommand();
+        if(scCheckBox.isSelected())
+            modalityString+="\\"+scCheckBox.getActionCommand();
+        if(nmCheckBox.isSelected())
+            modalityString+="\\"+nmCheckBox.getActionCommand();
+        if(rfCheckBox.isSelected())
+            modalityString+="\\"+rfCheckBox.getActionCommand();
+        if(dxCheckBox.isSelected())
+            modalityString+="\\"+dxCheckBox.getActionCommand();
+        if(pxCheckBox.isSelected())
+            modalityString+="\\"+pxCheckBox.getActionCommand();
+        if(usCheckBox.isSelected())
+            modalityString+="\\"+usCheckBox.getActionCommand();
+        if(otCheckBox.isSelected())
+            modalityString+="\\"+otCheckBox.getActionCommand();
+        if(drCheckBox.isSelected())
+            modalityString+="\\"+drCheckBox.getActionCommand();
+        if(srCheckBox.isSelected())
+            modalityString+="\\"+srCheckBox.getActionCommand();
+        if(mgCheckBox.isSelected())
+            modalityString+="\\"+mgCheckBox.getActionCommand();
+        if(rgCheckBox.isSelected())
+            modalityString+="\\"+rgCheckBox.getActionCommand();
 
+        return modalityString;
+    }
     private void osSpecifics() {
         this.setSize(1030, 750);
         if (System.getProperty("os.name").startsWith("Mac")) {
@@ -758,18 +830,12 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
             }
             jPanel1.setBorder(border);
             jPanel2.setBorder(border);
-            jPanel9.setBackground(new Color(216, 216, 216));
-            jTabbedPane1.setBackground(new Color(216, 216, 216));
+            jPanel9.setBackground(new Color(216, 216, 216));        
             jPanel1.setBackground(new Color(216, 216, 216));
-            jPanel2.setBackground(new Color(216, 216, 216));
-            jPanel3.setBackground(new Color(216, 216, 216));
-            jPanel4.setBackground(new Color(216, 216, 216));
-            jPanel5.setBackground(new Color(216, 216, 216));
-            jPanel6.setBackground(new Color(216, 216, 216));
+            jPanel2.setBackground(new Color(216, 216, 216));           
             jPanel7.setBackground(new Color(216, 216, 216));
             jPanel8.setBackground(new Color(216, 216, 216));
             serverlistScroll.setBackground(new Color(216, 216, 216));
-
         }
     }
 
@@ -816,50 +882,54 @@ public class QueryRetrive extends javax.swing.JFrame implements ItemListener, Se
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField accessionNoText;
-    private javax.swing.JRadioButton allRadio;
     private javax.swing.JRadioButton anydateRadio;
     private javax.swing.JRadioButton betweenRadio;
     private javax.swing.JSpinner birthDateSpinner;
-    private javax.swing.JRadioButton crRadio;
-    private javax.swing.JRadioButton ctRadio;
-    private javax.swing.JRadioButton drRadio;
-    private javax.swing.JRadioButton dxRadio;
+    private javax.swing.JCheckBox crCheckBox;
+    private javax.swing.JCheckBox ctCheckBox;
+    private javax.swing.JCheckBox drCheckBox;
+    private javax.swing.JCheckBox dxCheckBox;
     private javax.swing.JSpinner fromSpinner;
     private javax.swing.JLabel headerLabel;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JRadioButton lastmonthRadio;
     private javax.swing.JRadioButton lastweekRadio;
+    private javax.swing.JCheckBox mgCheckBox;
     private javax.swing.ButtonGroup modalityGroup;
-    private javax.swing.JRadioButton mrRadio;
-    private javax.swing.JRadioButton nmRadio;
-    private javax.swing.JRadioButton otRadio;
+    private javax.swing.JTextField modalityText;
+    private javax.swing.JCheckBox mrCheckBox;
+    private javax.swing.JCheckBox nmCheckBox;
+    private javax.swing.JCheckBox otCheckBox;
     private javax.swing.JTextField patientIDText;
     private javax.swing.JTextField patientNameText;
-    private javax.swing.JRadioButton pxRadio;
+    private javax.swing.JCheckBox pxCheckBox;
     private javax.swing.JButton queryButton;
     private javax.swing.JButton retrieveButton;
-    private javax.swing.JRadioButton rfRadio;
-    private javax.swing.JRadioButton scRadio;
+    private javax.swing.JCheckBox rfCheckBox;
+    private javax.swing.JCheckBox rgCheckBox;
+    private javax.swing.JCheckBox scCheckBox;
     private javax.swing.ButtonGroup searchDaysGroup;
     private javax.swing.JTable serverListTable;
     private javax.swing.JLabel serverNameLabel;
     private javax.swing.JScrollPane serverlistScroll;
+    private javax.swing.JCheckBox srCheckBox;
     private javax.swing.JTable studyListTable;
     private javax.swing.JSpinner toSpinner;
     private javax.swing.JRadioButton todayRadio;
-    private javax.swing.JRadioButton usRadio;
+    private javax.swing.JCheckBox usCheckBox;
     private javax.swing.JButton verifyButton;
-    private javax.swing.JRadioButton xaRadio;
+    private javax.swing.JCheckBox xaCheckBox;
     private javax.swing.JRadioButton yesterdayRadio;
     // End of variables declaration//GEN-END:variables
     public ArrayList<DicomServerDelegate> dicomServerArray = new ArrayList<DicomServerDelegate>();
