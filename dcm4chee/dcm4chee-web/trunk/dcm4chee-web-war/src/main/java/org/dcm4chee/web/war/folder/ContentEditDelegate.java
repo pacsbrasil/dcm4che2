@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.folder;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;

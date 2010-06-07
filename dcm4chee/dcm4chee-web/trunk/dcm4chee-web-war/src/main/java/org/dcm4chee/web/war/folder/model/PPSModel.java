@@ -52,13 +52,14 @@ import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Dec 19, 2008
  */
-public class PPSModel extends AbstractDicomModel implements Serializable {
+public class PPSModel extends AbstractEditableDicomModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
@@ -246,6 +247,7 @@ public class PPSModel extends AbstractDicomModel implements Serializable {
         return series;
     }
     
+    @Override
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);

@@ -145,8 +145,4 @@ public class PrivInstanceModel extends AbstractDicomModel implements Serializabl
     public List<? extends AbstractDicomModel> getDicomModelsOfNextLevel() {
         return null; //instance is the last DICOM level.
     }
-
-    @Override
-    public void update(DicomObject dicomObject) {
-    }
 }

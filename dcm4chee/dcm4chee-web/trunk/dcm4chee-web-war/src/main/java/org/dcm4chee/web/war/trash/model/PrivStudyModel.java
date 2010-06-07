@@ -44,7 +44,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.entity.PrivateSeries;
@@ -181,9 +180,5 @@ public class PrivStudyModel extends AbstractDicomModel implements Serializable {
     @Override
     public List<? extends AbstractDicomModel> getDicomModelsOfNextLevel() {
         return seriess;
-    }
-    
-    @Override
-    public void update(DicomObject dicomObject) {
     }
 }

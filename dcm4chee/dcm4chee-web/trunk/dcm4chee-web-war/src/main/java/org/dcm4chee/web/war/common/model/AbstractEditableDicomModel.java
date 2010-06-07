@@ -36,54 +36,19 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.common;
+package org.dcm4chee.web.war.common.model;
 
-import org.apache.wicket.Page;
-import org.apache.wicket.ResourceReference;
-import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.markup.html.resources.CompressedResourceReference;
-import org.dcm4chee.web.common.base.BaseWicketPage;
-import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
+import org.dcm4che2.data.DicomObject;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
- * @author Franz Willer <franz.willer@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since Nov 12, 2009
+ * @since June 07, 2010
  */
-public class EditDicomObjectPage extends WebPage {
+public abstract class AbstractEditableDicomModel extends AbstractDicomModel {
 
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    private static final ResourceReference CSS = new CompressedResourceReference(EditDicomObjectPage.class, "edit-style.css");
-    
-    public EditDicomObjectPage(final Page page,
-            final AbstractEditableDicomModel model) {
-        
-        if (EditDicomObjectPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(EditDicomObjectPage.BaseCSS));
-        if (EditDicomObjectPage.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(EditDicomObjectPage.CSS));
-        
-        add(new EditDicomObjectPanel("dicomobject", model.getDataset(), model.getClass().getSimpleName()) {
+    private static final long serialVersionUID = 1L;
 
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected void onCancel() {
-                setResponsePage(page);
-            }
-
-            @Override
-            protected void onApply() {
-                model.update(getDicomObject());
-            }
-
-            @Override
-            protected void onSubmit() {
-                model.update(getDicomObject());
-                setResponsePage(page);
-            }
-        });
-    }
+    public abstract void update(DicomObject dicomObject);
+    public abstract void refresh();
 }

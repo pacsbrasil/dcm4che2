@@ -53,13 +53,14 @@ import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Dec 12, 2008
  */
-public class StudyModel extends AbstractDicomModel implements Serializable {
+public class StudyModel extends AbstractEditableDicomModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
     

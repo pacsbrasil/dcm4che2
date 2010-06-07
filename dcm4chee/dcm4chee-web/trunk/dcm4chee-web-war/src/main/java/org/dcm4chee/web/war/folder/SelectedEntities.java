@@ -39,21 +39,19 @@
 package org.dcm4chee.web.war.folder;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 import org.dcm4chee.web.war.folder.model.FileModel;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -71,8 +69,6 @@ public class SelectedEntities implements Serializable {
     private Set<InstanceModel> instances = new HashSet<InstanceModel>();
     private Set<FileModel> files = new HashSet<FileModel>();
     
-    private static Logger log = LoggerFactory.getLogger(SelectedEntities.class);
-            
     public void update(List<PatientModel> allPatients) {
         clear();
         for ( PatientModel p : allPatients ) {
@@ -233,7 +229,7 @@ public class SelectedEntities implements Serializable {
         }
     }
     
-    private void refreshChilds(AbstractDicomModel m) {
+    private void refreshChilds(AbstractEditableDicomModel m) {
         m.collapse();
         m.expand();
         m.refresh();

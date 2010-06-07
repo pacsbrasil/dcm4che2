@@ -217,7 +217,6 @@ public class Mpps2MwlLinkPage extends ModalWindow {
             add(p);
         }
         
-        @SuppressWarnings("unchecked")
         private void presetSearchfields() {
             PPSModel ppsModel = ppsModels.get(0);
             String patPreset = this.getString("folder.mpps2mwl.preset.patientname");

@@ -58,9 +58,9 @@ import org.dcm4chee.web.dao.util.QueryUtil;
 import org.jboss.annotation.ejb.LocalBinding;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since Dec 17, 2008
+ * @since June 07, 2010
  */
 @Stateless
 @LocalBinding (jndiBinding=TrashListLocal.JNDI_NAME)

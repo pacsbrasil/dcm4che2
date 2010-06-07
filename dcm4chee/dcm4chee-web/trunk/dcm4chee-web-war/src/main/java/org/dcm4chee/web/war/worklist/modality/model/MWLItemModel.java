@@ -49,13 +49,14 @@ import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklist;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since 20.04.2010
  */
-public class MWLItemModel extends AbstractDicomModel implements Serializable {
+public class MWLItemModel extends AbstractEditableDicomModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -169,9 +170,17 @@ public class MWLItemModel extends AbstractDicomModel implements Serializable {
         return 0;
     }
 
+    @Override
     public void update(DicomObject dicomObject) {
         ModalityWorklist dao = (ModalityWorklist)
                 JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
         dataset = dao.updateMWLItem(getPk(), dicomObject).getAttributes();
+    }
+
+    @Override
+    public void refresh() {
+        ModalityWorklist dao = (ModalityWorklist)
+        JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
+        dataset = dao.getMWLItem(getPk()).getAttributes();        
     }
 }

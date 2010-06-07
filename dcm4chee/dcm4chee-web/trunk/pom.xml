@@ -6,6 +6,9 @@
   <version>3.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <description>Web Application for DCM4CHEE Archive</description>
+  <properties>
+	<wicket.version>1.4.7_patched</wicket.version>
+  </properties>
   <modules>
     <module>dcm4chee-web-ejb</module>
     <module>dcm4chee-web-common</module>

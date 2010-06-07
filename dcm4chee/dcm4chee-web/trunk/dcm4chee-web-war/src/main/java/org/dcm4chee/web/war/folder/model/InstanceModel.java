@@ -51,13 +51,14 @@ import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Dec 12, 2008
  */
-public class InstanceModel extends AbstractDicomModel implements Serializable {
+public class InstanceModel extends AbstractEditableDicomModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private List<FileModel> files = new ArrayList<FileModel>();

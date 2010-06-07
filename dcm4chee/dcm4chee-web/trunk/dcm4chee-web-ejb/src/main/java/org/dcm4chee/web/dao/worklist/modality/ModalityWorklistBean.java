@@ -341,6 +341,10 @@ public class ModalityWorklistBean implements ModalityWorklist {
                 .getResultList();
     }
 
+    public MWLItem getMWLItem(long pk) {
+        return em.find(MWLItem.class, pk);
+    }
+
     public MWLItem updateMWLItem(long pk, DicomObject attrs) {
         MWLItem mwlItem = em.find(MWLItem.class, pk);
         mwlItem.setAttributes(attrs);

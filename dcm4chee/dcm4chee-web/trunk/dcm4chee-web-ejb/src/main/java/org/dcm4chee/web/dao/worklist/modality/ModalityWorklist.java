@@ -58,6 +58,7 @@ public interface ModalityWorklist {
     public List<MWLItem> findAll();
     public int countMWLItems(ModalityWorklistFilter filter);
     public List<MWLItem> findMWLItems(ModalityWorklistFilter filter, int pAGESIZE, int offset);
+    MWLItem getMWLItem(long pk);
     public MWLItem updateMWLItem(long pk, DicomObject attrs);
         
     public List<String> selectDistinctModalities();

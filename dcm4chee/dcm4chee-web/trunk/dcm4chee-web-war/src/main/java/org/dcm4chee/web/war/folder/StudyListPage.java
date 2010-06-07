@@ -100,6 +100,7 @@ import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.war.WicketSession;
 import org.dcm4chee.web.war.common.EditDicomObjectPage;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 import org.dcm4chee.web.war.folder.model.FileModel;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
@@ -1225,7 +1226,7 @@ public class StudyListPage extends Panel {
         }
     }
     
-    private Link<Object> getEditLink(final AbstractDicomModel model, String tooltipId) {
+    private Link<Object> getEditLink(final AbstractEditableDicomModel model, String tooltipId) {
         Link<Object> link = new Link<Object>("edit") {
             
             private static final long serialVersionUID = 1L;
