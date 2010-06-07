@@ -261,7 +261,7 @@ public class DicomEditBean implements DicomEditLocal {
     }
 
     private void moveInstanceToTrash(Instance instance) {
-        DicomObject attrs = instance.getAttributes(true);
+        DicomObject attrs = instance.getAttributes(false);
         PrivateInstance pInst = new PrivateInstance();
         pInst.setAttributes(attrs);
         pInst.setPrivateType(DELETED);
@@ -292,7 +292,7 @@ public class DicomEditBean implements DicomEditLocal {
             series.getStudy().getPatient().getPk();
         } catch (NoResultException nre) {
             pSeries = new PrivateSeries();//we need parents initialized.
-            DicomObject attrs = series.getAttributes(true);
+            DicomObject attrs = series.getAttributes(false);
             attrs.putString(attrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), 
                     VR.AE, series.getSourceAET());
             pSeries.setAttributes(attrs);
@@ -314,7 +314,7 @@ public class DicomEditBean implements DicomEditLocal {
             study.getPatient().getPk();
         } catch (NoResultException nre) {
             pStudy = new PrivateStudy();
-            pStudy.setAttributes(study.getAttributes(true));
+            pStudy.setAttributes(study.getAttributes(false));
             pStudy.setPrivateType(DELETED);
             Patient pat = study.getPatient();
             PrivatePatient pPat = movePatientToTrash(pat);
