@@ -368,6 +368,7 @@ public class DicomEditBean implements DicomEditLocal {
         em.remove(patient);
     }
 
+    @SuppressWarnings("unchecked")
     public List<MPPS> deletePps(long[] pks) {
         Query q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(p) FROM MPPS p WHERE pk ", pks);
         List<MPPS> mppss = q.getResultList();
@@ -496,6 +497,8 @@ public class DicomEditBean implements DicomEditLocal {
         }
         return study;
     }
+    
+    @SuppressWarnings("deprecation")
     public Study createStudy(DicomObject studyAttrs, long patPk) {
         Patient patient = em.find(Patient.class, patPk);
         Study study = new Study();

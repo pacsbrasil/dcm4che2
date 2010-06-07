@@ -329,4 +329,22 @@ public class TrashListBean implements TrashListLocal {
                 VR.AE, pf.getInstance().getSeries().getSourceAET());
         return dio;
     }
+
+    public Long getNumberOfSeriesOfStudy(long studyPk) {
+        return (Long) em.createQuery("SELECT COUNT(s) from PrivateSeries s WHERE s.study.pk = :studyPk")
+        .setParameter("studyPk", studyPk)
+        .getSingleResult();
+    }
+    
+    public Long getNumberOfInstancesOfStudy(long studyPk) {
+        return (Long) em.createQuery("SELECT DISTINCT COUNT(i) FROM PrivateInstance i, PrivateSeries se , PrivateStudy st WHERE i.series.pk = se.pk AND se.study.pk = st.pk AND st.pk = :studyPk")
+        .setParameter("studyPk", studyPk)
+        .getSingleResult();
+    }
+
+    public Long getNumberOfInstancesOfSeries(long seriesPk) {
+        return (Long) em.createQuery("SELECT COUNT(i) from PrivateInstance i WHERE i.series.pk = :seriesPk")
+        .setParameter("seriesPk", seriesPk)
+        .getSingleResult();
+    }
 }

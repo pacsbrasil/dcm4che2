@@ -79,4 +79,8 @@ public interface TrashListLocal {
     public List<PrivateFile> getFilesForEntity(long pk, Class<? extends BaseEntity> clazz);
     
     public DicomObject getDicomAttributes(long filePk);
+
+    public Long getNumberOfSeriesOfStudy(long studyPk);
+    public Long getNumberOfInstancesOfStudy(long studyPk);
+    public Long getNumberOfInstancesOfSeries(long seriesPk);
 }

@@ -117,8 +117,8 @@ public class PrivSeriesModel extends AbstractDicomModel implements Serializable 
         return dataset.getString(Tag.SeriesDescription);
     }
 
-    public int getNumberOfInstances() {
-        return dataset.getInt(Tag.NumberOfSeriesRelatedInstances);
+    public Long getNumberOfInstances() {
+        return ((TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME)).getNumberOfInstancesOfSeries(this.getPk());
     }
 
     public Date getPPSStartDatetime() {

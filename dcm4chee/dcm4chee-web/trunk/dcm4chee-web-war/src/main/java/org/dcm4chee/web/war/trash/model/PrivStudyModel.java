@@ -117,12 +117,12 @@ public class PrivStudyModel extends AbstractDicomModel implements Serializable {
         dataset.putString(Tag.StudyDescription, VR.LO, description);
     }
 
-    public int getNumberOfSeries() {
-        return dataset.getInt(Tag.NumberOfStudyRelatedSeries);
+    public Long getNumberOfSeries() {
+        return ((TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME)).getNumberOfSeriesOfStudy(this.getPk());
     }
 
-    public int getNumberOfInstances() {
-        return dataset.getInt(Tag.NumberOfStudyRelatedInstances);
+    public Long getNumberOfInstances() {
+        return ((TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME)).getNumberOfInstancesOfStudy(this.getPk());
     }
 
     public String getAvailability() {
