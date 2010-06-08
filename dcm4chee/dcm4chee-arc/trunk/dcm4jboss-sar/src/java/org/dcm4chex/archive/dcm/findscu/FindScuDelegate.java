@@ -43,6 +43,7 @@ import javax.management.MBeanException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
+import org.dcm4che.data.Dataset;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -67,10 +68,10 @@ public class FindScuDelegate {
         this.findScuServiceName = findScuServiceName;
     }
 
-    public String availabilityOfStudy(String aet, String uid) throws Exception {
+    public Dataset findStudy(String aet, String uid) throws Exception {
         try {
-            return (String) service.getServer().invoke(
-                    findScuServiceName, "availabilityOfStudy",
+            return (Dataset) service.getServer().invoke(
+                    findScuServiceName, "findStudy",
                     new Object[]{ aet, uid },
                     new String[]{ String.class.getName(), 
                                   String.class.getName()});

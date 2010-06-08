@@ -389,18 +389,32 @@
   </attribute>
 
   <attribute access="read-write"
-    getMethod="isDeleteStudyOnlyIfCopyExternalRetrieveable"
-    setMethod="setDeleteStudyOnlyIfCopyExternalRetrieveable">
+    getMethod="isDeleteStudyOnlyIfCopyExternalRetrievable"
+    setMethod="setDeleteStudyOnlyIfCopyExternalRetrievable">
     <description><![CDATA[Defines if all instances of a study must be
-      retrieveable from an external Application Entity to become a candidate
+      retrievable from an external Application Entity to become a candidate
       for deletion from file systems of the file system group managed my this
       service triggered by running out of disk space or being not accessed
       longer than configured <i>DeleteStudiesNotAccessedFor</i>.]]>
     </description>
-    <name>DeleteStudyOnlyIfExternalRetrieveable</name>
+    <name>DeleteStudyOnlyIfExternalRetrievable</name>
     <type>boolean</type>
     <descriptors>
       <value value="false" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write"
+    getMethod="getInstanceAvailabilityOfExternalRetrievable"
+    setMethod="setInstanceAvailabilityOfExternalRetrievable">
+    <description><![CDATA[Defines assumed Instance Availability of only
+      external retrievable Studies. Enumerated values: ONLINE, NEARLINE, AUTO.
+      AUTO - query Instance Availability from external Retrieve AE.]]>
+    </description>
+    <name>InstanceAvailabilityOfExternalRetrievable</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="AUTO" />
     </descriptors>
   </attribute>
 
@@ -732,10 +746,10 @@
       <type>java.lang.String</type>
     </parameter>
     <parameter>
-      <description>Availability of only external retrieveable studies. Enumerated values: "ONLINE",
+      <description>Availability of only external retrievable studies. Enumerated values: "ONLINE",
         "NEARLINE","OFFLINE", "UNAVAILABLE".
       </description>
-      <name>availabilityOfExternalRetrieveable</name>
+      <name>availabilityOfExternalRetrievable</name>
       <type>java.lang.String</type>
     </parameter>
     <return-type>org.dcm4chex.archive.ejb.interfaces.FileSystemDTO</return-type>
