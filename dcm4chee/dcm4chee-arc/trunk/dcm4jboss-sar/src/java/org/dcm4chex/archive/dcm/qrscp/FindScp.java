@@ -179,6 +179,8 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             }
             perfMon.stop(assoc, rq, PerfCounterEnum.C_FIND_SCP_QUERY_DB);
             return rsp;
+        } catch (DcmServiceException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Query DB failed:", e);
             throw new DcmServiceException(Status.UnableToProcess, e);
