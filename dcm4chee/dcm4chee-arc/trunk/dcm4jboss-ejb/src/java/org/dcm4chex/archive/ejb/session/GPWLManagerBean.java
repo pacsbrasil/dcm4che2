@@ -40,6 +40,8 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -178,6 +180,8 @@ public abstract class GPWLManagerBean implements SessionBean {
             iuid = UIDGenerator.getInstance().createUID();
             ds.putUI(Tags.SOPInstanceUID, iuid);
         }
+        if (!ds.containsValue(Tags.SPSModificationDateandTime))
+            ds.putDT(Tags.SPSModificationDateandTime, new Date ());
         try {          
             gpspsHome.create(ds.subSet(PATIENT_ATTRS, true, true),
                     findOrCreatePatient(ds));
@@ -205,45 +209,90 @@ public abstract class GPWLManagerBean implements SessionBean {
             GPSPSLocal gpsps = gpspsHome.findBySopIuid(iuid);
             Dataset attrs = gpsps.getAttributes();
             attrs.putAll(ds.subSet(PATIENT_ATTRS, true, true));
+            attrs.putDT(Tags.SPSModificationDateandTime, new Date ());
             gpsps.setAttributes(attrs);
         } catch (Exception e) {
             throw new EJBException(e);
         }
     }
-
+    
     /**
      * @ejb.interface-method
      */
     public void modifyStatus(String iuid, Dataset ds) throws DcmServiceException {
-		try {
-			GPSPSLocal gpsps = gpspsHome.findBySopIuid(iuid);
-			String tsuid = ds.getString(Tags.TransactionUID);
-			String status = ds.getString(Tags.GPSPSStatus);
-			int statusAsInt = GPSPSStatus.toInt(status);
-			switch(gpsps.getGpspsStatusAsInt()) {
-			case GPSPSStatus.IN_PROGRESS:
-				if (statusAsInt == GPSPSStatus.IN_PROGRESS)
-					throw new DcmServiceException(ALREADY_IN_PROGRESS);					
-				else if (!tsuid.equals(gpsps.getTransactionUid()))
-					throw new DcmServiceException(WRONG_TRANSACTION_UID);
-				break;
-			case GPSPSStatus.COMPLETED:
-			case GPSPSStatus.DISCONTINUED:
-				throw new DcmServiceException(MAY_NO_LONGER_BE_UPDATED);
-			}
-	        Dataset attrs = gpsps.getAttributes();
-	        attrs.putCS(Tags.GPSPSStatus, status);
-	        gpsps.setTransactionUid(
-	        		statusAsInt == GPSPSStatus.IN_PROGRESS ? tsuid : null);
-	        addActualHumanPerformers(attrs, ds.get(Tags.ActualHumanPerformersSeq));
-	        gpsps.setAttributes(attrs);
-		} catch (ObjectNotFoundException e) {
-			throw new DcmServiceException(Status.NoSuchObjectInstance);
-		} catch (DcmServiceException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new DcmServiceException(Status.ProcessingFailure, e);
-		}
+        try {
+            HashMap<String, Dataset> nextWorkItems = new HashMap<String, Dataset>();
+            
+            GPSPSLocal gpsps = gpspsHome.findBySopIuid(iuid);
+            String tsuid = ds.getString(Tags.TransactionUID);
+            String status = ds.getString(Tags.GPSPSStatus);
+            int statusAsInt = GPSPSStatus.toInt(status);
+            switch(gpsps.getGpspsStatusAsInt()) {
+            case GPSPSStatus.IN_PROGRESS:
+                if (statusAsInt == GPSPSStatus.IN_PROGRESS)
+                    throw new DcmServiceException(ALREADY_IN_PROGRESS);					
+                else if (!tsuid.equals(gpsps.getTransactionUid()))
+                    throw new DcmServiceException(WRONG_TRANSACTION_UID);
+                
+                if (statusAsInt == GPSPSStatus.COMPLETED) {
+                    // The new status is COMPLETED. Check if we are requested to create a new SPS
+                    Collection c = gpsps.getGppps();
+                    for (Iterator iter = c.iterator(); iter.hasNext();) {
+                        Dataset gppps = ((GPPPSLocal) iter.next()).getAttributes();
+                        String ppsStatus = gppps.getString(Tags.GPPPSStatus);
+                        if (ppsStatus.equals("COMPLETED")) {
+                            DcmElement nextItems = gppps.get(Tags.RequestedSubsequentWorkitemCodeSeq);
+                            if (nextItems != null) {
+                                for (int i = 0, n = nextItems.countItems(); i < n; ++i) {
+                                    Dataset item = nextItems.getItem(i);
+                                    String value = item.getString(Tags.CodeValue);
+                                    String scheme = item.getString(Tags.CodingSchemeDesignator);
+                                    if (!(scheme.equals("DCM") && value.equals("110009")))
+                                        nextWorkItems.put(value, item);
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            case GPSPSStatus.COMPLETED:
+            case GPSPSStatus.DISCONTINUED:
+                throw new DcmServiceException(MAY_NO_LONGER_BE_UPDATED);
+            }
+            Dataset attrs = gpsps.getAttributes();
+            attrs.putCS(Tags.GPSPSStatus, status);
+            gpsps.setTransactionUid(
+                    statusAsInt == GPSPSStatus.IN_PROGRESS ? tsuid : null);
+            addActualHumanPerformers(attrs, ds.get(Tags.ActualHumanPerformersSeq));
+            attrs.putDT(Tags.SPSModificationDateandTime, new Date ());
+            gpsps.setAttributes(attrs);
+            
+             if (!nextWorkItems.isEmpty()) {
+                Dataset nextSPS = gpsps.getAttributes();
+                Dataset patientAttr = gpsps.getPatient().getAttributes(false);
+                nextSPS.putAll(patientAttr);
+                nextSPS.remove(Tags.ActualHumanPerformersSeq);
+                nextSPS.remove(Tags.SPSModificationDateandTime);
+                nextSPS.putCS(Tags.GPSPSStatus, "SCHEDULED");
+                Collection<Dataset> c = nextWorkItems.values ();
+                Iterator<Dataset> itr = c.iterator();
+                while (itr.hasNext()) {
+                    Dataset wi = itr.next();
+                    nextSPS.remove(Tags.SOPInstanceUID);
+                    nextSPS.remove(Tags.ScheduledWorkitemCodeSeq);
+                    nextSPS.putSQ(Tags.ScheduledWorkitemCodeSeq);
+                    DcmElement dest = nextSPS.get(Tags.ScheduledWorkitemCodeSeq);
+                    dest.addItem(wi);
+                    addWorklistItem(nextSPS);
+                }
+            }
+        } catch (ObjectNotFoundException e) {
+            throw new DcmServiceException(Status.NoSuchObjectInstance);
+        } catch (DcmServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new DcmServiceException(Status.ProcessingFailure, e);
+        }
     }
 
     private void addActualHumanPerformers(Dataset attrs, DcmElement src) {
