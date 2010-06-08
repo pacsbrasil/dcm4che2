@@ -31,7 +31,7 @@ public class Jdbexp {
 
     public static final String DEFINEFIELDS = "DefineFields";
 
-    public static final String EXECUTE = "ExecuteStatement";
+    public static final String EXECUTE = "Execute";
 
     static void exit(int ExitCode) {
         System.out.flush();
