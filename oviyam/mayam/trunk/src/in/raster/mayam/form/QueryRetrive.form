@@ -337,6 +337,9 @@
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JSpinner" name="birthDateSpinner">
+                  <Properties>
+                    <Property name="enabled" type="boolean" value="false"/>
+                  </Properties>
                 </Component>
               </SubComponents>
             </Container>

@@ -72,6 +72,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.util.DcmURL;
 import in.raster.mayam.model.table.renderer.CellRenderer;
 import in.raster.mayam.model.table.renderer.HeaderRenderer;
+import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionListener;
 
 /**
@@ -85,13 +86,13 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
     /** Creates new form QueryRetrive */
     public QueryRetrive() {
         initComponents();
-        refreshModels();       
+        refreshModels();
         addSearchDateitemListener();
         addModalityitemListener();
     }
 
     private void addSearchDateitemListener() {
-        SearchDaysHandler searchDaysHandler=new SearchDaysHandler();
+        SearchDaysHandler searchDaysHandler = new SearchDaysHandler();
         betweenRadio.addItemListener(searchDaysHandler);
         lastmonthRadio.addItemListener(searchDaysHandler);
         lastweekRadio.addItemListener(searchDaysHandler);
@@ -101,7 +102,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
     }
 
     private void addModalityitemListener() {
-        ModalityHandler modalityHandler=new ModalityHandler();
+        ModalityHandler modalityHandler = new ModalityHandler();
         ctCheckBox.addItemListener(modalityHandler);
         mrCheckBox.addItemListener(modalityHandler);
         xaCheckBox.addItemListener(modalityHandler);
@@ -118,6 +119,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
         mgCheckBox.addItemListener(modalityHandler);
         rgCheckBox.addItemListener(modalityHandler);
     }
+
     public void refreshModels() {
         setServerTableModel();
         setServerName();
@@ -291,6 +293,8 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
         jLabel4.setText("Acession #");
 
         jLabel5.setText("Date Of Birth");
+
+        birthDateSpinner.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout jPanel10Layout = new org.jdesktop.layout.GroupLayout(jPanel10);
         jPanel10.setLayout(jPanel10Layout);
@@ -515,21 +519,21 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
         jScrollPane2.setViewportView(studyListTable);
 
         serverNameLabel.setBackground(new java.awt.Color(41, 116, 217));
-        serverNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        serverNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         serverNameLabel.setForeground(new java.awt.Color(255, 255, 255));
         serverNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         serverNameLabel.setText(" Server Name");
         serverNameLabel.setOpaque(true);
 
         headerLabel.setBackground(new java.awt.Color(41, 116, 217));
-        headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         headerLabel.setForeground(new java.awt.Color(255, 255, 255));
         headerLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         headerLabel.setText(" DICOM Nodes ");
         headerLabel.setOpaque(true);
 
         jLabel1.setBackground(new java.awt.Color(41, 116, 217));
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Query Filter");
@@ -608,39 +612,45 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
         String serverName = ((ServerTableModel) serverListTable.getModel()).getValueAt(serverListTable.getSelectedRow(), 0);
         try {
             startSearch = true;
+            int noFilterQuery = 0;
             AEModel ae = ApplicationContext.databaseRef.getServerDetail(serverName);
             DcmURL url = new DcmURL("dicom://" + ae.getAeTitle() + "@" + ae.getHostName() + ":" + ae.getPort());
             QueryService qs = new QueryService();
-            setPatientInfoToQueryParam();
-            qs.callFindWithQuery(queryParam.getPatientId(), queryParam.getPatientName(), "", queryParam.getSearchDate(),getModality(), queryParam.getAccessionNo(), url);
-            Vector studyList = new Vector();
-            for (int dataSetCount = 0; dataSetCount < qs.getDatasetVector().size(); dataSetCount++) {
-                try {
-                    Dataset dataSet = (Dataset) qs.getDatasetVector().elementAt(dataSetCount);
-                    StudyModel studyModel = new StudyModel(dataSet);
-                    studyList.addElement(studyModel);
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
-                }
+            setPatientInfoToQueryParam();            
+            if (queryParam.getPatientId().equalsIgnoreCase("") && queryParam.getPatientName().equalsIgnoreCase("") && queryParam.getSearchDate().equalsIgnoreCase("") && modalityText.getText().equalsIgnoreCase("") && queryParam.getAccessionNo().equalsIgnoreCase("")) {
+                noFilterQuery = JOptionPane.showConfirmDialog(null, "No filters have been selected. It will take long time to query and display result...!");
             }
-            StudyListModel studyListModel = new StudyListModel();
-            studyListModel.setData(studyList);
-            studyListTable.setModel(studyListModel);
-            boolean dicomServerDetailAlreadyPresentInArray = false;
-            if (dicomServerArray != null) {
-                for (int i = 0; i < dicomServerArray.size(); i++) {
-                    if (dicomServerArray.get(i).getName().equalsIgnoreCase(ae.getServerName())) {
-                        dicomServerDetailAlreadyPresentInArray = true;
-                        dicomServerArray.get(i).setAe(ae);
-                        dicomServerArray.get(i).setStudyListModel(studyListModel);
+            if (noFilterQuery == 0) {
+                qs.callFindWithQuery(queryParam.getPatientId(), queryParam.getPatientName(), "", queryParam.getSearchDate(), modalityText.getText(), queryParam.getAccessionNo(), url);
+                Vector studyList = new Vector();
+                for (int dataSetCount = 0; dataSetCount < qs.getDatasetVector().size(); dataSetCount++) {
+                    try {
+                        Dataset dataSet = (Dataset) qs.getDatasetVector().elementAt(dataSetCount);
+                        StudyModel studyModel = new StudyModel(dataSet);
+                        studyList.addElement(studyModel);
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
                     }
                 }
-            }
-            if (!dicomServerDetailAlreadyPresentInArray) {
-                DicomServerDelegate dsd = new DicomServerDelegate(ae.getServerName());
-                dsd.setAe(ae);
-                dsd.setStudyListModel(studyListModel);
-                dicomServerArray.add(dsd);
+                StudyListModel studyListModel = new StudyListModel();
+                studyListModel.setData(studyList);
+                studyListTable.setModel(studyListModel);
+                boolean dicomServerDetailAlreadyPresentInArray = false;
+                if (dicomServerArray != null) {
+                    for (int i = 0; i < dicomServerArray.size(); i++) {
+                        if (dicomServerArray.get(i).getName().equalsIgnoreCase(ae.getServerName())) {
+                            dicomServerDetailAlreadyPresentInArray = true;
+                            dicomServerArray.get(i).setAe(ae);
+                            dicomServerArray.get(i).setStudyListModel(studyListModel);
+                        }
+                    }
+                }
+                if (!dicomServerDetailAlreadyPresentInArray) {
+                    DicomServerDelegate dsd = new DicomServerDelegate(ae.getServerName());
+                    dsd.setAe(ae);
+                    dsd.setStudyListModel(studyListModel);
+                    dicomServerArray.add(dsd);
+                }
             }
         } catch (Exception e) {
             System.out.println("Select a Server");
@@ -759,68 +769,86 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
         }
     }//GEN-LAST:event_studyListTableMouseClicked
 
-    private class SearchDaysHandler implements ItemListener
-    {
-    public void itemStateChanged(ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED) {
-            if (searchDaysGroup.getSelection() == ((JRadioButton) e.getItem()).getModel()) {
-                if (((JRadioButton) e.getItem()).getActionCommand().equalsIgnoreCase("Between")) {
-                    fromSpinner.setEnabled(true);
-                    toSpinner.setEnabled(true);
-                } else {
-                    fromSpinner.setEnabled(false);
-                    toSpinner.setEnabled(false);
+    private class SearchDaysHandler implements ItemListener {
+
+        public void itemStateChanged(ItemEvent e) {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                if (searchDaysGroup.getSelection() == ((JRadioButton) e.getItem()).getModel()) {
+                    if (((JRadioButton) e.getItem()).getActionCommand().equalsIgnoreCase("Between")) {
+                        fromSpinner.setEnabled(true);
+                        toSpinner.setEnabled(true);
+                    } else {
+                        fromSpinner.setEnabled(false);
+                        toSpinner.setEnabled(false);
+                    }
+                    queryParam.setSearchDays(((JRadioButton) e.getItem()).getActionCommand());
                 }
-                queryParam.setSearchDays(((JRadioButton) e.getItem()).getActionCommand());
-            }          
+            }
         }
     }
+
+    private class ModalityHandler implements ItemListener {
+
+        public void itemStateChanged(ItemEvent e) {
+            String selectedModality = getModality();
+            if (selectedModality.startsWith("\\")) {
+                selectedModality = selectedModality.substring(1);
+            }
+            modalityText.setText(selectedModality);
+        }
     }
-    private class ModalityHandler implements ItemListener
-    {
-    public void itemStateChanged(ItemEvent e) {
-        String selectedModality=getModality();        
-        if(selectedModality.startsWith("\\"))
-         selectedModality= selectedModality.substring(1);
-        modalityText.setText(selectedModality);
-    }
-    }
-    private String getModality()
-    {
-        String modalityString="";
-        if(ctCheckBox.isSelected())
-            modalityString=ctCheckBox.getActionCommand();
-        if(mrCheckBox.isSelected())
-            modalityString+="\\"+mrCheckBox.getActionCommand();
-        if(xaCheckBox.isSelected())
-            modalityString+="\\"+xaCheckBox.getActionCommand();
-        if(crCheckBox.isSelected())
-            modalityString+="\\"+crCheckBox.getActionCommand();
-        if(scCheckBox.isSelected())
-            modalityString+="\\"+scCheckBox.getActionCommand();
-        if(nmCheckBox.isSelected())
-            modalityString+="\\"+nmCheckBox.getActionCommand();
-        if(rfCheckBox.isSelected())
-            modalityString+="\\"+rfCheckBox.getActionCommand();
-        if(dxCheckBox.isSelected())
-            modalityString+="\\"+dxCheckBox.getActionCommand();
-        if(pxCheckBox.isSelected())
-            modalityString+="\\"+pxCheckBox.getActionCommand();
-        if(usCheckBox.isSelected())
-            modalityString+="\\"+usCheckBox.getActionCommand();
-        if(otCheckBox.isSelected())
-            modalityString+="\\"+otCheckBox.getActionCommand();
-        if(drCheckBox.isSelected())
-            modalityString+="\\"+drCheckBox.getActionCommand();
-        if(srCheckBox.isSelected())
-            modalityString+="\\"+srCheckBox.getActionCommand();
-        if(mgCheckBox.isSelected())
-            modalityString+="\\"+mgCheckBox.getActionCommand();
-        if(rgCheckBox.isSelected())
-            modalityString+="\\"+rgCheckBox.getActionCommand();
+
+    private String getModality() {
+        String modalityString = "";
+        if (ctCheckBox.isSelected()) {
+            modalityString = ctCheckBox.getActionCommand();
+        }
+        if (mrCheckBox.isSelected()) {
+            modalityString += "\\" + mrCheckBox.getActionCommand();
+        }
+        if (xaCheckBox.isSelected()) {
+            modalityString += "\\" + xaCheckBox.getActionCommand();
+        }
+        if (crCheckBox.isSelected()) {
+            modalityString += "\\" + crCheckBox.getActionCommand();
+        }
+        if (scCheckBox.isSelected()) {
+            modalityString += "\\" + scCheckBox.getActionCommand();
+        }
+        if (nmCheckBox.isSelected()) {
+            modalityString += "\\" + nmCheckBox.getActionCommand();
+        }
+        if (rfCheckBox.isSelected()) {
+            modalityString += "\\" + rfCheckBox.getActionCommand();
+        }
+        if (dxCheckBox.isSelected()) {
+            modalityString += "\\" + dxCheckBox.getActionCommand();
+        }
+        if (pxCheckBox.isSelected()) {
+            modalityString += "\\" + pxCheckBox.getActionCommand();
+        }
+        if (usCheckBox.isSelected()) {
+            modalityString += "\\" + usCheckBox.getActionCommand();
+        }
+        if (otCheckBox.isSelected()) {
+            modalityString += "\\" + otCheckBox.getActionCommand();
+        }
+        if (drCheckBox.isSelected()) {
+            modalityString += "\\" + drCheckBox.getActionCommand();
+        }
+        if (srCheckBox.isSelected()) {
+            modalityString += "\\" + srCheckBox.getActionCommand();
+        }
+        if (mgCheckBox.isSelected()) {
+            modalityString += "\\" + mgCheckBox.getActionCommand();
+        }
+        if (rgCheckBox.isSelected()) {
+            modalityString += "\\" + rgCheckBox.getActionCommand();
+        }
 
         return modalityString;
     }
+
     private void osSpecifics() {
         this.setSize(1030, 750);
         if (System.getProperty("os.name").startsWith("Mac")) {
@@ -830,9 +858,9 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
             }
             jPanel1.setBorder(border);
             jPanel2.setBorder(border);
-            jPanel9.setBackground(new Color(216, 216, 216));        
+            jPanel9.setBackground(new Color(216, 216, 216));
             jPanel1.setBackground(new Color(216, 216, 216));
-            jPanel2.setBackground(new Color(216, 216, 216));           
+            jPanel2.setBackground(new Color(216, 216, 216));
             jPanel7.setBackground(new Color(216, 216, 216));
             jPanel8.setBackground(new Color(216, 216, 216));
             serverlistScroll.setBackground(new Color(216, 216, 216));
