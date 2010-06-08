@@ -50,7 +50,7 @@
 
    <!-- Operations -->
    &defaultOperations;
-   <operation impact="ACTION">
+   <operation impact="INFO">
       <description>Query C-FIND SCP for Instance Availability of particular Study</description>
       <name>availabilityOfStudy</name>
       <parameter>
@@ -64,6 +64,21 @@
         <type>java.lang.String</type>
       </parameter>
       <return-type>java.lang.String</return-type>
+   </operation>   
+   <operation impact="INFO">
+      <description>Query C-FIND SCP for particular Study</description>
+      <name>findStudy</name>
+      <parameter>
+        <description>C-FIND SCP AE Title</description>
+        <name>aet</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Study Instance UID</description>
+        <name>uid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>org.dcm4che.data.Dataset</return-type>
    </operation>   
    
 </mbean>

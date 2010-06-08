@@ -51,6 +51,8 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.common.DeleteStudyOrdersAndMaxAccessTime;
@@ -77,6 +79,8 @@ import org.jboss.system.ServiceMBeanSupport;
 public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private static final String NONE = "NONE";
+
+    private static final String AUTO = "AUTO";
 
     private static final String GROUP = "group";
 
@@ -135,7 +139,9 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private long minNotAccessedFor = 0;
 
-    private boolean externalRetrieveable;
+    private boolean externalRetrievable;
+
+    private String instanceAvailabilityOfExternalRetrievable;
 
     private boolean storageNotCommited;
 
@@ -626,13 +632,26 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         return copyOnMedia;
     }
 
-    public boolean isDeleteStudyOnlyIfCopyExternalRetrieveable() {
-        return externalRetrieveable;
+    public boolean isDeleteStudyOnlyIfCopyExternalRetrievable() {
+        return externalRetrievable;
     }
 
-    public void setDeleteStudyOnlyIfCopyExternalRetrieveable(
-            boolean externalRetrieveable) {
-        this.externalRetrieveable = externalRetrieveable;
+    public void setDeleteStudyOnlyIfCopyExternalRetrievable(
+            boolean externalRetrievable) {
+        this.externalRetrievable = externalRetrievable;
+    }
+
+    public final String getInstanceAvailabilityOfExternalRetrievable() {
+        return instanceAvailabilityOfExternalRetrievable != null
+                ? instanceAvailabilityOfExternalRetrievable : AUTO;
+    }
+
+    public final void setInstanceAvailabilityOfExternalRetrievable(
+            String availability) {
+        String trimmed = availability.trim();
+        this.instanceAvailabilityOfExternalRetrievable = 
+            trimmed.equalsIgnoreCase(AUTO) ? null 
+                    : Availability.toString(Availability.toInt(trimmed));
     }
 
     public void setDeleteStudyOnlyIfCopyOnMedia(boolean copyOnMedia) {
@@ -785,12 +804,12 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     }
 
     public FileSystemDTO updateFileSystemAvailability(String dirPath,
-            String availability, String availabilityOfExternalRetrieveable)
+            String availability, String availabilityOfExternalRetrievable)
             throws Exception {
         return fileSystemMgt().updateFileSystemAvailability(
                         getFileSystemGroupID(), dirPath,
                         Availability.toInt(availability), 
-                        Availability.toInt(availabilityOfExternalRetrieveable), 
+                        Availability.toInt(availabilityOfExternalRetrievable), 
                         updateStudiesBatchSize);
     }
 
@@ -1070,7 +1089,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                             getFileSystemGroupID(), minAccessTime,
                             notAccessedAfter,
                             scheduleStudiesForDeletionBatchSize,
-                            externalRetrieveable, storageNotCommited,
+                            externalRetrievable, storageNotCommited,
                             copyOnMedia, copyOnFSGroup, copyArchived,
                             copyOnReadOnlyFS);
             if (deleteOrdersAndAccessTime == null) {
@@ -1084,7 +1103,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                     deleteOrdersAndAccessTime.deleteStudyOrders.iterator();
             while (sizeToDel > 0 && orderIter.hasNext()) {
                 DeleteStudyOrder order = orderIter.next();
-                if (!checkExternalRetrieveable(order))
+                if (!checkExternalRetrievable(order))
                     continue;
                 if (fsMgt.removeStudyOnFSRecord(order)) {
                     try {
@@ -1104,24 +1123,32 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         return countStudies;
     }
 
-    private boolean checkExternalRetrieveable(DeleteStudyOrder order) {
+    private boolean checkExternalRetrievable(DeleteStudyOrder order) {
         String aet = order.getExternalRetrieveAET();
         if (aet == null)
             return true;
         
-        String availability = null;
+        String availability = instanceAvailabilityOfExternalRetrievable;
         String studyIUID = order.getStudyIUID();
         try {
-            availability = findScu.availabilityOfStudy(aet, studyIUID);
-            if (availability == null) {
-                log.warn("Retrieve AE: " + aet
-                        + " does not return Instance Availability for study: "
-                        + studyIUID);
+            Dataset findRsp = findScu.findStudy(aet, studyIUID);
+            if (findRsp == null) {
+                log.warn("Study:" + studyIUID + " not found at Retrieve AE: "
+                        + aet);
                 return false;
             }
+            if (availability == null) {
+                availability = findRsp.getString(Tags.InstanceAvailability);
+                if (availability == null) {
+                    log.warn("Retrieve AE: " + aet
+                            + " does not return Instance Availability for study: "
+                            + studyIUID);
+                    return false;
+                }
+            }
         } catch (Exception e) {
-           log.warn("Query Instance Availability for study: " + studyIUID
-                   + " from external Retrieve AE: " + aet + " failed:", e);
+           log.warn("Query external Retrieve AE: " + aet + " for study: "
+                   + studyIUID +  "failed:", e);
            return false;
         }
 
@@ -1143,7 +1170,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                     getFileSystemGroupID());
         long sizeToDel = 0;
         for (DeleteStudyOrder order : orders) {
-            if (!checkExternalRetrieveable(order))
+            if (!checkExternalRetrievable(order))
                 continue;
             if (fsMgt.removeStudyOnFSRecord(order)) {
                 try {

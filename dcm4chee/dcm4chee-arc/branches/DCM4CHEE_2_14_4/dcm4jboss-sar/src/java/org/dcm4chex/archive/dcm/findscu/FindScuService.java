@@ -47,6 +47,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.AssociationFactory;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
 import org.dcm4chex.archive.config.DicomPriority;
@@ -69,9 +70,15 @@ public class FindScuService extends AbstractScuService {
         this.priority = DicomPriority.toCode(priority.trim());
     }
 
-    @SuppressWarnings("unchecked")
     public String availabilityOfStudy(String aet, String uid)
             throws Exception {
+        Dataset rsp = findStudy(aet, uid);
+        return rsp != null ? rsp.getString(Tags.InstanceAvailability)
+                : "UNAVAILABLE";
+    }
+
+    @SuppressWarnings("unchecked")
+    public Dataset findStudy(String aet, String uid) throws Exception {
         ActiveAssociation aa = openAssociation(aet,
                 UIDs.StudyRootQueryRetrieveInformationModelFIND);
         try {
@@ -86,7 +93,9 @@ public class FindScuService extends AbstractScuService {
             FutureRSP futureRSP = aa.invoke(af.newDimse(1, cmd, ds));
             int status = futureRSP.get().getCommand().getStatus();
             List<Dimse> pending = futureRSP.listPending();
-            return status == 0 && !pending.isEmpty() ? pending.get(0).getDataset().getString(Tags.InstanceAvailability) : null;
+            if (status != 0)
+                throw new DcmServiceException(status);
+            return !pending.isEmpty() ? pending.get(0).getDataset() : null;
         } finally {
             aa.release(false);
         }
