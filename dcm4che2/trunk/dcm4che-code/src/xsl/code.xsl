@@ -54,7 +54,7 @@
     <xsl:param name="scheme"/>
     <xsl:param name="value"/>
     <xsl:param name="meaning"/>
-    <xsl:if test="$value and $value!='…' and not(starts-with($value,'Code'))">
+    <xsl:if test="$value and $value!='...' and not(starts-with($value,'Code'))">
       <Code value="{$value}" scheme="{$scheme}">
         <xsl:value-of select="$meaning"/>
       </Code>

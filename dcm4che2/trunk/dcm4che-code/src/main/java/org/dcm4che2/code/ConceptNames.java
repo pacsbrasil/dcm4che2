@@ -1019,8 +1019,8 @@ public class ConceptNames {
   /** (11631-9, LN, "Gross Body Movement") */
   public static final String GrossBodyMovement = "11631-9\\LN";
 
-  /** (103, NDR[2.0b], "Guidewire crossing lesion") */
-  public static final String GuidewireCrossingLesion = "103\\NDR[2.0b]";
+  /** (103, NCDR[2.0b], "Guidewire crossing lesion") */
+  public static final String GuidewireCrossingLesion = "103\\NCDR[2.0b]";
 
   /** (R-20767, SRT, "Gynecological History") */
   public static final String GynecologicalHistory = "R-20767\\SRT";
@@ -1814,14 +1814,11 @@ public class ConceptNames {
   /** (11637-6, LN, "Preterm") */
   public static final String Preterm = "11637-6\\LN";
 
-  /** (108, NDR[2.0b], "Previous Dilation") */
-  public static final String PreviousDilation = "108\\NDR[2.0b]";
+  /** (108, NCDR[2.0b], "Previous Dilation") */
+  public static final String PreviousDilation = "108\\NCDR[2.0b]";
 
   /** (121069, DCM, "Previous Finding") */
   public static final String PreviousFinding = "121069\\DCM";
-
-  /** (108, NCDR[2.0b], "Previously Dilated Lesion") */
-  public static final String PreviouslyDilatedLesion = "108\\NCDR[2.0b]";
 
   /** (111531, DCM, "Previous Procedure") */
   public static final String PreviousProcedure = "111531\\DCM";

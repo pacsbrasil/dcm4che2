@@ -6647,19 +6647,25 @@
     <xslt style="src/xsl/keyword.xsl" in="target/xml/${classname}2.xml" out="target/xml/${classname}3.xml"/>
     <xslt style="src/xsl/java.xsl" in="target/xml/${classname}3.xml" out="target/java/org/dcm4che2/code/${classname}.java">
       <param name="classname" expression="${classname}"/>
+      <param name="title" expression="${title}"/>
     </xslt>
   </target>
 
-  <target name="meanings" depends="mkdir">
+  <target name="allCodes" depends="mkdir">
     <xslt style="src/xsl/allCodes.xsl" in="src/xml/09_16pu.xml" out="target/xml/allCodes1.xml"/>
     <xslt style="src/xsl/sort.xsl" in="target/xml/allCodes1.xml" out="target/xml/allCodes2.xml"/>
+  </target>
+
+  <target name="meanings" depends="allCodes">
     <xslt style="src/xsl/keyword.xsl" in="target/xml/allCodes2.xml" out="target/xml/allCodes3.xml"/>
     <xslt style="src/xsl/meanings.xsl" in="target/xml/allCodes3.xml" out="target/resources/org/dcm4che2/code/Meanings.properties"/>
   </target>
 
-  <target name="all" depends="
-meanings,
-ConceptNames,
+  <target name="diffMeanings" depends="allCodes">
+    <xslt style="src/xsl/diffMeanings.xsl" in="target/xml/allCodes2.xml" out="target/xml/diffMeanings.txt"/>
+  </target>
+
+  <target name="ContextGroups" depends="
 AnatomicModifier,
 AnatomicRegion,
 TransducerApproach,
@@ -7396,4 +7402,6 @@ AorticValveFindingSites,
 LeftVentricleFindingSites,
 CongenitalFindingSites
 "/>
+
+  <target name="all" depends="meanings, diffMeanings, ConceptNames, ContextGroups" />
 </project>
