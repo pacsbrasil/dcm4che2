@@ -66,8 +66,20 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     private boolean hasStatus;
     private boolean showCancel = false;
     
+    protected Label msgLabel;
+    protected boolean ajaxRunning = false;
+    
     public ConfirmationWindow(String id) {
         this(id, new ResourceModel("yesBtn"), new ResourceModel("noBtn"), new ResourceModel("cancelBtn"));
+        
+        setCloseButtonCallback(new CloseButtonCallback() {
+
+            private static final long serialVersionUID = 1L;
+
+            public boolean onCloseButtonClicked(AjaxRequestTarget target) {
+                return !ajaxRunning;
+            }
+        });
     }
     
     public ConfirmationWindow(String id, IModel<?> confirm, IModel<?> decline, IModel<?> cancel) {
@@ -131,7 +143,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
 
         public MessageWindowPanel(String id) {
             super(id);
-            final Label msgLabel =new Label("msg", new AbstractReadOnlyModel<Object>(){
+            msgLabel = new Label("msg", new AbstractReadOnlyModel<Object>() {
 
                 private static final long serialVersionUID = 1L;
 
@@ -140,6 +152,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                     return msg == null ? null : msg.getObject();
                 }
             });
+            msgLabel.setOutputMarkupId(true);
             add(msgLabel);
             AjaxFallbackLink<Object> confirmBtn = new AjaxFallbackLink<Object>("confirm"){
 

@@ -44,6 +44,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -66,6 +67,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
@@ -123,7 +125,7 @@ public class TrashListPage extends Panel {
     
     public TrashListPage(final String id) {
         super(id);
-        
+
         if (TrashListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(TrashListPage.CSS));
        
@@ -131,6 +133,7 @@ public class TrashListPage extends Panel {
         BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
         form.setResourceIdPrefix("trash.");
         form.setTooltipBehaviour(tooltipBehaviour);
+        form.setOutputMarkupId(true);
         add(form);
         addQueryFields(filter, form);
         addQueryOptions(form);
@@ -255,64 +258,98 @@ public class TrashListPage extends Panel {
             private static final long serialVersionUID = 1L;
             
             @Override
-            public void onConfirmation(AjaxRequestTarget target, PrivSelectedEntities selected) {
-
-                if (selected == null ? removeTrashAll() : removeTrashItems(selected)) {
-                    this.setStatus(new StringResourceModel("trash.deleteDone", TrashListPage.this,null));
-                    viewport.getPatients().clear();
-                } else
-                    this.setStatus(new StringResourceModel("trash.deleteFailed", TrashListPage.this,null));
-                queryStudies();
+            public void onOk(AjaxRequestTarget target) {
+                super.onOk(target);
+                target.addComponent(form);
             }
             
             @Override
-            public void onOk(AjaxRequestTarget target) {
-                target.addComponent(form);
-            }
+            public void onConfirmation(AjaxRequestTarget target, final PrivSelectedEntities selected) {
+
+                this.setStatus(new StringResourceModel("trash.delete.running", TrashListPage.this, null));
+                msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                    
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    protected void onTimer(AjaxRequestTarget target) {
+                        ajaxRunning = true;
+                        if (selected == null ? removeTrashAll() : removeTrashItems(selected)) {
+                            setStatus(new StringResourceModel("trash.deleteDone", TrashListPage.this,null));
+                            viewport.getPatients().clear();
+                        } else
+                            setStatus(new StringResourceModel("trash.deleteFailed", TrashListPage.this,null));
+                        queryStudies();
+                        this.stop();
+                        setStatus(new StringResourceModel("trash.deleteDone", TrashListPage.this, null));
+                        ajaxRunning = false;
+                        target.addComponent(msgLabel);
+                    }
+                });
+            }            
         };
         confirmDelete.setInitialHeight(150);
         form.add(confirmDelete);
+
         final ConfirmationWindow<PrivSelectedEntities> confirmRestore = new ConfirmationWindow<PrivSelectedEntities>("confirmRestore") {
 
             private static final long serialVersionUID = 1L;
             
             @Override
-            public void onConfirmation(AjaxRequestTarget target, PrivSelectedEntities selected) {
-                try {
-                    FileImportOrder fio = new FileImportOrder();
-                    List<PrivateFile> files = getFilesToRestore();
-                    TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
-                    
-                    for (PrivateFile privateFile : files) {
-                        DicomObject dio = dao.getDicomAttributes(privateFile.getPk());
-                        File file = new File();
-                        file.setFilePath(privateFile.getFilePath());
-                        file.setFileSize(privateFile.getFileSize());
-                        file.setFileStatus(privateFile.getFileStatus());
-                        file.setFileSystem(privateFile.getFileSystem());
-                        file.setMD5Sum(privateFile.getFileMD5());
-                        file.setTransferSyntaxUID(privateFile.getTransferSyntaxUID());
-                        Instance instance = new Instance();
-                        file.setInstance(instance);
-                        fio.addFile(file, dio);
-                    }
-
-                    StoreBridgeDelegate.getInstance(((WicketApplication) getApplication()).getInitParameter("storeBridgeServiceName")).importFile(fio);
-                    removeRestoredEntries();                            
-                            
-                    this.setStatus(new StringResourceModel("trash.restoreDone", TrashListPage.this,null));
-                } catch (Exception e) {
-                    log.error("Exception restoring entry:"+e.getMessage(), e);
-                    this.setStatus(new StringResourceModel("trash.restoreFailed", TrashListPage.this,null));
-                }
-                viewport.getPatients().clear();
-                queryStudies();
-            }
-            
-            @Override
             public void onOk(AjaxRequestTarget target) {
+                super.onOk(target);
                 target.addComponent(form);
             }
+
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, PrivSelectedEntities selected) {
+                
+                
+                this.setStatus(new StringResourceModel("trash.restore.running", TrashListPage.this, null));
+                msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                    
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    protected void onTimer(AjaxRequestTarget target) {
+                        ajaxRunning = true;
+
+                
+                        try {
+                            FileImportOrder fio = new FileImportOrder();
+                            List<PrivateFile> files = getFilesToRestore();
+                            TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
+                            
+                            for (PrivateFile privateFile : files) {
+                                DicomObject dio = dao.getDicomAttributes(privateFile.getPk());
+                                File file = new File();
+                                file.setFilePath(privateFile.getFilePath());
+                                file.setFileSize(privateFile.getFileSize());
+                                file.setFileStatus(privateFile.getFileStatus());
+                                file.setFileSystem(privateFile.getFileSystem());
+                                file.setMD5Sum(privateFile.getFileMD5());
+                                file.setTransferSyntaxUID(privateFile.getTransferSyntaxUID());
+                                Instance instance = new Instance();
+                                file.setInstance(instance);
+                                fio.addFile(file, dio);
+                            }
+        
+                            StoreBridgeDelegate.getInstance(((WicketApplication) getApplication()).getInitParameter("storeBridgeServiceName")).importFile(fio);
+                            removeRestoredEntries();                            
+                                    
+                            setStatus(new StringResourceModel("trash.restoreDone", TrashListPage.this,null));
+                        } catch (Exception e) {
+                            log.error("Exception restoring entry:"+e.getMessage(), e);
+                            setStatus(new StringResourceModel("trash.restoreFailed", TrashListPage.this,null));
+                        }
+                        viewport.getPatients().clear();
+                        queryStudies();
+                        this.stop();
+                        ajaxRunning = false;
+                        target.addComponent(msgLabel);
+                    }
+                });
+            }            
         };
         confirmRestore.setInitialHeight(150);
         form.add(confirmRestore);
