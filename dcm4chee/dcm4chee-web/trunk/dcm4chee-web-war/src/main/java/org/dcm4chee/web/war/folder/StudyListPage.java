@@ -47,6 +47,7 @@ import java.util.List;
 import org.apache.wicket.Application;
 import org.apache.wicket.PageMap;
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -79,6 +80,7 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.protocol.http.WebApplication;
+import org.apache.wicket.util.time.Duration;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.IValidator;
 import org.dcm4chee.archive.entity.Patient;
@@ -107,6 +109,7 @@ import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
+import org.dcm4chee.web.war.trash.TrashListPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -299,27 +302,50 @@ public class StudyListPage extends Panel {
         exportBtn.add(new Image("exportImg", ImageManager.IMAGE_EXPORT)
         .add(new ImageSizeBehaviour()));
         form.add(exportBtn);
+        
         final ConfirmationWindow<SelectedEntities> confirmMove = new ConfirmationWindow<SelectedEntities>("confirmMove"){
+
             private static final long serialVersionUID = 1L;
-            @Override
-            public void onConfirmation(AjaxRequestTarget target, SelectedEntities selected) {
-                try {
-                    int nrOfMovedInstances = ContentEditDelegate.getInstance().moveEntities(selected);
-                    if (nrOfMovedInstances != -1) {
-                        this.setStatus(new StringResourceModel("folder.moveDone", StudyListPage.this,null));
-                        viewport.getPatients().clear();
-                    } else {
-                        this.setStatus(new StringResourceModel("folder.moveFailed", StudyListPage.this,null));
-                    }
-                } catch (SelectionException x) {
-                    log.warn(x.getMessage());
-                    this.setStatus(new StringResourceModel(x.getMsgId(), StudyListPage.this,null));
-                }
-                queryStudies();
-            }
+
             @Override
             public void onOk(AjaxRequestTarget target) {
                 target.addComponent(form);
+            }
+
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, final SelectedEntities selected) {
+                
+                this.setStatus(new StringResourceModel("folder.move.running", StudyListPage.this, null));
+                okBtn.setVisible(false);
+                ajaxRunning = true;
+                
+                msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                    
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    protected void onTimer(AjaxRequestTarget target) {
+                        try {
+                            int nrOfMovedInstances = ContentEditDelegate.getInstance().moveEntities(selected);
+                            if (nrOfMovedInstances != -1) {
+                                setStatus(new StringResourceModel("folder.moveDone", StudyListPage.this,null));
+                                viewport.getPatients().clear();
+                            } else
+                                setStatus(new StringResourceModel("folder.moveFailed", StudyListPage.this,null));
+                        } catch (SelectionException x) {
+                            log.warn(x.getMessage());
+                            setStatus(new StringResourceModel(x.getMsgId(), StudyListPage.this,null));
+                        }
+                        queryStudies();
+                        this.stop();
+                        ajaxRunning = false;
+                        okBtn.setVisible(true);
+                        
+                        target.addComponent(msgLabel);
+                        target.addComponent(hourglassImage);
+                        target.addComponent(okBtn);
+                    }
+                });
             }
         };
         confirmMove.setInitialHeight(150);
@@ -341,22 +367,49 @@ public class StudyListPage extends Panel {
         moveBtn.add(new Image("moveImg",ImageManager.IMAGE_MOVE)
         .add(new ImageSizeBehaviour()));
         form.add(moveBtn);
+        
         final ConfirmationWindow<SelectedEntities> confirmDelete = new ConfirmationWindow<SelectedEntities>("confirmDelete") {
+
             private static final long serialVersionUID = 1L;
+
             @Override
-            public void onConfirmation(AjaxRequestTarget target, SelectedEntities selected) {
-                if (ContentEditDelegate.getInstance().moveToTrash(selected)) {
-                    this.setStatus(new StringResourceModel("folder.deleteDone", StudyListPage.this,null));
-                    if (selected.hasPatients()) {
-                        viewport.getPatients().clear();
-                        queryStudies();
-                    } else {
-                        selected.refreshView(true);
-                    }
-                } else {
-                    this.setStatus(new StringResourceModel("folder.deleteFailed", StudyListPage.this,null));
-                }
+            public void onOk(AjaxRequestTarget target) {
+                target.addComponent(form);
             }
+
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, final SelectedEntities selected) {
+
+                this.setStatus(new StringResourceModel("folder.delete.running", StudyListPage.this, null));
+                okBtn.setVisible(false);
+                ajaxRunning = true;
+
+                msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                    
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    protected void onTimer(AjaxRequestTarget target) {
+                        if (ContentEditDelegate.getInstance().moveToTrash(selected)) {
+                            setStatus(new StringResourceModel("folder.deleteDone", StudyListPage.this,null));
+                            if (selected.hasPatients()) {
+                                viewport.getPatients().clear();
+                                queryStudies();
+                            } else
+                                selected.refreshView(true);
+                        } else
+                            setStatus(new StringResourceModel("folder.deleteFailed", StudyListPage.this,null));
+                        this.stop();
+                        ajaxRunning = false;
+                        okBtn.setVisible(true);
+                        
+                        target.addComponent(msgLabel);
+                        target.addComponent(hourglassImage);
+                        target.addComponent(okBtn);
+                    }
+                });
+            }
+            
             @Override
             public void onDecline(AjaxRequestTarget target, SelectedEntities selected) {
                 if (selected.getPpss().size() != 0) {
@@ -367,10 +420,6 @@ public class StudyListPage extends Panel {
                         this.setStatus(new StringResourceModel("folder.deleteFailed", StudyListPage.this,null));
                     }
                 }
-            }
-            @Override
-            public void onOk(AjaxRequestTarget target) {
-                target.addComponent(form);
             }
         };
         confirmDelete.setInitialHeight(150);
@@ -397,24 +446,45 @@ public class StudyListPage extends Panel {
         .add(tooltipBehaviour);
         form.add(deleteBtn);
 
-        confirmUnlinkMpps = new ConfirmationWindow<PPSModel>("confirmUnlink"){
+        confirmUnlinkMpps = new ConfirmationWindow<PPSModel>("confirmUnlink") {
+            
             private static final long serialVersionUID = 1L;
-            @Override
-            public void onConfirmation(AjaxRequestTarget target, PPSModel ppsModel) {
-                try {
-                    if (ContentEditDelegate.getInstance().unlink(ppsModel)) {
-                        this.setStatus(new StringResourceModel("folder.unlinkDone", StudyListPage.this,null));
-                        return;
-                    }
-                } catch (Exception x) {
-                    log.error("Unlink of MPPS failed:"+ppsModel, x);
-                }
-                this.setStatus(new StringResourceModel("folder.unlinkFailed", StudyListPage.this,null));
 
-            }
             @Override
             public void onOk(AjaxRequestTarget target) {
                 target.addComponent(form);
+            }
+
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, final PPSModel ppsModel) {
+                
+                this.setStatus(new StringResourceModel("folder.unlink.running", StudyListPage.this, null));
+                okBtn.setVisible(false);
+                ajaxRunning = true;
+                
+                msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                    
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    protected void onTimer(AjaxRequestTarget target) {
+                        try {
+                            if (ContentEditDelegate.getInstance().unlink(ppsModel))
+                                setStatus(new StringResourceModel("folder.unlinkDone", StudyListPage.this,null));
+                        } catch (Exception x) {
+                            log.error("Unlink of MPPS failed:"+ppsModel, x);
+                            setStatus(new StringResourceModel("folder.unlinkFailed", StudyListPage.this,null));
+                        }
+                        queryStudies();
+                        this.stop();
+                        ajaxRunning = false;
+                        okBtn.setVisible(true);
+                        
+                        target.addComponent(msgLabel);
+                        target.addComponent(hourglassImage);
+                        target.addComponent(okBtn);
+                    }
+                });
             }
         };
         form.add(confirmUnlinkMpps);

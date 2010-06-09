@@ -41,10 +41,12 @@ package org.dcm4chee.web.common.markup.modal;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
+import org.dcm4chee.icons.ImageManager;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -63,12 +65,14 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     private String focusElementId;
     private IModel<?> msg, confirm, decline, cancel;
     
-    private boolean hasStatus;
+    protected boolean hasStatus;
     private boolean showCancel = false;
     
-    protected Label msgLabel;
     protected boolean ajaxRunning = false;
-    
+    protected Label msgLabel;
+    protected Image hourglassImage;
+    protected AjaxFallbackLink<Object> okBtn;
+
     public ConfirmationWindow(String id) {
         this(id, new ResourceModel("yesBtn"), new ResourceModel("noBtn"), new ResourceModel("cancelBtn"));
         
@@ -143,7 +147,18 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
 
         public MessageWindowPanel(String id) {
             super(id);
-            msgLabel = new Label("msg", new AbstractReadOnlyModel<Object>() {
+            
+            add((hourglassImage = new Image("hourglass-image", ImageManager.IMAGE_HOURGLASS) {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public boolean isVisible() {
+                    return ajaxRunning;
+                }
+            }).setOutputMarkupId(true));
+
+            add((msgLabel = new Label("msg", new AbstractReadOnlyModel<Object>() {
 
                 private static final long serialVersionUID = 1L;
 
@@ -151,9 +166,8 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                 public Object getObject() {
                     return msg == null ? null : msg.getObject();
                 }
-            });
-            msgLabel.setOutputMarkupId(true);
-            add(msgLabel);
+            })).setOutputMarkupId(true));
+            
             AjaxFallbackLink<Object> confirmBtn = new AjaxFallbackLink<Object>("confirm"){
 
                 private static final long serialVersionUID = 1L;
@@ -176,6 +190,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
             confirmBtn.add(new Label("confirmLabel", confirm));
             confirmBtn.setOutputMarkupId(true);
             add(confirmBtn);
+            
             add(new AjaxFallbackLink<Object>("decline"){
 
                 private static final long serialVersionUID = 1L;
@@ -195,6 +210,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                     return !hasStatus;
                 }
             }.add(new Label("declineLabel", decline)) );
+            
             add(new AjaxFallbackLink<Object>("cancel"){
                 private static final long serialVersionUID = 1L;
 
@@ -209,7 +225,8 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                     return !hasStatus && showCancel;
                 }
             }.add(new Label("cancelLabel", cancel)) );
-            add(new AjaxFallbackLink<Object>("ok"){
+            
+            add(okBtn = new AjaxFallbackLink<Object>("ok") {
 
                 private static final long serialVersionUID = 1L;
 
@@ -219,11 +236,15 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                     msg = null;
                     close(target);
                 }
+                
                 @Override
                 public boolean isVisible() {
-                    return hasStatus;
+                    return ajaxRunning ? false : hasStatus;
                 }
-            }.add(new Label("okLabel", new ResourceModel("okBtn"))) );
+            });
+            okBtn.add(new Label("okLabel", new ResourceModel("okBtn")));
+            okBtn.setOutputMarkupId(true);     
+            okBtn.setOutputMarkupPlaceholderTag(true);
             this.setOutputMarkupId(true);
         }
         

@@ -5,12 +5,14 @@
   xmlns:wicket="http://wicket.apache.org">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<title>ConfirmWindow</title>
 		<link rel="stylesheet" type="text/css" href="style.css"/>
 	</head>
 	<body>
 	  <wicket:panel>
 		<div class="msgWindow">
+			<div class="msgWindow_content">
+				<img wicket:id="hourglass-image" />
+			</div>
 			<div class="msgWindow_content">
 				<span wicket:id="msg" class="msgWindow-msg">[feedback]</span>
 			</div>
@@ -18,7 +20,7 @@
             	<button type="submit" wicket:id="confirm" ><span wicket:id="confirmLabel">ConfirmBtn</span></button>            	
             	<button type="submit" wicket:id="decline" ><span wicket:id="declineLabel">DeclineBtn</span></button>            	
             	<button type="submit" wicket:id="cancel" ><span wicket:id="cancelLabel">CancelBtn</span></button>            	
-            	<button type="submit" wicket:id="ok" ><span wicket:id="okLabel">okBtn</span></button>            	
+            	<button type="submit" wicket:id="ok" ><span wicket:id="okLabel">okBtn</span></button>
 	        </div>
 	    </div>
       </wicket:panel>

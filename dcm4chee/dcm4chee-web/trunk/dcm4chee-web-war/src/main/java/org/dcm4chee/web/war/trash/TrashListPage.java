@@ -259,7 +259,6 @@ public class TrashListPage extends Panel {
             
             @Override
             public void onOk(AjaxRequestTarget target) {
-                super.onOk(target);
                 target.addComponent(form);
             }
             
@@ -267,13 +266,15 @@ public class TrashListPage extends Panel {
             public void onConfirmation(AjaxRequestTarget target, final PrivSelectedEntities selected) {
 
                 this.setStatus(new StringResourceModel("trash.delete.running", TrashListPage.this, null));
+                okBtn.setVisible(false);
+                ajaxRunning = true;
+                
                 msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
                     
                     private static final long serialVersionUID = 1L;
 
                     @Override
                     protected void onTimer(AjaxRequestTarget target) {
-                        ajaxRunning = true;
                         if (selected == null ? removeTrashAll() : removeTrashItems(selected)) {
                             setStatus(new StringResourceModel("trash.deleteDone", TrashListPage.this,null));
                             viewport.getPatients().clear();
@@ -281,9 +282,12 @@ public class TrashListPage extends Panel {
                             setStatus(new StringResourceModel("trash.deleteFailed", TrashListPage.this,null));
                         queryStudies();
                         this.stop();
-                        setStatus(new StringResourceModel("trash.deleteDone", TrashListPage.this, null));
                         ajaxRunning = false;
+                        okBtn.setVisible(true);
+                        
                         target.addComponent(msgLabel);
+                        target.addComponent(hourglassImage);
+                        target.addComponent(okBtn);
                     }
                 });
             }            
@@ -297,24 +301,22 @@ public class TrashListPage extends Panel {
             
             @Override
             public void onOk(AjaxRequestTarget target) {
-                super.onOk(target);
                 target.addComponent(form);
             }
 
             @Override
             public void onConfirmation(AjaxRequestTarget target, PrivSelectedEntities selected) {
                 
-                
                 this.setStatus(new StringResourceModel("trash.restore.running", TrashListPage.this, null));
+                okBtn.setVisible(false);
+                ajaxRunning = true;
+                
                 msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
                     
                     private static final long serialVersionUID = 1L;
 
                     @Override
                     protected void onTimer(AjaxRequestTarget target) {
-                        ajaxRunning = true;
-
-                
                         try {
                             FileImportOrder fio = new FileImportOrder();
                             List<PrivateFile> files = getFilesToRestore();
@@ -346,7 +348,11 @@ public class TrashListPage extends Panel {
                         queryStudies();
                         this.stop();
                         ajaxRunning = false;
+                        okBtn.setVisible(true);
+                        
                         target.addComponent(msgLabel);
+                        target.addComponent(hourglassImage);
+                        target.addComponent(okBtn);
                     }
                 });
             }            
