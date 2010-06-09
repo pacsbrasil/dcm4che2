@@ -42,7 +42,7 @@ package org.dcm4che2.code;
  * CID 12228 Echocardiography Volume Methods.
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Revision$ $Date$
+ * @version $Rev$ $Date::            $
  * @since Jun 2, 2010
  */
 public class EchocardiographyVolumeMethods {

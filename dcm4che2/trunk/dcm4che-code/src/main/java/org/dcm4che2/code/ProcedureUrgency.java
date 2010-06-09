@@ -42,7 +42,7 @@ package org.dcm4che2.code;
  * CID 3414 Procedure Urgency.
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Revision$ $Date$
+ * @version $Rev$ $Date::            $
  * @since Jun 2, 2010
  */
 public class ProcedureUrgency {

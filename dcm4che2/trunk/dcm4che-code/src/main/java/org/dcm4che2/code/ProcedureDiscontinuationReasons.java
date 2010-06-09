@@ -42,7 +42,7 @@ package org.dcm4che2.code;
  * CID 9300 Procedure Discontinuation Reasons.
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Revision$ $Date$
+ * @version $Rev$ $Date::            $
  * @since Jun 2, 2010
  */
 public class ProcedureDiscontinuationReasons {

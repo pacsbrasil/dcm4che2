@@ -42,7 +42,7 @@ package org.dcm4che2.code;
  * CID 3229 ECG Axis Measurements.
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Revision$ $Date$
+ * @version $Rev$ $Date::            $
  * @since Jun 2, 2010
  */
 public class ECGAxisMeasurements {
