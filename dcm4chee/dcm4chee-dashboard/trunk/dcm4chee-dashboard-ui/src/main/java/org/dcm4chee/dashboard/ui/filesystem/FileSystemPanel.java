@@ -78,10 +78,13 @@ import org.dcm4chee.icons.ImageManager;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryAxis3D;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberAxis3D;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
+import org.jfree.chart.renderer.category.StackedBarRenderer3D;
 import org.jfree.data.Range;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.slf4j.Logger;
@@ -272,49 +275,52 @@ public class FileSystemPanel extends Panel {
                     }
                 };
 
-            
-            FileSystemModel fsm = (FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject();
+            final FileSystemModel fsm = (FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject();
 
             DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-            dataset.addValue(fsm.getOverallDiskSpaceLong() == 0 ? 0 : (100 * 
+            dataset.addValue(fsm.getOverallDiskSpaceLong() == 0f ? 0f : (100f * 
                     fsm.getUsedDiskSpaceLong())
                     / fsm.getOverallDiskSpaceLong(), new Integer(1), "");
-            dataset.addValue(fsm.getOverallDiskSpaceLong() == 0 ? 0 : 
-                fsm.getMinimumFreeDiskSpaceLong() == 0 ? 100 : (100 * 
+            dataset.addValue(fsm.getOverallDiskSpaceLong() == 0f ? 0f : 
+                fsm.getMinimumFreeDiskSpaceLong() == 0f ? 100f : (100f * 
                     fsm.getUsableDiskSpaceLong()
                     / fsm.getOverallDiskSpaceLong()), new Integer(2), "");
-            dataset.addValue(fsm.getOverallDiskSpaceLong() == 0 ? 0 : 100, new Integer(3), "");
-            
-            final JFreeChart chart = ChartFactory.createStackedBarChart(null,
-                    null, null, dataset, PlotOrientation.HORIZONTAL, false,
-                    false, false);
-            chart.setBackgroundPaint(new Color(13421772));
+            dataset.addValue(fsm.getOverallDiskSpaceLong() == 0f ? 0f : (100f * 
+                    Math.min(fsm.getMinimumFreeDiskSpaceLong(), fsm.getFreeDiskSpaceLong())
+                    / fsm.getOverallDiskSpaceLong()), new Integer(3), "");
 
+            final JFreeChart chart = ChartFactory.createStackedBarChart3D(
+                    null, null, null, dataset, PlotOrientation.HORIZONTAL, false,
+                    false, false);
+            chart.setBackgroundPaint(new Color(0, 0, 0, 0));
+            
             final CategoryPlot plot = chart.getCategoryPlot();
             plot.setBackgroundPaint(Color.white);
+            plot.setForegroundAlpha(0.7f);
 
-            NumberAxis numberaxis = new NumberAxis();
+            NumberAxis3D numberaxis = new NumberAxis3D();
             numberaxis.setRange(new Range(0, 100));            
             plot.setRangeAxis(numberaxis);
 
-            CategoryAxis categoryaxis = new CategoryAxis();
+            CategoryAxis3D categoryaxis = new CategoryAxis3D();
             categoryaxis.setLabel("%");
             plot.setDomainAxis(categoryaxis);
-            StackedBarRenderer renderer = new StackedBarRenderer() {
+            StackedBarRenderer3D renderer = new StackedBarRenderer3D(10, 10) {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 public Paint getItemPaint(final int row, final int column) {
+                    if (fsm.getOverallDiskSpaceLong() <= 0) return Color.white;
                     return (row == 0) ? Color.red : (row == 1) ? Color.green
-                            : (row == 2) ? Color.blue : Color.white;
+                            : (row == 2) ? Color.yellow : Color.white;
                 }
             };
             renderer.setBaseItemLabelsVisible(false);
             plot.setRenderer(renderer);
 
             return 
-            new JFreeChartImage("image", chart, 350, 40) {
+            new JFreeChartImage("image", chart, 350, 50) {
 
                 private static final long serialVersionUID = 1L;
 

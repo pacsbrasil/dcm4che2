@@ -8,6 +8,9 @@
   <version>0.0.1</version>
   <packaging>pom</packaging>
   <name>File System Dashboard</name>
+  <properties>
+	<wicket.version>1.4.9</wicket.version>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.slf4j</groupId>
