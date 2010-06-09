@@ -50,8 +50,8 @@ public class ImageManager {
     private static final String iconset = "oxygen";
     private static final String treetable = "treetable";
     
-    public static int defaultWidth = 18;
-    public static int defaultHeight = 18;
+    public static int defaultWidth = 16;
+    public static int defaultHeight = 16;
     
     // workaround for treetable
     public static final ResourceReference IMAGE_TREETABLE_EXPAND = 
@@ -132,4 +132,6 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "actions/wado.gif");
     public static final ResourceReference IMAGE_TRASH_RESTORE = 
         new ResourceReference(ImageManager.class, iconset + "/actions/system-switch-user.png");
+    public static final ResourceReference IMAGE_HOURGLASS = 
+        new ResourceReference(ImageManager.class, "actions/ajax-loader.gif");
 }
