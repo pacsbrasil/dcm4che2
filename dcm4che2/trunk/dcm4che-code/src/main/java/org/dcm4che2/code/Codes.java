@@ -50,7 +50,7 @@ import org.dcm4che2.data.VR;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Rev$ $Date:: 0000-00-00 $
+ * @version $Rev$ $Date::            $
  * @since Jun 4, 2010
  */
 public class Codes {
