@@ -38,8 +38,6 @@
 
 package org.dcm4che2.net;
 
-import java.util.Arrays;
-
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -372,8 +370,8 @@ public class CommandUtils
                 if (cmd.contains(Tag.AttributeIdentifierList))
                     sb.append(NL)
                         .append("\ttags=")
-                        .append(Arrays.toString(
-                                cmd.getInts(Tag.AttributeIdentifierList)));
+                        .append(cmd.get(Tag.AttributeIdentifierList)
+                                .getValueAsString(null, 64));
                 sb.append(NL)
                     .append("\tcuid=")
                     .append(dict.prompt(cmd.getString(Tag.RequestedSOPClassUID)))
