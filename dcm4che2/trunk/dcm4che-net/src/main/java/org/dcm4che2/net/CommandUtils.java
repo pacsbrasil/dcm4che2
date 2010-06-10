@@ -374,7 +374,8 @@ public class CommandUtils
                         .append("\ttags=")
                         .append(Arrays.toString(
                                 cmd.getInts(Tag.AttributeIdentifierList)));
-                sb.append("\tcuid=")
+                sb.append(NL)
+                    .append("\tcuid=")
                     .append(dict.prompt(cmd.getString(Tag.RequestedSOPClassUID)))
                     .append(NL)
                     .append("\tiuid=")
