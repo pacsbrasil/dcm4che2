@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <title>Study XML Service</title>
+</head>
+
+<body>
+<h2>Study XML Service</h2>
+
+<h3>Overview</h3>
+C-FIND metadata service that will return a patient root hierarchy of results in
+a specified text format. Constraints to the C-FIND are applied by adding
+parameters that correspond to the DICOM tag names. As with any C-FIND query,
+constraints on the containing types can be applied as well as the requested
+level. 
+
+<p>An empty result set will be returned if query constraints are not provided.
+</p>
+
+<p>See <a href="patient.html">Patient</a> level information for included query
+constraints/results at the patient level.</p>
+
+<h3>Parameters</h3>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <th>Parameter</th>
+      <th>Description</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>ko</td>
+      <td>Set to * to include in the study information the preferred key images
+        instance to apply. It is fairly slow in general to look this up, so
+        only use for a particular patient's studies or for some other fairly
+        constrained study list.</td>
+      <td>Causes koUID to be returned if available.</td>
+    </tr>
+    <tr>
+      <td>gsps</td>
+      <td>Set to * to include the preferred GSPS (markup/annotations) to be
+        determined per-study. Fairly slow, so only use it for a small number of
+        studies being returned (eg all studies for a single patient).</td>
+      <td>Causes gspsLabel to be returned if available.</td>
+    </tr>
+    <tr>
+      <td>AccessionNumber</td>
+      <td>Constrain by the accession number of the study. Multiple values
+        separated by \ are permitted.</td>
+      <td>Returned in XML</td>
+    </tr>
+    <tr>
+      <td>studyUID</td>
+      <td>Constrain by the UID of the study. Multiple entries can be searched
+        for by separating them with the backslash \ character.</td>
+      <td>Returned in XML</td>
+    </tr>
+    <tr>
+      <td>ModalitiesInStudy</td>
+      <td>Constrain by the modalities in the study. Multiple entries can be
+        searched for by separating them with the backslash \ character.</td>
+      <td>Returned in XML as a comma-separated list</td>
+    </tr>
+    <tr>
+      <td>StudyDescription</td>
+      <td>Constrain by the study description</td>
+      <td>Allows wildcards
+
+        <p>Returned in XML</p>
+      </td>
+    </tr>
+    <tr>
+      <td>StudyDateTime</td>
+      <td>Search by the study date-time.</td>
+      <td>See <a href="COMMON.html">Common</a> for format.
+
+        <p>Returned in XML</p>
+      </td>
+    </tr>
+    <tr>
+      <td>StudyID</td>
+      <td>Search by the Study ID. This is another, typically internal ID for
+        studies.</td>
+      <td>Returned in XML</td>
+    </tr>
+    <tr>
+      <td>ReferringPhysicianName</td>
+      <td>Search by referring physician.</td>
+      <td>Returned in XML</td>
+    </tr>
+    <tr>
+      <td>StudyStatusID</td>
+      <td>For some PACS systems, studies are searchable by the study status.
+        Impax Data Center is not one of the systems searchable in this
+      fashion.</td>
+      <td>Returned in XML</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Return Attributes</h3>
+
+<table border="1">
+  <tbody>
+    <tr>
+      <th>XML Attribute</th>
+      <th>Description</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>studyDateTimeF</td>
+      <td>Human-readable study date-time format.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>koUID</td>
+      <td>The default set of key images to apply if the user wishes to see only
+        key images.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>gspsLabel</td>
+      <td>The name of the GSPS object to apply to this study.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>InstanceAvailability</td>
+      <td>Determines how fast it is to access the given study. ONLINE means the
+        study is easily accessed, NEARLINE means a slight delay and OFFLINE
+        means someone needs to manually mount a tape which could take hours to
+        days.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>NumberOfStudyRelatedSeries</td>
+      <td>Contains the number of sets of images (series) that this study
+        contains. A series is typically a set of related images all taken at
+        once such as a pass through a CT scanner.</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>NumberOfStudyRelatedInstances</td>
+      <td>Contains the number of DICOM objects this study contains. This will
+        typically be an indicator of study size, but for multi-frames it may
+        not be that good an indicator.</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>
