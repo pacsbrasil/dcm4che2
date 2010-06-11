@@ -1,5 +1,4 @@
-/* ***** BEGIN LICENSE BLOCK *****
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ /* Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
  * 1.1 (the "License"); you may not use this file except in compliance with
@@ -241,12 +240,12 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                     getViewPort().getFilter().setModality(mod);
             }
             String startPreset = this.getString("folder.mpps2mwl.preset.startdate");
-            if ("delete".equals(modPreset)) {
+            if ("delete".equals(startPreset)) {
                 getViewPort().getFilter().setStartDateMin(null);
                 getViewPort().getFilter().setStartDateMax(null);
             } else if (startPreset != null) {
                 Calendar cal = Calendar.getInstance();
-                if ("mpps".equals(modPreset)) {
+                if ("mpps".equals(startPreset)) {
                     cal.setTime(ppsModel.getDatetime());
                 }
                 cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -256,7 +255,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                 cal.set(Calendar.HOUR_OF_DAY, 23);
                 cal.set(Calendar.MINUTE, 59);
                 cal.set(Calendar.MILLISECOND, 999);
-                getViewPort().getFilter().setStartDateMax(ppsModel.getDatetime());
+                getViewPort().getFilter().setStartDateMax(cal.getTime());
             }
             queryMWLItems();
         }
