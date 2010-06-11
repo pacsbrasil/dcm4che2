@@ -981,9 +981,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         protected String[] getLeftJoin() {
             return isMatchSrCode() ? new String[] {
                         "Code", SR_CODE, "Instance.srcode_fk", "Code.pk",
-                        "Media", null, "Instance.srcode_fk", "Media.pk" }
+                        "Media", null, "Instance.media_fk", "Media.pk" }
                     : new String[] {
-                        "Media", null, "Instance.srcode_fk", "Media.pk" };
+                        "Media", null, "Instance.media_fk", "Media.pk" };
         }
 
         protected String[] getRelations() {
