@@ -59,11 +59,11 @@ import org.dcm4chee.docstore.BaseDocument;
 import org.dcm4chee.docstore.DataHandlerVO;
 import org.dcm4chee.docstore.DocumentStore;
 import org.dcm4chee.docstore.Feature;
-import org.dcm4chee.docstore.spi.BaseDocumetStorage;
+import org.dcm4chee.docstore.spi.BaseDocumentStorage;
 import org.dcm4chee.docstore.util.FileSystemInfo;
 import org.jboss.system.server.ServerConfigLocator;
 
-public class DocumentFileStorage extends BaseDocumetStorage {
+public class DocumentFileStorage extends BaseDocumentStorage {
 
     private static final String UNKNOWN_MIME = "application/octet-stream";
     private static final String DEFAULT_MIME_FILENAME = "default.mime";

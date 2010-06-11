@@ -50,18 +50,18 @@ import org.dcm4chee.docstore.BaseDocument;
 import org.dcm4chee.docstore.DocumentStorageListener;
 import org.dcm4chee.docstore.Feature;
 
-public abstract class BaseDocumetStorage implements DocumentStorage {
+public abstract class BaseDocumentStorage implements DocumentStorage {
 
     private String desc;
     private Set<Feature> features = new HashSet<Feature>();
     private String name;
     private HashSet<DocumentStorageListener> listeners = new HashSet<DocumentStorageListener>();
 
-    private static Logger log = Logger.getLogger( BaseDocumetStorage.class.getName() );
-    public BaseDocumetStorage() {
+    private static Logger log = Logger.getLogger( BaseDocumentStorage.class.getName() );
+    public BaseDocumentStorage() {
     }
 
-    public BaseDocumetStorage(String name) {
+    public BaseDocumentStorage(String name) {
         this.name = name;
     }
 

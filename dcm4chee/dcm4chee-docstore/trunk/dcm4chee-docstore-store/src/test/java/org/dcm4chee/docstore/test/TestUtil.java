@@ -18,7 +18,7 @@ import org.dcm4chee.docstore.BaseDocument;
 import org.dcm4chee.docstore.DataHandlerVO;
 import org.dcm4chee.docstore.DocumentStore;
 import org.dcm4chee.docstore.DocumentStoreNoPoolTest;
-import org.dcm4chee.docstore.spi.BaseDocumetStorage;
+import org.dcm4chee.docstore.spi.BaseDocumentStorage;
 import org.dcm4chee.docstore.spi.DocumentStorage;
 
 import junit.framework.TestCase;
@@ -108,7 +108,7 @@ public class TestUtil {
     }
 
     public static DocumentStorage getDummyStorage(String name) {
-        return new BaseDocumetStorage(name) {
+        return new BaseDocumentStorage(name) {
             public BaseDocument createDocument(String docUid, String mime)
             throws IOException {
                 return null;
