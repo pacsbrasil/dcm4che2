@@ -42,11 +42,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.activation.DataHandler;
-import javax.activation.DataSource;
 
 import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.spi.DocumentStorage;
