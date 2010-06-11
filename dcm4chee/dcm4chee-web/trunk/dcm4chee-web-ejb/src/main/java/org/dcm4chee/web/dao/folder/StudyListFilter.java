@@ -156,6 +156,9 @@ public class StudyListFilter implements Serializable {
     }
 
     public void setStudyDateMin(Date studyDate) {
+        if ( studyDate == null) {
+            new NullPointerException("FYI").printStackTrace();
+        }
         this.studyDateMin = studyDate;
     }
 

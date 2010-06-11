@@ -49,6 +49,8 @@ import javax.persistence.Query;
 import javax.persistence.TemporalType;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4chee.archive.common.Availability;
+import org.dcm4chee.archive.common.StorageStatus;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
@@ -366,6 +368,15 @@ public class StudyListBean implements StudyListLocal {
         study.setAttributes(attrs);
         return study;
     }
+    public Study addStudy(long patPk, DicomObject attrs) {
+        Patient pat = em.find(Patient.class, patPk);
+        Study study = new Study();
+        study.setAttributes(attrs);
+        study.setPatient(pat);
+        study.setAvailability(Availability.ONLINE);
+        em.persist(study);
+        return study;
+    }
 
     public Series getSeries(long pk) {
         return em.find(Series.class, pk);
@@ -374,6 +385,17 @@ public class StudyListBean implements StudyListLocal {
     public Series updateSeries(long pk, DicomObject attrs) {
         Series series = em.find(Series.class, pk);
         series.setAttributes(attrs);
+        return series;
+    }
+    public Series addSeries(long studyPk, DicomObject attrs) {
+        Study study = em.find(Study.class, studyPk);
+        Series series = new Series();
+        series.setAttributes(attrs);
+        series.setStudy(study);
+        series.setAvailability(Availability.ONLINE);
+        series.setNumberOfSeriesRelatedInstances(0);
+        series.setStorageStatus(StorageStatus.STORED);
+        em.persist(series);
         return series;
     }
 

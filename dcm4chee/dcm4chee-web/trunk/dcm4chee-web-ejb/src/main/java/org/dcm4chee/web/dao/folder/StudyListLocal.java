@@ -85,10 +85,12 @@ public interface StudyListLocal {
     Study getStudy(long pk);
 
     Study updateStudy(long pk, DicomObject dataset);
+    Study addStudy(long patPk, DicomObject dataset);
 
     Series getSeries(long pk);
 
     Series updateSeries(long pk, DicomObject dataset);
+    Series addSeries(long studyPk, DicomObject dataset);
 
     Instance getInstance(long pk);
 
