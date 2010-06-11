@@ -153,8 +153,7 @@ public class PrivSelectedEntities implements Serializable {
         for (AbstractDicomModel c : childs) {
             if ( c.isSelected() ) {
                 c.setSelected(false);
-                log.info("######");
-                log.info("Deselect entity {} because parent is already selected! selected parent level: {}", c, parentLevel);
+                log.debug("Deselect entity {} because parent is already selected! selected parent level: {}", c, parentLevel);
             }
             deselectChildsOf(c, parentLevel);
         }

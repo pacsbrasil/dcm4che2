@@ -44,9 +44,11 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
+import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.common.PrivateTag;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.Series;
@@ -70,9 +72,15 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
     private PPSModel parent;
 
     public SeriesModel(Series series, PPSModel ppsModel) {
-        setPk(series.getPk());
-        this.sourceAET = series.getSourceAET();
-        this.dataset = series.getAttributes(true);
+        if (series == null) {
+            setPk(-1);
+            dataset = new BasicDicomObject();
+            dataset.putString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
+        } else {
+            setPk(series.getPk());
+            this.sourceAET = series.getSourceAET();
+            this.dataset = series.getAttributes(true);
+        }
         setParent(ppsModel);
     }
 
@@ -216,7 +224,13 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         dicomObject.putString(dicomObject.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), 
                 VR.AE, getSourceAET());
-        dataset = dao.updateSeries(getPk(), dicomObject).getAttributes(true);
+        if ( getPk() == -1) {
+            Series s = dao.addSeries(getParent().getParent().getPk(), dicomObject);
+            setPk(s.getPk());
+            dataset = s.getAttributes(true);
+        }  else {
+            dataset = dao.updateSeries(getPk(), dicomObject).getAttributes(true);
+        }
     }
     
     @Override

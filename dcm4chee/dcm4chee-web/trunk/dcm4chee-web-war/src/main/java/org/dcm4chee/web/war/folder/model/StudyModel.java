@@ -44,9 +44,11 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
+import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
@@ -69,8 +71,14 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     private PatientModel parent;
 
     public StudyModel(Study study, PatientModel patModel) {
-        setPk(study.getPk());
-        dataset = study.getAttributes(true);
+        if (study == null) {
+            setPk(-1);
+            dataset = new BasicDicomObject();
+            dataset.putString(Tag.StudyInstanceUID, VR.UI, UIDUtils.createUID());
+        } else {
+            setPk(study.getPk());
+            dataset = study.getAttributes(true);
+        }
         setParent(patModel);
     }
 
@@ -215,7 +223,13 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        dataset = dao.updateStudy(getPk(), dicomObject).getAttributes(true);
+        if (getPk() == -1) {
+            Study s = dao.addStudy(parent.getPk(), dicomObject);
+            setPk(s.getPk());
+            dataset = s.getAttributes(true);
+        } else {
+            dataset = dao.updateStudy(getPk(), dicomObject).getAttributes(true);
+        }
     }
     
     @Override
