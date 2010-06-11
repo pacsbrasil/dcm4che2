@@ -132,6 +132,11 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "actions/wado.gif");
     public static final ResourceReference IMAGE_TRASH_RESTORE = 
         new ResourceReference(ImageManager.class, iconset + "/actions/system-switch-user.png");
+    public static final ResourceReference IMAGE_ADD_STUDY = 
+        new ResourceReference(ImageManager.class, "actions/add.gif");
+    public static final ResourceReference IMAGE_ADD_SERIES = 
+        new ResourceReference(ImageManager.class, "actions/add.gif");
     public static final ResourceReference IMAGE_HOURGLASS = 
         new ResourceReference(ImageManager.class, "actions/ajax-loader.gif");
+
 }
