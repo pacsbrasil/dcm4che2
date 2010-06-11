@@ -70,6 +70,10 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
 
     private PatientModel parent;
 
+    private String availability;
+    private int numberOfStudyRelatedSeries;
+    private int numberOfStudyRelatedInstances;
+    
     public StudyModel(Study study, PatientModel patModel) {
         if (study == null) {
             setPk(-1);
@@ -77,7 +81,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
             dataset.putString(Tag.StudyInstanceUID, VR.UI, UIDUtils.createUID());
         } else {
             setPk(study.getPk());
-            dataset = study.getAttributes(true);
+            updateModel(study);
         }
         setParent(patModel);
     }
@@ -140,15 +144,15 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     }
 
     public int getNumberOfSeries() {
-        return dataset.getInt(Tag.NumberOfStudyRelatedSeries);
+        return numberOfStudyRelatedSeries;
     }
 
     public int getNumberOfInstances() {
-        return dataset.getInt(Tag.NumberOfStudyRelatedInstances);
+        return numberOfStudyRelatedInstances;
     }
 
     public String getAvailability() {
-        return dataset.getString(Tag.InstanceAvailability);
+        return availability;
     }
 
     public List<PPSModel> getPPSs() {
@@ -223,19 +227,29 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        Study s;
         if (getPk() == -1) {
-            Study s = dao.addStudy(parent.getPk(), dicomObject);
+            s = dao.addStudy(parent.getPk(), dicomObject);
             setPk(s.getPk());
-            dataset = s.getAttributes(true);
         } else {
-            dataset = dao.updateStudy(getPk(), dicomObject).getAttributes(true);
+            s = dao.updateStudy(getPk(), dicomObject);
         }
+        updateModel(s);
     }
     
     @Override
     public void refresh() {
         StudyListLocal dao = (StudyListLocal)
         JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        dataset = dao.getStudy(getPk()).getAttributes(true);
+        updateModel(dao.getStudy(getPk()));
     }    
+    
+    private void updateModel(Study s) {
+        dataset = s.getAttributes(false);
+        availability = s.getAvailability().name();
+        numberOfStudyRelatedSeries = s.getNumberOfStudyRelatedSeries();
+        numberOfStudyRelatedInstances = s.getNumberOfStudyRelatedInstances();
+    }
+    
+    
 }

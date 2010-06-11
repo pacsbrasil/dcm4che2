@@ -45,11 +45,13 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.RepeatingView;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.ElementDictionary;
 import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.util.TagUtils;
+import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -62,9 +64,31 @@ public class DicomObjectPanel extends Panel {
     
     private static ElementDictionary dict = ElementDictionary.getDictionary();
     private boolean populated;
+    private long modelPk = -1;
+    
+    public DicomObjectPanel(String id, AbstractDicomModel dcmModel, boolean header) {
+        this(id, dcmModel.getDataset(), header);
+        modelPk = dcmModel.getPk();
+    }
 
     public DicomObjectPanel(String id, final DicomObject dcmObj, boolean header) {
         super(id);
+        add(new Label("pkInfo", new AbstractReadOnlyModel<String>() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public String getObject() {
+                return getString("pkInfo")+modelPk;
+            }
+            
+        }){
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean isVisible() {
+                return modelPk != -1;
+            }
+        });
         add(new WebMarkupContainer("header").setVisible(header));
         RepeatingView rv = new RepeatingView("elements") {
 

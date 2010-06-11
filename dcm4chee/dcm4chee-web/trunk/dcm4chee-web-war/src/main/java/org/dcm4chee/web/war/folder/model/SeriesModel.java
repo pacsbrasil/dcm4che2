@@ -67,6 +67,9 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
     private static final long serialVersionUID = 1L;
     
     private String sourceAET;
+    private String availability;
+    private int numberOfSeriesRelatedInstances;
+    
     private List<InstanceModel> instances = new ArrayList<InstanceModel>();
 
     private PPSModel parent;
@@ -78,8 +81,7 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
             dataset.putString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
         } else {
             setPk(series.getPk());
-            this.sourceAET = series.getSourceAET();
-            this.dataset = series.getAttributes(true);
+            updateModel(series);
         }
         setParent(ppsModel);
     }
@@ -141,7 +143,7 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
     }
 
     public int getNumberOfInstances() {
-        return dataset.getInt(Tag.NumberOfSeriesRelatedInstances);
+        return numberOfSeriesRelatedInstances;
     }
 
     public Date getPPSStartDatetime() {
@@ -163,7 +165,7 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
     }
 
     public String getAvailability() {
-        return dataset.getString(Tag.InstanceAvailability);
+        return availability;
     }
 
     public List<InstanceModel> getInstances() {
@@ -224,20 +226,28 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         dicomObject.putString(dicomObject.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), 
                 VR.AE, getSourceAET());
+        Series s;
         if ( getPk() == -1) {
-            Series s = dao.addSeries(getParent().getParent().getPk(), dicomObject);
+            s = dao.addSeries(getParent().getParent().getPk(), dicomObject);
             setPk(s.getPk());
-            dataset = s.getAttributes(true);
         }  else {
-            dataset = dao.updateSeries(getPk(), dicomObject).getAttributes(true);
+            s = dao.updateSeries(getPk(), dicomObject);
         }
+        updateModel(s);
+    }
+
+    private void updateModel(Series s) {
+        dataset = s.getAttributes(false);
+        availability = s.getAvailability().name();
+        numberOfSeriesRelatedInstances = s.getNumberOfSeriesRelatedInstances();
+        sourceAET = s.getSourceAET();
     }
     
     @Override
     public void refresh() {
         StudyListLocal dao = (StudyListLocal)
         JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        dataset = dao.getSeries(getPk()).getAttributes(true);
+        updateModel(dao.getSeries(getPk()));
     }
     
     public boolean containedBySamePPS(SeriesModel series) {

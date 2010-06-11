@@ -752,7 +752,6 @@ public class StudyListPage extends Panel {
             item.add(dtl);
             item.add(new Label("sex").add(tooltipBehaviour));
             item.add(new Label("comments").add(tooltipBehaviour));
-            item.add(new Label("pk").add(new TooltipBehaviour("folder.","patPk")));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -800,7 +799,7 @@ public class StudyListPage extends Panel {
                 
             };
             item.add(details);
-            details.add(new DicomObjectPanel("dicomobject", patModel.getDataset(), false));
+            details.add(new DicomObjectPanel("dicomobject", patModel, false));
             item.add(new StudyListView("studies", patModel.getStudies(), item));
         }
     }
@@ -841,7 +840,6 @@ public class StudyListPage extends Panel {
             item.add(new Label("numberOfSeries").add(new TooltipBehaviour("folder.study","NoS")));
             item.add(new Label("numberOfInstances").add(new TooltipBehaviour("folder.study","NoI")));
             item.add(new Label("availability").add(new TooltipBehaviour("folder.study","Availability")));
-            item.add(new Label("pk").add(new TooltipBehaviour("folder.", "studyPk")));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -888,7 +886,7 @@ public class StudyListPage extends Panel {
             .add(new Image("webviewImg",ImageManager.IMAGE_WEBVIEWER).add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","studyWebviewer")));
             item.add(details);
-            details.add(new DicomObjectPanel("dicomobject", studyModel.getDataset(), false));
+            details.add(new DicomObjectPanel("dicomobject", studyModel, false));
             item.add(new PPSListView("ppss",
                     studyModel.getPPSs(), patientListItem));
         }
@@ -954,7 +952,6 @@ public class StudyListPage extends Panel {
             }
             .add(new ImageSizeBehaviour()));
 
-            item.add(new Label("pk").add(new TooltipBehaviour("folder.", "ppsPk")));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -1048,7 +1045,7 @@ public class StudyListPage extends Panel {
                 
             };
             item.add(details);
-            details.add(new DicomObjectPanel("dicomobject", ppsModel.getDataset(), false));
+            details.add(new DicomObjectPanel("dicomobject", ppsModel, false));
             item.add(new SeriesListView("series",
                     ppsModel.getSeries(), ppsListItem));
         }
@@ -1089,7 +1086,6 @@ public class StudyListPage extends Panel {
             item.add(new Label("description").add(new TooltipBehaviour("folder.series","Description")));
             item.add(new Label("numberOfInstances").add(new TooltipBehaviour("folder.series","NoI")));
             item.add(new Label("availability").add(new TooltipBehaviour("folder.series","Availability")));
-            item.add(new Label("pk").add(new TooltipBehaviour("folder.", "seriesPk")));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -1136,7 +1132,7 @@ public class StudyListPage extends Panel {
             .add(new Image("webviewImg",ImageManager.IMAGE_WEBVIEWER).add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","seriesWebviewer")));
             item.add(details);
-            details.add(new DicomObjectPanel("dicomobject", seriesModel.getDataset(), false));
+            details.add(new DicomObjectPanel("dicomobject", seriesModel, false));
             item.add(new InstanceListView("instances",
                     seriesModel.getInstances(), patientListItem));
         }
@@ -1175,7 +1171,6 @@ public class StudyListPage extends Panel {
             item.add(new Label("sopClassUID").add(new TooltipBehaviour("folder.","sopClassUID")));
             item.add(new Label("description").add(new TooltipBehaviour("folder.instance","Description")));
             item.add(new Label("availability").add(new TooltipBehaviour("folder.instance","Availability")));
-            item.add(new Label("pk").add(new TooltipBehaviour("folder.", "instancePk")));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -1233,7 +1228,7 @@ public class StudyListPage extends Panel {
                 
             };
             item.add(details);
-            details.add(new DicomObjectPanel("dicomobject", instModel.getDataset(), false));
+            details.add(new DicomObjectPanel("dicomobject", instModel, false));
             item.add(new FileListView("files", instModel.getFiles(), patientListItem));
         }
     }
@@ -1260,7 +1255,6 @@ public class StudyListPage extends Panel {
             item.add(new Label("file.fileSystem.directoryPath").add(new TooltipBehaviour("folder.file.fileSystem.","directoryPath")));
             item.add(new Label("file.filePath").add(new TooltipBehaviour("folder.file.","filePath")));
             item.add(new Label("file.fileSystem.availability").add(new TooltipBehaviour("folder.file.fileSystem.","availability")));
-            item.add(new Label("file.pk").add(new TooltipBehaviour("folder.","filePk")));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
