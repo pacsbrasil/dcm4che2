@@ -56,3 +56,9 @@ div.internal_error, div.page-expired, div.access-denied
 .msgWindow_content {height: 63%; width: 90%;position: absolute; left: 5%; top: 40px;}
 .msgWindow-msg { width:90%; position: absolute; left: 5%; top: 45%;}
 .msgWindow-button { width:50%;position: absolute; left: 25%; top: 80%; }
+
+.textFieldSH { width: 150px; }
+.textFieldLO { width: 290px; }
+.timeField { width: 35px; }
+.dateField { width: 80px; }
+.dateTimeField { width: 170px; }

@@ -12,7 +12,6 @@
     <colgroup>
       <col class="attrname" />
       <col class="val" />
-      <col class="action" />
     </colgroup>
     <thead>
       <tr class="input">
@@ -32,17 +31,23 @@
 			<div class="edit-input-value"><input wicket:id="value" type="text" /></div>
           </td>
         </wicket:fragment>
+        <wicket:fragment wicket:id="date_element">
+          <td wicket:id="name" class="attrname">
+          	<div class="edit-input-desc">[Attribute Name]</div>
+          	</td>
+          <td class="val">
+			<div class="edit-input-value"><div wicket:id="value" id="value" /></div>
+          </td>
+        </wicket:fragment>
       </tr>
       
     </tbody>
   </table>
   <div class="submit">
-	  <input type="submit" wicket:id="apply" />
 	  <input type="submit" wicket:id="submit"/>
 	  <input type="submit" wicket:id="cancel"/>
 	</div>
   </form>
-  <div wicket:id="mw" >MessageWindow</div>
 </wicket:panel>
 </body>
 </html>

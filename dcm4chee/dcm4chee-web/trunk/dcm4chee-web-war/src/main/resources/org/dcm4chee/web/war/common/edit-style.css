@@ -10,6 +10,11 @@ col.vr { width: 30px; }
 col.len { width: 60px; }
 col.val { width: 300px; }
 td.val input { width: 100%; }
+td.val input.textFieldSH { width: 150px; }
+td.val input.textFieldLO { width: 290px; }
+td.val input.dateField { width: 80px; }
+td.val input.timeField { width: 35px; }
+td.val input.dateTimeField { width: 170px; }
 col.action { width: 30px; }
 td.item, td.newitem, td.newattr { font-style: italic; }
 
