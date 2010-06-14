@@ -68,7 +68,7 @@ public class StudyListHeader extends Panel {
                 @Override
                 public ResourceReference getObject() {
                     return StudyListHeader.this.headerExpandLevel <= Cell.this.entityLevel ? 
-                            ImageManager.IMAGE_EXPAND : ImageManager.IMAGE_COLLAPSE;
+                            ImageManager.IMAGE_COMMON_EXPAND : ImageManager.IMAGE_COMMON_COLLAPSE;
                 }
             })
             .add(new ImageSizeBehaviour())));
@@ -100,7 +100,7 @@ public class StudyListHeader extends Panel {
             public boolean isVisible() {
                 return headerExpandLevel < expandAllLevel;
             }
-        }.add(new Image("expandAllImg", ImageManager.IMAGE_EXPAND_ALL)
+        }.add(new Image("expandAllImg", ImageManager.IMAGE_COMMON_EXPAND)
         .add(new ImageSizeBehaviour())));
 
         patCell.add(new AjaxCheckBox("autoExpand", autoExpand){

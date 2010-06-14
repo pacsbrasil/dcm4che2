@@ -223,7 +223,7 @@ public class EditDicomObjectPanel extends Panel {
                     }
                 }
 
-            }.add(new Image("img-remove", ImageManager.IMAGE_DELETE)
+            }.add(new Image("img-remove", ImageManager.IMAGE_COMMON_REMOVE)
             .add(new ImageSizeBehaviour())));
         }
      }
@@ -265,7 +265,7 @@ public class EditDicomObjectPanel extends Panel {
                 protected void onError(AjaxRequestTarget target, Form<?> form) {
                     target.addComponent(form.get("tag"));
                 }
-            }.add(new Image("img-add",ImageManager.IMAGE_NEW)
+            }.add(new Image("img-add",ImageManager.IMAGE_COMMON_ADD)
             .add(new ImageSizeBehaviour())));
         }
      }
@@ -296,7 +296,7 @@ public class EditDicomObjectPanel extends Panel {
                     }
                 }
                 
-            }.add(new Image("img-remove", ImageManager.IMAGE_DELETE)
+            }.add(new Image("img-remove", ImageManager.IMAGE_COMMON_REMOVE)
             .add(new ImageSizeBehaviour())));
         }
      }
@@ -322,7 +322,7 @@ public class EditDicomObjectPanel extends Panel {
                     }
                 }
                 
-            }.add(new Image("img-add", ImageManager.IMAGE_NEW)
+            }.add(new Image("img-add", ImageManager.IMAGE_COMMON_ADD)
             .add(new ImageSizeBehaviour())));
         }
 

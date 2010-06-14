@@ -68,13 +68,18 @@
 				<div wicket:id="viewport" class="viewport">Displaying studies 1 to 20 from 1234 matching studies</div>
 			</div>
 			<div class="action">
-				<a wicket:id="deleteBtn" href="#"><img wicket:id="deleteImg" alt="Delete" /></a>
-			</div>
-			<div class="action">
-				<a wicket:id="deleteAllBtn" href="#"><img wicket:id="deleteAllImg" alt="Delete all" /></a>
-			</div>
-			<div class="action">
-				<a wicket:id="restoreBtn" href="#"><img wicket:id="restoreImg" alt="Restore" /></a>
+				<button wicket:id="restoreBtn" >
+					<img wicket:id="restoreImg" alt="Restore" />
+					<span wicket:id="restoreText" />
+				</button>
+				<button wicket:id="deleteAllBtn" >
+					<img wicket:id="deleteAllImg" alt="Delete all" />
+					<span wicket:id="deleteAllText" />
+				</button>
+				<button wicket:id="deleteBtn" >
+					<img wicket:id="deleteImg" alt="Delete" />
+					<span wicket:id="deleteText" />
+				</button>
 			</div>
 		</div>
 	<table>

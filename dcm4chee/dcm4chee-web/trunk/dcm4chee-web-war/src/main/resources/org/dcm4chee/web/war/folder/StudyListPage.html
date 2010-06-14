@@ -5,7 +5,6 @@
 <head>
 <title>Studies</title>
 </head>
-<body>
 <wicket:panel>
     <div wicket:id="msgWin" >MessageWindow</div>
     <div wicket:id="linkPage" >MessageWindow</div>
@@ -133,9 +132,18 @@
 				<div wicket:id="viewport" class="viewport">Displaying studies 1 to 20 from 1234 matching studies</div>
 			</div>
 			<div class="action">
-				<a wicket:id="deleteBtn" href="#"><img wicket:id="deleteImg" alt="Delete" /></a>
-				<a wicket:id="moveBtn" href="#"><img wicket:id="moveImg" alt="Move" /></a>
-				<a wicket:id="exportBtn" href="#"><img wicket:id="exportImg" alt="Export" /></a>
+				<button wicket:id="deleteBtn" >
+					<img wicket:id="deleteImg" alt="Delete" />
+					<span wicket:id="deleteText" />
+				</button>
+				<button wicket:id="moveBtn" >
+					<img wicket:id="moveImg" alt="Move" />
+					<span wicket:id="moveText" />
+				</button>
+				<button wicket:id="exportBtn">
+					<img wicket:id="exportImg" alt="Export" />
+					<span wicket:id="exportText" />
+				</button>
 			</div>
 		</div>
 	<table>
@@ -378,5 +386,4 @@
 	</table>
 	</form>
 </wicket:panel>	
-</body>
 </html>

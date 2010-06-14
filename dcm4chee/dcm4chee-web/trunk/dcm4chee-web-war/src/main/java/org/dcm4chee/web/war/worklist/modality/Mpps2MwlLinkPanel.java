@@ -144,7 +144,7 @@ public class Mpps2MwlLinkPanel extends ModalityWorklistPanel {
                     log.error("MPPS to MWL link failed!", e);
                 }
             }
-        }.add(new Image("linkImg",ImageManager.IMAGE_INSERT_LINK)
+        }.add(new Image("linkImg",ImageManager.IMAGE_COMMON_LINK)
         .add(new ImageSizeBehaviour())));
     }    
     

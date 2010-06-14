@@ -84,6 +84,8 @@ import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.util.time.Duration;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.IValidator;
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -96,12 +98,14 @@ import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.PopupLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
+import org.dcm4chee.web.common.validators.UIDValidator;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.dao.folder.StudyListFilter;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.war.WicketSession;
 import org.dcm4chee.web.war.common.EditDicomObjectPage;
+import org.dcm4chee.web.war.common.SimpleEditDicomObjectPage;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 import org.dcm4chee.web.war.folder.model.FileModel;
@@ -174,6 +178,7 @@ public class StudyListPage extends Panel {
                 return (!filter.isExtendedStudyQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) &&
                        (!filter.isExtendedSeriesQuery() || QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID()));
             }
+            
         };
         form.addLabeledTextField("patientName", enabledModel);
         form.addLabel("patientIDDescr");
@@ -345,6 +350,7 @@ public class StudyListPage extends Panel {
         };
         confirmDelete.setInitialHeight(150);
         form.add(confirmDelete);
+        
         AjaxButton deleteBtn = new AjaxButton("deleteBtn") {
                     
             private static final long serialVersionUID = 1L;
@@ -419,7 +425,6 @@ public class StudyListPage extends Panel {
         confirmMove.setInitialHeight(150);
         form.add(confirmMove);
         
-// TODO: test this
         AjaxButton moveBtn = new AjaxButton("moveBtn") {
             
             private static final long serialVersionUID = 1L;
@@ -548,8 +553,8 @@ public class StudyListPage extends Panel {
                         ImageManager.IMAGE_COMMON_EXPAND;
                 }
         })
-        .add(new ImageSizeBehaviour())
-        .add(new TooltipBehaviour("folder.", "showExtendedPatFilter")));
+        .add(new ImageSizeBehaviour()));
+        
         form.add(link);
         return extendedPatFilter;
     }
@@ -565,7 +570,7 @@ public class StudyListPage extends Panel {
             }
         };
         extendedStudyFilter.add( new Label("studyInstanceUIDLabel", new ResourceModel("folder.studyInstanceUID")));
-        extendedStudyFilter.add( new TextField<String>("studyInstanceUID"));
+        extendedStudyFilter.add( new TextField<String>("studyInstanceUID").add(new UIDValidator()));
         form.add(extendedStudyFilter);
         AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedStudyFilter") {
 
@@ -587,8 +592,7 @@ public class StudyListPage extends Panel {
                     ImageManager.IMAGE_COMMON_EXPAND;
             }
         })
-        .add(new ImageSizeBehaviour())
-        .add(new TooltipBehaviour("folder.", "showExtendedStudyFilter")));
+        .add(new ImageSizeBehaviour()));
         
         form.add(link);
         return extendedStudyFilter;
@@ -636,8 +640,7 @@ public class StudyListPage extends Panel {
                     ImageManager.IMAGE_COMMON_EXPAND;
             }
         })
-        .add(new ImageSizeBehaviour())
-        .add(new TooltipBehaviour("folder.", "showExtendedSeriesFilter")));
+        .add(new ImageSizeBehaviour()));
         
         form.add(link);
         return extendedSeriesFilter;
@@ -784,9 +787,10 @@ public class StudyListPage extends Panel {
                 }
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","patDetail"))));
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","patDetail")));
             item.add(getEditLink(patModel, "patEdit"));
+            item.add(getAddStudyLink(patModel, "addStudy"));
             item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForPatient(patModel.getId(), patModel.getIssuer())) {
                 private static final long serialVersionUID = 1L;
                 @Override
@@ -871,9 +875,10 @@ public class StudyListPage extends Panel {
                 }
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","studyDetail"))));
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","studyDetail")));
             item.add( getEditLink(studyModel, "studyEdit"));
+            item.add(getAddSeriesLink(studyModel, "addSeries"));
             item.add( new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -986,8 +991,8 @@ public class StudyListPage extends Panel {
                     return ppsModel.getDataset() != null;
                 }
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","ppsDetail"))));
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","ppsDetail")));
             item.add(getEditLink(ppsModel, "ppsEdit"));
             
             AjaxFallbackLink<?> linkBtn = new AjaxFallbackLink<Object>("linkBtn") {
@@ -1116,8 +1121,8 @@ public class StudyListPage extends Panel {
                 }
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","seriesDetail"))));
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","seriesDetail")));
             item.add(getEditLink(seriesModel, "seriesEdit"));
             item.add(new AjaxCheckBox("selected"){
 
@@ -1201,8 +1206,8 @@ public class StudyListPage extends Panel {
                 }
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","instanceDetail"))));
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","instanceDetail")));
             item.add(getEditLink(instModel, "instanceEdit"));
             item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForInstance(instModel.getSOPInstanceUID())) {
                 private static final long serialVersionUID = 1L;
@@ -1285,8 +1290,8 @@ public class StudyListPage extends Panel {
                 }
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","fileDetail"))));
+            .add(new ImageSizeBehaviour()))
+            .add(new TooltipBehaviour("folder.","fileDetail")));
             item.add(new AjaxCheckBox("selected"){
                 private static final long serialVersionUID = 1L;
 
@@ -1328,12 +1333,65 @@ public class StudyListPage extends Panel {
                 return model.getDataset() != null;
             }
         };
-        link.add(new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT).add(new ImageSizeBehaviour())
-        .add(new TooltipBehaviour("folder.", tooltipId)));
+        link.add(new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT).add(new ImageSizeBehaviour()));
+        link.add(new TooltipBehaviour("folder.", tooltipId));
         MetaDataRoleAuthorizationStrategy.authorize(link, RENDER, "WebAdmin");
         return link;
     }
-    
+
+    private Link<Object> getAddStudyLink(final PatientModel model, String tooltipId) {
+        Link<Object> link = new Link<Object>("add") {
+            
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick() {
+                StudyModel newStudyModel = new StudyModel(null, model);
+                setResponsePage(
+                        new SimpleEditDicomObjectPage(StudyListPage.this.getPage(), new ResourceModel("folder.addStudy", "Add Study"),
+                                newStudyModel, new int[][]{{Tag.StudyInstanceUID},
+                                                    {Tag.StudyID},
+                                                    {Tag.AccessionNumber},
+                                                    {Tag.StudyDate, Tag.StudyTime}}, model));
+            }
+            @Override
+            public boolean isVisible() {
+                return model.getDataset() != null;
+            }
+        };
+        link.add(new Image("addImg",ImageManager.IMAGE_COMMON_ADD).add(new ImageSizeBehaviour()));
+        link.add(new TooltipBehaviour("folder.", tooltipId));
+        return link;
+    }
+
+    private Link<Object> getAddSeriesLink(final StudyModel model, String tooltipId) {
+        Link<Object> link = new Link<Object>("add") {
+            
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick() {
+                SeriesModel newSeriesModel = new SeriesModel(null, null);
+                PPSModel ppsModel = new PPSModel(null, newSeriesModel, model);
+                setResponsePage(
+                        new SimpleEditDicomObjectPage(StudyListPage.this.getPage(), new ResourceModel("folder.addSeries", "Add Series"),
+                                newSeriesModel, new int[][]{{Tag.SeriesInstanceUID},
+                                                    {Tag.SeriesNumber},
+                                                    {Tag.Modality},
+                                                    {Tag.SeriesDate, Tag.SeriesTime},
+                                                    {Tag.SeriesDescription},
+                                                    {Tag.BodyPartExamined},{Tag.Laterality}}, model));
+            }
+            @Override
+            public boolean isVisible() {
+                return model.getDataset() != null;
+            }
+        };
+        link.add(new Image("addImg",ImageManager.IMAGE_COMMON_ADD).add(new ImageSizeBehaviour()));
+        link.add(new TooltipBehaviour("folder.", tooltipId));
+        return link;
+    }
+
     private class ExpandCollapseLink extends AjaxFallbackLink<Object> {
 
         private static final long serialVersionUID = 1L;

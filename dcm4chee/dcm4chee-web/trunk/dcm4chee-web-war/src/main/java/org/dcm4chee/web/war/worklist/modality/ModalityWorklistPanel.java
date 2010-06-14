@@ -293,12 +293,12 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
             @Override
             public ResourceReference getObject() {
-                return filter.isExtendedQuery() ? ImageManager.IMAGE_COLLAPSE : 
-                    ImageManager.IMAGE_EXPAND;
+                return filter.isExtendedQuery() ? ImageManager.IMAGE_COMMON_COLLAPSE : 
+                    ImageManager.IMAGE_COMMON_EXPAND;
             }
         })
-        .add(new ImageSizeBehaviour()));
-        
+        .add(new ImageSizeBehaviour())
+        .add(new TooltipBehaviour("mw.", "showExtendedStudyFilter")));
         form.add(link);
         return extendedStudyFilter;
     }
@@ -371,9 +371,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                     target.addComponent(item);
             }
 
-        }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
-        .add(new ImageSizeBehaviour()))
-        .add(new TooltipBehaviour("mw.","patDetail")))
+        }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
+        .add(new ImageSizeBehaviour())
+        .add(new TooltipBehaviour("mw.","patDetail"))))
         .add( new Link<Object>("edit") {
 
             private static final long serialVersionUID = 1L;
@@ -382,9 +382,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             public void onClick() {
                 setResponsePage(new EditDicomObjectPage(mwlListView.getPage(), mwlItemModel));
             }
-        }.add(new Image("editImg",ImageManager.IMAGE_EDIT)
-        .add(new ImageSizeBehaviour()))
-        .add(new TooltipBehaviour("mw.","patEdit")))
+        }.add(new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT)
+        .add(new ImageSizeBehaviour())
+        .add(new TooltipBehaviour("mw.","patEdit"))))
         .add(new WebMarkupContainer("details") {
 
             private static final long serialVersionUID = 1L;

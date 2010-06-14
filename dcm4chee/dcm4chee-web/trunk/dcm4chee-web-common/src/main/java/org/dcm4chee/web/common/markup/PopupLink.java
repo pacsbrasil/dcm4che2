@@ -39,6 +39,7 @@
 package org.dcm4chee.web.common.markup;
 
 import org.apache.wicket.IPageMap;
+import org.apache.wicket.Page;
 import org.apache.wicket.PageMap;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.markup.html.IHeaderContributor;
@@ -75,13 +76,8 @@ public abstract class PopupLink extends Link<Object> {
         init(pageMapName);
     }
     
-    private void init(String pageMapName) {
-        if ( popupPageName != null ) {
-            popupPageName = pageMapName;
-        }
-        PopupSettings popupSettings = new MultiPopupSettings(PageMap.forName(popupPageName));
-        super.setPopupSettings(popupSettings);
-        add(new MultiPopupBehaviour());
+    public PopupLink(String id, Page targetPageInstance, String targetPageName) {
+        this(id, targetPageName);
     }
 
     public void setPopupHeight(int popupHeight) {
@@ -101,6 +97,15 @@ public abstract class PopupLink extends Link<Object> {
                 popupDisplayFlag | flag : popupDisplayFlag & ~flag;
     }
 
+    private void init(String pageMapName) {
+        if ( popupPageName != null ) 
+            popupPageName = pageMapName;
+
+        PopupSettings popupSettings = new MultiPopupSettings(PageMap.forName(popupPageName));
+        super.setPopupSettings(popupSettings);
+        add(new MultiPopupBehaviour());
+    }
+
     private class MultiPopupSettings extends PopupSettings {
         
         private static final long serialVersionUID = 1L;
@@ -115,22 +120,20 @@ public abstract class PopupLink extends Link<Object> {
             // Fix for IE bug.
             windowTitle = windowTitle.replaceAll("\\W", "_");
 
-            StringBuffer script = new StringBuffer("var w = window.open(href, '").
-                append(windowTitle).append("_'+popup_count, '");
-
+            StringBuffer script = new StringBuffer("var w = window.open('" 
+                    + getURL()
+                    + "', '").
+              append(windowTitle).append("_'+popup_count, '");
             script.append("scrollbars=").append(flagToString(SCROLLBARS));
             script.append(",location=").append(flagToString(LOCATION_BAR));
             script.append(",menuBar=").append(flagToString(MENU_BAR));
             script.append(",resizable=").append(flagToString(RESIZABLE));
             script.append(",status=").append(flagToString(STATUS_BAR));
             script.append(",toolbar=").append(flagToString(TOOL_BAR));
-
-            if (popupWidth != -1) {
+            if (popupWidth != -1)
                     script.append(",width=").append(popupWidth);
-            }
-            if (popupHeight != -1) {
+            if (popupHeight != -1)
                     script.append(",height=").append(popupHeight);
-            }
             script.append("'); if(w.blur) w.focus(); popup_count++; return false;");
             return script.toString();            
         }
@@ -138,7 +141,6 @@ public abstract class PopupLink extends Link<Object> {
         private String flagToString(final int flag) {
                 return (popupDisplayFlag & flag) != 0 ? "yes" : "no";
         }
-        
     }
     
     private class MultiPopupBehaviour extends AbstractBehavior implements IHeaderContributor {
@@ -154,5 +156,4 @@ public abstract class PopupLink extends Link<Object> {
             }
          }
     }
-    
 }

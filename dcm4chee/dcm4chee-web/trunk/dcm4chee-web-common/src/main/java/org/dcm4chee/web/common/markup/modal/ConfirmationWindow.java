@@ -148,7 +148,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
         public MessageWindowPanel(String id) {
             super(id);
             
-            add((hourglassImage = new Image("hourglass-image", ImageManager.IMAGE_HOURGLASS) {
+            add((hourglassImage = new Image("hourglass-image", ImageManager.IMAGE_COMMON_AJAXLOAD) {
 
                 private static final long serialVersionUID = 1L;
 

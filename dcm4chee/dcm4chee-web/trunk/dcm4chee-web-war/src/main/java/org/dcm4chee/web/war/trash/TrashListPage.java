@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -253,48 +254,6 @@ public class TrashListPage extends Panel {
     }
 
     private void addActions(final BaseForm form) {
-        final ConfirmationWindow<PrivSelectedEntities> confirmDelete = new ConfirmationWindow<PrivSelectedEntities>("confirmDelete") {
-
-            private static final long serialVersionUID = 1L;
-            
-            @Override
-            public void onOk(AjaxRequestTarget target) {
-                target.addComponent(form);
-            }
-            
-            @Override
-            public void onConfirmation(AjaxRequestTarget target, final PrivSelectedEntities selected) {
-
-                this.setStatus(new StringResourceModel("trash.delete.running", TrashListPage.this, null));
-                okBtn.setVisible(false);
-                ajaxRunning = true;
-                
-                msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                    
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    protected void onTimer(AjaxRequestTarget target) {
-                        if (selected == null ? removeTrashAll() : removeTrashItems(selected)) {
-                            setStatus(new StringResourceModel("trash.deleteDone", TrashListPage.this,null));
-                            viewport.getPatients().clear();
-                        } else
-                            setStatus(new StringResourceModel("trash.deleteFailed", TrashListPage.this,null));
-                        queryStudies();
-                        this.stop();
-                        ajaxRunning = false;
-                        okBtn.setVisible(true);
-                        
-                        target.addComponent(msgLabel);
-                        target.addComponent(hourglassImage);
-                        target.addComponent(okBtn);
-                    }
-                });
-            }            
-        };
-        confirmDelete.setInitialHeight(150);
-        form.add(confirmDelete);
-
         final ConfirmationWindow<PrivSelectedEntities> confirmRestore = new ConfirmationWindow<PrivSelectedEntities>("confirmRestore") {
 
             private static final long serialVersionUID = 1L;
@@ -359,6 +318,90 @@ public class TrashListPage extends Panel {
         };
         confirmRestore.setInitialHeight(150);
         form.add(confirmRestore);
+        
+        AjaxLink<?> restoreBtn = new AjaxLink<Object>("restoreBtn") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                selected.update(viewport.getPatients());
+                selected.deselectChildsOfSelectedEntities();
+                if (selected.hasDicomSelection())
+                    confirmRestore.confirm(target, new StringResourceModel("trash.confirmRestore", this, null,new Object[]{selected}), selected);
+                else
+                    msgWin.show(target, getString("trash.noSelection"));
+            }
+        };
+        restoreBtn.add(new Image("restoreImg",ImageManager.IMAGE_TRASH_RESTORE)
+            .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        );
+        restoreBtn.add(new TooltipBehaviour("folder.", "restoreBtn"));
+        restoreBtn.add(new Label("restoreText", new ResourceModel("trash.restoreBtn.text"))
+            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
+        );
+        form.add(restoreBtn);
+
+        final ConfirmationWindow<PrivSelectedEntities> confirmDelete = new ConfirmationWindow<PrivSelectedEntities>("confirmDelete") {
+
+            private static final long serialVersionUID = 1L;
+            
+            @Override
+            public void onOk(AjaxRequestTarget target) {
+                target.addComponent(form);
+            }
+            
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, final PrivSelectedEntities selected) {
+
+                this.setStatus(new StringResourceModel("trash.delete.running", TrashListPage.this, null));
+                okBtn.setVisible(false);
+                ajaxRunning = true;
+                
+                msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                    
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    protected void onTimer(AjaxRequestTarget target) {
+                        if (selected == null ? removeTrashAll() : removeTrashItems(selected)) {
+                            setStatus(new StringResourceModel("trash.deleteDone", TrashListPage.this,null));
+                            viewport.getPatients().clear();
+                        } else
+                            setStatus(new StringResourceModel("trash.deleteFailed", TrashListPage.this,null));
+                        queryStudies();
+                        this.stop();
+                        ajaxRunning = false;
+                        okBtn.setVisible(true);
+                        
+                        target.addComponent(msgLabel);
+                        target.addComponent(hourglassImage);
+                        target.addComponent(okBtn);
+                    }
+                });
+            }            
+        };
+        confirmDelete.setInitialHeight(150);
+        form.add(confirmDelete);
+
+        AjaxLink<?> deleteAllBtn = new AjaxLink<Object>("deleteAllBtn") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                confirmDelete.confirm(target, new StringResourceModel("trash.confirmDeleteAll",this, null), null);
+            }
+        };
+        deleteAllBtn.add(new Image("deleteAllImg",ImageManager.IMAGE_TRASH_EMPTY)
+            .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        );
+        deleteAllBtn.add(new TooltipBehaviour("trash.", "deleteAllBtn"));
+        deleteAllBtn.add(new Label("deleteAllText", new ResourceModel("trash.deleteAllBtn.text"))
+            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
+        );
+        form.add(deleteAllBtn);
+
         AjaxLink<?> deleteBtn = new AjaxLink<Object>("deleteBtn") {
 
             private static final long serialVersionUID = 1L;
@@ -375,41 +418,14 @@ public class TrashListPage extends Panel {
                 }
             }
         };
-        deleteBtn.add(new Image("deleteImg", ImageManager.IMAGE_TRASH)
-        .add(new ImageSizeBehaviour()))
-        .add(tooltipBehaviour);
+        deleteBtn.add(new Image("deleteImg", ImageManager.IMAGE_TRASH_DELETE_SELECTED)
+            .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        );
+        deleteBtn.add(new TooltipBehaviour("trash.", "deleteBtn"));
+        deleteBtn.add(new Label("deleteText", new ResourceModel("trash.deleteBtn.text"))
+            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
+        );
         form.add(deleteBtn);
-        AjaxLink<?> deleteAllBtn = new AjaxLink<Object>("deleteAllBtn") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                confirmDelete.confirm(target, new StringResourceModel("trash.confirmDeleteAll",this, null), null);
-            }
-        };
-        deleteAllBtn.add(new Image("deleteAllImg", ImageManager.IMAGE_TRASH_REMOVE_ALL)
-        .add(new ImageSizeBehaviour()))
-        .add(tooltipBehaviour);
-        form.add(deleteAllBtn);
-        AjaxLink<?> restoreBtn = new AjaxLink<Object>("restoreBtn") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                selected.update(viewport.getPatients());
-                selected.deselectChildsOfSelectedEntities();
-                if (selected.hasDicomSelection())
-                    confirmRestore.confirm(target, new StringResourceModel("trash.confirmRestore", this, null,new Object[]{selected}), selected);
-                else
-                    msgWin.show(target, getString("trash.noSelection"));
-            }
-        };
-        restoreBtn.add(new Image("restoreImg", ImageManager.IMAGE_TRASH_RESTORE)
-        .add(new ImageSizeBehaviour()))
-        .add(tooltipBehaviour);
-        form.add(restoreBtn);
     }
 
     private void initModalitiesAndSourceAETs() {
@@ -547,9 +563,9 @@ public class TrashListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("trash.","patDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("trash.","patDetail"))));
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -623,9 +639,9 @@ public class TrashListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("trash.","studyDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("trash.","studyDetail"))));
             item.add( new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -697,9 +713,9 @@ public class TrashListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("trash.","seriesDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("trash.","seriesDetail"))));
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -759,9 +775,9 @@ public class TrashListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("trash.","instanceDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("trash.","instanceDetail"))));
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -802,8 +818,8 @@ public class TrashListPage extends Panel {
 
                 @Override
                 public ResourceReference getObject() {
-                    return model.isCollapsed() ? ImageManager.IMAGE_EXPAND : 
-                        ImageManager.IMAGE_COLLAPSE;
+                    return model.isCollapsed() ? ImageManager.IMAGE_COMMON_EXPAND : 
+                        ImageManager.IMAGE_COMMON_COLLAPSE;
                 }
             })
             .add(new ImageSizeBehaviour()));

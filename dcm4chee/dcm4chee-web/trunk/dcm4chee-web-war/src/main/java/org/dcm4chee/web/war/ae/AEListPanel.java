@@ -38,6 +38,7 @@
 
 package org.dcm4chee.web.war.ae;
 
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
@@ -51,6 +52,7 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.list.OddEvenListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.archive.entity.AE;
@@ -152,7 +154,7 @@ public class AEListPanel extends Panel {
                         page.setEditPage(item.getModelObject());
                     }
                 };
-                editAET.add(new Image("img-editAET",ImageManager.IMAGE_EDIT)
+                editAET.add(new Image("img-editAET",ImageManager.IMAGE_AE_EDIT)
                 .add(new ImageSizeBehaviour()));
                 editAET.add(new TooltipBehaviour("aet."));
                 item.add(editAET);
@@ -167,7 +169,7 @@ public class AEListPanel extends Panel {
                         confirm.confirm(target, new StringResourceModel("aet.confirmDelete",AEListPanel.this, null,new Object[]{ae}), ae);
                     }
                 };
-                removeAET.add(new Image("img-removeAET", ImageManager.IMAGE_DELETE)
+                removeAET.add(new Image("img-removeAET", ImageManager.IMAGE_COMMON_REMOVE)
                 .add(new ImageSizeBehaviour()));
                 removeAET.add(new TooltipBehaviour("aet."));
                 item.add(removeAET);
@@ -180,7 +182,7 @@ public class AEListPanel extends Panel {
                     public void onClick(AjaxRequestTarget target) {
                         mw.show(target, item.getModelObject());
                     }
-                }.add(new Image("img-echoAET", ImageManager.IMAGE_ECHO)
+                }.add(new Image("img-echoAET", ImageManager.IMAGE_AE_ECHO)
                 .add(new ImageSizeBehaviour()))
                 .add(new TooltipBehaviour("aet."))
                 );
@@ -196,7 +198,13 @@ public class AEListPanel extends Panel {
                 page.setEditPage(new AE());
             }
         };
+        newAET.add(new Image("newAETImg",ImageManager.IMAGE_COMMON_ADD)
+            .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        );
         newAET.add(new TooltipBehaviour("aet."));
+        newAET.add(new Label("newAETText", new ResourceModel("aet.newAET.text"))
+            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
+        );
         add(newAET);
         MetaDataRoleAuthorizationStrategy.authorize(newAET, RENDER, "WebAdmin");
     }
