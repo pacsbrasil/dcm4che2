@@ -535,6 +535,9 @@
                   <Connection code="new ServerTableModel()" type="code"/>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="serverListTable.setDefaultRenderer(Object.class, new CellRenderer());"/>
+              </AuxValues>
             </Component>
           </SubComponents>
         </Container>
@@ -610,7 +613,7 @@
                 <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="studyListTableMouseClicked"/>
               </Events>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value=" studyListTable.getTableHeader().setDefaultRenderer(new HeaderRenderer());&#xa;        studyListTable.setDefaultRenderer(Object.class, new CellRenderer());"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="studyListTable.setDefaultRenderer(Object.class, new CellRenderer());"/>
               </AuxValues>
             </Component>
           </SubComponents>

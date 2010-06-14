@@ -74,6 +74,8 @@ import in.raster.mayam.model.table.renderer.CellRenderer;
 import in.raster.mayam.model.table.renderer.HeaderRenderer;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 /**
  *
@@ -465,6 +467,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
         );
 
         serverListTable.setModel(new ServerTableModel());
+        serverListTable.setDefaultRenderer(Object.class, new CellRenderer());
         serverlistScroll.setViewportView(serverListTable);
 
         verifyButton.setText("Verify");
@@ -509,7 +512,6 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
         );
 
         studyListTable.setModel(new StudyListModel());
-        studyListTable.getTableHeader().setDefaultRenderer(new HeaderRenderer());
         studyListTable.setDefaultRenderer(Object.class, new CellRenderer());
         studyListTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -616,7 +618,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
             AEModel ae = ApplicationContext.databaseRef.getServerDetail(serverName);
             DcmURL url = new DcmURL("dicom://" + ae.getAeTitle() + "@" + ae.getHostName() + ":" + ae.getPort());
             QueryService qs = new QueryService();
-            setPatientInfoToQueryParam();            
+            setPatientInfoToQueryParam();
             if (queryParam.getPatientId().equalsIgnoreCase("") && queryParam.getPatientName().equalsIgnoreCase("") && queryParam.getSearchDate().equalsIgnoreCase("") && modalityText.getText().equalsIgnoreCase("") && queryParam.getAccessionNo().equalsIgnoreCase("")) {
                 noFilterQuery = JOptionPane.showConfirmDialog(null, "No filters have been selected. It will take long time to query and display result...!");
             }
@@ -635,6 +637,8 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
                 StudyListModel studyListModel = new StudyListModel();
                 studyListModel.setData(studyList);
                 studyListTable.setModel(studyListModel);
+                TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(studyListModel);
+                studyListTable.setRowSorter(sorter);
                 boolean dicomServerDetailAlreadyPresentInArray = false;
                 if (dicomServerArray != null) {
                     for (int i = 0; i < dicomServerArray.size(); i++) {
@@ -735,6 +739,8 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
                 for (int i = 0; i < dicomServerArray.size(); i++) {
                     if (dicomServerArray.get(i).getName().equalsIgnoreCase(((ServerTableModel) serverListTable.getModel()).getValueAt(serverListTable.getSelectedRow(), 0))) {
                         studyListTable.setModel(dicomServerArray.get(i).getStudyListModel());
+                        TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(studyList);
+                        studyListTable.setRowSorter(sorter);
                     }
                 }
             }

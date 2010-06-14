@@ -74,6 +74,8 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.MatteBorder;
 import javax.swing.SwingUtilities;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 /**
  *
@@ -84,10 +86,11 @@ import javax.swing.SwingUtilities;
 public class MainScreen extends javax.swing.JFrame {
 
     /** Creates new form MainScreen */
-    public MainScreen() {       
+    public MainScreen() {
         initComponents();
         initAppDefaults();
     }
+
     private void initAppDefaults() {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         ApplicationContext.mainScreen = this;
@@ -100,7 +103,6 @@ public class MainScreen extends javax.swing.JFrame {
         initNetworkQueue();
         initSendingProgress();
         setTheme();
-        //setTableHeaders();
     }
 
     private void setTheme() {
@@ -114,11 +116,10 @@ public class MainScreen extends javax.swing.JFrame {
         }
     }
 
-    private void setTableHeaders() {
-        studyListTable.getTableHeader().setDefaultRenderer(new HeaderRenderer());
-        studyListTable.setDefaultRenderer(Object.class, new CellRenderer());
-    }
-
+    /* private void setTableHeaders() {
+    studyListTable.getTableHeader().setDefaultRenderer(new HeaderRenderer());
+    studyListTable.setDefaultRenderer(Object.class, new CellRenderer());
+    }*/
     /**
      * This routine used to initialize the sending progress
      */
@@ -212,8 +213,10 @@ public class MainScreen extends javax.swing.JFrame {
         }
         StudyListModel studyListModel = new StudyListModel();
         studyListModel.setData(ApplicationContext.databaseRef.listAllStudiesOfDB());
-        studyListTable.setModel(studyListModel);
-        studyListModel.fireTableRowsInserted(0,studyListModel.getStudyList().size()-1);
+        studyListTable.setModel((TableModel) studyListModel);
+        //studyListModel.fireTableRowsInserted(0,studyListModel.getStudyList().size()-1);
+        TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(studyListModel);
+        studyListTable.setRowSorter(sorter);
         if (studyListTable.getRowCount() > 0) {
             if (i < studyListTable.getRowCount()) {
                 studyListTable.setRowSelectionInterval(i, i);
@@ -295,7 +298,6 @@ public class MainScreen extends javax.swing.JFrame {
 
         studyListTable.setModel(new StudyListModel());
         studyListTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        studyListTable.getTableHeader().setDefaultRenderer(new HeaderRenderer());
         studyListTable.setDefaultRenderer(Object.class, new CellRenderer());
         studyListTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
