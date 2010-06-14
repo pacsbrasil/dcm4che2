@@ -254,6 +254,7 @@ public class DicomEditBean implements DicomEditLocal {
                 this.movePatientToTrash(p);
             } else {
                 entityTree = moveStudiesToTrash(studies, entityTree);
+                studies.clear();
             }
             deletePatient(p);
         }
