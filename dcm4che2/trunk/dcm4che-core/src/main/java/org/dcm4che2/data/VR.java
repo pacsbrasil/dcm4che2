@@ -325,6 +325,14 @@ public abstract class VR {
                 return 0;
             return StringUtils.count(VR.bytes2str(val, null), '\\') + 1;
         }
+
+        @Override
+        public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
+                boolean last, SpecificCharacterSet cs)
+        {
+            return last ? VR.str2bytes(sb.toString(), null) : null;
+        }
+
     }
 
     private static class StringVR extends VR
@@ -372,7 +380,14 @@ public abstract class VR {
                 return 0;
             return StringUtils.count(VR.bytes2str(val, cs), '\\') + 1;
         }
-    }
+
+        @Override
+        public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
+                boolean last, SpecificCharacterSet cs)
+        {
+            return last ? VR.str2bytes(sb.toString(), cs) : null;
+        }
+}
 
     private static class TextVR extends VR
     {
@@ -411,6 +426,13 @@ public abstract class VR {
         @Override
         public boolean isSingleValue(String val) {
             return val != null && val.length() != 0;
+        }
+
+        @Override
+        public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
+                boolean last, SpecificCharacterSet cs)
+        {
+            return last ? VR.str2bytes(sb.toString(), cs) : null;
         }
     }
 
@@ -2619,9 +2641,8 @@ public abstract class VR {
     }
 
     public byte[] parseXMLValue(StringBuffer sb, ByteArrayOutputStream out,
-            boolean last, SpecificCharacterSet cs)
-    {
-        return last ? VR.str2bytes(sb.toString(), null) : null;
+            boolean last, SpecificCharacterSet cs) {
+        throw new UnsupportedOperationException();
     }
 
     public int vm(byte[] bs, SpecificCharacterSet cs)
