@@ -164,7 +164,7 @@ public class UserListPanel extends Panel {
 
             RemoveUserLink removeUserLink = new RemoveUserLink("remove-user-link", user);
             removeUserLink.add(new TooltipBehaviour("userlist.", "remove-user-link", new PropertyModel<String>(user,"userID")));
-            removeUserLink.add(new Image("img-delete", ImageManager.IMAGE_DELETE)
+            removeUserLink.add(new Image("img-delete", ImageManager.IMAGE_COMMON_REMOVE)
             .add(new ImageSizeBehaviour()));
 
             row_parent.add(removeUserLink);
@@ -173,7 +173,7 @@ public class UserListPanel extends Panel {
             
             row_parent.add(
                     new ChangePasswordLink("change-password-link", this.changePasswordWindow, this.userId, user)
-                    .add(new Image("img-change-password", ImageManager.IMAGE_CHANGE_PASSWORD)
+                    .add(new Image("img-change-password", ImageManager.IMAGE_USER_CHANGE_PASSWORD)
                     .add(new ImageSizeBehaviour()))
                     .add(new AttributeModifier("title", true, new Model<String>(new ResourceModel("userlist.change_password.tooltip").wrapOnAssignment(this).getObject())))
             );
@@ -321,8 +321,8 @@ public class UserListPanel extends Panel {
         protected void onComponentTag(ComponentTag tag) {
             super.onComponentTag(tag);
             tag.put("src", this.forForm.isVisible() ? 
-                    this.getRequestCycle().urlFor(ImageManager.IMAGE_COLLAPSE)
-                    : this.getRequestCycle().urlFor(ImageManager.IMAGE_EXPAND));
+                    this.getRequestCycle().urlFor(ImageManager.IMAGE_COMMON_COLLAPSE)
+                    : this.getRequestCycle().urlFor(ImageManager.IMAGE_COMMON_EXPAND));
         }
     };
     
@@ -343,6 +343,9 @@ public class UserListPanel extends Panel {
             this.open_close_tooltip_texts = open_close_tooltip_texts;
             this.add(newAjaxComponent(
                     (this.toggleFormImage = new ToggleFormImage(toggleFormImageId, forForm))));
+            this.toggleFormImage.add(new ImageSizeBehaviour("vertical-align: middle;"));
+            this.add(newAjaxComponent(new Label("userlist.add-user-form.title", new ResourceModel("userlist.add-user-form.title"))
+            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))));
         }
 
         @Override

@@ -11,14 +11,10 @@
 		<div wicket:id="change-password-window" />
 		<div wicket:id="confirmation-window" />
 		<p>
-			<a wicket:id="toggle-user-form-link" href="#">
-				<img wicket:id="toggle-form-image-user" />
-				<span>
-					<wicket:message key="userlist.add-user-form.title">
-						[Add user]
-					</wicket:message>				
-				</span>
-			</a>
+			<button wicket:id="toggle-user-form-link" >
+				<img wicket:id="toggle-form-image-user" alt="New user" />
+				<span wicket:id="userlist.add-user-form.title" />
+			</button>
 			<form wicket:id="add-user-form" class="add-user">
 				 <table>
 				 	<tr class="input">

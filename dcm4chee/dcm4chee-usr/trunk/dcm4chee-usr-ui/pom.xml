@@ -12,9 +12,6 @@
 	<version>0.0.1</version>
 	<name>Jar with the wicket components</name>
 	<description></description>
-	<properties>
-		<wicket.version>1.4.7</wicket.version>
-	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>dcm4che.dcm4chee</groupId>

@@ -8,6 +8,9 @@
   <version>0.0.1</version>
   <packaging>pom</packaging>
   <name>Dcm4chee application</name>
+  <properties>
+	<wicket.version>1.4.9</wicket.version>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -19,9 +22,6 @@
   <build>
     <defaultGoal>package</defaultGoal>
   </build>
-  <properties>
-    <db>psql</db>
-  </properties>
   <modules>
     <module>dcm4chee-usr-entity</module>
     <module>dcm4chee-usr-dao</module>
