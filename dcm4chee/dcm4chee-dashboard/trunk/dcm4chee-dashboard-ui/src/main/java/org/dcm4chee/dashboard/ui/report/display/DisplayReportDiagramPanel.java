@@ -66,6 +66,7 @@ import org.dcm4chee.dashboard.ui.common.JFreeChartImage;
 import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisState;
@@ -244,13 +245,15 @@ public class DisplayReportDiagramPanel extends Panel {
                     });
                 }
             }
-            .add(new Image("diagram-download-image", ImageManager.IMAGE_DIAGRAM_DOWNLOAD)
-                .add(new ImageSizeBehaviour())
+            .add(new Image("diagram-download-image", ImageManager.IMAGE_DASHBOARD_REPORT_DOWNLOAD)
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("dashboard.report.reportdiagram.", "image.downloadlink"))
                 )
             );
 
-            addOrReplace(new Image("diagram-print-image", ImageManager.IMAGE_REPORT_PRINT)
+            addOrReplace(new Image("diagram-print-image", ImageManager.IMAGE_DASHBOARD_REPORT_PRINT)
             .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("dashboard.report.reportdiagram.", "image.printbutton"))
             );
 
             addOrReplace(new Label("error-message", "").setVisible(false));

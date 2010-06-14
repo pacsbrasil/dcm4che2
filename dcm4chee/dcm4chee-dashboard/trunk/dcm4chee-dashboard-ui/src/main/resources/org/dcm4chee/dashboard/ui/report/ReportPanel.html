@@ -9,15 +9,10 @@
 		<wicket:panel>
 			<div wicket:id="modal-window" />
 			<p style="clear: both">
-				<br />
-				<a wicket:id="toggle-group-form-link" href="#">
-					<img wicket:id="toggle-group-form-image" />
-					<span>
-						<wicket:message key="dashboard.report.add-group-form.visible.false">
-							[Add group]
-						</wicket:message>				
-					</span>
-				</a>
+				<button wicket:id="toggle-group-form-link" >
+					<img wicket:id="toggle-group-form-image" alt="New group" />
+					<span wicket:id="dashboard.report.add-group-form.title" />
+				</button>
 				<form wicket:id="add-group-form" class="add-group">
 					 <table>
 					 	<tr class="input">

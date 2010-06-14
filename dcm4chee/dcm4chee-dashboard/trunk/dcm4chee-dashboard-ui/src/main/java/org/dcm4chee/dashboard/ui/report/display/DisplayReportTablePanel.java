@@ -73,6 +73,7 @@ import org.dcm4chee.dashboard.ui.util.CSSUtils;
 import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -217,9 +218,11 @@ public class DisplayReportTablePanel extends Panel {
                     });
                 }
             }
-            .add(new Image("table-download-xml-image", ImageManager.IMAGE_REPORT_XML)
-                .add(new ImageSizeBehaviour())
-                )
+            .add(new Label("table-download-xml-image", "XML"))
+            .add(new TooltipBehaviour("dashboard.report.reporttable.", "xml.downloadlink"))
+//            .add(new Image("table-download-xml-image", ImageManager.IMAGE_REPORT_XML)
+//                .add(new ImageSizeBehaviour())
+//                )
             );
 
             addOrReplace(new Link<Object>("table-download-csv") {
@@ -258,14 +261,16 @@ public class DisplayReportTablePanel extends Panel {
                     });
                 }
             }
-            .add(new Image("table-download-csv-image", ImageManager.IMAGE_REPORT_CSV)
-                .add(new ImageSizeBehaviour())
-                )
+            .add(new Label("table-download-csv-image", "CSV"))
+            .add(new TooltipBehaviour("dashboard.report.reporttable.", "csv.downloadlink"))
+//            .add(new Image("table-download-csv-image", ImageManager.IMAGE_REPORT_CSV)
+//                .add(new ImageSizeBehaviour())
+//                )
             );
 
-            addOrReplace(new Image("table-print-image", ImageManager.IMAGE_REPORT_PRINT)
+            addOrReplace(new Image("table-print-image", ImageManager.IMAGE_DASHBOARD_REPORT_PRINT)
             .add(new ImageSizeBehaviour())
-            );
+            .add(new TooltipBehaviour("dashboard.report.reporttable.", "table.printbutton")));
 
             addOrReplace(new Label("error-message", "").setVisible(false));
             addOrReplace(new Label("error-reason", "").setVisible(false));

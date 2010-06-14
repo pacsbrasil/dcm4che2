@@ -43,6 +43,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ResourceReference;
@@ -195,8 +196,8 @@ public class ReportPanel extends Panel {
 
                     tag.put("style", "background-image: url('" + 
                             ((((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroupUuid() == null) ? 
-                                    getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_REPORT_FOLDER) 
-                                    : getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_REPORT))
+                                    getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT_FOLDER) 
+                                    : getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT))
                                     + "')"
                     );                    
                     tag.put("title", ((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getStatement());
@@ -250,22 +251,15 @@ public class ReportPanel extends Panel {
                 protected void onComponentTag(ComponentTag tag) {
                     super.onComponentTag(tag);
                     tag.put("src",form.isVisible() ? 
-                            getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_COLLAPSE)
-                            : getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_EXPAND)
+                            getRequestCycle().urlFor(ImageManager.IMAGE_COMMON_COLLAPSE)
+                            : getRequestCycle().urlFor(ImageManager.IMAGE_COMMON_EXPAND)
                     );
                 }
-            }).add(new ImageSizeBehaviour()));
+            }).add(new ImageSizeBehaviour("vertical-align: middle;")));
+            this.add(newAjaxComponent(new Label("dashboard.report.add-group-form.title", new ResourceModel("dashboard.report.add-group-form.title"))
+            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))));
         }
 
-        @Override
-        protected void onComponentTag(ComponentTag tag) {
-            super.onComponentTag(tag);
-            
-            tag.put("title", this.form.isVisible() ? 
-                    new ResourceModel("dashboard.report.add-group-form.visible.true").wrapOnAssignment(this).getObject()
-                    : new ResourceModel("dashboard.report.add-group-form.visible.false").wrapOnAssignment(this).getObject());
-        }
-        
         @Override
         public void onClick(AjaxRequestTarget target) {
             this.form.setVisible(!this.form.isVisible()); 

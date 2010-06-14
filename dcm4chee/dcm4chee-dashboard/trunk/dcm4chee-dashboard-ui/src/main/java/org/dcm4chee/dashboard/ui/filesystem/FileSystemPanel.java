@@ -77,13 +77,10 @@ import org.dcm4chee.dashboard.ui.common.JFreeChartImage;
 import org.dcm4chee.icons.ImageManager;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.CategoryAxis3D;
-import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberAxis3D;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.category.StackedBarRenderer;
 import org.jfree.chart.renderer.category.StackedBarRenderer3D;
 import org.jfree.data.Range;
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -354,10 +351,10 @@ public class FileSystemPanel extends Panel {
 
                     tag.put("style", "background-image: url('" + 
                             (((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).isGroup() ?  
-                                    getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_FILESYSTEM_GROUP) :
+                                    getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_FILESYSTEM_GROUP) :
                                     ((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).getDirectoryPath().contains("tar:") ?
-                                            getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_FILESYSTEM_TAR) : 
-                                            getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_FILESYSTEM_FOLDER))
+                                            getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_FILESYSTEM_TAR) : 
+                                            getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_FILESYSTEM))
                                             + "')"
                     );
                     tag.put("title", ((FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject()).getDescription());

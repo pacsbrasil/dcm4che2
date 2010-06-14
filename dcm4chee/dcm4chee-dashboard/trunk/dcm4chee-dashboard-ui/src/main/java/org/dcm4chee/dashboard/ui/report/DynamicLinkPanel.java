@@ -104,16 +104,16 @@ public class DynamicLinkPanel extends Panel {
                 public Object getObject() {
                     return (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.CreateOrEditReportLink) ? 
                         (report == null || report.getGroupUuid() == null) ? 
-                                getRequestCycle().urlFor(ImageManager.IMAGE_REPORT_NEW) :
-                                    getRequestCycle().urlFor(ImageManager.IMAGE_EDIT) : 
+                                getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT_ADD) :
+                                    getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT_EDIT) : 
                     (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.RemoveLink) ? 
-                            getRequestCycle().urlFor(ImageManager.IMAGE_DELETE) : 
+                            getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT_DELETE) : 
                     (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.DisplayDiagramLink) ?
-                            getRequestCycle().urlFor(ImageManager.IMAGE_DIAGRAM) : 
+                            getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT_CHART) : 
                     (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.DisplayTableLink) ?
-                            getRequestCycle().urlFor(ImageManager.IMAGE_TABLE) : 
+                            getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT_TABLE) : 
                     (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.DisplayDiagramAndTableLink) ? 
-                            getRequestCycle().urlFor(ImageManager.IMAGE_DIAGRAM_TABLE) : 
+                            getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT_CHART_AND_TABLE) : 
                     "";
                 }
             }))));

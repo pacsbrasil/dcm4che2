@@ -124,8 +124,8 @@ public abstract class DashboardTreeTable extends TreeTable {
                                 +  (!node.isLeaf() ? 
                                 " style=\"background-image: url('"
                                         + (isNodeExpanded(node) ? 
-                                                getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_COLLAPSE)
-                                                : getRequestCycle().urlFor(ImageManager.IMAGE_TREETABLE_EXPAND)) 
+                                                getRequestCycle().urlFor(ImageManager.IMAGE_COMMON_COLLAPSE)
+                                                : getRequestCycle().urlFor(ImageManager.IMAGE_COMMON_EXPAND)) 
                                                 + "')\""
                                 : "")
                         + "></span></span>");
