@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.wicket.Application;
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.PageMap;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
@@ -83,8 +84,6 @@ import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.util.time.Duration;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.IValidator;
-import org.dcm4che2.data.BasicDicomObject;
-import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -97,14 +96,12 @@ import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.PopupLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
-import org.dcm4chee.web.common.validators.UIDValidator;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.dao.folder.StudyListFilter;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.war.WicketSession;
 import org.dcm4chee.web.war.common.EditDicomObjectPage;
-import org.dcm4chee.web.war.common.SimpleEditDicomObjectPage;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 import org.dcm4chee.web.war.folder.model.FileModel;
@@ -177,7 +174,6 @@ public class StudyListPage extends Panel {
                 return (!filter.isExtendedStudyQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) &&
                        (!filter.isExtendedSeriesQuery() || QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID()));
             }
-            
         };
         form.addLabeledTextField("patientName", enabledModel);
         form.addLabel("patientIDDescr");
@@ -292,85 +288,6 @@ public class StudyListPage extends Panel {
     }
 
     private void addActions(final BaseForm form) {
-        PopupLink exportBtn = new PopupLink("exportBtn", "exportPage") {
-            private static final long serialVersionUID = 1L;
-            @Override
-            public void onClick() {
-                ExportPage page = new ExportPage(viewport.getPatients());
-                SelectedEntities.deselectAll(viewport.getPatients());
-                this.setResponsePage(page);
-            }
-        };
-        exportBtn.setPopupHeight(new Integer(new ResourceModel("folder.exportpage.window.height","500").wrapOnAssignment(this).getObject().toString()));
-        exportBtn.setPopupWidth(new Integer(new ResourceModel("folder.exportpage.window.width","650").wrapOnAssignment(this).getObject().toString()));
-        exportBtn.add(new Image("exportImg", ImageManager.IMAGE_EXPORT)
-        .add(new ImageSizeBehaviour()));
-        form.add(exportBtn);
-        
-        final ConfirmationWindow<SelectedEntities> confirmMove = new ConfirmationWindow<SelectedEntities>("confirmMove"){
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onOk(AjaxRequestTarget target) {
-                target.addComponent(form);
-            }
-
-            @Override
-            public void onConfirmation(AjaxRequestTarget target, final SelectedEntities selected) {
-                
-                this.setStatus(new StringResourceModel("folder.move.running", StudyListPage.this, null));
-                okBtn.setVisible(false);
-                ajaxRunning = true;
-                
-                msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                    
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    protected void onTimer(AjaxRequestTarget target) {
-                        try {
-                            int nrOfMovedInstances = ContentEditDelegate.getInstance().moveEntities(selected);
-                            if (nrOfMovedInstances != -1) {
-                                setStatus(new StringResourceModel("folder.moveDone", StudyListPage.this,null));
-                                viewport.getPatients().clear();
-                            } else
-                                setStatus(new StringResourceModel("folder.moveFailed", StudyListPage.this,null));
-                        } catch (SelectionException x) {
-                            log.warn(x.getMessage());
-                            setStatus(new StringResourceModel(x.getMsgId(), StudyListPage.this,null));
-                        }
-                        queryStudies();
-                        this.stop();
-                        ajaxRunning = false;
-                        okBtn.setVisible(true);
-                        
-                        target.addComponent(msgLabel);
-                        target.addComponent(hourglassImage);
-                        target.addComponent(okBtn);
-                    }
-                });
-            }
-        };
-        confirmMove.setInitialHeight(150);
-        form.add(confirmMove);
-        AjaxLink<?> moveBtn = new AjaxLink<Object>("moveBtn") {
-            private static final long serialVersionUID = 1L;
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                selected.update(viewport.getPatients());
-                selected.deselectChildsOfSelectedEntities();
-                log.info("Selected Entities:"+selected);
-                if (selected.hasDicomSelection()) {
-                    confirmMove.confirm(target, new StringResourceModel("folder.confirmMove",this, null,new Object[]{selected}), selected);
-                } else {
-                    msgWin.show(target, getString("folder.noSelection"));
-                }
-            }
-        };
-        moveBtn.add(new Image("moveImg",ImageManager.IMAGE_MOVE)
-        .add(new ImageSizeBehaviour()));
-        form.add(moveBtn);
         
         final ConfirmationWindow<SelectedEntities> confirmDelete = new ConfirmationWindow<SelectedEntities>("confirmDelete") {
 
@@ -428,12 +345,12 @@ public class StudyListPage extends Panel {
         };
         confirmDelete.setInitialHeight(150);
         form.add(confirmDelete);
-        AjaxLink<?> deleteBtn = new AjaxLink<Object>("deleteBtn") {
-
+        AjaxButton deleteBtn = new AjaxButton("deleteBtn") {
+                    
             private static final long serialVersionUID = 1L;
-
+            
             @Override
-            public void onClick(AjaxRequestTarget target) {
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 selected.update(viewport.getPatients());
                 selected.deselectChildsOfSelectedEntities();
                 if (selected.hasPPS()) {
@@ -445,10 +362,110 @@ public class StudyListPage extends Panel {
                 }
             }
         };
-        deleteBtn.add(new Image("deleteImg",ImageManager.IMAGE_TRASH)
-        .add(new ImageSizeBehaviour()))
-        .add(tooltipBehaviour);
+        deleteBtn.add(new Image("deleteImg",ImageManager.IMAGE_FOLDER_DELETE)
+            .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        );
+        deleteBtn.add(new TooltipBehaviour("folder.", "deleteBtn"));
+        deleteBtn.add(new Label("deleteText", new ResourceModel("folder.deleteBtn.text"))
+            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
+        );
         form.add(deleteBtn);
+        
+        final ConfirmationWindow<SelectedEntities> confirmMove = new ConfirmationWindow<SelectedEntities>("confirmMove"){
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onOk(AjaxRequestTarget target) {
+                target.addComponent(form);
+            }
+
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, final SelectedEntities selected) {
+                
+                this.setStatus(new StringResourceModel("folder.move.running", StudyListPage.this, null));
+                okBtn.setVisible(false);
+                ajaxRunning = true;
+                
+                msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                    
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    protected void onTimer(AjaxRequestTarget target) {
+                        try {
+                            int nrOfMovedInstances = ContentEditDelegate.getInstance().moveEntities(selected);
+                            if (nrOfMovedInstances != -1) {
+                                setStatus(new StringResourceModel("folder.moveDone", StudyListPage.this,null));
+                                viewport.getPatients().clear();
+                            } else
+                                setStatus(new StringResourceModel("folder.moveFailed", StudyListPage.this,null));
+                        } catch (SelectionException x) {
+                            log.warn(x.getMessage());
+                            setStatus(new StringResourceModel(x.getMsgId(), StudyListPage.this,null));
+                        }
+                        queryStudies();
+                        this.stop();
+                        ajaxRunning = false;
+                        okBtn.setVisible(true);
+                        
+                        target.addComponent(msgLabel);
+                        target.addComponent(hourglassImage);
+                        target.addComponent(okBtn);
+                    }
+                });
+            }
+        };
+        confirmMove.setInitialHeight(150);
+        form.add(confirmMove);
+        
+// TODO: test this
+        AjaxButton moveBtn = new AjaxButton("moveBtn") {
+            
+            private static final long serialVersionUID = 1L;
+            
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                selected.update(viewport.getPatients());
+                selected.deselectChildsOfSelectedEntities();
+                log.info("Selected Entities:"+selected);
+                if (selected.hasDicomSelection())
+                    confirmMove.confirm(target, new StringResourceModel("folder.confirmMove",this, null,new Object[]{selected}), selected);
+                else
+                    msgWin.show(target, getString("folder.noSelection"));
+            }
+        };
+        moveBtn.add(new Image("moveImg",ImageManager.IMAGE_FOLDER_MOVE)
+            .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        );
+        moveBtn.add(new TooltipBehaviour("folder.", "moveBtn"));
+        moveBtn.add(new Label("moveText", new ResourceModel("folder.moveBtn.text"))
+            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
+        );
+        form.add(moveBtn);
+        
+        PopupLink exportBtn = new PopupLink("exportBtn", "exportPage") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick() {
+                ExportPage page = new ExportPage(viewport.getPatients());
+                SelectedEntities.deselectAll(viewport.getPatients());
+                this.setResponsePage(page);
+            }
+        };
+        exportBtn.setPopupHeight(new Integer(new ResourceModel("folder.exportpage.window.height","500").wrapOnAssignment(this).getObject().toString()));
+        exportBtn.setPopupWidth(new Integer(new ResourceModel("folder.exportpage.window.width","650").wrapOnAssignment(this).getObject().toString()));
+
+        exportBtn.add(new Image("exportImg",ImageManager.IMAGE_FOLDER_EXPORT)
+            .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        );
+        exportBtn.add(new TooltipBehaviour("folder.", "exportBtn"));
+        exportBtn.add(new Label("exportText", new ResourceModel("folder.exportBtn.text"))
+            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
+        );
+        form.add(exportBtn);
 
         confirmUnlinkMpps = new ConfirmationWindow<PPSModel>("confirmUnlink") {
             
@@ -527,12 +544,12 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public ResourceReference getObject() {
-                    return filter.isExtendedPatQuery() ? ImageManager.IMAGE_COLLAPSE : 
-                        ImageManager.IMAGE_EXPAND;
+                    return filter.isExtendedPatQuery() ? ImageManager.IMAGE_COMMON_COLLAPSE : 
+                        ImageManager.IMAGE_COMMON_EXPAND;
                 }
         })
-        .add(new ImageSizeBehaviour()));
-        
+        .add(new ImageSizeBehaviour())
+        .add(new TooltipBehaviour("folder.", "showExtendedPatFilter")));
         form.add(link);
         return extendedPatFilter;
     }
@@ -548,7 +565,7 @@ public class StudyListPage extends Panel {
             }
         };
         extendedStudyFilter.add( new Label("studyInstanceUIDLabel", new ResourceModel("folder.studyInstanceUID")));
-        extendedStudyFilter.add( new TextField<String>("studyInstanceUID").add(new UIDValidator()));
+        extendedStudyFilter.add( new TextField<String>("studyInstanceUID"));
         form.add(extendedStudyFilter);
         AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedStudyFilter") {
 
@@ -566,11 +583,12 @@ public class StudyListPage extends Panel {
 
             @Override
             public ResourceReference getObject() {
-                return filter.isExtendedStudyQuery() ? ImageManager.IMAGE_COLLAPSE : 
-                    ImageManager.IMAGE_EXPAND;
+                return filter.isExtendedStudyQuery() ? ImageManager.IMAGE_COMMON_COLLAPSE : 
+                    ImageManager.IMAGE_COMMON_EXPAND;
             }
         })
-        .add(new ImageSizeBehaviour()));
+        .add(new ImageSizeBehaviour())
+        .add(new TooltipBehaviour("folder.", "showExtendedStudyFilter")));
         
         form.add(link);
         return extendedStudyFilter;
@@ -614,11 +632,12 @@ public class StudyListPage extends Panel {
 
             @Override
             public ResourceReference getObject() {
-                return filter.isExtendedSeriesQuery() ? ImageManager.IMAGE_COLLAPSE : 
-                    ImageManager.IMAGE_EXPAND;
+                return filter.isExtendedSeriesQuery() ? ImageManager.IMAGE_COMMON_COLLAPSE : 
+                    ImageManager.IMAGE_COMMON_EXPAND;
             }
         })
-        .add(new ImageSizeBehaviour()));
+        .add(new ImageSizeBehaviour())
+        .add(new TooltipBehaviour("folder.", "showExtendedSeriesFilter")));
         
         form.add(link);
         return extendedSeriesFilter;
@@ -764,11 +783,10 @@ public class StudyListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","patDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","patDetail"))));
             item.add(getEditLink(patModel, "patEdit"));
-            item.add(getAddStudyLink(patModel, "addStudy"));
             item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForPatient(patModel.getId(), patModel.getIssuer())) {
                 private static final long serialVersionUID = 1L;
                 @Override
@@ -778,7 +796,7 @@ public class StudyListPage extends Panel {
             }
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-            .add(new Image("webviewImg",ImageManager.IMAGE_WEBVIEWER).add(new ImageSizeBehaviour()))
+            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","patWebviewer")));
             item.add(new AjaxCheckBox("selected"){
 
@@ -852,11 +870,10 @@ public class StudyListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","studyDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","studyDetail"))));
             item.add( getEditLink(studyModel, "studyEdit"));
-            item.add(getAddSeriesLink(studyModel, "addSeries"));
             item.add( new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -883,7 +900,7 @@ public class StudyListPage extends Panel {
             }
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-            .add(new Image("webviewImg",ImageManager.IMAGE_WEBVIEWER).add(new ImageSizeBehaviour()))
+            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","studyWebviewer")));
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", studyModel, false));
@@ -940,8 +957,8 @@ public class StudyListPage extends Panel {
                 private static final long serialVersionUID = 1L;
                 @Override
                 public ResourceReference getObject() {
-                    return ppsModel.getAccessionNumber() == null ? ImageManager.IMAGE_STATUS_UNLINKED : 
-                        ImageManager.IMAGE_STATUS_LINKED;
+                    return ppsModel.getAccessionNumber() == null ? ImageManager.IMAGE_FOLDER_UNLINK : 
+                        ImageManager.IMAGE_COMMON_LINK;
                 }
             }) {
                 private static final long serialVersionUID = 1L;
@@ -968,9 +985,9 @@ public class StudyListPage extends Panel {
                 public boolean isVisible() {
                     return ppsModel.getDataset() != null;
                 }
-            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","ppsDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","ppsDetail"))));
             item.add(getEditLink(ppsModel, "ppsEdit"));
             
             AjaxFallbackLink<?> linkBtn = new AjaxFallbackLink<Object>("linkBtn") {
@@ -1003,7 +1020,7 @@ public class StudyListPage extends Panel {
                     return ppsModel.getDataset() != null && ppsModel.getAccessionNumber()==null;
                 }
             };
-            linkBtn.add(new Image("linkImg", ImageManager.IMAGE_INSERT_LINK)
+            linkBtn.add(new Image("linkImg", ImageManager.IMAGE_COMMON_LINK)
             .add(new ImageSizeBehaviour())).add(new TooltipBehaviour("folder.","ppsLink"));
             item.add(linkBtn);
 
@@ -1020,7 +1037,7 @@ public class StudyListPage extends Panel {
                 public boolean isVisible() {
                     return ppsModel.getDataset() != null && ppsModel.getAccessionNumber()!=null;
                 }
-            }.add(new Image("unlinkImg",ImageManager.IMAGE_STATUS_UNLINKED).add(new ImageSizeBehaviour())));
+            }.add(new Image("unlinkImg",ImageManager.IMAGE_FOLDER_UNLINK).add(new ImageSizeBehaviour())));
             
             item.add(new AjaxCheckBox("selected"){
                 private static final long serialVersionUID = 1L;
@@ -1098,9 +1115,9 @@ public class StudyListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","seriesDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","seriesDetail"))));
             item.add(getEditLink(seriesModel, "seriesEdit"));
             item.add(new AjaxCheckBox("selected"){
 
@@ -1129,7 +1146,7 @@ public class StudyListPage extends Panel {
             }
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-            .add(new Image("webviewImg",ImageManager.IMAGE_WEBVIEWER).add(new ImageSizeBehaviour()))
+            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","seriesWebviewer")));
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", seriesModel, false));
@@ -1183,9 +1200,9 @@ public class StudyListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","instanceDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","instanceDetail"))));
             item.add(getEditLink(instModel, "instanceEdit"));
             item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForInstance(instModel.getSOPInstanceUID())) {
                 private static final long serialVersionUID = 1L;
@@ -1196,7 +1213,7 @@ public class StudyListPage extends Panel {
             }
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-            .add(new Image("webviewImg",ImageManager.IMAGE_WEBVIEWER).add(new ImageSizeBehaviour()))
+            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour()))
             .add(new TooltipBehaviour("folder.","instanceWebviewer")));
             item.add(new ExternalLink("wado", WADODelegate.getInstance().getURL(instModel)){
 
@@ -1207,7 +1224,7 @@ public class StudyListPage extends Panel {
                     return WADODelegate.getInstance().getRenderType(instModel.getSopClassUID()) != WADODelegate.NOT_RENDERABLE;
                 }
                 
-            }.add(new Image("wadoImg",ImageManager.IMAGE_WADO).add(new ImageSizeBehaviour())
+            }.add(new Image("wadoImg",ImageManager.IMAGE_FOLDER_WADO).add(new ImageSizeBehaviour())
                     .add(new TooltipBehaviour("folder.","wado"))));
             item.add(new AjaxCheckBox("selected"){
 
@@ -1267,9 +1284,9 @@ public class StudyListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",ImageManager.IMAGE_DETAIL)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","fileDetail")));
+            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","fileDetail"))));
             item.add(new AjaxCheckBox("selected"){
                 private static final long serialVersionUID = 1L;
 
@@ -1311,65 +1328,12 @@ public class StudyListPage extends Panel {
                 return model.getDataset() != null;
             }
         };
-        link.add(new Image("editImg",ImageManager.IMAGE_EDIT).add(new ImageSizeBehaviour()));
-        link.add(new TooltipBehaviour("folder.", tooltipId));
+        link.add(new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT).add(new ImageSizeBehaviour())
+        .add(new TooltipBehaviour("folder.", tooltipId)));
         MetaDataRoleAuthorizationStrategy.authorize(link, RENDER, "WebAdmin");
         return link;
     }
-
-    private Link<Object> getAddStudyLink(final PatientModel model, String tooltipId) {
-        Link<Object> link = new Link<Object>("add") {
-            
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClick() {
-                StudyModel newStudyModel = new StudyModel(null, model);
-                setResponsePage(
-                        new SimpleEditDicomObjectPage(StudyListPage.this.getPage(), new ResourceModel("folder.addStudy", "Add Study"),
-                                newStudyModel, new int[][]{{Tag.StudyInstanceUID},
-                                                    {Tag.StudyID},
-                                                    {Tag.AccessionNumber},
-                                                    {Tag.StudyDate, Tag.StudyTime}}, model));
-            }
-            @Override
-            public boolean isVisible() {
-                return model.getDataset() != null;
-            }
-        };
-        link.add(new Image("addImg",ImageManager.IMAGE_ADD_STUDY).add(new ImageSizeBehaviour()));
-        link.add(new TooltipBehaviour("folder.", tooltipId));
-        return link;
-    }
-
-    private Link<Object> getAddSeriesLink(final StudyModel model, String tooltipId) {
-        Link<Object> link = new Link<Object>("add") {
-            
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClick() {
-                SeriesModel newSeriesModel = new SeriesModel(null, null);
-                PPSModel ppsModel = new PPSModel(null, newSeriesModel, model);
-                setResponsePage(
-                        new SimpleEditDicomObjectPage(StudyListPage.this.getPage(), new ResourceModel("folder.addSeries", "Add Series"),
-                                newSeriesModel, new int[][]{{Tag.SeriesInstanceUID},
-                                                    {Tag.SeriesNumber},
-                                                    {Tag.Modality},
-                                                    {Tag.SeriesDate, Tag.SeriesTime},
-                                                    {Tag.SeriesDescription},
-                                                    {Tag.BodyPartExamined},{Tag.Laterality}}, model));
-            }
-            @Override
-            public boolean isVisible() {
-                return model.getDataset() != null;
-            }
-        };
-        link.add(new Image("addImg",ImageManager.IMAGE_ADD_SERIES).add(new ImageSizeBehaviour()));
-        link.add(new TooltipBehaviour("folder.", tooltipId));
-        return link;
-    }
-
+    
     private class ExpandCollapseLink extends AjaxFallbackLink<Object> {
 
         private static final long serialVersionUID = 1L;
@@ -1387,8 +1351,8 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public ResourceReference getObject() {
-                    return model.isCollapsed() ? ImageManager.IMAGE_EXPAND : 
-                        ImageManager.IMAGE_COLLAPSE;
+                    return model.isCollapsed() ? ImageManager.IMAGE_COMMON_EXPAND : 
+                        ImageManager.IMAGE_COMMON_COLLAPSE;
                 }
             })
             .add(new ImageSizeBehaviour()));
