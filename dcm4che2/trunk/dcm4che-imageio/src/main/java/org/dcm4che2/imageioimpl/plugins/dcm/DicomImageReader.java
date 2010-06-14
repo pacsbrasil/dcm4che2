@@ -41,16 +41,18 @@ package org.dcm4che2.imageioimpl.plugins.dcm;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
-import java.awt.image.ReplicateScaleFilter;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
@@ -563,7 +565,8 @@ public class DicomImageReader extends ImageReader {
         if( sourceRegion==null ) sourceRegion = new Rectangle(src.getWidth(), src.getHeight());
         int dWidth = sourceRegion.width/subSampleX;
         int dHeight = sourceRegion.height/subSampleY;
-        BufferedImage ret = new BufferedImage(dWidth,dHeight,BufferedImage.TYPE_INT_RGB);
+        
+    	BufferedImage dest = createRGBBufferedImage(dWidth, dHeight);
 
         int[] srcRgb = new int[src.getWidth()];
         int[] destRgb = new int[dWidth];
@@ -573,16 +576,30 @@ public class DicomImageReader extends ImageReader {
         for (int iy = sourceRegion.y; iy < maxY; iy += subSampleY, destY++) {
             srcRgb = src.getRGB(sourceRegion.x, iy, sourceRegion.width, 1, srcRgb, 0, src.getWidth());
             if( subSampleX==1 ) {
-                ret.setRGB(0, destY, dWidth, 1, srcRgb, 0, src.getWidth());
+            	dest.setRGB(0, destY, dWidth, 1, srcRgb, 0, src.getWidth());
             } else {
                 int destX = 0;
                 for(int ix=sourceRegion.x; ix < maxX; ix += subSampleX) {
                     destRgb[destX++] = srcRgb[ix];
                 }
-                ret.setRGB(0, destY, dWidth, 1, destRgb, 0, dWidth);
+                dest.setRGB(0, destY, dWidth, 1, destRgb, 0, dWidth);
             }
         }
-        return ret;
+        return dest;
+    }
+    
+    /**
+     * Creates a BufferedImage with a custom color model that can be used to store
+     * 3 channel RGB data in a byte array data buffer
+     */
+    public static BufferedImage createRGBBufferedImage(int destWidth, int destHeight) {
+    	ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
+    	ColorModel cm = new ComponentColorModel(cs, false, false,
+                Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+    	WritableRaster r = cm.createCompatibleWritableRaster(destWidth, destHeight);
+    	BufferedImage dest = new BufferedImage(cm, r, false, null);
+    	
+    	return dest;
     }
 
     /**
