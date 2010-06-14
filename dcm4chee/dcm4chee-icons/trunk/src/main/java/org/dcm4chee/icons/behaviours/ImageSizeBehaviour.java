@@ -52,12 +52,12 @@ public class ImageSizeBehaviour extends AbstractBehavior {
 
     private static final long serialVersionUID = 1L;
     
-    private int width;
-    private int height;
+    private int width = ImageManager.defaultWidth;
+    private int height = ImageManager.defaultHeight;
+
+    private String additionalCSS;
     
     public ImageSizeBehaviour() {
-        this.width = ImageManager.defaultWidth;
-        this.height = ImageManager.defaultHeight;
     }
 
     public ImageSizeBehaviour(int width, int height) {
@@ -65,7 +65,11 @@ public class ImageSizeBehaviour extends AbstractBehavior {
         this.height = height;
     }
 
+    public ImageSizeBehaviour(String additionalCSS) {
+        this.additionalCSS = additionalCSS;
+    }
+    
     public void onComponentTag(Component c, ComponentTag tag) {
-        tag.put("style", "width: " + this.width + "px; height: " + this.height + "px;");
+        tag.put("style", "width: " + this.width + "px; height: " + this.height + "px;" + " " + this.additionalCSS);
     }    
 }

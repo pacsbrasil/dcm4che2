@@ -47,96 +47,107 @@ import org.apache.wicket.ResourceReference;
  */
 public class ImageManager {
 
-    private static final String iconset = "oxygen";
-    private static final String treetable = "treetable";
+    private static final String schemeDependentPrefix = "GREEN_";
     
     public static int defaultWidth = 16;
     public static int defaultHeight = 16;
     
-    // workaround for treetable
-    public static final ResourceReference IMAGE_TREETABLE_EXPAND = 
-        new ResourceReference(ImageManager.class, treetable + "/treetable-expand.png");
-    public static final ResourceReference IMAGE_TREETABLE_COLLAPSE = 
-        new ResourceReference(ImageManager.class, treetable + "/treetable-collapse.png");   
-    public static final ResourceReference IMAGE_TREETABLE_FILESYSTEM_GROUP = 
-        new ResourceReference(ImageManager.class, treetable + "/treetable-filesystem-group.png");
-    public static final ResourceReference IMAGE_TREETABLE_FILESYSTEM_TAR = 
-        new ResourceReference(ImageManager.class, treetable + "/treetable-filesystem-tar.png");
-    public static final ResourceReference IMAGE_TREETABLE_FILESYSTEM_FOLDER = 
-        new ResourceReference(ImageManager.class, treetable + "/treetable-filesystem-folder.png");
-    public static final ResourceReference IMAGE_TREETABLE_QUEUE = 
-        new ResourceReference(ImageManager.class, treetable + "/treetable-queue.png");
-    public static final ResourceReference IMAGE_TREETABLE_MESSAGE = 
-        new ResourceReference(ImageManager.class, treetable + "/treetable-message.png");
-    public static final ResourceReference IMAGE_TREETABLE_REPORT_FOLDER = 
-        new ResourceReference(ImageManager.class, treetable + "/treetable-report-folder.png");
-    public static final ResourceReference IMAGE_TREETABLE_REPORT = 
-        new ResourceReference(ImageManager.class, treetable + "/treetable-report.png");
-    public static final ResourceReference IMAGE_TREETABLE_PROPERTY_FOLDER = 
-        new ResourceReference(ImageManager.class, treetable + "/treetable-folder-property.png");
-    public static final ResourceReference IMAGE_TREETABLE_PROPERTY = 
-        new ResourceReference(ImageManager.class, treetable + "/treetable-property.png");
+    public static final ResourceReference IMAGE_COMMON_ADD = 
+        new ResourceReference(ImageManager.class, "common/add.png");
+    public static final ResourceReference IMAGE_COMMON_AJAXLOAD = 
+        new ResourceReference(ImageManager.class, "common/ajaxload.gif");
+    public static final ResourceReference IMAGE_COMMON_BACK = 
+        new ResourceReference(ImageManager.class, "common/" + schemeDependentPrefix + "back.png");
+    public static final ResourceReference IMAGE_COMMON_COLLAPSE = 
+        new ResourceReference(ImageManager.class, "common/" + schemeDependentPrefix + "collapse.png");
+    public static final ResourceReference IMAGE_COMMON_EXPAND = 
+        new ResourceReference(ImageManager.class, "common/" + schemeDependentPrefix + "expand.png");
+    public static final ResourceReference IMAGE_COMMON_FORWARD = 
+        new ResourceReference(ImageManager.class, "common/" + schemeDependentPrefix + "forward.png");
+    public static final ResourceReference IMAGE_COMMON_LOGOUT = 
+        new ResourceReference(ImageManager.class, "common/logout.png");
+    public static final ResourceReference IMAGE_COMMON_REMOVE = 
+        new ResourceReference(ImageManager.class, "common/remove.png");
+    public static final ResourceReference IMAGE_COMMON_TRASH = 
+        new ResourceReference(ImageManager.class, "common/trash.png");
+    public static final ResourceReference IMAGE_COMMON_DICOM_DETAILS = 
+        new ResourceReference(ImageManager.class, "common/dicom_details.png");
+    public static final ResourceReference IMAGE_COMMON_DICOM_EDIT = 
+        new ResourceReference(ImageManager.class, "common/dicom_edit.png");
+    public static final ResourceReference IMAGE_COMMON_LINK = 
+        new ResourceReference(ImageManager.class, "common/link.png");
+
+    public static final ResourceReference IMAGE_FOLDER_DELETE = 
+        new ResourceReference(ImageManager.class, "folder/delete.png");
+    public static final ResourceReference IMAGE_FOLDER_EXPORT = 
+        new ResourceReference(ImageManager.class, "folder/export.png");
+    public static final ResourceReference IMAGE_FOLDER_MOVE = 
+        new ResourceReference(ImageManager.class, "folder/move.png");
+    public static final ResourceReference IMAGE_FOLDER_UNLINK = 
+        new ResourceReference(ImageManager.class, "folder/unlink.png");
+    public static final ResourceReference IMAGE_FOLDER_VIEWER = 
+        new ResourceReference(ImageManager.class, "folder/viewer.png");
+    public static final ResourceReference IMAGE_FOLDER_WADO = 
+        new ResourceReference(ImageManager.class, "folder/wado.png");
+
+    public static final ResourceReference IMAGE_AE_ECHO = 
+        new ResourceReference(ImageManager.class, "ae/echo.png");
+    public static final ResourceReference IMAGE_AE_EDIT = 
+        new ResourceReference(ImageManager.class, "ae/edit.png");
     
-    public static final ResourceReference IMAGE_EXPAND = 
-        new ResourceReference(ImageManager.class, iconset + "/actions/go-down.png");
-    public static final ResourceReference IMAGE_COLLAPSE = 
-        new ResourceReference(ImageManager.class, iconset + "/actions/go-up.png");
-    public static final ResourceReference IMAGE_EXPAND_ALL = 
-        new ResourceReference(ImageManager.class, iconset + "/actions/go-bottom.png");
-    public static final ResourceReference IMAGE_DELETE = 
-        new ResourceReference(ImageManager.class, iconset + "/actions/list-remove.png");
-    public static final ResourceReference IMAGE_EDIT = 
-        new ResourceReference(ImageManager.class, iconset + "/actions/document-edit.png");
-    public static final ResourceReference IMAGE_DETAIL = 
-        new ResourceReference(ImageManager.class, iconset + "/categories/preferences-desktop-peripherals.png");
-    public static final ResourceReference IMAGE_TRASH = 
-        new ResourceReference(ImageManager.class, iconset + "/places/user-trash.png");
-    public static final ResourceReference IMAGE_TRASH_REMOVE_ALL = 
-        new ResourceReference(ImageManager.class, iconset + "/actions/edit-bomb.png");
-    public static final ResourceReference IMAGE_MOVE = 
-        new ResourceReference(ImageManager.class, iconset + "/actions/system-switch-user.png");
-    public static final ResourceReference IMAGE_EXPORT = 
-        new ResourceReference(ImageManager.class, iconset + "/actions/mail-receive.png");
-    public static final ResourceReference IMAGE_ECHO = 
-        new ResourceReference(ImageManager.class, iconset + "/apps/preferences-desktop-sound.png");
-    public static final ResourceReference IMAGE_NEW = 
-        new ResourceReference(ImageManager.class, iconset + "/actions/appointment-new.png");
-    public static final ResourceReference IMAGE_CHANGE_PASSWORD = 
-        new ResourceReference(ImageManager.class, iconset + "/apps/preferences-desktop-user-password.png");
+    public static final ResourceReference IMAGE_USER_CHANGE_PASSWORD = 
+        new ResourceReference(ImageManager.class, "user/change_password.png");
+    public static final ResourceReference IMAGE_USER_ROLE_ADD = 
+        new ResourceReference(ImageManager.class, "user/role_add.png");
+    public static final ResourceReference IMAGE_USER_ADD = 
+        new ResourceReference(ImageManager.class, "user/user_add.png");
 
-    public static final ResourceReference IMAGE_REPORT_NEW = 
-        new ResourceReference(ImageManager.class, iconset + "/places/document-multiple.png");
-    public static final ResourceReference IMAGE_DIAGRAM = 
-        new ResourceReference(ImageManager.class, iconset + "/mimetypes/application-vnd.oasis.opendocument.chart.png");
-    public static final ResourceReference IMAGE_TABLE = 
-        new ResourceReference(ImageManager.class, iconset + "/mimetypes/application-x-siag.png");
-    public static final ResourceReference IMAGE_DIAGRAM_TABLE = 
-        new ResourceReference(ImageManager.class, iconset + "/mimetypes/application-vnd.ms-powerpoint.png");
-    public static final ResourceReference IMAGE_DIAGRAM_DOWNLOAD = 
-        new ResourceReference(ImageManager.class, iconset + "/places/folder-downloads.png");
-    public static final ResourceReference IMAGE_REPORT_XML = 
-        new ResourceReference(ImageManager.class, iconset + "/mimetypes/text-xml.png");
-    public static final ResourceReference IMAGE_REPORT_CSV = 
-        new ResourceReference(ImageManager.class, iconset + "/mimetypes/text-csv.png");
-    public static final ResourceReference IMAGE_REPORT_PRINT = 
-        new ResourceReference(ImageManager.class, iconset + "/apps/preferences-desktop-printer.png");
-    public static final ResourceReference IMAGE_STATUS_LINKED = 
-        new ResourceReference(ImageManager.class, "status/linked.png");
-    public static final ResourceReference IMAGE_STATUS_UNLINKED = 
-        new ResourceReference(ImageManager.class, "status/unlinked.png");
-    public static final ResourceReference IMAGE_INSERT_LINK = 
-        new ResourceReference(ImageManager.class, iconset + "/actions/insert-link.png");
-    public static final ResourceReference IMAGE_WEBVIEWER = 
-        new ResourceReference(ImageManager.class, "actions/webview.gif");
-    public static final ResourceReference IMAGE_WADO = 
-        new ResourceReference(ImageManager.class, "actions/wado.gif");
+    public static final ResourceReference IMAGE_DASHBOARD_FILESYSTEM_GROUP = 
+        new ResourceReference(ImageManager.class, "dashboard/filesystem/filesystem_group.png");
+    public static final ResourceReference IMAGE_DASHBOARD_FILESYSTEM = 
+        new ResourceReference(ImageManager.class, "dashboard/filesystem/filesystem.png");
+    public static final ResourceReference IMAGE_DASHBOARD_FILESYSTEM_TAR = 
+        new ResourceReference(ImageManager.class, "dashboard/filesystem/tar.png");
+
+    public static final ResourceReference IMAGE_DASHBOARD_PROPERTY = 
+        new ResourceReference(ImageManager.class, "dashboard/property/" + schemeDependentPrefix + "property.png");
+    public static final ResourceReference IMAGE_DASHBOARD_PROPERTY_FOLDER = 
+        new ResourceReference(ImageManager.class, "dashboard/property/folder_property.png");
+
+    public static final ResourceReference IMAGE_DASHBOARD_QUEUE_MESSAGE = 
+        new ResourceReference(ImageManager.class, "dashboard/queue/message.png");
+    public static final ResourceReference IMAGE_DASHBOARD_QUEUE = 
+        new ResourceReference(ImageManager.class, "dashboard/queue/server_queue.png");
+    
+    public static final ResourceReference IMAGE_DASHBOARD_REPORT_CHART_AND_TABLE = 
+        new ResourceReference(ImageManager.class, "dashboard/report/both_chart_table.png");
+    public static final ResourceReference IMAGE_DASHBOARD_REPORT_CHART = 
+        new ResourceReference(ImageManager.class, "dashboard/report/chart_bar.png");
+    public static final ResourceReference IMAGE_DASHBOARD_REPORT_FOLDER_ADD = 
+        new ResourceReference(ImageManager.class, "dashboard/report/folder_add.png");
+    public static final ResourceReference IMAGE_DASHBOARD_REPORT_FOLDER_DELETE = 
+        new ResourceReference(ImageManager.class, "dashboard/report/folder_delete.png");
+    public static final ResourceReference IMAGE_DASHBOARD_REPORT_FOLDER = 
+        new ResourceReference(ImageManager.class, "dashboard/report/folder_report.png");
+    public static final ResourceReference IMAGE_DASHBOARD_REPORT_ADD = 
+        new ResourceReference(ImageManager.class, "dashboard/report/report_add.png");
+    public static final ResourceReference IMAGE_DASHBOARD_REPORT_DELETE = 
+        new ResourceReference(ImageManager.class, "dashboard/report/report_delete.png");
+    public static final ResourceReference IMAGE_DASHBOARD_REPORT_EDIT = 
+        new ResourceReference(ImageManager.class, "dashboard/report/report_edit.png");
+    public static final ResourceReference IMAGE_DASHBOARD_REPORT = 
+        new ResourceReference(ImageManager.class, "dashboard/report/report.png");
+    public static final ResourceReference IMAGE_DASHBOARD_REPORT_TABLE = 
+        new ResourceReference(ImageManager.class, "dashboard/report/table.png");
+    public static final ResourceReference IMAGE_DASHBOARD_REPORT_DOWNLOAD = 
+        new ResourceReference(ImageManager.class, "dashboard/report/report_download.png");
+    public static final ResourceReference IMAGE_DASHBOARD_REPORT_PRINT = 
+        new ResourceReference(ImageManager.class, "dashboard/report/print.png");
+
+    public static final ResourceReference IMAGE_TRASH_DELETE_SELECTED = 
+        new ResourceReference(ImageManager.class, "trash/delete_permanent.png");
+    public static final ResourceReference IMAGE_TRASH_EMPTY = 
+        new ResourceReference(ImageManager.class, "trash/empty_trash.png");
     public static final ResourceReference IMAGE_TRASH_RESTORE = 
-        new ResourceReference(ImageManager.class, iconset + "/actions/system-switch-user.png");
-    public static final ResourceReference IMAGE_ADD_STUDY = 
-        new ResourceReference(ImageManager.class, "actions/add.gif");
-    public static final ResourceReference IMAGE_ADD_SERIES = 
-        new ResourceReference(ImageManager.class, "actions/add.gif");
-    public static final ResourceReference IMAGE_HOURGLASS = 
-        new ResourceReference(ImageManager.class, "actions/ajax-loader.gif");
-
+        new ResourceReference(ImageManager.class, "trash/restore.png");
 }
