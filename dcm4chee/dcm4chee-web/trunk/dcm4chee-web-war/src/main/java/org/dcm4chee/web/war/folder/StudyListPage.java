@@ -787,8 +787,8 @@ public class StudyListPage extends Panel {
                 }
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","patDetail")));
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","patDetail"))));
             item.add(getEditLink(patModel, "patEdit"));
             item.add(getAddStudyLink(patModel, "addStudy"));
             item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForPatient(patModel.getId(), patModel.getIssuer())) {
@@ -800,8 +800,8 @@ public class StudyListPage extends Panel {
             }
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","patWebviewer")));
+            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","patWebviewer"))));
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -875,8 +875,8 @@ public class StudyListPage extends Panel {
                 }
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","studyDetail")));
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","studyDetail"))));
             item.add( getEditLink(studyModel, "studyEdit"));
             item.add(getAddSeriesLink(studyModel, "addSeries"));
             item.add( new AjaxCheckBox("selected"){
@@ -905,8 +905,8 @@ public class StudyListPage extends Panel {
             }
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","studyWebviewer")));
+            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","studyWebviewer"))));
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", studyModel, false));
             item.add(new PPSListView("ppss",
@@ -991,8 +991,8 @@ public class StudyListPage extends Panel {
                     return ppsModel.getDataset() != null;
                 }
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","ppsDetail")));
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","ppsDetail"))));
             item.add(getEditLink(ppsModel, "ppsEdit"));
             
             AjaxFallbackLink<?> linkBtn = new AjaxFallbackLink<Object>("linkBtn") {
@@ -1026,7 +1026,8 @@ public class StudyListPage extends Panel {
                 }
             };
             linkBtn.add(new Image("linkImg", ImageManager.IMAGE_COMMON_LINK)
-            .add(new ImageSizeBehaviour())).add(new TooltipBehaviour("folder.","ppsLink"));
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","ppsLink")));
             item.add(linkBtn);
 
             item.add(new AjaxFallbackLink<Object>("unlinkBtn") {
@@ -1042,7 +1043,8 @@ public class StudyListPage extends Panel {
                 public boolean isVisible() {
                     return ppsModel.getDataset() != null && ppsModel.getAccessionNumber()!=null;
                 }
-            }.add(new Image("unlinkImg",ImageManager.IMAGE_FOLDER_UNLINK).add(new ImageSizeBehaviour())));
+            }.add(new Image("unlinkImg",ImageManager.IMAGE_FOLDER_UNLINK)
+            .add(new ImageSizeBehaviour())));
             
             item.add(new AjaxCheckBox("selected"){
                 private static final long serialVersionUID = 1L;
@@ -1121,8 +1123,8 @@ public class StudyListPage extends Panel {
                 }
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","seriesDetail")));
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","seriesDetail"))));
             item.add(getEditLink(seriesModel, "seriesEdit"));
             item.add(new AjaxCheckBox("selected"){
 
@@ -1151,8 +1153,8 @@ public class StudyListPage extends Panel {
             }
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","seriesWebviewer")));
+            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","seriesWebviewer"))));
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", seriesModel, false));
             item.add(new InstanceListView("instances",
@@ -1206,8 +1208,8 @@ public class StudyListPage extends Panel {
                 }
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","instanceDetail")));
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","instanceDetail"))));
             item.add(getEditLink(instModel, "instanceEdit"));
             item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForInstance(instModel.getSOPInstanceUID())) {
                 private static final long serialVersionUID = 1L;
@@ -1218,8 +1220,8 @@ public class StudyListPage extends Panel {
             }
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","instanceWebviewer")));
+            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","instanceWebviewer"))));
             item.add(new ExternalLink("wado", WADODelegate.getInstance().getURL(instModel)){
 
                 private static final long serialVersionUID = 1L;
@@ -1290,8 +1292,8 @@ public class StudyListPage extends Panel {
                 }
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour()))
-            .add(new TooltipBehaviour("folder.","fileDetail")));
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("folder.","fileDetail"))));
             item.add(new AjaxCheckBox("selected"){
                 private static final long serialVersionUID = 1L;
 
@@ -1333,8 +1335,8 @@ public class StudyListPage extends Panel {
                 return model.getDataset() != null;
             }
         };
-        link.add(new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT).add(new ImageSizeBehaviour()));
-        link.add(new TooltipBehaviour("folder.", tooltipId));
+        link.add(new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT).add(new ImageSizeBehaviour())
+        .add(new TooltipBehaviour("folder.", tooltipId)));
         MetaDataRoleAuthorizationStrategy.authorize(link, RENDER, "WebAdmin");
         return link;
     }
@@ -1359,8 +1361,8 @@ public class StudyListPage extends Panel {
                 return model.getDataset() != null;
             }
         };
-        link.add(new Image("addImg",ImageManager.IMAGE_COMMON_ADD).add(new ImageSizeBehaviour()));
-        link.add(new TooltipBehaviour("folder.", tooltipId));
+        link.add(new Image("addImg",ImageManager.IMAGE_COMMON_ADD).add(new ImageSizeBehaviour())
+        .add(new TooltipBehaviour("folder.", tooltipId)));
         return link;
     }
 
@@ -1372,7 +1374,6 @@ public class StudyListPage extends Panel {
             @Override
             public void onClick() {
                 SeriesModel newSeriesModel = new SeriesModel(null, null);
-                PPSModel ppsModel = new PPSModel(null, newSeriesModel, model);
                 setResponsePage(
                         new SimpleEditDicomObjectPage(StudyListPage.this.getPage(), new ResourceModel("folder.addSeries", "Add Series"),
                                 newSeriesModel, new int[][]{{Tag.SeriesInstanceUID},
@@ -1387,8 +1388,8 @@ public class StudyListPage extends Panel {
                 return model.getDataset() != null;
             }
         };
-        link.add(new Image("addImg",ImageManager.IMAGE_COMMON_ADD).add(new ImageSizeBehaviour()));
-        link.add(new TooltipBehaviour("folder.", tooltipId));
+        link.add(new Image("addImg",ImageManager.IMAGE_COMMON_ADD).add(new ImageSizeBehaviour())
+        .add(new TooltipBehaviour("folder.", tooltipId)));
         return link;
     }
 
