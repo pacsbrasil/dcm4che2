@@ -82,6 +82,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.border.LineBorder;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4che2.data.Tag;
@@ -459,7 +460,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 Graphics2D g2 = image.createGraphics();
                 g2.drawImage(loadedImage, 0, 0, null);
                 repaint();
-            } catch (RuntimeException e) {}
+            } catch (RuntimeException e) {
+            }
         } catch (Exception e) {
             System.out.println("io exception");
         }
@@ -737,6 +739,12 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             repaint();
         }
         selectFirstInstance();
+    }
+
+    public void resizeHandler() {     
+        repaint();
+        centerImage();
+        this.canvas.setSelection();
     }
 
     /**
@@ -1645,14 +1653,14 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             JMenuItem menuitem;
             if (!series.getSeriesDesc().equalsIgnoreCase("null")) {
                 menuitem = new JMenuItem(series.getSeriesDesc());
-            } else if(!series.getBodyPartExamined().equalsIgnoreCase("null")){
+            } else if (!series.getBodyPartExamined().equalsIgnoreCase("null")) {
                 menuitem = new JMenuItem(series.getBodyPartExamined());
-            }
-            else {
+            } else {
                 menuitem = new JMenuItem(series.getSeriesInstanceUID());
             }
             menu.add(menuitem);
             menuitem.addActionListener(new java.awt.event.ActionListener() {
+
                 public void actionPerformed(ActionEvent arg0) {
                     changeSeries(arg0, series.getStudyInstanceUID(), series.getSeriesInstanceUID());
                 }

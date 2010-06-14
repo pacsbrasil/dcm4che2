@@ -1,41 +1,41 @@
 /* ***** BEGIN LICENSE BLOCK *****
-* Version: MPL 1.1/GPL 2.0/LGPL 2.1
-*
-* The contents of this file are subject to the Mozilla Public License Version
-* 1.1 (the "License"); you may not use this file except in compliance with
-* the License. You may obtain a copy of the License at
-* http://www.mozilla.org/MPL/
-*
-* Software distributed under the License is distributed on an "AS IS" basis,
-* WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-* for the specific language governing rights and limitations under the
-* License.
-*
-*
-* The Initial Developer of the Original Code is
-* Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2009-2010
-* the Initial Developer. All Rights Reserved.
-*
-* Contributor(s):
-* Babu Hussain A
-* Meer Asgar Hussain B
-* Prakash J
-* Suresh V
-*
-* Alternatively, the contents of this file may be used under the terms of
-* either the GNU General Public License Version 2 or later (the "GPL"), or
-* the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
-* in which case the provisions of the GPL or the LGPL are applicable instead
-* of those above. If you wish to allow use of your version of this file only
-* under the terms of either the GPL or the LGPL, and not to allow others to
-* use your version of this file under the terms of the MPL, indicate your
-* decision by deleting the provisions above and replace them with the notice
-* and other provisions required by the GPL or the LGPL. If you do not delete
-* the provisions above, a recipient may use your version of this file under
-* the terms of any one of the MPL, the GPL or the LGPL.
-*
-* ***** END LICENSE BLOCK ***** */
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ *
+ * The Initial Developer of the Original Code is
+ * Raster Images
+ * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ * Babu Hussain A
+ * Meer Asgar Hussain B
+ * Prakash J
+ * Suresh V
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
@@ -58,7 +58,7 @@ public class Canvas extends javax.swing.JPanel {
 
     public Canvas(LayeredCanvas canvas) {
         initComponents();
-        this.layeredCanvas = canvas;       
+        this.layeredCanvas = canvas;
         setNoSelectionColoring();
     }
 
@@ -101,15 +101,15 @@ public class Canvas extends javax.swing.JPanel {
 
     private void formMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
         setSelection();
-        this.layeredCanvas.annotationPanel.mouseClicked(evt);        
+        this.layeredCanvas.annotationPanel.mouseClicked(evt);
     }//GEN-LAST:event_formMouseClicked
     public boolean isFocusGained() {
         return focusGained;
-    } 
+    }
 
     @Override
     public void paint(Graphics g) {
-        super.paint(g);    
+        super.paint(g);
         if (firstTime) {
             this.setSize(layeredCanvas.getSize().width, layeredCanvas.getSize().height);
             firstTime = false;
@@ -118,25 +118,31 @@ public class Canvas extends javax.swing.JPanel {
         }
         if (this.focusGained) {
             g.setColor(Color.YELLOW);
-        } else {           
+        } else {
             g.setColor(Color.DARK_GRAY);
         }
-        g.drawRect(0, 0, getWidth() - 1, getHeight()-1);        
+        g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
     }
 
     @Override
     protected void paintBorder(Graphics g) {
-        super.paintBorder(g);        
+        super.paintBorder(g);
 
     }
+
+    public void resizeHandler() {
+        this.firstTime = true;
+        repaint();
+    }
+
     /**
      * This routine used to center the image.
      */
     private void centerImage() {
         int xPosition = (this.getSize().width - this.getComponent(0).getSize().width) / 2;
-        int yPosition = (this.getSize().height - this.getComponent(0).getSize().height) / 2;       
+        int yPosition = (this.getSize().height - this.getComponent(0).getSize().height) / 2;
         this.getComponent(0).setBounds(xPosition, yPosition, this.getComponent(0).getSize().width, this.getComponent(0).getSize().height);
-    }  
+    }
 
     public LayeredCanvas getLayeredCanvas() {
         return layeredCanvas;
@@ -145,11 +151,12 @@ public class Canvas extends javax.swing.JPanel {
     public void setLayeredCanvas(LayeredCanvas layeredCanvas) {
         this.layeredCanvas = layeredCanvas;
     }
+
     /**
      * This routine used to set the selection coloring.
      */
     public void setSelectionColoring() {
-        focusGained=true;
+        focusGained = true;
         repaint();
     }
 
@@ -157,7 +164,7 @@ public class Canvas extends javax.swing.JPanel {
      * This routine used to remove the selection coloring.
      */
     public void setNoSelectionColoring() {
-        focusGained=false;
+        focusGained = false;
         repaint();
     }
 
@@ -174,8 +181,6 @@ public class Canvas extends javax.swing.JPanel {
         ApplicationContext.annotationPanel = this.layeredCanvas.annotationPanel;
         ApplicationContext.layeredCanvas.getCanvas().setSelectionColoring();
     }
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 }

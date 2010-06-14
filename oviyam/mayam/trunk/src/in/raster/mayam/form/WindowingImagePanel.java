@@ -210,10 +210,10 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             currentInstanceNo = Integer.parseInt(dataset.getString(Tags.InstanceNumber));
         } catch (NumberFormatException e) {
             System.out.println("Instance Number format error currentInstanceNo: " + currentInstanceNo);
-            currentInstanceNo=1; // if Number error correct and put a correct number (1)
+            currentInstanceNo = 1; // if Number error correct and put a correct number (1)
         } catch (NullPointerException e) {
             System.out.println("Instance number Null pointer error");
-            currentInstanceNo=1; // if Number error correct and put a correct number (1)
+            currentInstanceNo = 1; // if Number error correct and put a correct number (1)
         }
     }
 
@@ -444,6 +444,11 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         imageIcon = null;
         loadedImage = null;
 
+    }
+
+    public void resizeHandler() {
+        repaint();
+        centerImage();
     }
 
     /**
@@ -765,7 +770,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         }
         currentInstanceNo--;
         Instance instance = instanceArray.get(currentInstanceNo);
-        dicomFileUrl=instance.getFilepath();
+        dicomFileUrl = instance.getFilepath();
         setImage(instance.getPixelData());
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
     }
@@ -776,7 +781,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             currentInstanceNo = 0;
         }
         Instance instance = instanceArray.get(currentInstanceNo);
-        dicomFileUrl=instance.getFilepath();
+        dicomFileUrl = instance.getFilepath();
         setImage(instance.getPixelData());
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
     }
