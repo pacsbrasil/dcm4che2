@@ -1153,6 +1153,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
 
     public Annotation getAnnotation() {
         annotation = new Annotation();
+        if(seletedShape!=null)
+            addShapeToArray();
         annotation.setEllipse(ellipseObj);
         annotation.setRect(rectObj);
         annotation.setLine(lineObj);
