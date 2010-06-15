@@ -85,8 +85,9 @@ public class MainPage extends BaseWicketPage {
             properties.load(((BaseWicketApplication) getApplication()).getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));
             selectorPanel.get("img_logo").add(new AttributeModifier("title", true, 
                     new Model<String>((
-                            new ResourceModel("application.name") == null ? "" : new ResourceModel("application.name").wrapOnAssignment(this).getObject())
-                            + (properties.getProperty("Implementation-Build") == null ? "" : properties.getProperty("Implementation-Build")))));            
+                            (properties.getProperty("Implementation-Title") == null ? "" : properties.getProperty("Implementation-Title"))
+                            + ": "
+                            + (properties.getProperty("Implementation-Build") == null ? "" : properties.getProperty("Implementation-Build"))))));            
         } catch (Exception ignore) {}
     }
 }
