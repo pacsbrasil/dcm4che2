@@ -184,8 +184,11 @@ public abstract class LookupTable {
         }
         switch (dstdata.getDataType()) {
         case DataBuffer.TYPE_BYTE:
-            lookup(srcdata, srcWidth, srcHeight, srcScanlineStride,
-                    ((DataBufferByte) dstdata).getData(), dstScanlineStride, channels, skip);
+            byte[][] data = ((DataBufferByte) dstdata).getBankData(); 
+            for(int bank=0; bank<data.length; bank++) {
+                lookup(srcdata, srcWidth, srcHeight, srcScanlineStride,
+                    data[bank], dstScanlineStride, channels, skip, bank);
+            }
             break;
         case DataBuffer.TYPE_USHORT:
             lookup(srcdata, srcWidth, srcHeight, srcScanlineStride,
@@ -206,10 +209,10 @@ public abstract class LookupTable {
     }
 
     public void lookup(DataBuffer src, int srcWidth, int srcHeight,
-            int srcScanlineStride, byte[] dst, int dstScanlineStride, int channels, int skip) {
+            int srcScanlineStride, byte[] dst, int dstScanlineStride, int channels, int skip, int bank) {
         switch (src.getDataType()) {
         case DataBuffer.TYPE_BYTE:
-            lookup(((DataBufferByte) src).getData(), srcWidth, srcHeight,
+            lookup(((DataBufferByte) src).getData(bank), srcWidth, srcHeight,
                     srcScanlineStride, dst, dstScanlineStride, channels, skip);
             break;
         case DataBuffer.TYPE_USHORT:
