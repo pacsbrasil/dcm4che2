@@ -98,6 +98,9 @@
               <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_ListenersCodePost" type="java.lang.String" value="serverListTable.setDefaultRenderer(Object.class, new CellRenderer());"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>

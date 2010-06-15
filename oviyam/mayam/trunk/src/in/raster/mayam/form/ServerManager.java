@@ -46,6 +46,7 @@ import in.raster.mayam.model.AEModel;
 import in.raster.mayam.model.ServerModel;
 import in.raster.mayam.model.table.PresetTableModel;
 import in.raster.mayam.model.table.ServerTableModel;
+import in.raster.mayam.model.table.renderer.CellRenderer;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -128,6 +129,7 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener{
         jLabel1.setOpaque(true);
 
         serverListTable.setModel(new PresetTableModel());
+        serverListTable.setDefaultRenderer(Object.class, new CellRenderer());
         jScrollPane1.setViewportView(serverListTable);
 
         addButton.setText("Add");
@@ -163,7 +165,7 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener{
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(171, Short.MAX_VALUE)
+                .addContainerGap(182, Short.MAX_VALUE)
                 .add(jButton1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(addButton)
@@ -172,7 +174,7 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener{
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
