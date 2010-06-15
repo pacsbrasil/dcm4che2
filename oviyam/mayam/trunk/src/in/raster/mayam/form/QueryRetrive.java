@@ -673,7 +673,11 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
             for (int i = 0; i < dicomServerArray.size(); i++) {
                 if (dicomServerArray.get(i).getName().equalsIgnoreCase(serverName)) {
                     int index[] = studyListTable.getSelectedRows();
+                    for (int j = 0; j < index.length; j++) {
+                    index[j] = studyListTable.convertRowIndexToModel(index[j]);
+                    }
                     for (int tempI = 0; tempI < index.length; tempI++) {
+
                         String tem[] = new String[]{
                             "dicom" + "://" + dicomServerArray.get(i).getAe().getAeTitle() + "@" + dicomServerArray.get(i).getAe().getHostName() + ":" + dicomServerArray.get(i).getAe().getPort(),
                             "--dest", s[0], "--pid", dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), "--suid",

@@ -145,7 +145,8 @@ public class ConfirmDelete extends javax.swing.JDialog {
     
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
          if (MainScreen.studyListTable.getSelectedRow() != -1) {
-            String studyIUID = (String) MainScreen.studyListTable.getModel().getValueAt(MainScreen.studyListTable.getSelectedRow(), 8);
+            int selection=MainScreen.studyListTable.convertRowIndexToModel(MainScreen.studyListTable.getSelectedRow());
+            String studyIUID = (String) MainScreen.studyListTable.getModel().getValueAt(selection, 8);
             ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList(studyIUID);
             Iterator<Series> seriesItr = seriesList.iterator();
             while (seriesItr.hasNext()) {

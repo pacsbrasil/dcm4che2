@@ -717,7 +717,8 @@ public class MainScreen extends javax.swing.JFrame {
     }//GEN-LAST:event_exportButtonActionPerformed
     private void exportHandler() {
         if (studyListTable.getSelectedRow() != -1) {
-            String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(studyListTable.getSelectedRow(), 8);
+            int selection=studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
+            String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
             JpegStoreLocationChooser jpegChooser = new JpegStoreLocationChooser(ApplicationContext.imgView, true);
             Display.alignScreen(jpegChooser);
             jpegChooser.setWithWindowing(false);
@@ -748,14 +749,16 @@ public class MainScreen extends javax.swing.JFrame {
             forwardHost = ae.getHostName();
             forwardPort = ae.getPort();
             if (studyListTable.getSelectedRow() != -1) {
-                String studyIUID = (String) studyListTable.getModel().getValueAt(studyListTable.getSelectedRow(), 8);
+                int selection=studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
+                String studyIUID = (String) studyListTable.getModel().getValueAt(selection, 8);
                 SendingDelegate sendingDelegate = new SendingDelegate(studyIUID, ae);
             }
         }
     }//GEN-LAST:event_sendButtonActionPerformed
     private void viewerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewerButtonActionPerformed
         if (studyListTable.getSelectedRow() != -1) {
-            String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(studyListTable.getSelectedRow(), 8);
+            int selection=studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
+            String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
             int rowColumnArray[] = new int[2];
             try {
                 rowColumnArray = ApplicationContext.databaseRef.getRowColumnBasedStudyUID(siuid);
@@ -806,7 +809,8 @@ public class MainScreen extends javax.swing.JFrame {
     private void studyListTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studyListTableMouseClicked
         if (evt.getClickCount() == 2) {
             if (studyListTable.getSelectedRow() != -1) {
-                String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(studyListTable.getSelectedRow(), 8);
+                int selection=studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
+                String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
                 int rowColumnArray[] = ApplicationContext.databaseRef.getRowColumnBasedStudyUID(siuid);
                 ArrayList tempRef = ApplicationContext.databaseRef.getUrlBasedOnStudyIUID(siuid);
                 StudyListUpdator studyListUpdator = new StudyListUpdator();
@@ -820,7 +824,8 @@ public class MainScreen extends javax.swing.JFrame {
     private void metaDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_metaDataButtonActionPerformed
         try {
             if (studyListTable.getSelectedRow() != -1) {
-                String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(studyListTable.getSelectedRow(), 8);
+                int selection=studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
+                String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
                 ArrayList<DicomTags> dcmTags = DicomTagsReader.getTags(new File(this.canvas.getFilePath()));
                 dicomTagsViewer.setDataModelOnTable(dcmTags);
                 Display.alignScreen(dicomTagsViewer);
@@ -966,7 +971,8 @@ public class MainScreen extends javax.swing.JFrame {
                 thumbUpdator.setCanRun(false);
                 removeThumbnailComponents();
             }
-            String studyUID = ((StudyListModel) studyListTable.getModel()).getValueAt(studyListTable.getSelectedRow(), 8);
+            int selection=studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
+            String studyUID = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
             thumbUpdator = new SeriesThumbUpdator(studyUID);
         }
     }
