@@ -45,6 +45,7 @@ import org.apache.wicket.authorization.strategies.role.RoleAuthorizationStrategy
 import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.usr.ui.usermanagement.UserListPanel;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
@@ -52,7 +53,6 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.base.ModuleSelectorPanel;
 import org.dcm4chee.web.war.ae.AEMgtPanel;
 import org.dcm4chee.web.war.folder.StudyListPage;
-import org.dcm4chee.web.war.fs.FileSystemPage;
 import org.dcm4chee.web.war.trash.TrashListPage;
 import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
 
@@ -73,7 +73,6 @@ public class MainPage extends BaseWicketPage {
         selectorPanel.addModule(StudyListPage.class);
         selectorPanel.addModule(TrashListPage.class);
         selectorPanel.addModule(AEMgtPanel.class);
-        //selectorPanel.addModule(FileSystemPage.class);
 
         if (new RoleAuthorizationStrategy((WicketApplication) this.getApplication()).isInstantiationAuthorized(UserListPanel.class))           
             selectorPanel.addInstance(new UserListPanel("panel", ((WicketSession) getSession()).getUsername()));
@@ -84,7 +83,10 @@ public class MainPage extends BaseWicketPage {
         try {
             Properties properties = new Properties();
             properties.load(((BaseWicketApplication) getApplication()).getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));
-            selectorPanel.get("img_logo").add(new AttributeModifier("title", true, new Model<String>("dcm4chee-web version: " + (properties.getProperty("Implementation-Build") == null ? "" : properties.getProperty("Implementation-Build")))));            
+            selectorPanel.get("img_logo").add(new AttributeModifier("title", true, 
+                    new Model<String>((
+                            new ResourceModel("application.name") == null ? "" : new ResourceModel("application.name").wrapOnAssignment(this).getObject())
+                            + (properties.getProperty("Implementation-Build") == null ? "" : properties.getProperty("Implementation-Build")))));            
         } catch (Exception ignore) {}
     }
 }
