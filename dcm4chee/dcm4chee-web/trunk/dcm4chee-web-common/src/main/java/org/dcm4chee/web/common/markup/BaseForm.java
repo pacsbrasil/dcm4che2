@@ -61,6 +61,7 @@ import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.form.AbstractTextComponent.ITextFormatProvider;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.validation.IValidator;
@@ -182,9 +183,9 @@ public class BaseForm extends Form<Object> {
         return dtf;
     }
     
-    public DateTextField getDateTextField(String id, IModel<Date> model, boolean addTooltip) {
-        DateTextField dt = new DateTextField(id, model, 
-                new StyleDateConverter("S-", false){
+    public DateTextField getDateTextField(String id, IModel<Date> model, boolean addTooltip, final IModel<Boolean> enabledModel) {
+        DateTextField dt = new DateTextField(id, model,  
+                new StyleDateConverter("S-", false) {
 
                     private static final long serialVersionUID = 1L;
 
@@ -193,8 +194,15 @@ public class BaseForm extends Form<Object> {
                         String pattern = DateUtils.getDatePattern(getComponent());
                         return DateTimeFormat.forPattern(pattern).withLocale(getLocale())
                                         .withPivotYear(2000);
-                    }
-            });
+                    }                    
+            }) {
+                private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean isEnabled() {
+                return enabledModel.getObject();
+            }
+        };
         if (addTooltip) {
             dt.add(new TooltipBehaviour(tooltipBehaviour == null ? null : tooltipBehaviour.getPrefix(), 
                     id, new PropertyModel<Object>(dt,"textFormat")));
@@ -217,7 +225,7 @@ public class BaseForm extends Form<Object> {
             @SuppressWarnings("unchecked")
             @Override
             protected DateTextField newDateTextField(String id, PropertyModel dateFieldModel) {
-                return getDateTextField(id, dateFieldModel, false);
+                return getDateTextField(id, dateFieldModel, false, new Model<Boolean>(true));
             }            
         };
         if (addTooltip) {
@@ -354,7 +362,6 @@ public class BaseForm extends Form<Object> {
         return fc;
     }
 
-    @SuppressWarnings("unchecked")
     private IValidator<String> getDicomTextValidator(VR vr) {
         if (vr == VR.AE || vr == VR.SH || vr == VR.CS) {
             return new StringValidator.MaximumLengthValidator(16);

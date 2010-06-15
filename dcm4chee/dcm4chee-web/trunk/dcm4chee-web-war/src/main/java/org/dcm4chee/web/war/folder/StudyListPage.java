@@ -137,6 +137,7 @@ public class StudyListPage extends Panel {
     };
     private static List<String> sourceAETs = new ArrayList<String>();
     private static List<String> modalities = new ArrayList<String>();
+    private boolean showSearch = true;
     private boolean notSearched = true;
     private BaseForm form;
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("folder.");
@@ -150,12 +151,58 @@ public class StudyListPage extends Panel {
         super(id);
         webviewerLinkProvider = new WebviewerLinkProvider(((WebApplication)Application.get()).getInitParameter("webviewerName"));
         add(CSSPackageResource.getHeaderContribution(StudyListPage.class, "folder-style.css"));
-        
+
+        final WebMarkupContainer searchHeader = new WebMarkupContainer("searchHeader");
+//        searchHeader.setOutputMarkupId(true);
+//        AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("search") {
+//
+//            private static final long serialVersionUID = 1L;
+//
+//            @Override
+//            public void onClick(AjaxRequestTarget target) {
+//                showSearch = !showSearch;
+//                target.addComponent(searchHeader);
+//                target.addComponent(form);
+//            }
+//        };
+//        link.add(new Image("searchImg", new AbstractReadOnlyModel<ResourceReference>() {
+//
+//                private static final long serialVersionUID = 1L;
+//
+//                @Override
+//                public ResourceReference getObject() {
+//                    return showSearch ? ImageManager.IMAGE_COMMON_COLLAPSE : 
+//                        ImageManager.IMAGE_COMMON_EXPAND;
+//                }
+//        })
+//        .add(new ImageSizeBehaviour()));
+//        searchHeader.add(link);
+//        searchHeader.add(new Label("searchText", new AbstractReadOnlyModel<String>() {
+//
+//            private static final long serialVersionUID = 1L;
+//
+//            @Override
+//            public String getObject() {
+//                return showSearch ? new ResourceModel("folder.search.hide.text").wrapOnAssignment(searchHeader).getObject()
+//                        : new ResourceModel("folder.search.show.text").wrapOnAssignment(searchHeader).getObject();
+//            }
+//        }));
+        add(searchHeader);
+
         final StudyListFilter filter = viewport.getFilter();
-        form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
+        form = new BaseForm("form", new CompoundPropertyModel<Object>(filter)) {
+
+            private static final long serialVersionUID = 1L;
+            
+            @Override
+            public boolean isVisible() {
+                return showSearch;
+            }
+        };
         form.setResourceIdPrefix("folder.");
         form.setTooltipBehaviour(tooltipBehaviour);
         add(form);
+
         addQueryFields(filter, form);
         addQueryOptions(form);
         addNavigation(form);
@@ -168,15 +215,15 @@ public class StudyListPage extends Panel {
         initModalitiesAndSourceAETs();
     }
 
-    private void addQueryFields(final StudyListFilter filter, BaseForm form) {
+    private void addQueryFields(final StudyListFilter filter, final BaseForm form) {
         IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
 
             private static final long serialVersionUID = 1L;
 
             @Override
             public Boolean getObject() {
-                return (!filter.isExtendedStudyQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) &&
-                       (!filter.isExtendedSeriesQuery() || QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID()));
+                return (!filter.isExtendedQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) &&
+                       (!filter.isExtendedQuery() || QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID()));
             }
             
         };
@@ -184,20 +231,71 @@ public class StudyListPage extends Panel {
         form.addLabel("patientIDDescr");
         form.addLabeledTextField("patientID", enabledModel);
         form.addLabeledTextField("issuerOfPatientID", enabledModel);
-        addExtendedPatientSearch(form);
         
         form.addLabel("studyDate");
         form.addLabeledDateTimeField("studyDateMin", new PropertyModel<Date>(filter, "studyDateMin"), enabledModel, false);
         form.addLabeledDateTimeField("studyDateMax", new PropertyModel<Date>(filter, "studyDateMax"), enabledModel, true);
 
         form.addLabeledTextField("accessionNumber", enabledModel);
-        addExtendedStudySearch(form);
         form.addLabeledDropDownChoice("modality", null, modalities, enabledModel);
         List<String> choices = viewport.getSourceAetChoices(sourceAETs);
         if (choices.size() > 0)
             filter.setSourceAET(choices.get(0));
         form.addLabeledDropDownChoice("sourceAET", null, choices, enabledModel);
-        addExtendedSeriesSearch(form);
+
+        final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean isVisible() {
+                return filter.isExtendedQuery();
+            }
+        };
+        extendedFilter.add( new Label("birthDateLabel", new ResourceModel("folder.birthDate")));
+        extendedFilter.add( new Label("birthDateMinLabel", new ResourceModel("folder.birthDateMin")));
+        extendedFilter.add( new Label("birthDateMaxLabel", new ResourceModel("folder.birthDateMax")));
+        extendedFilter.add(form.getDateTextField("birthDateMin", null, true, enabledModel));
+        extendedFilter.add(form.getDateTextField("birthDateMax", null, true, enabledModel));
+        
+        extendedFilter.add( new Label("studyInstanceUIDLabel", new ResourceModel("folder.studyInstanceUID")));
+        extendedFilter.add( new TextField<String>("studyInstanceUID").add(new UIDValidator()));
+
+        extendedFilter.add( new Label("seriesInstanceUIDLabel", new ResourceModel("folder.seriesInstanceUID")));
+        extendedFilter.add( new TextField<String>("seriesInstanceUID") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean isEnabled() {
+                return !filter.isExtendedQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
+            }
+        });
+        form.add(extendedFilter);
+        
+        AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedFilter") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                filter.setExtendedQuery(!filter.isExtendedQuery());
+                target.addComponent(form);
+            }
+        };
+        link.add(new Image("showExtendedFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public ResourceReference getObject() {
+                    return filter.isExtendedQuery() ? ImageManager.IMAGE_COMMON_COLLAPSE : 
+                        ImageManager.IMAGE_COMMON_EXPAND;
+                }
+        })
+        .add(new ImageSizeBehaviour()));
+        form.add(link);
+        form.add(new Label("showExtendedFilterText", new ResourceModel("folder.showExtendedFilter.text")));
     }
 
     private void addQueryOptions(BaseForm form) {
@@ -206,6 +304,7 @@ public class StudyListPage extends Panel {
         form.addLabeledCheckBox("ppsWithoutMwl", null);
     }
 
+    @SuppressWarnings("unchecked")
     private void addNavigation(BaseForm form) {
         
         form.add(new AjaxButton("reset", new ResourceModel("folder.reset")) {
@@ -232,40 +331,61 @@ public class StudyListPage extends Panel {
             }};
         form.add(searchBtn);
         form.setDefaultButton(searchBtn);
-        form.add(new Button("prev", new ResourceModel("folder.prev")) {
+        form.add(new Link("prev") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             protected void onComponentTag(ComponentTag tag) {
                 super.onComponentTag(tag);
-                if (viewport.getOffset() == 0) {
-                    tag.put("disabled", "");
-                }
+                if (viewport.getOffset() == 0) 
+                    disableLink(tag);
             }
 
             @Override
-            public void onSubmit() {
+            public void onClick() {
                 viewport.setOffset(Math.max(0, viewport.getOffset() - PAGESIZE));
-                queryStudies();
-            }});
-        form.add(new Button("next", new ResourceModel("folder.next")) {
+                queryStudies();               
+            }
+            
+            @Override
+            public boolean isVisible() {
+                return !notSearched;
+            }
+        }
+        .add(new Image("prevImg", ImageManager.IMAGE_COMMON_BACK)
+        .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        .add(new TooltipBehaviour("folder.")))
+        );
+ 
+        form.add(new Link("next") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             protected void onComponentTag(ComponentTag tag) {
                 super.onComponentTag(tag);
-                if (viewport.getTotal() - viewport.getOffset() <= PAGESIZE) {
-                    tag.put("disabled", "");
-                }
+                if (viewport.getTotal() - viewport.getOffset() <= PAGESIZE)
+                    disableLink(tag);
             }
 
             @Override
-            public void onSubmit() {
+            public void onClick() {
                 viewport.setOffset(viewport.getOffset() + PAGESIZE);
                 queryStudies();
-            }});
+            }
+
+            @Override
+            public boolean isVisible() {
+                return !notSearched;
+            }
+        }
+        .add(new Image("nextImg", ImageManager.IMAGE_COMMON_FORWARD)
+        .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        .add(new TooltipBehaviour("folder.")))
+        .setVisible(!notSearched)
+        );
+
         //viewport label: use StringResourceModel with key substitution to select 
         //property key according notSearched and getTotal.
         Model<?> keySelectModel = new Model<Serializable>() {
@@ -368,7 +488,7 @@ public class StudyListPage extends Panel {
                 }
             }
         };
-        deleteBtn.add(new Image("deleteImg",ImageManager.IMAGE_FOLDER_DELETE)
+        deleteBtn.add(new Image("deleteImg", ImageManager.IMAGE_FOLDER_DELETE)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
         deleteBtn.add(new TooltipBehaviour("folder.", "deleteBtn"));
@@ -514,136 +634,6 @@ public class StudyListPage extends Panel {
             }
         };
         form.add(confirmUnlinkMpps);
-    }
-
-    private WebMarkupContainer addExtendedPatientSearch(final BaseForm form) {
-        final StudyListFilter filter = viewport.getFilter();
-        final WebMarkupContainer extendedPatFilter = new WebMarkupContainer("extendedPatFilter") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public boolean isVisible() {
-                return filter.isExtendedPatQuery();
-            }
-        };
-        extendedPatFilter.add( new Label("birthDateLabel", new ResourceModel("folder.birthDate")));
-        extendedPatFilter.add( new Label("birthDateMinLabel", new ResourceModel("folder.birthDateMin")));
-        extendedPatFilter.add( new Label("birthDateMaxLabel", new ResourceModel("folder.birthDateMax")));
-        extendedPatFilter.add(form.getDateTextField("birthDateMin", null, true));
-        extendedPatFilter.add(form.getDateTextField("birthDateMax", null, true));
-        form.add(extendedPatFilter);
-        AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedPatFilter") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                filter.setExtendedPatQuery(!filter.isExtendedPatQuery());
-                target.addComponent(form);
-            }
-        };
-        link.add(new Image("showExtendedPatFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public ResourceReference getObject() {
-                    return filter.isExtendedPatQuery() ? ImageManager.IMAGE_COMMON_COLLAPSE : 
-                        ImageManager.IMAGE_COMMON_EXPAND;
-                }
-        })
-        .add(new ImageSizeBehaviour()));
-        
-        form.add(link);
-        return extendedPatFilter;
-    }
-    private WebMarkupContainer addExtendedStudySearch(final Form<?> form) {
-        final StudyListFilter filter = viewport.getFilter();
-        final WebMarkupContainer extendedStudyFilter = new WebMarkupContainer("extendedStudyFilter") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public boolean isVisible() {
-                return filter.isExtendedStudyQuery();
-            }
-        };
-        extendedStudyFilter.add( new Label("studyInstanceUIDLabel", new ResourceModel("folder.studyInstanceUID")));
-        extendedStudyFilter.add( new TextField<String>("studyInstanceUID").add(new UIDValidator()));
-        form.add(extendedStudyFilter);
-        AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedStudyFilter") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                filter.setExtendedStudyQuery(!filter.isExtendedStudyQuery());
-                target.addComponent(form);
-            }
-        };
-        link.add(new Image("showExtendedStudyFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public ResourceReference getObject() {
-                return filter.isExtendedStudyQuery() ? ImageManager.IMAGE_COMMON_COLLAPSE : 
-                    ImageManager.IMAGE_COMMON_EXPAND;
-            }
-        })
-        .add(new ImageSizeBehaviour()));
-        
-        form.add(link);
-        return extendedStudyFilter;
-    }
-    
-    private WebMarkupContainer addExtendedSeriesSearch(final Form<?> form) {
-        final StudyListFilter filter = viewport.getFilter();
-        final WebMarkupContainer extendedSeriesFilter = new WebMarkupContainer("extendedSeriesFilter") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public boolean isVisible() {
-                return filter.isExtendedSeriesQuery();
-            }
-        };
-        extendedSeriesFilter.add( new Label("seriesInstanceUIDLabel", new ResourceModel("folder.seriesInstanceUID")));
-        extendedSeriesFilter.add( new TextField<String>("seriesInstanceUID") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public boolean isEnabled() {
-                return !filter.isExtendedStudyQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
-            }
-        });
-        form.add(extendedSeriesFilter);
-        AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedSeriesFilter") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                filter.setExtendedSeriesQuery(!filter.isExtendedSeriesQuery());
-                target.addComponent(form);
-            }
-        };
-        link.add(new Image("showExtendedSeriesFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public ResourceReference getObject() {
-                return filter.isExtendedSeriesQuery() ? ImageManager.IMAGE_COMMON_COLLAPSE : 
-                    ImageManager.IMAGE_COMMON_EXPAND;
-            }
-        })
-        .add(new ImageSizeBehaviour()));
-        
-        form.add(link);
-        return extendedSeriesFilter;
     }
 
     private void initModalitiesAndSourceAETs() {

@@ -55,18 +55,16 @@ public class StudyListFilter implements Serializable {
     private String patientName;
     private String patientID;
     private String issuerOfPatientID;
-    private boolean extendedPatQuery;
+    private boolean extendedQuery;
     private Date birthDateMin;
     private Date birthDateMax;
     private String accessionNumber;
     private Date studyDateMin;
     private Date studyDateMax;
-    private boolean extendedStudyQuery;
     private String studyInstanceUID;
     private String modality;
     private String sourceAET;
     private Map<String,List<String>> sourceAetGroups;
-    private boolean extendedSeriesQuery;
     private String seriesInstanceUID;
     private boolean patientsWithoutStudies;
     private boolean latestStudiesFirst;
@@ -81,7 +79,7 @@ public class StudyListFilter implements Serializable {
             studyInstanceUID = modality = sourceAET = seriesInstanceUID = null;
         studyDateMin = studyDateMax = null; 
         birthDateMin = birthDateMax = null;
-        extendedPatQuery = extendedStudyQuery = extendedSeriesQuery = false;
+        extendedQuery = false;
         patientsWithoutStudies = false;
         latestStudiesFirst = false;
         ppsWithoutMwl = false;
@@ -111,12 +109,12 @@ public class StudyListFilter implements Serializable {
         this.issuerOfPatientID = issuerOfPatientID;
     }
 
-    public boolean isExtendedPatQuery() {
-        return extendedPatQuery;
+    public boolean isExtendedQuery() {
+        return extendedQuery;
     }
 
-    public void setExtendedPatQuery(boolean extendedPatQuery) {
-        this.extendedPatQuery = extendedPatQuery;
+    public void setExtendedQuery(boolean extendedQuery) {
+        this.extendedQuery = extendedQuery;
     }
 
     public Date getBirthDateMin() {
@@ -170,14 +168,6 @@ public class StudyListFilter implements Serializable {
         this.studyDateMax = studyDate;
     }
 
-    public boolean isExtendedStudyQuery() {
-        return extendedStudyQuery;
-    }
-
-    public void setExtendedStudyQuery(boolean extendedStudyQuery) {
-        this.extendedStudyQuery = extendedStudyQuery;
-    }
-
     public String getStudyInstanceUID() {
         return studyInstanceUID;
     }
@@ -212,14 +202,6 @@ public class StudyListFilter implements Serializable {
         return new String[]{sourceAET};
     }
     
-    public boolean isExtendedSeriesQuery() {
-        return extendedSeriesQuery;
-    }
-
-    public void setExtendedSeriesQuery(boolean extendedSeriesQuery) {
-        this.extendedSeriesQuery = extendedSeriesQuery;
-    }
-
     public String getSeriesInstanceUID() {
         return seriesInstanceUID;
     }

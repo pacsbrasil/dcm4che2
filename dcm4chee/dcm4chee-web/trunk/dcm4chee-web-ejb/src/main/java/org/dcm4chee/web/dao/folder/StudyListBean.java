@@ -108,15 +108,15 @@ public class StudyListBean implements StudyListLocal {
     private static void appendWhereClause(StringBuilder ql,
             StudyListFilter filter) {
         ql.append(" WHERE p.mergedWith IS NULL");
-        if ( filter.isExtendedStudyQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
+        if ( filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
             ql.append(" AND s.studyInstanceUID = :studyInstanceUID");
-        } else if (filter.isExtendedSeriesQuery() && !QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())) {
+        } else if (filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())) {
             appendSeriesInstanceUIDFilter(ql, filter.getSeriesInstanceUID());
         } else {
             appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
             appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID()));
             appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
-            if ( filter.isExtendedPatQuery()) {
+            if ( filter.isExtendedQuery()) {
                 appendPatientBirthDateFilter(ql, filter.getBirthDateMin(), filter.getBirthDateMax());
             }
             appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
@@ -129,15 +129,15 @@ public class StudyListBean implements StudyListLocal {
     }
 
     private static void setQueryParameters(Query query, StudyListFilter filter) {
-        if ( filter.isExtendedStudyQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
+        if ( filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
             setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
-        } else if (filter.isExtendedSeriesQuery() && !QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())) {
+        } else if (filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())) {
             setSeriesInstanceUIDQueryParameter(query, filter.getSeriesInstanceUID());
         } else {
             setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
             setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID()));
             setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
-            if ( filter.isExtendedPatQuery()) {
+            if ( filter.isExtendedQuery()) {
                 setPatientBirthDateQueryParameter(query, filter.getBirthDateMin(), filter.getBirthDateMax());
             }
             setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
