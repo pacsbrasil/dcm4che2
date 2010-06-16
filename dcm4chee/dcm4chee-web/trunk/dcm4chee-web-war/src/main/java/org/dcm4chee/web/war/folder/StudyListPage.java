@@ -152,7 +152,7 @@ public class StudyListPage extends Panel {
         webviewerLinkProvider = new WebviewerLinkProvider(((WebApplication)Application.get()).getInitParameter("webviewerName"));
         add(CSSPackageResource.getHeaderContribution(StudyListPage.class, "folder-style.css"));
 
-        final WebMarkupContainer searchHeader = new WebMarkupContainer("searchHeader");
+//        final WebMarkupContainer searchHeader = new WebMarkupContainer("searchHeader");
 //        searchHeader.setOutputMarkupId(true);
 //        AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("search") {
 //
@@ -187,7 +187,7 @@ public class StudyListPage extends Panel {
 //                        : new ResourceModel("folder.search.show.text").wrapOnAssignment(searchHeader).getObject();
 //            }
 //        }));
-        add(searchHeader);
+//        add(searchHeader);
 
         final StudyListFilter filter = viewport.getFilter();
         form = new BaseForm("form", new CompoundPropertyModel<Object>(filter)) {

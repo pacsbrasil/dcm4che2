@@ -8,29 +8,27 @@
 <wicket:panel>
     <div wicket:id="msgWin" >MessageWindow</div>
     <div wicket:id="linkPage" >MessageWindow</div>
-	<table rules="groups" class="search-panel" wicket:id="searchHeader" style="margin-top: 20px;">
-	<thead>
-		<tr>
-			<th class="lo"></th>
-			<th>Suche</th>
-			<th colspan="6"/>
-			<th>
-			<!-- 
-				<a wicket:id="search">
-					<img wicket:id="searchImg" />
-				</a>
-				<span wicket:id="searchText">Ausblenden</span>
-				 -->
-			</th>
-			<th class="ro"></th>
-		</tr>
-	</thead>
-	</table>
 	<form style="clear: both" wicket:id="form">
 		<div wicket:id="confirmDelete" >ConfirmDelete</div>
 		<div wicket:id="confirmMove" >ConfirmMove</div>
 		<div wicket:id="confirmUnlink" >ConfirmUnlink</div>	
-		<table rules="rows" class="search-panel">
+			<table rules="groups" class="search-panel" style="margin-top: 20px;">
+			<thead>
+				<tr>
+					<th class="lo"></th>
+					<th>Suche</th>
+					<th colspan="6"/>
+					<th>
+					<!-- 
+						<a wicket:id="search">
+							<img wicket:id="searchImg" />
+						</a>
+						<span wicket:id="searchText">Ausblenden</span>
+						 -->
+					</th>
+					<th class="ro"></th>
+				</tr>
+			</thead>
 			<tr>
 				<td></td>
 				<td>
@@ -90,7 +88,7 @@
 		</table>
 		<table rules="rows" class="search-panel" style="margin-bottom: 20px;">
  -->
-             <tr wicket:id="extendedFilter">
+             <tr wicket:id="extendedFilter" class="extended">
 	            <td></td>
 	            <td>
 	                <div wicket:id="birthDateLabel">Birth Date</div>
@@ -114,7 +112,7 @@
 				<td></td>
 				<td></td>
 			</tr>
-		    <tr>
+		    <tr class="searchFooter">
 				<td class="lu"></td>
 				<td>
 		            <a wicket:id="showExtendedFilter" href="#">
@@ -144,26 +142,30 @@
 				<td class="ru"></td>
 		    </tr>
 		</table>
-		<a wicket:id="prev">
-			<img wicket:id="prevImg" />
-		</a>
-		<span wicket:id="viewport" class="viewport" />
-		<a wicket:id="next">
-			<img wicket:id="nextImg" />
-		</a>			  
-		<div class="action">
-			<button wicket:id="deleteBtn" >
-				<img wicket:id="deleteImg" alt="Delete" />
-				<span wicket:id="deleteText" />
-			</button>
-			<button wicket:id="moveBtn" >
-				<img wicket:id="moveImg" alt="Move" />
-				<span wicket:id="moveText" />
-			</button>
-			<button wicket:id="exportBtn">
-				<img wicket:id="exportImg" alt="Export" />
-				<span wicket:id="exportText" />
-			</button>
+		<div class="viewport-and-actions">
+			<div class="viewport">
+				<a wicket:id="prev">
+					<img wicket:id="prevImg" />
+				</a>
+				<span wicket:id="viewport" />
+				<a wicket:id="next">
+					<img wicket:id="nextImg" />
+				</a>
+			</div>			  
+			<div class="actions">
+				<button wicket:id="deleteBtn" >
+					<img wicket:id="deleteImg" alt="Delete" />
+					<span wicket:id="deleteText" />
+				</button>
+				<button wicket:id="moveBtn" >
+					<img wicket:id="moveImg" alt="Move" />
+					<span wicket:id="moveText" />
+				</button>
+				<button wicket:id="exportBtn">
+					<img wicket:id="exportImg" alt="Export" />
+					<span wicket:id="exportText" />
+				</button>
+			</div>
 		</div>
 		<table class="module-panel-content">
 		  <thead wicket:id="thead" align="left" valign="top" >
