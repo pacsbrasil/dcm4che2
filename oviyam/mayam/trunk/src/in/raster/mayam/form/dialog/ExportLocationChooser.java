@@ -49,7 +49,7 @@ import java.io.File;
  * @version 0.5
  *
  */
-public class JpegStoreLocationChooser extends javax.swing.JDialog {
+public class ExportLocationChooser extends javax.swing.JDialog {
 
     /** A return status code - returned if Cancel button has been pressed */
     public static final int RET_CANCEL = 0;
@@ -61,7 +61,7 @@ public class JpegStoreLocationChooser extends javax.swing.JDialog {
     private MainScreen parent;
 
     /** Creates new form FileChooserDialog */
-    public JpegStoreLocationChooser(java.awt.Frame parent, boolean modal) {
+    public ExportLocationChooser(java.awt.Frame parent, boolean modal) {
         super(parent, modal);       
 
         initComponents();
@@ -211,7 +211,7 @@ public class JpegStoreLocationChooser extends javax.swing.JDialog {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                JpegStoreLocationChooser dialog = new JpegStoreLocationChooser(new javax.swing.JFrame(), true);
+                ExportLocationChooser dialog = new ExportLocationChooser(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
 
                     public void windowClosing(java.awt.event.WindowEvent e) {

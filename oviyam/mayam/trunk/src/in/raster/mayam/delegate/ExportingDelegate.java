@@ -41,10 +41,10 @@
 package in.raster.mayam.delegate;
 
 import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.form.dialog.JpegConvertorDialog;
+import in.raster.mayam.form.dialog.ExportDialog;
 import in.raster.mayam.form.display.Display;
 import in.raster.mayam.form.ExportingProgress;
-import in.raster.mayam.form.dialog.JpegStoreLocationChooser;
+import in.raster.mayam.form.dialog.ExportLocationChooser;
 import java.io.File;
 
 /**
@@ -79,16 +79,16 @@ public class ExportingDelegate extends Thread {
                 File patientNameFile=new File(openedFile,ApplicationContext.imgPanel.getTextOverlayParam().getPatientName());
             if(!patientNameFile.exists())
                 patientNameFile.mkdir();
-                if(JpegConvertorDialog.seriesOfImage)//series of image
+                if(ExportDialog.seriesOfImage)//series of image
                 {
-                    if(JpegConvertorDialog.conversionFormatDcm)
+                    if(ExportDialog.conversionFormatDcm)
                         exportToDcmDelegate.seriesExportAsDicom(ApplicationContext.imgPanel.getStudyUID(), ApplicationContext.imgPanel.getSeriesUID(), patientNameFile.getAbsolutePath());
                     else
                     jpegDelegate.seriesLevelConvertor(ApplicationContext.imgPanel.getStudyUID(), ApplicationContext.imgPanel.getSeriesUID(), patientNameFile.getAbsolutePath(), ApplicationContext.imgPanel.getColorModel());
                 }
                 else//Single image
                 {
-                    if(JpegConvertorDialog.conversionFormatDcm)
+                    if(ExportDialog.conversionFormatDcm)
                         exportToDcmDelegate.instanceExportAsDicom(ApplicationContext.imgPanel.getDicomFileUrl(),patientNameFile.getAbsolutePath());
                     else
                     jpegDelegate.instanceConvertor(patientNameFile.getAbsolutePath()+File.separator+ApplicationContext.imgPanel.getInstanceUID(), ApplicationContext.imgPanel.getCurrentbufferedimage());
@@ -96,7 +96,7 @@ public class ExportingDelegate extends Thread {
             }
             else //study convert
             {              
-                 if(JpegStoreLocationChooser.conversionFormatDcm)
+                 if(ExportLocationChooser.conversionFormatDcm)
                      exportToDcmDelegate.studyExportAsDicom(this.studyUID, openedFile.getAbsolutePath());
                  else
                 jpegDelegate.studyLevelConvertor(this.studyUID, openedFile.getAbsolutePath());

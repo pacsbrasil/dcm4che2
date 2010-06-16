@@ -41,6 +41,7 @@ package in.raster.mayam.form.dialog;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.display.Display;
+import in.raster.mayam.form.dialog.ExportLocationChooser;
 
 /**
  *
@@ -48,7 +49,7 @@ import in.raster.mayam.form.display.Display;
  * @version 0.5
  *
  */
-public class JpegConvertorDialog extends javax.swing.JDialog {
+public class ExportDialog extends javax.swing.JDialog {
 
     /** A return status code - returned if Cancel button has been pressed */
     public static final int RET_CANCEL = 0;
@@ -58,7 +59,7 @@ public class JpegConvertorDialog extends javax.swing.JDialog {
     public static boolean conversionFormatDcm;
 
     /** Creates new form AEManagementDialog */
-    public JpegConvertorDialog(java.awt.Frame parent, boolean modal) {
+    public ExportDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
 
@@ -104,7 +105,7 @@ public class JpegConvertorDialog extends javax.swing.JDialog {
         dicomRadio = new javax.swing.JRadioButton();
         jpgRadio = new javax.swing.JRadioButton();
 
-        setTitle("Jpeg Export");
+        setTitle("Export");
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -163,11 +164,11 @@ public class JpegConvertorDialog extends javax.swing.JDialog {
             .add(layout.createSequentialGroup()
                 .add(31, 31, 31)
                 .add(jLabel1)
-                .add(26, 26, 26)
-                .add(dicomRadio)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(dicomRadio)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jpgRadio)
-                .addContainerGap(212, Short.MAX_VALUE))
+                .addContainerGap(227, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {cancelButton, okButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -201,7 +202,7 @@ public class JpegConvertorDialog extends javax.swing.JDialog {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         selectedRadio();
         selectedFormat();
-        JpegStoreLocationChooser jpegChooser=new JpegStoreLocationChooser(ApplicationContext.imgView, true);
+        ExportLocationChooser jpegChooser=new ExportLocationChooser(ApplicationContext.imgView, true);
         this.setVisible(false);
         Display.alignScreen(jpegChooser);
         jpegChooser.setSeriesOrInstanceLevel(true);
@@ -239,7 +240,7 @@ public class JpegConvertorDialog extends javax.swing.JDialog {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                JpegConvertorDialog dialog = new JpegConvertorDialog(new javax.swing.JFrame(), true);
+                ExportDialog dialog = new ExportDialog(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
 
                     public void windowClosing(java.awt.event.WindowEvent e) {

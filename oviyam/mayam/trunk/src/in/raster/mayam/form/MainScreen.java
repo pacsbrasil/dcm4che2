@@ -51,7 +51,7 @@ import in.raster.mayam.delegate.ThumbnailUpdator;
 import in.raster.mayam.form.dialog.About;
 import in.raster.mayam.form.dialog.ConfirmDelete;
 import in.raster.mayam.form.dialog.FileChooserDialog;
-import in.raster.mayam.form.dialog.JpegStoreLocationChooser;
+import in.raster.mayam.form.dialog.ExportLocationChooser;
 import in.raster.mayam.form.dialog.ServerListDialog;
 import in.raster.mayam.form.dialog.SettingsDialog;
 import in.raster.mayam.util.DicomTags;
@@ -719,7 +719,7 @@ public class MainScreen extends javax.swing.JFrame {
         if (studyListTable.getSelectedRow() != -1) {
             int selection=studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
             String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
-            JpegStoreLocationChooser jpegChooser = new JpegStoreLocationChooser(ApplicationContext.imgView, true);
+            ExportLocationChooser jpegChooser = new ExportLocationChooser(ApplicationContext.imgView, true);
             Display.alignScreen(jpegChooser);
             jpegChooser.setSeriesOrInstanceLevel(false);
             jpegChooser.setStudyUID(siuid);

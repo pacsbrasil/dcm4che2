@@ -40,7 +40,7 @@ package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegate.LocalizerDelegate;
-import in.raster.mayam.form.dialog.JpegConvertorDialog;
+import in.raster.mayam.form.dialog.ExportDialog;
 import in.raster.mayam.util.DicomTags;
 import in.raster.mayam.util.DicomTagsReader;
 import in.raster.mayam.form.display.Display;
@@ -835,7 +835,7 @@ public class ImageToolbar extends javax.swing.JPanel {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
-            JpegConvertorDialog jpegConvertor = new JpegConvertorDialog(ApplicationContext.imgView, true);
+            ExportDialog jpegConvertor = new ExportDialog(ApplicationContext.imgView, true);
             Display.alignScreen(jpegConvertor);
             jpegConvertor.setVisible(true);
         } else {
