@@ -9,19 +9,6 @@
   <artifactId>dcm4che-code</artifactId>
   <name>dcm4che-code</name>
   <description></description>
-  <build>
-     <plugins>
-	<plugin>
-	   <groupId>org.apache.maven.plugins</groupId>
-	   <artifactId>maven-compiler-plugin</artifactId>
-	   <configuration>
-	      <compilerArguments>
-		 <encoding>UTF-8</encoding>
-	      </compilerArguments>
-	   </configuration>
-	</plugin>
-     </plugins>
-  </build>
   <dependencies>
     <dependency>
       <groupId>dcm4che</groupId>

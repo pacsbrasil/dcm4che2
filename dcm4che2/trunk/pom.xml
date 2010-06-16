@@ -32,6 +32,9 @@
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
+          <compilerArguments>
+            <encoding>UTF-8</encoding>
+          </compilerArguments>
         </configuration>
       </plugin>
       <plugin>
