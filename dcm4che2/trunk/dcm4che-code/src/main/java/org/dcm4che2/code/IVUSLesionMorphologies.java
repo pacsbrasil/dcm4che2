@@ -42,7 +42,7 @@ package org.dcm4che2.code;
  * CID 3491 IVUS Lesion Morphologies.
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Rev$ $Date::            $
+ * @version $Revision$ $Date$
  * @since Jun 2, 2010
  */
 public class IVUSLesionMorphologies {
@@ -68,8 +68,8 @@ public class IVUSLesionMorphologies {
   /** (122363, DCM, "Plaque Rupture") */
   public static final String PlaqueRupture = "122363\\DCM";
 
-  /** ( M-52103, SRT, "Plaque Ulceration") */
-  public static final String PlaqueUlceration = " M-52103\\SRT";
+  /** (M-52103, SRT, "Plaque Ulceration") */
+  public static final String PlaqueUlceration = "M-52103\\SRT";
 
   /** (M-32390, SRT, "Pseudo Aneurysm") */
   public static final String PseudoAneurysm = "M-32390\\SRT";

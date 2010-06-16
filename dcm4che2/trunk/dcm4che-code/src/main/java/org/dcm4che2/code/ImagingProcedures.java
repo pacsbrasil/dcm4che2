@@ -42,28 +42,28 @@ package org.dcm4che2.code;
  * CID 3428 Imaging Procedures.
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Rev$ $Date::            $
+ * @version $Revision$ $Date$
  * @since Jun 2, 2010
  */
 public class ImagingProcedures {
 
-  /** ( P5-009A0, SRT, "Angiography") */
-  public static final String Angiography = " P5-009A0\\SRT";
+  /** (P5-009A0, SRT, "Angiography") */
+  public static final String Angiography = "P5-009A0\\SRT";
 
-  /** ( P5-32130, SRT, "Aortography") */
-  public static final String Aortography = " P5-32130\\SRT";
+  /** (P5-32130, SRT, "Aortography") */
+  public static final String Aortography = "P5-32130\\SRT";
 
   /** (122058, DCM, "Arterial conduit angiography") */
   public static final String ArterialConduitAngiography = "122058\\DCM";
 
-  /** ( P5-30107, SRT, "Bypass graft angiography") */
-  public static final String BypassGraftAngiography = " P5-30107\\SRT";
+  /** (P5-30107, SRT, "Bypass graft angiography") */
+  public static final String BypassGraftAngiography = "P5-30107\\SRT";
 
-  /** ( P5-3003A, SRT, "Cardiac ventriculography") */
-  public static final String CardiacVentriculography = " P5-3003A\\SRT";
+  /** (P5-3003A, SRT, "Cardiac ventriculography") */
+  public static final String CardiacVentriculography = "P5-3003A\\SRT";
 
-  /** ( P5-30100, SRT, "Coronary Arteriography") */
-  public static final String CoronaryArteriography = " P5-30100\\SRT";
+  /** (P5-30100, SRT, "Coronary Arteriography") */
+  public static final String CoronaryArteriography = "P5-30100\\SRT";
 
   /** (P5-B3004, SRT, "Epicardial echocardiography") */
   public static final String EpicardialEchocardiography = "P5-B3004\\SRT";
@@ -74,11 +74,11 @@ public class ImagingProcedures {
   /** (P5-B001D, SRT, "Intravascular ultrasound") */
   public static final String IntravascularUltrasound = "P5-B001D\\SRT";
 
-  /** ( P5-30041, SRT, "Left Ventriculography") */
-  public static final String LeftVentriculography = " P5-30041\\SRT";
+  /** (P5-30041, SRT, "Left Ventriculography") */
+  public static final String LeftVentriculography = "P5-30041\\SRT";
 
-  /** ( P5-3003F, SRT, "Right Ventriculography") */
-  public static final String RightVentriculography = " P5-3003F\\SRT";
+  /** (P5-3003F, SRT, "Right Ventriculography") */
+  public static final String RightVentriculography = "P5-3003F\\SRT";
 
   /** (P5-B3002, SRT, "Transesophageal echocardiography") */
   public static final String TransesophagealEchocardiography = "P5-B3002\\SRT";
