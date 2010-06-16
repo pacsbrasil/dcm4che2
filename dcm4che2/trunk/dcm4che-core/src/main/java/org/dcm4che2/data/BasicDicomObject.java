@@ -417,7 +417,7 @@ public class BasicDicomObject extends AbstractDicomObject {
         if (vr == null)
             vr = vrOf(tag);
         return addInternal(new SimpleDicomElement(tag, vr, be, vr.toBytes(val,
-                be), cachePut ? new Integer(val) : null));
+                be), cachePut ? Integer.valueOf(val) : null));
     }
 
     public DicomElement putInts(int tag, VR vr, int[] val) {

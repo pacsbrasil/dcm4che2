@@ -176,7 +176,7 @@ class SimpleDicomElement extends AbstractDicomElement {
         }
         int val = vr.toInt(value, bigEndian);
         if (cache)
-            cachedValue = new Integer(val);
+            cachedValue = Integer.valueOf(val);
         return val;
     }
 
