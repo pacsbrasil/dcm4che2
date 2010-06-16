@@ -154,54 +154,54 @@ public class StudyListPage extends Panel {
 
 //        final WebMarkupContainer searchHeader = new WebMarkupContainer("searchHeader");
 //        searchHeader.setOutputMarkupId(true);
-//        AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("search") {
-//
-//            private static final long serialVersionUID = 1L;
-//
-//            @Override
-//            public void onClick(AjaxRequestTarget target) {
-//                showSearch = !showSearch;
-//                target.addComponent(searchHeader);
-//                target.addComponent(form);
-//            }
-//        };
-//        link.add(new Image("searchImg", new AbstractReadOnlyModel<ResourceReference>() {
-//
-//                private static final long serialVersionUID = 1L;
-//
-//                @Override
-//                public ResourceReference getObject() {
-//                    return showSearch ? ImageManager.IMAGE_COMMON_COLLAPSE : 
-//                        ImageManager.IMAGE_COMMON_EXPAND;
-//                }
-//        })
-//        .add(new ImageSizeBehaviour()));
-//        searchHeader.add(link);
-//        searchHeader.add(new Label("searchText", new AbstractReadOnlyModel<String>() {
-//
-//            private static final long serialVersionUID = 1L;
-//
-//            @Override
-//            public String getObject() {
-//                return showSearch ? new ResourceModel("folder.search.hide.text").wrapOnAssignment(searchHeader).getObject()
-//                        : new ResourceModel("folder.search.show.text").wrapOnAssignment(searchHeader).getObject();
-//            }
-//        }));
 //        add(searchHeader);
 
         final StudyListFilter filter = viewport.getFilter();
-        form = new BaseForm("form", new CompoundPropertyModel<Object>(filter)) {
-
-            private static final long serialVersionUID = 1L;
-            
-            @Override
-            public boolean isVisible() {
-                return showSearch;
-            }
-        };
+        form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
+//
+//            private static final long serialVersionUID = 1L;
+//            
+//            @Override
+//            public boolean isVisible() {
+//                return showSearch;
+//            }
+//        };
         form.setResourceIdPrefix("folder.");
         form.setTooltipBehaviour(tooltipBehaviour);
         add(form);
+
+        AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("searchToggle") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                showSearch = !showSearch;
+                target.addComponent(form);
+            }
+        };
+        link.add(new Image("searchToggleImg", new AbstractReadOnlyModel<ResourceReference>() {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public ResourceReference getObject() {
+                    return showSearch ? ImageManager.IMAGE_COMMON_COLLAPSE : 
+                        ImageManager.IMAGE_COMMON_EXPAND;
+                }
+        })
+        .add(new ImageSizeBehaviour()));
+        form.add(link);
+        form.add(new Label("searchToggleText", new AbstractReadOnlyModel<String>() {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public String getObject() {
+                return showSearch ? new ResourceModel("folder.search.hide.text").wrapOnAssignment(form).getObject()
+                        : new ResourceModel("folder.search.show.text").wrapOnAssignment(form).getObject();
+            }
+        }));
 
         addQueryFields(filter, form);
         addQueryOptions(form);
@@ -307,7 +307,7 @@ public class StudyListPage extends Panel {
     @SuppressWarnings("unchecked")
     private void addNavigation(BaseForm form) {
         
-        form.add(new AjaxButton("reset", new ResourceModel("folder.reset")) {
+        Button resetBtn = new AjaxButton("resetBtn") {
             
             private static final long serialVersionUID = 1L;
 
@@ -318,19 +318,37 @@ public class StudyListPage extends Panel {
                 form.setOutputMarkupId(true);
                 target.addComponent(form);
             }
-        }.setDefaultFormProcessing(false));
+        };
+        resetBtn.setDefaultFormProcessing(false);
+        resetBtn.add(new Image("resetImg",ImageManager.IMAGE_COMMON_RESET)
+        .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        );
+        resetBtn.add(new TooltipBehaviour("folder.", "resetBtn"));
+        resetBtn.add(new Label("resetText", new ResourceModel("folder.reset.text"))
+            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
+        );
+        form.add(resetBtn);
         
-        Button searchBtn = new Button("search", new ResourceModel("folder.search")) {
-
+        Button searchBtn = new Button("searchBtn") {
+            
             private static final long serialVersionUID = 1L;
-
+            
             @Override
             public void onSubmit() {
                 viewport.setOffset(0);
                 queryStudies();
-            }};
+            }
+        };
+        searchBtn.add(new Image("searchImg",ImageManager.IMAGE_COMMON_SEARCH)
+            .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        );
+        searchBtn.add(new TooltipBehaviour("folder.", "searchBtn"));
+        searchBtn.add(new Label("searchText", new ResourceModel("folder.search.text"))
+            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
+        );
         form.add(searchBtn);
         form.setDefaultButton(searchBtn);
+        
         form.add(new Link("prev") {
 
             private static final long serialVersionUID = 1L;

@@ -12,19 +12,19 @@
 		<div wicket:id="confirmDelete" >ConfirmDelete</div>
 		<div wicket:id="confirmMove" >ConfirmMove</div>
 		<div wicket:id="confirmUnlink" >ConfirmUnlink</div>	
-			<table rules="groups" class="search-panel" style="margin-top: 20px;">
+		<table rules="groups" class="search-panel" style="margin-top: 20px;">
 			<thead>
 				<tr>
 					<th class="lo"></th>
-					<th>Suche</th>
+					<th>
+						<wicket:message key="folder.search.title" />
+					</th>
 					<th colspan="6"/>
 					<th>
-					<!-- 
-						<a wicket:id="search">
-							<img wicket:id="searchImg" />
+						<a wicket:id="searchToggle">
+							<img wicket:id="searchToggleImg" />
 						</a>
-						<span wicket:id="searchText">Ausblenden</span>
-						 -->
+						<span wicket:id="searchToggleText" class="toggle-text">Ausblenden</span>
 					</th>
 					<th class="ro"></th>
 				</tr>
@@ -57,7 +57,7 @@
 					<input style="vertical-align: bottom" wicket:id="patientName" id="patientName" type="text" />
 				</td>
 				<td>
-                    <div wicket:id="patientIDLabel">ID</div>
+	                   <div wicket:id="patientIDLabel">ID</div>
 					<input wicket:id="patientID" id="patientID" type="text" title="ID" />
 				</td>
 				<td>                   
@@ -73,7 +73,7 @@
 					<div wicket:id="studyDateMax" id="studyDateMax" />
 				</td>
 				<td>
-                    <input wicket:id="accessionNumber" id="accessionNumber" type="text"/>
+	                   <input wicket:id="accessionNumber" id="accessionNumber" type="text"/>
 				</td>
 				<td>
 			      	<select wicket:id="modality" />			
@@ -83,11 +83,6 @@
 				</td>
 				<td></td>
 			</tr>
-
-<!-- 
-		</table>
-		<table rules="rows" class="search-panel" style="margin-bottom: 20px;">
- -->
              <tr wicket:id="extendedFilter" class="extended">
 	            <td></td>
 	            <td>
@@ -104,21 +99,20 @@
 					<div wicket:id="studyInstanceUIDLabel">Study Instance UID</div>
 					<input wicket:id="studyInstanceUID" id="studyInstanceUID" type="text"/>
 				</td>
-				<td colspan="2"></td>
+				<td></td>
 				<td>
 					<div wicket:id="seriesInstanceUIDLabel">Series Instance UID</div>
 					<input wicket:id="seriesInstanceUID" id="seriesInstanceUID" type="text"/>
 				</td>
-				<td></td>
-				<td></td>
+				<td colspan="3"></td>
 			</tr>
 		    <tr class="searchFooter">
 				<td class="lu"></td>
 				<td>
-		            <a wicket:id="showExtendedFilter" href="#">
+		            <a wicket:id="showExtendedFilter">
 		            	<img wicket:id="showExtendedFilterImg" alt="(+)" />
 					</a>
-					<span wicket:id="showExtendedFilterText" />
+					<span wicket:id="showExtendedFilterText" class="toggle-text" />
 				</td>
 				<td colspan="2"/>
 				<td>
@@ -134,10 +128,16 @@
 					<label for="ppsWithoutMwl" wicket:id="ppsWithoutMwlLabel">Studies with unlinked PPS</label>
 				</td>
 				<td>
-					<input type="submit" wicket:id="reset"/>
+					<button wicket:id="resetBtn" >
+						<img wicket:id="resetImg" alt="Search" />
+						<span wicket:id="resetText" />
+					</button>
 				</td>
 				<td>
-					<input type="submit" wicket:id="search"/>
+					<button wicket:id="searchBtn" >
+						<img wicket:id="searchImg" alt="Search" />
+						<span wicket:id="searchText" />
+					</button>
 				</td>
 				<td class="ru"></td>
 		    </tr>

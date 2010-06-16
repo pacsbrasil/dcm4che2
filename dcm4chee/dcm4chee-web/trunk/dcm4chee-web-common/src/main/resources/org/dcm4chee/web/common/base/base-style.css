@@ -2,7 +2,8 @@
 	Base CSS
 */
 
-body,h1,h2,h3,h4,p,ul,ol,li,dl,dt,dd,div,td,th { font-family:Verdana,sans-serif; font-size:12px; }
+body { font-family: Arial,sans-serif; font-size:14px; }
+
 h1 { font-size:26px; margin-bottom:18px; }
 h1.ph1 { font-size:21px; margin-bottom:18px; }
 h2 { font-size:21px; margin-bottom:18px; }
@@ -13,25 +14,93 @@ p,ul,ol,li,dl,dt,dd,div,td,th { font-size:12px; }
 
 img {border: none;}
 
-div.module-panel { width: 100%; background: none #E0E0E0; }
+div.signin {height: 400px; background-color: #A0D8C4; text-align: center; padding: 160 0 0 0;}
+div.signin table { width: 100%; background: #54B291; padding: 60 90 10 0; }
+div.signin tr, div.signin td { width: 50%; height: 35px; border-style: none;}
+div.signin span.login-desc { font-size:20px; font-weight: bold;}
+
+div.module-panel { width: 100%; background: none #E1E0DE; }
+
+span.toggle-text { vertical-align: middle; }
 
 table.search-panel { border: thin; border-width: 1px; border-style: solid; border-color: black; width:100%; white-space: nowrap; background-color: #FFFFFF;}
 table.search-panel tr.searchFooter {height: 30px;}
 table.search-panel tr {vertical-align: bottom;}
-table.search-panel tr.extended {background-color: #82FFD0;}
-table.search-panel th {background-color: #389C79; color: white; width: 20px; height: 20px; text-align: left;}
-table.search-panel th.lo {background: url("images/lo.gif") #389C79 top left; border-width: 0px; border-style: none;}
-table.search-panel th.ro {background: url("images/ro.gif") #389C79 top right; border-width: 0px; border-style: none;}
+table.search-panel tr.extended {background-color: #A0D8C4;}
+table.search-panel th {background-color: #0B6040; color: white; width: 20px; height: 20px; text-align: left;}
+table.search-panel th.lo {background: url("images/lo.gif") #0B6040 top left; border-width: 0px; border-style: none;}
+table.search-panel th.ro {background: url("images/ro.gif") #0B6040 top right; border-width: 0px; border-style: none;}
 table.search-panel td.lu {background: url("images/lu.gif") bottom left; border-width: 0px; border-style: none;}
 table.search-panel td.ru {background: url("images/ru.gif") bottom right; border-width: 0px; border-style: none;}
 
-table.module-panel-content { border-collapse: collapse; empty-cells: show; width: 100%; }
-th.module-panel-content, td.module-panel-content { width: auto; border-width: 1px; border-style: solid; border-color: #aaaaaa; }
+table.module-panel-content { 
+	width: 100%; 
+	border-collapse: collapse; 
+	empty-cells: show; 
+}
 
-div.signin {height: 400px; background: #99bbaa; text-align: center; padding: 160 0 0 0;}
-div.signin table { width: 100%; background: #99bbaa; padding: 60 90 10 0; }
-div.signin tr, div.signin td { width: 50%; height: 35px; border-style: none;}
-div.signin span.login-desc { font-size:28px; font-weight: bold;}
+.patient {
+/*	background-color: #389C79; */
+	background-color: #0B6040;
+	height: 25px; 
+	width: auto; 
+	border-width: 1px; 
+	border-style: solid; 
+	border-color: #aaaaaa;
+	color: white;
+}
+.study { 
+/*	background-color: #7BDAB9; */
+	background-color: #54B291;
+	height: 25px; 
+	width: auto; 
+	border-width: 1px; 
+	border-style: solid; 
+	border-color: #aaaaaa;
+} 
+.pps { 
+/*	background-color: #82FFD0; */
+	background-color: #A0D8C4; 
+	height: 25px; 
+	width: auto; 
+	border-width: 1px; 
+	border-style: solid; 
+	border-color: #aaaaaa;
+}
+.series { 
+/*	background-color: #C0C0C0; */
+	background-color: #D1FEF6; 
+	height: 25px; 
+	width: auto; 
+	border-width: 1px; 
+	border-style: solid; 
+	border-color: #aaaaaa;
+} 
+.instance {	
+/*	background-color: #E0E0E0; */
+	background-color: #E1E0DE;
+	height: 25px; 
+	width: auto; 
+	border-width: 1px; 
+	border-style: solid; 
+	border-color: #aaaaaa;
+} 
+.file {	
+	background-color : #FFFFFF; 
+	height: 25px; 
+	width: auto; 
+	border-width: 1px; 
+	border-style: solid; 
+	border-color: #aaaaaa;
+} 
+
+.details { background-color: #FFFFFF; }
+
+div.viewport-and-actions { margin-top: 20px; margin-bottom: 5px; padding: 5; }
+div.viewport { float: left; }
+div.actions { text-align: right; }
+
+table.dicomobject { background: #FFFFFF; width: 100%; }
 
 div.module-selector { width: 100%; height: 43px; background: #FFF url("images/menu-bg.gif") top left repeat-x; font-weight: bold; list-style-type: none; margin: 0; padding: 0; z-index: 1;}
 
@@ -74,24 +143,6 @@ div.internal_error, div.page-expired, div.access-denied
 .timeField { width: 35px; }
 .dateField { width: 80px; }
 .dateTimeField { width: 170px; }
-
-.patient {
-	background-color: #389C79;
-	color: white;
-}
-.study { background-color: #7BDAB9; } 
-.pps { background-color: #82FFD0; } 
-.series { background-color: #C0C0C0; } 
-.instance {	background-color: #E0E0E0; } 
-.file {	background-color : #FFFFFF; } 
-
-.details { background-color: #FFFFFF; }
-
-div.viewport-and-actions { margin-top: 20px; margin-bottom: 10px; padding: 5; }
-div.viewport { float: left; }
-div.actions { text-align: right; }
-
-table.dicomobject { background: #FFFFFF; width: 100%; }
 	
 .editTitle { text-align: center; font-size: 20px; font-weight: bold; }
 col.attrname { width: 200px; }
