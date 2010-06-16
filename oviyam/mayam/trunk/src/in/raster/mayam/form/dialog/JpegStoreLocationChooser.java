@@ -55,8 +55,9 @@ public class JpegStoreLocationChooser extends javax.swing.JDialog {
     public static final int RET_CANCEL = 0;
     /** A return status code - returned if OK button has been pressed */
     public static final int RET_OK = 1;
-    private boolean withWindowing=false;
+    private boolean seriesOrInstanceLevel=false;
     private String studyUID="";
+    public static boolean conversionFormatDcm;
     private MainScreen parent;
 
     /** Creates new form FileChooserDialog */
@@ -70,22 +71,42 @@ public class JpegStoreLocationChooser extends javax.swing.JDialog {
     public int getReturnStatus() {
         return returnStatus;
     }
-      public boolean isWithWindowing() {
-        return withWindowing;
-    }
-
-    public void setWithWindowing(boolean withWindowing) {
-        this.withWindowing = withWindowing;
-    }
-
+      
     public String getStudyUID() {
         return studyUID;
     }
 
     public void setStudyUID(String studyUID) {
-        this.studyUID = studyUID;
+        this.studyUID = studyUID;        
     }
 
+    public boolean isSeriesOrInstanceLevel() {
+        return seriesOrInstanceLevel;
+    }
+
+    public void setSeriesOrInstanceLevel(boolean seriesOrInstanceLevel) {
+        this.seriesOrInstanceLevel = seriesOrInstanceLevel;
+    }
+    public void hideFormatComponents()
+    {
+        formatLabel.setVisible(false);
+        dicomRadio.setVisible(false);
+        jpgRadio.setVisible(false);
+    }
+    public void showFormatComponents()
+    {
+
+        formatLabel.setVisible(true);
+        dicomRadio.setVisible(true);
+        jpgRadio.setVisible(true);
+    }
+    public void selectedFormat()
+    {
+        if(dicomRadio.isSelected())
+            conversionFormatDcm=true;
+        else
+            conversionFormatDcm=false;
+    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -94,7 +115,11 @@ public class JpegStoreLocationChooser extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        formatGroup = new javax.swing.ButtonGroup();
         jFileChooser1 = new javax.swing.JFileChooser();
+        formatLabel = new javax.swing.JLabel();
+        dicomRadio = new javax.swing.JRadioButton();
+        jpgRadio = new javax.swing.JRadioButton();
 
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -110,19 +135,40 @@ public class JpegStoreLocationChooser extends javax.swing.JDialog {
             }
         });
 
+        formatLabel.setText("Format");
+
+        formatGroup.add(dicomRadio);
+        dicomRadio.setSelected(true);
+        dicomRadio.setText("DICOM");
+
+        formatGroup.add(jpgRadio);
+        jpgRadio.setText("Jpg");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(jFileChooser1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(formatLabel)
+                        .add(26, 26, 26)
+                        .add(dicomRadio)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jpgRadio))
+                    .add(jFileChooser1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(20, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(formatLabel)
+                    .add(dicomRadio)
+                    .add(jpgRadio))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jFileChooser1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(40, 40, 40))
         );
@@ -143,7 +189,9 @@ public class JpegStoreLocationChooser extends javax.swing.JDialog {
         else if (evt.getActionCommand().equalsIgnoreCase("ApproveSelection")) {
            
             File openedFile = jFileChooser1.getSelectedFile();
-            ExportingDelegate exportingDelegate=new ExportingDelegate(openedFile, this.studyUID,withWindowing);
+            if(!seriesOrInstanceLevel)
+                selectedFormat();
+            ExportingDelegate exportingDelegate=new ExportingDelegate(openedFile, this.studyUID,seriesOrInstanceLevel);
             doClose(RET_OK);
         }
     }//GEN-LAST:event_jFileChooser1ActionPerformed
@@ -175,7 +223,11 @@ public class JpegStoreLocationChooser extends javax.swing.JDialog {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JRadioButton dicomRadio;
+    private javax.swing.ButtonGroup formatGroup;
+    private javax.swing.JLabel formatLabel;
     private javax.swing.JFileChooser jFileChooser1;
+    private javax.swing.JRadioButton jpgRadio;
     // End of variables declaration//GEN-END:variables
     private int returnStatus = RET_CANCEL;
 }

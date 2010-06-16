@@ -44,6 +44,7 @@ import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.dialog.JpegConvertorDialog;
 import in.raster.mayam.form.display.Display;
 import in.raster.mayam.form.ExportingProgress;
+import in.raster.mayam.form.dialog.JpegStoreLocationChooser;
 import java.io.File;
 
 /**
@@ -55,13 +56,13 @@ import java.io.File;
 public class ExportingDelegate extends Thread {
 
     private File openedFile;
-    private boolean withWindowing;
+    private boolean isSeriesOrInstanceLevel;
     private String studyUID;    
     public ExportingDelegate() {
     }
-    public ExportingDelegate(File openedFile,String studyUID,boolean withWindowing) {
+    public ExportingDelegate(File openedFile,String studyUID,boolean isSeriesOrInstanceLevel) {
         this.openedFile=openedFile;
-        this.withWindowing=withWindowing;
+        this.isSeriesOrInstanceLevel=isSeriesOrInstanceLevel;
         this.studyUID=studyUID;
               this.start();
     }
@@ -72,22 +73,32 @@ public class ExportingDelegate extends Thread {
         exportingProgress.setVisible(true);
         exportingProgress.updateBar(0);
         JpegConvertorDelegate jpegDelegate=new JpegConvertorDelegate();
-            if(withWindowing)
+        ExportToDcmDelegate exportToDcmDelegate=new ExportToDcmDelegate();
+            if(isSeriesOrInstanceLevel)
             {
                 File patientNameFile=new File(openedFile,ApplicationContext.imgPanel.getTextOverlayParam().getPatientName());
             if(!patientNameFile.exists())
                 patientNameFile.mkdir();
                 if(JpegConvertorDialog.seriesOfImage)//series of image
                 {
+                    if(JpegConvertorDialog.conversionFormatDcm)
+                        exportToDcmDelegate.seriesExportAsDicom(ApplicationContext.imgPanel.getStudyUID(), ApplicationContext.imgPanel.getSeriesUID(), patientNameFile.getAbsolutePath());
+                    else
                     jpegDelegate.seriesLevelConvertor(ApplicationContext.imgPanel.getStudyUID(), ApplicationContext.imgPanel.getSeriesUID(), patientNameFile.getAbsolutePath(), ApplicationContext.imgPanel.getColorModel());
                 }
                 else//Single image
                 {
+                    if(JpegConvertorDialog.conversionFormatDcm)
+                        exportToDcmDelegate.instanceExportAsDicom(ApplicationContext.imgPanel.getDicomFileUrl(),patientNameFile.getAbsolutePath());
+                    else
                     jpegDelegate.instanceConvertor(patientNameFile.getAbsolutePath()+File.separator+ApplicationContext.imgPanel.getInstanceUID(), ApplicationContext.imgPanel.getCurrentbufferedimage());
                 }
             }
             else //study convert
-            {
+            {              
+                 if(JpegStoreLocationChooser.conversionFormatDcm)
+                     exportToDcmDelegate.studyExportAsDicom(this.studyUID, openedFile.getAbsolutePath());
+                 else
                 jpegDelegate.studyLevelConvertor(this.studyUID, openedFile.getAbsolutePath());
             }
          exportingProgress.updateBar(100);

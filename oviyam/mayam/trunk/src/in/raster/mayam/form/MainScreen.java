@@ -721,7 +721,7 @@ public class MainScreen extends javax.swing.JFrame {
             String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
             JpegStoreLocationChooser jpegChooser = new JpegStoreLocationChooser(ApplicationContext.imgView, true);
             Display.alignScreen(jpegChooser);
-            jpegChooser.setWithWindowing(false);
+            jpegChooser.setSeriesOrInstanceLevel(false);
             jpegChooser.setStudyUID(siuid);
             jpegChooser.setVisible(true);
         }

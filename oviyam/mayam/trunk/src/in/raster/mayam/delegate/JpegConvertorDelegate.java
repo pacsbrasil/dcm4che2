@@ -86,7 +86,7 @@ public class JpegConvertorDelegate {
         File patientNameFile = new File(outputPath, patientName);
         if (!patientNameFile.exists()) {
             patientNameFile.mkdirs();
-        }
+        }       
         ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList(studyIUID);
         Iterator<Series> seriesItr = seriesList.iterator();
         while (seriesItr.hasNext()) {

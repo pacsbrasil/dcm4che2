@@ -55,6 +55,7 @@ public class JpegConvertorDialog extends javax.swing.JDialog {
     /** A return status code - returned if OK button has been pressed */
     public static final int RET_OK = 1;  
     public static boolean seriesOfImage;
+    public static boolean conversionFormatDcm;
 
     /** Creates new form AEManagementDialog */
     public JpegConvertorDialog(java.awt.Frame parent, boolean modal) {
@@ -76,7 +77,13 @@ public class JpegConvertorDialog extends javax.swing.JDialog {
         else
             seriesOfImage=true;
     }
-
+    public void selectedFormat()
+    {
+        if(dicomRadio.isSelected())
+            conversionFormatDcm=true;
+        else
+            conversionFormatDcm=false;
+    }
 
 
     /** This method is called from within the constructor to
@@ -88,10 +95,14 @@ public class JpegConvertorDialog extends javax.swing.JDialog {
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
+        formatGroup = new javax.swing.ButtonGroup();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         singleImage = new javax.swing.JRadioButton();
         allImageRadio = new javax.swing.JRadioButton();
+        jLabel1 = new javax.swing.JLabel();
+        dicomRadio = new javax.swing.JRadioButton();
+        jpgRadio = new javax.swing.JRadioButton();
 
         setTitle("Jpeg Export");
         setResizable(false);
@@ -122,24 +133,41 @@ public class JpegConvertorDialog extends javax.swing.JDialog {
         buttonGroup1.add(allImageRadio);
         allImageRadio.setText("All images of the series");
 
+        jLabel1.setText("Format");
+
+        formatGroup.add(dicomRadio);
+        dicomRadio.setSelected(true);
+        dicomRadio.setText("DICOM");
+
+        formatGroup.add(jpgRadio);
+        jpgRadio.setText("Jpg");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(220, Short.MAX_VALUE)
+                .addContainerGap(252, Short.MAX_VALUE)
                 .add(cancelButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(singleImage)
-                .addContainerGap(252, Short.MAX_VALUE))
+                .add(allImageRadio)
+                .addContainerGap(244, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(allImageRadio)
-                .addContainerGap(224, Short.MAX_VALUE))
+                .add(singleImage)
+                .addContainerGap(272, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(31, 31, 31)
+                .add(jLabel1)
+                .add(26, 26, 26)
+                .add(dicomRadio)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jpgRadio)
+                .addContainerGap(212, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {cancelButton, okButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -147,11 +175,16 @@ public class JpegConvertorDialog extends javax.swing.JDialog {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(25, 25, 25)
+                .add(40, 40, 40)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(dicomRadio)
+                    .add(jpgRadio))
+                .add(26, 26, 26)
                 .add(singleImage)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(allImageRadio)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 22, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(okButton)
                     .add(cancelButton))
@@ -167,12 +200,13 @@ public class JpegConvertorDialog extends javax.swing.JDialog {
      */
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         selectedRadio();
+        selectedFormat();
         JpegStoreLocationChooser jpegChooser=new JpegStoreLocationChooser(ApplicationContext.imgView, true);
         this.setVisible(false);
-       Display.alignScreen(jpegChooser);
-        jpegChooser.setWithWindowing(true);
+        Display.alignScreen(jpegChooser);
+        jpegChooser.setSeriesOrInstanceLevel(true);
+        jpegChooser.hideFormatComponents();
         jpegChooser.setVisible(true);
-
         doClose(RET_OK);
     }//GEN-LAST:event_okButtonActionPerformed
 
@@ -220,6 +254,10 @@ public class JpegConvertorDialog extends javax.swing.JDialog {
     private javax.swing.JRadioButton allImageRadio;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JRadioButton dicomRadio;
+    private javax.swing.ButtonGroup formatGroup;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JRadioButton jpgRadio;
     private javax.swing.JButton okButton;
     private javax.swing.JRadioButton singleImage;
     // End of variables declaration//GEN-END:variables
