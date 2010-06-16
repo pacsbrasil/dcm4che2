@@ -42,13 +42,13 @@ package org.dcm4che2.code;
  * CID 4016 Anatomic Region for Intra-oral Radiography.
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Rev$ $Date::            $
+ * @version $Revision$ $Date$
  * @since Jun 2, 2010
  */
 public class AnatomicRegionForIntraOralRadiography {
 
-  /** (T‑D1213, SRT, "Jaw region") */
-  public static final String JawRegion = "T‑D1213\\SRT";
+  /** (T-D1213, SRT, "Jaw region") */
+  public static final String JawRegion = "T-D1213\\SRT";
 
   /** (T-11180, SRT, "Mandible") */
   public static final String Mandible = "T-11180\\SRT";

@@ -42,7 +42,7 @@ package org.dcm4che2.code;
  * CID 4042 XA/XRF Anatomy Imaged.
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Rev$ $Date::            $
+ * @version $Revision$ $Date$
  * @since Jun 2, 2010
  */
 public class XAXRFAnatomyImaged {
@@ -254,8 +254,8 @@ public class XAXRFAnatomyImaged {
   /** (T-AA000, SRT, "Eye") */
   public static final String Eye = "T-AA000\\SRT";
 
-  /** (T‑D0801, SRT, "Eye region") */
-  public static final String EyeRegion = "T‑D0801\\SRT";
+  /** (T-D0801, SRT, "Eye region") */
+  public static final String EyeRegion = "T-D0801\\SRT";
 
   /** (T-45240, SRT, "Facial artery") */
   public static final String FacialArtery = "T-45240\\SRT";
@@ -365,8 +365,8 @@ public class XAXRFAnatomyImaged {
   /** (T-46200, SRT, "Internal mammary artery") */
   public static final String InternalMammaryArtery = "T-46200\\SRT";
 
-  /** (T‑D1213, SRT, "Jaw region") */
-  public static final String JawRegion = "T‑D1213\\SRT";
+  /** (T-D1213, SRT, "Jaw region") */
+  public static final String JawRegion = "T-D1213\\SRT";
 
   /** (T-58400, SRT, "Jejunum") */
   public static final String Jejunum = "T-58400\\SRT";

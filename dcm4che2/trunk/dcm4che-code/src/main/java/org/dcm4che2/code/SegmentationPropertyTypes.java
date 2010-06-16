@@ -42,7 +42,7 @@ package org.dcm4che2.code;
  * CID 7151 Segmentation Property Types.
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Rev$ $Date::            $
+ * @version $Revision$ $Date$
  * @since Jun 2, 2010
  */
 public class SegmentationPropertyTypes {
@@ -485,8 +485,8 @@ public class SegmentationPropertyTypes {
   /** (T-AA000, SRT, "Eye") */
   public static final String Eye = "T-AA000\\SRT";
 
-  /** (T‑D0801, SRT, "Eye region") */
-  public static final String EyeRegion = "T‑D0801\\SRT";
+  /** (T-D0801, SRT, "Eye region") */
+  public static final String EyeRegion = "T-D0801\\SRT";
 
   /** (T-45240, SRT, "Facial artery") */
   public static final String FacialArtery = "T-45240\\SRT";
@@ -707,8 +707,8 @@ public class SegmentationPropertyTypes {
   /** (T-1A170, SRT, "Intima") */
   public static final String Intima = "T-1A170\\SRT";
 
-  /** (T‑D1213, SRT, "Jaw region") */
-  public static final String JawRegion = "T‑D1213\\SRT";
+  /** (T-D1213, SRT, "Jaw region") */
+  public static final String JawRegion = "T-D1213\\SRT";
 
   /** (A-26434, SRT, "Jejunostomy tube") */
   public static final String JejunostomyTube = "A-26434\\SRT";

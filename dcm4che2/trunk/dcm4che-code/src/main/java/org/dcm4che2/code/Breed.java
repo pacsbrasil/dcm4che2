@@ -42,7 +42,7 @@ package org.dcm4che2.code;
  * CID 7480 Breed.
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Rev$ $Date::            $
+ * @version $Revision$ $Date$
  * @since Jun 2, 2010
  */
 public class Breed {
@@ -131,14 +131,14 @@ public class Breed {
   /** (L-80708, SRT, "Akita dog") */
   public static final String AkitaDog = "L-80708\\SRT";
 
-  /** (L-805D4, SRT, "Aksaî Black Pied pig breed") */
-  public static final String AksaîBlackPiedPigBreed = "L-805D4\\SRT";
+  /** (L-805D4, SRT, "Aksai Black Pied pig breed") */
+  public static final String AksaiBlackPiedPigBreed = "L-805D4\\SRT";
 
   /** (L-8BB1D, SRT, "Alambadi cattle breed") */
   public static final String AlambadiCattleBreed = "L-8BB1D\\SRT";
 
-  /** (L-80980, SRT, "Alano Español dog breed") */
-  public static final String AlanoEspañolDogBreed = "L-80980\\SRT";
+  /** (L-80980, SRT, "Alano Espanol dog breed") */
+  public static final String AlanoEspanolDogBreed = "L-80980\\SRT";
 
   /** (L-80972, SRT, "Alapaha blueblood bullDog breed") */
   public static final String AlapahaBluebloodBullDogBreed = "L-80972\\SRT";
@@ -164,8 +164,8 @@ public class Breed {
   /** (L-8B157, SRT, "Albanian Native pig breed") */
   public static final String AlbanianNativePigBreed = "L-8B157\\SRT";
 
-  /** (L-801CA, SRT, "Albères cattlebreed") */
-  public static final String AlbèresCattlebreed = "L-801CA\\SRT";
+  /** (L-801CA, SRT, "Alberes cattlebreed") */
+  public static final String AlberesCattlebreed = "L-801CA\\SRT";
 
   /** (L-801BE, SRT, "Albese cattle breed") */
   public static final String AlbeseCattleBreed = "L-801BE\\SRT";
@@ -485,11 +485,11 @@ public class Breed {
   /** (L-80473, SRT, "Argentine Polo Pony horse breed") */
   public static final String ArgentinePoloPonyHorseBreed = "L-80473\\SRT";
 
-  /** (L-80979, SRT, "Ariégeois dog breed") */
-  public static final String AriégeoisDogBreed = "L-80979\\SRT";
+  /** (L-80979, SRT, "Ariegeois dog breed") */
+  public static final String AriegeoisDogBreed = "L-80979\\SRT";
 
-  /** (L-80453, SRT, "Ariégeois pony horse breed") */
-  public static final String AriégeoisPonyHorseBreed = "L-80453\\SRT";
+  /** (L-80453, SRT, "Ariegeois pony horse breed") */
+  public static final String AriegeoisPonyHorseBreed = "L-80453\\SRT";
 
   /** (L-808F6, SRT, "Armant dog breed") */
   public static final String ArmantDogBreed = "L-808F6\\SRT";
@@ -812,8 +812,8 @@ public class Breed {
   /** (L-805D8, SRT, "Basque Black Pied pig breed") */
   public static final String BasqueBlackPiedPigBreed = "L-805D8\\SRT";
 
-  /** (L-80957, SRT, "Basset Artésian Normand dog breed") */
-  public static final String BassetArtésianNormandDogBreed = "L-80957\\SRT";
+  /** (L-80957, SRT, "Basset Artesian Normand dog breed") */
+  public static final String BassetArtesianNormandDogBreed = "L-80957\\SRT";
 
   /** (L-808BD, SRT, "Basset Bleu de Gascogne dog breed") */
   public static final String BassetBleuDeGascogneDogBreed = "L-808BD\\SRT";
@@ -821,8 +821,8 @@ public class Breed {
   /** (L-808AB, SRT, "Basset Fauve de Bretagne dog breed") */
   public static final String BassetFauveDeBretagneDogBreed = "L-808AB\\SRT";
 
-  /** (L-808BB, SRT, "Basset Griffon Vendéen dog breed") */
-  public static final String BassetGriffonVendéenDogBreed = "L-808BB\\SRT";
+  /** (L-808BB, SRT, "Basset Griffon Vendeen dog breed") */
+  public static final String BassetGriffonVendeenDogBreed = "L-808BB\\SRT";
 
   /** (L-80713, SRT, "Basset hound") */
   public static final String BassetHound = "L-80713\\SRT";
@@ -1415,8 +1415,8 @@ public class Breed {
   /** (L-807EF, SRT, "Braque Belge dog breed") */
   public static final String BraqueBelgeDogBreed = "L-807EF\\SRT";
 
-  /** (L-807E8, SRT, "Braque d'Ariége dog breed") */
-  public static final String BraqueDAriégeDogBreed = "L-807E8\\SRT";
+  /** (L-807E8, SRT, "Braque d'Ariege dog breed") */
+  public static final String BraqueDAriegeDogBreed = "L-807E8\\SRT";
 
   /** (L-809AA, SRT, "Braque d'Auvergne dog breed") */
   public static final String BraqueDAuvergneDogBreed = "L-809AA\\SRT";
@@ -1427,8 +1427,8 @@ public class Breed {
   /** (L-808BE, SRT, "Braque Dupuy dog breed") */
   public static final String BraqueDupuyDogBreed = "L-808BE\\SRT";
 
-  /** (L-80999, SRT, "Braque Français de Grand Taille dog breed") */
-  public static final String BraqueFrançaisDeGrandTailleDogBreed = "L-80999\\SRT";
+  /** (L-80999, SRT, "Braque Francais de Grand Taille dog breed") */
+  public static final String BraqueFrancaisDeGrandTailleDogBreed = "L-80999\\SRT";
 
   /** (L-809A6, SRT, "Braque Francais de Petite Taille dog breed") */
   public static final String BraqueFrancaisDePetiteTailleDogBreed = "L-809A6\\SRT";
@@ -1550,6 +1550,12 @@ public class Breed {
   /** (L-8A1DE, SRT, "Budyonny horse breed") */
   public static final String BudyonnyHorseBreed = "L-8A1DE\\SRT";
 
+  /** (L-80281, SRT, "Buendner goat breed") */
+  public static final String BuendnerGoatBreed = "L-80281\\SRT";
+
+  /** (L-8031A, SRT, "Buendner Oberland sheep breed") */
+  public static final String BuendnerOberlandSheepBreed = "L-8031A\\SRT";
+
   /** (L-8B9C6, SRT, "Bulgarian Brown cattle breed") */
   public static final String BulgarianBrownCattleBreed = "L-8B9C6\\SRT";
 
@@ -1573,12 +1579,6 @@ public class Breed {
 
   /** (L-80730, SRT, "Bull terrier") */
   public static final String BullTerrier = "L-80730\\SRT";
-
-  /** (L-80281, SRT, "Bündner goat breed") */
-  public static final String BündnerGoatBreed = "L-80281\\SRT";
-
-  /** (L-8031A, SRT, "Bündner Oberland sheep breed") */
-  public static final String BündnerOberlandSheepBreed = "L-8031A\\SRT";
 
   /** (L-8048C, SRT, "Buohai horse breed") */
   public static final String BuohaiHorseBreed = "L-8048C\\SRT";
@@ -1742,23 +1742,23 @@ public class Breed {
   /** (L-80251, SRT, "Canary Island goat breed") */
   public static final String CanaryIslandGoatBreed = "L-80251\\SRT";
 
-  /** (L-80599, SRT, "Canastrão, Cabano pig breed") */
-  public static final String CanastrãoCabanoPigBreed = "L-80599\\SRT";
+  /** (L-80599, SRT, "Canastrao, Cabano pig breed") */
+  public static final String CanastraoCabanoPigBreed = "L-80599\\SRT";
 
-  /** (L-80597, SRT, "Canastrão, Capitão Chico pig breed") */
-  public static final String CanastrãoCapitãoChicoPigBreed = "L-80597\\SRT";
+  /** (L-80597, SRT, "Canastrao, Capitao Chico pig breed") */
+  public static final String CanastraoCapitaoChicoPigBreed = "L-80597\\SRT";
 
-  /** (L-80596, SRT, "Canastrão, Junqueira pig breed") */
-  public static final String CanastrãoJunqueiraPigBreed = "L-80596\\SRT";
+  /** (L-80596, SRT, "Canastrao, Junqueira pig breed") */
+  public static final String CanastraoJunqueiraPigBreed = "L-80596\\SRT";
 
-  /** (L-80595, SRT, "Canastrão pig breed") */
-  public static final String CanastrãoPigBreed = "L-80595\\SRT";
+  /** (L-80595, SRT, "Canastrao pig breed") */
+  public static final String CanastraoPigBreed = "L-80595\\SRT";
 
-  /** (L-8059A, SRT, "Canastrão, Vermelho pig breed") */
-  public static final String CanastrãoVermelhoPigBreed = "L-8059A\\SRT";
+  /** (L-8059A, SRT, "Canastrao, Vermelho pig breed") */
+  public static final String CanastraoVermelhoPigBreed = "L-8059A\\SRT";
 
-  /** (L-80598, SRT, "Canastrão, Zabumba pig breed") */
-  public static final String CanastrãoZabumbaPigBreed = "L-80598\\SRT";
+  /** (L-80598, SRT, "Canastrao, Zabumba pig breed") */
+  public static final String CanastraoZabumbaPigBreed = "L-80598\\SRT";
 
   /** (L-8058C, SRT, "Canastra pig breed") */
   public static final String CanastraPigBreed = "L-8058C\\SRT";
@@ -1775,20 +1775,20 @@ public class Breed {
   /** (L-80493, SRT, "Canik horse breed") */
   public static final String CanikHorseBreed = "L-80493\\SRT";
 
-  /** (L-80250, SRT, "Canindé goat breed") */
-  public static final String CanindéGoatBreed = "L-80250\\SRT";
+  /** (L-80250, SRT, "Caninde goat breed") */
+  public static final String CanindeGoatBreed = "L-80250\\SRT";
 
   /** (L-806AD, SRT, "Cantonese pig breed") */
   public static final String CantonesePigBreed = "L-806AD\\SRT";
 
-  /** (L-808C1, SRT, "Cão da Serra de Aires dog breed") */
-  public static final String CãoDaSerraDeAiresDogBreed = "L-808C1\\SRT";
+  /** (L-808C1, SRT, "Cao da Serra de Aires dog breed") */
+  public static final String CaoDaSerraDeAiresDogBreed = "L-808C1\\SRT";
 
-  /** (L-808C2, SRT, "Cão de Castro Laboreiro dog breed") */
-  public static final String CãoDeCastroLaboreiroDogBreed = "L-808C2\\SRT";
+  /** (L-808C2, SRT, "Cao de Castro Laboreiro dog breed") */
+  public static final String CaoDeCastroLaboreiroDogBreed = "L-808C2\\SRT";
 
-  /** (L-808C3, SRT, "Cão de Fila Miguel dog breed") */
-  public static final String CãoDeFilaMiguelDogBreed = "L-808C3\\SRT";
+  /** (L-808C3, SRT, "Cao de Fila Miguel dog breed") */
+  public static final String CaoDeFilaMiguelDogBreed = "L-808C3\\SRT";
 
   /** (L-80494, SRT, "Cape Horse horse breed") */
   public static final String CapeHorseHorseBreed = "L-80494\\SRT";
@@ -1982,14 +1982,14 @@ public class Breed {
   /** (L-80991, SRT, "Chien d'Artois dog breed") */
   public static final String ChienDArtoisDogBreed = "L-80991\\SRT";
 
-  /** (L-80983, SRT, "Chien Français Blanc et Noir dog breed") */
-  public static final String ChienFrançaisBlancEtNoirDogBreed = "L-80983\\SRT";
+  /** (L-80983, SRT, "Chien Francais Blanc et Noir dog breed") */
+  public static final String ChienFrancaisBlancEtNoirDogBreed = "L-80983\\SRT";
 
-  /** (L-80998, SRT, "Chien Français Blanc et Orange dog breed") */
-  public static final String ChienFrançaisBlancEtOrangeDogBreed = "L-80998\\SRT";
+  /** (L-80998, SRT, "Chien Francais Blanc et Orange dog breed") */
+  public static final String ChienFrancaisBlancEtOrangeDogBreed = "L-80998\\SRT";
 
-  /** (L-80993, SRT, "Chien Français Tricolore dog breed") */
-  public static final String ChienFrançaisTricoloreDogBreed = "L-80993\\SRT";
+  /** (L-80993, SRT, "Chien Francais Tricolore dog breed") */
+  public static final String ChienFrancaisTricoloreDogBreed = "L-80993\\SRT";
 
   /** (L-8B9DC, SRT, "Chiford cattle breed") */
   public static final String ChifordCattleBreed = "L-8B9DC\\SRT";
@@ -2174,14 +2174,14 @@ public class Breed {
   /** (L-8040D, SRT, "Costa Rican Saddle Horse horse breed") */
   public static final String CostaRicanSaddleHorseHorseBreed = "L-8040D\\SRT";
 
-  /** (L-801EC, SRT, "Costeño con Cuernos cattle breed") */
-  public static final String CosteñoConCuernosCattleBreed = "L-801EC\\SRT";
+  /** (L-801EC, SRT, "Costeno con Cuernos cattle breed") */
+  public static final String CostenoConCuernosCattleBreed = "L-801EC\\SRT";
 
   /** (L-8040E, SRT, "Costeno horse breed") */
   public static final String CostenoHorseBreed = "L-8040E\\SRT";
 
-  /** (L-80929, SRT, "Coton de Tuléar dog breed") */
-  public static final String CotonDeTuléarDogBreed = "L-80929\\SRT";
+  /** (L-80929, SRT, "Coton de Tulear dog breed") */
+  public static final String CotonDeTulearDogBreed = "L-80929\\SRT";
 
   /** (L-80549, SRT, "Cotswold 16 pig breed") */
   public static final String Cotswold16PigBreed = "L-80549\\SRT";
@@ -2213,8 +2213,8 @@ public class Breed {
   /** (L-80257, SRT, "Creole Antilles goat breed") */
   public static final String CreoleAntillesGoatBreed = "L-80257\\SRT";
 
-  /** (L-805DA, SRT, "Créole pig breed") */
-  public static final String CréolePigBreed = "L-805DA\\SRT";
+  /** (L-805DA, SRT, "Creole pig breed") */
+  public static final String CreolePigBreed = "L-805DA\\SRT";
 
   /** (L-8B9E3, SRT, "Cretan Lowland cattle breed") */
   public static final String CretanLowlandCattleBreed = "L-8B9E3\\SRT";
@@ -2558,6 +2558,12 @@ public class Breed {
   /** (L-8B146, SRT, "Dobrogea Black pig breed") */
   public static final String DobrogeaBlackPigBreed = "L-8B146\\SRT";
 
+  /** (L-801F0, SRT, "Doelafe cattle breed") */
+  public static final String DoelafeCattleBreed = "L-801F0\\SRT";
+
+  /** (L-8A16E, SRT, "Doele horse breed") */
+  public static final String DoeleHorseBreed = "L-8A16E\\SRT";
+
   /** (L-808A3, SRT, "Dogue de Bourdeaux dog breed") */
   public static final String DogueDeBourdeauxDogBreed = "L-808A3\\SRT";
 
@@ -2668,12 +2674,6 @@ public class Breed {
 
   /** (L-8B155, SRT, "Dzumalia pig breed") */
   public static final String DzumaliaPigBreed = "L-8B155\\SRT";
-
-  /** (L-801F0, SRT, "Dølafe cattle breed") */
-  public static final String DølafeCattleBreed = "L-801F0\\SRT";
-
-  /** (L-8A16E, SRT, "Døle horse breed") */
-  public static final String DøleHorseBreed = "L-8A16E\\SRT";
 
   /** (L-8B9F3, SRT, "East Anatolian Red cattle breed") */
   public static final String EastAnatolianRedCattleBreed = "L-8B9F3\\SRT";
@@ -2843,8 +2843,8 @@ public class Breed {
   /** (L-80558, SRT, "Euroline pig breed") */
   public static final String EurolinePigBreed = "L-80558\\SRT";
 
-  /** (L-801F5, SRT, "Evolène cattle breed") */
-  public static final String EvolèneCattleBreed = "L-801F5\\SRT";
+  /** (L-801F5, SRT, "Evolene cattle breed") */
+  public static final String EvoleneCattleBreed = "L-801F5\\SRT";
 
   /** (L-8034C, SRT, "Exmoor Horn sheep breed") */
   public static final String ExmoorHornSheepBreed = "L-8034C\\SRT";
@@ -3290,6 +3290,9 @@ public class Breed {
   /** (L-8BB12, SRT, "Gobra cattle breed") */
   public static final String GobraCattleBreed = "L-8BB12\\SRT";
 
+  /** (L-806F5, SRT, "Goettingen Miniature pig breed") */
+  public static final String GoettingenMiniaturePigBreed = "L-806F5\\SRT";
+
   /** (L-8A1C6, SRT, "Golden American Saddlebred horse breed") */
   public static final String GoldenAmericanSaddlebredHorseBreed = "L-8A1C6\\SRT";
 
@@ -3320,11 +3323,8 @@ public class Breed {
   /** (L-8A1BE, SRT, "Gotland horse breed") */
   public static final String GotlandHorseBreed = "L-8A1BE\\SRT";
 
-  /** (L-806F5, SRT, "Göttingen Miniature pig breed") */
-  public static final String GöttingenMiniaturePigBreed = "L-806F5\\SRT";
-
-  /** (L-80946, SRT, "Grand Anglo-Français dog breed") */
-  public static final String GrandAngloFrançaisDogBreed = "L-80946\\SRT";
+  /** (L-80946, SRT, "Grand Anglo-Francais dog breed") */
+  public static final String GrandAngloFrancaisDogBreed = "L-80946\\SRT";
 
   /** (L-80947, SRT, "Grand Bassett Griffon Vendeen dog breed") */
   public static final String GrandBassettGriffonVendeenDogBreed = "L-80947\\SRT";
@@ -3359,8 +3359,8 @@ public class Breed {
   /** (L-809FF, SRT, "Greater Swiss Mountain Hound dog breed") */
   public static final String GreaterSwissMountainHoundDogBreed = "L-809FF\\SRT";
 
-  /** (L-807EA, SRT, "Great Münsterländer dog breed") */
-  public static final String GreatMünsterländerDogBreed = "L-807EA\\SRT";
+  /** (L-807EA, SRT, "Great Muensterlaender dog breed") */
+  public static final String GreatMuensterlaenderDogBreed = "L-807EA\\SRT";
 
   /** (L-807B4, SRT, "Great Pyrenee dog") */
   public static final String GreatPyreneeDog = "L-807B4\\SRT";
@@ -3428,6 +3428,9 @@ public class Breed {
   /** (L-80135, SRT, "Guernsey cow breed") */
   public static final String GuernseyCowBreed = "L-80135\\SRT";
 
+  /** (L-805C2, SRT, "Guessing Forest Pig pig breed") */
+  public static final String GuessingForestPigPigBreed = "L-805C2\\SRT";
+
   /** (L-80673, SRT, "Guinea Hog pig breed") */
   public static final String GuineaHogPigBreed = "L-80673\\SRT";
 
@@ -3448,9 +3451,6 @@ public class Breed {
 
   /** (L-8B150, SRT, "Gurktal pig breed") */
   public static final String GurktalPigBreed = "L-8B150\\SRT";
-
-  /** (L-805C2, SRT, "Güssing Forest Pig pig breed") */
-  public static final String GüssingForestPigPigBreed = "L-805C2\\SRT";
 
   /** (L-80360, SRT, "Gute sheep breed") */
   public static final String GuteSheepBreed = "L-80360\\SRT";
@@ -3506,8 +3506,8 @@ public class Breed {
   /** (L-8BABF, SRT, "Hallingdal cattle breed") */
   public static final String HallingdalCattleBreed = "L-8BABF\\SRT";
 
-  /** (L-80930, SRT, "Hamiltonstövare dog breed") */
-  public static final String HamiltonstövareDogBreed = "L-80930\\SRT";
+  /** (L-80930, SRT, "Hamiltonstoevare dog breed") */
+  public static final String HamiltonstoevareDogBreed = "L-80930\\SRT";
 
   /** (L-80544, SRT, "Hamline pig breed") */
   public static final String HamlinePigBreed = "L-80544\\SRT";
@@ -3566,8 +3566,8 @@ public class Breed {
   /** (L-807C3, SRT, "Harrier dog") */
   public static final String HarrierDog = "L-807C3\\SRT";
 
-  /** (L-801FF, SRT, "Hartón cattle breed") */
-  public static final String HartónCattleBreed = "L-801FF\\SRT";
+  /** (L-801FF, SRT, "Harton cattle breed") */
+  public static final String HartonCattleBreed = "L-801FF\\SRT";
 
   /** (L-8BA25, SRT, "Harz Red cattle breed") */
   public static final String HarzRedCattleBreed = "L-8BA25\\SRT";
@@ -3842,8 +3842,8 @@ public class Breed {
   /** (L-8A185, SRT, "Iomud horse breed") */
   public static final String IomudHorseBreed = "L-8A185\\SRT";
 
-  /** (L-806D3, SRT, "Í pig breed") */
-  public static final String ÍPigBreed = "L-806D3\\SRT";
+  /** (L-806D3, SRT, "I pig breed") */
+  public static final String IPigBreed = "L-806D3\\SRT";
 
   /** (L-8BB2D, SRT, "Iranian Zebu cattle breed") */
   public static final String IranianZebuCattleBreed = "L-8BB2D\\SRT";
@@ -3926,6 +3926,9 @@ public class Breed {
   /** (L-80387, SRT, "Jacob sheep breed") */
   public static final String JacobSheepBreed = "L-80387\\SRT";
 
+  /** (L-808CE, SRT, "Jaemthund dog breed") */
+  public static final String JaemthundDogBreed = "L-808CE\\SRT";
+
   /** (L-80944, SRT, "Jagdterrier dog breed") */
   public static final String JagdterrierDogBreed = "L-80944\\SRT";
 
@@ -3940,9 +3943,6 @@ public class Breed {
 
   /** (L-8BB5D, SRT, "Jamaica Red X zebu cattle breed") */
   public static final String JamaicaRedXZebuCattleBreed = "L-8BB5D\\SRT";
-
-  /** (L-808CE, SRT, "Jämthund dog breed") */
-  public static final String JämthundDogBreed = "L-808CE\\SRT";
 
   /** (L-8BA37, SRT, "Japanese Black cattle breed") */
   public static final String JapaneseBlackCattleBreed = "L-8BA37\\SRT";
@@ -4388,8 +4388,8 @@ public class Breed {
   /** (L-8B176, SRT, "Krolevets pig breed") */
   public static final String KrolevetsPigBreed = "L-8B176\\SRT";
 
-  /** (L-809E6, SRT, "Kromfohrländer dog breed") */
-  public static final String KromfohrländerDogBreed = "L-809E6\\SRT";
+  /** (L-809E6, SRT, "Kromfohrlaender dog breed") */
+  public static final String KromfohrlaenderDogBreed = "L-809E6\\SRT";
 
   /** (L-80677, SRT, "Krskopolje pig breed") */
   public static final String KrskopoljePigBreed = "L-80677\\SRT";
@@ -4676,6 +4676,9 @@ public class Breed {
   /** (L-809E3, SRT, "Loenberger dog breed") */
   public static final String LoenbergerDogBreed = "L-809E3\\SRT";
 
+  /** (L-809D3, SRT, "Loewchen dog breed") */
+  public static final String LoewchenDogBreed = "L-809D3\\SRT";
+
   /** (L-8BAE4, SRT, "Lohani cattle breed") */
   public static final String LohaniCattleBreed = "L-8BAE4\\SRT";
 
@@ -4720,9 +4723,6 @@ public class Breed {
 
   /** (L-8BA69, SRT, "Lourdais cattle breed") */
   public static final String LourdaisCattleBreed = "L-8BA69\\SRT";
-
-  /** (L-809D3, SRT, "Löwchen dog breed") */
-  public static final String LöwchenDogBreed = "L-809D3\\SRT";
 
   /** (L-8018D, SRT, "Lucanian cattle breed") */
   public static final String LucanianCattleBreed = "L-8018D\\SRT";
@@ -4787,8 +4787,8 @@ public class Breed {
   /** (L-8BB47, SRT, "Magal cattle breed") */
   public static final String MagalCattleBreed = "L-8BB47\\SRT";
 
-  /** (L-808D5, SRT, "Magyar Agår dog breed") */
-  public static final String MagyarAgårDogBreed = "L-808D5\\SRT";
+  /** (L-808D5, SRT, "Magyar Agar dog breed") */
+  public static final String MagyarAgarDogBreed = "L-808D5\\SRT";
 
   /** (L-80149, SRT, "Maine Anjou cow breed") */
   public static final String MaineAnjouCowBreed = "L-80149\\SRT";
@@ -4799,8 +4799,8 @@ public class Breed {
   /** (L-8BA73, SRT, "Makaweli cattle breed") */
   public static final String MakaweliCattleBreed = "L-8BA73\\SRT";
 
-  /** (L-80277, SRT, "Malagueña goat breed") */
-  public static final String MalagueñaGoatBreed = "L-80277\\SRT";
+  /** (L-80277, SRT, "Malaguena goat breed") */
+  public static final String MalaguenaGoatBreed = "L-80277\\SRT";
 
   /** (L-804BB, SRT, "Malakan horse breed") */
   public static final String MalakanHorseBreed = "L-804BB\\SRT";
@@ -5249,8 +5249,8 @@ public class Breed {
   /** (L-8058B, SRT, "Moura pig breed") */
   public static final String MouraPigBreed = "L-8058B\\SRT";
 
-  /** (L-80226, SRT, "Moxotó goat breed") */
-  public static final String MoxotóGoatBreed = "L-80226\\SRT";
+  /** (L-80226, SRT, "Moxoto goat breed") */
+  public static final String MoxotoGoatBreed = "L-80226\\SRT";
 
   /** (L-8A176, SRT, "Moyle horse breed") */
   public static final String MoyleHorseBreed = "L-8A176\\SRT";
@@ -5795,11 +5795,11 @@ public class Breed {
   /** (L-80813, SRT, "Pekingese dog") */
   public static final String PekingeseDog = "L-80813\\SRT";
 
-  /** (L-80BA1, SRT, "Pelibüey sheep breed") */
-  public static final String PelibüeySheepBreed = "L-80BA1\\SRT";
+  /** (L-80BA1, SRT, "Pelibueey sheep breed") */
+  public static final String PelibueeySheepBreed = "L-80BA1\\SRT";
 
-  /** (L-80617, SRT, "Pelón pig breed") */
-  public static final String PelónPigBreed = "L-80617\\SRT";
+  /** (L-80617, SRT, "Pelon pig breed") */
+  public static final String PelonPigBreed = "L-80617\\SRT";
 
   /** (L-8BA0C, SRT, "Peloponnesus cattle breed") */
   public static final String PeloponnesusCattleBreed = "L-8BA0C\\SRT";
@@ -5867,8 +5867,8 @@ public class Breed {
   /** (L-809CE, SRT, "Petit Bleu de Gascogne dog breed") */
   public static final String PetitBleuDeGascogneDogBreed = "L-809CE\\SRT";
 
-  /** (L-808B4, SRT, "Petit Brabaçon dog breed") */
-  public static final String PetitBrabaçonDogBreed = "L-808B4\\SRT";
+  /** (L-808B4, SRT, "Petit Brabacon dog breed") */
+  public static final String PetitBrabaconDogBreed = "L-808B4\\SRT";
 
   /** (L-809CF, SRT, "Petit Gascon-Saintongeois dog breed") */
   public static final String PetitGasconSaintongeoisDogBreed = "L-809CF\\SRT";
@@ -6155,8 +6155,8 @@ public class Breed {
   /** (L-805C9, SRT, "Prisheksninsk pig breed") */
   public static final String PrisheksninskPigBreed = "L-805C9\\SRT";
 
-  /** (L-8021B, SRT, "Provençale goat breed") */
-  public static final String ProvençaleGoatBreed = "L-8021B\\SRT";
+  /** (L-8021B, SRT, "Provencale goat breed") */
+  public static final String ProvencaleGoatBreed = "L-8021B\\SRT";
 
   /** (L-80835, SRT, "Pudelpointer") */
   public static final String Pudelpointer = "L-80835\\SRT";
@@ -6230,6 +6230,9 @@ public class Breed {
   /** (L-8A1FC, SRT, "Racking Horse horse breed") */
   public static final String RackingHorseHorseBreed = "L-8A1FC\\SRT";
 
+  /** (L-8B975, SRT, "Raetien Gray cattle breed") */
+  public static final String RaetienGrayCattleBreed = "L-8B975\\SRT";
+
   /** (L-80A97, SRT, "Ragamuffin cat breed") */
   public static final String RagamuffinCatBreed = "L-80A97\\SRT";
 
@@ -6271,9 +6274,6 @@ public class Breed {
 
   /** (L-8BAED, SRT, "Rathi cattle breed") */
   public static final String RathiCattleBreed = "L-8BAED\\SRT";
-
-  /** (L-8B975, SRT, "Rätien Gray cattle breed") */
-  public static final String RätienGrayCattleBreed = "L-8B975\\SRT";
 
   /** (L-809AF, SRT, "Rat Terrier dog breed") */
   public static final String RatTerrierDogBreed = "L-809AF\\SRT";
@@ -6320,8 +6320,8 @@ public class Breed {
   /** (L-80157, SRT, "Red Poll cow breed") */
   public static final String RedPollCowBreed = "L-80157\\SRT";
 
-  /** (L-8B978, SRT, "Red Polled Østland cattle breed") */
-  public static final String RedPolledØstlandCattleBreed = "L-8B978\\SRT";
+  /** (L-8B978, SRT, "Red Polled Oestland cattle breed") */
+  public static final String RedPolledOestlandCattleBreed = "L-8B978\\SRT";
 
   /** (L-8BAEE, SRT, "Red Sindhi cattle breed") */
   public static final String RedSindhiCattleBreed = "L-8BAEE\\SRT";
@@ -6539,8 +6539,8 @@ public class Breed {
   /** (L-8BC29, SRT, "Sabre X zebu cattle breed") */
   public static final String SabreXZebuCattleBreed = "L-8BC29\\SRT";
 
-  /** (L-808E3, SRT, "Sabuesos Españoles dog breed") */
-  public static final String SabuesosEspañolesDogBreed = "L-808E3\\SRT";
+  /** (L-808E3, SRT, "Sabuesos Espanoles dog breed") */
+  public static final String SabuesosEspanolesDogBreed = "L-808E3\\SRT";
 
   /** (L-80669, SRT, "Saddleback pig breed") */
   public static final String SaddlebackPigBreed = "L-80669\\SRT";
@@ -6617,8 +6617,8 @@ public class Breed {
   /** (L-8BB6D, SRT, "Santa Cruz X zebu cattle breed") */
   public static final String SantaCruzXZebuCattleBreed = "L-8BB6D\\SRT";
 
-  /** (L-80B8E, SRT, "Santa Inês sheep breed") */
-  public static final String SantaInêsSheepBreed = "L-80B8E\\SRT";
+  /** (L-80B8E, SRT, "Santa Ines sheep breed") */
+  public static final String SantaInesSheepBreed = "L-80B8E\\SRT";
 
   /** (L-8B985, SRT, "Sarabi cattle breed") */
   public static final String SarabiCattleBreed = "L-8B985\\SRT";
@@ -6962,8 +6962,8 @@ public class Breed {
   /** (L-8BB84, SRT, "Small East African Zebu cattle breed") */
   public static final String SmallEastAfricanZebuCattleBreed = "L-8BB84\\SRT";
 
-  /** (L-809BA, SRT, "Small Münsterländer dog breed") */
-  public static final String SmallMünsterländerDogBreed = "L-809BA\\SRT";
+  /** (L-809BA, SRT, "Small Muensterlaender dog breed") */
+  public static final String SmallMuensterlaenderDogBreed = "L-809BA\\SRT";
 
   /** (L-8B172, SRT, "Small Polish Prick-Eared pig breed") */
   public static final String SmallPolishPrickEaredPigBreed = "L-8B172\\SRT";
@@ -7124,8 +7124,8 @@ public class Breed {
   /** (L-805A3, SRT, "Soviet Meat pig breed") */
   public static final String SovietMeatPigBreed = "L-805A3\\SRT";
 
-  /** (L-80B97, SRT, "Spælsau sheep breed") */
-  public static final String SpælsauSheepBreed = "L-80B97\\SRT";
+  /** (L-80B97, SRT, "Spaelsau sheep breed") */
+  public static final String SpaelsauSheepBreed = "L-80B97\\SRT";
 
   /** (L-80880, SRT, "Spaniel") */
   public static final String Spaniel = "L-80880\\SRT";
@@ -7748,8 +7748,8 @@ public class Breed {
   /** (L-8BAAA, SRT, "Vaynol cattle breed") */
   public static final String VaynolCattleBreed = "L-8BAAA\\SRT";
 
-  /** (L-804A7, SRT, "Vendéen sheep breed") */
-  public static final String VendéenSheepBreed = "L-804A7\\SRT";
+  /** (L-804A7, SRT, "Vendeen sheep breed") */
+  public static final String VendeenSheepBreed = "L-804A7\\SRT";
 
   /** (L-80615, SRT, "Venezuelan Black pig breed") */
   public static final String VenezuelanBlackPigBreed = "L-80615\\SRT";
@@ -7979,8 +7979,8 @@ public class Breed {
   /** (L-80734, SRT, "White bull terrier dog breed") */
   public static final String WhiteBullTerrierDogBreed = "L-80734\\SRT";
 
-  /** (L-8B994, SRT, "White Cáceres cattle breed") */
-  public static final String WhiteCáceresCattleBreed = "L-8B994\\SRT";
+  /** (L-8B994, SRT, "White Caceres cattle breed") */
+  public static final String WhiteCaceresCattleBreed = "L-8B994\\SRT";
 
   /** (L-8038D, SRT, "Whiteface Dartmoor sheep breed") */
   public static final String WhitefaceDartmoorSheepBreed = "L-8038D\\SRT";

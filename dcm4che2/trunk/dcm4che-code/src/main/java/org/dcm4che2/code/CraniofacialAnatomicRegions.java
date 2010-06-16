@@ -42,7 +42,7 @@ package org.dcm4che2.code;
  * CID 4028 Craniofacial Anatomic Regions.
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Rev$ $Date::            $
+ * @version $Revision$ $Date$
  * @since Jun 2, 2010
  */
 public class CraniofacialAnatomicRegions {
@@ -50,8 +50,8 @@ public class CraniofacialAnatomicRegions {
   /** (T-11501, SRT, "Cervical spine") */
   public static final String CervicalSpine = "T-11501\\SRT";
 
-  /** (T‑D0801, SRT, "Eye region") */
-  public static final String EyeRegion = "T‑D0801\\SRT";
+  /** (T-D0801, SRT, "Eye region") */
+  public static final String EyeRegion = "T-D0801\\SRT";
 
   /** (T-11196, SRT, "Facial bones") */
   public static final String FacialBones = "T-11196\\SRT";
@@ -65,8 +65,8 @@ public class CraniofacialAnatomicRegions {
   /** (T-AB959, SRT, "Internal Auditory Canal") */
   public static final String InternalAuditoryCanal = "T-AB959\\SRT";
 
-  /** (T‑D1213, SRT, "Jaw region") */
-  public static final String JawRegion = "T‑D1213\\SRT";
+  /** (T-D1213, SRT, "Jaw region") */
+  public static final String JawRegion = "T-D1213\\SRT";
 
   /** (T-24100, SRT, "Larynx") */
   public static final String Larynx = "T-24100\\SRT";

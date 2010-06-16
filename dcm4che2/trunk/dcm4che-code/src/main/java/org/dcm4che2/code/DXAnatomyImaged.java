@@ -42,7 +42,7 @@ package org.dcm4che2.code;
  * CID 4009 DX Anatomy Imaged.
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Rev$ $Date::            $
+ * @version $Revision$ $Date$
  * @since Jun 2, 2010
  */
 public class DXAnatomyImaged {
@@ -125,8 +125,8 @@ public class DXAnatomyImaged {
   /** (T-AA000, SRT, "Eye") */
   public static final String Eye = "T-AA000\\SRT";
 
-  /** (T‑D0801, SRT, "Eye region") */
-  public static final String EyeRegion = "T‑D0801\\SRT";
+  /** (T-D0801, SRT, "Eye region") */
+  public static final String EyeRegion = "T-D0801\\SRT";
 
   /** (T-11196, SRT, "Facial bones") */
   public static final String FacialBones = "T-11196\\SRT";
@@ -173,8 +173,8 @@ public class DXAnatomyImaged {
   /** (T-AB959, SRT, "Internal Auditory Canal") */
   public static final String InternalAuditoryCanal = "T-AB959\\SRT";
 
-  /** (T‑D1213, SRT, "Jaw region") */
-  public static final String JawRegion = "T‑D1213\\SRT";
+  /** (T-D1213, SRT, "Jaw region") */
+  public static final String JawRegion = "T-D1213\\SRT";
 
   /** (T-58400, SRT, "Jejunum") */
   public static final String Jejunum = "T-58400\\SRT";

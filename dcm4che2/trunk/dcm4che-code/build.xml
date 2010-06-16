@@ -3810,7 +3810,7 @@
       <param name="mode" value="novers" />
       <param name="pos" value="830" />
       <param name="classname" value="MalignantPathologyCodesFromBIRADS" />
-      <param name="title" value="CID 6033 Malignant Pathology Codes from BI-RADS®" />
+      <param name="title" value="CID 6033 Malignant Pathology Codes from BI-RADS" />
     </antcall>
   </target>
   <target name="IntendedUseOfCADOutput">

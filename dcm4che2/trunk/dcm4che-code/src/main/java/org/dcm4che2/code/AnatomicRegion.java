@@ -42,7 +42,7 @@ package org.dcm4che2.code;
  * CID 4 Anatomic Region.
  *
  * @author Gunter Zeilinger <gunterze@gmail.com>
- * @version $Rev$ $Date::            $
+ * @version $Revision$ $Date$
  * @since Jun 2, 2010
  */
 public class AnatomicRegion {
@@ -350,8 +350,8 @@ public class AnatomicRegion {
   /** (T-AA810, SRT, "Eyelid") */
   public static final String Eyelid = "T-AA810\\SRT";
 
-  /** (T‑D0801, SRT, "Eye region") */
-  public static final String EyeRegion = "T‑D0801\\SRT";
+  /** (T-D0801, SRT, "Eye region") */
+  public static final String EyeRegion = "T-D0801\\SRT";
 
   /** (T-D1200, SRT, "Face") */
   public static final String Face = "T-D1200\\SRT";
@@ -494,8 +494,8 @@ public class AnatomicRegion {
   /** (T-D6221, SRT, "Intra-pelvic") */
   public static final String IntraPelvic = "T-D6221\\SRT";
 
-  /** (T‑D1213, SRT, "Jaw region") */
-  public static final String JawRegion = "T‑D1213\\SRT";
+  /** (T-D1213, SRT, "Jaw region") */
+  public static final String JawRegion = "T-D1213\\SRT";
 
   /** (T-58400, SRT, "Jejunum") */
   public static final String Jejunum = "T-58400\\SRT";
