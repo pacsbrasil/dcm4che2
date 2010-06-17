@@ -354,13 +354,6 @@ public class StudyListPage extends Panel {
             private static final long serialVersionUID = 1L;
 
             @Override
-            protected void onComponentTag(ComponentTag tag) {
-                super.onComponentTag(tag);
-                if (viewport.getOffset() == 0) 
-                    disableLink(tag);
-            }
-
-            @Override
             public void onClick() {
                 viewport.setOffset(Math.max(0, viewport.getOffset() - PAGESIZE));
                 queryStudies();               
@@ -368,7 +361,7 @@ public class StudyListPage extends Panel {
             
             @Override
             public boolean isVisible() {
-                return !notSearched;
+                return (!notSearched && !(viewport.getOffset() == 0));
             }
         }
         .add(new Image("prevImg", ImageManager.IMAGE_COMMON_BACK)
@@ -381,13 +374,6 @@ public class StudyListPage extends Panel {
             private static final long serialVersionUID = 1L;
 
             @Override
-            protected void onComponentTag(ComponentTag tag) {
-                super.onComponentTag(tag);
-                if (viewport.getTotal() - viewport.getOffset() <= PAGESIZE)
-                    disableLink(tag);
-            }
-
-            @Override
             public void onClick() {
                 viewport.setOffset(viewport.getOffset() + PAGESIZE);
                 queryStudies();
@@ -395,7 +381,7 @@ public class StudyListPage extends Panel {
 
             @Override
             public boolean isVisible() {
-                return !notSearched;
+                return (!notSearched && !(viewport.getTotal() - viewport.getOffset() <= PAGESIZE));
             }
         }
         .add(new Image("nextImg", ImageManager.IMAGE_COMMON_FORWARD)
@@ -966,22 +952,6 @@ public class StudyListPage extends Panel {
             item.add(new Label("numberOfSeries").add(new TooltipBehaviour("folder.pps","NoS")));
             item.add(new Label("numberOfInstances").add(new TooltipBehaviour("folder.pps","NoI")));
             item.add(new Label("status").add(new TooltipBehaviour("folder.pps","Status")));
-            item.add( new Image("linkStatus", new AbstractReadOnlyModel<ResourceReference>() {
-                private static final long serialVersionUID = 1L;
-                @Override
-                public ResourceReference getObject() {
-                    return ppsModel.getAccessionNumber() == null ? ImageManager.IMAGE_FOLDER_UNLINK : 
-                        ImageManager.IMAGE_COMMON_LINK;
-                }
-            }) {
-                private static final long serialVersionUID = 1L;
-                @Override
-                public boolean isVisible() {
-                    return ppsModel.getDataset() != null;
-                }
-            }
-            .add(new ImageSizeBehaviour()));
-
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;

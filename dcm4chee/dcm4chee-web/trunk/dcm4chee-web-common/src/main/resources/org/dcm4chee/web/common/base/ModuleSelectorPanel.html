@@ -11,10 +11,11 @@
 		   <img wicket:id="img_logo" alt="dcm4che.org" /><br/>
 		</div>
 		<div class="tab-lang">
-		   <a class="logout" href="#" wicket:id="logout"><span wicket:id="logoutLabel">[logout]</span></a>
-		   <a href="#" wicket:id="lang_en"><img wicket:id="img_en" alt="English" /></a>
-		   <a href="#" wicket:id="lang_de"><img wicket:id="img_de" alt="German" /></a>
-		   <a href="#" wicket:id="lang_fr"><img wicket:id="img_fr" alt="French" /></a>
+		   <a style="margin-right: 10px" class="logout" href="#" wicket:id="logout">
+		   		<span wicket:id="logoutLabel" />
+		   	</a>
+		   <wicket:message key="language" />
+		   <select wicket:id="language" />
 		</div>
 	</div>
 	<div wicket:id="panel" class="module-panel"></div>

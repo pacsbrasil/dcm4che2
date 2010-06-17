@@ -41,15 +41,20 @@ package org.dcm4chee.web.common.base;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
 import org.apache.wicket.extensions.markup.html.tabs.ITab;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.ChoiceRenderer;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
@@ -57,7 +62,6 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.resource.loader.ClassStringResourceLoader;
 import org.apache.wicket.resource.loader.PackageStringResourceLoader;
-import org.dcm4chee.web.common.markup.LocaleSelectorLink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,12 +93,40 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
                 return showLogout;
             }
         }.add(new Label("logoutLabel", new ResourceModel("logout"))));
-        add(new LocaleSelectorLink("lang_en","en").add(new Image("img_en", 
-                new ResourceReference(ModuleSelectorPanel.class, "images/lang_en.gif"))));
-        add(new LocaleSelectorLink("lang_de","de").add(new Image("img_de", 
-                new ResourceReference(ModuleSelectorPanel.class, "images/lang_de.gif"))));
-        add(new LocaleSelectorLink("lang_fr","fr").add(new Image("img_fr", 
-                new ResourceReference(ModuleSelectorPanel.class, "images/lang_fr.gif"))));
+        
+        List<String> languages = new ArrayList<String>();
+        languages.add("en");
+        languages.add("de");
+
+        final DropDownChoice<String> languageSelector = 
+            new DropDownChoice<String>("language", new Model<String>(), languages, new ChoiceRenderer<String>() {
+
+            private static final long serialVersionUID = 1L;
+            
+            @Override
+            public String getDisplayValue(String object) {
+                return new Locale(object).getDisplayName();
+            }
+        }) {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onSelectionChanged(String newSelection) {
+                getSession().setLocale(new Locale(newSelection));
+            }
+        };
+        languageSelector.setDefaultModelObject(getSession().getLocale().getLanguage());
+        languageSelector.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+            private static final long serialVersionUID = 1L;
+
+            protected void onUpdate(AjaxRequestTarget target) {
+                languageSelector.onSelectionChanged();
+                target.addComponent(getPage().setOutputMarkupId(true));
+            }
+        });
+        add(languageSelector);
+        
         add(new Image("img_logo", new ResourceReference(ModuleSelectorPanel.class, 
                 "images/logo.gif"))
         );
