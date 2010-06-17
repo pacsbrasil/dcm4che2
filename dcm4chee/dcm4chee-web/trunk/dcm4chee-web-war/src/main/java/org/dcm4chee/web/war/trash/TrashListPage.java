@@ -155,11 +155,11 @@ public class TrashListPage extends Panel {
                 return QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
             }
         };
-        form.addLabeledTextField("patientName", enabledModel);
+        form.addTextField("patientName", enabledModel, true);
         form.addLabel("patientIDDescr");
-        form.addLabeledTextField("patientID", enabledModel);
-        form.addLabeledTextField("issuerOfPatientID", enabledModel);
-        form.addLabeledTextField("accessionNumber", enabledModel);
+        form.addTextField("patientID", enabledModel, true);
+        form.addTextField("issuerOfPatientID", enabledModel, true);
+        form.addTextField("accessionNumber", enabledModel, true);
         form.addLabeledDropDownChoice("sourceAET", null, sourceAETs);
     }
 

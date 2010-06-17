@@ -29,16 +29,16 @@
 					<th class="ro"></th>
 				</tr>
 			</thead>
-			<tr>
+			<tr wicket:id="searchTableLabels">
 				<td></td>
 				<td>
 					<div wicket:id="patientNameLabel">Patient Name</div>
 				</td>
 				<td colspan="2">
-					<div  wicket:id="patientIDDescr">Patient ID</div>
+					<div  wicket:id="patientIDDescrLabel">Patient ID</div>
 				</td>
 				<td colspan="2">
-					<div wicket:id="studyDate">Study Date</div>
+					<div wicket:id="studyDateLabel">Study Date</div>
 				</td>
 				<td>
 					<div wicket:id="accessionNumberLabel">Accession Number</div>
@@ -51,13 +51,13 @@
 				</td>
 				<td></td>
 			</tr>
-			<tr>
+			<tr wicket:id="searchTableFields">
 				<td></td>
 				<td>
 					<input style="vertical-align: bottom" wicket:id="patientName" id="patientName" type="text" />
 				</td>
 				<td>
-	                   <div wicket:id="patientIDLabel">ID</div>
+	                <div wicket:id="patientIDLabel">ID</div>
 					<input wicket:id="patientID" id="patientID" type="text" title="ID" />
 				</td>
 				<td>                   
@@ -106,7 +106,7 @@
 				</td>
 				<td colspan="3"></td>
 			</tr>
-		    <tr class="searchFooter">
+		    <tr class="searchFooter" wicket:id="searchTableFooter">
 				<td class="lu"></td>
 				<td>
 		            <a wicket:id="showExtendedFilter">

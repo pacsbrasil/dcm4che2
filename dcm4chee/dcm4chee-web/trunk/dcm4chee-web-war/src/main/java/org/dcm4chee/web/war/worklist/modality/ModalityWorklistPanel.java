@@ -151,23 +151,23 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 return !filter.isExtendedQuery() || "*".equals(filter.getStudyInstanceUID());
             }
         };
-        form.addLabeledTextField("patientName", enabledModel);
+        form.addTextField("patientName", enabledModel, true);
         form.addLabel("patientIDDescr");
-        form.addLabeledTextField("patientID", enabledModel);
-        form.addLabeledTextField("issuerOfPatientID", enabledModel);
+        form.addTextField("patientID", enabledModel, true);
+        form.addTextField("issuerOfPatientID", enabledModel, true);
         
         form.addLabel("startDate");
-        form.addLabeledDateTimeField("startDateMin", new PropertyModel<Date>(filter, "startDateMin"), enabledModel, false);
-        form.addLabeledDateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"), enabledModel, true);
+        form.addDateTimeField("startDateMin", new PropertyModel<Date>(filter, "startDateMin"), enabledModel, false, true);
+        form.addDateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"), enabledModel, true, true);
 
-        form.addLabeledTextField("accessionNumber", enabledModel);
-        form.addLabeledDropDownChoice("modality", null, getModalityChoices(), enabledModel);
+        form.addTextField("accessionNumber", enabledModel, true);
+        form.addDropDownChoice("modality", null, getModalityChoices(), enabledModel, true);
         List<String> choices = viewport.getStationAetChoices(getStationAETChoices());
         if (choices.size() > 0)
             filter.setScheduledStationAET(choices.get(0));
-        form.addLabeledDropDownChoice("scheduledStationAET", null, choices, enabledModel);
-        form.addLabeledDropDownChoice("scheduledStationName", null, getStationNameChoices(), enabledModel);
-        form.addLabeledDropDownChoice("scheduledProcedureStepStatus", null, getSpsStatusChoices(), enabledModel);
+        form.addDropDownChoice("scheduledStationAET", null, choices, enabledModel, true);
+        form.addDropDownChoice("scheduledStationName", null, getStationNameChoices(), enabledModel, true);
+        form.addDropDownChoice("scheduledProcedureStepStatus", null, getSpsStatusChoices(), enabledModel, true);
     }
 
     protected void addQueryOptions(BaseForm form) {

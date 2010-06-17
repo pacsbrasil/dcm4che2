@@ -46,25 +46,22 @@ import java.util.List;
 
 import org.apache.wicket.Application;
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.Component;
 import org.apache.wicket.PageMap;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
-import org.apache.wicket.datetime.markup.html.form.DateTextField;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.extensions.yui.calendar.DateTimeField;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.ExternalLink;
@@ -82,9 +79,6 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.util.time.Duration;
-import org.apache.wicket.validation.IValidatable;
-import org.apache.wicket.validation.IValidator;
-import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
@@ -114,7 +108,6 @@ import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
-import org.dcm4chee.web.war.trash.TrashListPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,25 +140,15 @@ public class StudyListPage extends Panel {
     
     private WebviewerLinkProvider webviewerLinkProvider;
     
+    private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
+    
     public StudyListPage(final String id) {
         super(id);
         webviewerLinkProvider = new WebviewerLinkProvider(((WebApplication)Application.get()).getInitParameter("webviewerName"));
         add(CSSPackageResource.getHeaderContribution(StudyListPage.class, "folder-style.css"));
 
-//        final WebMarkupContainer searchHeader = new WebMarkupContainer("searchHeader");
-//        searchHeader.setOutputMarkupId(true);
-//        add(searchHeader);
-
         final StudyListFilter filter = viewport.getFilter();
         form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
-//
-//            private static final long serialVersionUID = 1L;
-//            
-//            @Override
-//            public boolean isVisible() {
-//                return showSearch;
-//            }
-//        };
         form.setResourceIdPrefix("folder.");
         form.setTooltipBehaviour(tooltipBehaviour);
         add(form);
@@ -177,6 +160,8 @@ public class StudyListPage extends Panel {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 showSearch = !showSearch;
+                for (WebMarkupContainer wmc : searchTableComponents)
+                    wmc.setVisible(showSearch);               
                 target.addComponent(form);
             }
         };
@@ -205,7 +190,7 @@ public class StudyListPage extends Panel {
 
         addQueryFields(filter, form);
         addQueryOptions(form);
-        addNavigation(form);
+        addNavigation(form);               
         addActions(form);
         form.add(header);
         form.add(new PatientListView("patients", viewport.getPatients()));
@@ -216,7 +201,7 @@ public class StudyListPage extends Panel {
     }
 
     private void addQueryFields(final StudyListFilter filter, final BaseForm form) {
-        IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
+        final IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
 
             private static final long serialVersionUID = 1L;
 
@@ -227,21 +212,33 @@ public class StudyListPage extends Panel {
             }
             
         };
-        form.addLabeledTextField("patientName", enabledModel);
-        form.addLabel("patientIDDescr");
-        form.addLabeledTextField("patientID", enabledModel);
-        form.addLabeledTextField("issuerOfPatientID", enabledModel);
         
-        form.addLabel("studyDate");
-        form.addLabeledDateTimeField("studyDateMin", new PropertyModel<Date>(filter, "studyDateMin"), enabledModel, false);
-        form.addLabeledDateTimeField("studyDateMax", new PropertyModel<Date>(filter, "studyDateMax"), enabledModel, true);
-
-        form.addLabeledTextField("accessionNumber", enabledModel);
-        form.addLabeledDropDownChoice("modality", null, modalities, enabledModel);
+        WebMarkupContainer wmc = new WebMarkupContainer("searchTableLabels");
+        searchTableComponents.add(wmc);
+        form.setParent(wmc);
+        
+        form.addInternalLabel("patientName");
+        form.addInternalLabel("patientIDDescr");
+        form.addInternalLabel("studyDate");
+        form.addInternalLabel("accessionNumber");
+        form.addInternalLabel("modality");
+        form.addInternalLabel("sourceAET");
+        
+        wmc = new WebMarkupContainer("searchTableFields");
+        searchTableComponents.add(wmc);
+        form.setParent(wmc);
+        
+        form.addTextField("patientName", enabledModel, false);
+        form.addTextField("patientID", enabledModel, true);
+        form.addTextField("issuerOfPatientID", enabledModel, true);
+        form.addDateTimeField("studyDateMin", new PropertyModel<Date>(filter, "studyDateMin"), enabledModel, false, true);
+        form.addDateTimeField("studyDateMax", new PropertyModel<Date>(filter, "studyDateMax"), enabledModel, true, true);
+        form.addTextField("accessionNumber", enabledModel, false);
+        form.addDropDownChoice("modality", null, modalities, enabledModel, false);
         List<String> choices = viewport.getSourceAetChoices(sourceAETs);
         if (choices.size() > 0)
             filter.setSourceAET(choices.get(0));
-        form.addLabeledDropDownChoice("sourceAET", null, choices, enabledModel);
+        form.addDropDownChoice("sourceAET", null, choices, enabledModel, false);
 
         final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
 
@@ -249,7 +246,7 @@ public class StudyListPage extends Panel {
 
             @Override
             public boolean isVisible() {
-                return filter.isExtendedQuery();
+                return showSearch && filter.isExtendedQuery();
             }
         };
         extendedFilter.add( new Label("birthDateLabel", new ResourceModel("folder.birthDate")));
@@ -273,6 +270,10 @@ public class StudyListPage extends Panel {
         });
         form.add(extendedFilter);
         
+        wmc = new WebMarkupContainer("searchTableFooter");
+        searchTableComponents.add(wmc);
+        form.setParent(wmc);
+        
         AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedFilter") {
 
             private static final long serialVersionUID = 1L;
@@ -294,8 +295,8 @@ public class StudyListPage extends Panel {
                 }
         })
         .add(new ImageSizeBehaviour()));
-        form.add(link);
-        form.add(new Label("showExtendedFilterText", new ResourceModel("folder.showExtendedFilter.text")));
+        form.addComponent(link);
+        form.addComponent(new Label("showExtendedFilterText", new ResourceModel("folder.showExtendedFilter.text")));
     }
 
     private void addQueryOptions(BaseForm form) {
@@ -327,7 +328,7 @@ public class StudyListPage extends Panel {
         resetBtn.add(new Label("resetText", new ResourceModel("folder.reset.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
-        form.add(resetBtn);
+        form.addComponent(resetBtn);
         
         Button searchBtn = new Button("searchBtn") {
             
@@ -346,8 +347,10 @@ public class StudyListPage extends Panel {
         searchBtn.add(new Label("searchText", new ResourceModel("folder.search.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
         );
-        form.add(searchBtn);
+        form.addComponent(searchBtn);
         form.setDefaultButton(searchBtn);
+        
+        form.setParent(null);
         
         form.add(new Link("prev") {
 

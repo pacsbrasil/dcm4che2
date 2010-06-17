@@ -110,20 +110,20 @@ public class Mpps2MwlLinkPanel extends ModalityWorklistPanel {
                 return !filter.isExtendedQuery() || "*".equals(filter.getStudyInstanceUID());
             }
         };
-        tfPatName = form.addLabeledTextField("patientName", enabledModel);
+        tfPatName = form.addTextField("patientName", enabledModel, true);
         form.addLabel("patientIDDescr");
-        form.addLabeledTextField("patientID", enabledModel);
-        form.addLabeledTextField("issuerOfPatientID", enabledModel);
+        form.addTextField("patientID", enabledModel, true);
+        form.addTextField("issuerOfPatientID", enabledModel, true);
         
         form.addLabel("startDate");
-        form.addLabeledDateTimeField("startDateMin", new PropertyModel<Date>(filter, "startDateMin"), enabledModel, false);
-        form.addLabeledDateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"), enabledModel, true);
+        form.addDateTimeField("startDateMin", new PropertyModel<Date>(filter, "startDateMin"), enabledModel, false, true);
+        form.addDateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"), enabledModel, true, true);
 
-        form.addLabeledTextField("accessionNumber", enabledModel);
-        tfModality = form.addLabeledDropDownChoice("modality", null, getModalityChoices(), enabledModel);
-        form.addLabeledDropDownChoice("scheduledStationAET", null, getStationAETChoices(), enabledModel);
-        form.addLabeledDropDownChoice("scheduledStationName", null, getStationNameChoices(), enabledModel);
-        form.addLabeledDropDownChoice("scheduledProcedureStepStatus", null, getSpsStatusChoices(), enabledModel);
+        form.addTextField("accessionNumber", enabledModel, true);
+        tfModality = form.addDropDownChoice("modality", null, getModalityChoices(), enabledModel, true);
+        form.addDropDownChoice("scheduledStationAET", null, getStationAETChoices(), enabledModel, true);
+        form.addDropDownChoice("scheduledStationName", null, getStationNameChoices(), enabledModel, true);
+        form.addDropDownChoice("scheduledProcedureStepStatus", null, getSpsStatusChoices(), enabledModel, true);
     }
 
     protected WebMarkupContainer addExtendedStudySearch(final Form<?> form) {

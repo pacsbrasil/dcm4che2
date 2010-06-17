@@ -46,12 +46,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.datetime.StyleDateConverter;
 import org.apache.wicket.datetime.markup.html.form.DateTextField;
 import org.apache.wicket.extensions.yui.calendar.DateField;
 import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -91,6 +93,8 @@ public class BaseForm extends Form<Object> {
     private String resourceIdPrefix;
     private TooltipBehaviour tooltipBehaviour;
 
+    private WebMarkupContainer parent;
+    
     private IVisitor<Component> visitor = new FormVisitor();
     
     MarkInvalidBehaviour markInvalidBehaviour = new MarkInvalidBehaviour();
@@ -114,6 +118,28 @@ public class BaseForm extends Form<Object> {
         super.onBeforeRender();
         visitChildren(visitor);
     }
+
+    public MarkupContainer setParent(WebMarkupContainer parent) {
+        this.parent = parent;
+        if (parent != null) 
+            super.add(parent);
+        return this;
+    }
+    
+    public MarkupContainer addComponent(Component child) {
+System.out.println("addComponent: adding " + child.getId());
+        if (parent == null) {
+            System.out.println("addComponent: parent null, adding to " + super.getId());
+            super.add(child);
+        }
+        else {
+            System.out.println("addComponent: parent NOT null, adding to " + parent.getId());
+            parent.add(child);
+
+        }
+System.out.println("addComponent: DONE");
+        return this;
+    }
     
     /**
      * Add a Label and a TextField with text from ResourceModel.
@@ -128,18 +154,18 @@ public class BaseForm extends Form<Object> {
     public TextField<String> addLabeledTextField(String id) {
         TextField<String> tf = new TextField<String>(id);
         addInternalLabel(id);
-        this.add(tf);
+        this.addComponent(tf);
         return tf;
     }
 
     public TextField<Integer> addLabeledNumberTextField(String id) {
         TextField<Integer> tf = new TextField<Integer>(id);
         addInternalLabel(id);
-        this.add(tf);
+        this.addComponent(tf);
         return tf;
     }
 
-    public TextField<String> addLabeledTextField(String id, final IModel<Boolean> enabledModel) {
+    public TextField<String> addTextField(String id, final IModel<Boolean> enabledModel, boolean addLabel) {
         TextField<String> tf = new TextField<String>(id) {
 
             private static final long serialVersionUID = 1L;
@@ -149,14 +175,16 @@ public class BaseForm extends Form<Object> {
                 return enabledModel.getObject();
             }
         };
-        addInternalLabel(id);
-        add(tf);
+        if (addLabel) 
+            addInternalLabel(id);
+        addComponent(tf);
         return tf;
     }
 
-    public SimpleDateTimeField addLabeledDateTimeField(String id, IModel<Date> model, final IModel<Boolean> enabledModel, final boolean max) {
+    public SimpleDateTimeField addDateTimeField(String id, IModel<Date> model, final IModel<Boolean> enabledModel, final boolean max, boolean addLabel) {
         SimpleDateTimeField dtf = getSimpleDateTimeField(id, model, enabledModel, max);
-        addInternalLabel(id);
+        if (addLabel) 
+            addInternalLabel(id);
         return dtf;
     }
 
@@ -179,7 +207,7 @@ public class BaseForm extends Form<Object> {
                         return DateUtils.getDatePattern(dtf);
                     }
         }));
-        add(dtf);
+        addComponent(dtf);
         return dtf;
     }
     
@@ -239,11 +267,11 @@ public class BaseForm extends Form<Object> {
         DropDownChoice<?> ch = model == null ? new DropDownChoice<Object>(id, values) :
                                             new DropDownChoice<Object>(id, model, values);
         addInternalLabel(id);
-        add(ch);
+        addComponent(ch);
         return ch;
     }
 
-    public DropDownChoice<?> addLabeledDropDownChoice(String id, IModel<Object> model, List<String> values, final IModel<Boolean> enabledModel) {
+    public DropDownChoice<?> addDropDownChoice(String id, IModel<Object> model, List<String> values, final IModel<Boolean> enabledModel, boolean addLabel) {
         DropDownChoice<?> ch = model == null ? new DropDownChoice<Object>(id, values)  {
 
                                                 private static final long serialVersionUID = 1L;
@@ -262,8 +290,9 @@ public class BaseForm extends Form<Object> {
                                                     return enabledModel.getObject();
                                                 }
                                             };
-        addInternalLabel(id);
-        add(ch);
+        if (addLabel) 
+            addInternalLabel(id);
+        addComponent(ch);
         return ch;
     }
 
@@ -271,20 +300,20 @@ public class BaseForm extends Form<Object> {
         CheckBox chk = model == null ? new CheckBox(id) :
                                             new CheckBox(id, model);
         addInternalLabel(id);
-        add(chk);
+        addComponent(chk);
         return chk;
     }
     
-    private Label addInternalLabel(String id) {
+    public Label addInternalLabel(String id) {
         String labelId = id+LABEL_ID_EXTENSION;
         Label l = new Label(labelId, new ResourceModel(toResourcekey(id)));
-        add(l);
+        addComponent(l);
         return l;
     }
     
     public Label addLabel(String id) {
         Label l = new Label(id, new ResourceModel(toResourcekey(id)));
-        add(l);
+        addComponent(l);
         return l;
     }
 
@@ -380,6 +409,5 @@ public class BaseForm extends Form<Object> {
         }
         return new StringValidator.MaximumLengthValidator(64);
     }
-
 }
 

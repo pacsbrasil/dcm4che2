@@ -161,6 +161,9 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
     }
     
     private class DateModel implements IModel<Date> {
+        
+        private static final long serialVersionUID = 1L;
+        
         protected SimpleDateTimeField tf;
 
         public DateModel(SimpleDateTimeField tf) {
