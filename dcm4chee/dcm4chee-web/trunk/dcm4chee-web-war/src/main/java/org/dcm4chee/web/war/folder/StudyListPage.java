@@ -207,7 +207,6 @@ public class StudyListPage extends Panel {
                 return (!filter.isExtendedQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) &&
                        (!filter.isExtendedQuery() || QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID()));
             }
-            
         };
         
         WebMarkupContainer wmc = new WebMarkupContainer("searchTableLabels");
@@ -329,7 +328,6 @@ public class StudyListPage extends Panel {
         resetBtn.add(new Image("resetImg",ImageManager.IMAGE_COMMON_RESET)
         .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-//        resetBtn.add(new TooltipBehaviour("folder.", "resetBtn"));
         resetBtn.add(new Label("resetText", new ResourceModel("folder.resetBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
@@ -348,7 +346,6 @@ public class StudyListPage extends Panel {
         searchBtn.add(new Image("searchImg",ImageManager.IMAGE_COMMON_SEARCH)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-//        searchBtn.add(new TooltipBehaviour("folder.", "searchBtn"));
         searchBtn.add(new Label("searchText", new ResourceModel("folder.searchBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
         );
