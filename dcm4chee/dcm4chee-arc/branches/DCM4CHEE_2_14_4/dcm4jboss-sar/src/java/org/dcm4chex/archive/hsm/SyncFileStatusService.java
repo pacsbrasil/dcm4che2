@@ -273,7 +273,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         super.stopService();
     }
 
-    private int check() throws Exception  {
+    public int check() throws Exception  {
         if (fileSystem == null) {
             return 0;
         }
