@@ -53,6 +53,7 @@ import org.dcm4che2.net.NetworkApplicationEntity;
 import org.dcm4che2.net.NetworkConnection;
 import org.dcm4che2.net.NewThreadExecutor;
 import org.dcm4che2.net.TransferCapability;
+import org.dcm4che2.net.pdu.AAssociateRJ;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.jboss.system.ServiceMBeanSupport;
@@ -118,6 +119,13 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
         localNAE.setMaxOpsInvoked(maxOpsInvoked);
     }
 
+    public int getDimseRspTimeout() {
+        return localNAE.getDimseRspTimeout();
+    }
+
+    public void setDimseRspTimeout(int retrieveRspTimeout) {
+        localNAE.setDimseRspTimeout(retrieveRspTimeout);
+    }
     public int getRetrieveRspTimeout() {
         return localNAE.getRetrieveRspTimeout();
     }
@@ -215,13 +223,13 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
         NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
         NetworkConnection remoteConn = new NetworkConnection();
    
+        remoteConn.setHostname(ae.getHostName());
+        remoteConn.setPort(ae.getPort());
         remoteAE.setAETitle(ae.getTitle());
         remoteAE.setInstalled(true);
         remoteAE.setAssociationAcceptor(true);
-        remoteAE.setNetworkConnection(new NetworkConnection[] { remoteConn });
+        remoteAE.setNetworkConnection(remoteConn);
    
-        remoteConn.setHostname(ae.getHostName());
-        remoteConn.setPort(ae.getPort());
         List<String> ciphers = ae.getCipherSuites();
         LOG.info("Open association to {} url:{} Ciphers:{}", new Object[]{ae.getTitle(), ae, ciphers});
         if (ciphers.size() > 0) {
@@ -241,7 +249,9 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
             localConn.setTlsCipherSuite(new String[0]);
         }
         try {
-            return localNAE.connect(remoteAE, executor);
+            return localNAE.connect(remoteAE, executor, true);
+        } catch (AAssociateRJ t) {
+            throw t;
         } catch (Throwable t) {
             log.error("localNAE.connect failed!",t);
             throw new IOException("Failed to establish Association aet:"+ae.getTitle());
