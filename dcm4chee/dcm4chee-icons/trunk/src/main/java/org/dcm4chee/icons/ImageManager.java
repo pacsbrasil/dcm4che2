@@ -51,7 +51,7 @@ public class ImageManager {
     
     public static int defaultWidth = 16;
     public static int defaultHeight = 16;
-    
+   
     public static final ResourceReference IMAGE_COMMON_ADD = 
         new ResourceReference(ImageManager.class, "common/add.png");
     public static final ResourceReference IMAGE_COMMON_AJAXLOAD = 
@@ -76,6 +76,10 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "common/dicom_edit.png");
     public static final ResourceReference IMAGE_COMMON_LINK = 
         new ResourceReference(ImageManager.class, "common/link.png");
+    public static ResourceReference IMAGE_COMMON_SEARCH = 
+        new ResourceReference(ImageManager.class, "common/search.png");
+    public static ResourceReference IMAGE_COMMON_RESET = 
+        new ResourceReference(ImageManager.class, "common/reset.png");
 
     public static final ResourceReference IMAGE_FOLDER_DELETE = 
         new ResourceReference(ImageManager.class, "folder/delete.png");
