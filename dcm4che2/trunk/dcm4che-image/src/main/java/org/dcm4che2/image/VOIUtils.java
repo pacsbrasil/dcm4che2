@@ -287,6 +287,11 @@ public class VOIUtils {
                 minMax = calcMinMax(img, raster);
             }
         }
+        // Handle all single value images
+        if( minMax[0]==minMax[1] ) {
+            if( minMax[0]>0 ) minMax[0] = 0;
+            else minMax[1] = minMax[0]+1;
+        }
         return new float[] {
                 ((minMax[1] + minMax[0]) / 2.f) * slope + intercept + 0.5f,
                 (minMax[1] - minMax[0]) * slope + 1 };
