@@ -71,14 +71,14 @@ public class AEListPanel extends Panel {
     private static final long serialVersionUID = 1L;
 
     private AEMgtPanel page;
-    
+    private DicomEchoWindow mw;
     public AEListPanel(String id, AEMgtPanel p) {
         super(id);
         
         add(CSSPackageResource.getHeaderContribution(AEListPanel.class, "ae-style.css"));
         
         setOutputMarkupId(true);
-        final DicomEchoWindow mw = new DicomEchoWindow("echoPanel", true);
+        mw = new DicomEchoWindow("echoPanel", true);
         mw.setWindowClosedCallback(new WindowClosedCallback(){
 
             private static final long serialVersionUID = 1L;

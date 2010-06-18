@@ -38,6 +38,8 @@
 
 package org.dcm4chee.web.war.ae;
 
+import java.net.UnknownHostException;
+
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
 import org.slf4j.Logger;
@@ -69,6 +71,19 @@ public class EchoDelegate extends BaseMBeanDelegate {
         }
     }
 
+    public boolean ping(String host) throws UnknownHostException {
+        try {
+            return (Boolean) server.invoke(serviceObjectName, "ping", 
+                new Object[]{host}, 
+                new String[]{String.class.getName()});
+        } catch (UnknownHostException x) {
+            throw x;
+        } catch (Exception x) {
+            log.error("ICMP PING failed! Reason:"+x.getMessage(),x);
+            return false;
+        }
+    }
+
     @Override
     public String getInitParameterName() {
         return "echoServiceName";
@@ -78,5 +93,4 @@ public class EchoDelegate extends BaseMBeanDelegate {
     public String getDefaultServiceObjectName() {
         return "dcm4chee.web:service=EchoService";
     }
-
 }
