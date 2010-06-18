@@ -70,7 +70,6 @@ public class TimeField extends TextField<Date> implements ITextFormatProvider {
     @Override
     public void onComponentTag(ComponentTag tag) {
         super.onComponentTag(tag);
-        log.info("#### TimeField is Valid?:"+isValid()+" input:"+getInput()+ " converted:"+getConvertedInput());
         if ( tag.getAttribute("class") == null ) {
             tag.put("class", "timeField");
         }
@@ -89,9 +88,7 @@ public class TimeField extends TextField<Date> implements ITextFormatProvider {
             private Calendar cal = Calendar.getInstance();
 
             public Object convertToObject(String value, Locale locale) {
-                Date oldValue = TimeField.this.getModelObject();
-                Date d = convert(value);
-                return d == null ? oldValue : d;
+                return convert(value);
             }
 
             public String convertToString(Object value, Locale locale) {

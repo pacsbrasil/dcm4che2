@@ -113,10 +113,9 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
         Date t = timeField.getConvertedInput();
         if (d == null) {
             if (t != null) {
-                d = t;
-                dateField.setConvertedInput(d);
+                timeField.setConvertedInput(null);
             }
-            setConvertedInput(d);
+            setConvertedInput(null);
         } else {
             GregorianCalendar cal = new GregorianCalendar();
             cal.setTime(d);
