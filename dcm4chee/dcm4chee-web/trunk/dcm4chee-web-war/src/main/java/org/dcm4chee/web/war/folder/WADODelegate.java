@@ -160,11 +160,8 @@ public class WADODelegate extends BaseMBeanDelegate {
     }
     
     public String getURL(InstanceModel instModel) {
-        SeriesModel seriesModel = instModel.getParent();
-        log.info("seriesModel:"+seriesModel);
-        log.info("ppsModel:"+seriesModel.getParent());
-        log.info("studyModel:"+seriesModel.getParent().getParent());
-        return getWadoBaseUrl()+"&studyUID="+seriesModel.getParent().getParent().getStudyInstanceUID()+"&seriesUID="+
+        SeriesModel seriesModel = instModel.getSeries();
+        return getWadoBaseUrl()+"&studyUID="+seriesModel.getPPS().getStudy().getStudyInstanceUID()+"&seriesUID="+
             seriesModel.getSeriesInstanceUID()+"&objectUID="+instModel.getSOPInstanceUID();
     }
     
