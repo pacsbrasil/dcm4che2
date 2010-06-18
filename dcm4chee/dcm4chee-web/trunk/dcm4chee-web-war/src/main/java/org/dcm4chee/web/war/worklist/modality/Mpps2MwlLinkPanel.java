@@ -150,8 +150,8 @@ public class Mpps2MwlLinkPanel extends ModalityWorklistPanel {
     
     private void addMppsInfoPanel() {
         PPSModel ppsModel = ppsModels.get(0);
-        StudyModel studyModel= ppsModel.getParent();
-        PatientModel patModel = studyModel.getParent();
+        StudyModel studyModel= ppsModel.getStudy();
+        PatientModel patModel = studyModel.getPatient();
         WebMarkupContainer p = new WebMarkupContainer("mppsInfo");
         p.add(new Label("mppsInfoTitle", new ResourceModel("link.ppsInfoTitle")));
         p.add(new Label("patNameLabel", new ResourceModel("link.patNameLabel")));
@@ -170,7 +170,7 @@ public class Mpps2MwlLinkPanel extends ModalityWorklistPanel {
     @SuppressWarnings("unchecked")
     private void presetSearchfields() {
         PPSModel ppsModel = ppsModels.get(0);
-        PatientModel patModel = ppsModel.getParent().getParent();
+        PatientModel patModel = ppsModel.getStudy().getPatient();
         String name = patModel.getName();
         if (name != null && name.length() > 3)
             name = name.substring(0,4);
