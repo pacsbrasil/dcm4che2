@@ -46,7 +46,6 @@ import java.util.List;
 
 import org.apache.wicket.Application;
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.Component;
 import org.apache.wicket.PageMap;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
@@ -153,7 +152,7 @@ public class StudyListPage extends Panel {
         form.setTooltipBehaviour(tooltipBehaviour);
         add(form);
 
-        AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("searchToggle") {
+        form.add(new AjaxFallbackLink<Object>("searchToggle") {
 
             private static final long serialVersionUID = 1L;
 
@@ -164,8 +163,8 @@ public class StudyListPage extends Panel {
                     wmc.setVisible(showSearch);               
                 target.addComponent(form);
             }
-        };
-        link.add(new Image("searchToggleImg", new AbstractReadOnlyModel<ResourceReference>() {
+        }
+        .add((new Image("searchToggleImg", new AbstractReadOnlyModel<ResourceReference>() {
 
                 private static final long serialVersionUID = 1L;
 
@@ -175,18 +174,16 @@ public class StudyListPage extends Panel {
                         ImageManager.IMAGE_COMMON_EXPAND;
                 }
         })
-        .add(new ImageSizeBehaviour()));
-        form.add(link);
-        form.add(new Label("searchToggleText", new AbstractReadOnlyModel<String>() {
+        .add(new TooltipBehaviour("folder.", "searchToggleImg", new AbstractReadOnlyModel<Boolean>() {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public String getObject() {
-                return showSearch ? new ResourceModel("folder.search.hide.text").wrapOnAssignment(form).getObject()
-                        : new ResourceModel("folder.search.show.text").wrapOnAssignment(form).getObject();
+            public Boolean getObject() {
+                return showSearch;
             }
-        }));
+        })))
+        .add(new ImageSizeBehaviour())));
 
         addQueryFields(filter, form);
         addQueryOptions(form);
@@ -284,7 +281,7 @@ public class StudyListPage extends Panel {
                 target.addComponent(form);
             }
         };
-        link.add(new Image("showExtendedFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
+        link.add((new Image("showExtendedFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
 
                 private static final long serialVersionUID = 1L;
 
@@ -294,9 +291,17 @@ public class StudyListPage extends Panel {
                         ImageManager.IMAGE_COMMON_EXPAND;
                 }
         })
+        .add(new TooltipBehaviour("folder.", "showExtendedFilterImg", new AbstractReadOnlyModel<Boolean>() {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Boolean getObject() {
+                return filter.isExtendedQuery();
+            }
+        })))
         .add(new ImageSizeBehaviour()));
         form.addComponent(link);
-        form.addComponent(new Label("showExtendedFilterText", new ResourceModel("folder.showExtendedFilter.text")));
     }
 
     private void addQueryOptions(BaseForm form) {
@@ -324,8 +329,8 @@ public class StudyListPage extends Panel {
         resetBtn.add(new Image("resetImg",ImageManager.IMAGE_COMMON_RESET)
         .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        resetBtn.add(new TooltipBehaviour("folder.", "resetBtn"));
-        resetBtn.add(new Label("resetText", new ResourceModel("folder.reset.text"))
+//        resetBtn.add(new TooltipBehaviour("folder.", "resetBtn"));
+        resetBtn.add(new Label("resetText", new ResourceModel("folder.resetBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
         form.addComponent(resetBtn);
@@ -343,8 +348,8 @@ public class StudyListPage extends Panel {
         searchBtn.add(new Image("searchImg",ImageManager.IMAGE_COMMON_SEARCH)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        searchBtn.add(new TooltipBehaviour("folder.", "searchBtn"));
-        searchBtn.add(new Label("searchText", new ResourceModel("folder.search.text"))
+//        searchBtn.add(new TooltipBehaviour("folder.", "searchBtn"));
+        searchBtn.add(new Label("searchText", new ResourceModel("folder.searchBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
         );
         form.addComponent(searchBtn);

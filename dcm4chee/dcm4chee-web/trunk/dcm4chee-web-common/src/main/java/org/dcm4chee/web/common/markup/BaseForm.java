@@ -127,17 +127,10 @@ public class BaseForm extends Form<Object> {
     }
     
     public MarkupContainer addComponent(Component child) {
-System.out.println("addComponent: adding " + child.getId());
-        if (parent == null) {
-            System.out.println("addComponent: parent null, adding to " + super.getId());
+        if (parent == null)
             super.add(child);
-        }
-        else {
-            System.out.println("addComponent: parent NOT null, adding to " + parent.getId());
+        else
             parent.add(child);
-
-        }
-System.out.println("addComponent: DONE");
         return this;
     }
     

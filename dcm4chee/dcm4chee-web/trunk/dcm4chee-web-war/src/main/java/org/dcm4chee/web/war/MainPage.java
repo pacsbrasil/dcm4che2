@@ -45,7 +45,6 @@ import org.apache.wicket.authorization.strategies.role.RoleAuthorizationStrategy
 import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.usr.ui.usermanagement.UserListPanel;
 import org.dcm4chee.web.common.base.BaseWicketApplication;

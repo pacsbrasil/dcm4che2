@@ -43,6 +43,7 @@ import org.apache.wicket.Component;
 import org.apache.wicket.Localizer;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 
 /**
@@ -60,6 +61,7 @@ public class TooltipBehaviour extends AbstractBehavior {
     private transient Localizer localizer;
 
     private IModel<?> substitutionModel;
+    private AbstractReadOnlyModel<Boolean> showTooltipModel;
     
     /*
      * Create a TooltipBehaviour with given prefix.
@@ -85,6 +87,11 @@ public class TooltipBehaviour extends AbstractBehavior {
         this.substitutionModel = substitutionModel;
     }
 
+    public TooltipBehaviour(String prefix, String id, AbstractReadOnlyModel<Boolean> showTooltipModel) {
+        this(prefix, id);
+        this.showTooltipModel = showTooltipModel;
+    }
+
     public void onComponentTag(Component c, ComponentTag tag) {
         tag.put("title", getLocalizer().getStringIgnoreSettings(getResourceKey(c), c, substitutionModel, ""));
     }
@@ -93,6 +100,10 @@ public class TooltipBehaviour extends AbstractBehavior {
         StringBuilder sb = new StringBuilder();
         if ( prefix != null ) sb.append(prefix);
         sb.append(id==null ? c.getId() : id);
+        sb.append(this.showTooltipModel == null ? "" 
+                : "."
+                    + (this.showTooltipModel.getObject() ?  "hide" : "show")
+        );
         sb.append(POSTFIX);
         return sb.toString();
     }
@@ -110,4 +121,20 @@ public class TooltipBehaviour extends AbstractBehavior {
     public TooltipBehaviour newWithSubstitution(IModel<?> model) {
         return new TooltipBehaviour(prefix, id, model);
     }
+    
+//    public static class DynamicTooltipModel extends AbstractReadOnlyModel<String>{
+//        
+//        private static final long serialVersionUID = 1L;
+//        
+//        private boolean show;
+//        
+//        public DynamicTooltipModel(boolean show) {
+//            this.show = show;
+//        }
+//        
+//        @Override
+//        public String getObject() {
+//            return show ? "hide" : "show";
+//        }
+//    }
 }
