@@ -105,7 +105,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     public void show(AjaxRequestTarget target, PPSModel ppsModel, Component c) {
         ppsModels  = toList(ppsModel);
         ppsModelForInfo = ppsModels.get(0);
-        ppsPatModelForInfo = ppsModelForInfo.getParent().getParent();
+        ppsPatModelForInfo = ppsModelForInfo.getStudy().getPatient();
         panel.presetSearchfields();
         comp = c;
         super.show(target);
@@ -172,7 +172,6 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                         int nrOfStudies = result.getStudiesToMove().size();
                         if (nrOfStudies == 0) {
                             for (PPSModel mpps : ppsModels) {
-                                mpps.getParent().collapse();
                                 mpps.getParent().expand();
                             }
                         } else {
@@ -222,7 +221,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
             if ("delete".equals(patPreset)) {
                 getViewPort().getFilter().setPatientName(null);
             } else if (patPreset != null) {
-                PatientModel patModel = ppsModel.getParent().getParent();
+                PatientModel patModel = ppsModel.getStudy().getPatient();
                 String name = patModel.getName();
                 if ( !"*".equals(patPreset)) {
                     int nrofChars = Integer.parseInt(patPreset);

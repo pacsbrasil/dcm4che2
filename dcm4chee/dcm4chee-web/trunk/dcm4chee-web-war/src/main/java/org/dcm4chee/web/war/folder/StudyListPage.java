@@ -78,7 +78,10 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.util.time.Duration;
+import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
+import org.dcm4chee.archive.common.PrivateTag;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -263,7 +266,7 @@ public class StudyListPage extends Panel {
             public boolean isEnabled() {
                 return !filter.isExtendedQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
             }
-        });
+        }.add(new UIDValidator()));
         form.add(extendedFilter);
         
         wmc = new WebMarkupContainer("searchTableFooter");
@@ -333,14 +336,16 @@ public class StudyListPage extends Panel {
         );
         form.addComponent(resetBtn);
         
-        Button searchBtn = new Button("searchBtn") {
+        Button searchBtn = new AjaxButton("searchBtn") {
             
             private static final long serialVersionUID = 1L;
             
             @Override
-            public void onSubmit() {
+            public void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 viewport.setOffset(0);
                 queryStudies();
+                form.setOutputMarkupId(true);
+                target.addComponent(form);
             }
         };
         searchBtn.add(new Image("searchImg",ImageManager.IMAGE_COMMON_SEARCH)
@@ -506,65 +511,17 @@ public class StudyListPage extends Panel {
         );
         form.add(deleteBtn);
         
-        final ConfirmationWindow<SelectedEntities> confirmMove = new ConfirmationWindow<SelectedEntities>("confirmMove"){
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onOk(AjaxRequestTarget target) {
-                target.addComponent(form);
-            }
-
-            @Override
-            public void onConfirmation(AjaxRequestTarget target, final SelectedEntities selected) {
-                
-                this.setStatus(new StringResourceModel("folder.move.running", StudyListPage.this, null));
-                okBtn.setVisible(false);
-                ajaxRunning = true;
-                
-                msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                    
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    protected void onTimer(AjaxRequestTarget target) {
-                        try {
-                            int nrOfMovedInstances = ContentEditDelegate.getInstance().moveEntities(selected);
-                            if (nrOfMovedInstances != -1) {
-                                setStatus(new StringResourceModel("folder.moveDone", StudyListPage.this,null));
-                                viewport.getPatients().clear();
-                            } else
-                                setStatus(new StringResourceModel("folder.moveFailed", StudyListPage.this,null));
-                        } catch (SelectionException x) {
-                            log.warn(x.getMessage());
-                            setStatus(new StringResourceModel(x.getMsgId(), StudyListPage.this,null));
-                        }
-                        queryStudies();
-                        this.stop();
-                        ajaxRunning = false;
-                        okBtn.setVisible(true);
-                        
-                        target.addComponent(msgLabel);
-                        target.addComponent(hourglassImage);
-                        target.addComponent(okBtn);
-                    }
-                });
-            }
-        };
-        confirmMove.setInitialHeight(150);
-        form.add(confirmMove);
-        
         AjaxButton moveBtn = new AjaxButton("moveBtn") {
             
             private static final long serialVersionUID = 1L;
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                selected.update(viewport.getPatients());
-                selected.deselectChildsOfSelectedEntities();
+                selected.update(viewport.getPatients(), true);
+                //selected.deselectChildsOfSelectedEntities();
                 log.info("Selected Entities:"+selected);
                 if (selected.hasDicomSelection())
-                    confirmMove.confirm(target, new StringResourceModel("folder.confirmMove",this, null,new Object[]{selected}), selected);
+                    setResponsePage(new MoveEntitiesPage(StudyListPage.this.getPage(), selected, viewport.getPatients()));
                 else
                     msgWin.show(target, getString("folder.noSelection"));
             }
@@ -766,8 +723,13 @@ public class StudyListPage extends Panel {
             cell.add(new ExpandCollapseLink("expand", patModel, item));
             item.add(cell);
             item.add(new Label("name").add(tooltipBehaviour));
-            item.add(new Label("id").add(tooltipBehaviour));
-            item.add(new Label("issuer").add(tooltipBehaviour));
+            item.add(new Label("id", new AbstractReadOnlyModel<String>(){
+                @Override
+                public String getObject() {
+                    return patModel.getIssuer() == null ? patModel.getId() :
+                        patModel.getId()+"/"+patModel.getIssuer();
+                }
+            }).add(tooltipBehaviour));
             DateTimeLabel dtl = new DateTimeLabel("birthdate").setWithoutTime(true);
             dtl.add(tooltipBehaviour.newWithSubstitution(new PropertyModel<String>(dtl, "textFormat")));
             item.add(dtl);
@@ -1336,6 +1298,7 @@ public class StudyListPage extends Panel {
                         new SimpleEditDicomObjectPage(StudyListPage.this.getPage(), new ResourceModel("folder.addStudy", "Add Study"),
                                 newStudyModel, new int[][]{{Tag.StudyInstanceUID},
                                                     {Tag.StudyID},
+                                                    {Tag.StudyDescription},
                                                     {Tag.AccessionNumber},
                                                     {Tag.StudyDate, Tag.StudyTime}}, model));
             }
@@ -1357,6 +1320,9 @@ public class StudyListPage extends Panel {
             @Override
             public void onClick() {
                 SeriesModel newSeriesModel = new SeriesModel(null, null);
+                DicomObject attrs = newSeriesModel.getDataset();
+                attrs.putString(attrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), VR.AE, "created");
+                new PPSModel(null, newSeriesModel, model);
                 setResponsePage(
                         new SimpleEditDicomObjectPage(StudyListPage.this.getPage(), new ResourceModel("folder.addSeries", "Add Series"),
                                 newSeriesModel, new int[][]{{Tag.SeriesInstanceUID},

@@ -67,7 +67,6 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
     private int numberOfInstances;
     private int numberOfSeries;
     private List<SeriesModel> series = new ArrayList<SeriesModel>();
-    private StudyModel parent;
     
     public PPSModel(MPPS mpps, SeriesModel series1, StudyModel studyModel) {
         if (mpps != null) {
@@ -75,17 +74,17 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
             this.dataset = mpps.getAttributes();
         }
         setParent(studyModel);
-        series1.setParent(this);
+        series1.setPPS(this);
         this.series1 = series1;
         series.add(series1);
     }
     
-    public void setParent(StudyModel m) {
-        parent = m;
+    public void setStudy(StudyModel m) {
+        setParent(m);
     }
     
-    public StudyModel getParent() {
-        return parent;
+    public StudyModel getStudy() {
+        return (StudyModel) getParent();
     }
 
 
@@ -229,6 +228,7 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
     public void expand() {
         String uid = getUid();
         if (uid != null) {
+            series.clear();
             StudyListLocal dao = (StudyListLocal)
                     JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
             for (Series ser : dao.findSeriesOfMpps(uid)) {
@@ -256,11 +256,21 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
     
     @Override
     public void refresh() {
+        StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         if (dataset != null) {
-            StudyListLocal dao = (StudyListLocal)
-            JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
             dataset = dao.getMPPS(getPk()).getAttributes();
+        } else {
+            ArrayList<SeriesModel> currentSeries = new ArrayList<SeriesModel>();
+            for (Series s : dao.findSeriesOfStudy(getStudy().getPk())) {
+                SeriesModel seriesModel = new SeriesModel(s,null);
+                MPPS mpps = s.getModalityPerformedProcedureStep();
+                if (mpps == null && seriesModel.containedBySamePPS(getSeries1())) {
+                    currentSeries.add(seriesModel);
+                }
+            }
+            series.retainAll(currentSeries);
         }
+        numberOfSeries = 0;
         numberOfInstances = 0;
-    }
+    }    
 }

@@ -487,6 +487,11 @@ public class DicomEditBean implements DicomEditLocal {
         return series;
     }
     
+    public void removeSeries(long seriesPk) {
+        Series series = em.find(Series.class, seriesPk);
+        em.remove(series);
+    }
+    
     public Study updateStudy(Study study) {
         if (study.getPk() == -1) {
             if (study.getPatient().getPk() == -1) {
@@ -511,6 +516,11 @@ public class DicomEditBean implements DicomEditLocal {
         study.setPatient(patient);
         em.persist(study);
         return study;
+    }
+    
+    public void removeStudy(long studyPk) {
+        Study study = em.find(Study.class, studyPk);
+        em.remove(study);
     }
  
     private void removeSeriesFromMPPS(MPPS mpps, String seriesIUID) {

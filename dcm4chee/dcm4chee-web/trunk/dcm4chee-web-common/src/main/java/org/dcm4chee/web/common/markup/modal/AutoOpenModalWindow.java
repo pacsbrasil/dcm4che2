@@ -77,6 +77,7 @@ public abstract class AutoOpenModalWindow extends ModalWindow {
             container.getHeaderResponse().renderOnLoadJavascript("self.focus();var elem=document.getElementById('"+
                     c.getMarkupId() + "');elem.focus()");
         }
+        container.getHeaderResponse().renderOnDomReadyJavascript ("Wicket.Window.unloadConfirmation = false");
     }
 
     @Override

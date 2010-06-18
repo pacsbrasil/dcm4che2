@@ -68,8 +68,6 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     
     private List<PPSModel> ppss = new ArrayList<PPSModel>();
 
-    private PatientModel parent;
-
     private String availability;
     private int numberOfStudyRelatedSeries;
     private int numberOfStudyRelatedInstances;
@@ -83,15 +81,15 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
             setPk(study.getPk());
             updateModel(study);
         }
+        setPatient(patModel);
+    }
+
+    private void setPatient(PatientModel patModel) {
         setParent(patModel);
     }
 
-    private void setParent(PatientModel patModel) {
-        parent = patModel;
-    }
-
-    public PatientModel getParent() {
-        return parent;
+    public PatientModel getPatient() {
+        return (PatientModel) getParent();
     }
 
     public String getStudyInstanceUID() {
@@ -190,6 +188,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
 
     @Override
     public void expand() {
+        ppss.clear();
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         for (Series series : dao.findSeriesOfStudy(getPk())) {
@@ -229,7 +228,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         Study s;
         if (getPk() == -1) {
-            s = dao.addStudy(parent.getPk(), dicomObject);
+            s = dao.addStudy(getPatient().getPk(), dicomObject);
             setPk(s.getPk());
         } else {
             s = dao.updateStudy(getPk(), dicomObject);

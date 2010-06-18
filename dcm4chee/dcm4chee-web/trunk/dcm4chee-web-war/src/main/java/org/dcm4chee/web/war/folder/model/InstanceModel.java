@@ -62,20 +62,19 @@ public class InstanceModel extends AbstractEditableDicomModel implements Seriali
 
     private static final long serialVersionUID = 1L;
     private List<FileModel> files = new ArrayList<FileModel>();
-    private SeriesModel parent;
 
     public InstanceModel(Instance inst, SeriesModel seriesModel) {
         setPk(inst.getPk());
         this.dataset = inst.getAttributes(true);
-        setParent(seriesModel);
+        setSeries(seriesModel);
     }
 
-    private void setParent(SeriesModel m) {
-        parent = m;
+    private void setSeries(SeriesModel m) {
+        setParent(m);
     }
     
-    public SeriesModel getParent() {
-        return parent;
+    public SeriesModel getSeries() {
+        return (SeriesModel) getParent();
     }
 
     public String getSOPInstanceUID() {
@@ -167,6 +166,7 @@ public class InstanceModel extends AbstractEditableDicomModel implements Seriali
 
     @Override
     public void expand() {
+        files.clear();
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         for (File file : dao.findFilesOfInstance(getPk())) {

@@ -72,8 +72,13 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
         this.latestStudyFirst = latestStudyFirst;
     }
 
+    @Override
+    public void setParent(AbstractDicomModel o) {
+        throw new UnsupportedOperationException("Patient has no parent model!");
+    }
+
     public String getName() {
-        return dataset.getString(Tag.PatientName);
+        return replace(dataset.getString(Tag.PatientName),'^', ' ');
     }
 
     public String getId() {
@@ -131,6 +136,7 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
 
     @Override
     public void expand() {
+        studies.clear();
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst.getObject())) {

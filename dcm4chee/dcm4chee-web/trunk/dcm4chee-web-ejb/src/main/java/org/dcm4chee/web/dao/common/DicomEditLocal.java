@@ -82,6 +82,8 @@ public interface DicomEditLocal {
     
     Series updateSeries(Series series);
     Series createSeries(DicomObject seriesAttrs, long studyPk);
+    void removeSeries(long seriesPk);
     Study updateStudy(Study study);
     Study createStudy(DicomObject studyAttrs, long patPk);
+    void removeStudy(long studyPk);
 }

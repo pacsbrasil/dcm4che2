@@ -70,33 +70,33 @@ public class SelectedEntities implements Serializable {
     private Set<FileModel> files = new HashSet<FileModel>();
     
     public void update(List<PatientModel> allPatients) {
+        update(allPatients, false);
+    }
+    public void update(List<PatientModel> allPatients, boolean all) {
         clear();
         for ( PatientModel p : allPatients ) {
             if ( p.isSelected() ) {
                 patients.add(p);
-            } else {
+            }
+            if (all || !p.isSelected()) {
                 for (StudyModel study : p.getStudies()) {
                     if (study.isSelected()) {
                         studies.add(study);
-                    } else {
+                    }
+                    if (all || !study.isSelected()) {
                         for ( PPSModel pps : study.getPPSs()) {
                             if (pps.isSelected()) {
                                ppss.add(pps);
-                            } else {
+                            }
+                            if (all || !pps.isSelected()) {
                                 for ( SeriesModel series : pps.getSeries()) {
                                     if ( series.isSelected() ) {
                                         seriess.add(series);
-                                    } else {
+                                    }
+                                    if (all || !series.isSelected()) {
                                         for (InstanceModel inst : series.getInstances()) {
                                             if (inst.isSelected()) {
                                                 instances.add(inst);
-                                                for (FileModel f : inst.getFiles()) f.setSelected(false);
-                                            } else {
-                                                for (FileModel f : inst.getFiles()) {
-                                                    if (f.isSelected()){
-                                                        files.add(f);
-                                                    }
-                                                }
                                             }
                                         }
                                     }
@@ -201,24 +201,24 @@ public class SelectedEntities implements Serializable {
     
     public void refreshView(boolean deselect) {
         for (InstanceModel m : instances) {
-            refreshChilds(m.getParent());
-            m.getParent().getParent().refresh();
-            m.getParent().getParent().getParent().refresh();//refresh study
+            refreshChilds(m.getSeries());
+            m.getSeries().getPPS().refresh();
+            m.getSeries().getPPS().getStudy().refresh();//refresh study
             if (deselect) 
                 m.setSelected(false);
         }
         for (SeriesModel m : seriess) {
-            refreshChilds(m.getParent().getParent());
+            refreshChilds(m.getPPS().getStudy());
             if (deselect) 
                 m.setSelected(false);
         }
         for (PPSModel m : ppss) {
-            refreshChilds(m.getParent());
+            refreshChilds(m.getStudy());
             if (deselect) 
                 m.setSelected(false);
         }
         for (StudyModel m : studies) {
-            refreshChilds(m.getParent());
+            refreshChilds(m.getPatient());
             if (deselect) 
                 m.setSelected(false);
         }
@@ -230,7 +230,6 @@ public class SelectedEntities implements Serializable {
     }
     
     private void refreshChilds(AbstractEditableDicomModel m) {
-        m.collapse();
         m.expand();
         m.refresh();
     }

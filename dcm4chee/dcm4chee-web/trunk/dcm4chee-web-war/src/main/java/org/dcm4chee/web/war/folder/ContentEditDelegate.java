@@ -155,11 +155,11 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
                     if ( selected.hasSeries() && selected.hasInstances()) {
                         throw new SelectionException(MSG_ERR_SELECTION_MOVE_SOURCE_LEVEL, MSGID_ERR_SELECTION_MOVE_SOURCE_LEVEL);
                     } else if (selected.hasSeries()) {
-                        Study st = createNewStudy(selected.getSeries().iterator().next().getParent().getParent(), patPk);
+                        Study st = createNewStudy(selected.getSeries().iterator().next().getPPS().getStudy(), patPk);
                         return moveEntities("moveSeriesToStudy", st.getPk(), toPks(selected.getSeries()));
                     } else if (selected.hasInstances()) {
-                        SeriesModel sModel = selected.getInstances().iterator().next().getParent();
-                        Study st = createNewStudy(sModel.getParent().getParent(), patPk);
+                        SeriesModel sModel = selected.getInstances().iterator().next().getSeries();
+                        Study st = createNewStudy(sModel.getPPS().getStudy(), patPk);
                         Series series = createNewSeries(sModel, st.getPk());
                         return moveEntities("moveInstancesToSeries", series.getPk(), toPks(selected.getInstances()));
                     } else {
@@ -177,7 +177,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
             if( nrOfStudies == 1) {
                 if (selected.getSeries().size() < 1) {
                     if ( selected.hasInstances()) {
-                        SeriesModel sModel = selected.getInstances().iterator().next().getParent();
+                        SeriesModel sModel = selected.getInstances().iterator().next().getSeries();
                         Series series = createNewSeries(sModel, selected.getStudies().iterator().next().getPk());
                         return moveEntities("moveInstancesToSeries", series.getPk(), toPks(selected.getInstances()));
                     } else {
@@ -265,8 +265,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         boolean status = (Boolean) server.invoke(serviceObjectName, "unlinkMpps", 
                 new Object[]{mpps.getPk()}, 
                 new String[]{long.class.getName()});
-        mpps.getParent().collapse();
-        mpps.getParent().expand();
+        mpps.getStudy().expand();
         return status;
     }
     

@@ -72,8 +72,6 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
     
     private List<InstanceModel> instances = new ArrayList<InstanceModel>();
 
-    private PPSModel parent;
-
     public SeriesModel(Series series, PPSModel ppsModel) {
         if (series == null) {
             setPk(-1);
@@ -86,12 +84,12 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
         setParent(ppsModel);
     }
 
-    protected void setParent(PPSModel ppsModel) {
-       parent = ppsModel;
+    protected void setPPS(PPSModel ppsModel) {
+       setParent(ppsModel);
     }
 
-    public PPSModel getParent() {
-        return parent;
+    public PPSModel getPPS() {
+        return (PPSModel)getParent();
     }
 
     public String getSeriesInstanceUID() {
@@ -203,6 +201,7 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
 
     @Override
     public void expand() {
+        instances.clear();
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         for (Instance inst : dao.findInstancesOfSeries(getPk())) {
@@ -228,7 +227,7 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
                 VR.AE, getSourceAET());
         Series s;
         if ( getPk() == -1) {
-            s = dao.addSeries(getParent().getParent().getPk(), dicomObject);
+            s = dao.addSeries(getPPS().getStudy().getPk(), dicomObject);
             setPk(s.getPk());
         }  else {
             s = dao.updateSeries(getPk(), dicomObject);

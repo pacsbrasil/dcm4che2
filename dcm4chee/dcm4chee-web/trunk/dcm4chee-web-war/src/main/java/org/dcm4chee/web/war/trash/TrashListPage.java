@@ -550,7 +550,6 @@ public class TrashListPage extends Panel {
             item.add(new DateTimeLabel("birthdate").setWithoutTime(true).add(tooltipBehaviour));
             item.add(new Label("sex").add(tooltipBehaviour));
             item.add(new Label("comments").add(tooltipBehaviour));
-            item.add(new Label("pk").add(new TooltipBehaviour("trash.","patPk")));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -626,7 +625,6 @@ public class TrashListPage extends Panel {
             item.add(new Label("numberOfSeries").add(new TooltipBehaviour("trash.study","NoS")));
             item.add(new Label("numberOfInstances").add(new TooltipBehaviour("trash.study","NoI")));
             item.add(new Label("availability").add(new TooltipBehaviour("trash.study","Availability")));
-            item.add(new Label("pk").add(new TooltipBehaviour("trash.", "studyPk")));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -700,7 +698,6 @@ public class TrashListPage extends Panel {
             item.add(new Label("description").add(new TooltipBehaviour("trash.series","Description")));
             item.add(new Label("numberOfInstances").add(new TooltipBehaviour("trash.series","NoI")));
             item.add(new Label("availability").add(new TooltipBehaviour("trash.series","Availability")));
-            item.add(new Label("pk").add(new TooltipBehaviour("trash.", "seriesPk")));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -762,7 +759,6 @@ public class TrashListPage extends Panel {
             item.add(new Label("sopClassUID").add(new TooltipBehaviour("trash.","sopClassUID")));
             item.add(new Label("description").add(new TooltipBehaviour("trash.instance","Description")));
             item.add(new Label("availability").add(new TooltipBehaviour("trash.instance","Availability")));
-            item.add(new Label("pk").add(new TooltipBehaviour("trash.", "instancePk")));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
