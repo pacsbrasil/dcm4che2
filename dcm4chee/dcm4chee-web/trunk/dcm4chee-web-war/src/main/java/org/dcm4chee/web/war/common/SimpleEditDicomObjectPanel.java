@@ -93,10 +93,11 @@ public class SimpleEditDicomObjectPanel extends Panel {
     
     private static Logger log = LoggerFactory.getLogger(SimpleEditDicomObjectPanel.class);
 
-    public SimpleEditDicomObjectPanel(String id, DicomObject dcmObj, final int[][] tagPaths) {
+    public SimpleEditDicomObjectPanel(String id, IModel<String> title, DicomObject dcmObj, final int[][] tagPaths) {
         super(id);
         this.dcmObj = new BasicDicomObject();
         dcmObj.copyTo(this.dcmObj);
+        add(new Label("title", title));
         form = new BaseForm("form");
         add(form);
         table = new WebMarkupContainer("table");

@@ -66,8 +66,7 @@ public class SimpleEditDicomObjectPage extends WebPage {
             add(CSSPackageResource.getHeaderContribution(SimpleEditDicomObjectPage.BaseCSS));
         if (SimpleEditDicomObjectPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(SimpleEditDicomObjectPage.CSS));
-        add(new Label("title", title));
-        add(new SimpleEditDicomObjectPanel("dicomobject", model.getDataset(), tagPaths) {
+        add(new SimpleEditDicomObjectPanel("dicomobject", title, model.getDataset(), tagPaths) {
 
             private static final long serialVersionUID = 1L;
 
@@ -80,7 +79,6 @@ public class SimpleEditDicomObjectPage extends WebPage {
             protected void onSubmit() {
                 model.update(getDicomObject());
                 if (parentModel != null) {
-                    parentModel.collapse();
                     parentModel.expand();
                 }
                 setResponsePage(page);

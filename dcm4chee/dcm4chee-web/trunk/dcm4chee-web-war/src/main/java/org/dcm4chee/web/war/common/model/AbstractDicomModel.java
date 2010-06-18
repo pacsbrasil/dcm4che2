@@ -69,6 +69,7 @@ public abstract class AbstractDicomModel implements Serializable {
     private boolean selected;
     private boolean details;
     protected DicomObject dataset;
+    private AbstractDicomModel parent;
     
     protected static Logger log = LoggerFactory.getLogger(AbstractDicomModel.class);
             
@@ -82,6 +83,14 @@ public abstract class AbstractDicomModel implements Serializable {
     
     public DicomObject getDataset() {
         return dataset;
+    }
+
+    public AbstractDicomModel getParent() {
+        return parent;
+    }
+
+    public void setParent(AbstractDicomModel parent) {
+        this.parent = parent;
     }
 
     public boolean isSelected() {
@@ -142,5 +151,28 @@ public abstract class AbstractDicomModel implements Serializable {
             log.warn("DicomObject contains wrong value in date attribute!:"+dataset);
             return null;
         }
+    }
+    
+    public String replace(String s, char oldChar, char newChar) {
+        return s == null ? s : s.replace(oldChar, newChar);
+    }
+    
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+        if (o.getClass() != getClass()) {
+            return false;
+        }
+        return ((AbstractDicomModel) o).getPk() == pk;
+    }
+    
+    public int hashCode() {
+        int hashCode = 1;
+        hashCode = 31 * hashCode + (int) (+pk ^ (pk >>> 32));
+        return hashCode;
     }
 }
