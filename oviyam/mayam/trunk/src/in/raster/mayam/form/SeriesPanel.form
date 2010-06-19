@@ -25,7 +25,7 @@
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="institutionText" alignment="0" pref="93" max="32767" attributes="1"/>
+                          <Component id="institutionText" alignment="0" pref="107" max="32767" attributes="1"/>
                           <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
                               <Component id="modalityText" max="32767" attributes="1"/>
                               <Component id="seriesDescriptionText" alignment="0" min="-2" pref="93" max="-2" attributes="1"/>

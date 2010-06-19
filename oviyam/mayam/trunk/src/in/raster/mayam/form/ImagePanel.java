@@ -198,6 +198,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     private double thumbRatio;
     private int startX = 0;
     private int startY = 0;
+    private double currentScaleFactor=1;
 
     public ImagePanel() {
         initComponents();
@@ -982,6 +983,18 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
 
         startX = (maxWidth - thumbWidth) / 2;
         startY = (maxHeight - thumbHeight) / 2;
+        displayZoomLevel();
+    }
+    private void displayZoomLevel()
+    {
+        int currentZoomLevel=(int) (this.scaleFactor * currentScaleFactor * 100);
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setZoomLevel(" Zoom: "+currentZoomLevel+"%");
+        this.getCanvas().getLayeredCanvas().textOverlay.repaint();
+    }
+    public double getCurrentScaleFactor()
+    {        
+        currentScaleFactor=(thumbWidth+0.000f)/image.getWidth();       
+        return currentScaleFactor;
     }
 
     public void setScoutBorder1Coordinates(int line1X1, int line1Y1, int line1X2, int line1Y2) {
@@ -1025,6 +1038,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     public void doZoomIn() {
         scaleFlag = true;
         scaleFactor = scaleFactor + 0.5;
+        displayZoomLevel();
         scaleProcess();
 
     }
@@ -1049,7 +1063,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         } else {
             scaleFactor = 0.5;
         }
-
+         displayZoomLevel();
     }
 
     /**

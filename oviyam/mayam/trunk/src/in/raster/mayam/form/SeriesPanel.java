@@ -165,6 +165,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
     private void readDicomFile(File selFile) {
         try {
             iis = ImageIO.createImageInputStream(selFile);
+            ImageIO.scanForPlugins();
             iter = ImageIO.getImageReadersByFormatName("DICOM");
             reader = (ImageReader) iter.next();
             reader.setInput(iis, false);

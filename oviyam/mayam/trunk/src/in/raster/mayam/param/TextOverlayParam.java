@@ -62,6 +62,7 @@ public class TextOverlayParam {
     private String pxValue = "";
     private String totalInstance="";
     private String currentInstance="";
+    private String zoomLevel="";
 
     public TextOverlayParam() {
     }
@@ -203,6 +204,14 @@ public class TextOverlayParam {
 
     public void setCurrentInstance(String currentInstance) {
         this.currentInstance = currentInstance;
+    }
+
+    public String getZoomLevel() {
+        return zoomLevel;
+    }
+
+    public void setZoomLevel(String zoomLevel) {
+        this.zoomLevel = zoomLevel;
     }
 
 

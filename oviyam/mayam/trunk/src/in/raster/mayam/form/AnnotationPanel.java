@@ -1047,11 +1047,11 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     private String calculateDiff(int mouseLocX1, int mouseLocY1, int mouseLocX2, int mouseLocY2) {
         double diff;
         if (mouseLocX1 == mouseLocX2) {
-            diff = (double) ((mouseLocY2 - mouseLocY1) * (this.layeredCanvas.imgpanel.getPixelSpacingY()));
+            diff = (double) (((mouseLocY2 - mouseLocY1)/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * (this.layeredCanvas.imgpanel.getPixelSpacingY()));
         } else if (mouseLocY1 == mouseLocY2) {
-            diff = (double) ((mouseLocX2 - mouseLocX1) * (this.layeredCanvas.imgpanel.getPixelSpacingX()));
+            diff = (double) (((mouseLocX2 - mouseLocX1)/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * (this.layeredCanvas.imgpanel.getPixelSpacingX()));
         } else {
-            diff = (double) Math.sqrt(Math.pow((mouseLocY2 - mouseLocY1) * (this.layeredCanvas.imgpanel.getPixelSpacingY()), 2) + Math.pow((mouseLocX2 - mouseLocX1) * (this.layeredCanvas.imgpanel.getPixelSpacingX()), 2));
+            diff = (double) Math.sqrt(Math.pow(((mouseLocY2 - mouseLocY1)/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * (this.layeredCanvas.imgpanel.getPixelSpacingY()), 2) + Math.pow(((mouseLocX2 - mouseLocX1)/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * (this.layeredCanvas.imgpanel.getPixelSpacingX()), 2));
         }
         double diff1 = diff / 10;
         NumberFormat nf = NumberFormat.getInstance();
@@ -1082,7 +1082,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         } else {
             diffX = mouseLocX2 - mouseLocX1;
         }
-        diff = (double) (((diffY) * this.layeredCanvas.imgpanel.getPixelSpacingY()) * ((diffX) * this.layeredCanvas.imgpanel.getPixelSpacingX()));
+        diff = (double) (((diffY/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * this.layeredCanvas.imgpanel.getPixelSpacingY()) * ((diffX/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * this.layeredCanvas.imgpanel.getPixelSpacingX()));
         double diff1 = diff / 100;
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(3);
@@ -1113,8 +1113,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             diffX = mouseLocX2 - mouseLocX1;
         }
 
-        width = ((diffX) * this.layeredCanvas.imgpanel.getPixelSpacingX());
-        height = ((diffY) * this.layeredCanvas.imgpanel.getPixelSpacingY());
+        width = ((diffX/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * this.layeredCanvas.imgpanel.getPixelSpacingX());
+        height = ((diffY/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * this.layeredCanvas.imgpanel.getPixelSpacingY());
 
         diff = (double) (Math.PI * (width * 0.5) * (height * 0.5));
 
