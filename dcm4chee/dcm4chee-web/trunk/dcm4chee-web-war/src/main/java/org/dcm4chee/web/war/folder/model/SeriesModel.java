@@ -223,8 +223,6 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        dicomObject.putString(dicomObject.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), 
-                VR.AE, getSourceAET());
         Series s;
         if ( getPk() == -1) {
             s = dao.addSeries(getPPS().getStudy().getPk(), dicomObject);
