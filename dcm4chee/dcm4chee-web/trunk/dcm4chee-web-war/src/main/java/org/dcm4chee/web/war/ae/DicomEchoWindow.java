@@ -314,8 +314,9 @@ public class DicomEchoWindow extends ModalWindow {
 
     public void doPing(final AE ae) {
         echoRunning = true;
+        result = getString("aet.echoResult.ping", new Model<AE>(ae));
         final EchoDelegate delegate = new EchoDelegate();
-        final String success = getString("aet.ping_success"); 
+        final String success = getString("aet.ping_success");
         final String failed = getString("aet.ping_failed");
         new Thread(new Runnable(){
             public void run() {
@@ -382,8 +383,7 @@ public class DicomEchoWindow extends ModalWindow {
         @Override
         protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
             newTimer();
-            result = getString("aet.echoResult.ping");
-            doPing(aeOri);
+            doPing(aeEcho);
             target.addComponent(resultLabel);
             target.addComponent(timerComponent);
         }

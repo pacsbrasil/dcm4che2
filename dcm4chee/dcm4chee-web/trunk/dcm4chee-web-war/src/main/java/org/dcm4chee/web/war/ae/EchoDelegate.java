@@ -79,6 +79,9 @@ public class EchoDelegate extends BaseMBeanDelegate {
         } catch (UnknownHostException x) {
             throw x;
         } catch (Exception x) {
+            if ( x.getCause() instanceof UnknownHostException) {
+                throw (UnknownHostException) x.getCause();
+            }
             log.error("ICMP PING failed! Reason:"+x.getMessage(),x);
             return false;
         }
