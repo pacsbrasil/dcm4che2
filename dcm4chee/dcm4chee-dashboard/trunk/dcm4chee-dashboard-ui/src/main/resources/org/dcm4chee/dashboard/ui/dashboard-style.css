@@ -27,7 +27,7 @@ span.c_ {
 div.wicket-tree-table span.junction, div.wicket-tree-table span.junction-last, div.wicket-tree-table span.plus, div.wicket-tree-table span.minus, div.wicket-tree-table span.corner, div.wicket-tree-table span.indent-line, div.wicket-tree-table span.icon, div.wicket-tree-table div.row, div.wicket-tree-table div.row-selected, div.wicket-tree-table div.a_, div.wicket-tree-table span.b_, div.wicket-tree-table span.b_ span.c_ {
 	height: 60px !important;
 	min-height: 60px !important;
-	overflow: auto !important;
+/*	overflow: hidden !important; */
 }
 
 div.dashboard-input-desc {
