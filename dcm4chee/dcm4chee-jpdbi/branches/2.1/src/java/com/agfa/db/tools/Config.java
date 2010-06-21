@@ -497,7 +497,7 @@ class Config {
 					.create());
 
 			// DataSets
-			options.addOption(OptionBuilder.withLongOpt("patds").withDescription("print patient dataset").create());
+			options.addOption(OptionBuilder.withLongOpt("patientds").withDescription("print patient dataset").create());
 			options.addOption(OptionBuilder.withLongOpt("studyds").withDescription("print study dataset").create());
 			options.addOption(OptionBuilder.withLongOpt("seriesds").withDescription("print series dataset").create());
 			options.addOption(OptionBuilder.withLongOpt("sopds").withDescription("print instance dataset").create());
@@ -550,12 +550,12 @@ class Config {
 
 			optionGroup.addOption(OptionBuilder.withLongOpt("patient-level").withDescription("display patient level")
 					.create("l1"));
-			optionGroup.addOption(OptionBuilder.withLongOpt("instance-level").withDescription("display instance level")
-					.create("l2"));
 			optionGroup.addOption(OptionBuilder.withLongOpt("series-level").withDescription("display series level")
-					.create("l3"));
+					.create("l2"));
 			optionGroup.addOption(OptionBuilder.withLongOpt("study-level").withDescription("display study level").create(
-					"l4"));
+					"l3"));
+			optionGroup.addOption(OptionBuilder.withLongOpt("instance-level").withDescription("display instance level")
+					.create("l4"));
 			optionGroup.addOption(OptionBuilder.withLongOpt("path").withDescription("display object path").create("l5"));
 
 			options.addOptionGroup(optionGroup);
