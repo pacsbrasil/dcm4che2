@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.folder;
 
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.war.folder.model.FileModel;
@@ -53,9 +54,26 @@ public class FilePanel extends Panel {
 
     private static final long serialVersionUID = 1L;
 
-    public FilePanel(String id, FileModel fileModel) {
+    public FilePanel(String id, final FileModel fileModel) {
         super(id, new CompoundPropertyModel<Object>(fileModel));
-        add(new Label("file.pk"));
+  
+        add(new Label("pkInfo", new AbstractReadOnlyModel<String>() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public String getObject() {
+                return getString("pkInfo")+fileModel.getFile().getPk();
+            }
+            
+        }){
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean isVisible() {
+                return fileModel.getFile().getPk() != -1;
+            }
+        });
+       
         add(new DateTimeLabel("file.createdTime"));
         add(new Label("file.fileSize"));
         add(new Label("file.transferSyntaxUID"));
