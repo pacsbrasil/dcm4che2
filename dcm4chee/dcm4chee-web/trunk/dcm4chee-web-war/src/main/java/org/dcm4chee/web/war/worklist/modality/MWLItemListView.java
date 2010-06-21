@@ -42,6 +42,7 @@ import java.util.List;
 
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.list.OddEvenListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
@@ -63,6 +64,11 @@ public class MWLItemListView extends PropertyListView<MWLItemModel> {
     public MWLItemListView(String id, List<MWLItemModel> list, MwlActionProvider mwlActionProvider) {
         this(id, list);
         this.mwlActionProvider = mwlActionProvider;
+    }
+
+    @Override
+    protected ListItem<MWLItemModel> newItem(final int index) {
+        return new OddEvenListItem<MWLItemModel>(index, getListItemModel(getModel(), index));
     }
 
     @Override

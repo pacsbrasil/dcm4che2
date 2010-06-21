@@ -10,29 +10,31 @@
 <wicket:panel>
 	<div wicket:id="echoPanel" >echoPanel</div>
 	<div wicket:id="confirm" >confirmDelete</div>
-	<button wicket:id="newAET" >
+	<button wicket:id="newAET" style="margin-top: 5px;">
 		<img wicket:id="newAETImg" alt="New AET" />
 		<span wicket:id="newAETText" />
 	</button>
-	<table class="ae-list" style="clear: both">
-	  <tr>
-	    <th wicket:id="titleHdrLabel">Title</th>
-	    <th wicket:id="hostHdrLabel">Host</th>
-	    <th wicket:id="portHdrLabel">Port</th>
-	    <th wicket:id="cipherHdrLabel">Cipher Suites</th>
-	    <th wicket:id="descriptionHdrLabel">Description</th>
-	    <th wicket:id="issuerHdrLabel">Issuer Of Patient ID</th>
-	    <th wicket:id="fsgrpHdrLabel">File System Group ID</th>
-	    <th wicket:id="wadoHdrLabel">WADO URL</th>
-	    <th wicket:id="userHdrLabel">User ID</th>
-	    <th wicket:id="stationHdrLabel">Station Name</th>
-	    <th wicket:id="institutionHdrLabel">Institution</th>
-	    <th wicket:id="departmentHdrLabel">Department</th>
-	    <th wicket:id="installedHdrLabel">Installed</th>
-	    <th></th>
-	    <th></th>
-	    <th></th>
-	  </tr>
+	<table rules="groups" class="base" style="clear: both; margin-top: 9px;">
+		<thead>
+		  <tr>
+		    <th wicket:id="titleHdrLabel">Title</th>
+		    <th wicket:id="hostHdrLabel">Host</th>
+		    <th wicket:id="portHdrLabel">Port</th>
+		    <th wicket:id="cipherHdrLabel">Cipher Suites</th>
+		    <th wicket:id="descriptionHdrLabel">Description</th>
+		    <th wicket:id="issuerHdrLabel">Issuer Of Patient ID</th>
+		    <th wicket:id="fsgrpHdrLabel">File System Group ID</th>
+		    <th wicket:id="wadoHdrLabel">WADO URL</th>
+		    <th wicket:id="userHdrLabel">User ID</th>
+		    <th wicket:id="stationHdrLabel">Station Name</th>
+		    <th wicket:id="institutionHdrLabel">Institution</th>
+		    <th wicket:id="departmentHdrLabel">Department</th>
+		    <th wicket:id="installedHdrLabel">Installed</th>
+		    <th></th>
+		    <th></th>
+		    <th></th>
+		  </tr>
+		  </thead>
 	  <tr wicket:id="list">
 	    <td title="Application Entity Title" wicket:id="title">[Title]</td>
 	    <td title="Hostname or IP address" wicket:id="hostName">[Host]</td>

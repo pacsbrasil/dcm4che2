@@ -42,21 +42,39 @@ div.tabpanel div.tab-row a:hover { background: #aaa; }
 
 div.module-panel { width: 100%; background: none #E1E0DE; }
 
-table.search-panel { border: thin; border-width: 1px; border-style: solid; border-color: black; width:100%; white-space: nowrap; background-color: #FFFFFF;}
-table.search-panel tr.searchFooter {height: 30px;}
-table.search-panel tr {vertical-align: bottom;}
-table.search-panel tr.extended {background-color: #A0D8C4;}
-table.search-panel th {background-color: #446666; color: white; width: 20px; height: 20px; text-align: left;}
-table.search-panel th.lo {background: url("images/lo.gif") #446666 top left; border-width: 0px; border-style: none;}
-table.search-panel th.ro {background: url("images/ro.gif") #446666 top right; border-width: 0px; border-style: none;}
-table.search-panel td.lu {background: url("images/lu.gif") bottom left; border-width: 0px; border-style: none;}
-table.search-panel td.ru {background: url("images/ru.gif") bottom right; border-width: 0px; border-style: none;}
-table.search-panel span.toggle-text { vertical-align: middle; }
+/*
+
+table.search
+table.content
+table.folded
+
+*/
+
+table.base { border: thin; border-width: 1px; border-style: solid; border-color: black; width:100%; white-space: nowrap; background-color: #FFFFFF;}
+table.base tr.searchFooter {height: 30px;}
+table.base tr {vertical-align: bottom;}
+table.base tr.extended {background-color: #D1FEF6;}
+table.base th {background-color: #446666; color: white; width: 20px; height: 20px; text-align: left;}
+table.base th.lo {background: url("images/lo.gif") #446666 top left; border-width: 0px; border-style: none;}
+table.base th.ro {background: url("images/ro.gif") #446666 top right; border-width: 0px; border-style: none;}
+table.base td.lu {background: url("images/lu.gif") bottom left; border-width: 0px; border-style: none;}
+table.base td.ru {background: url("images/ru.gif") bottom right; border-width: 0px; border-style: none;}
+table.base span.toggle-text { vertical-align: middle; }
 
 table.module-panel-content { 
 	width: 100%; 
 	border-collapse: collapse; 
 	empty-cells: show; 
+}
+
+.odd {
+	background-color: #FFFFFF;
+	height: 25px;
+}
+
+.even {
+	background-color: #E1E0DE;
+	height: 25px;
 }
 
 .file {

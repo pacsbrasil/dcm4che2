@@ -8,7 +8,7 @@
 <body>
 <wicket:panel>
 	<form style="clear: both" wicket:id="form">
-		<table rules="groups" class="search-panel" style="margin-top: 20px;">
+		<table rules="groups" class="base" style="margin-top: 20px;">
 			<thead>
 				<tr>
 					<th class="lo"></th>
@@ -134,7 +134,7 @@
 				</a>
 			</div>			  
 		</div>
-		<table class="module-panel-content">
+		<table class="module-panel-content base">
 			<thead>
 				<tr class="mwlitem">
 		      		<th><wicket:message key="mw.patientName" /></th>
@@ -148,7 +148,7 @@
 		    	</tr>
 			</thead>
 			<tbody wicket:id="mwlitems" align="left" valign="top" >
-		    	<tr class="patient">
+		    	<tr>
 					<td wicket:id="patientName">[PatientName]</td>
 		      		<td wicket:id="scheduledProcedureStepDescription">[Scheduled Procedure Step Description]</td>
 					<td wicket:id="modality">[Modality]</td>
