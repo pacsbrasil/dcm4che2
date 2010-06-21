@@ -160,27 +160,45 @@ public class SelectedEntities implements Serializable {
         instances.clear();
     }
 
+    public void deselectAll() {
+        deselectAll(patients);
+        deselectAll(studies);
+        deselectAll(ppss);
+        deselectAll(seriess);
+        deselectAll(instances);
+    }
     public static void deselectAll(Collection<? extends AbstractDicomModel> models) {
-        deselectChilds(models);
+        for (AbstractDicomModel m : models) {
+            deselectChilds(m.getDicomModelsOfNextLevel());
+            m.setSelected(false);
+        }
     }
     public void deselectChildsOfSelectedEntities() {
         deselectChilds(patients);
+        deselectChilds(studies);
+        deselectChilds(ppss);
+        deselectChilds(seriess);
+        deselectChilds(instances);
     }
     
     private static void deselectChilds(Collection<? extends AbstractDicomModel> models) {
-        for (AbstractDicomModel p : models) {
-            deselectChildsOf(p, p.levelOfModel());
+        if (models != null) { 
+            for (AbstractDicomModel p : models) {
+                deselectChildsOf(p);
+            }
         }
     }
-    private static void deselectChildsOf(AbstractDicomModel p, int parentLevel) {
-        List<? extends AbstractDicomModel> childs = p.getDicomModelsOfNextLevel();
-        if ( childs == null || childs.isEmpty())
-            return;
-        for (AbstractDicomModel c : childs) {
-            if ( c.isSelected() ) {
-                c.setSelected(false);
+    private static void deselectChildsOf(AbstractDicomModel p) {
+        if (p != null) { 
+            List<? extends AbstractDicomModel> childs = p.getDicomModelsOfNextLevel();
+            if ( childs == null || childs.isEmpty())
+                return;
+            for (AbstractDicomModel c : childs) {
+                if ( c.isSelected() ) {
+                    c.setSelected(false);
+                }
+                deselectChildsOf(c);
             }
-            deselectChildsOf(c, parentLevel);
         }
     }
     
