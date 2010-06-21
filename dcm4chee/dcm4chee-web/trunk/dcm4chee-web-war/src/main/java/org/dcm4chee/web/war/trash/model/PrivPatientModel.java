@@ -68,7 +68,7 @@ public class PrivPatientModel extends AbstractDicomModel implements Serializable
     }
 
     public String getName() {
-        return dataset.getString(Tag.PatientName);
+        return replace(dataset.getString(Tag.PatientName),'^', ' ');
     }
 
     public String getId() {

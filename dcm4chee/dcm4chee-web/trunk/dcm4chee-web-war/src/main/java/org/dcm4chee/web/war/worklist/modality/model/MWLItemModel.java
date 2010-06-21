@@ -88,7 +88,7 @@ public class MWLItemModel extends AbstractEditableDicomModel implements Serializ
     }
 
     public String getPatientName() {
-        return patAttrs.getString(Tag.PatientName);
+        return replace(patAttrs.getString(Tag.PatientName),'^', ' ');
     }
     
     public String getModality() {
