@@ -318,7 +318,6 @@ public class BaseForm extends Form<Object> {
     
     public static void addInvalidComponentsToAjaxRequestTarget(
             final AjaxRequestTarget target, final Form<?> form) {
-        Component c;
         IVisitor<Component> visitor = new IVisitor<Component>() {
 
             public Object component(Component c) {
