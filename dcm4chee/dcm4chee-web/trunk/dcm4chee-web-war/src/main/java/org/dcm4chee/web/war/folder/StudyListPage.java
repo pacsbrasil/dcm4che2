@@ -347,6 +347,10 @@ public class StudyListPage extends Panel {
                 form.setOutputMarkupId(true);
                 target.addComponent(form);
             }
+            @Override
+            public void onError(AjaxRequestTarget target, Form<?> form) {
+                BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
+            }
         };
         searchBtn.add(new Image("searchImg",ImageManager.IMAGE_COMMON_SEARCH)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))

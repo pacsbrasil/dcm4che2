@@ -317,16 +317,21 @@ public class BaseForm extends Form<Object> {
     
     
     public static void addInvalidComponentsToAjaxRequestTarget(
-            AjaxRequestTarget target, Form<?> form) {
+            final AjaxRequestTarget target, final Form<?> form) {
         Component c;
-        for ( Iterator<? extends Component> it = form.iterator() ; it.hasNext() ;) {
-            c = it.next();
-            if ( c instanceof FormComponent<?> ) {
-                FormComponent<?> fc = (FormComponent<?>) c;
-                if ( !fc.isValid() )
-                    target.addComponent(fc);
+        IVisitor<Component> visitor = new IVisitor<Component>() {
+
+            public Object component(Component c) {
+                if ( c instanceof FormComponent<?> ) {
+                    FormComponent<?> fc = (FormComponent<?>) c;
+                    if ( !fc.isValid() ) {
+                        target.addComponent(fc);
+                    }
+                }
+                return IVisitor.CONTINUE_TRAVERSAL;
             }
-        }
+        };
+        form.visitChildren(visitor);
     }
 
     class FormVisitor implements IVisitor<Component>, Serializable {
@@ -339,8 +344,10 @@ public class BaseForm extends Form<Object> {
                 visited.add(c);
                 if ( tooltipBehaviour != null && componentHasNoTooltip(c))
                     c.add(tooltipBehaviour);
-                if (c instanceof FormComponent<?>)
+                if (c instanceof FormComponent<?>) {
                     c.add(markInvalidBehaviour);
+                    c.setOutputMarkupId(true);
+                }
             }
             return IVisitor.CONTINUE_TRAVERSAL;
         }
