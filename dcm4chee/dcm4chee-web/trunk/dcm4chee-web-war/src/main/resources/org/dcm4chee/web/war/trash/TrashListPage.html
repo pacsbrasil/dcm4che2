@@ -11,63 +11,94 @@
 	<form style="clear: both" wicket:id="form">
 		<div wicket:id="confirmDelete" >ConfirmDelete</div>
 		<div wicket:id="confirmRestore" >ConfirmRestore</div>
-        <div class="filterPanel">
-            <div class="filter">
-                <div class="filterHeader2Lines" wicket:id="patientNameLabel">Patient Name</div>
-                <div class="filterValue">
-                    <input wicket:id="patientName" id="patientName" type="text"/>
-                </div>
-            </div>
-            <div class="filter">
-                <div class="filterHeader" wicket:id="patientIDDescr">Patient ID</div>
-                <div class="filterValue2Lines">
-                    <div class="filterLabeledValueFirst">
-                        <div class="filterHeader" wicket:id="patientIDLabel">ID</div>
-                        <div class="filterValue">
-                            <input wicket:id="patientID" id="patientID" type="text" title="ID"/>
-                        </div>
-                    </div>
-                    <div class="filterLabeledValue">
-                        <div class="filterHeader" wicket:id="issuerOfPatientIDLabel">Issuer</div>
-                        <div class="filterValue">
-                            <input wicket:id="issuerOfPatientID" id="issuerOfPatientID" type="text"
-                                title="Issuer"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="filter">
-                <div class="filterHeader2Lines" wicket:id="accessionNumberLabel">Accession Number</div>
-                <div class="filterValue">
-                    <input wicket:id="accessionNumber" id="accessionNumber" type="text"/>
-                </div>
-            </div>
-            <div class="filter">
-                <div class="filterHeader2Lines" wicket:id="sourceAETLabel">Source AET</div>
-                <div class="filterValue">
-			      <select wicket:id="sourceAET">
-			        <option>*</option>
-			        <option>DCMSND</option>
-			      </select>
-                </div>
-            </div>
-        </div>
-	
-		<div class="queryoptions">
-		  <input type="checkbox" id="patientsWithoutStudies" wicket:id="patientsWithoutStudies" />
-		  <label for="patientsWithoutStudies" wicket:id="patientsWithoutStudiesLabel">patients w/o studies</label>
-		</div>
-		<div class="NavAndAction">
-			<div class="query_nav">
-				<div class="querybuttons">
-				  <input type="submit" wicket:id="reset"/>
-				  <input type="submit" wicket:id="search"/>
-				  <input type="submit" wicket:id="prev"/>
-				  <input type="submit" wicket:id="next"/>
-				</div>
-				<div wicket:id="viewport" class="viewport">Displaying studies 1 to 20 from 1234 matching studies</div>
-			</div>
-			<div class="action">
+		<table rules="groups" class="search-panel" style="margin-top: 20px;">
+			<thead>
+				<tr>
+					<th class="lo"></th>
+					<th>
+						<wicket:message key="trash.search.title" />
+					</th>
+					<th colspan="6"/>
+					<th style="text-align: right;">
+						<a wicket:id="searchToggle">
+							<img wicket:id="searchToggleImg" />
+						</a>
+					</th>
+					<th class="ro"></th>
+				</tr>
+			</thead>
+			<tr wicket:id="searchTableLabels">
+				<td></td>
+				<td>
+					<div wicket:id="patientNameLabel">Patient Name</div>
+				</td>
+				<td colspan="2">
+					<div  wicket:id="patientIDDescrLabel">Patient ID</div>
+				</td>
+				<td>
+					<div wicket:id="accessionNumberLabel">Accession Number</div>
+				</td>
+				<td>
+					<div wicket:id="sourceAETLabel">Source AET</div>
+				</td>
+				<td colspan="3"></td>
+				<td></td>
+			</tr>
+			<tr wicket:id="searchTableFields">
+				<td></td>
+				<td>
+					<input style="vertical-align: bottom" wicket:id="patientName" id="patientName" type="text" />
+				</td>
+				<td>
+	                <div wicket:id="patientIDLabel">ID</div>
+					<input wicket:id="patientID" id="patientID" type="text" title="ID" />
+				</td>
+				<td>                   
+					<div wicket:id="issuerOfPatientIDLabel">Issuer</div>
+					<input wicket:id="issuerOfPatientID" id="issuerOfPatientID" type="text" title="Issuer" />
+				</td>
+				<td>
+	                   <input wicket:id="accessionNumber" id="accessionNumber" type="text"/>
+				</td>
+				<td>
+					<select wicket:id="sourceAET" />
+				</td>
+				<td colspan="3"></td>
+				<td></td>
+			</tr>
+		    <tr class="searchFooter" wicket:id="searchTableFooter">
+				<td class="lu"></td>
+				<td colspan="5"></td>
+				<td>
+					<input type="checkbox" id="patientsWithoutStudies" wicket:id="patientsWithoutStudies" />
+		  			<label for="patientsWithoutStudies" wicket:id="patientsWithoutStudiesLabel">patients w/o studies</label>
+				</td>
+				<td>
+					<button wicket:id="resetBtn" >
+						<img wicket:id="resetImg" alt="Search" />
+						<span wicket:id="resetText" />
+					</button>
+				</td>
+				<td>
+					<button wicket:id="searchBtn" >
+						<img wicket:id="searchImg" alt="Search" />
+						<span wicket:id="searchText" />
+					</button>
+				</td>
+				<td class="ru"></td>
+		    </tr>
+		</table>
+		<div class="viewport-and-actions">
+			<div class="viewport">
+				<a wicket:id="prev">
+					<img wicket:id="prevImg" />
+				</a>
+				<span wicket:id="viewport" />
+				<a wicket:id="next">
+					<img wicket:id="nextImg" />
+				</a>
+			</div>  
+			<div class="actions">
 				<button wicket:id="restoreBtn" >
 					<img wicket:id="restoreImg" alt="Restore" />
 					<span wicket:id="restoreText" />
@@ -82,7 +113,7 @@
 				</button>
 			</div>
 		</div>
-	<table>
+	<table class="module-panel-content">
 	  <thead wicket:id="thead" align="left" valign="top" >
 	    <wicket:remove>
 	    <tr class="patient">

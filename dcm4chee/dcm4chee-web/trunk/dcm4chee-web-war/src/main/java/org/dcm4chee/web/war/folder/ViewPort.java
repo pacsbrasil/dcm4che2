@@ -95,5 +95,4 @@ public class ViewPort implements Serializable {
     public List<String> getSourceAetChoices(List<String> availableChoices) {
         return GroupedChoices.get(SOURCE_AETS_PROPERTIES_FILENAME).getChoices(availableChoices);
     }
-
 }

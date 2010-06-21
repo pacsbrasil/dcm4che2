@@ -115,9 +115,11 @@ import org.slf4j.LoggerFactory;
 
 public class StudyListPage extends Panel {
 
+    // TODO: put this into .properties file
+    private static int PAGESIZE = 10;
+
     private static final String MODULE_NAME = "folder";
     private static final long serialVersionUID = 1L;
-    private static int PAGESIZE = 10;
     private static Logger log = LoggerFactory.getLogger(StudyListPage.class);
     private ViewPort viewport = ((WicketSession) getSession()).getFolderViewPort();
     private StudyListHeader header = new StudyListHeader("thead");
@@ -220,8 +222,6 @@ public class StudyListPage extends Panel {
         form.addInternalLabel("patientIDDescr");
         form.addInternalLabel("studyDate");
         form.addInternalLabel("accessionNumber");
-        form.addInternalLabel("modality");
-        form.addInternalLabel("sourceAET");
         
         wmc = new WebMarkupContainer("searchTableFields");
         searchTableComponents.add(wmc);
@@ -233,6 +233,14 @@ public class StudyListPage extends Panel {
         form.addDateTimeField("studyDateMin", new PropertyModel<Date>(filter, "studyDateMin"), enabledModel, false, true);
         form.addDateTimeField("studyDateMax", new PropertyModel<Date>(filter, "studyDateMax"), enabledModel, true, true);
         form.addTextField("accessionNumber", enabledModel, false);
+
+        wmc = new WebMarkupContainer("searchTableDropdowns");
+        searchTableComponents.add(wmc);
+        form.setParent(wmc);
+
+        form.addInternalLabel("modality");
+        form.addInternalLabel("sourceAET");
+        
         form.addDropDownChoice("modality", null, modalities, enabledModel, false);
         List<String> choices = viewport.getSourceAetChoices(sourceAETs);
         if (choices.size() > 0)
@@ -312,17 +320,17 @@ public class StudyListPage extends Panel {
         form.addLabeledCheckBox("ppsWithoutMwl", null);
     }
 
-    @SuppressWarnings("unchecked")
     private void addNavigation(BaseForm form) {
-        
+
         Button resetBtn = new AjaxButton("resetBtn") {
             
             private static final long serialVersionUID = 1L;
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                viewport.clear();
+
                 form.clearInput();
+                viewport.clear();
                 form.setOutputMarkupId(true);
                 target.addComponent(form);
             }
@@ -363,7 +371,7 @@ public class StudyListPage extends Panel {
         
         form.setParent(null);
         
-        form.add(new Link("prev") {
+        form.add(new Link<Object>("prev") {
 
             private static final long serialVersionUID = 1L;
 
@@ -383,7 +391,7 @@ public class StudyListPage extends Panel {
         .add(new TooltipBehaviour("folder.")))
         );
  
-        form.add(new Link("next") {
+        form.add(new Link<Object>("next") {
 
             private static final long serialVersionUID = 1L;
 
@@ -728,6 +736,9 @@ public class StudyListPage extends Panel {
             item.add(cell);
             item.add(new Label("name").add(tooltipBehaviour));
             item.add(new Label("id", new AbstractReadOnlyModel<String>(){
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public String getObject() {
                     return patModel.getIssuer() == null ? patModel.getId() :

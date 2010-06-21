@@ -48,7 +48,6 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.markup.ComponentTag;
@@ -58,6 +57,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -112,17 +112,22 @@ public class TrashListPage extends Panel {
 
     private static final ResourceReference CSS = new CompressedResourceReference(TrashListPage.class, "trash-style.css");
 
+    // TODO: put this into .properties file
+    private static int PAGESIZE = 10;
+    
     private static final String MODULE_NAME = "trash";
     private static final long serialVersionUID = 1L;
-    private static int PAGESIZE = 10;
     private ViewPort viewport = new ViewPort();
     private TrashListHeader header = new TrashListHeader("thead");
     private PrivSelectedEntities selected = new PrivSelectedEntities();
     
     private List<String> sourceAETs = new ArrayList<String>();
+    private boolean showSearch = true;
     private boolean notSearched = true;
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("trash.");
     private MessageWindow msgWin = new MessageWindow("msgWin");
+    
+    private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
     
     public TrashListPage(final String id) {
         super(id);
@@ -131,11 +136,45 @@ public class TrashListPage extends Panel {
             add(CSSPackageResource.getHeaderContribution(TrashListPage.CSS));
        
         final TrashListFilter filter = viewport.getFilter();
-        BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
+        final BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
         form.setResourceIdPrefix("trash.");
         form.setTooltipBehaviour(tooltipBehaviour);
         form.setOutputMarkupId(true);
         add(form);
+        
+        form.add(new AjaxFallbackLink<Object>("searchToggle") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                showSearch = !showSearch;
+                for (WebMarkupContainer wmc : searchTableComponents)
+                    wmc.setVisible(showSearch);               
+                target.addComponent(form);
+            }
+        }
+        .add((new Image("searchToggleImg", new AbstractReadOnlyModel<ResourceReference>() {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public ResourceReference getObject() {
+                    return showSearch ? ImageManager.IMAGE_COMMON_COLLAPSE : 
+                        ImageManager.IMAGE_COMMON_EXPAND;
+                }
+        })
+        .add(new TooltipBehaviour("trash.", "searchToggleImg", new AbstractReadOnlyModel<Boolean>() {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Boolean getObject() {
+                return showSearch;
+            }
+        })))
+        .add(new ImageSizeBehaviour())));
+
         addQueryFields(filter, form);
         addQueryOptions(form);
         addNavigation(form);
@@ -155,12 +194,32 @@ public class TrashListPage extends Panel {
                 return QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
             }
         };
-        form.addTextField("patientName", enabledModel, true);
-        form.addLabel("patientIDDescr");
+        
+        WebMarkupContainer wmc = new WebMarkupContainer("searchTableLabels");
+        searchTableComponents.add(wmc);
+        form.setParent(wmc);
+        
+        form.addInternalLabel("patientName");
+        form.addInternalLabel("patientIDDescr");
+        form.addInternalLabel("accessionNumber");
+        form.addInternalLabel("sourceAET");
+        
+        wmc = new WebMarkupContainer("searchTableFields");
+        searchTableComponents.add(wmc);
+        form.setParent(wmc);
+        
+        form.addTextField("patientName", enabledModel, false);
         form.addTextField("patientID", enabledModel, true);
         form.addTextField("issuerOfPatientID", enabledModel, true);
-        form.addTextField("accessionNumber", enabledModel, true);
-        form.addLabeledDropDownChoice("sourceAET", null, sourceAETs);
+        form.addTextField("accessionNumber", enabledModel, false);
+        List<String> choices = viewport.getSourceAetChoices(sourceAETs);
+        if (choices.size() > 0)
+            filter.setSourceAET(choices.get(0));
+        form.addDropDownChoice("sourceAET", null, choices, enabledModel, false);
+
+        wmc = new WebMarkupContainer("searchTableFooter");
+        searchTableComponents.add(wmc);
+        form.setParent(wmc);
     }
 
     private void addQueryOptions(BaseForm form) {
@@ -169,64 +228,96 @@ public class TrashListPage extends Panel {
 
     private void addNavigation(BaseForm form) {
         
-        form.add(new AjaxButton("reset", new ResourceModel("trash.reset")) {
+        Button resetBtn = new AjaxButton("resetBtn") {
             
             private static final long serialVersionUID = 1L;
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                viewport.clear();
+
                 form.clearInput();
+                viewport.clear();
                 form.setOutputMarkupId(true);
                 target.addComponent(form);
             }
-        }.setDefaultFormProcessing(false));
-
-        Button searchBtn = new Button("search", new ResourceModel("trash.search")) {
-
+        };
+        resetBtn.setDefaultFormProcessing(false);
+        resetBtn.add(new Image("resetImg",ImageManager.IMAGE_COMMON_RESET)
+        .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        );
+        resetBtn.add(new Label("resetText", new ResourceModel("trash.resetBtn.text"))
+            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
+        );
+        form.addComponent(resetBtn);
+        
+        Button searchBtn = new AjaxButton("searchBtn") {
+            
             private static final long serialVersionUID = 1L;
-
+            
             @Override
-            public void onSubmit() {
+            public void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 viewport.setOffset(0);
                 queryStudies();
-            }};
-        form.add(searchBtn);
+                form.setOutputMarkupId(true);
+                target.addComponent(form);
+            }
+            @Override
+            public void onError(AjaxRequestTarget target, Form<?> form) {
+                BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
+            }
+        };
+        searchBtn.add(new Image("searchImg",ImageManager.IMAGE_COMMON_SEARCH)
+            .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        );
+        searchBtn.add(new Label("searchText", new ResourceModel("trash.searchBtn.text"))
+            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
+        );
+        form.addComponent(searchBtn);
         form.setDefaultButton(searchBtn);
-        form.add(new Button("prev", new ResourceModel("trash.prev")) {
+        
+        form.setParent(null);
+        
+        form.add(new Link<Object>("prev") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            protected void onComponentTag(ComponentTag tag) {
-                super.onComponentTag(tag);
-                if (viewport.getOffset() == 0) {
-                    tag.put("disabled", "");
-                }
-            }
-
-            @Override
-            public void onSubmit() {
+            public void onClick() {
                 viewport.setOffset(Math.max(0, viewport.getOffset() - PAGESIZE));
-                queryStudies();
-            }});
-        form.add(new Button("next", new ResourceModel("trash.next")) {
+                queryStudies();               
+            }
+            
+            @Override
+            public boolean isVisible() {
+                return (!notSearched && !(viewport.getOffset() == 0));
+            }
+        }
+        .add(new Image("prevImg", ImageManager.IMAGE_COMMON_BACK)
+        .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        .add(new TooltipBehaviour("trash.")))
+        );
+ 
+        form.add(new Link<Object>("next") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            protected void onComponentTag(ComponentTag tag) {
-                super.onComponentTag(tag);
-                if (viewport.getTotal() - viewport.getOffset() <= PAGESIZE) {
-                    tag.put("disabled", "");
-                }
-            }
-
-            @Override
-            public void onSubmit() {
+            public void onClick() {
                 viewport.setOffset(viewport.getOffset() + PAGESIZE);
                 queryStudies();
-            }});
+            }
+
+            @Override
+            public boolean isVisible() {
+                return (!notSearched && !(viewport.getTotal() - viewport.getOffset() <= PAGESIZE));
+            }
+        }
+        .add(new Image("nextImg", ImageManager.IMAGE_COMMON_FORWARD)
+        .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        .add(new TooltipBehaviour("trash.")))
+        .setVisible(!notSearched)
+        );
+
         //viewport label: use StringResourceModel with key substitution to select 
         //property key according notSearched and getTotal.
         Model<?> keySelectModel = new Model<Serializable>() {
@@ -254,6 +345,7 @@ public class TrashListPage extends Panel {
     }
 
     private void addActions(final BaseForm form) {
+        
         final ConfirmationWindow<PrivSelectedEntities> confirmRestore = new ConfirmationWindow<PrivSelectedEntities>("confirmRestore") {
 
             private static final long serialVersionUID = 1L;
@@ -319,12 +411,12 @@ public class TrashListPage extends Panel {
         confirmRestore.setInitialHeight(150);
         form.add(confirmRestore);
         
-        AjaxLink<?> restoreBtn = new AjaxLink<Object>("restoreBtn") {
+        AjaxButton restoreBtn = new AjaxButton("restoreBtn") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onClick(AjaxRequestTarget target) {
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 selected.update(viewport.getPatients());
                 selected.deselectChildsOfSelectedEntities();
                 if (selected.hasDicomSelection())
@@ -336,7 +428,7 @@ public class TrashListPage extends Panel {
         restoreBtn.add(new Image("restoreImg",ImageManager.IMAGE_TRASH_RESTORE)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        restoreBtn.add(new TooltipBehaviour("folder.", "restoreBtn"));
+        restoreBtn.add(new TooltipBehaviour("trash.", "restoreBtn"));
         restoreBtn.add(new Label("restoreText", new ResourceModel("trash.restoreBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
@@ -384,12 +476,12 @@ public class TrashListPage extends Panel {
         confirmDelete.setInitialHeight(150);
         form.add(confirmDelete);
 
-        AjaxLink<?> deleteAllBtn = new AjaxLink<Object>("deleteAllBtn") {
+        AjaxButton deleteAllBtn = new AjaxButton("deleteAllBtn") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onClick(AjaxRequestTarget target) {
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 confirmDelete.confirm(target, new StringResourceModel("trash.confirmDeleteAll",this, null), null);
             }
         };
@@ -402,12 +494,12 @@ public class TrashListPage extends Panel {
         );
         form.add(deleteAllBtn);
 
-        AjaxLink<?> deleteBtn = new AjaxLink<Object>("deleteBtn") {
+        AjaxButton deleteBtn = new AjaxButton("deleteBtn") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onClick(AjaxRequestTarget target) {
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 selected.update(viewport.getPatients());
                 selected.deselectChildsOfSelectedEntities();
                 log.info("Selected Entities: :"+selected);

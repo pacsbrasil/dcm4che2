@@ -14,8 +14,8 @@ p,ul,ol,li,dl,dt,dd,div,td,th { font-size:12px; }
 
 img {border: none;}
 
-div.signin {height: 400px; background-color: #A0D8C4; text-align: center; padding: 160 0 0 0;}
-div.signin table { width: 100%; background: #54B291; padding: 60 90 10 0; }
+div.signin {height: 400px; text-align: center; padding: 160 0 0 0;}
+div.signin table { width: 100%; padding: 60 90 10 0; }
 div.signin tr, div.signin td { width: 50%; height: 35px; border-style: none;}
 div.signin span.login-desc { font-size:20px; font-weight: bold;}
 
@@ -59,8 +59,7 @@ table.module-panel-content {
 	empty-cells: show; 
 }
 
-.patient {	
-/*	background-color: #0B6040; */
+.file {
 	background-color: #446666;
 	height: 25px; 
 	width: auto; 
@@ -69,7 +68,8 @@ table.module-panel-content {
 	border-color: #aaaaaa;
 	color: white;
 }
-.study {
+
+.instance {
 	background-color: #54B291;
 	height: 25px; 
 	width: auto; 
@@ -77,7 +77,8 @@ table.module-panel-content {
 	border-style: solid; 
 	border-color: #aaaaaa;
 }
-.pps {
+
+.series {
 	background-color: #A0D8C4; 
 	height: 25px; 
 	width: auto; 
@@ -85,7 +86,8 @@ table.module-panel-content {
 	border-style: solid; 
 	border-color: #aaaaaa;
 }
-.series { 
+ 
+.pps {
 	background-color: #D1FEF6; 
 	height: 25px; 
 	width: auto; 
@@ -93,7 +95,8 @@ table.module-panel-content {
 	border-style: solid; 
 	border-color: #aaaaaa;
 } 	
-.instance {
+
+.study {
 	background-color: #E1E0DE;
 	height: 25px; 
 	width: auto; 
@@ -101,7 +104,8 @@ table.module-panel-content {
 	border-style: solid; 
 	border-color: #aaaaaa;
 }
-.file {
+
+.patient {
 	background-color : #FFFFFF; 
 	height: 25px; 
 	width: auto; 

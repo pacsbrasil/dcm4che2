@@ -41,12 +41,6 @@
 				<td>
 					<div wicket:id="accessionNumberLabel">Accession Number</div>
 				</td>
-				<td>
-					<div wicket:id="modalityLabel">Mod</div>
-				</td>
-				<td>
-					<div wicket:id="sourceAETLabel">Source AET</div>
-				</td>
 				<td></td>
 			</tr>
 			<tr wicket:id="searchTableFields">
@@ -58,7 +52,7 @@
 	                <div wicket:id="patientIDLabel">ID</div>
 					<input wicket:id="patientID" id="patientID" type="text" title="ID" />
 				</td>
-				<td>                   
+				<td>
 					<div wicket:id="issuerOfPatientIDLabel">Issuer</div>
 					<input wicket:id="issuerOfPatientID" id="issuerOfPatientID" type="text" title="Issuer" />
 				</td>
@@ -71,14 +65,21 @@
 					<div wicket:id="studyDateMax" id="studyDateMax" />
 				</td>
 				<td>
-	                   <input wicket:id="accessionNumber" id="accessionNumber" type="text"/>
+					<input wicket:id="accessionNumber" id="accessionNumber" type="text"/>
 				</td>
+				<td></td>
+			</tr>
+			<tr wicket:id="searchTableDropdowns">
+				<td></td>
 				<td>
+					<div wicket:id="modalityLabel">Mod</div>
 			      	<select wicket:id="modality" />			
 				</td>
 				<td>
+					<div wicket:id="sourceAETLabel">Source AET</div>
 					<select wicket:id="sourceAET" />
 				</td>
+				<td colspan="4"></td>
 				<td></td>
 			</tr>
              <tr wicket:id="extendedFilter" class="extended">
@@ -102,7 +103,7 @@
 					<div wicket:id="seriesInstanceUIDLabel">Series Instance UID</div>
 					<input wicket:id="seriesInstanceUID" id="seriesInstanceUID" type="text"/>
 				</td>
-				<td colspan="3"></td>
+				<td></td>
 			</tr>
 		    <tr class="searchFooter" wicket:id="searchTableFooter">
 				<td class="lu"></td>
@@ -111,7 +112,6 @@
 		            	<img wicket:id="showExtendedFilterImg" alt="(+)" />
 					</a>
 				</td>
-				<td colspan="2"/>
 				<td>
 					<input type="checkbox" id="patientsWithoutStudies" wicket:id="patientsWithoutStudies" />
 		  			<label for="patientsWithoutStudies" wicket:id="patientsWithoutStudiesLabel">patients w/o studies</label>
