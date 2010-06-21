@@ -38,11 +38,17 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.service.echo;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.net.Association;
+import org.dcm4che2.net.DimseRSP;
 import org.dcm4che2.net.ExtRetrieveTransferCapability;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4chee.archive.entity.AE;
@@ -55,6 +61,8 @@ import org.dcm4chee.web.service.common.AbstractScuService;
  */
 public class EchoService extends AbstractScuService {
     
+    private int pingTimeout;
+    
     public EchoService() {
         super();
         configureTransferCapability();
@@ -66,11 +74,20 @@ public class EchoService extends AbstractScuService {
         setTransferCapability(tcs);
     }
     
+    public int getPingTimeout() {
+        return pingTimeout;
+    }
+
+    public void setPingTimeout(int pingTimeout) {
+        this.pingTimeout = pingTimeout;
+    }
+
     /**
      * Perform a DICOM Echo to given Application Entity Title.
      */
     public boolean echo(String title) {
         Association assoc = null;
+        int status = 0;
         try {
             assoc = open(title);
         } catch (Throwable t) {
@@ -78,7 +95,10 @@ public class EchoService extends AbstractScuService {
             return false;
         }
         try {
-            assoc.cecho().next();
+            DimseRSP rsp = assoc.cecho();
+            rsp.next();
+            DicomObject cmd = rsp.getCommand();
+            status = cmd.getInt(Tag.Status);
         } catch (Throwable t) {
             log.error("Echo failed! aet:"+title, t);
             return false;
@@ -88,16 +108,16 @@ public class EchoService extends AbstractScuService {
         } catch (InterruptedException t) {
             log.error("Association release failed! aet:"+title, t);
         }
-        return true;
+        return  status == 0;
     }
 
     public String echo(AE ae, int nrOfTests) {
         Association assoc = null;
-        StringWriter swr = new StringWriter(nrOfTests*20+50);
-        StringBuffer echoResult = swr.getBuffer();
+        StringBuilder echoResult = new StringBuilder();
         try {
             echoResult.append("DICOM Echo to ").append(ae).append(":\n");
             long tStart = System.currentTimeMillis();
+            InetAddress.getByName(ae.getHostName());
             assoc = open(ae);
             try {
                 long t1 = System.currentTimeMillis();
@@ -106,9 +126,18 @@ public class EchoService extends AbstractScuService {
                 int nrOfLT1ms = 0;
                 for (int i = 0; i < nrOfTests; i++) {
                     t0 = System.currentTimeMillis();
-                    assoc.cecho().next();
+                    DimseRSP rsp = assoc.cecho();
                     t1 = System.currentTimeMillis();
                     diff = t1 - t0;
+                    rsp.next();
+                    DicomObject cmd = rsp.getCommand();
+                    int status = cmd.getInt(Tag.Status);
+                    if (status != 0) {
+                        echoResult.append("Echo failed with status ").append(Integer.toHexString(status))
+                        .append("H! Error Comment:").append(cmd.getString(Tag.ErrorComment))
+                        .append(" (").append(diff).append("ms)");
+                        break;
+                    }
                     if (diff < 1) {
                         nrOfLT1ms++;
                     } else {
@@ -116,7 +145,7 @@ public class EchoService extends AbstractScuService {
                             echoResult.append(nrOfLT1ms).append(" Echoes, each done in less than 1 ms!\n");
                             nrOfLT1ms = 0;
                         }
-                        echoResult.append("Echo done in ").append(System.currentTimeMillis() - t0).append(" ms!\n");
+                        echoResult.append("Echo done in ").append(diff).append(" ms!\n");
                     }
                 }
                 if (nrOfLT1ms > 0)
@@ -133,12 +162,17 @@ public class EchoService extends AbstractScuService {
                     log.warn("Failed to release Association AE:" + assoc.getCalledAET());
                 }
             }
+        } catch (UnknownHostException x) {
+            echoResult.append("Echo failed! Reason: unknown host:").append(x.getMessage());
         } catch (Throwable t) {
             log.error("Echo " + ae + " failed", t);
             echoResult.append("Echo failed! Reason: ").append(t.getMessage());
-            t.printStackTrace(new PrintWriter(swr));
         }
         return echoResult.toString();
+    }
+    
+    public boolean ping(String host) throws UnknownHostException, IOException{
+         return InetAddress.getByName(host).isReachable(pingTimeout);
     }
     
  }
