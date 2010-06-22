@@ -74,6 +74,20 @@ public class Codes {
         return keys;
     }
 
+    public static boolean contextGroupContains(Class<?> clazz, String key) {
+        Field[] fields = clazz.getFields();
+        for (int i = 0; i < fields.length; i++) {
+            try {
+                if (key.equals(fields[i].get(null)))
+                        return true;
+            } catch (IllegalAccessException e) {
+                throw new IllegalArgumentException("Static field " + fields[i]
+                        + " of " + clazz + " is not accessable");
+            }
+        }
+        return false;
+    }
+
     public static String toKey(String codeValue, String schemeDesignator,
             String schemeVersion) {
         return ((schemeVersion == null)
