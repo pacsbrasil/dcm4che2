@@ -47,11 +47,10 @@ import java.util.Set;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
-import org.apache.wicket.util.time.Duration;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -59,25 +58,25 @@ import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
-import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.PrivateTag;
-import org.dcm4chee.archive.entity.Series;
-import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.exceptions.SelectionException;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
+import org.dcm4chee.web.dao.common.DicomEditLocal;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPage;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
@@ -87,9 +86,6 @@ import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
-import org.dcm4chee.web.common.exceptions.SelectionException;
-import org.dcm4chee.web.dao.common.DicomEditLocal;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -159,7 +155,6 @@ public class MoveEntitiesPage extends WebPage {
         } 
         if( pats == 1) {
             PatientModel patModel = selected.getPatients().iterator().next();
-            long patPk = patModel.getPk();
             if (selected.getStudies().size() < 1) {
                 if ( selected.hasSeries() && selected.hasInstances()) {
                     return MSGID_ERR_SELECTION_MOVE_SOURCE_LEVEL;
@@ -275,7 +270,7 @@ public class MoveEntitiesPage extends WebPage {
     private void needNewSeries(SeriesModel sourceSeries, final StudyModel study) {
         missingState = missingState | MISSING_SERIES;
         seriesModel = new SeriesModel(null, null);
-        PPSModel ppsModel = new PPSModel(null, seriesModel, study);
+        new PPSModel(null, seriesModel, study);
         presetSeries(sourceSeries);
         newSeriesPanel = new SimpleEditDicomObjectPanel("panel", new ResourceModel("folder.newSeriesForMove"),
                 seriesModel.getDataset(), getSeriesEditAttributes() ) {
@@ -390,8 +385,6 @@ public class MoveEntitiesPage extends WebPage {
                         }
                     }
                     
-                    AbstractDicomModel parent;
-                    int level;
                     for (AbstractDicomModel m : modifiedModels) {
                         if (m.levelOfModel() == AbstractDicomModel.PPS_LEVEL) {
                             m.getParent().expand();
@@ -533,7 +526,8 @@ public class MoveEntitiesPage extends WebPage {
         }
 
     }
-    
+    //used in a PropertyModel
+    @SuppressWarnings("unused")
     private class SelectedInfo implements Serializable {
         private static final long serialVersionUID = 1L;
         private PatientModel pat;
