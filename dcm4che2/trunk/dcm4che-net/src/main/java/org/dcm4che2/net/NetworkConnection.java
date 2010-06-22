@@ -139,14 +139,21 @@ public class NetworkConnection {
 
     private InetAddress addr;
 
+
+    private InetAddress addr() throws UnknownHostException {
+        if (addr == null)
+            addr = InetAddress.getByName(hostname);
+        return addr;
+    }
+
+
     /**
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer("NetworkConnection[");
-        sb.append(addr != null ? addr.toString() : hostname).append(':')
-                .append(port);
+        sb.append(hostname).append(':').append(port);
         if (tlsCipherSuite.length != 0)
             sb.append(", TLS").append(Arrays.asList(tlsCipherSuite));
         if (installed != null)
@@ -199,13 +206,6 @@ public class NetworkConnection {
      */
     public void setHostname(String hostname) {
         this.hostname = hostname;
-        try {
-            addr = InetAddress.getByName(hostname);
-        }
-        catch (UnknownHostException e) {
-            addr = null;
-            log.warn("unknown host name: {}", hostname);
-        }
     }
 
     /**
@@ -517,16 +517,20 @@ public class NetworkConnection {
         this.tlsProtocol = TLS_WO_SSLv2;
     }
 
-    private InetSocketAddress getEndPoint() {
-        return new InetSocketAddress(addr, port);
+    private InetSocketAddress getEndPoint() throws UnknownHostException {
+        return new InetSocketAddress(addr(), port);
     }
 
-    private InetSocketAddress getBindPoint() {
+    private InetSocketAddress getBindPoint() throws UnknownHostException {
         // don't use loopback address as bind point to avoid
         // ConnectionException connection to remote endpoint
-        return new InetSocketAddress(
-                (addr != null && addr.isLoopbackAddress()) ? null : addr, 0);
+        return new InetSocketAddress(maskLoopBackAddress(addr()), 0);
     }
+
+    private static InetAddress maskLoopBackAddress(InetAddress addr) {
+         return addr.isLoopbackAddress() ? null : addr;
+    }
+
 
     /**
      * Returns server socket associated with this Network Connection, bound to
@@ -704,7 +708,7 @@ public class NetworkConnection {
      * @return boolean True if the max association count has not been exceeded.
      */
     public boolean checkConnectionCountWithinLimit() {
-        return true ? associationCount <= maxScpAssociations : false;
+        return associationCount <= maxScpAssociations;
     }
 
     public synchronized void unbind() {
