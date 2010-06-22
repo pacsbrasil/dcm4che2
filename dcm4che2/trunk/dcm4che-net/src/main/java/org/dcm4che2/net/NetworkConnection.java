@@ -141,7 +141,7 @@ public class NetworkConnection {
 
 
     private InetAddress addr() throws UnknownHostException {
-        if (addr == null)
+        if (addr == null && hostname != null)
             addr = InetAddress.getByName(hostname);
         return addr;
     }
@@ -528,7 +528,7 @@ public class NetworkConnection {
     }
 
     private static InetAddress maskLoopBackAddress(InetAddress addr) {
-         return addr.isLoopbackAddress() ? null : addr;
+         return addr != null && addr.isLoopbackAddress() ? null : addr;
     }
 
 
