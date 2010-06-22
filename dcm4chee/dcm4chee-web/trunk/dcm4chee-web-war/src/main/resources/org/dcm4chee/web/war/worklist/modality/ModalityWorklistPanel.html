@@ -8,7 +8,7 @@
 <body>
 <wicket:panel>
 	<form style="clear: both" wicket:id="form">
-		<table rules="groups" class="base" style="margin-top: 20px;">
+		<table rules="groups" class="search-table" style="margin-top: 20px;">
 			<thead>
 				<tr>
 					<th class="lo"></th>
@@ -87,7 +87,7 @@
 				<td colspan="2"></td>
 				<td></td>
 			</tr>
-             <tr wicket:id="extendedFilter" class="extended">
+             <tr wicket:id="extendedFilter" class="search-table-extended">
 	            <td></td>
 				<td>
 					<div wicket:id="studyInstanceUIDLabel">Study Instance UID</div>
@@ -96,7 +96,7 @@
 	            <td colspan="5"></td>
 				<td></td>
 			</tr>
-		    <tr class="searchFooter" wicket:id="searchTableFooter">
+		    <tr class="search-table-footer" wicket:id="searchTableFooter">
 				<td class="lu"></td>
 				<td>
 		            <a wicket:id="showExtendedFilter">
@@ -134,9 +134,10 @@
 				</a>
 			</div>			  
 		</div>
-		<table class="module-panel-content base">
+		<table class="content-table">
 			<thead>
-				<tr class="mwlitem">
+				<tr>
+					<th></th>
 		      		<th><wicket:message key="mw.patientName" /></th>
 					<th><wicket:message key="mw.spsDescription" /></th>
 		      		<th><wicket:message key="mw.modality" /></th>
@@ -144,11 +145,13 @@
 					<th><wicket:message key="mw.spsID" /></th>
 					<th><wicket:message key="mw.requestedProcedureID" /></th>
 		      		<th><wicket:message key="mw.accessionNumber" /></th>
-		      		<th></th>
+		      		<th colspan="2"></th>
 		    	</tr>
 			</thead>
-			<tbody wicket:id="mwlitems" align="left" valign="top" >
-		    	<tr>
+			<tbody align="left" valign="top" >
+ 				<wicket:container wicket:id="mwlitems">
+		    	<tr wicket:id="mwlitem">
+					<td wicket:id="cell" class="expand"></td>
 					<td wicket:id="patientName">[PatientName]</td>
 		      		<td wicket:id="scheduledProcedureStepDescription">[Scheduled Procedure Step Description]</td>
 					<td wicket:id="modality">[Modality]</td>
@@ -156,20 +159,24 @@
 					<td wicket:id="scheduledProcedureStepID">[Scheduled Procedure Step ID]</td>
 					<td wicket:id="requestedProcedureID">[Requested Procedure ID]</td>
 					<td wicket:id="accessionNumber">[Accession Number]</td>
-					<td>
+					<td class="action">
 						<a wicket:id="toggledetails" href="#">
 							<img wicket:id="detailImg" alt="D" />
 						</a>
+					</td>
+					<td class="action">
 						<a wicket:id="edit" href="#">
 							<img wicket:id="editImg" alt="E" />
 						</a>
 					</td>
 		    	</tr>
-			    <tr wicket:id="details" class="patient">
-			      <td colspan="8">
-			        <div wicket:id="dicomobject"></div>
-			      </td>
+ 			    <tr wicket:id="details" class="patient">
+ 			    	<td class="expand"></td>
+					<td colspan="9">
+			        	<div wicket:id="dicomobject" />
+					</td>
 			    </tr>
+			    </wicket:container>
 			</tbody>
 		  </table>
 	</form>

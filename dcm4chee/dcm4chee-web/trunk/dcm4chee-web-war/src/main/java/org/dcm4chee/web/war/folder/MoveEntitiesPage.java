@@ -540,7 +540,7 @@ public class MoveEntitiesPage extends WebPage {
             this.count = count;
             
         }
-        public SelectedInfo(PatientModel m) {
+        SelectedInfo(PatientModel m) {
             this("patient", 1);
             pat = m;
         }

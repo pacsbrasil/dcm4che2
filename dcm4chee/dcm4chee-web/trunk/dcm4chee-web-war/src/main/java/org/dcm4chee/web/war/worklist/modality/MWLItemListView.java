@@ -40,10 +40,13 @@ package org.dcm4chee.web.war.worklist.modality;
 
 import java.util.List;
 
+import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
-import org.apache.wicket.markup.html.list.OddEvenListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
+import org.apache.wicket.model.Model;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 
@@ -55,7 +58,10 @@ import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 public class MWLItemListView extends PropertyListView<MWLItemModel> {
 
     private static final long serialVersionUID = 1L;
+    
     private MwlActionProvider mwlActionProvider;
+    WebMarkupContainer mwlitem;
+    WebMarkupContainer details;
     
     public MWLItemListView(String id, List<MWLItemModel> list) {
         super(id, list);
@@ -66,27 +72,39 @@ public class MWLItemListView extends PropertyListView<MWLItemModel> {
         this.mwlActionProvider = mwlActionProvider;
     }
 
-    @Override
-    protected ListItem<MWLItemModel> newItem(final int index) {
-        return new OddEvenListItem<MWLItemModel>(index, getListItemModel(getModel(), index));
+    private String getOddEvenClass(ListItem<?> item) {
+        return item.getIndex() % 2 == 0 ? "even" : "odd";
     }
-
+    
     @Override
     protected void populateItem(final ListItem<MWLItemModel> item) {
 
-        item
-        .add(new Label("scheduledProcedureStepDescription"))
+        item.add(this.mwlitem = new WebMarkupContainer("mwlitem"));
+        this.mwlitem.add(new AttributeModifier("class", true, new Model<String>(getOddEvenClass(item))));     
+
+        this.mwlitem.add(new WebMarkupContainer("cell") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onComponentTag(ComponentTag tag) {
+               super.onComponentTag(tag);
+               if (item.getModelObject().isDetails()) 
+                   tag.put("rowspan", "2");
+            }
+        });
+
+        this.mwlitem.add(new Label("scheduledProcedureStepDescription"))
         .add(new Label("scheduledProcedureStepID"))
         .add(new Label("requestedProcedureID"))
         .add(new Label("accessionNumber"))
         .add(new Label("patientName"))
         .add(new Label("modality"))
         .add(new DateTimeLabel("startDate"));
-        if (mwlActionProvider != null) {
+        if (mwlActionProvider != null)
             mwlActionProvider.addMwlActions(item, MWLItemListView.this);
-        }
     }
-    
+
     public interface MwlActionProvider {
         void addMwlActions(ListItem<MWLItemModel> item, MWLItemListView mwlListView);
     }

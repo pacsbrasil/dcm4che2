@@ -105,7 +105,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     private boolean notSearched = true;
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("mw.");
     private ViewPort viewport;
-  
+    final BaseForm form;
+    
     private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
     
     private transient ModalityWorklist dao;
@@ -117,7 +118,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             add(CSSPackageResource.getHeaderContribution(ModalityWorklistPanel.CSS));
 
         final ModalityWorklistFilter filter = viewport.getFilter();
-        final BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
+        form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
         form.setResourceIdPrefix("mw.");
         form.setTooltipBehaviour(tooltipBehaviour);
         add(form);
@@ -459,16 +460,30 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
     //MwlActionProvider (details and edit)
     public void addMwlActions(final ListItem<MWLItemModel> item, final MWLItemListView mwlListView) {
+
         final MWLItemModel mwlItemModel = item.getModelObject();
-        item.add(new AjaxFallbackLink<Object>("toggledetails") {
+
+        item.add((mwlListView.details = new WebMarkupContainer("details") {
+            
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean isVisible() {
+                return mwlItemModel.isDetails();
+            }
+        })
+        .add(new DicomObjectPanel("dicomobject", mwlItemModel.getDataset(), false)));
+
+        mwlListView.mwlitem.add(new AjaxFallbackLink<Object>("toggledetails") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             public void onClick(AjaxRequestTarget target) {
                 mwlItemModel.setDetails(!mwlItemModel.isDetails());
+                form.setOutputMarkupId(true);
                 if (target != null) 
-                    target.addComponent(item);
+                    target.addComponent(form);
             }
 
         }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
@@ -484,17 +499,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
         }.add(new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT)
         .add(new ImageSizeBehaviour())
-        .add(new TooltipBehaviour("mw.","patEdit"))))
-        .add(new WebMarkupContainer("details") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public boolean isVisible() {
-                return mwlItemModel.isDetails();
-            }
-        }
-        .add(new DicomObjectPanel("dicomobject", mwlItemModel.getDataset(), false)))
-        .setOutputMarkupId(true);
+        .add(new TooltipBehaviour("mw.","patEdit"))));
     }
 }

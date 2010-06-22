@@ -1,6 +1,8 @@
 #
 # Edit Dicom Object CSS
 #
+
+/*
 div.dicomobject td { border-style: solid; border-width: 1px; background:#99bbaa; }
 .editTitle { text-align: center; font-size: 20px; font-weight: bold; }
 col.attrname { width: 200px; }
@@ -48,3 +50,4 @@ div.edit-input-button {
 	height: 30;
 	text-align: left;
 }
+*/
