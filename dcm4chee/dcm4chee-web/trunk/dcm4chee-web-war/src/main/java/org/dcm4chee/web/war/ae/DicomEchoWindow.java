@@ -91,6 +91,8 @@ public class DicomEchoWindow extends ModalWindow {
     private Image hourglassImage;
     private boolean saveFailed;
     
+    private transient EchoDelegate delegate;
+    
     public DicomEchoWindow(String id, boolean echoOnShow) {
         super(id);
         this.echoOnShow = echoOnShow;
@@ -105,6 +107,13 @@ public class DicomEchoWindow extends ModalWindow {
                 return !echoRunning;
             }
         });
+    }
+    
+    private EchoDelegate getDelegate() {
+        if (delegate == null) {
+            delegate = new EchoDelegate();
+        }
+        return delegate;
     }
 
     public void show(AjaxRequestTarget target, AE ae) {
@@ -280,9 +289,9 @@ public class DicomEchoWindow extends ModalWindow {
     protected void onBeforeRender() {
         super.onBeforeRender();
         
-        if (false){//echoOnShow && !echoPerformed) {
-            echoRunning = true;
+        if (echoOnShow && !echoPerformed) {
             result = getString("aet.echoResult.default");
+            getDelegate();
             timerComponent.add(timer = getTimer());
         }
     }
@@ -297,11 +306,11 @@ public class DicomEchoWindow extends ModalWindow {
     
     public void doEcho(final AE ae) {
         echoRunning = true;
-        final EchoDelegate delegate = new EchoDelegate();//ensure that delegate is initialized - will fail in new thread! 
+        getDelegate();//ensure that delegate is initialized - will fail in new thread! 
         new Thread(new Runnable(){
             public void run() {
                 try {
-                    result = delegate.echo(ae, nrOfTests);
+                    result = getDelegate().echo(ae, nrOfTests);
                 } catch (Throwable t) {
                     t.printStackTrace();
                     result = "Echo failed! Reason:"+t.getMessage();
@@ -315,7 +324,7 @@ public class DicomEchoWindow extends ModalWindow {
     public void doPing(final AE ae) {
         echoRunning = true;
         result = getString("aet.echoResult.ping", new Model<AE>(ae));
-        final EchoDelegate delegate = new EchoDelegate();
+        getDelegate();
         final String success = getString("aet.ping_success");
         final String failed = getString("aet.ping_failed");
         new Thread(new Runnable(){
