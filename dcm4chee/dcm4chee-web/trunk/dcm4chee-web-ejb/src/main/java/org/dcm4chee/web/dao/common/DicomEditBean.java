@@ -60,9 +60,13 @@ import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.PrivateTag;
 import org.dcm4chee.archive.common.StorageStatus;
+import org.dcm4chee.archive.entity.BaseEntity;
 import org.dcm4chee.archive.entity.File;
+import org.dcm4chee.archive.entity.GPPPS;
+import org.dcm4chee.archive.entity.GPSPS;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
+import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.PrivateFile;
 import org.dcm4chee.archive.entity.PrivateInstance;
@@ -162,7 +166,7 @@ public class DicomEditBean implements DicomEditLocal {
         for (Series s : series) {
             instances = s.getInstances();
             if (instances.isEmpty()) {
-                log.debug("move empty series to trash:{}",s.getSeriesInstanceUID());
+                log.info("move empty series to trash:{}",s.getSeriesInstanceUID());
                 this.moveSeriesToTrash(s);
             } else {
                 entityTree = moveInstancesToTrash(instances, false, entityTree);
@@ -217,7 +221,7 @@ public class DicomEditBean implements DicomEditLocal {
         for (Study st : studies) {
             series = st.getSeries();
             if (series.isEmpty()) {
-                log.debug("move empty study to trash:{}",st.getStudyInstanceUID());
+                log.info("move empty study to trash:{}",st.getStudyInstanceUID());
                 this.moveStudyToTrash(st);
             } else {
                 entityTree = moveSeriesToTrash(series, false, entityTree);
@@ -249,7 +253,7 @@ public class DicomEditBean implements DicomEditLocal {
         Set<Study> studies;
         for (Patient p : patients) {
             studies = p.getStudies();
-            if (studies.isEmpty()) {
+            if (studies == null || studies.isEmpty()) {
                 log.debug("move empty patient to trash:"+p.getPatientID()+"^^^"+p.getIssuerOfPatientID()+":"+p.getPatientName());
                 this.movePatientToTrash(p);
             } else {
@@ -361,12 +365,35 @@ public class DicomEditBean implements DicomEditLocal {
     }
 
     private void deletePatient(Patient patient) {
-        log.debug("Delete Patient:{}",patient);
-        for (MPPS mpps : patient.getModalityPerformedProcedureSteps()) {
-            em.remove(mpps);
-            log.debug("  MPPS deleted:{}",mpps);
+        log.info("Delete Patient:{}",patient);
+        Set<MPPS> mppss = patient.getModalityPerformedProcedureSteps();
+        if (mppss != null) {
+            for (MPPS mpps : mppss) {
+                Set<Series> seriess = mpps.getSeries();
+                if (seriess == null || seriess.isEmpty()) {
+                    em.remove(mpps);
+                } else {
+                    Patient pat = seriess.iterator().next().getStudy().getPatient();
+                    log.warn("Wrong patient in MPPS found!\n corrected from:"+mpps.getPatient()+"\nto:"+pat);
+                    mpps.setPatient(pat);
+                }
+            }
         }
+        delete(patient.getModalityWorklistItems());
+        delete(patient.getGeneralPurposeScheduledProcedureSteps());
+        delete(patient.getGeneralPurposePerformedProcedureSteps());
+        em.flush();
+        em.refresh(patient);
         em.remove(patient);
+    }
+    
+    private void delete(Set<? extends BaseEntity> entities) {
+        if ( entities != null) {
+            for (BaseEntity entity : entities) {
+                em.remove(entity);
+                log.info("Deleted: {}",entity);
+            }
+        }        
     }
 
     @SuppressWarnings("unchecked")
