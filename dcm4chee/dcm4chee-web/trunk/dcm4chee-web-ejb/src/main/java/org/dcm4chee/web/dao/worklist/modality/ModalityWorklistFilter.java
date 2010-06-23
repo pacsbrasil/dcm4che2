@@ -65,7 +65,7 @@ public class ModalityWorklistFilter implements Serializable {
     private Map<String,List<String>> stationAetGroups;
     private String scheduledStationName;
     private boolean latestItemsFirst;
-    private String scheduledProcedureStepStatus;
+    private String SPSStatus;
     
     private Date startDateMin;
     private Date startDateMax;
@@ -77,7 +77,7 @@ public class ModalityWorklistFilter implements Serializable {
     public void clear() {
         patientName = patientID = issuerOfPatientID = accessionNumber = 
             studyInstanceUID = modality = scheduledStationAET = 
-                scheduledStationName = scheduledProcedureStepStatus = null;
+                scheduledStationName = SPSStatus = null;
         extendedQuery = latestItemsFirst = false;
     }
 
@@ -187,12 +187,12 @@ public class ModalityWorklistFilter implements Serializable {
         this.scheduledStationName = scheduledStationName;
     }
 
-    public String getScheduledProcedureStepStatus() {
-        return scheduledProcedureStepStatus;
+    public String getSPSStatus() {
+        return SPSStatus;
     }
 
-    public void setScheduledProcedureStepStatus(String scheduledProcedureStepStatus) {
-        this.scheduledProcedureStepStatus = scheduledProcedureStepStatus;
+    public void setSPSStatus(String SPSStatus) {
+        this.SPSStatus = SPSStatus;
     }
 
     public Date getStartDateMin() {

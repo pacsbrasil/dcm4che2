@@ -94,12 +94,12 @@ public class MWLItemListView extends PropertyListView<MWLItemModel> {
             }
         });
 
-        this.mwlitem.add(new Label("scheduledProcedureStepDescription"))
-        .add(new Label("scheduledProcedureStepID"))
+        this.mwlitem.add(new Label("SPSDescription"))
+        .add(new Label("SPSID"))
         .add(new Label("requestedProcedureID"))
         .add(new Label("accessionNumber"))
         .add(new Label("patientName"))
-        .add(new Label("modality"))
+        .add(new Label("SPSModality"))
         .add(new DateTimeLabel("startDate"));
         if (mwlActionProvider != null)
             mwlActionProvider.addMwlActions(item, MWLItemListView.this);

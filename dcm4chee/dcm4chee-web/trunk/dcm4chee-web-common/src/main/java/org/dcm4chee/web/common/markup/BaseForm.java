@@ -41,7 +41,6 @@ package org.dcm4chee.web.common.markup;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -119,6 +118,10 @@ public class BaseForm extends Form<Object> {
         visitChildren(visitor);
     }
 
+    public void visitChildren() {
+        visitChildren(visitor);
+    }
+    
     public MarkupContainer setParent(WebMarkupContainer parent) {
         this.parent = parent;
         if (parent != null) 
@@ -313,8 +316,6 @@ public class BaseForm extends Form<Object> {
     private String toResourcekey(String id) {
         return resourceIdPrefix == null ? id : resourceIdPrefix+id;
     }
-
-    
     
     public static void addInvalidComponentsToAjaxRequestTarget(
             final AjaxRequestTarget target, final Form<?> form) {
@@ -341,6 +342,7 @@ public class BaseForm extends Form<Object> {
         public Object component(Component c) {
             if (!visited.contains(c)) {
                 visited.add(c);
+                
                 if ( tooltipBehaviour != null && componentHasNoTooltip(c))
                     c.add(tooltipBehaviour);
                 if (c instanceof FormComponent<?>) {

@@ -123,7 +123,7 @@ public class ModalityWorklistBean implements ModalityWorklist {
             appendModalityFilter(ql, filter.getModality());
             appendScheduledStationAETFilter(ql, filter.getScheduledStationAETs());
             appendScheduledStationNameFilter(ql, filter.getScheduledStationName());
-            appendScheduledProcedureStepStatus(ql, filter.getScheduledProcedureStepStatus());
+            appendScheduledProcedureStepStatus(ql, filter.getSPSStatus());
         } else {
             if (!QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()))
                 ql.append(" AND m.studyInstanceUID = :studyInstanceUID");
@@ -143,7 +143,7 @@ public class ModalityWorklistBean implements ModalityWorklist {
             setModalityQueryParameter(query, filter.getModality());
             setScheduledStationAETQueryParameter(query, filter.getScheduledStationAETs());
             setScheduledStationNameQueryParameter(query, filter.getScheduledStationName());
-            setScheduledProcedureStepStatusQueryParameter(query, filter.getScheduledProcedureStepStatus());
+            setScheduledProcedureStepStatusQueryParameter(query, filter.getSPSStatus());
         } else {        
             if (!QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()))
                 setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());

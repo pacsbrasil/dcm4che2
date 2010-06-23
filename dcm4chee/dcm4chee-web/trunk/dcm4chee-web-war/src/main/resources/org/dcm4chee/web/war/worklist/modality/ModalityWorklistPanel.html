@@ -81,8 +81,8 @@
 					<select wicket:id="scheduledStationName" />
 				</td>
 				<td>
-					<div wicket:id="scheduledProcedureStepStatusLabel">SPS Status</div>
-					<select wicket:id="scheduledProcedureStepStatus" />
+					<div wicket:id="SPSStatusLabel">SPS Status</div>
+					<select wicket:id="SPSStatus" />
 				</td>
 				<td colspan="2"></td>
 				<td></td>
@@ -139,10 +139,10 @@
 				<tr>
 					<th></th>
 		      		<th><wicket:message key="mw.patientName" /></th>
-					<th><wicket:message key="mw.spsDescription" /></th>
-		      		<th><wicket:message key="mw.modality" /></th>
+					<th><wicket:message key="mw.SPSDescription" /></th>
+		      		<th><wicket:message key="mw.SPSModality" /></th>
 					<th><wicket:message key="mw.startDate" /></th>
-					<th><wicket:message key="mw.spsID" /></th>
+					<th><wicket:message key="mw.SPSID" /></th>
 					<th><wicket:message key="mw.requestedProcedureID" /></th>
 		      		<th><wicket:message key="mw.accessionNumber" /></th>
 		      		<th colspan="2"></th>
@@ -152,11 +152,11 @@
  				<wicket:container wicket:id="mwlitems">
 		    	<tr wicket:id="mwlitem">
 					<td wicket:id="cell" class="expand"></td>
-					<td wicket:id="patientName">[PatientName]</td>
-		      		<td wicket:id="scheduledProcedureStepDescription">[Scheduled Procedure Step Description]</td>
-					<td wicket:id="modality">[Modality]</td>
+					<td wicket:id="patientName">[Patient Name]</td>
+		      		<td wicket:id="SPSDescription">[Scheduled Procedure Step Description]</td>
+					<td wicket:id="SPSModality">[Modality]</td>
 					<td wicket:id="startDate">[Start Date]</td>
-					<td wicket:id="scheduledProcedureStepID">[Scheduled Procedure Step ID]</td>
+					<td wicket:id="SPSID">[Scheduled Procedure Step ID]</td>
 					<td wicket:id="requestedProcedureID">[Requested Procedure ID]</td>
 					<td wicket:id="accessionNumber">[Accession Number]</td>
 					<td class="action">

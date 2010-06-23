@@ -80,7 +80,7 @@ public class MWLItemModel extends AbstractEditableDicomModel implements Serializ
         spsItem = dataset.getNestedDicomObject(Tag.ScheduledProcedureStepSequence);
     }
 
-    public String getScheduledProcedureStepDescription() {
+    public String getSPSDescription() {
         String desc = getCodeString(spsItem.get(Tag.ScheduledProtocolCodeSequence));
         if (desc == null)
             desc = spsItem.getString(Tag.ScheduledProcedureStepDescription);
@@ -91,7 +91,7 @@ public class MWLItemModel extends AbstractEditableDicomModel implements Serializ
         return replace(patAttrs.getString(Tag.PatientName),'^', ' ');
     }
     
-    public String getModality() {
+    public String getSPSModality() {
         return spsItem.getString(Tag.Modality);
     }
 
@@ -108,7 +108,7 @@ public class MWLItemModel extends AbstractEditableDicomModel implements Serializ
         }
     }
 
-    public String getScheduledProcedureStepID() {
+    public String getSPSID() {
         return spsItem.getString(Tag.ScheduledProcedureStepID);
     }
 
@@ -136,7 +136,7 @@ public class MWLItemModel extends AbstractEditableDicomModel implements Serializ
         return spsItem.getString( Tag.ScheduledStationName );
     }
 
-    public String getSpsStatus() {
+    public String getSPSStatus() {
         return spsItem.getString(Tag.ScheduledProcedureStepStatus);
     }
 

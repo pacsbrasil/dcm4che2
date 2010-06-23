@@ -103,7 +103,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     private static List<String> modalities = new ArrayList<String>();
     private boolean showSearch = true;
     private boolean notSearched = true;
-    private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("mw.");
     private ViewPort viewport;
     final BaseForm form;
     
@@ -119,8 +118,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
         final ModalityWorklistFilter filter = viewport.getFilter();
         form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
-        form.setResourceIdPrefix("mw.");
-        form.setTooltipBehaviour(tooltipBehaviour);
+        form.setResourceIdPrefix("mw.search.");
+        form.setTooltipBehaviour(new TooltipBehaviour("mw.search."));
         add(form);
 
         form.add(new AjaxFallbackLink<Object>("searchToggle") {
@@ -159,6 +158,10 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         addQueryFields(filter, form);
         addQueryOptions(form);
         addNavigation(form);
+        
+        form.visitChildren();
+        form.setResourceIdPrefix("mw.");
+        form.setTooltipBehaviour(new TooltipBehaviour("mw."));
         
         form.add(new MWLItemListView("mwlitems", viewport.getMWLItemModels(), this));
         initModalitiesAndStationAETs();
@@ -210,7 +213,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         form.addInternalLabel("modality");
         form.addInternalLabel("scheduledStationAET");
         form.addInternalLabel("scheduledStationName");
-        form.addInternalLabel("scheduledProcedureStepStatus");
+        form.addInternalLabel("SPSStatus");
 
         form.addDropDownChoice("modality", null, modalities, enabledModel, false);
         List<String> choices = viewport.getStationAetChoices(scheduledStationAETs);
@@ -218,7 +221,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             filter.setScheduledStationAET(choices.get(0));
         form.addDropDownChoice("scheduledStationAET", null, choices, enabledModel, false);
         form.addDropDownChoice("scheduledStationName", null, getStationNameChoices(), enabledModel, false);
-        form.addDropDownChoice("scheduledProcedureStepStatus", null, getSpsStatusChoices(), enabledModel, false);
+        form.addDropDownChoice("SPSStatus", null, getSpsStatusChoices(), enabledModel, false);
 
         final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
 
@@ -229,7 +232,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 return showSearch && filter.isExtendedQuery();
             }
         };
-        extendedFilter.add( new Label("studyInstanceUIDLabel", new ResourceModel("mw.studyInstanceUID")));
+        extendedFilter.add( new Label("studyInstanceUIDLabel", new ResourceModel("mw.search.studyInstanceUID")));
         extendedFilter.add( new TextField<String>("studyInstanceUID").add(new UIDValidator()));
         form.add(extendedFilter);
         
@@ -257,7 +260,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                         ImageManager.IMAGE_COMMON_EXPAND;
                 }
         })
-        .add(new TooltipBehaviour("folder.", "showExtendedFilterImg", new AbstractReadOnlyModel<Boolean>() {
+        .add(new TooltipBehaviour("mw.search.", "showExtendedFilterImg", new AbstractReadOnlyModel<Boolean>() {
 
             private static final long serialVersionUID = 1L;
 
@@ -265,8 +268,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             public Boolean getObject() {
                 return filter.isExtendedQuery();
             }
-        })))
-        .add(new ImageSizeBehaviour()));
+        }))
+        .add(new ImageSizeBehaviour())));
         form.addComponent(link);
     }
 
@@ -291,9 +294,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         };
         resetBtn.setDefaultFormProcessing(false);
         resetBtn.add(new Image("resetImg",ImageManager.IMAGE_COMMON_RESET)
-        .add(new ImageSizeBehaviour("vertical-align: middle;"))
+            .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        resetBtn.add(new Label("resetText", new ResourceModel("mw.resetBtn.text"))
+        resetBtn.add(new Label("resetText", new ResourceModel("mw.search.resetBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
         form.addComponent(resetBtn);
@@ -317,7 +320,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         searchBtn.add(new Image("searchImg",ImageManager.IMAGE_COMMON_SEARCH)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        searchBtn.add(new Label("searchText", new ResourceModel("mw.searchBtn.text"))
+        searchBtn.add(new Label("searchText", new ResourceModel("mw.search.searchBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
         );
         form.addComponent(searchBtn);
@@ -342,7 +345,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         }
         .add(new Image("prevImg", ImageManager.IMAGE_COMMON_BACK)
         .add(new ImageSizeBehaviour("vertical-align: middle;"))
-        .add(new TooltipBehaviour("mw.")))
+        .add(new TooltipBehaviour("mw.search.")))
         );
  
         form.add(new Link<Object>("next") {
@@ -362,7 +365,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         }
         .add(new Image("nextImg", ImageManager.IMAGE_COMMON_FORWARD)
         .add(new ImageSizeBehaviour("vertical-align: middle;"))
-        .add(new TooltipBehaviour("mw.")))
+        .add(new TooltipBehaviour("mw.search.")))
         .setVisible(!notSearched)
         );
 
@@ -374,9 +377,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
             @Override
             public Serializable getObject() {
-                return notSearched ? "mw.notSearched" :
-                        viewport.getTotal() == 0 ? "mw.noMatchingMppsFound" : 
-                            "mw.mppsFound";
+                return notSearched ? "mw.search.notSearched" :
+                        viewport.getTotal() == 0 ? "mw.search.noMatchingMppsFound" : 
+                            "mw.search.mppsFound";
             }
         };
         form.add(new Label("viewport", new StringResourceModel("${}", ModalityWorklistPanel.this, keySelectModel,new Object[]{"dummy"}){
@@ -488,7 +491,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
         }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
         .add(new ImageSizeBehaviour())
-        .add(new TooltipBehaviour("mw.","patDetail"))))
+        .add(new TooltipBehaviour("mw.","SPSDetail"))))
         .add( new Link<Object>("edit") {
 
             private static final long serialVersionUID = 1L;
@@ -499,6 +502,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
         }.add(new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT)
         .add(new ImageSizeBehaviour())
-        .add(new TooltipBehaviour("mw.","patEdit"))));
+        .add(new TooltipBehaviour("mw.","SPSEdit"))));
     }
 }
