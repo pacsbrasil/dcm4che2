@@ -314,9 +314,9 @@ public class Instance extends BaseEntity implements Serializable {
         DicomObject dataset = DicomObjectUtils.decode(encodedAttributes);
         if (cfindrsp) {
             if (media != null) {
-                dataset.putString(Tag.StorageMediaFilesetUID, VR.UI,
+                dataset.putString(Tag.StorageMediaFileSetUID, VR.UI,
                         media.getFileSetUID());
-                dataset.putString(Tag.StorageMediaFilesetID, VR.SH,
+                dataset.putString(Tag.StorageMediaFileSetID, VR.SH,
                         media.getFileSetID());
             }
             if (retrieveAETs != null || externalRetrieveAET != null) {

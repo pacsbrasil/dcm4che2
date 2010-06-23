@@ -277,9 +277,9 @@ public class GPSPS extends BaseEntity implements Serializable {
     public void setAttributes(DicomObject attrs) {
         this.sopInstanceUID = attrs.getString(Tag.SOPInstanceUID);
         this.startDateTime = attrs
-                .getDate(Tag.ScheduledProcedureStepStartDateAndTime);
+                .getDate(Tag.ScheduledProcedureStepStartDateTime);
         this.expectedCompletionDateTime = attrs
-                .getDate(Tag.ExpectedCompletionDateAndTime);
+                .getDate(Tag.ExpectedCompletionDateTime);
         this.status = GPSPSStatus.valueOf(attrs.getString(
                 Tag.GeneralPurposeScheduledProcedureStepStatus).replace(' ',
                 '_'));

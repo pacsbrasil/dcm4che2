@@ -386,8 +386,8 @@ public class Series extends BaseEntity implements Serializable {
             dataset.putInt(Tag.NumberOfSeriesRelatedInstances, VR.IS,
                     numberOfSeriesRelatedInstances);
             if (fileSetUID != null && fileSetID != null) {
-                dataset.putString(Tag.StorageMediaFilesetUID, VR.UI, fileSetUID);
-                dataset.putString(Tag.StorageMediaFilesetID, VR.SH, fileSetID);
+                dataset.putString(Tag.StorageMediaFileSetUID, VR.UI, fileSetUID);
+                dataset.putString(Tag.StorageMediaFileSetID, VR.SH, fileSetID);
             }
             if (retrieveAETs != null || externalRetrieveAET != null) {
                 dataset.putString(Tag.RetrieveAETitle, VR.AE, 

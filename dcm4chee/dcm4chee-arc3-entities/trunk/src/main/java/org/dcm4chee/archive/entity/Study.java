@@ -427,8 +427,8 @@ public class Study extends BaseEntity implements Serializable {
             dataset.putString(Tag.ModalitiesInStudy, VR.CS, modalitiesInStudy);
             dataset.putString(Tag.SOPClassesInStudy, VR.UI, sopClassesInStudy);
             if (fileSetUID != null && fileSetID != null) {
-                dataset.putString(Tag.StorageMediaFilesetUID, VR.UI, fileSetUID);
-                dataset.putString(Tag.StorageMediaFilesetID, VR.SH, fileSetID);
+                dataset.putString(Tag.StorageMediaFileSetUID, VR.UI, fileSetUID);
+                dataset.putString(Tag.StorageMediaFileSetID, VR.SH, fileSetID);
             }
             if (retrieveAETs != null || externalRetrieveAET != null) {
                 dataset.putString(Tag.RetrieveAETitle, VR.AE, 
