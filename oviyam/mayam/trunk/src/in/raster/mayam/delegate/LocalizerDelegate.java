@@ -59,14 +59,14 @@ public class LocalizerDelegate {
     public LocalizerDelegate() {
     }
 
-    public boolean drawScoutLine() {
+    public boolean drawScoutLine() {        
         boolean retVal = false;
         if (ApplicationContext.imgPanel != null) {
             if (!ApplicationContext.imgPanel.isLocalizer()) {
                 for (int j = 0; j < ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponentCount(); j++) {
                     try {
                         if (ApplicationContext.imgPanel.getReferencedSOPInstanceUID().equalsIgnoreCase(((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getInstanceUID())) {
-                            if (ApplicationContext.imgPanel.getFrameOfReferenceUID().equalsIgnoreCase(((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getFrameOfReferenceUID())) {
+                          //  if (ApplicationContext.imgPanel.getFrameOfReferenceUID().equalsIgnoreCase(((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getFrameOfReferenceUID())) {
                                 String scoutPos = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getImagePosition();
                                 String scoutOrientation = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getImageOrientation();
                                 String scoutPixelSpacing = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getPixelSpacing();
@@ -76,11 +76,11 @@ public class LocalizerDelegate {
                                 String imgOrientation = ApplicationContext.imgPanel.getImageOrientation();
                                 String imgPixelSpacing = ApplicationContext.imgPanel.getPixelSpacing();
                                 int imgRow = ApplicationContext.imgPanel.getRow();
-                                int imgColumn = ApplicationContext.imgPanel.getColumn();
+                                int imgColumn = ApplicationContext.imgPanel.getColumn();                              
                                 locator.projectSlice(scoutPos, scoutOrientation, scoutPixelSpacing, scoutRow, scoutColumn, imgPos, imgOrientation, imgPixelSpacing, imgRow, imgColumn);
                                 ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.setScoutCoordinates((int) locator.getBoxUlx(), (int) locator.getBoxUly(), (int) locator.getBoxLlx(), (int) locator.getBoxLly(), (int) locator.getBoxUrx(), (int) locator.getBoxUry(), (int) locator.getBoxLrx(), (int) locator.getBoxLry());
                                 retVal = true;
-                            }
+                            //}
                         }
                     } catch (Exception e) {
                        //e.printStackTrace();
@@ -112,14 +112,38 @@ public class LocalizerDelegate {
 
     }
 
-    public boolean drawScoutLineWithBorder() {
+    public boolean drawScoutLineWithBorder() {        
         boolean retVal = false;
-        if (ApplicationContext.imgPanel != null) {
-            if (!ApplicationContext.imgPanel.isLocalizer()) {
+        if (ApplicationContext.imgPanel != null) {          
+            if (!ApplicationContext.imgPanel.isLocalizer()) {              
                 ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(0)).imgpanel.setDisplayScout(true);
                 for (int j = 0; j < ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponentCount(); j++) {
-                    try {
-                        if (ApplicationContext.imgPanel.getReferencedSOPInstanceUID().equalsIgnoreCase(((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getInstanceUID())) {
+                    try {                        
+                        if (ApplicationContext.imgPanel.getReferencedSOPInstanceUID()!=null&&ApplicationContext.imgPanel.getReferencedSOPInstanceUID().equalsIgnoreCase(((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getInstanceUID())) {
+                         //   if (ApplicationContext.imgPanel.getFrameOfReferenceUID().equalsIgnoreCase(((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getFrameOfReferenceUID())) {
+                                String scoutPos = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getImagePosition();
+                                String scoutOrientation = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getImageOrientation();
+                                String scoutPixelSpacing = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getPixelSpacing();
+                                int scoutRow = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getRow();
+                                int scoutColumn = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getColumn();
+                                String imgPos = ApplicationContext.imgPanel.getImagePosition();
+                                String imgOrientation = ApplicationContext.imgPanel.getImageOrientation();
+                                String imgPixelSpacing = ApplicationContext.imgPanel.getPixelSpacing();
+                                int imgRow = ApplicationContext.imgPanel.getRow();
+                                int imgColumn = ApplicationContext.imgPanel.getColumn();                              
+                                ScoutLineInfoModel[] borderLineArray = ApplicationContext.imgPanel.getScoutBorder();
+                                locator.projectSlice(scoutPos, scoutOrientation, scoutPixelSpacing, scoutRow, scoutColumn, borderLineArray[0].getImagePosition(), borderLineArray[0].getImageOrientation(), borderLineArray[0].getImagePixelSpacing(), borderLineArray[0].getImageRow(), borderLineArray[0].getImageColumn());
+                                ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.setScoutBorder1Coordinates((int) locator.getBoxUlx(), (int) locator.getBoxUly(), (int) locator.getBoxLlx(), (int) locator.getBoxLly());
+                                locator.projectSlice(scoutPos, scoutOrientation, scoutPixelSpacing, scoutRow, scoutColumn, borderLineArray[1].getImagePosition(), borderLineArray[1].getImageOrientation(), borderLineArray[1].getImagePixelSpacing(), borderLineArray[1].getImageRow(), borderLineArray[1].getImageColumn());
+                                ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.setScoutBorder2Coordinates((int) locator.getBoxUlx(), (int) locator.getBoxUly(), (int) locator.getBoxLlx(), (int) locator.getBoxLly());
+                                locator.projectSlice(scoutPos, scoutOrientation, scoutPixelSpacing, scoutRow, scoutColumn, imgPos, imgOrientation, imgPixelSpacing, imgRow, imgColumn);
+                                ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.setScoutCoordinates((int) locator.getBoxUlx(), (int) locator.getBoxUly(), (int) locator.getBoxLlx(), (int) locator.getBoxLly(), (int) locator.getBoxUrx(), (int) locator.getBoxUry(), (int) locator.getBoxLrx(), (int) locator.getBoxLry());
+                                retVal = true;
+                            //}
+                        }
+                        else
+                        {
+                            if(((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.isLocalizer()){
                             if (ApplicationContext.imgPanel.getFrameOfReferenceUID().equalsIgnoreCase(((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getFrameOfReferenceUID())) {
                                 String scoutPos = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getImagePosition();
                                 String scoutOrientation = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getImageOrientation();
@@ -130,7 +154,7 @@ public class LocalizerDelegate {
                                 String imgOrientation = ApplicationContext.imgPanel.getImageOrientation();
                                 String imgPixelSpacing = ApplicationContext.imgPanel.getPixelSpacing();
                                 int imgRow = ApplicationContext.imgPanel.getRow();
-                                int imgColumn = ApplicationContext.imgPanel.getColumn();
+                                int imgColumn = ApplicationContext.imgPanel.getColumn();           
                                 ScoutLineInfoModel[] borderLineArray = ApplicationContext.imgPanel.getScoutBorder();
                                 locator.projectSlice(scoutPos, scoutOrientation, scoutPixelSpacing, scoutRow, scoutColumn, borderLineArray[0].getImagePosition(), borderLineArray[0].getImageOrientation(), borderLineArray[0].getImagePixelSpacing(), borderLineArray[0].getImageRow(), borderLineArray[0].getImageColumn());
                                 ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.setScoutBorder1Coordinates((int) locator.getBoxUlx(), (int) locator.getBoxUly(), (int) locator.getBoxLlx(), (int) locator.getBoxLly());
@@ -140,8 +164,11 @@ public class LocalizerDelegate {
                                 ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.setScoutCoordinates((int) locator.getBoxUlx(), (int) locator.getBoxUly(), (int) locator.getBoxLlx(), (int) locator.getBoxLly(), (int) locator.getBoxUrx(), (int) locator.getBoxUry(), (int) locator.getBoxLrx(), (int) locator.getBoxLry());
                                 retVal = true;
                             }
+                            }                              
                         }
-                    } catch (Exception e) {                       
+
+                    }catch(NullPointerException e){}
+                    catch (Exception e) {
                         e.printStackTrace();                        
                     }
                 }

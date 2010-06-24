@@ -295,16 +295,13 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             column = dataset.getString(Tags.Columns) != null ? Integer.parseInt(dataset.getString(Tags.Columns)) : 0;
             Dataset referencedImageSequence = dataset.getItem(Tag.ReferencedImageSequence) != null ? dataset.getItem(Tag.ReferencedImageSequence) : null;
             if (imageType != null) {
-                if (imageType.length >= 3 && !imageType[2].equalsIgnoreCase("LOCALIZER")) {
-                    if (referencedImageSequence != null) {
-                        referencedSOPInstanceUID = referencedImageSequence.getString(Tag.ReferencedSOPInstanceUID);
-                    }
+                if (imageType.length >= 3 && imageType[2].equalsIgnoreCase("LOCALIZER")) {
+                    isLocalizer=true;
                 } else {
                     if (referencedImageSequence != null) {
                         referencedSOPInstanceUID = referencedImageSequence.getString(Tag.ReferencedSOPInstanceUID);
-                    } else {
-                        isLocalizer = true;
                     }
+                    isLocalizer=false;
                 }
             }
         } catch (Exception e) {
@@ -938,11 +935,11 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             if (displayScout) {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g.setColor(Color.YELLOW);
-                g.drawLine(boundaryLine1X1, boundaryLine1Y1, boundaryLine1X2, boundaryLine1Y2);
-                g.drawLine(boundaryLine2X1, boundaryLine2Y1, boundaryLine2X2, boundaryLine2Y2);
+                g.drawLine((int) (boundaryLine1X1 * this.getCurrentScaleFactor()), (int) (boundaryLine1Y1 * this.getCurrentScaleFactor()), (int) (boundaryLine1X2 * this.getCurrentScaleFactor()), (int) (boundaryLine1Y2 * this.getCurrentScaleFactor()));
+                g.drawLine((int) (boundaryLine2X1 * this.getCurrentScaleFactor()), (int) (boundaryLine2Y1 * this.getCurrentScaleFactor()), (int) (boundaryLine2X2 * this.getCurrentScaleFactor()), (int) (boundaryLine2Y2 * this.getCurrentScaleFactor()));
                 g.setColor(Color.ORANGE);
-                g.drawLine(scoutLine1X1, scoutLine1Y1, scoutLine1X2, scoutLine1Y2);
-                g.drawLine(scoutLine2X1, scoutLine2Y1, scoutLine2X2, scoutLine2Y2);
+                g.drawLine((int) (scoutLine1X1 * this.getCurrentScaleFactor()), (int) (scoutLine1Y1 * this.getCurrentScaleFactor()), (int) (scoutLine1X2 * this.getCurrentScaleFactor()), (int) (scoutLine1Y2 * this.getCurrentScaleFactor()));
+                g.drawLine((int) (scoutLine2X1 * this.getCurrentScaleFactor()), (int) (scoutLine2Y1 * this.getCurrentScaleFactor()), (int) (scoutLine2X2 * this.getCurrentScaleFactor()), (int) (scoutLine2Y2 * this.getCurrentScaleFactor()));
             }
         }
         if (firstTime) {
