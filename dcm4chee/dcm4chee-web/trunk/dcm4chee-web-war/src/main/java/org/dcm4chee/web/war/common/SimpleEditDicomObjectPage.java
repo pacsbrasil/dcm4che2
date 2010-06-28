@@ -42,12 +42,11 @@ import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.IModel;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
-import org.dcm4chee.web.common.base.BaseWicketPage;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>

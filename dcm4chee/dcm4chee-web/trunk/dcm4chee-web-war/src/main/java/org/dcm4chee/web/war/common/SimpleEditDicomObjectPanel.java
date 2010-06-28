@@ -38,42 +38,25 @@
 
 package org.dcm4chee.web.war.common;
 
-import java.util.Iterator;
-
-import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
-import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
-import org.apache.wicket.markup.html.form.TextField;
-import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.ElementDictionary;
 import org.dcm4che2.data.SpecificCharacterSet;
-import org.dcm4che2.data.VR;
-import org.dcm4che2.data.VRMap;
 import org.dcm4che2.util.TagUtils;
-import org.dcm4chee.icons.ImageManager;
-import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
-import org.dcm4chee.web.common.markup.modal.MessageWindow;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -85,14 +68,11 @@ public class SimpleEditDicomObjectPanel extends Panel {
     private static final long serialVersionUID = 1L;
     
     private static ElementDictionary dict = ElementDictionary.getDictionary();
-    private static VRMap vrMap = VRMap.getVRMap();
     private final DicomObject dcmObj;
     private final BaseForm form;
     private final WebMarkupContainer table;
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("dicom.");
     
-    private static Logger log = LoggerFactory.getLogger(SimpleEditDicomObjectPanel.class);
-
     public SimpleEditDicomObjectPanel(String id, IModel<String> title, DicomObject dcmObj, final int[][] tagPaths) {
         super(id);
         this.dcmObj = new BasicDicomObject();
