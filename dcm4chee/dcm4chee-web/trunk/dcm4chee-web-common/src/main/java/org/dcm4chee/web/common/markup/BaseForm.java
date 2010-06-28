@@ -168,7 +168,7 @@ public class BaseForm extends Form<Object> {
 
             @Override
             public boolean isEnabled() {
-                return enabledModel.getObject();
+                return enabledModel == null ? true : enabledModel.getObject();
             }
         };
         if (addLabel) 
@@ -224,7 +224,7 @@ public class BaseForm extends Form<Object> {
 
             @Override
             public boolean isEnabled() {
-                return enabledModel.getObject();
+                return enabledModel == null ? true : enabledModel.getObject();
             }
         };
         if (addTooltip) {
@@ -274,7 +274,7 @@ public class BaseForm extends Form<Object> {
                                     
                                                 @Override
                                                 public boolean isEnabled() {
-                                                    return enabledModel.getObject();
+                                                    return enabledModel == null ? true : enabledModel.getObject();
                                                 }
                                             } : 
                                             new DropDownChoice<Object>(id, model, values) {
@@ -283,7 +283,7 @@ public class BaseForm extends Form<Object> {
 
                                                 @Override
                                                 public boolean isEnabled() {
-                                                    return enabledModel.getObject();
+                                                    return enabledModel == null ? true : enabledModel.getObject();
                                                 }
                                             };
         if (addLabel) 
@@ -327,6 +327,20 @@ public class BaseForm extends Form<Object> {
                     if ( !fc.isValid() ) {
                         target.addComponent(fc);
                     }
+                }
+                return IVisitor.CONTINUE_TRAVERSAL;
+            }
+        };
+        form.visitChildren(visitor);
+    }
+    
+    public static void addFormComponentsToAjaxRequestTarget(
+            final AjaxRequestTarget target, final Form<?> form) {
+        IVisitor<Component> visitor = new IVisitor<Component>() {
+
+            public Object component(Component c) {
+                if ( c.getOutputMarkupId() ) {
+                    target.addComponent(c);
                 }
                 return IVisitor.CONTINUE_TRAVERSAL;
             }
