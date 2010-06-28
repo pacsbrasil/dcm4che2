@@ -48,12 +48,21 @@ import org.dcm4chee.web.common.webview.link.spi.WebviewerLinkProviderSPI;
 public class OviyamLinkProvider extends WebviewerLinkProviderSPI {
     private static final long serialVersionUID = 4548297230882756086L;
 
-    private static String baseUrl = "http://localhost:8080/oviyam/oviyam?";
+    private static String baseUrl = "/oviyam/oviyam?";
     
     public String getName() {
         return "oviyam";
     }
     
+    @Override
+    public void setBaseURL(String baseUrl) {
+        if ( baseUrl != null) {
+            this.baseUrl = baseUrl;
+            if (this.baseUrl.indexOf("?") == -1) {
+                this.baseUrl += "?";
+            }
+        }
+    }
     public boolean supportPatientLevel() {
         return true;
     }

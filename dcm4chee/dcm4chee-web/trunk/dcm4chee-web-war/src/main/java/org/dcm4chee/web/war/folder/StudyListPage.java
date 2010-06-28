@@ -50,6 +50,9 @@ import org.apache.wicket.PageMap;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.IAjaxCallDecorator;
+import org.apache.wicket.ajax.calldecorator.CancelEventIfNoAjaxDecorator;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
@@ -149,6 +152,7 @@ public class StudyListPage extends Panel {
     public StudyListPage(final String id) {
         super(id);
         webviewerLinkProvider = new WebviewerLinkProvider(((WebApplication)Application.get()).getInitParameter("webviewerName"));
+        webviewerLinkProvider.setBaseUrl(((WebApplication)Application.get()).getInitParameter("webviewerBaseUrl"));
         add(CSSPackageResource.getHeaderContribution(StudyListPage.class, "folder-style.css"));
 
         final StudyListFilter filter = viewport.getFilter();

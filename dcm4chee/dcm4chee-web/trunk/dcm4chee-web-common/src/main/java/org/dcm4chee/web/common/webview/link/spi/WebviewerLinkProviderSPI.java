@@ -40,6 +40,9 @@ package org.dcm4chee.web.common.webview.link.spi;
 
 import java.io.Serializable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
@@ -48,6 +51,7 @@ import java.io.Serializable;
 public abstract class WebviewerLinkProviderSPI implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static Logger log = LoggerFactory.getLogger(WebviewerLinkProviderSPI.class);
     
     public abstract String getName();
     public abstract boolean supportPatientLevel();
@@ -62,4 +66,7 @@ public abstract class WebviewerLinkProviderSPI implements Serializable {
     public abstract String getUrlForInstance(String sopIuid);
     public abstract String getUrlForPresentationState(String iuid);
     public abstract String getUrlForKeyObjectSelection(String iuid);
+    public void setBaseURL(String baseUrl) {
+        log.warn("This WebviewerLinkProvider ignores setting of Base Webviewer URL! base URL:"+baseUrl);
+    }
 }
