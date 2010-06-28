@@ -78,6 +78,7 @@ public class ModalityWorklistFilter implements Serializable {
         patientName = patientID = issuerOfPatientID = accessionNumber = 
             studyInstanceUID = modality = scheduledStationAET = 
                 scheduledStationName = SPSStatus = null;
+        startDateMin = startDateMax = null;
         extendedQuery = latestItemsFirst = false;
     }
 
