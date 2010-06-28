@@ -42,6 +42,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import org.apache.wicket.Component;
+import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.datetime.StyleDateConverter;
 import org.apache.wicket.datetime.markup.html.form.DateTextField;
 import org.apache.wicket.extensions.yui.calendar.DatePicker;
@@ -141,6 +143,16 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
         }
         log.debug("Converted Input:{}", getConvertedInput());
     }
+    
+    public Component addToDateField(final IBehavior... behaviors) {
+        this.dateField.add(behaviors);
+        return this;
+    }
+    public Component addToTimeField(final IBehavior... behaviors) {
+        this.timeField.add(behaviors);
+        return this;
+    }
+
     private void setTimeToMinOrMax(GregorianCalendar cal, boolean max) {
         if (max) {
             cal.set(Calendar.HOUR_OF_DAY, 23);
