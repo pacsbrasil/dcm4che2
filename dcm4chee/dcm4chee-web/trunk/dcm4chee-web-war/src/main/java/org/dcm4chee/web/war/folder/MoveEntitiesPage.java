@@ -423,10 +423,13 @@ public class MoveEntitiesPage extends WebPage {
                         protected void onTimer(AjaxRequestTarget target) {
                             try {
                                 int nrOfMovedInstances = ContentEditDelegate.getInstance().moveEntities(selected);
-                                if (nrOfMovedInstances != -1) {
+                                if (nrOfMovedInstances > 0) {
                                     setStatus(new StringResourceModel("folder.moveDone", MoveEntitiesPage.this,null));
-                                } else
+                                } else if (nrOfMovedInstances == 0) {
+                                    setStatus(new StringResourceModel("folder.moveNothing", MoveEntitiesPage.this,null));
+                                } else {
                                     setStatus(new StringResourceModel("folder.moveFailed", MoveEntitiesPage.this,null));
+                                }
                             } catch (SelectionException x) {
                                 log.warn(x.getMessage());
                                 setStatus(new StringResourceModel(x.getMsgId(), MoveEntitiesPage.this,null));
