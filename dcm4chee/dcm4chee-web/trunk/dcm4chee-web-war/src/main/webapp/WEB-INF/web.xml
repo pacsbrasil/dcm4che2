@@ -96,6 +96,11 @@
 	      <param-name>webviewerName</param-name>
 	      <param-value>MY_WEB_VIEWER</param-value>
 	    </init-param> -->
+	    <!--  WebViewer Base URL. uncomment and configure it according to your WebViewer / URLProvider
+	    <init-param>
+	      <param-name>webviewerBaseUrl</param-name>
+	      <param-value>http://WEBVIEWER:8080/view?</param-value>
+	    </init-param>  -->
 	    <init-param>
 	      <param-name>storeBridgeServiceName</param-name>
 	      <param-value>dcm4chee.web:service=StoreBridge</param-value>
