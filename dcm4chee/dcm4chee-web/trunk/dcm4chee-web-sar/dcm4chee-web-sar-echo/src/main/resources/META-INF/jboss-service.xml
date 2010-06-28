@@ -57,11 +57,11 @@
       </descriptors>
    </attribute>
    <attribute access="read-write" 
-     getMethod="getRetrieveRspTimeout"
-     setMethod="setRetrieveRspTimeout">
-      <description>Timeout in milliseconds for receiving DIMSE-RSP for an open C-MOVE request. 0 = no timeout.
+     getMethod="getDimseRspTimeout"
+     setMethod="setDimseRspTimeout">
+      <description>Timeout in milliseconds for receiving DIMSE-RSP. 0 = no timeout.
       </description>
-      <name>RetrieveRspTimeout</name>
+      <name>DimseRspTimeout</name>
       <type>int</type>
       <descriptors>
          <value value="60000"/>
@@ -132,6 +132,17 @@
       <type>javax.management.ObjectName</type>
    </attribute>
 
+   <attribute access="read-write"
+     getMethod="getPingTimeout"
+     setMethod="setPingTimeout">
+      <description>ICMP Ping Timeout in ms. 0 = no timeout</description>
+      <name>PingTimeout</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1000"/>
+      </descriptors>
+   </attribute>
+
    &defaultAttributes;
    
    <!-- Operations -->
@@ -164,6 +175,17 @@
         <type>int</type>
       </parameter>
       <return-type>java.lang.String</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Checks if the given host is reachable via ICMP ping or TCP Echo (port 7).
+      		]]> </description>
+      <name>ping</name>
+      <parameter>
+        <description>Hostname or IP address</description>
+        <name>hostname</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
    </operation>
     </xmbean>
   </mbean>
