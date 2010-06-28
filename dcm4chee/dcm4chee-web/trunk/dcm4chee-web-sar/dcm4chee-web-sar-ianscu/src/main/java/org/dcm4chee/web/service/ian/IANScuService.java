@@ -192,7 +192,6 @@ public class IANScuService extends AbstractScheduledScuService implements Messag
                 break;
             default:
                 LOG.error("Sending IAN(SCN) failed with status {}H at calledAET:{}", StringUtils.shortToHex(status), as.getCalledAET());
-                System.out.print('F');
             }
         }
     }
