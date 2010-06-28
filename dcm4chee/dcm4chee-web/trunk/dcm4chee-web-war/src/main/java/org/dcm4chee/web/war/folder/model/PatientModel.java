@@ -78,7 +78,7 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     }
 
     public String getName() {
-        return replace(dataset.getString(Tag.PatientName),'^', ' ');
+        return dataset.getString(Tag.PatientName);
     }
 
     public String getId() {

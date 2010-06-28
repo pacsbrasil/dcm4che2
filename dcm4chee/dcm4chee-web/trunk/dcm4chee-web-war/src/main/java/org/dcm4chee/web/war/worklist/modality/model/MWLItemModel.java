@@ -88,7 +88,10 @@ public class MWLItemModel extends AbstractEditableDicomModel implements Serializ
     }
 
     public String getPatientName() {
-        return replace(patAttrs.getString(Tag.PatientName),'^', ' ');
+        return patAttrs.getString(Tag.PatientName);
+    }
+    public Date getBirthDate() {
+        return patAttrs.getDate(Tag.PatientBirthDate);
     }
     
     public String getSPSModality() {
