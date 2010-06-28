@@ -65,6 +65,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
@@ -119,7 +120,6 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     public class Mpps2MwlLinkPanelM extends ModalityWorklistPanel {
 
         private static final long serialVersionUID = 1L;
-        private DropDownChoice<?> tfModality;
 
         public Mpps2MwlLinkPanelM(final String id) {
             super(id);
@@ -129,7 +129,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         protected ViewPort initViewPort() {
             return new ViewPort();
         }
-
+/*
         protected void addQueryFields(final ModalityWorklistFilter filter, BaseForm form) {
             final IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
 
@@ -159,10 +159,11 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         protected WebMarkupContainer addExtendedStudySearch(final Form<?> form) {
             return null;
         }
-
-        public void addMwlActions(final ListItem<MWLItemModel> item, final MWLItemListView mwlListView) {
+/*_*/ 
+        public void addMwlActions(final ListItem<MWLItemModel> item, WebMarkupContainer valueContainer, final MWLItemListView mwlListView) {
             final MWLItemModel mwlItemModel = item.getModelObject();
-            item.add(new AjaxFallbackLink<Object>("link") {
+
+            valueContainer.add(new AjaxFallbackLink<Object>("link") {
                 private static final long serialVersionUID = 1L;
                 @Override
                 public void onClick(AjaxRequestTarget target) {
@@ -197,7 +198,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
             }.add(new Image("linkImg",ImageManager.IMAGE_COMMON_LINK)
             .add(new ImageSizeBehaviour())));
         }    
-        
+       
         @SuppressWarnings("unchecked")
         private void addMppsInfoPanel() {
             WebMarkupContainer p = new WebMarkupContainer("mppsInfo", new CompoundPropertyModel(new PpsInfoModel()));
@@ -208,13 +209,18 @@ public class Mpps2MwlLinkPage extends ModalWindow {
             p.add(new Label("patId"));
             p.add(new Label("patIssuerLabel", new ResourceModel("link.patIssuerLabel")));
             p.add(new Label("patIssuer"));
+            p.add(new Label("birthdateLabel", new ResourceModel("link.birthdateLabel")));
+            p.add(new DateTimeLabel("birthdate").setWithoutTime(true));
             p.add(new Label("modalityLabel", new ResourceModel("link.modalityLabel")));
             p.add(new Label("modality"));
             p.add(new Label("startDateLabel", new ResourceModel("link.startDateLabel")));
             p.add(new DateTimeLabel("datetime"));
+            p.add(new Label("studyDescriptionLabel", new ResourceModel("link.studyDescriptionLabel")));
+            p.add(new Label("studyDescription"));
             add(p);
         }
         
+        @SuppressWarnings("unchecked")
         private void presetSearchfields() {
             PPSModel ppsModel = ppsModels.get(0);
             String patPreset = this.getString("folder.mpps2mwl.preset.patientname");
@@ -235,7 +241,8 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                 getViewPort().getFilter().setModality(null);
             } else if ("mpps".equals(modPreset)){
                 String mod = ppsModel.getModality();
-                if(tfModality.getChoices().contains(mod))
+                DropDownChoice<String> modChoice = (DropDownChoice<String>) this.get("form:searchTableDropdowns:modality");
+                if(modChoice.getChoices().contains(mod))
                     getViewPort().getFilter().setModality(mod);
             }
             String startPreset = this.getString("folder.mpps2mwl.preset.startdate");
@@ -262,28 +269,33 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         
     }
 
+    @SuppressWarnings("unused") //used in a PropertyModel
     private class PpsInfoModel implements Serializable{
         private static final long serialVersionUID = 1L;
 
-        @SuppressWarnings("unused")
         public String getPatName() {
             return ppsPatModelForInfo.getName();
         }
-        @SuppressWarnings("unused")
         public String getPatId() {
             return ppsPatModelForInfo.getId();
         }
-        @SuppressWarnings("unused")
+        public Date getBirthdate() {
+            return ppsPatModelForInfo.getBirthdate();
+        }
         public String getPatIssuer() {
             return ppsPatModelForInfo.getIssuer();
         }
-        @SuppressWarnings("unused")
         public String getModality() {
             return ppsModelForInfo.getModality();
         }
-        @SuppressWarnings("unused")
         public Date getDatetime() {
             return ppsModelForInfo.getDatetime();
+        }
+        public String getStudyDescription() {
+            return ppsModelForInfo.getStudy().getDescription();
+        }
+        public String getStudyId() {
+            return ppsModelForInfo.getStudy().getId();
         }
     }
 }

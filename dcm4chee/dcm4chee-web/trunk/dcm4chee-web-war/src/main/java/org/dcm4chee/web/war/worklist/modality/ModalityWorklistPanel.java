@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.worklist.modality;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
@@ -48,6 +47,7 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
+import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -63,7 +63,6 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.archive.common.SPSStatus;
@@ -101,7 +100,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     private static final String MODULE_NAME = "mw";
     private static List<String> scheduledStationAETs = new ArrayList<String>();
     private static List<String> modalities = new ArrayList<String>();
-    private boolean showSearch = true;
+    private Model<Boolean> showSearchModel = new Model<Boolean>(true);
     private boolean notSearched = true;
     private ViewPort viewport;
     final BaseForm form;
@@ -109,6 +108,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
     
     private transient ModalityWorklist dao;
+
+    private WebMarkupContainer listPanel;
+    private WebMarkupContainer navPanel;
 
     public ModalityWorklistPanel(final String id) {
         super(id);
@@ -121,39 +123,34 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         form.setResourceIdPrefix("mw.search.");
         form.setTooltipBehaviour(new TooltipBehaviour("mw.search."));
         add(form);
-
-        form.add(new AjaxFallbackLink<Object>("searchToggle") {
-
+        AjaxFallbackLink<Object> toggleLink;
+        toggleLink = new AjaxFallbackLink<Object>("searchToggle") {
             private static final long serialVersionUID = 1L;
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                showSearch = !showSearch;
-                for (WebMarkupContainer wmc : searchTableComponents)
-                    wmc.setVisible(showSearch);               
-                target.addComponent(form);
+                boolean b = !showSearchModel.getObject();
+                showSearchModel.setObject(b);
+                for (WebMarkupContainer wmc : searchTableComponents) {
+                    wmc.setVisible(b);               
+                    target.addComponent(wmc);
+                }
+                target.addComponent(this);
             }
-        }
-        .add((new Image("searchToggleImg", new AbstractReadOnlyModel<ResourceReference>() {
+        };
+        form.add(toggleLink);
+        toggleLink.add((new Image("searchToggleImg", new AbstractReadOnlyModel<ResourceReference>() {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 public ResourceReference getObject() {
-                    return showSearch ? ImageManager.IMAGE_COMMON_COLLAPSE : 
+                    return showSearchModel.getObject() ? ImageManager.IMAGE_COMMON_COLLAPSE : 
                         ImageManager.IMAGE_COMMON_EXPAND;
                 }
         })
-        .add(new TooltipBehaviour("mw.", "searchToggleImg", new AbstractReadOnlyModel<Boolean>() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public Boolean getObject() {
-                return showSearch;
-            }
-        })))
-        .add(new ImageSizeBehaviour())));
+        .add(new TooltipBehaviour("mw.", "searchToggleImg", showSearchModel)))
+        .add(new ImageSizeBehaviour()));
 
         addQueryFields(filter, form);
         addQueryOptions(form);
@@ -162,8 +159,10 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         form.visitChildren();
         form.setResourceIdPrefix("mw.");
         form.setTooltipBehaviour(new TooltipBehaviour("mw."));
-        
-        form.add(new MWLItemListView("mwlitems", viewport.getMWLItemModels(), this));
+        listPanel = new WebMarkupContainer("listPanel");
+        add(listPanel);
+        listPanel.setOutputMarkupId(true);
+        listPanel.add(new MWLItemListView("mwlitems", viewport.getMWLItemModels(), this));
         initModalitiesAndStationAETs();
     }
     
@@ -186,29 +185,23 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
         };
         
-        WebMarkupContainer wmc = new WebMarkupContainer("searchTableLabels");
-        searchTableComponents.add(wmc);
-        form.setParent(wmc);
+        setNewFormParent(form, "searchTableLabels");
         
         form.addInternalLabel("patientName");
         form.addInternalLabel("patientIDDescr");
         form.addInternalLabel("startDate");
         form.addInternalLabel("accessionNumber");
         
-        wmc = new WebMarkupContainer("searchTableFields");
-        searchTableComponents.add(wmc);
-        form.setParent(wmc);
+        setNewFormParent(form, "searchTableFields");
         
         form.addTextField("patientName", enabledModel, false);
         form.addTextField("patientID", enabledModel, true);
         form.addTextField("issuerOfPatientID", enabledModel, true);
-        form.addDateTimeField("startDateMin", new PropertyModel<Date>(filter, "startDateMin"), enabledModel, false, true);
-        form.addDateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"), enabledModel, true, true);
+        form.addDateTimeField("startDateMin", null, enabledModel, false, true);
+        form.addDateTimeField("startDateMax", null, enabledModel, true, true);
         form.addTextField("accessionNumber", enabledModel, false);
         
-        wmc = new WebMarkupContainer("searchTableDropdowns");
-        searchTableComponents.add(wmc);
-        form.setParent(wmc);
+        setNewFormParent(form, "searchTableDropdowns");
 
         form.addInternalLabel("modality");
         form.addInternalLabel("scheduledStationAET");
@@ -229,16 +222,21 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
             @Override
             public boolean isVisible() {
-                return showSearch && filter.isExtendedQuery();
+                return showSearchModel.getObject() && filter.isExtendedQuery();
             }
         };
+        //extendedFilter.add( new Label("birthDateLabel", new ResourceModel("mw.search.birthDate")));
+        //extendedFilter.add( new Label("birthDateMinLabel", new ResourceModel("mw.search.birthDateMin")));
+        //extendedFilter.add( new Label("birthDateMaxLabel", new ResourceModel("mw.search.birthDateMax")));
+        //extendedFilter.add(form.getDateTextField("birthDateMin", null, true, null));
+        //extendedFilter.add(form.getDateTextField("birthDateMax", null, true, null));
         extendedFilter.add( new Label("studyInstanceUIDLabel", new ResourceModel("mw.search.studyInstanceUID")));
         extendedFilter.add( new TextField<String>("studyInstanceUID").add(new UIDValidator()));
+        extendedFilter.setOutputMarkupId(true);
+        extendedFilter.setOutputMarkupPlaceholderTag(true);
         form.add(extendedFilter);
         
-        wmc = new WebMarkupContainer("searchTableFooter");
-        searchTableComponents.add(wmc);
-        form.setParent(wmc);
+        setNewFormParent(form, "searchTableFooter");
         
         AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedFilter") {
 
@@ -247,7 +245,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 filter.setExtendedQuery(!filter.isExtendedQuery());
-                target.addComponent(form);
+                target.addComponent(extendedFilter);
+                target.addComponent(this);
             }
         };
         link.add((new Image("showExtendedFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
@@ -270,7 +269,16 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
         }))
         .add(new ImageSizeBehaviour())));
+        link.setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true);
         form.addComponent(link);
+    }
+
+    private void setNewFormParent(final BaseForm form, String id) {
+        WebMarkupContainer wmc = new WebMarkupContainer(id);
+        wmc.setOutputMarkupId(true);
+        wmc.setOutputMarkupPlaceholderTag(true);
+        searchTableComponents.add(wmc);
+        form.setParent(wmc);
     }
 
     protected void addQueryOptions(BaseForm form) {
@@ -284,12 +292,13 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             private static final long serialVersionUID = 1L;
 
             @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+            protected void onSubmit(final AjaxRequestTarget target, Form<?> form) {
 
                 form.clearInput();
                 viewport.clear();
-                form.setOutputMarkupId(true);
-                target.addComponent(form);
+                BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
+                target.addComponent(navPanel);
+                target.addComponent(listPanel);
             }
         };
         resetBtn.setDefaultFormProcessing(false);
@@ -309,8 +318,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             public void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 viewport.setOffset(0);
                 queryMWLItems();
-                form.setOutputMarkupId(true);
-                target.addComponent(form);
+                target.addComponent(navPanel);
+                target.addComponent(listPanel);
+
             }
             @Override
             public void onError(AjaxRequestTarget target, Form<?> form) {
@@ -326,16 +336,19 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         form.addComponent(searchBtn);
         form.setDefaultButton(searchBtn);
         
-        form.setParent(null);
+        form.setParent(navPanel = new WebMarkupContainer("navPanel"));
+        navPanel.setOutputMarkupId(true);
         
-        form.add(new Link<Object>("prev") {
+        form.addComponent(new AjaxFallbackLink<Object>("prev") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onClick() {
+            public void onClick(AjaxRequestTarget target) {
                 viewport.setOffset(Math.max(0, viewport.getOffset() - PAGESIZE));
                 queryMWLItems();
+                target.addComponent(navPanel);
+                target.addComponent(listPanel);
             }
             
             @Override
@@ -348,14 +361,16 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         .add(new TooltipBehaviour("mw.search.")))
         );
  
-        form.add(new Link<Object>("next") {
+        form.addComponent(new AjaxFallbackLink<Object>("next") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onClick() {
+            public void onClick(AjaxRequestTarget target) {
                 viewport.setOffset(viewport.getOffset() + PAGESIZE);
                 queryMWLItems();
+                target.addComponent(navPanel);
+                target.addComponent(listPanel);
             }
 
             @Override
@@ -382,7 +397,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                             "mw.search.mppsFound";
             }
         };
-        form.add(new Label("viewport", new StringResourceModel("${}", ModalityWorklistPanel.this, keySelectModel,new Object[]{"dummy"}){
+        form.addComponent(new Label("viewport", new StringResourceModel("${}", ModalityWorklistPanel.this, keySelectModel,new Object[]{"dummy"}){
 
             private static final long serialVersionUID = 1L;
 
@@ -393,6 +408,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                         viewport.getTotal()};
             }
         }));
+        form.setParent(null);
     }
 
     private void initModalitiesAndStationAETs() {
@@ -462,11 +478,22 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     }
 
     //MwlActionProvider (details and edit)
-    public void addMwlActions(final ListItem<MWLItemModel> item, final MWLItemListView mwlListView) {
+    public void addMwlActions(final ListItem<MWLItemModel> item, WebMarkupContainer valueContainer, final MWLItemListView mwlListView) {
 
         final MWLItemModel mwlItemModel = item.getModelObject();
+        valueContainer.add(new WebMarkupContainer("cell") {
 
-        item.add((mwlListView.details = new WebMarkupContainer("details") {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onComponentTag(ComponentTag tag) {
+               super.onComponentTag(tag);
+               if (item.getModelObject().isDetails()) 
+                   tag.put("rowspan", "2");
+            }
+        });
+
+        WebMarkupContainer details = new WebMarkupContainer("details") {
             
             private static final long serialVersionUID = 1L;
 
@@ -474,10 +501,10 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             public boolean isVisible() {
                 return mwlItemModel.isDetails();
             }
-        })
-        .add(new DicomObjectPanel("dicomobject", mwlItemModel.getDataset(), false)));
+        };
+        item.add((details).add(new DicomObjectPanel("dicomobject", mwlItemModel.getDataset(), false)));
 
-        mwlListView.mwlitem.add(new AjaxFallbackLink<Object>("toggledetails") {
+        valueContainer.add(new AjaxFallbackLink<Object>("toggledetails") {
 
             private static final long serialVersionUID = 1L;
 
@@ -485,8 +512,10 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             public void onClick(AjaxRequestTarget target) {
                 mwlItemModel.setDetails(!mwlItemModel.isDetails());
                 form.setOutputMarkupId(true);
-                if (target != null) 
-                    target.addComponent(form);
+                if (target != null) {
+                    target.addComponent(navPanel);
+                    target.addComponent(listPanel);
+                }
             }
 
         }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)

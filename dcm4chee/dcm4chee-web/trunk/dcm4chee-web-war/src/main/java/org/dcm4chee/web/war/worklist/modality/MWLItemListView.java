@@ -41,7 +41,6 @@ package org.dcm4chee.web.war.worklist.modality;
 import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -60,8 +59,7 @@ public class MWLItemListView extends PropertyListView<MWLItemModel> {
     private static final long serialVersionUID = 1L;
     
     private MwlActionProvider mwlActionProvider;
-    WebMarkupContainer mwlitem;
-    WebMarkupContainer details;
+    private WebMarkupContainer mwlitem;
     
     public MWLItemListView(String id, List<MWLItemModel> list) {
         super(id, list);
@@ -71,7 +69,6 @@ public class MWLItemListView extends PropertyListView<MWLItemModel> {
         this(id, list);
         this.mwlActionProvider = mwlActionProvider;
     }
-
     private String getOddEvenClass(ListItem<?> item) {
         return item.getIndex() % 2 == 0 ? "even" : "odd";
     }
@@ -82,30 +79,20 @@ public class MWLItemListView extends PropertyListView<MWLItemModel> {
         item.add(this.mwlitem = new WebMarkupContainer("mwlitem"));
         this.mwlitem.add(new AttributeModifier("class", true, new Model<String>(getOddEvenClass(item))));     
 
-        this.mwlitem.add(new WebMarkupContainer("cell") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected void onComponentTag(ComponentTag tag) {
-               super.onComponentTag(tag);
-               if (item.getModelObject().isDetails()) 
-                   tag.put("rowspan", "2");
-            }
-        });
-
         this.mwlitem.add(new Label("SPSDescription"))
-        .add(new Label("SPSID"))
-        .add(new Label("requestedProcedureID"))
+        .add(new Label("SPSStatus"))
+        .add(new Label("stationAET"))
+        .add(new Label("stationName"))
+        .add(new DateTimeLabel("birthDate").setWithoutTime(true))
         .add(new Label("accessionNumber"))
         .add(new Label("patientName"))
         .add(new Label("SPSModality"))
         .add(new DateTimeLabel("startDate"));
         if (mwlActionProvider != null)
-            mwlActionProvider.addMwlActions(item, MWLItemListView.this);
+            mwlActionProvider.addMwlActions(item, mwlitem, MWLItemListView.this);
     }
 
     public interface MwlActionProvider {
-        void addMwlActions(ListItem<MWLItemModel> item, MWLItemListView mwlListView);
+        void addMwlActions(ListItem<MWLItemModel> item, WebMarkupContainer valueContainer, MWLItemListView mwlListView);
     }
 }
