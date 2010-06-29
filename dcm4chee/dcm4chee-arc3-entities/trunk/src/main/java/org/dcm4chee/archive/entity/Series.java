@@ -429,7 +429,7 @@ public class Series extends BaseEntity implements Serializable {
                 Tag.PerformedProcedureStepStartTime);
         this.performedProcedureStepInstanceUID = attrs.getString(new int[] {
                 Tag.ReferencedPerformedProcedureStepSequence, 0,
-                Tag.ReferencedSOPInstanceUID }, "");
+                Tag.ReferencedSOPInstanceUID });
         AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
