@@ -333,12 +333,13 @@
       <outputDirectory>bin</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>dcm4che-tool/dcm4che-tool-dcmups/src/bin</directory>
+      <directory>dcm4che-tool/dcm4che-tool-dcmups/src</directory>
       <includes>
-        <include>*.bat</include>
+        <include>bin/*.bat</include>
+        <include>etc/dcmups/*</include>
       </includes>
       <lineEnding>dos</lineEnding>
-      <outputDirectory>bin</outputDirectory>
+      <outputDirectory>/</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>dcm4che-tool/dcm4che-tool-dcmups/src/bin</directory>
