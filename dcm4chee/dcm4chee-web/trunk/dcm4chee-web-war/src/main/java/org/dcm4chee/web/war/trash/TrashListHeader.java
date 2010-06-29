@@ -37,7 +37,6 @@ public class TrashListHeader extends Panel {
         public boolean isVisible() {
             return TrashListHeader.this.headerExpandLevel >= Row.this.entityLevel;
         }
-
     }
 
     private final class Cell extends WebMarkupContainer {
@@ -113,7 +112,7 @@ public class TrashListHeader extends Panel {
                     headerExpandLevel = expandAllLevel;
                     target.addComponent(TrashListHeader.this);
                 }
-            }}.add(new TooltipBehaviour("folder.","autoExpand")));
+            }}.add(new TooltipBehaviour("trash.search.","autoExpand")));
         add(new Row("patient", 0).add(patCell));
         add(new Row("study", 1).add(new Cell("cell", 1)));
         add(new Row("series", 2).add(new Cell("cell", 2)));

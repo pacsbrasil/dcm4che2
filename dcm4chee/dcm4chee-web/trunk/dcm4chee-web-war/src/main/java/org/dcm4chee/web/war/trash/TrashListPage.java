@@ -124,7 +124,6 @@ public class TrashListPage extends Panel {
     private List<String> sourceAETs = new ArrayList<String>();
     private boolean showSearch = true;
     private boolean notSearched = true;
-    private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("trash.");
     private MessageWindow msgWin = new MessageWindow("msgWin");
     
     private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
@@ -138,7 +137,6 @@ public class TrashListPage extends Panel {
         final TrashListFilter filter = viewport.getFilter();
         final BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
         form.setResourceIdPrefix("trash.");
-        form.setTooltipBehaviour(tooltipBehaviour);
         form.setOutputMarkupId(true);
         add(form);
         
@@ -164,7 +162,7 @@ public class TrashListPage extends Panel {
                         ImageManager.IMAGE_COMMON_EXPAND;
                 }
         })
-        .add(new TooltipBehaviour("trash.", "searchToggleImg", new AbstractReadOnlyModel<Boolean>() {
+        .add(new TooltipBehaviour("trash", "searchToggleImg", new AbstractReadOnlyModel<Boolean>() {
 
             private static final long serialVersionUID = 1L;
 
@@ -179,6 +177,7 @@ public class TrashListPage extends Panel {
         addQueryOptions(form);
         addNavigation(form);
         addActions(form);
+        
         form.add(header);
         form.add(new PatientListView("patients", viewport.getPatients()));
         msgWin.setTitle(MessageWindow.TITLE_WARNING);
@@ -195,7 +194,7 @@ public class TrashListPage extends Panel {
             }
         };
         
-        WebMarkupContainer wmc = new WebMarkupContainer("searchTableLabels");
+        WebMarkupContainer wmc = new WebMarkupContainer("searchLabels");
         searchTableComponents.add(wmc);
         form.setParent(wmc);
         
@@ -204,7 +203,7 @@ public class TrashListPage extends Panel {
         form.addInternalLabel("accessionNumber");
         form.addInternalLabel("sourceAET");
         
-        wmc = new WebMarkupContainer("searchTableFields");
+        wmc = new WebMarkupContainer("searchFields");
         searchTableComponents.add(wmc);
         form.setParent(wmc);
         
@@ -217,7 +216,7 @@ public class TrashListPage extends Panel {
             filter.setSourceAET(choices.get(0));
         form.addDropDownChoice("sourceAET", null, choices, enabledModel, false);
 
-        wmc = new WebMarkupContainer("searchTableFooter");
+        wmc = new WebMarkupContainer("searchFooter");
         searchTableComponents.add(wmc);
         form.setParent(wmc);
     }
@@ -245,7 +244,7 @@ public class TrashListPage extends Panel {
         resetBtn.add(new Image("resetImg",ImageManager.IMAGE_COMMON_RESET)
         .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        resetBtn.add(new Label("resetText", new ResourceModel("trash.resetBtn.text"))
+        resetBtn.add(new Label("resetText", new ResourceModel("trash.searchFooter.resetBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
         form.addComponent(resetBtn);
@@ -258,7 +257,6 @@ public class TrashListPage extends Panel {
             public void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 viewport.setOffset(0);
                 queryStudies();
-                form.setOutputMarkupId(true);
                 target.addComponent(form);
             }
             @Override
@@ -269,7 +267,7 @@ public class TrashListPage extends Panel {
         searchBtn.add(new Image("searchImg",ImageManager.IMAGE_COMMON_SEARCH)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        searchBtn.add(new Label("searchText", new ResourceModel("trash.searchBtn.text"))
+        searchBtn.add(new Label("searchText", new ResourceModel("trash.searchFooter.searchBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
         );
         form.addComponent(searchBtn);
@@ -294,7 +292,7 @@ public class TrashListPage extends Panel {
         }
         .add(new Image("prevImg", ImageManager.IMAGE_COMMON_BACK)
         .add(new ImageSizeBehaviour("vertical-align: middle;"))
-        .add(new TooltipBehaviour("trash.")))
+        .add(new TooltipBehaviour("trash.search.")))
         );
  
         form.add(new Link<Object>("next") {
@@ -314,7 +312,7 @@ public class TrashListPage extends Panel {
         }
         .add(new Image("nextImg", ImageManager.IMAGE_COMMON_FORWARD)
         .add(new ImageSizeBehaviour("vertical-align: middle;"))
-        .add(new TooltipBehaviour("trash.")))
+        .add(new TooltipBehaviour("trash.search.")))
         .setVisible(!notSearched)
         );
 
@@ -326,9 +324,9 @@ public class TrashListPage extends Panel {
 
             @Override
             public Serializable getObject() {
-                return notSearched ? "trash.notSearched" :
-                        viewport.getTotal() == 0 ? "trash.noMatchingStudiesFound" : 
-                            "trash.studiesFound";
+                return notSearched ? "trash.search.notSearched" :
+                        viewport.getTotal() == 0 ? "trash.search.noMatchingStudiesFound" : 
+                            "trash.search.studiesFound";
             }
         };
         form.add(new Label("viewport", new StringResourceModel("${}", TrashListPage.this, keySelectModel,new Object[]{"dummy"}){
@@ -358,7 +356,7 @@ public class TrashListPage extends Panel {
             @Override
             public void onConfirmation(AjaxRequestTarget target, PrivSelectedEntities selected) {
                 
-                this.setStatus(new StringResourceModel("trash.restore.running", TrashListPage.this, null));
+                this.setStatus(new StringResourceModel("trash.message.restore.running", TrashListPage.this, null));
                 okBtn.setVisible(false);
                 ajaxRunning = true;
                 
@@ -390,10 +388,10 @@ public class TrashListPage extends Panel {
                             StoreBridgeDelegate.getInstance(((WicketApplication) getApplication()).getInitParameter("storeBridgeServiceName")).importFile(fio);
                             removeRestoredEntries();                            
                                     
-                            setStatus(new StringResourceModel("trash.restoreDone", TrashListPage.this,null));
+                            setStatus(new StringResourceModel("trash.message.restoreDone", TrashListPage.this,null));
                         } catch (Exception e) {
                             log.error("Exception restoring entry:"+e.getMessage(), e);
-                            setStatus(new StringResourceModel("trash.restoreFailed", TrashListPage.this,null));
+                            setStatus(new StringResourceModel("trash.message.restoreFailed", TrashListPage.this,null));
                         }
                         viewport.getPatients().clear();
                         queryStudies();
@@ -420,15 +418,14 @@ public class TrashListPage extends Panel {
                 selected.update(viewport.getPatients());
                 selected.deselectChildsOfSelectedEntities();
                 if (selected.hasDicomSelection())
-                    confirmRestore.confirm(target, new StringResourceModel("trash.confirmRestore", this, null,new Object[]{selected}), selected);
+                    confirmRestore.confirm(target, new StringResourceModel("trash.message.confirmRestore", this, null,new Object[]{selected}), selected);
                 else
-                    msgWin.show(target, getString("trash.noSelection"));
+                    msgWin.show(target, getString("trash.message.noSelection"));
             }
         };
         restoreBtn.add(new Image("restoreImg",ImageManager.IMAGE_TRASH_RESTORE)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        restoreBtn.add(new TooltipBehaviour("trash.", "restoreBtn"));
         restoreBtn.add(new Label("restoreText", new ResourceModel("trash.restoreBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
@@ -446,7 +443,7 @@ public class TrashListPage extends Panel {
             @Override
             public void onConfirmation(AjaxRequestTarget target, final PrivSelectedEntities selected) {
 
-                this.setStatus(new StringResourceModel("trash.delete.running", TrashListPage.this, null));
+                this.setStatus(new StringResourceModel("trash.message.delete.running", TrashListPage.this, null));
                 okBtn.setVisible(false);
                 ajaxRunning = true;
                 
@@ -457,10 +454,10 @@ public class TrashListPage extends Panel {
                     @Override
                     protected void onTimer(AjaxRequestTarget target) {
                         if (selected == null ? removeTrashAll() : removeTrashItems(selected)) {
-                            setStatus(new StringResourceModel("trash.deleteDone", TrashListPage.this,null));
+                            setStatus(new StringResourceModel("trash.message.deleteDone", TrashListPage.this,null));
                             viewport.getPatients().clear();
                         } else
-                            setStatus(new StringResourceModel("trash.deleteFailed", TrashListPage.this,null));
+                            setStatus(new StringResourceModel("trash.message.deleteFailed", TrashListPage.this,null));
                         queryStudies();
                         this.stop();
                         ajaxRunning = false;
@@ -482,13 +479,12 @@ public class TrashListPage extends Panel {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                confirmDelete.confirm(target, new StringResourceModel("trash.confirmDeleteAll",this, null), null);
+                confirmDelete.confirm(target, new StringResourceModel("trash.message.confirmDeleteAll",this, null), null);
             }
         };
         deleteAllBtn.add(new Image("deleteAllImg",ImageManager.IMAGE_TRASH_EMPTY)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        deleteAllBtn.add(new TooltipBehaviour("trash.", "deleteAllBtn"));
         deleteAllBtn.add(new Label("deleteAllText", new ResourceModel("trash.deleteAllBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
@@ -504,7 +500,7 @@ public class TrashListPage extends Panel {
                 selected.deselectChildsOfSelectedEntities();
                 log.info("Selected Entities: :"+selected);
                 if (selected.hasDicomSelection()) {
-                    confirmDelete.confirm(target, new StringResourceModel("trash.confirmDelete",this, null,new Object[]{selected}), selected);
+                    confirmDelete.confirm(target, new StringResourceModel("trash.message.confirmDelete",this, null,new Object[]{selected}), selected);
                 } else {
                     msgWin.show(target, getString("trash.noSelection"));
                 }
@@ -513,7 +509,6 @@ public class TrashListPage extends Panel {
         deleteBtn.add(new Image("deleteImg", ImageManager.IMAGE_TRASH_DELETE_SELECTED)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        deleteBtn.add(new TooltipBehaviour("trash.", "deleteBtn"));
         deleteBtn.add(new Label("deleteText", new ResourceModel("trash.deleteBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
@@ -623,6 +618,7 @@ public class TrashListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
+            
             final PrivPatientModel patModel = (PrivPatientModel) item.getModelObject();
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
@@ -636,12 +632,15 @@ public class TrashListPage extends Panel {
             };
             cell.add(new ExpandCollapseLink("expand", patModel, item));
             item.add(cell);
-            item.add(new Label("name").add(tooltipBehaviour));
-            item.add(new Label("id").add(tooltipBehaviour));
-            item.add(new Label("issuer").add(tooltipBehaviour));
-            item.add(new DateTimeLabel("birthdate").setWithoutTime(true).add(tooltipBehaviour));
-            item.add(new Label("sex").add(tooltipBehaviour));
-            item.add(new Label("comments").add(tooltipBehaviour));
+            
+            TooltipBehaviour tooltip = new TooltipBehaviour("trash.content.data.patient.");
+            
+            item.add(new Label("name").add(tooltip));
+            item.add(new Label("id").add(tooltip));
+            item.add(new Label("issuer").add(tooltip));
+            item.add(new DateTimeLabel("birthdate").setWithoutTime(true).add(tooltip));
+            item.add(new Label("sex").add(tooltip));
+            item.add(new Label("comments").add(tooltip));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -656,7 +655,7 @@ public class TrashListPage extends Panel {
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("trash.","patDetail"))));
+            .add(tooltip)));
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -664,7 +663,8 @@ public class TrashListPage extends Panel {
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
-                }}.setOutputMarkupId(true).add(new TooltipBehaviour("trash.","patSelect")));
+                }}.setOutputMarkupId(true)
+                .add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -673,7 +673,6 @@ public class TrashListPage extends Panel {
                 public boolean isVisible() {
                     return patModel.isDetails();
                 }
-                
             };
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", patModel.getDataset(), false));
@@ -696,6 +695,7 @@ public class TrashListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
+            
             final PrivStudyModel studyModel = (PrivStudyModel) item.getModelObject();
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
@@ -709,14 +709,17 @@ public class TrashListPage extends Panel {
             };
             cell.add(new ExpandCollapseLink("expand", studyModel, patientListItem));
             item.add(cell);
-            item.add(new DateTimeLabel("datetime").add(new TooltipBehaviour("trash.study","DateTime")));
-            item.add(new Label("id").add(new TooltipBehaviour("trash.study","Id")));
-            item.add(new Label("accessionNumber").add(new TooltipBehaviour("trash.","accessionNumber")));
-            item.add(new Label("modalities").add(new TooltipBehaviour("trash.","modalities")));
-            item.add(new Label("description").add(new TooltipBehaviour("trash.study","Description")));
-            item.add(new Label("numberOfSeries").add(new TooltipBehaviour("trash.study","NoS")));
-            item.add(new Label("numberOfInstances").add(new TooltipBehaviour("trash.study","NoI")));
-            item.add(new Label("availability").add(new TooltipBehaviour("trash.study","Availability")));
+            
+            TooltipBehaviour tooltip = new TooltipBehaviour("trash.content.data.study.");
+            
+            item.add(new DateTimeLabel("datetime").add(tooltip));
+            item.add(new Label("id").add(tooltip));
+            item.add(new Label("accessionNumber").add(tooltip));
+            item.add(new Label("modalities").add(tooltip));
+            item.add(new Label("description").add(tooltip));
+            item.add(new Label("numberOfSeries").add(tooltip));
+            item.add(new Label("numberOfInstances").add(tooltip));
+            item.add(new Label("availability").add(tooltip));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -728,10 +731,9 @@ public class TrashListPage extends Panel {
                         target.addComponent(patientListItem);
                     }
                 }
-
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("trash.","studyDetail"))));
+            .add(tooltip)));
             item.add( new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -739,7 +741,8 @@ public class TrashListPage extends Panel {
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
-                }}.setOutputMarkupId(true).add(new TooltipBehaviour("trash.","studySelect")));
+                }}.setOutputMarkupId(true)
+                .add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -770,6 +773,7 @@ public class TrashListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
+            
             final PrivSeriesModel seriesModel = (PrivSeriesModel) item.getModelObject();
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
@@ -783,13 +787,16 @@ public class TrashListPage extends Panel {
             };
             cell.add(new ExpandCollapseLink("expand", seriesModel, patientListItem));
             item.add(cell);
-            item.add(new DateTimeLabel("datetime").add(new TooltipBehaviour("trash.series","DateTime")));
-            item.add(new Label("seriesNumber").add(new TooltipBehaviour("trash.","seriesNumber")));
-            item.add(new Label("sourceAET").add(new TooltipBehaviour("trash.","sourceAET")));
-            item.add(new Label("modality").add(new TooltipBehaviour("trash.series","Modality")));
-            item.add(new Label("description").add(new TooltipBehaviour("trash.series","Description")));
-            item.add(new Label("numberOfInstances").add(new TooltipBehaviour("trash.series","NoI")));
-            item.add(new Label("availability").add(new TooltipBehaviour("trash.series","Availability")));
+            
+            TooltipBehaviour tooltip = new TooltipBehaviour("trash.content.data.series.");
+            
+            item.add(new DateTimeLabel("datetime").add(tooltip));
+            item.add(new Label("seriesNumber").add(tooltip));
+            item.add(new Label("sourceAET").add(tooltip));
+            item.add(new Label("modality").add(tooltip));
+            item.add(new Label("description").add(tooltip));
+            item.add(new Label("numberOfInstances").add(tooltip));
+            item.add(new Label("availability").add(tooltip));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -804,15 +811,16 @@ public class TrashListPage extends Panel {
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("trash.","seriesDetail"))));
-            item.add(new AjaxCheckBox("selected"){
+            .add(tooltip)));
+            item.add(new AjaxCheckBox("selected") {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
-                }}.setOutputMarkupId(true).add(new TooltipBehaviour("trash.","seriesSelect")));
+                }}.setOutputMarkupId(true)
+                .add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -821,7 +829,6 @@ public class TrashListPage extends Panel {
                 public boolean isVisible() {
                     return seriesModel.isDetails();
                 }
-                
             };
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", seriesModel.getDataset(), false));
@@ -845,12 +852,16 @@ public class TrashListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
+            
             final PrivInstanceModel instModel = (PrivInstanceModel) item.getModelObject();
-            item.add(new DateTimeLabel("datetime").add(new TooltipBehaviour("trash.instance","DateTime")));
-            item.add(new Label("instanceNumber").add(new TooltipBehaviour("trash.","instanceNumber")));
-            item.add(new Label("sopClassUID").add(new TooltipBehaviour("trash.","sopClassUID")));
-            item.add(new Label("description").add(new TooltipBehaviour("trash.instance","Description")));
-            item.add(new Label("availability").add(new TooltipBehaviour("trash.instance","Availability")));
+            
+            TooltipBehaviour tooltip = new TooltipBehaviour("trash.content.data.instance.");
+            
+            item.add(new DateTimeLabel("datetime").add(tooltip));
+            item.add(new Label("instanceNumber").add(tooltip));
+            item.add(new Label("sopClassUID").add(tooltip));
+            item.add(new Label("description").add(tooltip));
+            item.add(new Label("availability").add(tooltip));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -865,7 +876,7 @@ public class TrashListPage extends Panel {
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("trash.","instanceDetail"))));
+            .add(tooltip)));
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -873,7 +884,8 @@ public class TrashListPage extends Panel {
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
-                }}.setOutputMarkupId(true).add(new TooltipBehaviour("trash.","instanceSelect")));
+                }}.setOutputMarkupId(true)
+                .add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;

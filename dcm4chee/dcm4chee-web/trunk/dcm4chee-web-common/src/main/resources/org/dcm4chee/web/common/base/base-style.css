@@ -75,8 +75,8 @@ table.content-table tr td.action { text-align: center; }
 /*
 	table.folded-table
 */
-table.folded-table { border: thin; border-width: 1px; border-style: solid; border-color: #000000; border-collapse: collapse; empty-cells: show; width:100%; white-space: nowrap; background-color: #FFFFFF; }
-table.folded-table tr {	height: 25px; width: auto; border: thin; border-width: 1px; border-style: solid; border-color: #AAAAAA; }
+table.folded-table { border: thin; border-width: 1px; border-style: solid; border-color: #AAAAAA; border-collapse: collapse; empty-cells: show; width:100%; white-space: nowrap; background-color: #FFFFFF; }
+table.folded-table tr {	height: 25px; width: auto; border: thin; border-width: 1px 1px 0px; border-style: solid; border-color: #AAAAAA; }
 table.folded-table tr.study td.expand, 
 table.folded-table tr.pps td.expand, 
 table.folded-table tr.series td.expand, 
@@ -89,12 +89,18 @@ table.folded-table tr.pps { background-color: #D1FEF6; }
 table.folded-table tr.study { background-color: #E1E0DE; }
 table.folded-table tr.patient { background-color : #FFFFFF; } 
 
-table.dicomobject { border-style: inset; border-width:6; border-color: aaaaaa; background: #FFFFFF; width: 100%; }
+div.dicomobjectpanel { border: thin; border-width: 1px; border-style: inset; border-color: #AAAAAA; }
+table.dicomobject { background: #FFFFFF; width: 100%; }
+
+.invalid { background: #eebbaa; }
+
+.msgWindow { background-color: #A0D8C4; width: 100% ; height: 100%; text-align: center;}
+.msgWindow_content {height: 63%; width: 90%;position: absolute; left: 5%; top: 40px;}
+.msgWindow-msg { width:90%; position: absolute; left: 5%; top: 45%;}
+.msgWindow-button { width: 50%; position: absolute; left: 25%; top: 80%; }
 
 /*
 .details { background-color: #FFFFFF; }
-
-.invalid { background: #eebbaa; }
 
 p.seperator { width: 100%; height: 1px;}
 
@@ -102,11 +108,6 @@ div.internal_error, div.page-expired, div.access-denied
 	{ background: #99bbaa; height: 250px; text-align: center; padding: 10 10 280 10;}
 
 .message-system {font-size: 28px; padding: 200 0 20 0; font-weight: bold;}
-
-.msgWindow { background: #99bbaa; width: 100% ; height: 100%; text-align: center;}
-.msgWindow_content {height: 63%; width: 90%;position: absolute; left: 5%; top: 40px;}
-.msgWindow-msg { width:90%; position: absolute; left: 5%; top: 45%;}
-.msgWindow-button { width:50%;position: absolute; left: 25%; top: 80%; }
 
 .textFieldSH { width: 150px; }
 .textFieldLO { width: 290px; }

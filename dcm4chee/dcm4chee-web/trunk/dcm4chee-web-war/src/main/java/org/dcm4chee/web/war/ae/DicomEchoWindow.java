@@ -67,7 +67,6 @@ import org.apache.wicket.validation.validator.StringValidator;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
-import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.war.ae.model.CipherModel;
 
@@ -235,7 +234,7 @@ public class DicomEchoWindow extends ModalWindow {
     public DicomEchoPanel(String id) {
         super(id);
         form = new BaseForm("form");
-        form.setTooltipBehaviour(new TooltipBehaviour("aet."));
+        form.setResourceIdPrefix("aet.");
         add(CSSPackageResource.getHeaderContribution(DicomEchoPanel.class, "ae-style.css"));
         add(form);
         CompoundPropertyModel<AE> model = new CompoundPropertyModel<AE>(aeEcho);

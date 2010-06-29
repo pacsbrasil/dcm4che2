@@ -97,12 +97,12 @@ import org.slf4j.LoggerFactory;
 public class MoveEntitiesPage extends WebPage {
     private static Logger log = LoggerFactory.getLogger(MoveEntitiesPage.class);
 
-    private static final String MSGID_ERR_SELECTION_MOVE_SOURCE_LEVEL = "folder.err_moveSelectionSrcLevel";
-    private static final String MSGID_ERR_SELECTION_MOVE_DESTINATION = "folder.err_moveSelectionDest";
-    private static final String MSGID_ERR_SELECTION_MOVE_NO_SELECTION = "folder.err_moveNoSelection";
-    private static final String MSGID_ERR_SELECTION_MOVE_NO_SOURCE = "folder.err_moveNoSource";
-    private static final String MSGID_ERR_SELECTION_MOVE_PPS = "folder.err_movePPS";
-    private static final String MSGID_ERR_SELECTION_MOVE_NOT_ONLINE = "folder.err_moveNotOnline";
+    private static final String MSGID_ERR_SELECTION_MOVE_SOURCE_LEVEL = "move.message.error.moveSelectionSrcLevel";
+    private static final String MSGID_ERR_SELECTION_MOVE_DESTINATION = "move.message.error.moveSelectionDest";
+    private static final String MSGID_ERR_SELECTION_MOVE_NO_SELECTION = "move.message.error.moveNoSelection";
+    private static final String MSGID_ERR_SELECTION_MOVE_NO_SOURCE = "move.message.error.moveNoSource";
+    private static final String MSGID_ERR_SELECTION_MOVE_PPS = "move.message.error.movePPS";
+    private static final String MSGID_ERR_SELECTION_MOVE_NOT_ONLINE = "move.message.error.moveNotOnline";
     
     private static final int MISSING_NOTHING = 0;
     private static final int MISSING_STUDY = 1;
@@ -236,7 +236,7 @@ public class MoveEntitiesPage extends WebPage {
         missingState = missingState | MISSING_STUDY;
         studyModel = new StudyModel(null, pat);
         presetStudy(sourceStudy);
-        newStudyPanel = new SimpleEditDicomObjectPanel("panel", new ResourceModel("folder.newStudyForMove"),
+        newStudyPanel = new SimpleEditDicomObjectPanel("panel", new ResourceModel("move.newStudyForMove.text"),
                 studyModel.getDataset(), getStudyEditAttributes() ) {
             private static final long serialVersionUID = 1L;
 
@@ -272,7 +272,7 @@ public class MoveEntitiesPage extends WebPage {
         seriesModel = new SeriesModel(null, null);
         new PPSModel(null, seriesModel, study);
         presetSeries(sourceSeries);
-        newSeriesPanel = new SimpleEditDicomObjectPanel("panel", new ResourceModel("folder.newSeriesForMove"),
+        newSeriesPanel = new SimpleEditDicomObjectPanel("panel", new ResourceModel("move.newSeriesForMove.text"),
                 seriesModel.getDataset(), getSeriesEditAttributes() ) {
             private static final long serialVersionUID = 1L;
 
@@ -360,9 +360,9 @@ public class MoveEntitiesPage extends WebPage {
         
         public InfoPanel() {
             super("panel");
-            add( new Label("infoTitle", new ResourceModel("folder.moveEntitiesTitle")));
+            add( new Label("infoTitle", new ResourceModel("move.pageTitle")));
             add( new Label("info", infoModel));
-            final ConfirmationWindow<SelectedEntities> confirmMove = new ConfirmationWindow<SelectedEntities>("confirmMove"){
+            final ConfirmationWindow<SelectedEntities> confirmMove = new ConfirmationWindow<SelectedEntities>("confirmMove") {
 
                 private static final long serialVersionUID = 1L;
 
@@ -411,7 +411,7 @@ public class MoveEntitiesPage extends WebPage {
                 @Override
                 public void onConfirmation(AjaxRequestTarget target, final SelectedEntities selected) {
                     
-                    this.setStatus(new StringResourceModel("folder.move.running", MoveEntitiesPage.this, null));
+                    this.setStatus(new StringResourceModel("move.message.move.running", MoveEntitiesPage.this, null));
                     okBtn.setVisible(false);
                     ajaxRunning = true;
                     
@@ -424,11 +424,11 @@ public class MoveEntitiesPage extends WebPage {
                             try {
                                 int nrOfMovedInstances = ContentEditDelegate.getInstance().moveEntities(selected);
                                 if (nrOfMovedInstances > 0) {
-                                    setStatus(new StringResourceModel("folder.moveDone", MoveEntitiesPage.this,null));
+                                    setStatus(new StringResourceModel("move.message.moveDone", MoveEntitiesPage.this,null));
                                 } else if (nrOfMovedInstances == 0) {
                                     setStatus(new StringResourceModel("folder.moveNothing", MoveEntitiesPage.this,null));
                                 } else {
-                                    setStatus(new StringResourceModel("folder.moveFailed", MoveEntitiesPage.this,null));
+                                    setStatus(new StringResourceModel("move.message.moveFailed", MoveEntitiesPage.this,null));
                                 }
                             } catch (SelectionException x) {
                                 log.warn(x.getMessage());
@@ -453,7 +453,7 @@ public class MoveEntitiesPage extends WebPage {
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     try {
-                        confirmMove.confirm(target, new StringResourceModel("folder.confirmMove",this, null,new Object[]{selected}), selected);
+                        confirmMove.confirm(target, new StringResourceModel("move.message.confirmMove",this, null,new Object[]{selected}), selected);
                     } catch (Throwable t) {
                         log.error("Can not move selected entities!", t);
                     }
@@ -480,7 +480,6 @@ public class MoveEntitiesPage extends WebPage {
             }.add(new Label("cancelLabel", new ResourceModel("cancelBtn"))) );
        }
         
-        @SuppressWarnings("unchecked")
         public void setSrcInfo(SelectedEntities selected) {
             SelectedInfo info = null;
             if (selected.hasInstances()) {
@@ -496,7 +495,7 @@ public class MoveEntitiesPage extends WebPage {
                 info = new SelectedInfo(selected.getStudies().iterator().next(),
                         selected.getStudies().size());
             }
-            selectedInfoModel = getSelectedInfoModel("folder.selectedToMove_${level}", info, "Selected:?");
+            selectedInfoModel = getSelectedInfoModel("move.selectedToMove_${level}.text", info, "Selected:?");
         }
         
         private void addModifiedModels(Set<? extends AbstractDicomModel> models) {

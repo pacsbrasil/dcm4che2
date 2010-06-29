@@ -140,7 +140,6 @@ public class DicomObjectPanel extends Panel {
             add(new Label("value",
                     el.hasItems() ? "" : el.getValueAsString(cs, 64)));
         }
-
      }
 
     public class ItemFragment extends Fragment {
@@ -151,7 +150,5 @@ public class DicomObjectPanel extends Panel {
             super(id, "item", DicomObjectPanel.this);
             add(new Label("name", nestingLevel + "Item #" + (itemIndex + 1)));
         }
-
      }
-
 }

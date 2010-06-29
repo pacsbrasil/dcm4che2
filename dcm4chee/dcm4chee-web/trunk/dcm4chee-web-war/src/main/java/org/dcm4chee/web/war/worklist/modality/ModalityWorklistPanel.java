@@ -103,7 +103,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     private Model<Boolean> showSearchModel = new Model<Boolean>(true);
     private boolean notSearched = true;
     private ViewPort viewport;
-    final BaseForm form;
+    protected final BaseForm form;
     
     private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
     
@@ -119,10 +119,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             add(CSSPackageResource.getHeaderContribution(ModalityWorklistPanel.CSS));
 
         final ModalityWorklistFilter filter = viewport.getFilter();
-        form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
-        form.setResourceIdPrefix("mw.search.");
-        form.setTooltipBehaviour(new TooltipBehaviour("mw.search."));
-        add(form);
+        add(form = new BaseForm("form", new CompoundPropertyModel<Object>(filter)));
+        form.setResourceIdPrefix("mw.");
         AjaxFallbackLink<Object> toggleLink;
         toggleLink = new AjaxFallbackLink<Object>("searchToggle") {
             private static final long serialVersionUID = 1L;
@@ -156,9 +154,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         addQueryOptions(form);
         addNavigation(form);
         
-        form.visitChildren();
         form.setResourceIdPrefix("mw.");
-        form.setTooltipBehaviour(new TooltipBehaviour("mw."));
         listPanel = new WebMarkupContainer("listPanel");
         add(listPanel);
         listPanel.setOutputMarkupId(true);
@@ -185,14 +181,14 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
         };
         
-        setNewFormParent(form, "searchTableLabels");
+        setNewFormParent(form, "searchLabels");
         
         form.addInternalLabel("patientName");
         form.addInternalLabel("patientIDDescr");
         form.addInternalLabel("startDate");
         form.addInternalLabel("accessionNumber");
         
-        setNewFormParent(form, "searchTableFields");
+        setNewFormParent(form, "searchFields");
         
         form.addTextField("patientName", enabledModel, false);
         form.addTextField("patientID", enabledModel, true);
@@ -201,7 +197,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         form.addDateTimeField("startDateMax", null, enabledModel, true, true);
         form.addTextField("accessionNumber", enabledModel, false);
         
-        setNewFormParent(form, "searchTableDropdowns");
+        setNewFormParent(form, "searchDropdowns");
 
         form.addInternalLabel("modality");
         form.addInternalLabel("scheduledStationAET");
@@ -225,18 +221,14 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 return showSearchModel.getObject() && filter.isExtendedQuery();
             }
         };
-        //extendedFilter.add( new Label("birthDateLabel", new ResourceModel("mw.search.birthDate")));
-        //extendedFilter.add( new Label("birthDateMinLabel", new ResourceModel("mw.search.birthDateMin")));
-        //extendedFilter.add( new Label("birthDateMaxLabel", new ResourceModel("mw.search.birthDateMax")));
-        //extendedFilter.add(form.getDateTextField("birthDateMin", null, true, null));
-        //extendedFilter.add(form.getDateTextField("birthDateMax", null, true, null));
-        extendedFilter.add( new Label("studyInstanceUIDLabel", new ResourceModel("mw.search.studyInstanceUID")));
+
+        extendedFilter.add( new Label("studyInstanceUID.label", new ResourceModel("mw.extendedFilter.studyInstanceUID.label")));
         extendedFilter.add( new TextField<String>("studyInstanceUID").add(new UIDValidator()));
         extendedFilter.setOutputMarkupId(true);
         extendedFilter.setOutputMarkupPlaceholderTag(true);
         form.add(extendedFilter);
         
-        setNewFormParent(form, "searchTableFooter");
+        setNewFormParent(form, "searchFooter");
         
         AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedFilter") {
 
@@ -305,7 +297,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         resetBtn.add(new Image("resetImg",ImageManager.IMAGE_COMMON_RESET)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        resetBtn.add(new Label("resetText", new ResourceModel("mw.search.resetBtn.text"))
+        resetBtn.add(new Label("resetText", new ResourceModel("mw.searchFooter.resetBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
         form.addComponent(resetBtn);
@@ -320,8 +312,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 queryMWLItems();
                 target.addComponent(navPanel);
                 target.addComponent(listPanel);
-
             }
+            
             @Override
             public void onError(AjaxRequestTarget target, Form<?> form) {
                 BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
@@ -330,7 +322,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         searchBtn.add(new Image("searchImg",ImageManager.IMAGE_COMMON_SEARCH)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        searchBtn.add(new Label("searchText", new ResourceModel("mw.search.searchBtn.text"))
+        searchBtn.add(new Label("searchText", new ResourceModel("mw.searchFooter.searchBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
         );
         form.addComponent(searchBtn);
@@ -518,9 +510,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 }
             }
 
-        }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
+        }.add(new Image("detailImg", ImageManager.IMAGE_COMMON_DICOM_DETAILS)
         .add(new ImageSizeBehaviour())
-        .add(new TooltipBehaviour("mw.","SPSDetail"))))
+        .add(new TooltipBehaviour("mw.", "detailImg"))))
         .add( new Link<Object>("edit") {
 
             private static final long serialVersionUID = 1L;
@@ -531,6 +523,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
         }.add(new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT)
         .add(new ImageSizeBehaviour())
-        .add(new TooltipBehaviour("mw.","SPSEdit"))));
+        .add(new TooltipBehaviour("mw.", "editImg"))));
     }
 }

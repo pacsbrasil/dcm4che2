@@ -59,7 +59,7 @@ public class FileModel implements Serializable {
         this.file = file;
     }
 
-    public File getFile() {
+    public File getFileObject() {
         return file;
     }
 
@@ -82,5 +82,4 @@ public class FileModel implements Serializable {
     public int getRowspan() {
         return details ? 2 : 1;
     }
-
 }

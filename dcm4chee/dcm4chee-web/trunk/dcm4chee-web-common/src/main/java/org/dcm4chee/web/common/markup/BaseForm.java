@@ -40,9 +40,7 @@ package org.dcm4chee.web.common.markup;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
@@ -87,14 +85,11 @@ import org.joda.time.format.DateTimeFormatter;
 public class BaseForm extends Form<Object> {
 
     private static final long serialVersionUID = 0L;
-    public static final String LABEL_ID_EXTENSION = "Label";
+    public static final String LABEL_ID_EXTENSION = ".label";
 
     private String resourceIdPrefix;
-    private TooltipBehaviour tooltipBehaviour;
-
     private WebMarkupContainer parent;
-    
-    private IVisitor<Component> visitor = new FormVisitor();
+    private boolean rendered;
     
     MarkInvalidBehaviour markInvalidBehaviour = new MarkInvalidBehaviour();
         
@@ -109,19 +104,16 @@ public class BaseForm extends Form<Object> {
     public void setResourceIdPrefix(String resourceIdPrefix) {
         this.resourceIdPrefix = resourceIdPrefix;
     }
-    public void setTooltipBehaviour(TooltipBehaviour tooltip) {
-        tooltipBehaviour = tooltip;
-    }
-    
-    public void onBeforeRender() {
+
+    @Override
+    protected void onBeforeRender() {
         super.onBeforeRender();
-        visitChildren(visitor);
+        if (!rendered) {
+            visitChildren(new FormVisitor());
+            rendered = true;
+        }
     }
 
-    public void visitChildren() {
-        visitChildren(visitor);
-    }
-    
     public MarkupContainer setParent(WebMarkupContainer parent) {
         this.parent = parent;
         if (parent != null) 
@@ -194,20 +186,21 @@ public class BaseForm extends Form<Object> {
                 return enabledModel == null ? true : enabledModel.getObject();
             }
         };
-        dtf.add(new TooltipBehaviour(tooltipBehaviour == null ? null : tooltipBehaviour.getPrefix(), 
-                id, new AbstractReadOnlyModel<String>(){
+        addComponent(dtf);
+        dtf.add(new TooltipBehaviour(generateResourcePrefix(dtf), id, 
+                new AbstractReadOnlyModel<String>(){
                     private static final long serialVersionUID = 1L;
 
                     @Override
                     public String getObject() {
                         return DateUtils.getDatePattern(dtf);
                     }
-        }));
-        addComponent(dtf);
+                }
+        ));
         return dtf;
     }
     
-    public DateTextField getDateTextField(String id, IModel<Date> model, boolean addTooltip, final IModel<Boolean> enabledModel) {
+    public DateTextField getDateTextField(String id, IModel<Date> model, String tooltipPrefix, final IModel<Boolean> enabledModel) {
         DateTextField dt = new DateTextField(id, model,  
                 new StyleDateConverter("S-", false) {
 
@@ -227,15 +220,13 @@ public class BaseForm extends Form<Object> {
                 return enabledModel == null ? true : enabledModel.getObject();
             }
         };
-        if (addTooltip) {
-            dt.add(new TooltipBehaviour(tooltipBehaviour == null ? null : tooltipBehaviour.getPrefix(), 
-                    id, new PropertyModel<Object>(dt,"textFormat")));
-        }
+        if (tooltipPrefix != null) 
+            dt.add(new TooltipBehaviour((resourceIdPrefix != null ? resourceIdPrefix : "") + tooltipPrefix, id, new PropertyModel<Object>(dt,"textFormat")));
         dt.add(markInvalidBehaviour);
         return dt;
     }
     
-    public DateField getDateField(String id, IModel<Date> model, boolean addTooltip) {
+    public DateField getDateField(String id, IModel<Date> model, final String tooltipPrefix) {
         DateField dt = new DateField(id, model){
             private static final long serialVersionUID = 1L;
 
@@ -249,13 +240,11 @@ public class BaseForm extends Form<Object> {
             @SuppressWarnings("unchecked")
             @Override
             protected DateTextField newDateTextField(String id, PropertyModel dateFieldModel) {
-                return getDateTextField(id, dateFieldModel, false, new Model<Boolean>(true));
+                return getDateTextField(id, dateFieldModel, tooltipPrefix, new Model<Boolean>(true));
             }            
         };
-        if (addTooltip) {
-            dt.add(new TooltipBehaviour(tooltipBehaviour == null ? null : tooltipBehaviour.getPrefix(), 
-                    id, new PropertyModel<Object>(dt,"textFormat")));
-        }
+        if (tooltipPrefix != null)
+            dt.add(new TooltipBehaviour((resourceIdPrefix != null ? resourceIdPrefix : "") + tooltipPrefix, id, new PropertyModel<Object>(dt,"textFormat")));
         return dt;
     }
 
@@ -301,20 +290,24 @@ public class BaseForm extends Form<Object> {
     }
     
     public Label addInternalLabel(String id) {
-        String labelId = id+LABEL_ID_EXTENSION;
-        Label l = new Label(labelId, new ResourceModel(toResourcekey(id)));
-        addComponent(l);
-        return l;
+        String labelId = id + LABEL_ID_EXTENSION;
+        return addLabel(labelId);
     }
     
     public Label addLabel(String id) {
-        Label l = new Label(id, new ResourceModel(toResourcekey(id)));
+        Label l = new Label(id, new ResourceModel(toResourceKey(id)));
         addComponent(l);
         return l;
     }
 
-    private String toResourcekey(String id) {
-        return resourceIdPrefix == null ? id : resourceIdPrefix+id;
+    private String toResourceKey(String id) {
+        StringBuffer resourceKey = new StringBuffer(id);
+        if (parent != null) {
+            resourceKey.insert(0, ".");
+            resourceKey.insert(0, parent.getId());
+        }
+        if (resourceIdPrefix != null) resourceKey.insert(0, resourceIdPrefix);
+        return resourceKey.toString();
     }
     
     public static void addInvalidComponentsToAjaxRequestTarget(
@@ -349,20 +342,16 @@ public class BaseForm extends Form<Object> {
     }
 
     class FormVisitor implements IVisitor<Component>, Serializable {
+        
         private static final long serialVersionUID = 0L;
 
-        Set<Component> visited = new HashSet<Component>();
-
         public Object component(Component c) {
-            if (!visited.contains(c)) {
-                visited.add(c);
-                
-                if ( tooltipBehaviour != null && componentHasNoTooltip(c))
-                    c.add(tooltipBehaviour);
-                if (c instanceof FormComponent<?>) {
-                    c.add(markInvalidBehaviour);
-                    c.setOutputMarkupId(true);
-                }
+            
+            if (componentHasNoTooltip(c)) 
+                c.add(new TooltipBehaviour(generateResourcePrefix(c), c.getId()));
+            if (c instanceof FormComponent<?>) {
+                c.add(markInvalidBehaviour);
+                c.setOutputMarkupId(true);
             }
             return IVisitor.CONTINUE_TRAVERSAL;
         }
@@ -376,11 +365,25 @@ public class BaseForm extends Form<Object> {
         return true;
     }
 
+    private String generateResourcePrefix(Component c) {
+
+        StringBuffer prefix = new StringBuffer("");
+        Component parent = c.getParent();
+        while ((parent != null) && !parent.equals("") && !(parent instanceof BaseForm)) {
+            prefix.insert(0, ".");
+            prefix.insert(0, parent.getId());
+            parent = parent.getParent();
+        }
+        if ((resourceIdPrefix != null) && (!resourceIdPrefix.equals(""))) 
+            prefix.insert(0, resourceIdPrefix);
+        return prefix.toString();
+    }
+
     public FormComponent<?> getDicomObjectField(String id, DicomObject dcmObj, int[] tagPath) {
         VR vr = DicomElementModel.getVRof(dcmObj, tagPath);
         FormComponent<?> fc;
         if (vr==VR.DA) {
-            fc = this.getDateField(id, DicomElementModel.newDateModel(dcmObj, tagPath), false);
+            fc = this.getDateField(id, DicomElementModel.newDateModel(dcmObj, tagPath), null);
         } else if (vr==VR.DT) {
             fc = this.getSimpleDateTimeField(id, DicomElementModel.newDateModel(dcmObj, tagPath), null, false);
         } else if (vr==VR.TM) {

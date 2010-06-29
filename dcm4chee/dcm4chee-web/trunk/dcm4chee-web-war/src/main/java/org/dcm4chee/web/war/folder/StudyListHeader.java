@@ -37,7 +37,6 @@ public class StudyListHeader extends Panel {
         public boolean isVisible() {
             return StudyListHeader.this.headerExpandLevel >= Row.this.entityLevel;
         }
-
     }
 
     private final class Cell extends WebMarkupContainer {
@@ -113,7 +112,7 @@ public class StudyListHeader extends Panel {
                     headerExpandLevel = expandAllLevel;
                     target.addComponent(StudyListHeader.this);
                 }
-            }}.add(new TooltipBehaviour("folder.","autoExpand")));
+            }}.add(new TooltipBehaviour("folder.search.","autoExpand")));
         add(new Row("patient", 0).add(patCell));
         add(new Row("study", 1).add(new Cell("cell", 1)));
         add(new Row("pps", 2).add(new Cell("cell", 2)));

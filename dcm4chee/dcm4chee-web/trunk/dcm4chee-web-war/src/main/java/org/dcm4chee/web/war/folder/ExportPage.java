@@ -136,7 +136,9 @@ public class ExportPage extends BaseWicketPage {
         add(CSSPackageResource.getHeaderContribution(ExportPage.class, "folder-style.css"));
         initDestinationAETs();
         final BaseForm form = new BaseForm("form");
+        form.setResourceIdPrefix("export.");
         add(form);
+        
         form.add( new Label("label","DICOM Export"));
         form.addLabel("selectedItems");
         form.addLabel("selectedPats");
@@ -179,9 +181,9 @@ public class ExportPage extends BaseWicketPage {
             public String getObject() {
                 if (exportInfo.hasSelection()) {
                     ExportResult r = getExportResults().get(resultId);
-                    return (r == null ? getString("exportDone") : r.getResultString());
+                    return (r == null ? getString("export.message.exportDone") : r.getResultString());
                 } else {
-                    return getString("noSelectionForExport");
+                    return getString("export.message.noSelectionForExport");
                 }
             }}).setOutputMarkupId(true));
         form.add( new Button("export", new ResourceModel("exportBtn")){
@@ -198,7 +200,7 @@ public class ExportPage extends BaseWicketPage {
                 return exportInfo.hasSelection() && isExportInactive();
             }
         }.setOutputMarkupId(true));
-        form.add(new Button("close", new ResourceModel("closeBtn")){
+        form.add(new Button("close", new ResourceModel("export.closeBtn.text")){
 
             private static final long serialVersionUID = 1L;
 
@@ -231,7 +233,7 @@ public class ExportPage extends BaseWicketPage {
             }
             
         }.setEnabled(exportInfo.hasSelection()));
-        form.addLabel("closeOnFinishedLabel");
+        form.addLabel("closeOnFinished");
         
         form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(700)){
 
@@ -472,7 +474,7 @@ public class ExportPage extends BaseWicketPage {
         public String getResultString() {
             int totalRequests = moveRequests.size();
             if (totalRequests == 0) {
-                return ExportPage.this.getString("exportNotStarted");
+                return ExportPage.this.getString("export.message.exportNotStarted");
             } else {
                 int[] total = calcTotal();
                 StringBuilder sb = new StringBuilder();

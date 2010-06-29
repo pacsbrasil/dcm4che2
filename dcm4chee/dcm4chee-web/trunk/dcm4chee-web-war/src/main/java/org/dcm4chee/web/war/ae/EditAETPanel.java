@@ -56,11 +56,10 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.validation.validator.RangeValidator;
 import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
-import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
-import org.dcm4chee.web.common.validators.UrlValidator1;
+import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
+import org.dcm4chee.web.common.validators.UrlValidator1;
 import org.dcm4chee.web.war.ae.model.CipherModel;
 
 /**
@@ -87,7 +86,6 @@ public class EditAETPanel extends Panel {
         setOutputMarkupId(true);
         BaseForm form = new BaseForm("form");
         form.setResourceIdPrefix("aet.");
-        form.setTooltipBehaviour(new TooltipBehaviour("aet."));
         add(form);
         CompoundPropertyModel<AE> model = new CompoundPropertyModel<AE>(ae);
         setDefaultModel(model);
@@ -95,11 +93,11 @@ public class EditAETPanel extends Panel {
             .setRequired(true).add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour());
         form.addLabeledTextField("hostName").setRequired(true); 
         form.addLabeledNumberTextField("port").add(new RangeValidator<Integer>(1,65535));
-        form.add(new Label("ciphersLabel1", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{1} ) ) );
+        form.add(new Label("ciphers1.label", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{1} ) ) );
         form.add(new DropDownChoice<String>("ciphersuite1", new CipherModel(ae, 0), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
-        form.add(new Label("ciphersLabel2", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{2} ) ) );
+        form.add(new Label("ciphers2.label", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{2} ) ) );
         form.add(new DropDownChoice<String>("ciphersuite2", new CipherModel(ae, 1), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
-        form.add(new Label("ciphersLabel3", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{3} ) ) );
+        form.add(new Label("ciphers3.label", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{3} ) ) );
         form.add(new DropDownChoice<String>("ciphersuite3", new CipherModel(ae, 2), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
         form.addLabeledTextField("description"); 
         form.addLabeledTextField("issuerOfPatientID"); 
@@ -107,12 +105,12 @@ public class EditAETPanel extends Panel {
                 delegate.getFSGroupIDs()).setNullValid(true);
         form.addLabeledTextField("wadoURL").add(new UrlValidator1()); //Wicket UrlValidator doesn't accept http://hostname:8080/web!
         form.addLabeledTextField("userID"); 
-        form.add(new Label("passwordLabel", new ResourceModel("aet.password") ) );
+        form.add(new Label("password.label", new ResourceModel("aet.password") ) );
         form.add(new PasswordTextField("password").setRequired(false)); 
         form.addLabeledTextField("stationName"); 
         form.addLabeledTextField("institution"); 
         form.addLabeledTextField("department"); 
-        form.add(new Label("installedLabel", new ResourceModel("aet.installed") ) );
+        form.add(new Label("installed.label", new ResourceModel("aet.installed") ) );
         form.add(new AjaxCheckBox("installed"){
 
             private static final long serialVersionUID = 1L;

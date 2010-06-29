@@ -9,26 +9,25 @@
 </head>
 <body>  
 <wicket:panel>
-	<div class="mpps-info"><div wicket:id="mppsInfo">
+	<div class="mpps-info" wicket:id="mppsInfo">
 		<div class="info-title"><span wicket:id="mppsInfoTitle" >[INFO]</span></div>
-		<span class="info-desc" wicket:id="patNameLabel" >Patient name:</span>
+		<span class="info-desc" wicket:id="patientName.label" >Patient name:</span>
 		<div class="info-value">
-			<span wicket:id="patName" >[PatientName]</span><span> (</span>
-			<span wicket:id="patIdLabel" >patId:</span>
-			<span wicket:id="patId" >[PatId]</span><span>/</span>
-			<span wicket:id="patIssuerLabel" >Issuer:</span>
-			<span wicket:id="patIssuer" >[Issuer]</span><span>)</span>
+			<span wicket:id="patientName" >[PatientName]</span><span> (</span>
+			<span wicket:id="patientID.label" >patId:</span>
+			<span wicket:id="patientID" >[PatId]</span><span>/</span>
+			<span wicket:id="patientIssuer.label" >Issuer:</span>
+			<span wicket:id="patientIssuer" >[Issuer]</span><span>)</span>
 		</div>
-		<span class="info-desc" wicket:id="birthdateLabel" >Birthday:</span>
+		<span class="info-desc" wicket:id="birthdate.label" >Birthday:</span>
 		<span class="info-value" wicket:id="birthdate" >[BIRTHDAY]</span>
-		<span class="info-desc" wicket:id="modalityLabel" >Modality:</span>
+		<span class="info-desc" wicket:id="modality.label" >Modality:</span>
 		<span class="info-value" wicket:id="modality" >[MODALITY]</span>
-		<span class="info-desc" wicket:id="startDateLabel" >SPS start date:</span>
-		<span class="info-value" wicket:id="datetime" >[SPS_STARTDATE]</span>
-		<span class="info-desc" wicket:id="studyDescriptionLabel" >Study description:</span>
+		<span class="info-desc" wicket:id="startDate.label" >SPS start date:</span>
+		<span class="info-value" wicket:id="datetime" >[SPS_STARTDATE]</span>	
+		<span class="info-desc" wicket:id="studyDescription.label" >Study description:</span>
 		<span class="info-value" wicket:id="studyDescription" >[STUDY DESCRPTION]</span>
-		
-	</div> </div>
+	</div>
 	<form style="clear: both" wicket:id="form">
 		<table rules="groups" class="search-table" style="margin-top: 20px;">
 			<thead>
@@ -46,41 +45,41 @@
 					<th class="ro"></th>
 				</tr>
 			</thead>
-			<tr wicket:id="searchTableLabels">
+			<tr wicket:id="searchLabels">
 				<td></td>
 				<td>
-					<div wicket:id="patientNameLabel">Patient Name</div>
+					<div wicket:id="patientName.label">Patient Name</div>
 				</td>
 				<td colspan="2">
-					<div  wicket:id="patientIDDescrLabel">Patient ID</div>
+					<div  wicket:id="patientIDDescr.label">Patient ID</div>
 				</td>
 				<td colspan="2">
-					<div wicket:id="startDateLabel">Start Date</div>
+					<div wicket:id="startDate.label">Start Date</div>
 				</td>
 				<td>
-					<div wicket:id="accessionNumberLabel">Accession Number</div>
+					<div wicket:id="accessionNumber.label">Accession Number</div>
 				</td>
 				<td></td>
 			</tr>
-			<tr wicket:id="searchTableFields">
+			<tr wicket:id="searchFields">
 				<td></td>
 				<td>
 					<input style="vertical-align: bottom" wicket:id="patientName" id="patientName" type="text" />
 				</td>
 				<td>
-	                <div wicket:id="patientIDLabel">ID</div>
+	                <div wicket:id="patientID.label">ID</div>
 					<input wicket:id="patientID" id="patientID" type="text" title="ID" />
 				</td>
 				<td>                   
-					<div wicket:id="issuerOfPatientIDLabel">Issuer</div>
+					<div wicket:id="issuerOfPatientID.label">Issuer</div>
 					<input wicket:id="issuerOfPatientID" id="issuerOfPatientID" type="text" title="Issuer" />
 				</td>
 				<td>
-					<div wicket:id="startDateMinLabel">from</div>
+					<div wicket:id="startDateMin.label">from</div>
 					<div wicket:id="startDateMin" id="startDateMin" />
 				</td>
 				<td>           
-					<div wicket:id="startDateMaxLabel">to</div>
+					<div wicket:id="startDateMax.label">to</div>
 					<div wicket:id="startDateMax" id="startDateMax" />
 				</td>
 				<td>
@@ -88,22 +87,22 @@
 				</td>
 				<td></td>
 			</tr>
-			<tr wicket:id="searchTableDropdowns">
+			<tr wicket:id="searchDropdowns">
 				<td></td>
 				<td>
-					<div wicket:id="modalityLabel">Mod</div>
+					<div wicket:id="modality.label">Mod</div>
 			      	<select wicket:id="modality" />			
 				</td>
 				<td>
-					<div wicket:id="scheduledStationAETLabel">Station AET</div>
+					<div wicket:id="scheduledStationAET.label">Station AET</div>
 					<select wicket:id="scheduledStationAET" />
 				</td>
 				<td>
-					<div wicket:id="scheduledStationNameLabel">Station Name</div>
+					<div wicket:id="scheduledStationName.label">Station Name</div>
 					<select wicket:id="scheduledStationName" />
 				</td>
 				<td>
-					<div wicket:id="SPSStatusLabel">SPS Status</div>
+					<div wicket:id="SPSStatus.label">SPS Status</div>
 					<select wicket:id="SPSStatus" />
 				</td>
 				<td colspan="2"></td>
@@ -111,23 +110,14 @@
 			</tr>
              <tr wicket:id="extendedFilter" class="search-table-extended">
 	            <td></td>
-	            <!-- <td>
-	                <div wicket:id="birthDateLabel">Birth Date</div>
-					<div wicket:id="birthDateMinLabel">from</div>
-					<input wicket:id="birthDateMin" id="birthDateMin" type="text" />
-	            </td>
 				<td>
-					<div wicket:id="birthDateMaxLabel">to</div>
-					<input wicket:id="birthDateMax" id="birthDateMax" type="text" />
-				</td> -->
-				<td>
-					<div wicket:id="studyInstanceUIDLabel">Study Instance UID</div>
+					<div wicket:id="studyInstanceUID.label">Study Instance UID</div>
 					<input wicket:id="studyInstanceUID" id="studyInstanceUID" type="text"/>
 				</td>
 	            <td colspan="5"></td>
 				<td></td>
 			</tr>
-		    <tr class="search-table-footer" wicket:id="searchTableFooter">
+		    <tr class="search-table-footer" wicket:id="searchFooter">
 				<td class="lu"></td>
 				<td>
 		            <a wicket:id="showExtendedFilter">
@@ -137,7 +127,7 @@
 				<td colspan="2"/>
 				<td>
 					<input type="checkbox" id="latestItemsFirst" wicket:id="latestItemsFirst" />
-					<label for="latestItemsFirst" wicket:id="latestItemsFirstLabel" />
+					<label for="latestItemsFirst" wicket:id="latestItemsFirst.label" />
 				</td>
 				<td>
 					<button wicket:id="resetBtn" >
@@ -166,41 +156,45 @@
 			</div>			  
 		</div>
 	</form>
-	<div wicket:id="listPanel">
+	<div wicket:id="listPanel" style="clear: both;">
 		<table class="content-table">
 			<thead>
 				<tr>
-		      		<th><wicket:message key="mw.patientName" /></th>
-		      		<th><wicket:message key="mw.birthDate" /></th>
-					<th><wicket:message key="mw.SPSDescription" /></th>
-		      		<th><wicket:message key="mw.SPSModality" /></th>
-					<th><wicket:message key="mw.startDate" /></th>
-					<th><wicket:message key="mw.stationAET" /></th>
-					<th><wicket:message key="mw.stationName" /></th>
-		      		<th><wicket:message key="mw.accessionNumber" /></th>
-		      		<th><wicket:message key="mw.SPSStatus" /></th>
-		      		<th></th>
+					<th></th>
+		      		<th><wicket:message key="mpps2mwl.content.header.patientName" /></th>
+		      		<th><wicket:message key="mpps2mwl.content.header.birthDate" /></th>
+					<th><wicket:message key="mpps2mwl.content.header.SPSDescription" /></th>
+		      		<th><wicket:message key="mpps2mwl.content.header.SPSModality" /></th>
+					<th><wicket:message key="mpps2mwl.content.header.startDate" /></th>
+					<th><wicket:message key="mpps2mwl.content.header.stationAET" /></th>
+					<th><wicket:message key="mpps2mwl.content.header.stationName" /></th>
+		      		<th><wicket:message key="mpps2mwl.content.header.accessionNumber" /></th>
+		      		<th><wicket:message key="mpps2mwl.content.header.SPSStatus" /></th>
+		      		<th colspan="2"></th>
 		    	</tr>
 			</thead>
-			<tbody wicket:id="mwlitems" align="left" valign="top" >
-		    	<tr wicket:id="mwlitem">
-					<td wicket:id="patientName">[Patient Name]</td>
-					<td wicket:id="birthDate">[Birth date]</td>
-		      		<td wicket:id="SPSDescription">[Scheduled Procedure Step Description]</td>
-					<td wicket:id="SPSModality">[Modality]</td>
-					<td wicket:id="startDate">[Start Date]</td>
-					<td wicket:id="stationAET">[Scheduled Procedure Step ID]</td>
-					<td wicket:id="stationName">[Requested Procedure ID]</td>
-					<td wicket:id="accessionNumber">[Accession Number]</td>
-					<td wicket:id="SPSStatus">[Patient Name]</td>
-					<td>
-						<a wicket:id="link" href="#">
-							<img wicket:id="linkImg" alt="L" />
-						</a>
-					</td>
-		    	</tr>
+			<tbody align="left" valign="top" >
+				<wicket:container wicket:id="mwlitems">
+			    	<tr wicket:id="mwlitem">
+						<td wicket:id="cell" class="expand"></td>
+						<td wicket:id="patientName">[Patient Name]</td>
+			      		<td wicket:id="SPSDescription">[Scheduled Procedure Step Description]</td>
+						<td wicket:id="SPSModality">[Modality]</td>
+						<td wicket:id="startDate">[Start Date]</td>
+						<td wicket:id="stationAET">[Station AET]</td>
+						<td wicket:id="stationName">[Station Name]</td>
+						<td wicket:id="accessionNumber">[Accession Number]</td>
+						<td wicket:id="SPSStatus">SPS Status</td>
+						<td class="action">
+							<a wicket:id="link" href="#">
+								<img wicket:id="linkImg" alt="L" />
+							</a>
+						</td>
+			    		<td></td>
+			    	</tr>
+		    	</wicket:container>
 			</tbody>
-		  </table>
+	   </table>
 	</div>
 </wicket:panel>	
 </body>

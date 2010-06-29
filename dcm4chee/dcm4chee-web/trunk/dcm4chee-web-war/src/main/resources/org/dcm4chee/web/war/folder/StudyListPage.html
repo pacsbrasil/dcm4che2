@@ -27,41 +27,41 @@
 					<th class="ro"></th>
 				</tr>
 			</thead>
-			<tr wicket:id="searchTableLabels">
+			<tr wicket:id="searchLabels">
 				<td></td>
 				<td>
-					<div wicket:id="patientNameLabel">Patient Name</div>
+					<div wicket:id="patientName.label">Patient Name</div>
 				</td>
 				<td colspan="2">
-					<div  wicket:id="patientIDDescrLabel">Patient ID</div>
+					<div  wicket:id="patientIDDescr.label">Patient ID</div>
 				</td>
 				<td colspan="2">
-					<div wicket:id="studyDateLabel">Study Date</div>
+					<div wicket:id="studyDate.label">Study Date</div>
 				</td>
 				<td>
-					<div wicket:id="accessionNumberLabel">Accession Number</div>
+					<div wicket:id="accessionNumber.label">Accession Number</div>
 				</td>
 				<td></td>
 			</tr>
-			<tr wicket:id="searchTableFields">
+			<tr wicket:id="searchFields">
 				<td></td>
 				<td>
 					<input style="vertical-align: bottom" wicket:id="patientName" id="patientName" type="text" />
 				</td>
 				<td>
-	                <div wicket:id="patientIDLabel">ID</div>
+	                <div wicket:id="patientID.label">ID</div>
 					<input wicket:id="patientID" id="patientID" type="text" title="ID" />
 				</td>
 				<td>
-					<div wicket:id="issuerOfPatientIDLabel">Issuer</div>
+					<div wicket:id="issuerOfPatientID.label">Issuer</div>
 					<input wicket:id="issuerOfPatientID" id="issuerOfPatientID" type="text" title="Issuer" />
 				</td>
 				<td>
-					<div wicket:id="studyDateMinLabel">from</div>
+					<div wicket:id="studyDateMin.label">from</div>
 					<div wicket:id="studyDateMin" id="studyDateMin" />
 				</td>
 				<td>                   
-					<div wicket:id="studyDateMaxLabel">to</div>
+					<div wicket:id="studyDateMax.label">to</div>
 					<div wicket:id="studyDateMax" id="studyDateMax" />
 				</td>
 				<td>
@@ -69,14 +69,14 @@
 				</td>
 				<td></td>
 			</tr>
-			<tr wicket:id="searchTableDropdowns">
+			<tr wicket:id="searchDropdowns">
 				<td></td>
 				<td>
-					<div wicket:id="modalityLabel">Mod</div>
+					<div wicket:id="modality.label">Mod</div>
 			      	<select wicket:id="modality" />			
 				</td>
 				<td>
-					<div wicket:id="sourceAETLabel">Source AET</div>
+					<div wicket:id="sourceAET.label">Source AET</div>
 					<select wicket:id="sourceAET" />
 				</td>
 				<td colspan="4"></td>
@@ -85,27 +85,27 @@
              <tr wicket:id="extendedFilter" class="search-table-extended">
 	            <td></td>
 	            <td>
-	                <div wicket:id="birthDateLabel">Birth Date</div>
-					<div wicket:id="birthDateMinLabel">from</div>
+	                <div wicket:id="birthDate.label">Birth Date</div>
+					<div wicket:id="birthDateMin.label">from</div>
 					<input wicket:id="birthDateMin" id="birthDateMin" type="text" />
 	            </td>
 				<td>
-					<div wicket:id="birthDateMaxLabel">to</div>
+					<div wicket:id="birthDateMax.label">to</div>
 					<input wicket:id="birthDateMax" id="birthDateMax" type="text" />
 				</td>
 				<td></td>
 				<td>
-					<div wicket:id="studyInstanceUIDLabel">Study Instance UID</div>
+					<div wicket:id="studyInstanceUID.label">Study Instance UID</div>
 					<input wicket:id="studyInstanceUID" id="studyInstanceUID" type="text"/>
 				</td>
 				<td></td>
 				<td>
-					<div wicket:id="seriesInstanceUIDLabel">Series Instance UID</div>
+					<div wicket:id="seriesInstanceUID.label">Series Instance UID</div>
 					<input wicket:id="seriesInstanceUID" id="seriesInstanceUID" type="text"/>
 				</td>
 				<td></td>
 			</tr>
-		    <tr class="search-table-footer" wicket:id="searchTableFooter">
+		    <tr class="search-table-footer" wicket:id="searchFooter">
 				<td class="lu"></td>
 				<td>
 		            <a wicket:id="showExtendedFilter">
@@ -114,15 +114,15 @@
 				</td>
 				<td>
 					<input type="checkbox" id="patientsWithoutStudies" wicket:id="patientsWithoutStudies" />
-		  			<label for="patientsWithoutStudies" wicket:id="patientsWithoutStudiesLabel">patients w/o studies</label>
+		  			<label for="patientsWithoutStudies" wicket:id="patientsWithoutStudies.label">patients w/o studies</label>
 				</td>
 				<td>
 					<input type="checkbox" id="latestStudiesFirst" wicket:id="latestStudiesFirst" />
-					<label for="latestStudiesFirst" wicket:id="latestStudiesFirstLabel">latest studies first</label>
+					<label for="latestStudiesFirst" wicket:id="latestStudiesFirst.label">latest studies first</label>
 				</td>
 				<td>
 					<input type="checkbox" id="ppsWithoutMwl" wicket:id="ppsWithoutMwl" />
-					<label for="ppsWithoutMwl" wicket:id="ppsWithoutMwlLabel">Studies with unlinked PPS</label>
+					<label for="ppsWithoutMwl" wicket:id="ppsWithoutMwl.label">Studies with unlinked PPS</label>
 				</td>
 				<td>
 					<button wicket:id="resetBtn" >
@@ -269,7 +269,7 @@
 		      </td>
 		      <td><input wicket:id="selected" type="checkbox" /></td>
 		    </tr>
-		    <tr wicket:id="details" class="patient">
+		    <tr wicket:id="details" class="patient" style="border-top-style: none;">
 		      <td colspan="17">
 		        <div wicket:id="dicomobject"></div>
 		      </td>
@@ -302,7 +302,7 @@
 		      </td>
 		      <td><input wicket:id="selected" type="checkbox" /></td>
 		    </tr>
-		    <tr wicket:id="details" class="study">
+		    <tr wicket:id="details" class="study" style="border-top-style: none;">
 		      <td colspan="16">
 		        <div wicket:id="dicomobject"></div>
 		      </td>
@@ -337,7 +337,7 @@
 		      </td>
 		      <td><input wicket:id="selected" type="checkbox" /></td>
 		    </tr>
-		    <tr wicket:id="details" class="pps">
+		    <tr wicket:id="details" class="pps" style="border-top-style: none;">
 		      <td colspan="15">
 		        <div wicket:id="dicomobject"></div>
 		      </td>
@@ -367,7 +367,7 @@
 		      </td>
 		      <td><input wicket:id="selected" type="checkbox" /></td>
 		    </tr>
-		    <tr wicket:id="details" class="series">
+		    <tr wicket:id="details" class="series" style="border-top-style: none;">
 		      <td colspan="14">
 		        <div wicket:id="dicomobject"></div>
 		      </td>
@@ -395,21 +395,21 @@
 		      </td>
 		      <td><input wicket:id="selected" type="checkbox" /></td>
 		    </tr>
-		    <tr wicket:id="details" class="instance">
+		    <tr wicket:id="details" class="instance" style="border-top-style: none;">
 		      <td colspan="13">
 		        <div wicket:id="dicomobject"></div>
 		      </td>
 		    </tr>
 		    <wicket:container wicket:id="files" >
 		    <tr class="file">
-		      <td wicket:id="file.createdTime">[File Date/Time]</td>
-		      <td wicket:id="file.fileSize">[Size]</td>
-		      <td wicket:id="file.transferSyntaxUID" colspan="2">[Transfer Syntax UID]</td>
+		      <td wicket:id="fileObject.createdTime">[File Date/Time]</td>
+		      <td wicket:id="fileObject.fileSize">[Size]</td>
+		      <td wicket:id="fileObject.transferSyntaxUID" colspan="2">[Transfer Syntax UID]</td>
 		      <td colspan="2">
-		        <span wicket:id="file.fileSystem.directoryPath">[Dir Path]</span>/<span
-		              wicket:id="file.filePath">[File Path]</span>
+		        <span wicket:id="fileObject.fileSystem.directoryPath">[Dir Path]</span>/<span
+		              wicket:id="fileObject.filePath">[File Path]</span>
 		      </td>
-		      <td wicket:id="file.fileSystem.availability">[Availability]</td>
+		      <td wicket:id="fileObject.fileSystem.availability">[Availability]</td>
 		      <td>
 		        <a wicket:id="toggledetails" href="#"><img wicket:id="detailImg" alt="D" /></a>
 		      </td>
@@ -421,7 +421,7 @@
 		      </td>
 		      <td><input wicket:id="selected" type="checkbox" /></td>
 		    </tr>
-		    <tr wicket:id="details" class="file">
+		    <tr wicket:id="details" class="file" style="border-top-style: none;">
 		      <td colspan="13">
 		        <div wicket:id="file"></div>
 		      </td>

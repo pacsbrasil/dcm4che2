@@ -56,20 +56,15 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
-import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
-import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
-import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
-import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
 import org.dcm4chee.web.war.WicketSession;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
@@ -103,6 +98,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         add(CSSPackageResource.getHeaderContribution(Mpps2MwlLinkPage.CSS));
         setContent(panel);
     }
+
     public void show(AjaxRequestTarget target, PPSModel ppsModel, Component c) {
         ppsModels  = toList(ppsModel);
         ppsModelForInfo = ppsModels.get(0);
@@ -129,40 +125,16 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         protected ViewPort initViewPort() {
             return new ViewPort();
         }
-/*
-        protected void addQueryFields(final ModalityWorklistFilter filter, BaseForm form) {
-            final IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public Boolean getObject() {
-                    return !filter.isExtendedQuery() || "*".equals(filter.getStudyInstanceUID());
-                }
-            };
-            form.addTextField("patientName", enabledModel, true);
-            form.addLabel("patientIDDescr");
-            form.addTextField("patientID", enabledModel, true);
-            form.addTextField("issuerOfPatientID", enabledModel, true);
-            
-            form.addLabel("startDate");
-            form.addDateTimeField("startDateMin", new PropertyModel<Date>(filter, "startDateMin"), enabledModel, false, true);
-            form.addDateTimeField("startDateMax", new PropertyModel<Date>(filter, "startDateMax"), enabledModel, true, true);
-
-            form.addTextField("accessionNumber", enabledModel, true);
-            tfModality = form.addDropDownChoice("modality", null, getModalityChoices(), enabledModel, true);
-            form.addDropDownChoice("scheduledStationAET", null, getStationAETChoices(), enabledModel, true);
-            form.addDropDownChoice("scheduledStationName", null, getStationNameChoices(), enabledModel, true);
-            form.addDropDownChoice("scheduledProcedureStepStatus", null, getSpsStatusChoices(), enabledModel, true);
-        }
 
         protected WebMarkupContainer addExtendedStudySearch(final Form<?> form) {
             return null;
         }
-/*_*/ 
+
+        @Override
         public void addMwlActions(final ListItem<MWLItemModel> item, WebMarkupContainer valueContainer, final MWLItemListView mwlListView) {
             final MWLItemModel mwlItemModel = item.getModelObject();
 
+            valueContainer.add(new WebMarkupContainer("cell"));
             valueContainer.add(new AjaxFallbackLink<Object>("link") {
                 private static final long serialVersionUID = 1L;
                 @Override
@@ -196,26 +168,26 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                     }
                 }
             }.add(new Image("linkImg",ImageManager.IMAGE_COMMON_LINK)
-            .add(new ImageSizeBehaviour())));
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("mpps2mwl.", "link"))));
         }    
-       
-        @SuppressWarnings("unchecked")
+
         private void addMppsInfoPanel() {
-            WebMarkupContainer p = new WebMarkupContainer("mppsInfo", new CompoundPropertyModel(new PpsInfoModel()));
+            WebMarkupContainer p = new WebMarkupContainer("mppsInfo", new CompoundPropertyModel<Object>(new PpsInfoModel()));
             p.add(new Label("mppsInfoTitle", new ResourceModel("link.ppsInfoTitle")));
-            p.add(new Label("patNameLabel", new ResourceModel("link.patNameLabel")));
-            p.add(new Label("patName"));
-            p.add(new Label("patIdLabel", new ResourceModel("link.patIdLabel")));
-            p.add(new Label("patId"));
-            p.add(new Label("patIssuerLabel", new ResourceModel("link.patIssuerLabel")));
-            p.add(new Label("patIssuer"));
-            p.add(new Label("birthdateLabel", new ResourceModel("link.birthdateLabel")));
+            p.add(new Label("patientName.label", new ResourceModel("link.patNameLabel")));
+            p.add(new Label("patientName"));
+            p.add(new Label("patientID.label", new ResourceModel("link.patIdLabel")));
+            p.add(new Label("patientID"));
+            p.add(new Label("patientIssuer.label", new ResourceModel("link.patIssuerLabel")));
+            p.add(new Label("patientIssuer"));
+            p.add(new Label("birthdate.label", new ResourceModel("link.birthdateLabel")));
             p.add(new DateTimeLabel("birthdate").setWithoutTime(true));
-            p.add(new Label("modalityLabel", new ResourceModel("link.modalityLabel")));
+            p.add(new Label("modality.label", new ResourceModel("link.modalityLabel")));
             p.add(new Label("modality"));
-            p.add(new Label("startDateLabel", new ResourceModel("link.startDateLabel")));
+            p.add(new Label("startDate.label", new ResourceModel("link.startDateLabel")));
             p.add(new DateTimeLabel("datetime"));
-            p.add(new Label("studyDescriptionLabel", new ResourceModel("link.studyDescriptionLabel")));
+            p.add(new Label("studyDescription.label", new ResourceModel("link.studyDescriptionLabel")));
             p.add(new Label("studyDescription"));
             add(p);
         }
@@ -223,7 +195,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         @SuppressWarnings("unchecked")
         private void presetSearchfields() {
             PPSModel ppsModel = ppsModels.get(0);
-            String patPreset = this.getString("folder.mpps2mwl.preset.patientname");
+            String patPreset = this.getString("mpps2mwl.preset.patientname");
             if ("delete".equals(patPreset)) {
                 getViewPort().getFilter().setPatientName(null);
             } else if (patPreset != null) {
@@ -236,16 +208,16 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                 }
                 getViewPort().getFilter().setPatientName(name);
             }
-            String modPreset = this.getString("folder.mpps2mwl.preset.modality");
+            String modPreset = this.getString("mpps2mwl.preset.modality");
             if ("delete".equals(modPreset)) {
                 getViewPort().getFilter().setModality(null);
             } else if ("mpps".equals(modPreset)){
                 String mod = ppsModel.getModality();
-                DropDownChoice<String> modChoice = (DropDownChoice<String>) this.get("form:searchTableDropdowns:modality");
+                DropDownChoice<String> modChoice = (DropDownChoice<String>) this.get("form:searchDropdowns:modality");
                 if(modChoice.getChoices().contains(mod))
                     getViewPort().getFilter().setModality(mod);
             }
-            String startPreset = this.getString("folder.mpps2mwl.preset.startdate");
+            String startPreset = this.getString("mpps2mwl.preset.startdate");
             if ("delete".equals(startPreset)) {
                 getViewPort().getFilter().setStartDateMin(null);
                 getViewPort().getFilter().setStartDateMax(null);
@@ -265,24 +237,22 @@ public class Mpps2MwlLinkPage extends ModalWindow {
             }
             queryMWLItems();
         }
-
-        
     }
 
     @SuppressWarnings("unused") //used in a PropertyModel
     private class PpsInfoModel implements Serializable{
         private static final long serialVersionUID = 1L;
 
-        public String getPatName() {
+        public String getPatientName() {
             return ppsPatModelForInfo.getName();
         }
-        public String getPatId() {
+        public String getPatientID() {
             return ppsPatModelForInfo.getId();
         }
         public Date getBirthdate() {
             return ppsPatModelForInfo.getBirthdate();
         }
-        public String getPatIssuer() {
+        public String getPatientIssuer() {
             return ppsPatModelForInfo.getIssuer();
         }
         public String getModality() {

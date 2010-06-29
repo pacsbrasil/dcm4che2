@@ -57,8 +57,7 @@ public class EditDicomObjectPage extends WebPage {
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(EditDicomObjectPage.class, "edit-style.css");
     
-    public EditDicomObjectPage(final Page page,
-            final AbstractEditableDicomModel model) {
+    public EditDicomObjectPage(final Page page, final AbstractEditableDicomModel model) {
         
         if (EditDicomObjectPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(EditDicomObjectPage.BaseCSS));

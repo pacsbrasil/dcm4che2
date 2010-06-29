@@ -98,8 +98,9 @@ public class TooltipBehaviour extends AbstractBehavior {
 
     private String getResourceKey(Component c) {
         StringBuilder sb = new StringBuilder();
-        if ( prefix != null ) sb.append(prefix);
-        sb.append(id==null ? c.getId() : id);
+        if ( prefix != null ) 
+            sb.append(prefix);
+        sb.append(id == null ? c.getId() : id);
         sb.append(this.showTooltipModel == null ? "" 
                 : "."
                     + (this.showTooltipModel.getObject() ?  "hide" : "show")
@@ -121,20 +122,4 @@ public class TooltipBehaviour extends AbstractBehavior {
     public TooltipBehaviour newWithSubstitution(IModel<?> model) {
         return new TooltipBehaviour(prefix, id, model);
     }
-    
-//    public static class DynamicTooltipModel extends AbstractReadOnlyModel<String>{
-//        
-//        private static final long serialVersionUID = 1L;
-//        
-//        private boolean show;
-//        
-//        public DynamicTooltipModel(boolean show) {
-//            this.show = show;
-//        }
-//        
-//        @Override
-//        public String getObject() {
-//            return show ? "hide" : "show";
-//        }
-//    }
 }

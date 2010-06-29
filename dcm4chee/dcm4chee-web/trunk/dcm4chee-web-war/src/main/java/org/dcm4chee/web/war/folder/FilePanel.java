@@ -62,7 +62,7 @@ public class FilePanel extends Panel {
 
             @Override
             public String getObject() {
-                return getString("pkInfo")+fileModel.getFile().getPk();
+                return getString("pkInfo")+fileModel.getFileObject().getPk();
             }
             
         }){
@@ -70,7 +70,7 @@ public class FilePanel extends Panel {
 
             @Override
             public boolean isVisible() {
-                return fileModel.getFile().getPk() != -1;
+                return fileModel.getFileObject().getPk() != -1;
             }
         });
        

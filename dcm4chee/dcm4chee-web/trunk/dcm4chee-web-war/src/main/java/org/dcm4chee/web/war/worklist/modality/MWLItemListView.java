@@ -46,6 +46,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.model.Model;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 
@@ -79,15 +80,18 @@ public class MWLItemListView extends PropertyListView<MWLItemModel> {
         item.add(this.mwlitem = new WebMarkupContainer("mwlitem"));
         this.mwlitem.add(new AttributeModifier("class", true, new Model<String>(getOddEvenClass(item))));     
 
-        this.mwlitem.add(new Label("SPSDescription"))
-        .add(new Label("SPSStatus"))
-        .add(new Label("stationAET"))
-        .add(new Label("stationName"))
-        .add(new DateTimeLabel("birthDate").setWithoutTime(true))
-        .add(new Label("accessionNumber"))
-        .add(new Label("patientName"))
-        .add(new Label("SPSModality"))
-        .add(new DateTimeLabel("startDate"));
+        TooltipBehaviour tooltip = new TooltipBehaviour("mw.content.data.");
+
+        this.mwlitem.add(new Label("patientName").add(tooltip))
+        .add(new DateTimeLabel("birthDate").setWithoutTime(true).add(tooltip))
+        .add(new Label("SPSDescription").add(tooltip))
+        .add(new Label("SPSModality").add(tooltip))
+        .add(new DateTimeLabel("startDate").add(tooltip))
+        .add(new Label("accessionNumber").add(tooltip))
+        .add(new Label("stationAET").add(tooltip))
+        .add(new Label("stationName").add(tooltip))
+        .add(new Label("SPSStatus").add(tooltip));
+        
         if (mwlActionProvider != null)
             mwlActionProvider.addMwlActions(item, mwlitem, MWLItemListView.this);
     }

@@ -140,7 +140,6 @@ public class StudyListPage extends Panel {
     private boolean showSearch = true;
     private boolean notSearched = true;
     private BaseForm form;
-    private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("folder.");
     private MessageWindow msgWin = new MessageWindow("msgWin");
     private Mpps2MwlLinkPage linkPage = new Mpps2MwlLinkPage("linkPage");
     private ConfirmationWindow<PPSModel> confirmUnlinkMpps;
@@ -156,10 +155,8 @@ public class StudyListPage extends Panel {
         add(CSSPackageResource.getHeaderContribution(StudyListPage.class, "folder-style.css"));
 
         final StudyListFilter filter = viewport.getFilter();
-        form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
+        add(form = new BaseForm("form", new CompoundPropertyModel<Object>(filter)));
         form.setResourceIdPrefix("folder.");
-        form.setTooltipBehaviour(tooltipBehaviour);
-        add(form);
 
         form.add(new AjaxFallbackLink<Object>("searchToggle") {
 
@@ -198,6 +195,7 @@ public class StudyListPage extends Panel {
         addQueryOptions(form);
         addNavigation(form);               
         addActions(form);
+        
         form.add(header);
         form.add(new PatientListView("patients", viewport.getPatients()));
         msgWin.setTitle(MessageWindow.TITLE_WARNING);
@@ -218,7 +216,7 @@ public class StudyListPage extends Panel {
             }
         };
         
-        WebMarkupContainer wmc = new WebMarkupContainer("searchTableLabels");
+        WebMarkupContainer wmc = new WebMarkupContainer("searchLabels");
         searchTableComponents.add(wmc);
         form.setParent(wmc);
         
@@ -227,18 +225,18 @@ public class StudyListPage extends Panel {
         form.addInternalLabel("studyDate");
         form.addInternalLabel("accessionNumber");
         
-        wmc = new WebMarkupContainer("searchTableFields");
+        wmc = new WebMarkupContainer("searchFields");
         searchTableComponents.add(wmc);
         form.setParent(wmc);
         
         form.addTextField("patientName", enabledModel, false);
         form.addTextField("patientID", enabledModel, true);
         form.addTextField("issuerOfPatientID", enabledModel, true);
-        form.addDateTimeField("studyDateMin", new PropertyModel<Date>(filter, "studyDateMin"), enabledModel, false, true);
-        form.addDateTimeField("studyDateMax", new PropertyModel<Date>(filter, "studyDateMax"), enabledModel, true, true);
+        form.addDateTimeField("studyDateMin", new PropertyModel<Date>(filter, "studyDateMin"), enabledModel, false, true).setOutputMarkupId(true);
+        form.addDateTimeField("studyDateMax", new PropertyModel<Date>(filter, "studyDateMax"), enabledModel, true, true).setOutputMarkupId(true);
         form.addTextField("accessionNumber", enabledModel, false);
 
-        wmc = new WebMarkupContainer("searchTableDropdowns");
+        wmc = new WebMarkupContainer("searchDropdowns");
         searchTableComponents.add(wmc);
         form.setParent(wmc);
 
@@ -260,16 +258,16 @@ public class StudyListPage extends Panel {
                 return showSearch && filter.isExtendedQuery();
             }
         };
-        extendedFilter.add( new Label("birthDateLabel", new ResourceModel("folder.birthDate")));
-        extendedFilter.add( new Label("birthDateMinLabel", new ResourceModel("folder.birthDateMin")));
-        extendedFilter.add( new Label("birthDateMaxLabel", new ResourceModel("folder.birthDateMax")));
-        extendedFilter.add(form.getDateTextField("birthDateMin", null, true, enabledModel));
-        extendedFilter.add(form.getDateTextField("birthDateMax", null, true, enabledModel));
+        extendedFilter.add( new Label("birthDate.label", new ResourceModel("folder.extendedFilter.birthDate.label")));
+        extendedFilter.add( new Label("birthDateMin.label", new ResourceModel("folder.extendedFilter.birthDateMin.label")));
+        extendedFilter.add( new Label("birthDateMax.label", new ResourceModel("folder.extendedFilter.birthDateMax.label")));
+        extendedFilter.add(form.getDateTextField("birthDateMin", null, "extendedFilter.", enabledModel));
+        extendedFilter.add(form.getDateTextField("birthDateMax", null, "extendedFilter.", enabledModel));
         
-        extendedFilter.add( new Label("studyInstanceUIDLabel", new ResourceModel("folder.studyInstanceUID")));
+        extendedFilter.add( new Label("studyInstanceUID.label", new ResourceModel("folder.extendedFilter.studyInstanceUID.label")));
         extendedFilter.add( new TextField<String>("studyInstanceUID").add(new UIDValidator()));
 
-        extendedFilter.add( new Label("seriesInstanceUIDLabel", new ResourceModel("folder.seriesInstanceUID")));
+        extendedFilter.add( new Label("seriesInstanceUID.label", new ResourceModel("folder.extendedFilter.seriesInstanceUID.label")));
         extendedFilter.add( new TextField<String>("seriesInstanceUID") {
 
             private static final long serialVersionUID = 1L;
@@ -281,7 +279,7 @@ public class StudyListPage extends Panel {
         }.add(new UIDValidator()));
         form.add(extendedFilter);
         
-        wmc = new WebMarkupContainer("searchTableFooter");
+        wmc = new WebMarkupContainer("searchFooter");
         searchTableComponents.add(wmc);
         form.setParent(wmc);
         
@@ -305,7 +303,7 @@ public class StudyListPage extends Panel {
                         ImageManager.IMAGE_COMMON_EXPAND;
                 }
         })
-        .add(new TooltipBehaviour("folder.", "showExtendedFilterImg", new AbstractReadOnlyModel<Boolean>() {
+        .add(new TooltipBehaviour("folder.search.", "showExtendedFilterImg", new AbstractReadOnlyModel<Boolean>() {
 
             private static final long serialVersionUID = 1L;
 
@@ -343,7 +341,7 @@ public class StudyListPage extends Panel {
         resetBtn.add(new Image("resetImg",ImageManager.IMAGE_COMMON_RESET)
         .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        resetBtn.add(new Label("resetText", new ResourceModel("folder.resetBtn.text"))
+        resetBtn.add(new Label("resetText", new ResourceModel("folder.searchFooter.resetBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
         form.addComponent(resetBtn);
@@ -356,9 +354,9 @@ public class StudyListPage extends Panel {
             public void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 viewport.setOffset(0);
                 queryStudies();
-                form.setOutputMarkupId(true);
                 target.addComponent(form);
             }
+            
             @Override
             public void onError(AjaxRequestTarget target, Form<?> form) {
                 BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
@@ -367,7 +365,7 @@ public class StudyListPage extends Panel {
         searchBtn.add(new Image("searchImg",ImageManager.IMAGE_COMMON_SEARCH)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        searchBtn.add(new Label("searchText", new ResourceModel("folder.searchBtn.text"))
+        searchBtn.add(new Label("searchText", new ResourceModel("folder.searchFooter.searchBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
         );
         form.addComponent(searchBtn);
@@ -392,7 +390,7 @@ public class StudyListPage extends Panel {
         }
         .add(new Image("prevImg", ImageManager.IMAGE_COMMON_BACK)
         .add(new ImageSizeBehaviour("vertical-align: middle;"))
-        .add(new TooltipBehaviour("folder.")))
+        .add(new TooltipBehaviour("folder.search.")))
         );
  
         form.add(new Link<Object>("next") {
@@ -412,7 +410,7 @@ public class StudyListPage extends Panel {
         }
         .add(new Image("nextImg", ImageManager.IMAGE_COMMON_FORWARD)
         .add(new ImageSizeBehaviour("vertical-align: middle;"))
-        .add(new TooltipBehaviour("folder.")))
+        .add(new TooltipBehaviour("folder.search.")))
         .setVisible(!notSearched)
         );
 
@@ -424,9 +422,9 @@ public class StudyListPage extends Panel {
 
             @Override
             public Serializable getObject() {
-                return notSearched ? "folder.notSearched" :
-                        viewport.getTotal() == 0 ? "folder.noMatchingStudiesFound" : 
-                            "folder.studiesFound";
+                return notSearched ? "folder.search.notSearched" :
+                        viewport.getTotal() == 0 ? "folder.search.noMatchingStudiesFound" : 
+                            "folder.search.studiesFound";
             }
         };
         form.add(new Label("viewport", new StringResourceModel("${}", StudyListPage.this, keySelectModel,new Object[]{"dummy"}){
@@ -456,7 +454,7 @@ public class StudyListPage extends Panel {
             @Override
             public void onConfirmation(AjaxRequestTarget target, final SelectedEntities selected) {
 
-                this.setStatus(new StringResourceModel("folder.delete.running", StudyListPage.this, null));
+                this.setStatus(new StringResourceModel("folder.message.delete.running", StudyListPage.this, null));
                 okBtn.setVisible(false);
                 ajaxRunning = true;
 
@@ -467,14 +465,14 @@ public class StudyListPage extends Panel {
                     @Override
                     protected void onTimer(AjaxRequestTarget target) {
                         if (ContentEditDelegate.getInstance().moveToTrash(selected)) {
-                            setStatus(new StringResourceModel("folder.deleteDone", StudyListPage.this,null));
+                            setStatus(new StringResourceModel("folder.message.deleteDone", StudyListPage.this,null));
                             if (selected.hasPatients()) {
                                 viewport.getPatients().clear();
                                 queryStudies();
                             } else
                                 selected.refreshView(true);
                         } else
-                            setStatus(new StringResourceModel("folder.deleteFailed", StudyListPage.this,null));
+                            setStatus(new StringResourceModel("folder.message.deleteFailed", StudyListPage.this,null));
                         this.stop();
                         ajaxRunning = false;
                         okBtn.setVisible(true);
@@ -490,10 +488,10 @@ public class StudyListPage extends Panel {
             public void onDecline(AjaxRequestTarget target, SelectedEntities selected) {
                 if (selected.getPpss().size() != 0) {
                     if (ContentEditDelegate.getInstance().deletePps(selected)) {
-                        this.setStatus(new StringResourceModel("folder.deleteDone", StudyListPage.this,null));
+                        this.setStatus(new StringResourceModel("folder.message.deleteDone", StudyListPage.this,null));
                         selected.refreshView(true);
                     } else {
-                        this.setStatus(new StringResourceModel("folder.deleteFailed", StudyListPage.this,null));
+                        this.setStatus(new StringResourceModel("folder.message.deleteFailed", StudyListPage.this,null));
                     }
                 }
             }
@@ -510,18 +508,17 @@ public class StudyListPage extends Panel {
                 selected.update(viewport.getPatients());
                 selected.deselectChildsOfSelectedEntities();
                 if (selected.hasPPS()) {
-                    confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.confirmPpsDelete",this, null,new Object[]{selected}), selected);
+                    confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.message.confirmPpsDelete",this, null,new Object[]{selected}), selected);
                 } else if (selected.hasDicomSelection()) {
-                    confirmDelete.confirm(target, new StringResourceModel("folder.confirmDelete",this, null,new Object[]{selected}), selected);
+                    confirmDelete.confirm(target, new StringResourceModel("folder.message.confirmDelete",this, null,new Object[]{selected}), selected);
                 } else {
-                    msgWin.show(target, getString("folder.noSelection"));
+                    msgWin.show(target, getString("folder.message.noSelection"));
                 }
             }
         };
         deleteBtn.add(new Image("deleteImg", ImageManager.IMAGE_FOLDER_DELETE)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        deleteBtn.add(new TooltipBehaviour("folder.", "deleteBtn"));
         deleteBtn.add(new Label("deleteText", new ResourceModel("folder.deleteBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
@@ -539,13 +536,12 @@ public class StudyListPage extends Panel {
                 if (selected.hasDicomSelection())
                     setResponsePage(new MoveEntitiesPage(StudyListPage.this.getPage(), selected, viewport.getPatients()));
                 else
-                    msgWin.show(target, getString("folder.noSelection"));
+                    msgWin.show(target, getString("folder.message.noSelection"));
             }
         };
         moveBtn.add(new Image("moveImg",ImageManager.IMAGE_FOLDER_MOVE)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        moveBtn.add(new TooltipBehaviour("folder.", "moveBtn"));
         moveBtn.add(new Label("moveText", new ResourceModel("folder.moveBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
@@ -568,7 +564,6 @@ public class StudyListPage extends Panel {
         exportBtn.add(new Image("exportImg",ImageManager.IMAGE_FOLDER_EXPORT)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        exportBtn.add(new TooltipBehaviour("folder.", "exportBtn"));
         exportBtn.add(new Label("exportText", new ResourceModel("folder.exportBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
@@ -586,7 +581,7 @@ public class StudyListPage extends Panel {
             @Override
             public void onConfirmation(AjaxRequestTarget target, final PPSModel ppsModel) {
                 
-                this.setStatus(new StringResourceModel("folder.unlink.running", StudyListPage.this, null));
+                this.setStatus(new StringResourceModel("folder.message.unlink.running", StudyListPage.this, null));
                 okBtn.setVisible(false);
                 ajaxRunning = true;
                 
@@ -598,10 +593,10 @@ public class StudyListPage extends Panel {
                     protected void onTimer(AjaxRequestTarget target) {
                         try {
                             if (ContentEditDelegate.getInstance().unlink(ppsModel))
-                                setStatus(new StringResourceModel("folder.unlinkDone", StudyListPage.this,null));
+                                setStatus(new StringResourceModel("folder.message.unlinkDone", StudyListPage.this,null));
                         } catch (Exception x) {
                             log.error("Unlink of MPPS failed:"+ppsModel, x);
-                            setStatus(new StringResourceModel("folder.unlinkFailed", StudyListPage.this,null));
+                            setStatus(new StringResourceModel("folder.message.unlinkFailed", StudyListPage.this,null));
                         }
                         queryStudies();
                         this.stop();
@@ -725,6 +720,7 @@ public class StudyListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
+            
             final PatientModel patModel = (PatientModel) item.getModelObject();
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
@@ -738,7 +734,9 @@ public class StudyListPage extends Panel {
             };
             cell.add(new ExpandCollapseLink("expand", patModel, item));
             item.add(cell);
-            item.add(new Label("name").add(tooltipBehaviour));
+            
+            TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.patient.");
+            item.add(new Label("name").add(tooltip));        
             item.add(new Label("id", new AbstractReadOnlyModel<String>(){
 
                 private static final long serialVersionUID = 1L;
@@ -746,14 +744,15 @@ public class StudyListPage extends Panel {
                 @Override
                 public String getObject() {
                     return patModel.getIssuer() == null ? patModel.getId() :
-                        patModel.getId()+"/"+patModel.getIssuer();
+                        patModel.getId()+" / "+patModel.getIssuer();
                 }
-            }).add(tooltipBehaviour));
+            })
+            .add(tooltip));
             DateTimeLabel dtl = new DateTimeLabel("birthdate").setWithoutTime(true);
-            dtl.add(tooltipBehaviour.newWithSubstitution(new PropertyModel<String>(dtl, "textFormat")));
+            dtl.add(tooltip.newWithSubstitution(new PropertyModel<String>(dtl, "textFormat")));
             item.add(dtl);
-            item.add(new Label("sex").add(tooltipBehaviour));
-            item.add(new Label("comments").add(tooltipBehaviour));
+            item.add(new Label("sex").add(tooltip));
+            item.add(new Label("comments").add(tooltip));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -765,13 +764,14 @@ public class StudyListPage extends Panel {
                         target.addComponent(item);
                     }
                 }
-
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","patDetail"))));
-            item.add(getEditLink(patModel, "patEdit"));
-            item.add(getAddStudyLink(patModel, "addStudy"));
-            item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForPatient(patModel.getId(), patModel.getIssuer())) {
+            .add(tooltip)));
+            item.add(getEditLink(patModel, tooltip)
+                    .add(tooltip));
+            item.add(getAddStudyLink(patModel, tooltip)
+                    .add(tooltip));
+            item.add(new ExternalLink("webview", webviewerLinkProvider.getUrlForPatient(patModel.getId(), patModel.getIssuer())) {
                 private static final long serialVersionUID = 1L;
                 @Override
                 public boolean isVisible() {
@@ -781,15 +781,16 @@ public class StudyListPage extends Panel {
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
             .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","patWebviewer"))));
-            item.add(new AjaxCheckBox("selected"){
+                    .add(tooltip)));
+            item.add(new AjaxCheckBox("selected") {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
-                }}.setOutputMarkupId(true).add(new TooltipBehaviour("folder.","patSelect")));
+                }}.setOutputMarkupId(true)
+                .add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -821,6 +822,7 @@ public class StudyListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
+            
             final StudyModel studyModel = (StudyModel) item.getModelObject();
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
@@ -834,14 +836,17 @@ public class StudyListPage extends Panel {
             };
             cell.add(new ExpandCollapseLink("expand", studyModel, patientListItem));
             item.add(cell);
-            item.add(new DateTimeLabel("datetime").add(new TooltipBehaviour("folder.study","DateTime")));
-            item.add(new Label("id").add(new TooltipBehaviour("folder.study","Id")));
-            item.add(new Label("accessionNumber").add(new TooltipBehaviour("folder.","accessionNumber")));
-            item.add(new Label("modalities").add(new TooltipBehaviour("folder.","modalities")));
-            item.add(new Label("description").add(new TooltipBehaviour("folder.study","Description")));
-            item.add(new Label("numberOfSeries").add(new TooltipBehaviour("folder.study","NoS")));
-            item.add(new Label("numberOfInstances").add(new TooltipBehaviour("folder.study","NoI")));
-            item.add(new Label("availability").add(new TooltipBehaviour("folder.study","Availability")));
+            
+            TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.study.");
+            
+            item.add(new DateTimeLabel("datetime").add(tooltip));
+            item.add(new Label("id").add(tooltip));
+            item.add(new Label("accessionNumber").add(tooltip));
+            item.add(new Label("modalities").add(tooltip));
+            item.add(new Label("description").add(tooltip));
+            item.add(new Label("numberOfSeries").add(tooltip));
+            item.add(new Label("numberOfInstances").add(tooltip));
+            item.add(new Label("availability").add(tooltip));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -856,17 +861,17 @@ public class StudyListPage extends Panel {
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","studyDetail"))));
-            item.add( getEditLink(studyModel, "studyEdit"));
-            item.add(getAddSeriesLink(studyModel, "addSeries"));
-            item.add( new AjaxCheckBox("selected"){
+            .add(tooltip)));
+            item.add(getEditLink(studyModel, tooltip));
+            item.add(getAddSeriesLink(studyModel, tooltip));
+            item.add( new AjaxCheckBox("selected") {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
-                }}.setOutputMarkupId(true).add(new TooltipBehaviour("folder.","studySelect")));
+                }}.setOutputMarkupId(true).add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -886,7 +891,7 @@ public class StudyListPage extends Panel {
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
             .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","studyWebviewer"))));
+            .add(tooltip)));
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", studyModel, false));
             item.add(new PPSListView("ppss",
@@ -909,6 +914,7 @@ public class StudyListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
+            
             final PPSModel ppsModel = (PPSModel) item.getModelObject();
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
@@ -930,14 +936,17 @@ public class StudyListPage extends Panel {
                 }
             });
             item.add(cell);
-            item.add(new DateTimeLabel("datetime").add(new TooltipBehaviour("folder.pps","DateTime")));
-            item.add(new Label("id").add(new TooltipBehaviour("folder.pps","Id")));
-            item.add(new Label("spsid").add(new TooltipBehaviour("folder.","spsid")));
-            item.add(new Label("modality").add(new TooltipBehaviour("folder.pps","Modality")));
-            item.add(new Label("description").add(new TooltipBehaviour("folder.pps","Description")));
-            item.add(new Label("numberOfSeries").add(new TooltipBehaviour("folder.pps","NoS")));
-            item.add(new Label("numberOfInstances").add(new TooltipBehaviour("folder.pps","NoI")));
-            item.add(new Label("status").add(new TooltipBehaviour("folder.pps","Status")));
+            
+            TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.pps.");
+            
+            item.add(new DateTimeLabel("datetime").add(tooltip));
+            item.add(new Label("id").add(tooltip));
+            item.add(new Label("spsid").add(tooltip));
+            item.add(new Label("modality").add(tooltip));
+            item.add(new Label("description").add(tooltip));
+            item.add(new Label("numberOfSeries").add(tooltip));
+            item.add(new Label("numberOfInstances").add(tooltip));
+            item.add(new Label("status").add(tooltip));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -956,8 +965,9 @@ public class StudyListPage extends Panel {
                 }
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","ppsDetail"))));
-            item.add(getEditLink(ppsModel, "ppsEdit"));
+                .add(tooltip))
+            );
+            item.add(getEditLink(ppsModel,tooltip));
             
             AjaxFallbackLink<?> linkBtn = new AjaxFallbackLink<Object>("linkBtn") {
                 
@@ -991,7 +1001,7 @@ public class StudyListPage extends Panel {
             };
             linkBtn.add(new Image("linkImg", ImageManager.IMAGE_COMMON_LINK)
             .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","ppsLink")));
+            .add(tooltip));
             item.add(linkBtn);
 
             item.add(new AjaxFallbackLink<Object>("unlinkBtn") {
@@ -1000,7 +1010,7 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    confirmUnlinkMpps.confirm(target, new StringResourceModel("folder.confirmUnlink",this, null,new Object[]{ppsModel}), ppsModel);
+                    confirmUnlinkMpps.confirm(target, new StringResourceModel("folder.message.confirmUnlink",this, null,new Object[]{ppsModel}), ppsModel);
                 }
 
                 @Override
@@ -1021,7 +1031,9 @@ public class StudyListPage extends Panel {
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
-                }}.setOutputMarkupId(true).add(new TooltipBehaviour("folder.","ppsSelect")));
+                }}.setOutputMarkupId(true)
+                .add(tooltip)
+            );
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -1030,7 +1042,6 @@ public class StudyListPage extends Panel {
                 public boolean isVisible() {
                     return ppsModel.isDetails();
                 }
-                
             };
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", ppsModel, false));
@@ -1054,6 +1065,7 @@ public class StudyListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
+            
             final SeriesModel seriesModel = (SeriesModel) item.getModelObject();
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
@@ -1067,13 +1079,16 @@ public class StudyListPage extends Panel {
             };
             cell.add(new ExpandCollapseLink("expand", seriesModel, patientListItem));
             item.add(cell);
-            item.add(new DateTimeLabel("datetime").add(new TooltipBehaviour("folder.series","DateTime")));
-            item.add(new Label("seriesNumber").add(new TooltipBehaviour("folder.","seriesNumber")));
-            item.add(new Label("sourceAET").add(new TooltipBehaviour("folder.","sourceAET")));
-            item.add(new Label("modality").add(new TooltipBehaviour("folder.series","Modality")));
-            item.add(new Label("description").add(new TooltipBehaviour("folder.series","Description")));
-            item.add(new Label("numberOfInstances").add(new TooltipBehaviour("folder.series","NoI")));
-            item.add(new Label("availability").add(new TooltipBehaviour("folder.series","Availability")));
+            
+            TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.series.");
+            
+            item.add(new DateTimeLabel("datetime").add(tooltip));
+            item.add(new Label("seriesNumber").add(tooltip));
+            item.add(new Label("sourceAET").add(tooltip));
+            item.add(new Label("modality").add(tooltip));
+            item.add(new Label("description").add(tooltip));
+            item.add(new Label("numberOfInstances").add(tooltip));
+            item.add(new Label("availability").add(tooltip));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -1088,16 +1103,19 @@ public class StudyListPage extends Panel {
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","seriesDetail"))));
-            item.add(getEditLink(seriesModel, "seriesEdit"));
-            item.add(new AjaxCheckBox("selected"){
+                .add(tooltip))
+            );
+            item.add(getEditLink(seriesModel, tooltip));
+            item.add(new AjaxCheckBox("selected") {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
-                }}.setOutputMarkupId(true).add(new TooltipBehaviour("folder.","seriesSelect")));
+                }
+            }.setOutputMarkupId(true)
+            .add(tooltip));
             final WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -1106,7 +1124,6 @@ public class StudyListPage extends Panel {
                 public boolean isVisible() {
                     return seriesModel.isDetails();
                 }
-                
             };
             item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForSeries(seriesModel.getSeriesInstanceUID())) {
                 private static final long serialVersionUID = 1L;
@@ -1118,7 +1135,7 @@ public class StudyListPage extends Panel {
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
             .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","seriesWebviewer"))));
+                    .add(tooltip)));
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", seriesModel, false));
             item.add(new InstanceListView("instances",
@@ -1141,6 +1158,7 @@ public class StudyListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
+            
             final InstanceModel instModel = (InstanceModel) item.getModelObject();
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
@@ -1154,11 +1172,14 @@ public class StudyListPage extends Panel {
             };
             cell.add(new ExpandCollapseLink("expand", instModel, patientListItem));
             item.add(cell);
-            item.add(new DateTimeLabel("datetime").add(new TooltipBehaviour("folder.instance","DateTime")));
-            item.add(new Label("instanceNumber").add(new TooltipBehaviour("folder.","instanceNumber")));
-            item.add(new Label("sopClassUID").add(new TooltipBehaviour("folder.","sopClassUID")));
-            item.add(new Label("description").add(new TooltipBehaviour("folder.instance","Description")));
-            item.add(new Label("availability").add(new TooltipBehaviour("folder.instance","Availability")));
+            
+            TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.instance.");
+            
+            item.add(new DateTimeLabel("datetime").add(tooltip));
+            item.add(new Label("instanceNumber").add(tooltip));
+            item.add(new Label("sopClassUID").add(tooltip));
+            item.add(new Label("description").add(tooltip));
+            item.add(new Label("availability").add(tooltip));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -1173,8 +1194,8 @@ public class StudyListPage extends Panel {
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","instanceDetail"))));
-            item.add(getEditLink(instModel, "instanceEdit"));
+            .add(tooltip)));
+            item.add(getEditLink(instModel, tooltip));
             item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForInstance(instModel.getSOPInstanceUID())) {
                 private static final long serialVersionUID = 1L;
                 @Override
@@ -1185,7 +1206,7 @@ public class StudyListPage extends Panel {
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
             .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","instanceWebviewer"))));
+            .add(tooltip)));
             item.add(new ExternalLink("wado", WADODelegate.getInstance().getURL(instModel)){
 
                 private static final long serialVersionUID = 1L;
@@ -1196,7 +1217,7 @@ public class StudyListPage extends Panel {
                 }
                 
             }.add(new Image("wadoImg",ImageManager.IMAGE_FOLDER_WADO).add(new ImageSizeBehaviour())
-                    .add(new TooltipBehaviour("folder.","wado"))));
+                    .add(tooltip)));
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;
@@ -1204,7 +1225,8 @@ public class StudyListPage extends Panel {
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
-                }}.setOutputMarkupId(true).add(new TooltipBehaviour("folder.","instanceSelect")));
+                }}.setOutputMarkupId(true)
+                .add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -1213,7 +1235,6 @@ public class StudyListPage extends Panel {
                 public boolean isVisible() {
                     return instModel.isDetails();
                 }
-                
             };
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", instModel, false));
@@ -1236,13 +1257,16 @@ public class StudyListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
+            
+            TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.file.");
+            
             final FileModel fileModel = (FileModel) item.getModelObject();
-            item.add(new DateTimeLabel("file.createdTime").add(new TooltipBehaviour("folder.file.","createdTime")));
-            item.add(new Label("file.fileSize").add(new TooltipBehaviour("folder.file.","fileSize")));
-            item.add(new Label("file.transferSyntaxUID").add(new TooltipBehaviour("folder.file.","transferSyntaxUID")));
-            item.add(new Label("file.fileSystem.directoryPath").add(new TooltipBehaviour("folder.file.fileSystem.","directoryPath")));
-            item.add(new Label("file.filePath").add(new TooltipBehaviour("folder.file.","filePath")));
-            item.add(new Label("file.fileSystem.availability").add(new TooltipBehaviour("folder.file.fileSystem.","availability")));
+            item.add(new DateTimeLabel("fileObject.createdTime").add(tooltip));
+            item.add(new Label("fileObject.fileSize").add(tooltip));
+            item.add(new Label("fileObject.transferSyntaxUID").add(tooltip));
+            item.add(new Label("fileObject.fileSystem.directoryPath").add(tooltip));
+            item.add(new Label("fileObject.filePath").add(tooltip));
+            item.add(new Label("fileObject.fileSystem.availability").add(tooltip));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
@@ -1257,8 +1281,8 @@ public class StudyListPage extends Panel {
 
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
-            .add(new TooltipBehaviour("folder.","fileDetail"))));
-            item.add(new AjaxCheckBox("selected"){
+            .add(tooltip)));
+            item.add(new AjaxCheckBox("selected") {
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -1268,7 +1292,8 @@ public class StudyListPage extends Panel {
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
-                }}.setOutputMarkupId(true).add(new TooltipBehaviour("folder.","fileSelect")));
+                }}.setOutputMarkupId(true)
+                .add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -1277,14 +1302,13 @@ public class StudyListPage extends Panel {
                 public boolean isVisible() {
                     return fileModel.isDetails();
                 }
-                
             };
             item.add(details);
             details.add(new FilePanel("file", fileModel));
         }
     }
     
-    private Link<Object> getEditLink(final AbstractEditableDicomModel model, String tooltipId) {
+    private Link<Object> getEditLink(final AbstractEditableDicomModel model, TooltipBehaviour tooltip) {
         Link<Object> link = new Link<Object>("edit") {
             
             private static final long serialVersionUID = 1L;
@@ -1299,13 +1323,17 @@ public class StudyListPage extends Panel {
                 return model.getDataset() != null;
             }
         };
-        link.add(new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT).add(new ImageSizeBehaviour())
-        .add(new TooltipBehaviour("folder.", tooltipId)));
+        Image image = new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT);
+        image.add(new ImageSizeBehaviour());
+        if (tooltip != null) image.add(tooltip);
+        link.add(image);
+
+        
         MetaDataRoleAuthorizationStrategy.authorize(link, RENDER, "WebAdmin");
         return link;
     }
 
-    private Link<Object> getAddStudyLink(final PatientModel model, String tooltipId) {
+    private Link<Object> getAddStudyLink(final PatientModel model, TooltipBehaviour tooltip) {
         Link<Object> link = new Link<Object>("add") {
             
             private static final long serialVersionUID = 1L;
@@ -1326,12 +1354,14 @@ public class StudyListPage extends Panel {
                 return model.getDataset() != null;
             }
         };
-        link.add(new Image("addImg",ImageManager.IMAGE_COMMON_ADD).add(new ImageSizeBehaviour())
-        .add(new TooltipBehaviour("folder.", tooltipId)));
+        Image image = new Image("addImg",ImageManager.IMAGE_COMMON_ADD);
+        image.add(new ImageSizeBehaviour());
+        if (tooltip != null) image.add(tooltip);
+        link.add(image);
         return link;
     }
 
-    private Link<Object> getAddSeriesLink(final StudyModel model, String tooltipId) {
+    private Link<Object> getAddSeriesLink(final StudyModel model, TooltipBehaviour tooltip) {
         Link<Object> link = new Link<Object>("add") {
             
             private static final long serialVersionUID = 1L;
@@ -1356,8 +1386,10 @@ public class StudyListPage extends Panel {
                 return model.getDataset() != null;
             }
         };
-        link.add(new Image("addImg",ImageManager.IMAGE_COMMON_ADD).add(new ImageSizeBehaviour())
-        .add(new TooltipBehaviour("folder.", tooltipId)));
+        Image image = new Image("addImg",ImageManager.IMAGE_COMMON_ADD);
+        image.add(new ImageSizeBehaviour());
+        if (tooltip != null) image.add(tooltip);
+        link.add(image);
         return link;
     }
 
