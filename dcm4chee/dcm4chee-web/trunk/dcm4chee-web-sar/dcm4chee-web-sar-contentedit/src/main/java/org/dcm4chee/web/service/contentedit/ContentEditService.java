@@ -106,7 +106,11 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     private static final String NONE ="NONE";
     private static final String MWL2STORE_XSL = "mwl-cfindrsp2cstorerq.xsl";
-    
+
+    private static final int[] EXCLUDE_PPS_ATTRS = new int[]{
+        Tag.ReferencedPerformedProcedureStepSequence, 
+        Tag.PerformedProcedureStepStartDate, Tag.PerformedProcedureStepStartTime};
+
     private Code rejectNoteCode = new Code();
 
     private String[] moveDestinationAETs;
@@ -399,28 +403,28 @@ public class ContentEditService extends ServiceMBeanSupport {
     public int moveInstancesToSeries(long[] instPks, long seriesPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
         DicomObject targetAttrs = lookupDicomEditLocal().getCompositeObjectforSeries(seriesPk);
         EntityTree entityTree = lookupDicomEditLocal().moveInstancesToTrash(instPks);
-        processAfterMoveEntities(entityTree, targetAttrs);
+        processAfterMoveEntities(entityTree, targetAttrs, null);
         return entityTree.getAllInstances().size();
     }
 
     public int moveInstanceToSeries(String sopIUID, String seriesIUID) throws InstanceNotFoundException, MBeanException, ReflectionException {
         DicomObject targetAttrs = lookupDicomEditLocal().getCompositeObjectforSeries(seriesIUID);
         EntityTree entityTree = lookupDicomEditLocal().moveInstanceToTrash(sopIUID);
-        processAfterMoveEntities(entityTree, targetAttrs);
+        processAfterMoveEntities(entityTree, targetAttrs, null);
         return entityTree.getAllInstances().size();
     }
     
     public int moveSeriesToStudy(long[] seriesPks, long studyPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
         DicomObject targetAttrs = lookupDicomEditLocal().getCompositeObjectforStudy(studyPk);
         EntityTree entityTree = lookupDicomEditLocal().moveSeriesToTrash(seriesPks);
-        processAfterMoveEntities(entityTree, targetAttrs);
+        processAfterMoveEntities(entityTree, targetAttrs, EXCLUDE_PPS_ATTRS);
         return entityTree.getAllInstances().size();
     }
 
     public int moveSeriesToStudy(String seriesIUID, String studyIUID) throws InstanceNotFoundException, MBeanException, ReflectionException {
         DicomObject targetAttrs = lookupDicomEditLocal().getCompositeObjectforStudy(studyIUID);
         EntityTree entityTree = lookupDicomEditLocal().moveSeriesToTrash(seriesIUID);
-        processAfterMoveEntities(entityTree, targetAttrs);
+        processAfterMoveEntities(entityTree, targetAttrs, EXCLUDE_PPS_ATTRS);
         return entityTree.getAllInstances().size();
     }
 
@@ -457,7 +461,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         return lookupDicomEditLocal().updateSeries(series);
     }
 
-    private void processAfterMoveEntities(EntityTree entityTree, DicomObject targetAttrs)
+    private void processAfterMoveEntities(EntityTree entityTree, DicomObject targetAttrs, int[] excludeTagsForImport)
         throws InstanceNotFoundException, MBeanException,ReflectionException {
         if (!entityTree.isEmpty()) { 
             DicomObject[] rejNotes = getRejectionNotes(entityTree);
@@ -466,11 +470,11 @@ public class ContentEditService extends ServiceMBeanSupport {
                 processRejectionNote(kos);
             }
             processIANs(entityTree, Availability.UNAVAILABLE);
-            importFiles(entityTree, targetAttrs);
+            importFiles(entityTree, targetAttrs, excludeTagsForImport);
         }
     }
 
-    private void importFiles(EntityTree entityTree, DicomObject targetAttrs) {
+    private void importFiles(EntityTree entityTree, DicomObject targetAttrs, int[] excludeTags) {
         FileImportOrder order = new FileImportOrder();
         DicomObject headerAttrs, studyAttrs, seriesAttrs;
         File file;
@@ -504,7 +508,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                         i.getAttributes(false).copyTo(headerAttrs);
                         headerAttrs.putString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
                         file = i.getFiles().iterator().next();
-                        order.addFile(file, headerAttrs);
+                        order.addFile(file, headerAttrs.exclude(excludeTags));
                     }
                 }
             }
