@@ -69,6 +69,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     private List<PPSModel> ppss = new ArrayList<PPSModel>();
 
     private String availability;
+    private String modalities;
     private int numberOfStudyRelatedSeries;
     private int numberOfStudyRelatedInstances;
     
@@ -115,22 +116,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     }
 
     public String getModalities() {
-        return toString(dataset.getStrings(Tag.ModalitiesInStudy));
-    }
-
-    private String toString(String[] ss) {
-        if (ss == null || ss.length == 0) {
-            return null;
-        }
-        if (ss.length == 1) {
-            return ss[0];
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append(ss[0]);
-        for (int i = 1; i < ss.length; i++) {
-            sb.append('\\').append(ss[i]);
-        }
-        return sb.toString();
+        return modalities;
     }
 
     public String getDescription() {
@@ -246,6 +232,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     private void updateModel(Study s) {
         dataset = s.getAttributes(false);
         availability = s.getAvailability().name();
+        modalities = s.getModalitiesInStudy();
         numberOfStudyRelatedSeries = s.getNumberOfStudyRelatedSeries();
         numberOfStudyRelatedInstances = s.getNumberOfStudyRelatedInstances();
     }
