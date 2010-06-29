@@ -1,41 +1,41 @@
 /* ***** BEGIN LICENSE BLOCK *****
-* Version: MPL 1.1/GPL 2.0/LGPL 2.1
-*
-* The contents of this file are subject to the Mozilla Public License Version
-* 1.1 (the "License"); you may not use this file except in compliance with
-* the License. You may obtain a copy of the License at
-* http://www.mozilla.org/MPL/
-*
-* Software distributed under the License is distributed on an "AS IS" basis,
-* WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-* for the specific language governing rights and limitations under the
-* License.
-*
-*
-* The Initial Developer of the Original Code is
-* Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2009-2010
-* the Initial Developer. All Rights Reserved.
-*
-* Contributor(s):
-* Babu Hussain A
-* Meer Asgar Hussain B
-* Prakash J
-* Suresh V
-*
-* Alternatively, the contents of this file may be used under the terms of
-* either the GNU General Public License Version 2 or later (the "GPL"), or
-* the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
-* in which case the provisions of the GPL or the LGPL are applicable instead
-* of those above. If you wish to allow use of your version of this file only
-* under the terms of either the GPL or the LGPL, and not to allow others to
-* use your version of this file under the terms of the MPL, indicate your
-* decision by deleting the provisions above and replace them with the notice
-* and other provisions required by the GPL or the LGPL. If you do not delete
-* the provisions above, a recipient may use your version of this file under
-* the terms of any one of the MPL, the GPL or the LGPL.
-*
-* ***** END LICENSE BLOCK ***** */
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ *
+ * The Initial Developer of the Original Code is
+ * Raster Images
+ * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ * Babu Hussain A
+ * Meer Asgar Hussain B
+ * Prakash J
+ * Suresh V
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.util.localizer;
 
 /**
@@ -113,7 +113,7 @@ public class SliceLocator {
         // set the position valid flag (_mScoutvalid) to false
         retVal = checkPosString(scoutPosition);
         if (retVal) {
-            _scoutPositionArray = scoutPosition.split("\\\\");           
+            _scoutPositionArray = scoutPosition.split("\\\\");
             _scoutx = Float.parseFloat(_scoutPositionArray[0]);
             _scouty = Float.parseFloat(_scoutPositionArray[1]);
             _scoutz = Float.parseFloat(_scoutPositionArray[2]);
@@ -241,7 +241,7 @@ public class SliceLocator {
 
     private boolean checkPosString(String position) {
         boolean retVal = true;
-        String[] positionArray;       
+        String[] positionArray;
         positionArray = position.split("\\\\");
         for (int i = 0; i < positionArray.length; i++) {
             if (positionArray[i].matches("((-|\\+)?[0-9]+(\\.[0-9]+)?)+")) {
@@ -253,7 +253,7 @@ public class SliceLocator {
         }
         //I just want to check the existance of the numeric values in the position.
         return retVal;
-    }    
+    }
 
     private boolean checkVectorString(String vector) {
         boolean retVal = true;
@@ -283,7 +283,7 @@ public class SliceLocator {
         // first create the scout normal vector
         _nrmCosX = _scoutRowCosy * _scoutColCosz - _scoutRowCosz * _scoutColCosy;
         _nrmCosY = _scoutRowCosz * _scoutColCosx - _scoutRowCosx * _scoutColCosz;
-        _nrmCosZ = _scoutRowCosx * _scoutColCosy - _scoutRowCosy * _scoutColCosx;        
+        _nrmCosZ = _scoutRowCosx * _scoutColCosy - _scoutRowCosy * _scoutColCosx;
         return (checkVector(_nrmCosX, _nrmCosY, _nrmCosZ));
     }
 
@@ -291,8 +291,8 @@ public class SliceLocator {
         //  Convert the pixelspacing for the scout image and return true if both values are > 0
         // the pixel spacing is specified in adjacent row/adjacent column spacing
         // in this code ..xSpacing refers to column spacing
-        String []scoutPixelSpacingArray;
-        scoutPixelSpacingArray=scoutPixelSpacing.split("\\\\");
+        String[] scoutPixelSpacingArray;
+        scoutPixelSpacingArray = scoutPixelSpacing.split("\\\\");
         _scoutxSpacing = Float.parseFloat(scoutPixelSpacingArray[1]);
         _scoutySpacing = Float.parseFloat(scoutPixelSpacingArray[0]);
         if (_scoutxSpacing == 0 || _scoutySpacing == 0) {
@@ -306,8 +306,8 @@ public class SliceLocator {
         //  Convert the pixelspacing for the Img image and return true if both values are > 0
         // the pixel spacing is specified in adjacent row/adjacent column spacing
         // in this code ..xSpacing refers to column spacing
-        String []imgPixelSpacingArray;
-        imgPixelSpacingArray=imgPixelSpacing.split("\\\\");
+        String[] imgPixelSpacingArray;
+        imgPixelSpacingArray = imgPixelSpacing.split("\\\\");
 
         _imgxSpacing = Float.parseFloat(imgPixelSpacingArray[1]);
         _imgySpacing = Float.parseFloat(imgPixelSpacingArray[0]);
@@ -329,7 +329,7 @@ public class SliceLocator {
 
     private boolean setScoutDimensions() {
         _scoutRowLen = _scoutRows * _scoutxSpacing;
-        _scoutColLen = _scoutCols * _scoutySpacing;      
+        _scoutColLen = _scoutCols * _scoutySpacing;
         return (true);
     }
 
@@ -347,7 +347,7 @@ public class SliceLocator {
         int rowPixel[] = new int[4];
         int colPixel[] = new int[4];
         int i;
-        
+
         // upper left hand Corner
         posX[0] = _imgx;
         posY[0] = _imgy;
@@ -514,7 +514,7 @@ public class SliceLocator {
         _mAxisBottomx = colPixel[2];
         _mAxisBottomy = rowPixel[2];
         _mAxisLeftx = colPixel[3];
-        _mAxisLefty = rowPixel[3];     
+        _mAxisLefty = rowPixel[3];
 
     }
 
@@ -550,4 +550,35 @@ public class SliceLocator {
         return _boxUry;
     }
 
+    public float getmAxisBottomx() {
+        return _mAxisBottomx;
+    }
+
+    public float getmAxisBottomy() {
+        return _mAxisBottomy;
+    }
+
+    public float getmAxisLeftx() {
+        return _mAxisLeftx;
+    }
+
+    public float getmAxisLefty() {
+        return _mAxisLefty;
+    }
+
+    public float getmAxisRightx() {
+        return _mAxisRightx;
+    }
+
+    public float getmAxisRighty() {
+        return _mAxisRighty;
+    }
+
+    public float getmAxisTopx() {
+        return _mAxisTopx;
+    }
+
+    public float getmAxisTopy() {
+        return _mAxisTopy;
+    }
 }

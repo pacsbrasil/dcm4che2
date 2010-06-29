@@ -82,7 +82,6 @@ import javax.imageio.stream.ImageInputStream;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.border.LineBorder;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4che2.data.Tag;
@@ -164,6 +163,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     //TextOverlay 
     private TextOverlayParam textOverlayParam;
     private String[] aspectRatio;
+    private float floatAspectRatio;
     //Scout Param
     private String frameOfReferenceUID;
     private String imagePosition;
@@ -198,7 +198,33 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     private double thumbRatio;
     private int startX = 0;
     private int startY = 0;
-    private double currentScaleFactor=1;
+    private double currentScaleFactor = 1;
+    private double initialPixelSpacingX;
+    private double initialPixelSpacingY;
+    private int axis1LeftX;
+    private int axis1LeftY;
+    private int axis1RightX;
+    private int axis1RightY;
+    private int axis1BottomX;
+    private int axis1BottomY;
+    private int axis1TopX;
+    private int axis1TopY;
+    private int axis2LeftX;
+    private int axis2LeftY;
+    private int axis2RightX;
+    private int axis2RightY;
+    private int axis2BottomX;
+    private int axis2BottomY;
+    private int axis2TopX;
+    private int axis2TopY;
+    private int axisLeftX;
+    private int axisLeftY;
+    private int axisRightX;
+    private int axisRightY;
+    private int axisBottomX;
+    private int axisBottomY;
+    private int axisTopX;
+    private int axisTopY;
 
     public ImagePanel() {
         initComponents();
@@ -296,12 +322,12 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             Dataset referencedImageSequence = dataset.getItem(Tag.ReferencedImageSequence) != null ? dataset.getItem(Tag.ReferencedImageSequence) : null;
             if (imageType != null) {
                 if (imageType.length >= 3 && imageType[2].equalsIgnoreCase("LOCALIZER")) {
-                    isLocalizer=true;
+                    isLocalizer = true;
                 } else {
                     if (referencedImageSequence != null) {
                         referencedSOPInstanceUID = referencedImageSequence.getString(Tag.ReferencedSOPInstanceUID);
                     }
-                    isLocalizer=false;
+                    isLocalizer = false;
                 }
             }
         } catch (Exception e) {
@@ -332,9 +358,9 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             int wMax = cMax - cMin;
             int w = wMax;
             try {
-                pixelSpacingX = Double.parseDouble(dataset.getString(
+                initialPixelSpacingY = pixelSpacingY = Double.parseDouble(dataset.getString(
                         Tags.PixelSpacing, 0));
-                pixelSpacingY = Double.parseDouble(dataset.getString(
+                initialPixelSpacingX = pixelSpacingX = Double.parseDouble(dataset.getString(
                         Tags.PixelSpacing, 1));
 
             } catch (NullPointerException e) {
@@ -446,6 +472,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             dataset = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
             try {
                 currentbufferedimage = reader.read(0);
+                floatAspectRatio = reader.getAspectRatio(0);
                 nFrames = reader.getNumImages(true);
                 if (nFrames - 1 > 0) {
                     mulitiFrame = true;
@@ -739,7 +766,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         selectFirstInstance();
     }
 
-    public void resizeHandler() {     
+    public void resizeHandler() {
         repaint();
         centerImage();
         this.canvas.setSelection();
@@ -924,22 +951,23 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 op.filter(image, filteredImage);
                 image = filteredImage;
             }
-            if (aspectRatio != null) {
-                calculateNewHeightAndWidthBasedonAspectRatio(Integer.parseInt(aspectRatio[0]), Integer.parseInt(aspectRatio[1]));
-            } else {
-                calculateNewHeightAndWidthBasedonAspectRatio(1, 1);
-            }
-
+            calculateNewHeightAndWidthBasedonAspectRatio();
             g.drawImage(image, startX, startY, thumbWidth, thumbHeight, null);
-
             if (displayScout) {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g.setColor(Color.YELLOW);
-                g.drawLine((int) (boundaryLine1X1 * this.getCurrentScaleFactor()), (int) (boundaryLine1Y1 * this.getCurrentScaleFactor()), (int) (boundaryLine1X2 * this.getCurrentScaleFactor()), (int) (boundaryLine1Y2 * this.getCurrentScaleFactor()));
-                g.drawLine((int) (boundaryLine2X1 * this.getCurrentScaleFactor()), (int) (boundaryLine2Y1 * this.getCurrentScaleFactor()), (int) (boundaryLine2X2 * this.getCurrentScaleFactor()), (int) (boundaryLine2Y2 * this.getCurrentScaleFactor()));
-                g.setColor(Color.ORANGE);
-                g.drawLine((int) (scoutLine1X1 * this.getCurrentScaleFactor()), (int) (scoutLine1Y1 * this.getCurrentScaleFactor()), (int) (scoutLine1X2 * this.getCurrentScaleFactor()), (int) (scoutLine1Y2 * this.getCurrentScaleFactor()));
-                g.drawLine((int) (scoutLine2X1 * this.getCurrentScaleFactor()), (int) (scoutLine2Y1 * this.getCurrentScaleFactor()), (int) (scoutLine2X2 * this.getCurrentScaleFactor()), (int) (scoutLine2Y2 * this.getCurrentScaleFactor()));
+                if (boundaryLine1X1 != boundaryLine1X2) {
+                    g.drawLine((int) (boundaryLine1X1 * this.getCurrentScaleFactor() + startX), (int) (boundaryLine1Y1 * this.getCurrentScaleFactor() + startY), (int) (boundaryLine1X2 * this.getCurrentScaleFactor() + startX), (int) (boundaryLine1Y2 * this.getCurrentScaleFactor() + startY));
+                    g.drawLine((int) (boundaryLine2X1 * this.getCurrentScaleFactor() + startX), (int) (boundaryLine2Y1 * this.getCurrentScaleFactor() + startY), (int) (boundaryLine2X2 * this.getCurrentScaleFactor() + startX), (int) (boundaryLine2Y2 * this.getCurrentScaleFactor() + startY));
+                    g.setColor(Color.GREEN);
+                    g.drawLine((int) (scoutLine1X1 * this.getCurrentScaleFactor() + startX), (int) (scoutLine1Y1 * this.getCurrentScaleFactor() + startY), (int) (scoutLine1X2 * this.getCurrentScaleFactor() + startX), (int) (scoutLine1Y2 * this.getCurrentScaleFactor() + startY));
+                    g.drawLine((int) (scoutLine2X1 * this.getCurrentScaleFactor() + startX), (int) (scoutLine2Y1 * this.getCurrentScaleFactor() + startY), (int) (scoutLine2X2 * this.getCurrentScaleFactor() + startX), (int) (scoutLine2Y2 * this.getCurrentScaleFactor() + startY));
+                } else {
+                    g.drawLine((int) (axis1LeftX * this.getCurrentScaleFactor() + startX), (int) (axis1LeftY * this.getCurrentScaleFactor() + startY), (int) (axis1RightX * this.getCurrentScaleFactor() + startX), (int) (axis1RightY * this.getCurrentScaleFactor() + startY));
+                    g.drawLine((int) (axis2LeftX * this.getCurrentScaleFactor() + startX), (int) (axis2LeftY * this.getCurrentScaleFactor() + startY), (int) (axis2RightX * this.getCurrentScaleFactor() + startX), (int) (axis2RightY * this.getCurrentScaleFactor() + startY));
+                    g.setColor(Color.GREEN);
+                    g.drawLine((int) (axisLeftX * this.getCurrentScaleFactor() + startX), (int) (axisLeftY * this.getCurrentScaleFactor() + startY), (int) (axisRightX * this.getCurrentScaleFactor() + startX), (int) (axisRightY * this.getCurrentScaleFactor() + startY));
+                }
             }
         }
         if (firstTime) {
@@ -963,34 +991,49 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         repaint();
     }
 
-    private void calculateNewHeightAndWidthBasedonAspectRatio(int widthRatio, int heightRatio) {
+    private void calculateNewHeightAndWidthBasedonAspectRatio() {
         thumbRatio = thumbWidth / thumbHeight;
-        int imageWidth = image.getWidth();
-        int imageHeight = image.getHeight();
-        float widthARatio = widthRatio;
-        float heightARatio = heightRatio;
-        float aspectRatio = widthARatio / heightARatio;
-        // double imageRatio=(double)imageWidth*widthARatio/(double)imageHeight*heightARatio;
+        double imageWidth = image.getWidth();
+        double imageHeight = image.getHeight();
         double imageRatio = (double) imageWidth / (double) imageHeight;
-        if (thumbRatio < imageRatio) {
-            thumbHeight = (int) (thumbWidth / imageRatio);
+        if (imageRatio < floatAspectRatio) {
+            imageHeight = (imageWidth + 0.00f) / floatAspectRatio;
+            pixelSpacingY = ((initialPixelSpacingY * image.getHeight()) / imageHeight);
+            pixelSpacing = pixelSpacingY + "\\" + pixelSpacingX;
         } else {
-            thumbWidth = (int) (thumbHeight * imageRatio);
+            imageWidth = (imageHeight + 0.00f) * floatAspectRatio;
+            pixelSpacingX = (initialPixelSpacingX * image.getWidth()) / imageWidth;
+            pixelSpacing = pixelSpacingY + "\\" + pixelSpacingX;
         }
-
+        this.row = (int) Math.round(imageHeight);
+        this.column = (int) Math.round(imageWidth);
+        imageRatio = imageWidth / imageHeight;
+        if (thumbRatio < imageRatio) {
+            thumbHeight = (int) Math.round((thumbWidth + 0.00f) / imageRatio);
+        } else {
+            thumbWidth = (int) Math.round((thumbHeight + 0.00f) * imageRatio);
+        }
         startX = (maxWidth - thumbWidth) / 2;
         startY = (maxHeight - thumbHeight) / 2;
         displayZoomLevel();
     }
-    private void displayZoomLevel()
-    {
-        int currentZoomLevel=(int) (this.scaleFactor * currentScaleFactor * 100);
-        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setZoomLevel(" Zoom: "+currentZoomLevel+"%");
+
+    private void displayZoomLevel() {
+        int currentZoomLevel = (int) Math.round(this.scaleFactor * currentScaleFactor * 100);
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setZoomLevel(" Zoom: " + currentZoomLevel + "%");
         this.getCanvas().getLayeredCanvas().textOverlay.repaint();
     }
-    public double getCurrentScaleFactor()
-    {        
-        currentScaleFactor=(thumbWidth+0.000f)/image.getWidth();       
+
+    public double getCurrentScaleFactor() {
+        double imageWidth = image.getWidth();
+        double imageHeight = image.getHeight();
+        double imageRatio = imageWidth / imageHeight;
+        if (imageRatio < floatAspectRatio) {
+            imageHeight = (imageWidth + 0.00f) / floatAspectRatio;
+        } else {
+            imageWidth = (imageHeight + 0.00f) * floatAspectRatio;
+        }
+        currentScaleFactor = (thumbHeight + 0.000f) / imageHeight;
         return currentScaleFactor;
     }
 
@@ -999,7 +1042,6 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         boundaryLine1X2 = line1X2;
         boundaryLine1Y1 = line1Y1;
         boundaryLine1Y2 = line1Y2;
-
     }
 
     public void setScoutBorder2Coordinates(int line1X1, int line1Y1, int line1X2, int line1Y2) {
@@ -1007,7 +1049,39 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         boundaryLine2X2 = line1X2;
         boundaryLine2Y1 = line1Y1;
         boundaryLine2Y2 = line1Y2;
+    }
 
+    public void setAxis1Coordinates(int leftx, int lefty, int rightx, int righty, int topx, int topy, int bottomx, int bottomy) {
+        axis1LeftX = leftx;
+        axis1LeftY = lefty;
+        axis1RightX = rightx;
+        axis1RightY = righty;
+        axis1TopX = topx;
+        axis1TopY = topy;
+        axis1BottomX = bottomx;
+        axis1BottomY = bottomy;
+    }
+
+    public void setAxis2Coordinates(int leftx, int lefty, int rightx, int righty, int topx, int topy, int bottomx, int bottomy) {
+        axis2LeftX = leftx;
+        axis2LeftY = lefty;
+        axis2RightX = rightx;
+        axis2RightY = righty;
+        axis2TopX = topx;
+        axis2TopY = topy;
+        axis2BottomX = bottomx;
+        axis2BottomY = bottomy;
+    }
+
+    public void setAxisCoordinates(int leftx, int lefty, int rightx, int righty, int topx, int topy, int bottomx, int bottomy) {
+        axisLeftX = leftx;
+        axisLeftY = lefty;
+        axisRightX = rightx;
+        axisRightY = righty;
+        axisTopX = topx;
+        axisTopY = topy;
+        axisBottomX = bottomx;
+        axisBottomY = bottomy;
     }
 
     private void setEnclosingSizes(int finalWidth, int finalHeight) {
@@ -1060,7 +1134,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         } else {
             scaleFactor = 0.5;
         }
-         displayZoomLevel();
+        displayZoomLevel();
     }
 
     /**
@@ -1436,8 +1510,10 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         setImage(instance.getPixelData());
         setInstanceInfo(instance);
         if (displayScout) {
-            LocalizerDelegate localizer = new LocalizerDelegate();
-            localizer.drawScoutLineWithBorder();
+            if (!this.isLocalizer) {
+                LocalizerDelegate localizer = new LocalizerDelegate();
+                localizer.drawScoutLineWithBorder();
+            }
         }
         this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getAnnotation());
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
@@ -1452,8 +1528,10 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         setImage(instance.getPixelData());
         setInstanceInfo(instance);
         if (displayScout) {
-            LocalizerDelegate localizer = new LocalizerDelegate();
-            localizer.drawScoutLineWithBorder();
+            if (!this.isLocalizer) {
+                LocalizerDelegate localizer = new LocalizerDelegate();
+                localizer.drawScoutLineWithBorder();
+            }
         }
         this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getAnnotation());
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
