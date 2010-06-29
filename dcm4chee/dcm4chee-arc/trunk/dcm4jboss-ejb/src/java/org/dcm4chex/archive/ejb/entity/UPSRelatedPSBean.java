@@ -39,12 +39,19 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
+import javax.ejb.EntityContext;
 import javax.ejb.RemoveException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
+import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.UPSLocal;
 
 /**
@@ -58,22 +65,54 @@ import org.dcm4chex.archive.ejb.interfaces.UPSLocal;
  * @ejb.persistence table-name="ups_rel_ps"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * 
+ * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  */
 public abstract class UPSRelatedPSBean implements EntityBean {
 
     private static final Logger LOG = Logger.getLogger(UPSRelatedPSBean.class);
 
+    private CodeLocalHome codeHome;
+
+    public void setEntityContext(EntityContext ctx) {
+        Context jndiCtx = null;
+        try {
+            jndiCtx = new InitialContext();
+            codeHome = (CodeLocalHome)
+                    jndiCtx.lookup("java:comp/env/ejb/Code");
+        } catch (NamingException e) {
+            throw new EJBException(e);
+        } finally {
+            if (jndiCtx != null) {
+                try {
+                    jndiCtx.close();
+                } catch (NamingException ignore) {
+                }
+            }
+        }
+    }
+
+    public void unsetEntityContext() {
+        codeHome = null;
+    }
+
     /**
      * @ejb.create-method
      */
     public Long ejbCreate(Dataset ds, UPSLocal ups) throws CreateException {
-        setSOPInstanceUID(ds.getString(Tags.RefSOPInstanceUID));
-        setSOPClassUID(ds.getString(Tags.RefSOPClassUID));
+        setRefSOPInstanceUID(ds.getString(Tags.RefSOPInstanceUID));
+        setRefSOPClassUID(ds.getString(Tags.RefSOPClassUID));
         return null;
     }
 
     public void ejbPostCreate(Dataset ds, UPSLocal ups) throws CreateException {
         setUPS(ups);
+        try {
+            setPurposeOfReferenceCode(CodeBean.valueOf(codeHome,
+                        ds.getItem(Tags.PurposeOfReferenceCodeSeq)));
+        } catch (Exception e) {
+            throw new EJBException(e);
+        }
         LOG.info(prompt("Created UPSRelatedPS[pk=]"));
     }
 
@@ -83,9 +122,8 @@ public abstract class UPSRelatedPSBean implements EntityBean {
 
     private String prompt(String prefix) {
         return prefix + getPk()
-                + ", iuid=" + getSOPInstanceUID()
-                + ", cuid=" + getSOPClassUID()
-                + ", UPS[pk=" + getUPS().getPk() + "]]";
+                + ", iuid=" + getRefSOPInstanceUID()
+                + ", cuid=" + getRefSOPClassUID() + "]";
    }
 
     /**
@@ -105,17 +143,27 @@ public abstract class UPSRelatedPSBean implements EntityBean {
      * @ejb.interface-method
      * @ejb.persistence column-name="sop_iuid"
      */
-    public abstract String getSOPInstanceUID();
+    public abstract String getRefSOPInstanceUID();
 
-    public abstract void setSOPInstanceUID(String uid);
+    public abstract void setRefSOPInstanceUID(String uid);
 
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="sop_cuid"
      */
-    public abstract String getSOPClassUID();
+    public abstract String getRefSOPClassUID();
 
-    public abstract void setSOPClassUID(String uid);
+    public abstract void setRefSOPClassUID(String uid);
+
+    /**
+     * @ejb.relation name="ups-related-ps-purposecode" role-name="ups-related-ps-with-purposecode"
+     *               target-ejb="Code" target-role-name="purposecode-of-related-ps"
+     *               target-multiple="yes"
+     * @jboss.relation fk-column="code_fk" related-pk-field="pk"
+     */
+    public abstract CodeLocal getPurposeOfReferenceCode();
+
+    public abstract void setPurposeOfReferenceCode(CodeLocal code);
 
     /**
      * @ejb.relation name="ups-related-ps" role-name="related-ps-of-ups"

@@ -44,49 +44,54 @@ import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.Tags;
-import org.dcm4chex.archive.ejb.interfaces.UPSLocal;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date:: xxxx-xx-xx $
- * @since Mar 29, 2010
- * 
- * @ejb.bean name="UPSRequest" type="CMP" view-type="local"
- *           local-jndi-name="ejb/UPSRequest" primkey-field="pk"
- * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
- * @ejb.persistence table-name="ups_req"
+ * @since Apr 20, 2010
+ *
+ * @ejb.bean name="UPSGlobalSubscription" type="CMP" view-type="local" primkey-field="pk"
+ *           local-jndi-name="ejb/UPSGlobalSubscription"
  * @ejb.transaction type="Required"
+ * @ejb.persistence table-name="ups_glob_subscr"
+ * 
+ * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ *
+ * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.UPSGlobalSubscriptionLocal findByReceivingAET(java.lang.String aet)"
+ *             query="SELECT OBJECT(s) FROM UPSGlobalSubscription AS s WHERE s.receivingAETitle = ?1"
+ *             transaction-type="Supports"
+ *
+ * @ejb.finder signature="java.util.Collection findAll()"
+ *             query="SELECT OBJECT(s) FROM UPSGlobalSubscription AS s"
+ *             transaction-type="Supports"
  */
-public abstract class UPSRequestBean implements EntityBean {
+public abstract class UPSGlobalSubscriptionBean implements EntityBean {
 
-    private static final Logger LOG = Logger.getLogger(UPSRequestBean.class);
+    private static final Logger LOG = Logger.getLogger(UPSGlobalSubscriptionBean.class);
 
     /**
      * @ejb.create-method
      */
-    public Long ejbCreate(Dataset ds, UPSLocal ups) throws CreateException {
-        setRequestedProcedureId(ds.getString(Tags.RequestedProcedureID));
-        setAccessionNumber(ds.getString(Tags.AccessionNumber));
-        setConfidentialityCode(ds.getString(Tags.ConfidentialityCode));
-        setRequestingService(ds.getString(Tags.RequestingService));
+    public Long ejbCreate(String aet, boolean deletionLock)
+            throws CreateException {
+        setReceivingAETitle(aet);
+        setDeletionLock(deletionLock);
         return null;
     }
 
-    public void ejbPostCreate(Dataset ds, UPSLocal ups) throws CreateException {
-        setUPS(ups);
-        LOG.info(prompt("Created UPSRequest[pk="));
+    public void ejbPostCreate(Dataset ds)
+            throws CreateException {
+        LOG.info(prompt("Created UPSGlobalSubscription[pk="));
     }
 
     public void ejbRemove() throws RemoveException {
-        LOG.info(prompt("Deleting UPSRequest[pk="));
+        LOG.info(prompt("Deleting UPSGlobalSubscription[pk="));
     }
 
     private String prompt(String prefix) {
-        return prefix + getPk()
-                + ", rpid=" + getRequestedProcedureId()
-                + ", accno=" + getAccessionNumber() + "]";
+        return prefix + getPk() + ", aet=" + getReceivingAETitle()
+                + ", deletionLock=" + getDeletionLock() + "]";
     }
 
     /**
@@ -96,54 +101,28 @@ public abstract class UPSRequestBean implements EntityBean {
      * @ejb.pk-field
      * @ejb.persistence column-name="pk"
      * @jboss.persistence auto-increment="true"
-     *  
      */
     public abstract Long getPk();
 
-    public abstract void setPk(Long pk);
-    
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="req_proc_id"
-     */
-    public abstract String getRequestedProcedureId();
-
-    public abstract void setRequestedProcedureId(String id);
+    public abstract void getPk(Long pk);
 
     /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="accession_no"
-     */
-    public abstract String getAccessionNumber();
-
-    public abstract void setAccessionNumber(String no);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="confidentiality"
-     */
-    public abstract String getConfidentialityCode();
-
-    public abstract void setConfidentialityCode(String code);
-
-    /**
-     * @ejb.interface-method
-     * @ejb.persistence column-name="req_service"
-     */
-    public abstract String getRequestingService();
-
-    public abstract void setRequestingService(String service);
-
-    /**
-     * @ejb.relation name="ups-request" role-name="request-for-ups"
-     *               cascade-delete="yes"
-     * @jboss.relation fk-column="ups_fk" related-pk-field="pk"
-     */
-    public abstract void setUPS(UPSLocal ups);
-
-    /**
+     * @ejb.persistence column-name="aet"
      * @ejb.interface-method
      */
-    public abstract UPSLocal getUPS();
+    public abstract String getReceivingAETitle();
+
+    public abstract void setReceivingAETitle(String aet);
+
+    /**
+     * @ejb.persistence column-name="deletion_lock"
+     * @ejb.interface-method
+     */
+    public abstract boolean getDeletionLock();
+
+    /**
+      * @ejb.interface-method
+     */
+    public abstract void setDeletionLock(boolean deletionLock);
 
 }

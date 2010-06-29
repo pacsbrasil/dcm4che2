@@ -66,6 +66,7 @@ import org.dcm4chex.archive.ejb.interfaces.UPSRelatedPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.UPSRelatedPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.UPSRequestLocal;
 import org.dcm4chex.archive.ejb.interfaces.UPSRequestLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.UPSSubscriptionLocal;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -81,6 +82,14 @@ import org.dcm4chex.archive.ejb.interfaces.UPSRequestLocalHome;
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
+ * 
+ * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.UPSLocal findBySopInstanceUID(java.lang.String uid)"
+ *                 query="SELECT OBJECT(ups) FROM UPS AS ups WHERE ups.sopInstanceUID = ?1"
+ *             transaction-type="Supports"
+ *
+ * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
+ * @ejb.ejb-ref ejb-name="UPSRequest" view-type="local" ref-name="ejb/UPSRequest"
+ * @ejb.ejb-ref ejb-name="UPSRelatedPS" view-type="local" ref-name="ejb/UPSRelatedPS"
  */
 public abstract class UPSBean implements EntityBean {
 
@@ -135,6 +144,9 @@ public abstract class UPSBean implements EntityBean {
         try {
             setScheduledWorkItemCode(CodeBean.valueOf(codeHome,
                         ds.getItem(Tags.ScheduledWorkitemCodeSeq)));
+            CodeBean.addCodesTo(codeHome, 
+                        ds.get(Tags.ScheduledProcessingApplicationsCodeSeq),
+                    getScheduledProcessingApplicationsCodes());
             CodeBean.addCodesTo(codeHome,
                         ds.get(Tags.ScheduledStationNameCodeSeq),
                     getScheduledStationNameCodes());
@@ -144,10 +156,10 @@ public abstract class UPSBean implements EntityBean {
             CodeBean.addCodesTo(codeHome,
                         ds.get(Tags.ScheduledStationGeographicLocationCodeSeq),
                     getScheduledStationGeographicLocationCodes());
-            createScheduledHumanPerformers(
+            updateScheduledHumanPerformers(
                     ds.get(Tags.ScheduledHumanPerformersSeq));
-            createRefRequests(ds.get(Tags.RefRequestSeq));
-            createRelatedPS(ds.get(Tags.RelatedProcedureStepSeq));
+            updateRefRequests(ds.get(Tags.RefRequestSeq));
+            updateRelatedPS(ds.get(Tags.RelatedProcedureStepSeq));
         } catch (Exception e) {
             throw new EJBException(e);
         }
@@ -163,14 +175,15 @@ public abstract class UPSBean implements EntityBean {
 
     private Object prompt(String prefix) {
         return prefix + getPk()
-                + ", uid=" + getSOPInstanceUID()
+                + ", uid=" + getSopInstanceUID()
                 + "]";
     }
 
-    private void createScheduledHumanPerformers(DcmElement sq)
+    private void updateScheduledHumanPerformers(DcmElement sq)
             throws CreateException, FinderException {
-        if (sq == null || sq.isEmpty()) return;
+        if (sq == null) return;
         Collection<CodeLocal> c = getScheduledHumanPerformerCodes();
+        c.clear();
         for (int i = 0, n = sq.countItems(); i < n; i++) {
             DcmElement codeSq = sq.getItem(i).get(Tags.HumanPerformerCodeSeq);
             Dataset code;
@@ -178,17 +191,19 @@ public abstract class UPSBean implements EntityBean {
                 c.add(CodeBean.valueOf(codeHome, code));
         }
     }
-    private void createRefRequests(DcmElement sq) throws CreateException {
-        if (sq == null || sq.isEmpty()) return;
+    private void updateRefRequests(DcmElement sq) throws CreateException {
+        if (sq == null) return;
         Collection<UPSRequestLocal> c = getRefRequests();
+        c.clear();
         UPSLocal ups = (UPSLocal) ejbctx.getEJBLocalObject();
         for (int i = 0, n = sq.countItems(); i < n; i++)
             c.add(rqHome.create(sq.getItem(i), ups));
     }
 
-    private void createRelatedPS(DcmElement sq) throws CreateException {
-        if (sq == null || sq.isEmpty()) return;
+    private void updateRelatedPS(DcmElement sq) throws CreateException {
+        if (sq == null) return;
         Collection<UPSRelatedPSLocal> c = getRelatedProcedureSteps();
+        c.clear();
         UPSLocal ups = (UPSLocal) ejbctx.getEJBLocalObject();
         for (int i = 0, n = sq.countItems(); i < n; i++)
             c.add(relPSHome.create(sq.getItem(i), ups));
@@ -211,9 +226,9 @@ public abstract class UPSBean implements EntityBean {
      * @ejb.persistence column-name="ups_iuid"
      * @ejb.interface-method
      */
-    public abstract String getSOPInstanceUID();
+    public abstract String getSopInstanceUID();
 
-    public abstract void setSOPInstanceUID(String iuid);
+    public abstract void setSopInstanceUID(String iuid);
 
     /**
      * @ejb.persistence column-name="ups_tuid"
@@ -235,7 +250,7 @@ public abstract class UPSBean implements EntityBean {
     public abstract void setAdmissionID(String admissionID);
 
     /**
-     * @ejb.persistence column-name="adm_issuer_id"
+     * @ejb.persistence column-name="adm_id_issuer_id"
      * @ejb.interface-method
      */
     public abstract String getIssuerOfAdmissionIDLocalNamespaceEntityID();
@@ -243,7 +258,7 @@ public abstract class UPSBean implements EntityBean {
     public abstract void setIssuerOfAdmissionIDLocalNamespaceEntityID(String id);
 
     /**
-     * @ejb.persistence column-name="adm_issuer_uid"
+     * @ejb.persistence column-name="adm_id_issuer_uid"
      * @ejb.interface-method
      */
     public abstract String getIssuerOfAdmissionIDUniversialEntityID();
@@ -283,18 +298,19 @@ public abstract class UPSBean implements EntityBean {
     public abstract void setExpectedCompletionDateTime(java.sql.Timestamp time);
 
     /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="ups_state"
      */
-    public abstract int getUPSStateAsInt();
+    public abstract int getStateAsInt();
 
-    public abstract void setUPSStateAsInt(int state);
+    public abstract void setStateAsInt(int state);
 
     /**
      * @ejb.persistence column-name="ups_prior"
      */
-    public abstract int getUPSPriorityAsInt();
+    public abstract int getPriorityAsInt();
 
-    public abstract void setUPSPriorityAsInt(int prior);
+    public abstract void setPriorityAsInt(int prior);
 
     /**
      * @ejb.interface-method
@@ -341,6 +357,19 @@ public abstract class UPSBean implements EntityBean {
     public abstract CodeLocal getScheduledWorkItemCode();
 
     public abstract void setScheduledWorkItemCode(CodeLocal code);
+
+    /**
+     * @ejb.relation name="ups-appcode" role-name="ups-with-appcodes"
+     *               target-ejb="Code" target-role-name="appcode-for-upss"
+     *               target-multiple="yes"
+     * @jboss.relation-table table-name="rel_ups_appcode"
+     * @jboss.relation fk-column="appcode_fk" related-pk-field="pk"
+     * @jboss.target-relation fk-column="ups_fk" related-pk-field="pk"
+     */
+    public abstract Collection<CodeLocal> getScheduledProcessingApplicationsCodes();
+
+    public abstract void setScheduledProcessingApplicationsCodes(
+            Collection<CodeLocal> codes);
 
     /**
      * @ejb.relation name="ups-devnamecode" role-name="ups-with-devnamecodes"
@@ -410,6 +439,14 @@ public abstract class UPSBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.relation name="ups-subscription" role-name="ups-with-subscriptions"
+     */
+    public abstract Collection<UPSSubscriptionLocal> getSubscriptions();
+
+    public abstract void setSubscriptions(Collection<UPSSubscriptionLocal> subscriptions);
+
+    /**
+     * @ejb.interface-method
      */
     public Dataset getAttributes() {
         return DatasetUtils.fromByteArray(getEncodedAttributes());
@@ -422,8 +459,22 @@ public abstract class UPSBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
+    public boolean updateState(int newState) {
+        if (getStateAsInt() == newState)
+            return false;
+        setStateAsInt(newState);
+        Dataset ds = getAttributes();
+        ds.putCS(Tags.UPSState, UPSState.toString(newState));
+        setEncodedAttributes(DatasetUtils.toByteArray(ds,
+                UIDs.DeflatedExplicitVRLittleEndian));
+        return true;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
     public void setAttributes(Dataset ds) {
-        setSOPInstanceUID(ds.getString(Tags.SOPInstanceUID));
+        setSopInstanceUID(ds.getString(Tags.SOPInstanceUID));
         setAdmissionID(ds.getString(Tags.AdmissionID));
         Dataset issuer = ds.getItem(Tags.IssuerOfAdmissionIDSeq);
         if (issuer != null) {
@@ -434,12 +485,96 @@ public abstract class UPSBean implements EntityBean {
         }
         setProcedureStepLabel(ds.getString(Tags.ProcedureStepLabel));
         setWorklistLabel(ds.getString(Tags.WorklistLabel));
-        setUPSStateAsInt(UPSState.toInt(ds.getString(Tags.UPSState)));
-        setUPSPriorityAsInt(Priority.toInt(ds.getString(Tags.SPSPriority)));
+        setStateAsInt(UPSState.toInt(ds.getString(Tags.UPSState)));
+        setPriorityAsInt(Priority.toInt(ds.getString(Tags.SPSPriority)));
         setScheduledStartDateTime(toTimestamp(ds.getDate(Tags.SPSStartDateAndTime)));
         setExpectedCompletionDateTime(
                 toTimestamp(ds.getDate(Tags.ExpectedCompletionDateAndTime)));
         setEncodedAttributes(DatasetUtils.toByteArray(ds,
                 UIDs.DeflatedExplicitVRLittleEndian));
     }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void updateAttributes(Dataset newAttrs) {
+        try {
+            updateWorkitemCode(newAttrs.getItem(Tags.ScheduledWorkitemCodeSeq));
+            updateScheduledProcessingApplicationsCodes(
+                    newAttrs.get(Tags.ScheduledProcessingApplicationsCodeSeq));
+            updateScheduledStationNameCodes(
+                    newAttrs.get(Tags.ScheduledStationNameCodeSeq));
+            updateScheduledStationClassCodes(
+                    newAttrs.get(Tags.ScheduledStationClassCodeSeq));
+            updateScheduledStationGeographicLocationCodes(
+                    newAttrs.get(Tags.ScheduledStationGeographicLocationCodeSeq));
+            updateScheduledHumanPerformers(
+                    newAttrs.get(Tags.ScheduledHumanPerformersSeq));
+            updateRefRequests(newAttrs.get(Tags.RefRequestSeq));
+            updateRelatedPS(newAttrs.get(Tags.RelatedProcedureStepSeq));
+        } catch (Exception e) {
+            throw new EJBException(e);
+        }
+        Dataset ds = getAttributes();
+        ds.putAll(newAttrs, Dataset.REPLACE_ITEMS);
+        setAttributes(ds);
+    }
+
+    private void updateWorkitemCode(Dataset newCode)
+            throws CreateException, FinderException {
+        if (newCode != null)
+            setScheduledWorkItemCode(CodeBean.valueOf(codeHome, newCode));
+    }
+
+    private void updateScheduledProcessingApplicationsCodes(DcmElement newCodes)
+            throws CreateException, FinderException {
+        if (newCodes != null) {
+            Collection<CodeLocal> codes = getScheduledProcessingApplicationsCodes();
+            codes.clear();
+            CodeBean.addCodesTo(codeHome, newCodes, codes);
+        }
+    }
+
+    private void updateScheduledStationNameCodes(DcmElement newCodes)
+            throws CreateException, FinderException {
+        if (newCodes != null) {
+            Collection<CodeLocal> codes = getScheduledStationNameCodes();
+            codes.clear();
+            CodeBean.addCodesTo(codeHome, newCodes, codes);
+        }
+    }
+
+    private void updateScheduledStationClassCodes(DcmElement newCodes)
+            throws CreateException, FinderException {
+        if (newCodes != null) {
+            Collection<CodeLocal> codes = getScheduledStationClassCodes();
+            codes.clear();
+            CodeBean.addCodesTo(codeHome, newCodes, codes);
+        }
+    }
+
+    private void updateScheduledStationGeographicLocationCodes(
+            DcmElement newCodes) throws CreateException, FinderException {
+        if (newCodes != null) {
+            Collection<CodeLocal> codes =
+                    getScheduledStationGeographicLocationCodes();
+            codes.clear();
+            CodeBean.addCodesTo(codeHome, newCodes, codes);
+        }
+    }
+
+    /**
+     * @ejb.select query="SELECT ups.sopInstanceUID FROM UPS AS ups WHERE ups.subscriptions IS EMPTY"
+     */ 
+    public abstract Collection<String> ejbSelectNotSubscribed(String aet)
+            throws FinderException;
+
+    /**
+     * @ejb.home-method
+     */
+    public Collection<String> ejbHomeGetNotSubscribed(String aet)
+            throws FinderException {
+        return ejbSelectNotSubscribed(aet);
+    }
+
 }

@@ -75,6 +75,21 @@ ClaimCompressingFileCmd=UPDATE files SET file_status=3 WHERE pk=? AND file_statu
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'GPSPSPerformer']" mode="fk">
 <xsl:with-param name="fk" select="'code_fk'"/>
 </xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'UPS']" mode="fk">
+<xsl:with-param name="fk" select="'patient_fk'"/>
+</xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'UPS']" mode="fk">
+<xsl:with-param name="fk" select="'code_fk'"/>
+</xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'UPSRequest']" mode="fk">
+<xsl:with-param name="fk" select="'ups_fk'"/>
+</xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'UPSRelatedPS']" mode="fk">
+<xsl:with-param name="fk" select="'ups_fk'"/>
+</xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'UPSRelatedPS']" mode="fk">
+<xsl:with-param name="fk" select="'code_fk'"/>
+</xsl:apply-templates>
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'MPPS']" mode="fk">
 <xsl:with-param name="fk" select="'patient_fk'"/>
 </xsl:apply-templates>
