@@ -114,13 +114,17 @@ public class BaseForm extends Form<Object> {
         }
     }
 
-    public MarkupContainer setParent(WebMarkupContainer parent) {
-        this.parent = parent;
-        if (parent != null) 
-            super.add(parent);
-        return this;
+    public void clearParent() {
+        this.parent = null;
     }
     
+    public WebMarkupContainer createAjaxParent(String id) {
+        super.add(this.parent = new WebMarkupContainer(id));
+        this.parent.setOutputMarkupId(true);
+        this.parent.setOutputMarkupPlaceholderTag(true);
+        return this.parent;
+    }
+
     public MarkupContainer addComponent(Component child) {
         if (parent == null)
             super.add(child);

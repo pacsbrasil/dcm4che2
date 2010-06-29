@@ -194,18 +194,14 @@ public class TrashListPage extends Panel {
             }
         };
         
-        WebMarkupContainer wmc = new WebMarkupContainer("searchLabels");
-        searchTableComponents.add(wmc);
-        form.setParent(wmc);
+        searchTableComponents.add(form.createAjaxParent("searchLabels"));
         
         form.addInternalLabel("patientName");
         form.addInternalLabel("patientIDDescr");
         form.addInternalLabel("accessionNumber");
         form.addInternalLabel("sourceAET");
         
-        wmc = new WebMarkupContainer("searchFields");
-        searchTableComponents.add(wmc);
-        form.setParent(wmc);
+        searchTableComponents.add(form.createAjaxParent("searchFields"));
         
         form.addTextField("patientName", enabledModel, false);
         form.addTextField("patientID", enabledModel, true);
@@ -216,9 +212,7 @@ public class TrashListPage extends Panel {
             filter.setSourceAET(choices.get(0));
         form.addDropDownChoice("sourceAET", null, choices, enabledModel, false);
 
-        wmc = new WebMarkupContainer("searchFooter");
-        searchTableComponents.add(wmc);
-        form.setParent(wmc);
+        searchTableComponents.add(form.createAjaxParent("searchFooter"));
     }
 
     private void addQueryOptions(BaseForm form) {
@@ -273,7 +267,7 @@ public class TrashListPage extends Panel {
         form.addComponent(searchBtn);
         form.setDefaultButton(searchBtn);
         
-        form.setParent(null);
+        form.clearParent();
         
         form.add(new Link<Object>("prev") {
 

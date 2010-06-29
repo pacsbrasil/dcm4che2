@@ -216,18 +216,14 @@ public class StudyListPage extends Panel {
             }
         };
         
-        WebMarkupContainer wmc = new WebMarkupContainer("searchLabels");
-        searchTableComponents.add(wmc);
-        form.setParent(wmc);
+        searchTableComponents.add(form.createAjaxParent("searchLabels"));
         
         form.addInternalLabel("patientName");
         form.addInternalLabel("patientIDDescr");
         form.addInternalLabel("studyDate");
         form.addInternalLabel("accessionNumber");
         
-        wmc = new WebMarkupContainer("searchFields");
-        searchTableComponents.add(wmc);
-        form.setParent(wmc);
+        searchTableComponents.add(form.createAjaxParent("searchFields"));
         
         form.addTextField("patientName", enabledModel, false);
         form.addTextField("patientID", enabledModel, true);
@@ -236,10 +232,8 @@ public class StudyListPage extends Panel {
         form.addDateTimeField("studyDateMax", new PropertyModel<Date>(filter, "studyDateMax"), enabledModel, true, true).setOutputMarkupId(true);
         form.addTextField("accessionNumber", enabledModel, false);
 
-        wmc = new WebMarkupContainer("searchDropdowns");
-        searchTableComponents.add(wmc);
-        form.setParent(wmc);
-
+        searchTableComponents.add(form.createAjaxParent("searchDropdowns"));
+        
         form.addInternalLabel("modality");
         form.addInternalLabel("sourceAET");
         
@@ -279,9 +273,7 @@ public class StudyListPage extends Panel {
         }.add(new UIDValidator()));
         form.add(extendedFilter);
         
-        wmc = new WebMarkupContainer("searchFooter");
-        searchTableComponents.add(wmc);
-        form.setParent(wmc);
+        searchTableComponents.add(form.createAjaxParent("searchFooter"));
         
         AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedFilter") {
 
@@ -371,7 +363,7 @@ public class StudyListPage extends Panel {
         form.addComponent(searchBtn);
         form.setDefaultButton(searchBtn);
         
-        form.setParent(null);
+        form.clearParent();
         
         form.add(new Link<Object>("prev") {
 

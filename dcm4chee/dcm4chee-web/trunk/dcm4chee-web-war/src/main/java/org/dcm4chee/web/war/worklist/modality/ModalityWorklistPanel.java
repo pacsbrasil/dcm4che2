@@ -181,14 +181,14 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
         };
         
-        setNewFormParent(form, "searchLabels");
+        searchTableComponents.add(form.createAjaxParent("searchLabels"));
         
         form.addInternalLabel("patientName");
         form.addInternalLabel("patientIDDescr");
         form.addInternalLabel("startDate");
         form.addInternalLabel("accessionNumber");
         
-        setNewFormParent(form, "searchFields");
+        searchTableComponents.add(form.createAjaxParent("searchFields"));
         
         form.addTextField("patientName", enabledModel, false);
         form.addTextField("patientID", enabledModel, true);
@@ -197,7 +197,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         form.addDateTimeField("startDateMax", null, enabledModel, true, true);
         form.addTextField("accessionNumber", enabledModel, false);
         
-        setNewFormParent(form, "searchDropdowns");
+        searchTableComponents.add(form.createAjaxParent("searchDropdowns"));
 
         form.addInternalLabel("modality");
         form.addInternalLabel("scheduledStationAET");
@@ -228,7 +228,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         extendedFilter.setOutputMarkupPlaceholderTag(true);
         form.add(extendedFilter);
         
-        setNewFormParent(form, "searchFooter");
+        searchTableComponents.add(form.createAjaxParent("searchFooter"));
         
         AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedFilter") {
 
@@ -263,14 +263,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         .add(new ImageSizeBehaviour())));
         link.setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true);
         form.addComponent(link);
-    }
-
-    private void setNewFormParent(final BaseForm form, String id) {
-        WebMarkupContainer wmc = new WebMarkupContainer(id);
-        wmc.setOutputMarkupId(true);
-        wmc.setOutputMarkupPlaceholderTag(true);
-        searchTableComponents.add(wmc);
-        form.setParent(wmc);
     }
 
     protected void addQueryOptions(BaseForm form) {
@@ -328,8 +320,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         form.addComponent(searchBtn);
         form.setDefaultButton(searchBtn);
         
-        form.setParent(navPanel = new WebMarkupContainer("navPanel"));
-        navPanel.setOutputMarkupId(true);
+        navPanel = form.createAjaxParent("navPanel");
         
         form.addComponent(new AjaxFallbackLink<Object>("prev") {
 
@@ -400,7 +391,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                         viewport.getTotal()};
             }
         }));
-        form.setParent(null);
+        form.clearParent();
     }
 
     private void initModalitiesAndStationAETs() {
