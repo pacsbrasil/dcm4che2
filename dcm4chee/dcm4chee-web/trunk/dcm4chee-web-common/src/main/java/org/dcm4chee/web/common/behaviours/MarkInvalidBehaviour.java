@@ -49,8 +49,7 @@ import org.apache.wicket.markup.html.form.FormComponent;
  * @version $Revision$ $Date$
  * @since Oct 31, 2009
  */
-public class MarkInvalidBehaviour extends AbstractBehavior
-{
+public class MarkInvalidBehaviour extends AbstractBehavior {
     private static final long serialVersionUID = 5109347770809331652L;
 
     private String msg;
