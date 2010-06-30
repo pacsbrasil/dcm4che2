@@ -41,7 +41,7 @@ div.wicket-tree-table span.junction, div.wicket-tree-table span.junction-last, d
 }
 
 .error-message {
-	color: #EEBBAA;
+	color: red;
 }
 
 div.diagram-panel {

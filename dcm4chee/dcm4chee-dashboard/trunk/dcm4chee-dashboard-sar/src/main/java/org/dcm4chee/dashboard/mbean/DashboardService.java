@@ -45,6 +45,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -238,6 +240,9 @@ public class DashboardService extends ServiceMBeanSupport {
             writer.write(jsonObject.toString());
             writer.newLine();
             writer.close();
+            
+            sort(this.groupFilename);
+            sort(this.reportFilename);
         } catch (IOException e) {
             log.debug("Exception: ", e);
         }        
@@ -276,11 +281,51 @@ public class DashboardService extends ServiceMBeanSupport {
             writer.close();
             reportFile.delete();
             new File(tempFilename).renameTo(reportFile);
+            
+            sort(this.groupFilename);
+            sort(this.reportFilename);
         } catch (IOException e) {
             log.debug("Exception: ", e);
         }
     }
 
+    private void sort(String filename) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(filename));// : this.reportFilename));
+            File reportFile = new File(filename);            
+            String tempFilename = reportFile.getAbsolutePath().substring(0, reportFile.getAbsolutePath().length() - reportFile.getName().length()) 
+                                + UUID.randomUUID().toString();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFilename, true));
+            String line;
+            
+            // store here
+            List<ReportModel> reports = new ArrayList<ReportModel>();
+            
+            while ((line = reader.readLine()) != null) {
+                reports.add((ReportModel) JSONObject.toBean(JSONObject.fromObject(line), ReportModel.class));
+                
+            }
+            Collections.sort(reports, new Comparator<ReportModel>() {
+            
+                @Override
+                public int compare(ReportModel rm1, ReportModel rm2) {
+                    return (rm1.getTitle().toUpperCase().compareTo(rm2.getTitle().toUpperCase()));
+                }
+            });
+            for (ReportModel rm : reports) {
+                JSONObject jsonObject = JSONObject.fromObject(rm);
+                writer.write(jsonObject.toString());
+                writer.newLine();
+            }
+            reader.close();
+            writer.close();
+            reportFile.delete();
+            new File(tempFilename).renameTo(reportFile);
+        } catch (IOException e) {
+            log.debug("Exception: ", e);
+        }       
+    }
+    
     public String[] listQueueNames() throws MalformedObjectNameException, NullPointerException {
         List<String> queueNameList = new ArrayList<String>();
         for (ObjectInstance oi : 
