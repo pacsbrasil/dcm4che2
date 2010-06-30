@@ -70,8 +70,10 @@ import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.behaviours.CheckOneDayBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.markup.SimpleDateTimeField;
 import org.dcm4chee.web.common.validators.UIDValidator;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
@@ -193,8 +195,10 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         form.addTextField("patientName", enabledModel, false);
         form.addTextField("patientID", enabledModel, true);
         form.addTextField("issuerOfPatientID", enabledModel, true);
-        form.addDateTimeField("startDateMin", null, enabledModel, false, true);
-        form.addDateTimeField("startDateMax", null, enabledModel, true, true);
+        SimpleDateTimeField dtf = form.addDateTimeField("startDateMin", null, enabledModel, false, true);
+        SimpleDateTimeField dtfMax = form.addDateTimeField("startDateMax", null, enabledModel, true, true);
+        dtf.addToDateField(new CheckOneDayBehaviour(dtf, dtfMax, "onchange"));
+        
         form.addTextField("accessionNumber", enabledModel, false);
         
         searchTableComponents.add(form.createAjaxParent("searchDropdowns"));
