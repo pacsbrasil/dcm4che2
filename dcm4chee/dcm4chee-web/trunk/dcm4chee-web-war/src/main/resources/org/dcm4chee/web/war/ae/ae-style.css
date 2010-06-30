@@ -1,16 +1,8 @@
 /*
-	AEMgt CSS
+	AE CSS
 */
 
-table.module-panel-list th {	
-	color: #FFFFFF;
-	background-color: #446666;
-	border-width: 1px; 
-	border-style: solid; 
-	border-color: #000000;
-}
-/*table.ae-list tr.even {background: #aaccbb;}
-table.ae-list tr.odd {background: #99bbaa;}*/
+table.module-panel-list th { color: #FFFFFF; background-color: #446666;	border-width: 1px; border-style: solid; border-color: #000000; }
 
 div.ae-table-panel { padding: 10 0 0 0; width: 100% ; height: 524; background: none #99bbaa; }
 
