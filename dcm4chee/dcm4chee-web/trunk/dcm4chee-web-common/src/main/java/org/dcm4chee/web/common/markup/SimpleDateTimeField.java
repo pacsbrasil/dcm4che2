@@ -87,7 +87,12 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
                                         .withPivotYear(2000);
                     }
             });
-        dateField.add(new DatePicker());
+        dateField.add(new DatePicker() {
+            private static final long serialVersionUID = 1L;
+            protected boolean enableMonthYearSelection() {
+                    return true;
+            }
+        });
         add(dateField);
         timeField = new TimeField("timeField", new TimeModel(this));
         add(timeField);
@@ -132,10 +137,17 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
                         calT.get(Calendar.MINUTE) == 0 && calT.get(Calendar.SECOND) == 0) {
                     setTimeToMinOrMax(cal, true);
                 } else {
-                    cal.set(Calendar.HOUR_OF_DAY, calT.get(Calendar.HOUR_OF_DAY));
-                    cal.set(Calendar.MINUTE, calT.get(Calendar.MINUTE));
-                    cal.set(Calendar.SECOND, calT.get(Calendar.SECOND));
-                    cal.set(Calendar.MILLISECOND, calT.get(Calendar.MILLISECOND));
+                    int h = calT.get(Calendar.HOUR_OF_DAY);
+                    int m = calT.get(Calendar.MINUTE);
+                    cal.set(Calendar.HOUR_OF_DAY, h);
+                    cal.set(Calendar.MINUTE, m);
+                    if (h == 23 && m == 59) {
+                        cal.set(Calendar.SECOND, 59);
+                        cal.set(Calendar.MILLISECOND, 999);                        
+                    } else {
+                        cal.set(Calendar.SECOND, calT.get(Calendar.SECOND));
+                        cal.set(Calendar.MILLISECOND, calT.get(Calendar.MILLISECOND));
+                    }
                 }
                 d = cal.getTime();
             }
