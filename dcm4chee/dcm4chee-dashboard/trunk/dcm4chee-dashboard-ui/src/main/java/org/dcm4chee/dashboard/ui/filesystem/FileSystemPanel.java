@@ -105,6 +105,7 @@ public class FileSystemPanel extends Panel {
         
         if (FileSystemPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(FileSystemPanel.CSS));
+        add(CSSPackageResource.getHeaderContribution(FileSystemPanel.class, "filesystem-style.css"));
     }
     
     @Override

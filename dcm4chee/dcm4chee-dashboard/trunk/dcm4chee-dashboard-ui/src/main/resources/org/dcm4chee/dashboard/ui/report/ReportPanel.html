@@ -8,26 +8,22 @@
 	<body>
 		<wicket:panel>
 			<div wicket:id="modal-window" />
-			<p style="clear: both">
+			<div style="clear: both; margin-top: 5px;" />
 				<button wicket:id="toggle-group-form-link" >
 					<img wicket:id="toggle-group-form-image" alt="New group" />
 					<span wicket:id="dashboard.report.add-group-form.title" />
 				</button>
-				<form wicket:id="add-group-form" class="add-group">
-					 <table>
-					 	<tr class="input">
+				<form wicket:id="add-group-form" style="clear: both; margin-top: 9px;">
+					 <table class="content-table">
+					 	<tr>
 					 		<td>
-								<div class="report-input-desc">
-									<span wicket:id="new-groupname-label" />
-								</div>
+								<span wicket:id="new-groupname-label" />
 							</td>
 							<td>
-								<div class="report-input-value">
-									<input wicket:id="dashboard.report.add-group-form.groupname.input" type="text" size="15" autocomplete="off" />
-								</div>
+								<input wicket:id="dashboard.report.add-group-form.groupname.input" type="text" size="15" autocomplete="off" />
 							</td>
 						</tr>
-						<tr class="submit">
+						<tr>
 							<td>
 							</td>
 							<td>
@@ -36,7 +32,6 @@
 						</tr>
 					</table>
 				</form>
-			</p>
 			<div id="report">
 				<div wicket:id="report-tree-table">
 				</div>

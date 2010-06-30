@@ -12,47 +12,35 @@
 				[Configure report]
 			</wicket:message>
 			<form wicket:id="configure-report-form" class="configure-report">
-				<table>
-				 	<tr class="input">
+				<table class="content-table">
+				 	<tr>
 				 		<td>
-				 			<div class="dashboard-input-desc">
-								<wicket:message key="dashboard.report.configure.form.title.label" />
-							</div>
+							<wicket:message key="dashboard.report.configure.form.title.label" />
 						</td>
 						<td>
-							<div class="dashboard-input-desc">
-								<label wicket:id="dashboard.report.configure.form.title.name" />
-							</div>
+							<label wicket:id="dashboard.report.configure.form.title.name" />
 						</td>
 					</tr>
 		 	  	  	<tr wicket:id="variable-rows" class="input">
 			 	  	  	<td>
-							<div class="dashboard-input-desc">
-			 	  	  			<div wicket:id="variable-name" />
-							</div>
+							<div wicket:id="variable-name" />
 						</td>
 						<td>
-							<div class="dashboard-input-value">
-								<input wicket:id="variable-value" type="text" />
-							</div>
+							<input wicket:id="variable-value" type="text" />
 						</td>
 		 	  	  	</tr>
-					<tr class="submit">
+					<tr>
 						<td>
 						</td>
 						<td>
-							<div class="dashboard-input-submit">
-								<input wicket:id="form-submit" type="submit" wicket:message="value:dashboard.report.configure.form.submit" style="clear: left" />
-							</div>
+							<input wicket:id="form-submit" type="submit" wicket:message="value:dashboard.report.configure.form.submit" style="clear: left" />
 						</td>
 					</tr>
 				</table>
 			</form>
         </div>
-        <p>
-			<div wicket:id="result-message">
-				[Result message]
-			</div>
-        </p>
+		<div wicket:id="result-message" style="clear: both; margin-top: 9px;">
+			[Result message]
+		</div>
 	</body>
 </html>
