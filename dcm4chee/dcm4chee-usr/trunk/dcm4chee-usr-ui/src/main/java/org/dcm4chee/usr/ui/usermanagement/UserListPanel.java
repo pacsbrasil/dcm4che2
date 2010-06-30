@@ -82,6 +82,7 @@ import org.dcm4chee.usr.ui.util.SecurityUtils;
 import org.dcm4chee.usr.ui.validator.RoleValidator;
 import org.dcm4chee.usr.ui.validator.UserValidator;
 import org.dcm4chee.usr.ui.validator.ValidatorMessageLabel;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
@@ -108,15 +109,15 @@ public class UserListPanel extends Panel {
 
     public UserListPanel(String id, String userId) {
         super(id);
+        add(CSSPackageResource.getHeaderContribution(BaseWicketPage.class, "base-style.css"));
+        if (UserListPanel.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(UserListPanel.CSS));
 
         setOutputMarkupId(true);
         
         this.userId = userId;
         add(this.changePasswordWindow = new ModalWindow("change-password-window"));
-        
-        if (UserListPanel.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(UserListPanel.CSS));
-        
+               
         this.allUsers = new ListModel<User>(getAllUsers());
         this.allRolenames = new ListModel<String>(getAllRolenames());
 
@@ -128,15 +129,14 @@ public class UserListPanel extends Panel {
             public void onConfirmation(AjaxRequestTarget target, User userObject) {
                 ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).deleteUser(userObject.getUserID());
                 target.addComponent(UserListPanel.this);
-                allUsers = new ListModel<User>(getAllUsers());
+                allUsers.setObject(getAllUsers());
             }
-
         });
         
-        addOrReplace(new ToggleFormLink("toggle-user-form-link", 
-                new AddUserForm("add-user-form", this.allUsers),
+        add(new ToggleFormLink("toggle-user-form-link", 
+                new AddUserForm("add-user-form"), 
                 this, 
-                "toggle-form-image-user", 
+                new Image("toggle-user-form-image", ImageManager.IMAGE_USER_ADD),  
                 Arrays.asList("userlist.toggle-user-form-link.title.tooltip", "userlist.toggle-user-form-link.close.tooltip"))
         );
     }
@@ -157,33 +157,49 @@ public class UserListPanel extends Panel {
             
             final User user = this.allUsers.getObject().get(i);
             
-            WebMarkupContainer row_parent = new WebMarkupContainer(roleRows.newChildId());
-            Label userIDLabel = new Label("userID", user.getUserID());
-            row_parent.add(userIDLabel);
-            roleRows.add(row_parent);
+            WebMarkupContainer rowParent;
+            roleRows.add((rowParent = new WebMarkupContainer(roleRows.newChildId())).add(new Label("userID", user.getUserID())));
 
-            RemoveUserLink removeUserLink = new RemoveUserLink("remove-user-link", user);
-            removeUserLink.add(new TooltipBehaviour("userlist.", "remove-user-link", new PropertyModel<String>(user,"userID")));
-            removeUserLink.add(new Image("img-delete", ImageManager.IMAGE_COMMON_REMOVE)
-            .add(new ImageSizeBehaviour()));
+            rowParent.add((new AjaxFallbackLink<Object>("remove-user-link") {
 
-            row_parent.add(removeUserLink);
-            row_parent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))));
-            removeUserLink.setVisible(!this.userId.equals(user.getUserID()));
-            
-            row_parent.add(
-                    new ChangePasswordLink("change-password-link", this.changePasswordWindow, this.userId, user)
+                                private static final long serialVersionUID = 1L;
+
+                                @Override
+                                public void onClick(AjaxRequestTarget target) {
+                                    confirmationWindow.confirm(target, new Model<String>(new ResourceModel("userlist.remove-user-link.confirmation").wrapOnAssignment(this.getParent()).getObject()), user);
+                                }
+                            }
+                    .add(new Image("img-delete", ImageManager.IMAGE_COMMON_REMOVE)
+                    .add(new TooltipBehaviour("userlist.", "remove-user-link", new PropertyModel<String>(user,"userID")))
+                    .add(new ImageSizeBehaviour())))
+                    .setVisible(!this.userId.equals(user.getUserID())))
+                .add(new ChangePasswordLink("change-password-link", this.changePasswordWindow, this.userId, user)
                     .add(new Image("img-change-password", ImageManager.IMAGE_USER_CHANGE_PASSWORD)
                     .add(new ImageSizeBehaviour()))
                     .add(new AttributeModifier("title", true, new Model<String>(new ResourceModel("userlist.change_password.tooltip").wrapOnAssignment(this).getObject())))
-            );
+                )
+                .add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))));
             
             RepeatingView roleDividers = new RepeatingView("role-dividers");
-            row_parent.add(roleDividers);
-            roleRows.add(row_parent);
+            rowParent.add(roleDividers);
 
             for (final String rolename : this.allRolenames.getObject()) {
-                HasRoleCheckBox roleCheckbox = new HasRoleCheckBox("role-checkbox", new HasRoleModel(user, rolename));
+                AjaxCheckBox roleCheckbox = new AjaxCheckBox("role-checkbox", new HasRoleModel(user, rolename)) {
+
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    protected void onUpdate(AjaxRequestTarget target) {
+                        target.addComponent(this);
+                    }
+                      
+                    @Override
+                    protected void onComponentTag(ComponentTag tag) {
+                        super.onComponentTag(tag);
+                        tag.put("title", new ResourceModel(((HasRoleModel) this.getModel()).getObject().booleanValue() ? "userlist.has-role-checkbox.remove.tooltip" : "userlist.has-role-checkbox.add.tooltip").wrapOnAssignment(this).getObject());
+                    }
+                };
+                
                 if (this.userId.equals(user.getUserID())) {
                     AuthenticatedWebApplication awa = (AuthenticatedWebApplication) getApplication(); 
                     if (rolename.equals(awa.getInitParameter("userRoleName")) || rolename.equals(awa.getInitParameter("adminRoleName"))) {
@@ -199,10 +215,10 @@ public class UserListPanel extends Panel {
                         .add(roleCheckbox)              
                 );
             }
-            row_parent.add(new ToggleFormLink("toggle-role-form-link", 
+            rowParent.add(new ToggleFormLink("toggle-role-form-link", 
                     new AddRoleForm("add-role-form", user.getUserID(), this.allRolenames), 
-                    row_parent, 
-                    "toggle-form-image-role", 
+                    rowParent, 
+                    new Image("toggle-role-form-image", ImageManager.IMAGE_USER_ROLE_ADD),   
                     Arrays.asList("userlist.add-role-form.title.tooltip", "userlist.add-role-form.close.tooltip"))
             );
         }
@@ -215,36 +231,28 @@ public class UserListPanel extends Panel {
         private Model<String> newUsername = new Model<String>();
         private Model<String> password = new Model<String>();
         
-        public AddUserForm(String id, ListModel<User> currentUserList) {
+        public AddUserForm(String id) {
             super(id);
 
             newAjaxComponent(this)
                 .setVisible(false);
             
-            this.add(newAjaxComponent(
-                    new Label("new-username-label", new ResourceModel("userlist.add-user-form.username.label"))));
-            final TextField<String> usernameTf;
-            this.add(newAjaxComponent(
-                    (usernameTf = new TextField<String>("userlist.add-user-form.username.input", newUsername))
+            add(new Label("new-username-label", new ResourceModel("userlist.add-user-form.username.label")));
+            add((new TextField<String>("userlist.add-user-form.username.input", newUsername))
                     .setRequired(true)
-                    .add(new UserValidator(currentUserList)))
+                    .add(new UserValidator(allUsers))
             );
             
-            this.add(newAjaxComponent(
-                    new Label("password-label-1", new ResourceModel("userlist.add-user-form.password_1.label"))));
+            add(new Label("password-label-1", new ResourceModel("userlist.add-user-form.password_1.label")));
+            add(new Label("password-label-2", new ResourceModel("userlist.add-user-form.password_2.label")));
+            
             PasswordTextField passwordTf1 = null;
-            this.add(newAjaxComponent(
-                    (passwordTf1 = new PasswordTextField("userlist.add-user-form.password_1.input", password))));
-         
-            this.add(newAjaxComponent(
-                    new Label("password-label-2", new ResourceModel("userlist.add-user-form.password_2.label"))));
             PasswordTextField passwordTf2 = null;
-            this.add(newAjaxComponent(
-                    (passwordTf2 = new PasswordTextField("userlist.add-user-form.password_2.input", new Model<String>("")))));
-
-            this.add(new EqualPasswordInputValidator(passwordTf1, passwordTf2));
+            add(passwordTf1 = new PasswordTextField("userlist.add-user-form.password_1.input", password));
+            add(passwordTf2 = new PasswordTextField("userlist.add-user-form.password_2.input", new Model<String>("")));
+            add(new EqualPasswordInputValidator(passwordTf1, passwordTf2));
         
-            this.add(new Button("add-user-submit") {
+            add(new Button("add-user-submit") {
                 
                 private static final long serialVersionUID = 1L;
 
@@ -254,10 +262,11 @@ public class UserListPanel extends Panel {
                     user.setUserID(newUsername.getObject());
                     user.setPassword(SecurityUtils.encodePassword(password.getObject()));
                     ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).createUser(user);
-                    
-                    this.getParent().setVisible(false);
-                    usernameTf.setModelObject("");
-                    allUsers = new ListModel<User>(getAllUsers());
+
+                    newUsername.setObject("");
+                    clearInput();
+                    getParent().setVisible(false);
+                    allUsers.setObject(getAllUsers());
                 }
             });
         }
@@ -274,18 +283,14 @@ public class UserListPanel extends Panel {
             
             newAjaxComponent(this)
                 .setVisible(false);
-            setTooltipBehaviour(new TooltipBehaviour(""));
             
-            this.add(newAjaxComponent(
-                    new Label("new-rolename-label", new ResourceModel("userlist.add-role-form.rolename.label"))));
-            final TextField<String> rolenameTf;
-            this.add(newAjaxComponent(
-                    (rolenameTf = new TextField<String>("userlist.add-role-form.rolename.input", newRolename))
+            add(new Label("new-rolename-label", new ResourceModel("userlist.add-role-form.rolename.label")));
+            add((new TextField<String>("userlist.add-role-form.rolename.input", newRolename))
                     .setRequired(true)
-                    .add(new RoleValidator(currentRolenameList)))
+                    .add(new RoleValidator(currentRolenameList))
             );
             
-            this.add(new Button("add-role-submit") {
+            add(new Button("add-role-submit") {
                 
                 private static final long serialVersionUID = 1L;
 
@@ -295,34 +300,13 @@ public class UserListPanel extends Panel {
                     role.setUserID(userId);
                     role.setRole(newRolename.getObject());
                     ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).addRole(role);
-                    
-                    this.getParent().setVisible(false);
-                    rolenameTf.setModelObject("");
+
+                    clearInput();
+                    getParent().setVisible(false);
                     allUsers = new ListModel<User>(getAllUsers());
                     allRolenames = new ListModel<String>(getAllRolenames());
                 }
             });
-        }
-    };
-
-    private final class ToggleFormImage extends Image {
-        
-        private static final long serialVersionUID = 1L;
-        
-        private Form<?> forForm;
-        
-        public ToggleFormImage(String id, Form<?> forForm) {
-            super(id);
-            this.forForm = forForm;
-            this.add(new ImageSizeBehaviour());
-        }
-        
-        @Override
-        protected void onComponentTag(ComponentTag tag) {
-            super.onComponentTag(tag);
-            tag.put("src", this.forForm.isVisible() ? 
-                    this.getRequestCycle().urlFor(ImageManager.IMAGE_COMMON_COLLAPSE)
-                    : this.getRequestCycle().urlFor(ImageManager.IMAGE_COMMON_EXPAND));
         }
     };
     
@@ -331,25 +315,23 @@ public class UserListPanel extends Panel {
         private static final long serialVersionUID = 1L;
         
         private Form<?> forForm;
-        private ToggleFormImage toggleFormImage;
         private List<String> open_close_tooltip_texts; 
         
-        public ToggleFormLink(String id, Form<?> forForm, MarkupContainer container, String toggleFormImageId, List<String> open_close_tooltip_texts) {
+        public ToggleFormLink(String id, Form<?> forForm, MarkupContainer container, Image toggleFormImage, List<String> open_close_tooltip_texts) {
             super(id);
 
             newAjaxComponent(this);
 
             container.addOrReplace(this.forForm = forForm);
             this.open_close_tooltip_texts = open_close_tooltip_texts;
-            this.add(newAjaxComponent(
-                    (this.toggleFormImage = new ToggleFormImage(toggleFormImageId, forForm))));
-            this.toggleFormImage.add(new ImageSizeBehaviour("vertical-align: middle;"));
+            this.add(newAjaxComponent(toggleFormImage)
+                    .add(new ImageSizeBehaviour("vertical-align: middle;")));
             this.add(newAjaxComponent(new Label("userlist.add-user-form.title", new ResourceModel("userlist.add-user-form.title"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))));
         }
 
         @Override
-        protected void onComponentTag(ComponentTag tag) {
+        public void onComponentTag(ComponentTag tag) {
             super.onComponentTag(tag);
             if ((this.open_close_tooltip_texts != null) && (this.open_close_tooltip_texts.size() == 2))
                 tag.put("title", new ResourceModel(this.open_close_tooltip_texts.get(forForm.isVisible() ? 1 : 0)).wrapOnAssignment(this).getObject());            
@@ -359,31 +341,10 @@ public class UserListPanel extends Panel {
         public void onClick(AjaxRequestTarget target) {
             this.forForm.setVisible(!this.forForm.isVisible()); 
             target.addComponent(this);
-            target.addComponent(this.toggleFormImage);
             target.addComponent(this.forForm);
         }
     };
 
-    private final class HasRoleCheckBox extends AjaxCheckBox {
-        
-        private static final long serialVersionUID = 1L;
-        
-        private HasRoleCheckBox(String id, HasRoleModel model) {
-            super(id, model);
-        }
-        
-        @Override
-        protected void onUpdate(AjaxRequestTarget target) {
-            target.addComponent(this);
-        }
-        
-        @Override
-        protected void onComponentTag(ComponentTag tag) {
-            super.onComponentTag(tag);
-            tag.put("title", new ResourceModel(((HasRoleModel) this.getModel()).getObject().booleanValue() ? "userlist.has-role-checkbox.remove.tooltip" : "userlist.has-role-checkbox.add.tooltip").wrapOnAssignment(this).getObject());
-        }
-    }
-    
     private final class HasRoleModel implements IModel<Boolean> {
         
         private static final long serialVersionUID = 1L;
@@ -427,22 +388,6 @@ public class UserListPanel extends Panel {
         }
     }
     
-    private final class RemoveUserLink extends AjaxFallbackLink<Object> {
-        
-        private static final long serialVersionUID = 1L;
-        
-        private User user;
-        public RemoveUserLink(String id, User user) {
-            super(id);
-            this.user = user;
-        }
-        
-        @Override
-        public void onClick(AjaxRequestTarget target) {
-            confirmationWindow.confirm(target, new Model<String>(new ResourceModel("userlist.remove-user-link.confirmation").wrapOnAssignment(this.getParent()).getObject()), this.user);
-        }
-    };
-
     private List<User> getAllUsers() {
         
         List<User> allUsers = new ArrayList<User>();
