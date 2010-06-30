@@ -124,13 +124,14 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
     private ColorModel cm = null;
     private ImageIcon imageIcon;
     private String aspectRatio[];
+    private float floatAspectRatio;
     // private MediaTracker tracker;
     private String dicomFileUrl;
     private ArrayList<Instance> instanceArray = null;
-    private int thumbWidth = 600;
-    private int thumbHeight = 600;
-    private int maxHeight = 600;
-    private int maxWidth = 600;
+    private int thumbWidth = 384;
+    private int thumbHeight = 384;
+    private int maxHeight = 384;
+    private int maxWidth = 384;
     private double thumbRatio;
     private int startX = 0;
     private int startY = 0;
@@ -138,6 +139,13 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
     private int nFrames = 0;
     private int currentFrame = 0;
     private boolean mulitiFrame = false;
+    private double currentScaleFactor = 1;
+    private double initialPixelSpacingX;
+    private double initialPixelSpacingY;
+    private String pixelSpacing;
+    private int row;
+    private int column;
+    private double scaleFactor = 1;
 
     public WindowingImagePanel() {
         initComponents();
@@ -238,9 +246,9 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             int wMax = cMax - cMin;
             int w = wMax;
             try {
-                pixelSpacingX = Double.parseDouble(dataset.getString(
+                 initialPixelSpacingY = pixelSpacingY = Double.parseDouble(dataset.getString(
                         Tags.PixelSpacing, 0));
-                pixelSpacingY = Double.parseDouble(dataset.getString(
+                initialPixelSpacingX = pixelSpacingX = Double.parseDouble(dataset.getString(
                         Tags.PixelSpacing, 1));
 
             } catch (NullPointerException e) {
@@ -294,6 +302,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             dataset = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
             try {
                 currentbufferedimage = reader.read(0);
+                floatAspectRatio = reader.getAspectRatio(0);
                 nFrames = reader.getNumImages(true);
                 if (nFrames - 1 > 0) {
                     mulitiFrame = true;
@@ -395,11 +404,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         if (image != null) {
-            if (aspectRatio != null) {
-                calculateNewHeightAndWidthBasedonAspectRatio(Integer.parseInt(aspectRatio[0]), Integer.parseInt(aspectRatio[1]));
-            } else {
-                calculateNewHeightAndWidthBasedonAspectRatio(1, 1);
-            }
+            calculateNewHeightAndWidthBasedonAspectRatio();
             g.drawImage(image, startX, startY, thumbWidth, thumbHeight, null);
 
         }
@@ -411,24 +416,46 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         }
     }
     int finalHeight;
-    int finalWidth;
-
-    private void calculateNewHeightAndWidthBasedonAspectRatio(int widthRatio, int heightRatio) {
+    int finalWidth;  
+    private void calculateNewHeightAndWidthBasedonAspectRatio() {
         thumbRatio = thumbWidth / thumbHeight;
-        int imageWidth = image.getWidth();
-        int imageHeight = image.getHeight();
-        float widthARatio = widthRatio;
-        float heightARatio = heightRatio;
-        float aspectRatio = widthARatio / heightARatio;
+        double imageWidth = image.getWidth();
+        double imageHeight = image.getHeight();
         double imageRatio = (double) imageWidth / (double) imageHeight;
-        if (thumbRatio < imageRatio) {
-            thumbHeight = (int) (thumbWidth / imageRatio);
+        if (imageRatio < floatAspectRatio) {
+            imageHeight = (imageWidth + 0.00f) / floatAspectRatio;
+            pixelSpacingY = ((initialPixelSpacingY * image.getHeight()) / imageHeight);
+            pixelSpacing = pixelSpacingY + "\\" + pixelSpacingX;
         } else {
-            thumbWidth = (int) (thumbHeight * imageRatio);
+            imageWidth = (imageHeight + 0.00f) * floatAspectRatio;
+            pixelSpacingX = (initialPixelSpacingX * image.getWidth()) / imageWidth;
+            pixelSpacing = pixelSpacingY + "\\" + pixelSpacingX;
         }
-
+        this.row = (int) Math.round(imageHeight);
+        this.column = (int) Math.round(imageWidth);
+        imageRatio = imageWidth / imageHeight;
+        if (thumbRatio < imageRatio) {
+            thumbHeight = (int) Math.round((thumbWidth + 0.00f) / imageRatio);
+        } else {
+            thumbWidth = (int) Math.round((thumbHeight + 0.00f) * imageRatio);
+        }
         startX = (maxWidth - thumbWidth) / 2;
-        startY = (maxHeight - thumbHeight) / 2;
+        startY = (maxHeight - thumbHeight) / 2;       
+    }
+
+    
+
+    public double getCurrentScaleFactor() {
+        double imageWidth = image.getWidth();
+        double imageHeight = image.getHeight();
+        double imageRatio = imageWidth / imageHeight;
+        if (imageRatio < floatAspectRatio) {
+            imageHeight = (imageWidth + 0.00f) / floatAspectRatio;
+        } else {
+            imageWidth = (imageHeight + 0.00f) * floatAspectRatio;
+        }
+        currentScaleFactor = (thumbHeight + 0.000f) / imageHeight;
+        return currentScaleFactor;
     }
 
     /**
@@ -694,7 +721,13 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
     }
     }
     }*/
+    public double getScaleFactor() {
+        return scaleFactor;
+    }
 
+    public void setScaleFactor(double scaleFactor) {
+        this.scaleFactor = scaleFactor;
+    }
     private void setTotalInstacne() {
         currentInstanceNo--;
         totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);

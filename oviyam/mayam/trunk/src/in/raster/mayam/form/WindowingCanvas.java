@@ -38,6 +38,7 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
+import java.awt.Color;
 import java.awt.Graphics;
 
 /**
@@ -98,6 +99,45 @@ public class WindowingCanvas extends javax.swing.JPanel {
             firstTime = false;
             centerImage();
             repaint();
+        }
+         if (this.layeredCanvas.imgpanel != null) {
+            if (this.layeredCanvas.imgpanel.getPixelSpacingY() != -1) {
+                int viewScaleHeight = (int) ((int) (100 / this.layeredCanvas.imgpanel.getPixelSpacingY()) * this.layeredCanvas.imgpanel.getScaleFactor() * this.layeredCanvas.imgpanel.getCurrentScaleFactor());
+                int y1 = (this.getHeight() - viewScaleHeight) / 2;
+                int hx = 20;
+                int y2 = y1 + viewScaleHeight;
+                g.setColor(Color.YELLOW);
+                g.drawLine(hx, y1, hx, y2);
+                g.drawLine(hx, y1, hx + 12, y1);
+                g.drawLine(hx, y2, hx + 12, y2);
+                double viewScaleHeightUnit = (viewScaleHeight + 0.000f) / 10;
+                g.drawLine(hx, (int) (y1 + (viewScaleHeightUnit * 1)), hx + 6, (int) (y1 + (viewScaleHeightUnit * 1)));
+                g.drawLine(hx, (int) (y1 + (viewScaleHeightUnit * 2)), hx + 6, (int) (y1 + (viewScaleHeightUnit * 2)));
+                g.drawLine(hx, (int) (y1 + (viewScaleHeightUnit * 3)), hx + 6, (int) (y1 + (viewScaleHeightUnit * 3)));
+                g.drawLine(hx, (int) (y1 + (viewScaleHeightUnit * 4)), hx + 6, (int) (y1 + (viewScaleHeightUnit * 4)));
+                g.drawLine(hx, (int) (y1 + (viewScaleHeightUnit * 5)), hx + 12, (int) (y1 + (viewScaleHeightUnit * 5)));
+                g.drawLine(hx, (int) (y1 + (viewScaleHeightUnit * 6)), hx + 6, (int) (y1 + (viewScaleHeightUnit * 6)));
+                g.drawLine(hx, (int) (y1 + (viewScaleHeightUnit * 7)), hx + 6, (int) (y1 + (viewScaleHeightUnit * 7)));
+                g.drawLine(hx, (int) (y1 + (viewScaleHeightUnit * 8)), hx + 6, (int) (y1 + (viewScaleHeightUnit * 8)));
+                g.drawLine(hx, (int) (y1 + (viewScaleHeightUnit * 9)), hx + 6, (int) (y1 + (viewScaleHeightUnit * 9)));
+                int viewScaleWidth = (int) ((int) (100 / this.layeredCanvas.imgpanel.getPixelSpacingX()) * this.layeredCanvas.imgpanel.getScaleFactor() * this.layeredCanvas.imgpanel.getCurrentScaleFactor());
+                int wx1 = (this.getWidth() - viewScaleWidth) / 2;
+                int wy = this.getHeight() - 20;
+                int wx2 = wx1 + viewScaleWidth;
+                g.drawLine(wx1, wy, wx2, wy);
+                g.drawLine(wx1, wy, wx1, wy - 12);
+                g.drawLine(wx2, wy, wx2, wy - 12);
+                double viewScaleWidthUnit = (viewScaleWidth + 0.000f) / 10;
+                g.drawLine((int) (wx1 + (viewScaleWidthUnit * 5)), wy, (int) (wx1 + (viewScaleWidthUnit * 5)), wy - 12);
+                g.drawLine((int) (wx1 + (viewScaleWidthUnit * 1)), wy, (int) (wx1 + (viewScaleWidthUnit * 1)), wy - 6);
+                g.drawLine((int) (wx1 + (viewScaleWidthUnit * 2)), wy, (int) (wx1 + (viewScaleWidthUnit * 2)), wy - 6);
+                g.drawLine((int) (wx1 + (viewScaleWidthUnit * 3)), wy, (int) (wx1 + (viewScaleWidthUnit * 3)), wy - 6);
+                g.drawLine((int) (wx1 + (viewScaleWidthUnit * 4)), wy, (int) (wx1 + (viewScaleWidthUnit * 4)), wy - 6);
+                g.drawLine((int) (wx1 + (viewScaleWidthUnit * 6)), wy, (int) (wx1 + (viewScaleWidthUnit * 6)), wy - 6);
+                g.drawLine((int) (wx1 + (viewScaleWidthUnit * 7)), wy, (int) (wx1 + (viewScaleWidthUnit * 7)), wy - 6);
+                g.drawLine((int) (wx1 + (viewScaleWidthUnit * 8)), wy, (int) (wx1 + (viewScaleWidthUnit * 8)), wy - 6);
+                g.drawLine((int) (wx1 + (viewScaleWidthUnit * 9)), wy, (int) (wx1 + (viewScaleWidthUnit * 9)), wy - 6);
+            }
         }
     }
 

@@ -53,8 +53,8 @@ import javax.swing.JLayeredPane;
  */
 public class WindowingLayeredCanvas extends JLayeredPane implements ComponentListener {
 
-    private static final int ImageHeight = 600;
-    private static final int ImageWidth = 600;
+    private static final int ImageHeight = 384;
+    private static final int ImageWidth = 384;
     public WindowingImagePanel imgpanel;
     public WindowingTextOverlay textOverlay;
     public WindowingCanvas canvas;

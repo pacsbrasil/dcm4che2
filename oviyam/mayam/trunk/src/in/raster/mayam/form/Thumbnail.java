@@ -60,17 +60,20 @@ public class Thumbnail extends JLabel{
     private double thumbRatio;
     private int x;
     private int y;
+     int imageWidth;
+     int imageHeight;
 
     public Thumbnail(BufferedImage image) {
         this.image = image;
+        imageWidth=image.getWidth();
+        imageHeight=image.getHeight();
+        calculateAspectRatioBasedSize();
         initComponents();
         
     }
     private void calculateAspectRatioBasedSize()
     {
-        thumbRatio=(double)thumbWidth/thumbHeight;
-        int imageWidth=image.getWidth();
-        int imageHeight=image.getHeight();      
+        thumbRatio=(double)thumbWidth/thumbHeight;          
         double imageRatio=(double)imageWidth/(double)imageHeight;
         if(thumbRatio<imageRatio)        
             thumbHeight=(int)(thumbWidth/imageRatio);       
@@ -93,7 +96,7 @@ public class Thumbnail extends JLabel{
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         if (image != null) {
-            calculateAspectRatioBasedSize();
+            //calculateAspectRatioBasedSize();
             g.drawImage(image, x,y, thumbWidth,thumbHeight, null);
         }
     }
