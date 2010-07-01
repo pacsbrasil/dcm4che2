@@ -177,6 +177,7 @@ public class BaseForm extends Form<Object> {
         SimpleDateTimeField dtf = getSimpleDateTimeField(id, model, enabledModel, max);
         if (addLabel) 
             addInternalLabel(id);
+        addComponent(dtf);
         return dtf;
     }
 
@@ -190,7 +191,6 @@ public class BaseForm extends Form<Object> {
                 return enabledModel == null ? true : enabledModel.getObject();
             }
         };
-        addComponent(dtf);
         dtf.add(new TooltipBehaviour(generateResourcePrefix(dtf), id, 
                 new AbstractReadOnlyModel<String>(){
                     private static final long serialVersionUID = 1L;
@@ -204,19 +204,8 @@ public class BaseForm extends Form<Object> {
         return dtf;
     }
     
-    public DateTextField getDateTextField(String id, IModel<Date> model, String tooltipPrefix, final IModel<Boolean> enabledModel) {
-        DateTextField dt = new DateTextField(id, model,  
-                new StyleDateConverter("S-", false) {
-
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    protected DateTimeFormatter getFormat() {
-                        String pattern = DateUtils.getDatePattern(getComponent());
-                        return DateTimeFormat.forPattern(pattern).withLocale(getLocale())
-                                        .withPivotYear(2000);
-                    }                    
-            }) {
+    public SimpleDateTimeField getDateTextField(String id, IModel<Date> model, String tooltipPrefix, final IModel<Boolean> enabledModel) {
+        SimpleDateTimeField dt = new SimpleDateTimeField(id, model) {
                 private static final long serialVersionUID = 1L;
 
             @Override
@@ -224,34 +213,13 @@ public class BaseForm extends Form<Object> {
                 return enabledModel == null ? true : enabledModel.getObject();
             }
         };
+        dt.setWithoutTime(true);
         if (tooltipPrefix != null) 
             dt.add(new TooltipBehaviour((resourceIdPrefix != null ? resourceIdPrefix : "") + tooltipPrefix, id, new PropertyModel<Object>(dt,"textFormat")));
         dt.add(markInvalidBehaviour);
         return dt;
     }
     
-    public DateField getDateField(String id, IModel<Date> model, final String tooltipPrefix) {
-        DateField dt = new DateField(id, model){
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onComponentTag(ComponentTag tag) {
-                super.onComponentTag(tag);
-                if ( tag.getAttribute("class") == null )
-                    tag.put("class", "dateField");
-            }
-            
-            @SuppressWarnings("unchecked")
-            @Override
-            protected DateTextField newDateTextField(String id, PropertyModel dateFieldModel) {
-                return getDateTextField(id, dateFieldModel, tooltipPrefix, new Model<Boolean>(true));
-            }            
-        };
-        if (tooltipPrefix != null)
-            dt.add(new TooltipBehaviour((resourceIdPrefix != null ? resourceIdPrefix : "") + tooltipPrefix, id, new PropertyModel<Object>(dt,"textFormat")));
-        return dt;
-    }
-
     public DropDownChoice<?> addLabeledDropDownChoice(String id, IModel<Object> model, List<String> values) {
         DropDownChoice<?> ch = model == null ? new DropDownChoice<Object>(id, values) :
                                             new DropDownChoice<Object>(id, model, values);
@@ -387,7 +355,7 @@ public class BaseForm extends Form<Object> {
         VR vr = DicomElementModel.getVRof(dcmObj, tagPath);
         FormComponent<?> fc;
         if (vr==VR.DA) {
-            fc = this.getDateField(id, DicomElementModel.newDateModel(dcmObj, tagPath), null);
+            fc = this.getDateTextField(id, DicomElementModel.newDateModel(dcmObj, tagPath), null, null);
         } else if (vr==VR.DT) {
             fc = this.getSimpleDateTimeField(id, DicomElementModel.newDateModel(dcmObj, tagPath), null, false);
         } else if (vr==VR.TM) {

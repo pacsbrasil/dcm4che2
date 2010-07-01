@@ -262,9 +262,11 @@ public class StudyListPage extends Panel {
         extendedFilter.add( new Label("birthDate.label", new ResourceModel("folder.extendedFilter.birthDate.label")));
         extendedFilter.add( new Label("birthDateMin.label", new ResourceModel("folder.extendedFilter.birthDateMin.label")));
         extendedFilter.add( new Label("birthDateMax.label", new ResourceModel("folder.extendedFilter.birthDateMax.label")));
-        extendedFilter.add(form.getDateTextField("birthDateMin", null, "extendedFilter.", enabledModel));
-        extendedFilter.add(form.getDateTextField("birthDateMax", null, "extendedFilter.", enabledModel));
-        
+        SimpleDateTimeField dtfB = form.getDateTextField("birthDateMin", null, "extendedFilter.", enabledModel);
+        SimpleDateTimeField dtfBEnd = form.getDateTextField("birthDateMax", null, "extendedFilter.", enabledModel);
+        dtfB.addToDateField(new CheckOneDayBehaviour(dtfB, dtfBEnd, "onchange"));
+        extendedFilter.add(dtfB);
+        extendedFilter.add(dtfBEnd);
         extendedFilter.add( new Label("studyInstanceUID.label", new ResourceModel("folder.extendedFilter.studyInstanceUID.label")));
         extendedFilter.add( new TextField<String>("studyInstanceUID").add(new UIDValidator()));
 

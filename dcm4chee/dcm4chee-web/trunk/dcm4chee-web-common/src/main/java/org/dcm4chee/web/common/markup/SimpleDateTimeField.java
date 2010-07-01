@@ -69,6 +69,7 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
     private boolean max;
     private DateTextField dateField;
     private TimeField timeField;
+    private boolean withoutTime;
 
     private static Logger log = LoggerFactory.getLogger(SimpleDateTimeField.class);
     
@@ -94,12 +95,23 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
             }
         });
         add(dateField);
-        timeField = new TimeField("timeField", new TimeModel(this));
+        timeField = new TimeField("timeField", new TimeModel(this)) {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public boolean isVisible() {
+                return !withoutTime;
+            }
+        };
         add(timeField);
     }
     public SimpleDateTimeField(String id, IModel<Date> model, boolean max) {
         this(id, model);
         this.max = max;
+    }
+    
+    public SimpleDateTimeField setWithoutTime(boolean b) {
+        withoutTime = b;
+        return this;
     }
     
     @Override

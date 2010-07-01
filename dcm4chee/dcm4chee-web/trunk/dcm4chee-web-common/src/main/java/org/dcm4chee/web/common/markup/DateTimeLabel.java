@@ -59,7 +59,7 @@ public class DateTimeLabel extends Label {
 
     private static final long serialVersionUID = 1L;
     private SimpleDateFormat df = new SimpleDateFormat("HH:mm");
-    boolean withoutTime;
+    private boolean withoutTime;
 
     public DateTimeLabel(String id) {
         super(id);
