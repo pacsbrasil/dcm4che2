@@ -42,6 +42,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -177,6 +178,14 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         }
         mpps.setAttributes(mppsAttrs);
         em.merge(mpps);
+        Set<Series> series = mpps.getSeries();
+        if ( series.size() > 0) {
+            Study s = series.iterator().next().getStudy();
+            DicomObject sAttrs = s.getAttributes(true);
+            sAttrs.putString(Tag.AccessionNumber, VR.SH, accNo);
+            s.setAttributes(sAttrs);
+            em.merge(s);
+        }
     }
 
     public MPPS unlinkMpps(long pk, String modifyingSystem, String modifyReason) {
