@@ -112,11 +112,15 @@ public class ModalityWorklistBean implements ModalityWorklist {
     private static void appendWhereClause(StringBuilder ql, ModalityWorklistFilter filter) {
         ql.append(" WHERE p.mergedWith IS NULL");
 
-        if (!filter.isExtendedQuery()) {
+        if (filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
+            ql.append(" AND m.studyInstanceUID = :studyInstanceUID");
+        } else {
             appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
             appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID()));
             appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
-            appendPatientBirthDateFilter(ql, filter.getBirthDateMin(), filter.getBirthDateMax());
+            if (filter.isExtendedQuery()) {
+                appendPatientBirthDateFilter(ql, filter.getBirthDateMin(), filter.getBirthDateMax());
+            }
             appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
             appendStartDateMinFilter(ql, filter.getStartDateMin());
             appendStartDateMaxFilter(ql, filter.getStartDateMax());
@@ -124,19 +128,20 @@ public class ModalityWorklistBean implements ModalityWorklist {
             appendScheduledStationAETFilter(ql, filter.getScheduledStationAETs());
             appendScheduledStationNameFilter(ql, filter.getScheduledStationName());
             appendScheduledProcedureStepStatus(ql, filter.getSPSStatus());
-        } else {
-            if (!QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()))
-                ql.append(" AND m.studyInstanceUID = :studyInstanceUID");
         }        
     }
     
     private static void setQueryParameters(Query query, ModalityWorklistFilter filter) {
 
-        if (!filter.isExtendedQuery()) {
+        if (filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
+            setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
+        } else {        
             setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
             setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID()));
             setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
-            setPatientBirthDateQueryParameter(query, filter.getBirthDateMin(), filter.getBirthDateMax());
+            if (filter.isExtendedQuery()) {
+                setPatientBirthDateQueryParameter(query, filter.getBirthDateMin(), filter.getBirthDateMax());
+            }
             setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
             setStartDateMinQueryParameter(query, filter.getStartDateMin());
             setStartDateMaxQueryParameter(query, filter.getStartDateMax());
@@ -144,9 +149,6 @@ public class ModalityWorklistBean implements ModalityWorklist {
             setScheduledStationAETQueryParameter(query, filter.getScheduledStationAETs());
             setScheduledStationNameQueryParameter(query, filter.getScheduledStationName());
             setScheduledProcedureStepStatusQueryParameter(query, filter.getSPSStatus());
-        } else {        
-            if (!QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()))
-                setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
         }
     }
 

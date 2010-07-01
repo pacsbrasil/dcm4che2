@@ -226,6 +226,14 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
         };
 
+        extendedFilter.add( new Label("birthDate.label", new ResourceModel("mw.extendedFilter.birthDate.label")));
+        extendedFilter.add( new Label("birthDateMin.label", new ResourceModel("mw.extendedFilter.birthDateMin.label")));
+        extendedFilter.add( new Label("birthDateMax.label", new ResourceModel("mw.extendedFilter.birthDateMax.label")));
+        SimpleDateTimeField dtfB = form.getDateTextField("birthDateMin", null, "extendedFilter.", enabledModel);
+        SimpleDateTimeField dtfBEnd = form.getDateTextField("birthDateMax", null, "extendedFilter.", enabledModel);
+        dtfB.addToDateField(new CheckOneDayBehaviour(dtfB, dtfBEnd, "onchange"));
+        extendedFilter.add(dtfB);
+        extendedFilter.add(dtfBEnd);
         extendedFilter.add( new Label("studyInstanceUID.label", new ResourceModel("mw.extendedFilter.studyInstanceUID.label")));
         extendedFilter.add( new TextField<String>("studyInstanceUID").add(new UIDValidator()));
         extendedFilter.setOutputMarkupId(true);
