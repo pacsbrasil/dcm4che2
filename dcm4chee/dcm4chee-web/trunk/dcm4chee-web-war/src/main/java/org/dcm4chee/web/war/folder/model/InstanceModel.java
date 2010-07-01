@@ -192,9 +192,10 @@ public class InstanceModel extends AbstractEditableDicomModel implements Seriali
     }
     
     @Override
-    public void refresh() {
+    public AbstractEditableDicomModel refresh() {
         StudyListLocal dao = (StudyListLocal)
         JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         dataset = dao.getInstance(getPk()).getAttributes(true);
+        return this;
     }
 }

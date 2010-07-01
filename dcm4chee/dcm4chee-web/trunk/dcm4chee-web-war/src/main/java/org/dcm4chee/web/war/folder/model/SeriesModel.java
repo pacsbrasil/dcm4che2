@@ -240,10 +240,11 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
     }
     
     @Override
-    public void refresh() {
+    public AbstractEditableDicomModel refresh() {
         StudyListLocal dao = (StudyListLocal)
         JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         updateModel(dao.getSeries(getPk()));
+        return this;
     }
     
     public boolean containedBySamePPS(SeriesModel series) {

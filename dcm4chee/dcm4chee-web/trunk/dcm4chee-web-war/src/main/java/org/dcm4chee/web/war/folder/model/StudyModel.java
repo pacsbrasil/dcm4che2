@@ -223,10 +223,11 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     }
     
     @Override
-    public void refresh() {
+    public AbstractEditableDicomModel refresh() {
         StudyListLocal dao = (StudyListLocal)
         JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         updateModel(dao.getStudy(getPk()));
+        return this;
     }    
     
     private void updateModel(Study s) {

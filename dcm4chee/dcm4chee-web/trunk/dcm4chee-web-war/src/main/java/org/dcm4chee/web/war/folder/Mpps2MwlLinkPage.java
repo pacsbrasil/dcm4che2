@@ -145,7 +145,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                         int nrOfStudies = result.getStudiesToMove().size();
                         if (nrOfStudies == 0) {
                             for (PPSModel mpps : ppsModels) {
-                                mpps.getParent().expand();
+                                mpps.getStudy().refresh().expand();
                             }
                         } else {
                             org.dcm4chee.web.war.folder.ViewPort viewport = ((WicketSession) getSession()).getFolderViewPort();
@@ -157,7 +157,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                             StudyModel sm;
                             for (Study s : result.getStudiesToMove()) {
                                 sm = new StudyModel(s, patModel);
-                                sm.expand();
+                                sm.refresh().expand();
                                 patModel.getStudies().add(sm);
                             }
                         }

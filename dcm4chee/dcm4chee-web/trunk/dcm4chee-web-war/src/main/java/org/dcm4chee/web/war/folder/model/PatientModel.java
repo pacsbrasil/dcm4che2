@@ -162,9 +162,10 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     }
     
     @Override
-    public void refresh() {
+    public AbstractEditableDicomModel refresh() {
         StudyListLocal dao = (StudyListLocal)
         JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         dataset = dao.getPatient(getPk()).getAttributes();
+        return this;
     }
 }

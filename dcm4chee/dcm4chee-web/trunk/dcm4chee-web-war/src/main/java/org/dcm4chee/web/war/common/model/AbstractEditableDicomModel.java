@@ -50,5 +50,5 @@ public abstract class AbstractEditableDicomModel extends AbstractDicomModel {
     private static final long serialVersionUID = 1L;
 
     public abstract void update(DicomObject dicomObject);
-    public abstract void refresh();
+    public abstract AbstractEditableDicomModel refresh();
 }

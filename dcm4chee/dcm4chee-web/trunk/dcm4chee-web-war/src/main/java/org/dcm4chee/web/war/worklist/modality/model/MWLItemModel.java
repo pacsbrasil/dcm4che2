@@ -181,9 +181,10 @@ public class MWLItemModel extends AbstractEditableDicomModel implements Serializ
     }
 
     @Override
-    public void refresh() {
+    public AbstractEditableDicomModel refresh() {
         ModalityWorklist dao = (ModalityWorklist)
         JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
-        dataset = dao.getMWLItem(getPk()).getAttributes();        
+        dataset = dao.getMWLItem(getPk()).getAttributes();     
+        return this;
     }
 }

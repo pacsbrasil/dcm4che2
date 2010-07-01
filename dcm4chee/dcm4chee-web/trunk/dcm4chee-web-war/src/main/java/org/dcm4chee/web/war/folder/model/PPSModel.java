@@ -255,7 +255,7 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
     }
     
     @Override
-    public void refresh() {
+    public AbstractEditableDicomModel refresh() {
         StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         if (dataset != null) {
             dataset = dao.getMPPS(getPk()).getAttributes();
@@ -272,5 +272,6 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
         }
         numberOfSeries = 0;
         numberOfInstances = 0;
+        return this;
     }    
 }
