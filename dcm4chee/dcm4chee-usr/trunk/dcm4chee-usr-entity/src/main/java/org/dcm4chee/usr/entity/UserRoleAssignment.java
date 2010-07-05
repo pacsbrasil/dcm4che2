@@ -41,19 +41,28 @@ package org.dcm4chee.usr.entity;
 import java.io.Serializable;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.Table;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since 19.08.2009
  */
-public class RolePK implements Serializable {
+@Entity
+@Table(name = "roles")
+@IdClass(UserRoleAssignmentPK.class)
+public class UserRoleAssignment implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @Id
     @Column(name = "user_id")
     private String userID;
-    
+
+    @Id
     @Column(name = "roles")
     private String role;
 
@@ -72,17 +81,4 @@ public class RolePK implements Serializable {
     public void setRole(String role) {
         this.role = role;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof RolePK)) return false;
-        RolePK other = (RolePK) obj;
-        return userID.equals(other.userID) && role.equals(other.role);
-    }
-
-    @Override
-    public int hashCode() {
-        return 31*userID.hashCode() + role.hashCode();
-    }
-
 }

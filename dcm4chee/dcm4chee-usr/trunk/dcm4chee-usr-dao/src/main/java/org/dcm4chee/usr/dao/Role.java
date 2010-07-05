@@ -36,69 +36,47 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.entity;
+package org.dcm4chee.usr.dao;
 
 import java.io.Serializable;
-import java.util.Collection;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @param <UserRoleAssignment>
- * @since 19.08.2009
+ * @since 01.07.2010
  */
-@Entity
-@Table(name = "users")
-public class User implements Serializable {
+public class Role implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    @Id
-    @Column(name = "user_id")
-    private String userID;
-
-    @Column(name = "passwd")
-    private String password;
     
-    @OneToMany
-    @JoinColumn(name = "user_id")
-    private Collection<UserRoleAssignment> roles;
-
-    public User() {}
+    private String rolename;
+    private boolean isSystemRole;
     
-    public User(String userID, String password) {
-        this.userID = userID;
-        this.password = password;
+    public Role() {
     }
     
-    public String getUserID() {
-        return userID;
+    public Role(String rolename) {
+        this.rolename = rolename;
     }
 
-    public void setUserID(String userID) {
-        this.userID = userID;
+    public Role(String rolename, boolean isSystemRole) {
+        this(rolename);
+        this.isSystemRole = isSystemRole;
     }
 
-    public String getPassword() {
-        return password;
+    public String getRolename() {
+        return rolename;     
+    }
+    
+    public void setRolename(String rolename) {
+        this.rolename = rolename;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setSystemRole(boolean isSystemRole) {
+        this.isSystemRole = isSystemRole;
     }
 
-    public Collection<UserRoleAssignment> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Collection<UserRoleAssignment> roles) {
-        this.roles = roles;
-    }
+    public boolean isSystemRole() {
+        return isSystemRole;
+    }   
 }

@@ -36,56 +36,60 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.war.pages;
+package org.dcm4chee.usr.ui.usermanagement;
 
-import org.apache.wicket.PageParameters;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
-import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.pages.InternalErrorPage;
-import org.dcm4chee.usr.dao.UserAccess;
-import org.dcm4chee.usr.war.session.JaasWicketSession;
-import org.dcm4chee.usr.ui.usermanagement.ChangePasswordLink;
+import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
+import org.apache.wicket.extensions.markup.html.tabs.AbstractTab;
+import org.apache.wicket.extensions.markup.html.tabs.ITab;
+import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.ResourceModel;
+import org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel;
 import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
-import org.dcm4chee.usr.ui.util.JNDIUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since 18.11.2009
+ * @since 07.04.2010
  */
-@AuthorizeInstantiation({"ADMIN"})
-public class UserManagementMainPage extends WebPage {
+@AuthorizeInstantiation({Roles.ADMIN, "WebAdmin"})
+public class UserManagementPanel extends AjaxTabbedPanel {
     
     private static final long serialVersionUID = 1L;
-    
-    private static Logger log = LoggerFactory.getLogger(UserManagementMainPage.class);
-    
-    private ModalWindow window;
-    
-    public UserManagementMainPage(final PageParameters parameters) {
-        try {
-            String name = ((JaasWicketSession) this.getSession()).getUsername();
-            add(this.window = new ModalWindow("window"));
-            add(new ChangePasswordLink("change-my-password-link", this.window, name, ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getUser(name)));
-            add(new Link<Object>("logout-link") {
 
+    public UserManagementPanel(String id, List<ITab> tabs) {
+        super(id, tabs);
+    }
+
+    public UserManagementPanel(String id) {
+
+       
+        this(id, new ArrayList<ITab>(Arrays.asList(
+            new AbstractTab(new ResourceModel("usermanagement.tabs.tab1.name")) {
+            
                 private static final long serialVersionUID = 1L;
+            
+                public Panel getPanel(String panelId) {
 
-                @Override
-                public void onClick() {
-                    this.getSession().invalidateNow();
-                    setResponsePage(this.getApplication().getHomePage());
+                    return new UserListPanel(panelId);
                 }
-            });
-            add(new UserListPanel("userListPanel"));
-        } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
-            log.debug("Exception: ", e);
-            this.redirectToInterceptPage(new InternalErrorPage());
-        }
-    }    
+            }, 
+            new AbstractTab(new ResourceModel("usermanagement.tabs.tab2.name")) {
+                
+                private static final long serialVersionUID = 1L;
+            
+                public Panel getPanel(String panelId) {
+                    return new RoleListPanel(panelId);
+                }
+            })));
+    }
+    
+    public static String getModuleName() {
+        return "usermanagement";
+    }
 }

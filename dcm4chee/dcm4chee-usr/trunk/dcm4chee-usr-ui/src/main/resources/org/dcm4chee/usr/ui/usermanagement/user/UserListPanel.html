@@ -10,7 +10,8 @@
 	<wicket:panel>
 		<div wicket:id="change-password-window" />
 		<div wicket:id="confirmation-window" />
-		<button wicket:id="toggle-user-form-link" style="margin-top: 5px;">
+		<div style="clear: both; margin-top: 5px;" />
+		<button wicket:id="toggle-user-form-link">
 			<img wicket:id="toggle-user-form-image" alt="New user" />
 			<span wicket:id="userlist.add-user-form.title" />
 		</button>
@@ -59,7 +60,6 @@
 				</th>
 				<th></th>
 				<th></th>
-				<th></th>
 				<th wicket:id="role-headers"></th>
 		    </tr>
 		  </thead>
@@ -77,18 +77,6 @@
 					<a wicket:id="remove-user-link" href="#">
 						<img wicket:id="img-delete" />
 					</a>
-		      	</td>
-				<td>
-					<a wicket:id="toggle-role-form-link" href="#">
-						<img wicket:id="toggle-role-form-image" />
-					</a>
-					<form wicket:id="add-role-form">
-						<div wicket:id="new-rolename-label" />
-						<input wicket:id="userlist.add-role-form.rolename.input" type="text" size="15" />
-						<div>
-							<input wicket:id="add-role-submit" type="submit" wicket:message="value:userlist.add-role-form.submit" />
-						</div>
-					</form>
 		      	</td>
 	 	  	  	<td wicket:id="role-dividers">
 					<input wicket:id="role-checkbox" type="checkbox" />

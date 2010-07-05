@@ -42,8 +42,8 @@ import java.util.List;
 
 import javax.ejb.Local;
 
-import org.dcm4chee.usr.entity.Role;
 import org.dcm4chee.usr.entity.User;
+import org.dcm4chee.usr.entity.UserRoleAssignment;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -62,9 +62,14 @@ public interface UserAccess {
     public void deleteUser(String userId);
     public Boolean userExists(String username);
     public Boolean hasPassword(String username, String password);
-    
-    public List<String> getAllRolenames();   
+
+    public void assignRole(UserRoleAssignment ura);
+    public void unassignRole(UserRoleAssignment ura);
+
+    //  accesses the role file, not the relation table in the database
+    public void checkSystemRoles(String userRoleName, String adminRoleName);
+    public List<Role> getAllRolenames();   
     public void addRole(Role role);
     public void removeRole(Role role);
-    public Boolean roleExists(String rolename);   
+    public Boolean roleExists(String rolename);
 }

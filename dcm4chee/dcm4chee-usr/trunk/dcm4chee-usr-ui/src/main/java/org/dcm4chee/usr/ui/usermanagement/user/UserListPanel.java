@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.ui.usermanagement;
+package org.dcm4chee.usr.ui.usermanagement.user;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,16 +73,18 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.usr.dao.Role;
 import org.dcm4chee.usr.dao.UserAccess;
-import org.dcm4chee.usr.entity.Role;
 import org.dcm4chee.usr.entity.User;
+import org.dcm4chee.usr.entity.UserRoleAssignment;
+import org.dcm4chee.usr.ui.usermanagement.ChangePasswordLink;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.ui.util.JNDIUtils;
 import org.dcm4chee.usr.ui.util.SecurityUtils;
 import org.dcm4chee.usr.ui.validator.RoleValidator;
 import org.dcm4chee.usr.ui.validator.UserValidator;
-import org.dcm4chee.usr.ui.validator.ValidatorMessageLabel;
 import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.base.JaasWicketSession;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
@@ -100,14 +102,14 @@ public class UserListPanel extends Panel {
     private static final ResourceReference CSS = new CompressedResourceReference(UserListPanel.class, "usr-style.css");
     
     private ListModel<User> allUsers;
-    private ListModel<String> allRolenames;
+    private ListModel<Role> allRolenames;
 
     private String userId;
 
     private ModalWindow changePasswordWindow;
     private ConfirmationWindow<User> confirmationWindow;
 
-    public UserListPanel(String id, String userId) {
+    public UserListPanel(String id) {
         super(id);
         add(CSSPackageResource.getHeaderContribution(BaseWicketPage.class, "base-style.css"));
         if (UserListPanel.CSS != null)
@@ -115,11 +117,11 @@ public class UserListPanel extends Panel {
 
         setOutputMarkupId(true);
         
-        this.userId = userId;
+        this.userId = ((JaasWicketSession) getSession()).getUsername();
         add(this.changePasswordWindow = new ModalWindow("change-password-window"));
                
         this.allUsers = new ListModel<User>(getAllUsers());
-        this.allRolenames = new ListModel<String>(getAllRolenames());
+        this.allRolenames = new ListModel<Role>(getAllRolenames());
 
         add(this.confirmationWindow = new ConfirmationWindow<User>("confirmation-window") {
 
@@ -146,8 +148,8 @@ public class UserListPanel extends Panel {
         super.onBeforeRender();
         
         RepeatingView roleHeaders = new RepeatingView("role-headers");
-        for (String rolename : this.allRolenames.getObject())
-            roleHeaders.add(new Label(roleHeaders.newChildId(), rolename));
+        for (Role role : this.allRolenames.getObject())
+            roleHeaders.add(new Label(roleHeaders.newChildId(), role.getRolename()));
         addOrReplace(roleHeaders);
 
         RepeatingView roleRows = new RepeatingView("role-rows");
@@ -183,8 +185,8 @@ public class UserListPanel extends Panel {
             RepeatingView roleDividers = new RepeatingView("role-dividers");
             rowParent.add(roleDividers);
 
-            for (final String rolename : this.allRolenames.getObject()) {
-                AjaxCheckBox roleCheckbox = new AjaxCheckBox("role-checkbox", new HasRoleModel(user, rolename)) {
+            for (final Role role : this.allRolenames.getObject()) {
+                AjaxCheckBox roleCheckbox = new AjaxCheckBox("role-checkbox", new HasRoleModel(user, role.getRolename())) {
 
                     private static final long serialVersionUID = 1L;
 
@@ -202,9 +204,9 @@ public class UserListPanel extends Panel {
                 
                 if (this.userId.equals(user.getUserID())) {
                     AuthenticatedWebApplication awa = (AuthenticatedWebApplication) getApplication(); 
-                    if (rolename.equals(awa.getInitParameter("userRoleName")) || rolename.equals(awa.getInitParameter("adminRoleName"))) {
-                        for (Role role : user.getRoles()) {
-                            if (role.getRole().equals(rolename))
+                    if (role.getRolename().equals(awa.getInitParameter("userRoleName")) || role.getRolename().equals(awa.getInitParameter("adminRoleName"))) {
+                        for (UserRoleAssignment ura : user.getRoles()) {
+                            if (ura.getRole().equals(role.getRolename()))
                                 roleCheckbox.setEnabled(false)
                                 .add(new AttributeModifier("title", true, new ResourceModel("userlist.add-role-form.change_denied.tooltip").wrapOnAssignment(this)));
                         }
@@ -215,12 +217,6 @@ public class UserListPanel extends Panel {
                         .add(roleCheckbox)              
                 );
             }
-            rowParent.add(new ToggleFormLink("toggle-role-form-link", 
-                    new AddRoleForm("add-role-form", user.getUserID(), this.allRolenames), 
-                    rowParent, 
-                    new Image("toggle-role-form-image", ImageManager.IMAGE_USER_ROLE_ADD),   
-                    Arrays.asList("userlist.add-role-form.title.tooltip", "userlist.add-role-form.close.tooltip"))
-            );
         }
     }
 
@@ -267,44 +263,6 @@ public class UserListPanel extends Panel {
                     clearInput();
                     getParent().setVisible(false);
                     allUsers.setObject(getAllUsers());
-                }
-            });
-        }
-    };
-    
-    private final class AddRoleForm extends BaseForm {
-        
-        private static final long serialVersionUID = 1L;
-        
-        private Model<String> newRolename = new Model<String>();
-        
-        public AddRoleForm(String id, final String userId, ListModel<String> currentRolenameList) {
-            super(id);
-            
-            newAjaxComponent(this)
-                .setVisible(false);
-            
-            add(new Label("new-rolename-label", new ResourceModel("userlist.add-role-form.rolename.label")));
-            add((new TextField<String>("userlist.add-role-form.rolename.input", newRolename))
-                    .setRequired(true)
-                    .add(new RoleValidator(currentRolenameList))
-            );
-            
-            add(new Button("add-role-submit") {
-                
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onSubmit() {
-                    Role role = new Role();
-                    role.setUserID(userId);
-                    role.setRole(newRolename.getObject());
-                    ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).addRole(role);
-
-                    clearInput();
-                    getParent().setVisible(false);
-                    allUsers = new ListModel<User>(getAllUsers());
-                    allRolenames = new ListModel<String>(getAllRolenames());
                 }
             });
         }
@@ -359,7 +317,7 @@ public class UserListPanel extends Panel {
         
         @Override
         public Boolean getObject() {
-            for (Role role : this.user.getRoles())
+            for (UserRoleAssignment role : this.user.getRoles())
                 if (role.getRole().equals(this.rolename)) return true;
             return false;
         }
@@ -367,15 +325,15 @@ public class UserListPanel extends Panel {
         @Override
         public void setObject(Boolean hasRole) {
             if (hasRole) {
-                Role role = new Role();
+                UserRoleAssignment role = new UserRoleAssignment();
                 role.setUserID(this.user.getUserID());
                 role.setRole(this.rolename);
-                ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).addRole(role);
+                ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).assignRole(role);
                 this.user.getRoles().add(role);
             } else {
-                for (Role role : this.user.getRoles()) {
+                for (UserRoleAssignment role : this.user.getRoles()) {
                     if (role.getRole().equals(this.rolename)) {
-                        ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).removeRole(role);
+                        ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).unassignRole(role);
                         this.user.getRoles().remove(role);
                         break;
                     }
@@ -395,13 +353,10 @@ public class UserListPanel extends Panel {
         return allUsers;
     }
     
-    private ArrayList<String> getAllRolenames() {
+    private List<Role> getAllRolenames() {
 
-        ArrayList<String> allRolenames = new ArrayList<String>(2);
-        AuthenticatedWebApplication awa = (AuthenticatedWebApplication) getApplication();
+        List<Role> allRolenames = new ArrayList<Role>(2);
         allRolenames.addAll(((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getAllRolenames());
-        if (!allRolenames.contains(awa.getInitParameter("userRoleName"))) allRolenames.add(awa.getInitParameter("userRoleName"));
-        if (!allRolenames.contains(awa.getInitParameter("adminRoleName"))) allRolenames.add(awa.getInitParameter("adminRoleName"));
         return allRolenames;
     }
     
@@ -409,9 +364,5 @@ public class UserListPanel extends Panel {
         component.setOutputMarkupId(true);
         component.setOutputMarkupPlaceholderTag(true);
         return component;
-    }
-    
-    public static String getModuleName() {
-        return "userlist";
-    }
+    }    
 }

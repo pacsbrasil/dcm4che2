@@ -33,8 +33,8 @@
 			<groupId>dcm4che.dcm4chee</groupId>
 			<artifactId>dcm4chee-usr-entity</artifactId>
 			<type>ejb</type>
-			<classifier>${db}</classifier>
 			<version>0.0.1</version>
+			<classifier>${db}</classifier>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
