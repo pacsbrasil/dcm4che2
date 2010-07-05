@@ -16,9 +16,9 @@
 		<project>dcm4chee-web-sar-contentedit</project>
 		<project>dcm4chee-web-ejb</project>
 		<project>dcm4chee-web-vo</project>
+		<project>dcm4chee-usr-entity</project>
 		<project>dcm4chee-arc-entities-${db}</project>
 		<project>dcm4chee-usr-dao</project>
-		<project>dcm4chee-usr-entity</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -46,7 +46,7 @@ import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
-import org.dcm4chee.usr.ui.usermanagement.UserListPanel;
+import org.dcm4chee.usr.ui.usermanagement.UserManagementPanel;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.base.ModuleSelectorPanel;
@@ -73,8 +73,8 @@ public class MainPage extends BaseWicketPage {
         selectorPanel.addModule(TrashListPage.class);
         selectorPanel.addModule(AEMgtPanel.class);
 
-        if (new RoleAuthorizationStrategy((WicketApplication) this.getApplication()).isInstantiationAuthorized(UserListPanel.class))           
-            selectorPanel.addInstance(new UserListPanel("panel", ((WicketSession) getSession()).getUsername()));
+        if (new RoleAuthorizationStrategy((WicketApplication) this.getApplication()).isInstantiationAuthorized(UserManagementPanel.class))           
+            selectorPanel.addInstance(new UserManagementPanel("panel"));
 
         selectorPanel.addModule(DashboardPanel.class);
         selectorPanel.addModule(ModalityWorklistPanel.class);

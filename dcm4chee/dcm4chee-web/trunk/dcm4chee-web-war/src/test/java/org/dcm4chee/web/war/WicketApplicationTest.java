@@ -28,7 +28,7 @@ import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyOnFileSystem;
 import org.dcm4chee.archive.entity.VerifyingObserver;
-import org.dcm4chee.usr.entity.Role;
+import org.dcm4chee.usr.entity.UserRoleAssignment;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.web.common.base.LoginPage;
 import org.dcm4chee.web.dao.folder.StudyListBean;
@@ -47,7 +47,7 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
         File.class, FileSystem.class, StudyOnFileSystem.class, VerifyingObserver.class,
         Media.class, MPPS.class, GPSPS.class, GPPPS.class, GPSPSRequest.class, GPSPSPerformer.class,
         MWLItem.class,  
-        OtherPatientID.class, AE.class, RequestAttributes.class, Code.class, User.class, Role.class};
+        OtherPatientID.class, AE.class, RequestAttributes.class, Code.class, User.class, UserRoleAssignment.class};
     public WicketApplicationTest() throws Exception {
         super(StudyListBean.class, usedBeans);
     }
