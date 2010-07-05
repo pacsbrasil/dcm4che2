@@ -48,7 +48,7 @@ import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.war.session.JaasWicketSession;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordLink;
 import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
-import org.dcm4chee.usr.ui.util.JNDIUtils;
+import org.dcm4chee.usr.util.JNDIUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa-Gevaert AG.
- * Portions created by the Initial Developer are Copyright (C) 2008
+ * Portions created by the Initial Developer are Copyright (C) 2002-2005
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,29 +36,54 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.ui.util;
+package org.dcm4chee.usr.sar;
 
-import javax.naming.InitialContext;
+import org.dcm4chee.usr.dao.Role;
+import org.dcm4chee.usr.dao.UserAccess;
+import org.dcm4chee.usr.util.JNDIUtils;
+import org.jboss.system.ServiceMBeanSupport;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since Dec 19, 2008
+ * @since 19.08.2009
  */
-public class JNDIUtils {
+public class UserAccessService extends ServiceMBeanSupport {
 
-    public static Object lookup(String name) {
-        try {
-            InitialContext jndiCtx = new InitialContext();
-            try {
-                return jndiCtx.lookup(name);
-            } finally {
-                try  {
-                    jndiCtx.close();
-                } catch ( Exception ignore ) {}
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    private String userRoleName;
+    private String adminRoleName;
+    
+    private String roleFilename;
+
+    public void setUserRoleName(String userRoleName) {
+        this.userRoleName = userRoleName;
+    }
+
+    public String getUserRoleName() {
+        return userRoleName;
+    }
+
+    public void setAdminRoleName(String adminRoleName) {
+        this.adminRoleName = adminRoleName;
+    }
+
+    public String getAdminRoleName() {
+        return adminRoleName;
+    }
+
+    public void setRoleFilename(String roleFilename) {
+        this.roleFilename = roleFilename;
+    }
+
+    public String getRoleFilename() {
+        return roleFilename;
+    }
+
+    public String listRoles() {
+        return JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceName.getCanonicalName()).getAllRolenames().toString();
+    }
+
+    public void addRole(String rolename) {
+        JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceName.getCanonicalName()).addRole(new Role(rolename));
     }
 }

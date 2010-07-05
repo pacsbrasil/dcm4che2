@@ -13,6 +13,26 @@
       <description>MBean Constructor.</description>
       <name>org.dcm4chee.dashboard.mbean.DashboardService</name>
    </constructor>
+	<attribute access="read-write" getMethod="getUserRoleName" setMethod="setUserRoleName">
+        <description>
+            Sets the name of the user role
+        </description>
+        <name>userRoleName</name>
+        <type>java.lang.String</type>
+        <descriptors>
+            <value>WebUser</value>
+        </descriptors>
+    </attribute>
+	<attribute access="read-write" getMethod="getAdminRoleName" setMethod="setAdminRoleName">
+        <description>
+            Sets the name of the admin role
+        </description>
+        <name>adminRoleName</name>
+        <type>java.lang.String</type>
+        <descriptors>
+            <value>JBossAdmin</value>
+        </descriptors>
+    </attribute>
 	<attribute access="read-write" getMethod="getRoleFilename" setMethod="setRoleFilename">
         <description>
             Sets the file name for storing roles
@@ -23,6 +43,11 @@
             <value>roles.json</value>
         </descriptors>
     </attribute>
+   <operation>
+      <description>MBean Operation.</description>
+      <name>listRoles</name>
+      <return-type>java.lang.String</return-type>
+   </operation>
    <operation>
       <description>MBean Operation.</description>
       <name>addRole</name>

@@ -70,8 +70,8 @@ import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.usr.dao.Role;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.ui.util.CSSUtils;
-import org.dcm4chee.usr.ui.util.JNDIUtils;
 import org.dcm4chee.usr.ui.validator.RoleValidator;
+import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.base.JaasWicketSession;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
@@ -90,6 +90,8 @@ public class RoleListPanel extends Panel {
     
     private static final ResourceReference CSS = new CompressedResourceReference(RoleListPanel.class, "usr-style.css");
     
+    String serviceObjectName;
+    
     private ListModel<Role> allRolenames;
 
     private ConfirmationWindow<Role> confirmationWindow;
@@ -100,13 +102,10 @@ public class RoleListPanel extends Panel {
         if (RoleListPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(RoleListPanel.CSS));
 
+        serviceObjectName = ((AuthenticatedWebApplication) getApplication()).getInitParameter("UserAccessServiceName");
+            
         setOutputMarkupId(true);
 
-        AuthenticatedWebApplication awa = ((AuthenticatedWebApplication) getApplication());
-        ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).checkSystemRoles(
-                awa.getInitParameter("userRoleName"), 
-                awa.getInitParameter("adminRoleName"));
-        
         ((JaasWicketSession) getSession()).getUsername();
         this.allRolenames = new ListModel<Role>(getAllRolenames());
 
@@ -116,7 +115,7 @@ public class RoleListPanel extends Panel {
 
             @Override
             public void onConfirmation(AjaxRequestTarget target, Role role) {
-                ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).removeRole(role);
+                JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceObjectName).removeRole(role);
                 target.addComponent(RoleListPanel.this);
                 allRolenames.setObject(getAllRolenames());
             }
@@ -140,7 +139,6 @@ public class RoleListPanel extends Panel {
         for (int i = 0; i < this.allRolenames.getObject().size(); i++) {
             final Role role = this.allRolenames.getObject().get(i);
             
-            AuthenticatedWebApplication awa = ((AuthenticatedWebApplication) getApplication());
             
             WebMarkupContainer rowParent;
             roleRows.add((rowParent = new WebMarkupContainer(roleRows.newChildId())).add(new Label("rolename", role.getRolename())));
@@ -156,10 +154,9 @@ public class RoleListPanel extends Panel {
                     .add(new Image("img-delete", ImageManager.IMAGE_COMMON_REMOVE)
                     .add(new TooltipBehaviour("rolelist.", "remove-role-link", new Model<String>(role.getRolename()))))
                     .add(new ImageSizeBehaviour()))
-                    .setVisible(!awa.getInitParameter("userRoleName").equals(role.getRolename())
-                            && !awa.getInitParameter("adminRoleName").equals(role.getRolename()))
-                )
-                .add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))));
+                    .setVisible(!JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceObjectName).getUserRoleName().equals(role.getRolename())
+                            && !JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceObjectName).getAdminRoleName().equals(role.getRolename()))
+                .add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i)))));
         }
     }
 
@@ -187,7 +184,7 @@ public class RoleListPanel extends Panel {
 
                 @Override
                 public void onSubmit() {
-                    ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).addRole(new Role(newRolename.getObject()));
+                    JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceObjectName).addRole(new Role(newRolename.getObject()));
                     rolenameTextField.setModelObject("");
                     getParent().setVisible(false);
                     allRolenames.setObject(getAllRolenames());
@@ -235,7 +232,7 @@ public class RoleListPanel extends Panel {
     private ArrayList<Role> getAllRolenames() {
 
         ArrayList<Role> allRolenames = new ArrayList<Role>(2);
-        allRolenames.addAll(((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getAllRolenames());
+        allRolenames.addAll(JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceObjectName).getAllRolenames());
         return allRolenames;
     }
     

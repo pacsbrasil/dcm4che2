@@ -79,10 +79,10 @@ import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordLink;
 import org.dcm4chee.usr.ui.util.CSSUtils;
-import org.dcm4chee.usr.ui.util.JNDIUtils;
 import org.dcm4chee.usr.ui.util.SecurityUtils;
 import org.dcm4chee.usr.ui.validator.RoleValidator;
 import org.dcm4chee.usr.ui.validator.UserValidator;
+import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.base.JaasWicketSession;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
@@ -356,7 +356,9 @@ public class UserListPanel extends Panel {
     private List<Role> getAllRolenames() {
 
         List<Role> allRolenames = new ArrayList<Role>(2);
-        allRolenames.addAll(((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getAllRolenames());
+        allRolenames.addAll(JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, 
+                ((AuthenticatedWebApplication) getApplication()).getInitParameter("UserAccessServiceName"))
+                .getAllRolenames());
         return allRolenames;
     }
     

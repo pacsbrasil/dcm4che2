@@ -55,9 +55,9 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.entity.User;
-import org.dcm4chee.usr.ui.util.JNDIUtils;
 import org.dcm4chee.usr.ui.util.SecurityUtils;
 import org.dcm4chee.usr.ui.validator.PasswordValidator;
+import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
 

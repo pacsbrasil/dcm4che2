@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa-Gevaert AG.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,52 +36,37 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.dao;
+package org.dcm4chee.usr.util;
 
-import java.io.Serializable;
+import javax.naming.InitialContext;
+
+import org.dcm4chee.usr.dao.UserAccess;
 
 /**
- * @author Robert David <robert.david@agfa.com>
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since 01.07.2010
+ * @since Dec 19, 2008
  */
-public class Role implements Serializable {
+public class JNDIUtils {
 
-    private static final long serialVersionUID = 1L;
-    
-    private String rolename;
-    private boolean isSystemRole;
-    
-    public Role() {
-    }
-    
-    public Role(String rolename) {
-        this.rolename = rolename;
-    }
-
-    public Role(String rolename, boolean isSystemRole) {
-        this(rolename);
-        this.isSystemRole = isSystemRole;
-    }
-
-    public String getRolename() {
-        return rolename;     
+    public static Object lookup(String name) {
+        try {
+            InitialContext jndiCtx = new InitialContext();
+            try {
+                return jndiCtx.lookup(name);
+            } finally {
+                try  {
+                    jndiCtx.close();
+                } catch ( Exception ignore ) {}
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
     
-    public void setRolename(String rolename) {
-        this.rolename = rolename;
-    }
-
-    public void setSystemRole(boolean isSystemRole) {
-        this.isSystemRole = isSystemRole;
-    }
-
-    public boolean isSystemRole() {
-        return isSystemRole;
-    }
-    
-    @Override
-    public String toString() {
-        return getRolename();   
+    public static UserAccess lookupAndInit(String name, String serviceObjectName) {
+        UserAccess ua = (UserAccess) lookup(name);
+        ua.init(serviceObjectName);
+        return ua;
     }
 }

@@ -53,6 +53,9 @@ import org.dcm4chee.usr.entity.UserRoleAssignment;
 @Local
 public interface UserAccess {
     String JNDI_NAME = "dcm4chee-usr-dao/UserAccess/local";
+
+    public String getUserRoleName();
+    public String getAdminRoleName();
     
     public List<User> findAll();
 
@@ -67,7 +70,7 @@ public interface UserAccess {
     public void unassignRole(UserRoleAssignment ura);
 
     //  accesses the role file, not the relation table in the database
-    public void checkSystemRoles(String userRoleName, String adminRoleName);
+    public void init(String serviceObjectName);
     public List<Role> getAllRolenames();   
     public void addRole(Role role);
     public void removeRole(Role role);
