@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mbean PUBLIC
+   "-//JBoss//DTD JBOSS XMBEAN 1.2//EN"
+   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_2.dtd">
+<mbean>
+   <description>Management Bean.</description>
+   <descriptors>
+      <persistence persistPolicy="OnUpdate" />
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+   </descriptors>
+   <class>org.dcm4chee.usr.dao.UserAccessBean</class>
+   <constructor>
+      <description>MBean Constructor.</description>
+      <name>org.dcm4chee.dashboard.mbean.DashboardService</name>
+   </constructor>
+	<attribute access="read-write" getMethod="getRoleFilename" setMethod="setRoleFilename">
+        <description>
+            Sets the file name for storing roles
+        </description>
+        <name>roleFilename</name>
+        <type>java.lang.String</type>
+        <descriptors>
+            <value>roles.json</value>
+        </descriptors>
+    </attribute>
+   <operation>
+      <description>MBean Operation.</description>
+      <name>addRole</name>
+      <parameter>
+         <name>rolename</name>
+         <type>java.lang.String</type>
+      </parameter>
+   </operation>
+</mbean>
