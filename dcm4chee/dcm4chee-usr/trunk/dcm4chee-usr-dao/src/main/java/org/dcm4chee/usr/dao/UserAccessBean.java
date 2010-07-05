@@ -57,6 +57,8 @@ import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
+import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
@@ -91,11 +93,27 @@ public class UserAccessBean implements UserAccess {
     private EntityManager em;
 
     private ObjectName serviceObjectName;
-    private final MBeanServer server = MBeanServerLocator.locate();
+//    private final MBeanServer server = MBeanServerLocator.locate();
+    private MBeanServerConnection server = null;
 
     private String userRoleName;
     private String adminRoleName;
 
+    @SuppressWarnings("unused")
+    @PostConstruct
+    private void initMBeanServer() {
+        if (server == null) {
+            List<?> servers = MBeanServerFactory.findMBeanServer(null);
+            if (servers != null && !servers.isEmpty()) {
+                this.server = (MBeanServerConnection) servers.get(0);
+                log.debug("Found MBeanServer:"+server);
+            } else {
+                log.error("Failed to get MBeanServerConnection! MbeanDelegate class:"+getClass().getName());
+                return;
+            }
+        }   
+    }
+    
     public void init(String serviceObjectName) {
 
         BufferedReader reader = null;
