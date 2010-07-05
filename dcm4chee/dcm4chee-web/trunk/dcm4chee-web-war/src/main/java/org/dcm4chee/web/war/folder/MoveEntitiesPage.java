@@ -75,7 +75,6 @@ import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.exceptions.SelectionException;
-import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.dao.common.DicomEditLocal;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPage;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
@@ -308,9 +307,11 @@ public class MoveEntitiesPage extends WebPage {
         DicomEditLocal dao = (DicomEditLocal) JNDIUtils.lookup(DicomEditLocal.JNDI_NAME);
         if (seriesModel != null && seriesModel.getPk() != -1) {
             dao.removeSeries(seriesModel.getPk());
+            seriesModel.getPPS().getSeries().remove(seriesModel);
         }
         if (studyModel != null && studyModel.getPk() != -1) {
             dao.removeStudy(studyModel.getPk());
+            studyModel.getPatient().getStudies().remove(studyModel);
         }
         setResponsePage(page);
     }
@@ -344,7 +345,13 @@ public class MoveEntitiesPage extends WebPage {
     private class InfoPanel extends Panel {
 
         private static final long serialVersionUID = 1L;
-
+        private Label infoLabel;
+        private AjaxFallbackLink<Object> moveBtn;
+        private AjaxFallbackLink<Object> okBtn;
+        private AjaxFallbackLink<Object> cancelBtn;
+        private boolean ajaxRunning = false;
+        private Image hourglassImage;
+        
         private IModel<String> infoModel = new AbstractReadOnlyModel<String>() {
             private static final long serialVersionUID = 1L;
 
@@ -361,13 +368,22 @@ public class MoveEntitiesPage extends WebPage {
         public InfoPanel() {
             super("panel");
             add( new Label("infoTitle", new ResourceModel("move.pageTitle")));
-            add( new Label("info", infoModel));
-            final ConfirmationWindow<SelectedEntities> confirmMove = new ConfirmationWindow<SelectedEntities>("confirmMove") {
+            add( infoLabel = new Label("info", infoModel));
+            infoLabel.setOutputMarkupId(true);
+            add((hourglassImage = new Image("hourglass-image", ImageManager.IMAGE_COMMON_AJAXLOAD) {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void onOk(AjaxRequestTarget target) {
+                public boolean isVisible() {
+                    return ajaxRunning;
+                }
+            }).setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true));
+            
+            okBtn = new AjaxFallbackLink<Object>("moveFinishedBtn") {
+                private static final long serialVersionUID = 1L;
+                @Override
+                public void onClick(AjaxRequestTarget target) {
                     selected.clear();
                     SelectedEntities.deselectAll(allPatients);
                     if (studyModel == null && seriesModel == null) {
@@ -395,68 +411,56 @@ public class MoveEntitiesPage extends WebPage {
                     }
                     setResponsePage(page);
                 }
-
-                private void refreshStudyAndSeries(AbstractDicomModel parent) {
-                    int level = parent.levelOfModel();
-                    if ( level == AbstractDicomModel.INSTANCE_LEVEL) {
-                        parent = parent.getParent();
-                        level--;
-                    }
-                    for ( ; level > 0 ; level-- ) {
-                        ((AbstractEditableDicomModel)parent).refresh();
-                        parent = parent.getParent();
-                    }
-                }
-
-                @Override
-                public void onConfirmation(AjaxRequestTarget target, final SelectedEntities selected) {
-                    
-                    this.setStatus(new StringResourceModel("move.message.move.running", MoveEntitiesPage.this, null));
-                    okBtn.setVisible(false);
-                    ajaxRunning = true;
-                    
-                    msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                        
-                        private static final long serialVersionUID = 1L;
-
-                        @Override
-                        protected void onTimer(AjaxRequestTarget target) {
-                            try {
-                                int nrOfMovedInstances = ContentEditDelegate.getInstance().moveEntities(selected);
-                                if (nrOfMovedInstances > 0) {
-                                    setStatus(new StringResourceModel("move.message.moveDone", MoveEntitiesPage.this,null));
-                                } else if (nrOfMovedInstances == 0) {
-                                    setStatus(new StringResourceModel("folder.moveNothing", MoveEntitiesPage.this,null));
-                                } else {
-                                    setStatus(new StringResourceModel("move.message.moveFailed", MoveEntitiesPage.this,null));
-                                }
-                            } catch (SelectionException x) {
-                                log.warn(x.getMessage());
-                                setStatus(new StringResourceModel(x.getMsgId(), MoveEntitiesPage.this,null));
-                            }
-                            //queryStudies();
-                            this.stop();
-                            ajaxRunning = false;
-                            okBtn.setVisible(true);
-                            
-                            target.addComponent(msgLabel);
-                            target.addComponent(hourglassImage);
-                            target.addComponent(okBtn);
-                        }
-                    });
-                }
             };
-            confirmMove.setInitialHeight(150);
-            add(confirmMove);
-            AjaxFallbackLink<Object> moveBtn = new AjaxFallbackLink<Object>("moveBtn") {
+            okBtn.add(new TooltipBehaviour("folder.", "moveFinishedBtn"));
+            okBtn.add(new Label("moveFinishedText", new ResourceModel("folder.moveFinishedBtn.text"))
+                .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle"))));
+            okBtn.setVisible(false).setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true);
+            add(okBtn);
+            moveBtn = new AjaxFallbackLink<Object>("moveBtn") {
                 private static final long serialVersionUID = 1L;
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     try {
-                        confirmMove.confirm(target, new StringResourceModel("move.message.confirmMove",this, null,new Object[]{selected}), selected);
+                        infoMsgId = "move.message.move.running";
+                        okBtn.setVisible(false);
+                        cancelBtn.setVisible(false);
+                        ajaxRunning = true;
+                        
+                        infoLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                            
+                            private static final long serialVersionUID = 1L;
+
+                            @Override
+                            protected void onTimer(AjaxRequestTarget target) {
+                                try {
+                                    int nrOfMovedInstances = ContentEditDelegate.getInstance().moveEntities(selected);
+                                    if (nrOfMovedInstances > 0) {
+                                        infoMsgId = "move.message.moveDone";
+                                    } else if (nrOfMovedInstances == 0) {
+                                        infoMsgId = "move.message.moveNothing";
+                                    } else {
+                                        infoMsgId = "move.message.moveFailed";
+                                        cancelBtn.setVisible(true);
+                                    }
+                                    okBtn.setVisible(true);
+                                    moveBtn.setVisible(false);
+                                    
+                                } catch (SelectionException x) {
+                                    log.warn(x.getMessage());
+                                    infoMsgId = x.getMsgId();
+                                }
+                                //queryStudies();
+                                this.stop();
+                                ajaxRunning = false;
+                                addToTarget(target);
+                            }
+                        });
                     } catch (Throwable t) {
                         log.error("Can not move selected entities!", t);
+                        infoMsgId = "move.message.moveFailed";
                     }
+                    addToTarget(target);
                 }
                 @Override
                 public boolean isEnabled() {
@@ -470,15 +474,28 @@ public class MoveEntitiesPage extends WebPage {
             moveBtn.add(new Label("moveText", new ResourceModel("folder.moveBtn.text"))
                 .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
             );
-            add(moveBtn);
-            add(new AjaxLink<Object>("cancelBtn") {
+            add(moveBtn.setOutputMarkupId(true));
+            cancelBtn = new AjaxFallbackLink<Object>("cancelBtn") {
                 private static final long serialVersionUID = 1L;
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     doCancel();
                 }
-            }.add(new Label("cancelLabel", new ResourceModel("cancelBtn"))) );
-       }
+            };
+            add(cancelBtn.add(new Label("cancelLabel", new ResourceModel("cancelBtn"))).setOutputMarkupId(true) );
+        }
+
+        private void refreshStudyAndSeries(AbstractDicomModel parent) {
+            int level = parent.levelOfModel();
+            if ( level == AbstractDicomModel.INSTANCE_LEVEL) {
+                parent = parent.getParent();
+                level--;
+            }
+            for ( ; level > 0 ; level-- ) {
+                ((AbstractEditableDicomModel)parent).refresh();
+                parent = parent.getParent();
+            }
+        }
         
         public void setSrcInfo(SelectedEntities selected) {
             SelectedInfo info = null;
@@ -525,6 +542,14 @@ public class MoveEntitiesPage extends WebPage {
                 };
                 return new StringResourceModel(key, MoveEntitiesPage.this, m, params, def);
             }
+        }
+
+        private void addToTarget(AjaxRequestTarget target) {
+            target.addComponent(infoLabel);
+            target.addComponent(hourglassImage);
+            target.addComponent(okBtn);
+            target.addComponent(moveBtn);
+            target.addComponent(cancelBtn);
         }
 
     }
