@@ -113,7 +113,7 @@
   <!-- Admitting Diagnoses Description -->
   <attr tag="00081080" vr="LO" />
 
-  <!-- Referenced Admitting Diagnoses Code Sequence -->
+  <!-- Referenced Request Sequence -->
   <attr tag="0040A370" vr="SQ">
     <item>
 
