@@ -186,7 +186,7 @@ public class ExportPage extends BaseWicketPage {
                     return getString("export.message.noSelectionForExport");
                 }
             }}).setOutputMarkupId(true));
-        form.add( new Button("export", new ResourceModel("exportBtn")){
+        form.add( new Button("export", new ResourceModel("export.exportBtn.text")){
 
             private static final long serialVersionUID = 1L;
             
@@ -233,7 +233,7 @@ public class ExportPage extends BaseWicketPage {
             }
             
         }.setEnabled(exportInfo.hasSelection()));
-        form.addInternalLabel("closeOnFinished");
+        form.addLabel("closeOnFinishedLabel");
         
         form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(700)){
 
