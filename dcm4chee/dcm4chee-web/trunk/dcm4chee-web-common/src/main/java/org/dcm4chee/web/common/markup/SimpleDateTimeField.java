@@ -114,6 +114,10 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
         return this;
     }
     
+    public boolean isWithoutTime() {
+        return withoutTime;
+    }
+    
     @Override
     public void onComponentTag(ComponentTag tag) {
         super.onComponentTag(tag);
@@ -139,7 +143,7 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
             GregorianCalendar cal = new GregorianCalendar();
             cal.setTime(d);
             if (t == null) {
-                setTimeToMinOrMax(cal, max);
+                DateUtils.setTimeToMinOrMax(cal, max);
                 timeField.getModel().setObject(cal.getTime());
                 timeField.setConvertedInput(cal.getTime());
             } else {                
@@ -147,7 +151,7 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
                 calT.setTime(t);
                 if (max && calT.get(Calendar.HOUR_OF_DAY) == 0 &&
                         calT.get(Calendar.MINUTE) == 0 && calT.get(Calendar.SECOND) == 0) {
-                    setTimeToMinOrMax(cal, true);
+                    DateUtils.setTimeToMinOrMax(cal, true);
                 } else {
                     int h = calT.get(Calendar.HOUR_OF_DAY);
                     int m = calT.get(Calendar.MINUTE);
@@ -175,20 +179,6 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
     public Component addToTimeField(final IBehavior... behaviors) {
         this.timeField.add(behaviors);
         return this;
-    }
-
-    private void setTimeToMinOrMax(GregorianCalendar cal, boolean max) {
-        if (max) {
-            cal.set(Calendar.HOUR_OF_DAY, 23);
-            cal.set(Calendar.MINUTE, 59);
-            cal.set(Calendar.SECOND, 59);
-            cal.set(Calendar.MILLISECOND, 999);
-        } else {
-            cal.set(Calendar.HOUR_OF_DAY, 0);
-            cal.set(Calendar.MINUTE, 0);
-            cal.set(Calendar.SECOND, 0);
-            cal.set(Calendar.MILLISECOND, 0);
-        }
     }
 
     public String getTextFormat() {

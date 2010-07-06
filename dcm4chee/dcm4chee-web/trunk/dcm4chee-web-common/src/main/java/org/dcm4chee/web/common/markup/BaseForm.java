@@ -183,7 +183,7 @@ public class BaseForm extends Form<Object> {
 
     public SimpleDateTimeField getSimpleDateTimeField(String id, IModel<Date> model,
             final IModel<Boolean> enabledModel, final boolean max) {
-        final SimpleDateTimeField dtf = new SimpleDateTimeField(id, model) {
+        final SimpleDateTimeField dtf = new SimpleDateTimeField(id, model, max) {
             private static final long serialVersionUID = 1L;
 
             @Override

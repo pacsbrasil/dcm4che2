@@ -47,6 +47,7 @@ import org.apache.wicket.ajax.calldecorator.CancelEventIfNoAjaxDecorator;
 import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.model.IModel;
 import org.dcm4chee.web.common.markup.SimpleDateTimeField;
+import org.dcm4chee.web.common.util.DateUtils;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -73,7 +74,7 @@ public class CheckOneDayBehaviour extends AjaxFormSubmitBehavior {
         if (oldStart != null) {
             Calendar cal = Calendar.getInstance();
             cal.setTime(oldStart);
-            setEndOfDay(cal);
+            DateUtils.setTimeToMinOrMax(cal, !dtfEnd.isWithoutTime());
             oldStart = cal.getTime();
         }
         super.onEvent(target);
@@ -87,21 +88,17 @@ public class CheckOneDayBehaviour extends AjaxFormSubmitBehavior {
         Date startDate = dtfStart.getModelObject();
         Date endDate = dtfEnd.getModelObject();
         IModel<Date> mEnd = dtfEnd.getModel();
+        System.out.println("startDate:"+startDate);
+        System.out.println("endDate:"+endDate);
+        System.out.println("oldStart:"+oldStart);
         if (startDate != null && (endDate == null || endDate.equals(oldStart))) {
             Calendar cal = Calendar.getInstance();
             cal.setTime(startDate);
-            setEndOfDay(cal);
+            DateUtils.setTimeToMinOrMax(cal, !dtfEnd.isWithoutTime());
             mEnd.setObject(cal.getTime());
             target.addComponent(dtfStart);
             target.addComponent(dtfEnd);
         }
-    }
-
-    private void setEndOfDay(Calendar cal) {
-        cal.set(Calendar.HOUR_OF_DAY, 23);
-        cal.set(Calendar.MINUTE, 59);
-        cal.set(Calendar.SECOND, 59);
-        cal.set(Calendar.MILLISECOND, 999);
     }
 
     protected IAjaxCallDecorator getAjaxCallDecorator() {
