@@ -233,7 +233,7 @@ public class ExportPage extends BaseWicketPage {
             }
             
         }.setEnabled(exportInfo.hasSelection()));
-        form.addLabel("closeOnFinished");
+        form.addInternalLabel("closeOnFinished");
         
         form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(700)){
 
