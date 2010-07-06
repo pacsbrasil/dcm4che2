@@ -57,10 +57,13 @@ import org.apache.wicket.ajax.calldecorator.CancelEventIfNoAjaxDecorator;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.CloseButtonCallback;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -148,6 +151,7 @@ public class StudyListPage extends Panel {
     private MessageWindow msgWin = new MessageWindow("msgWin");
     private Mpps2MwlLinkPage linkPage = new Mpps2MwlLinkPage("linkPage");
     private ConfirmationWindow<PPSModel> confirmUnlinkMpps;
+    private ImageSelectionWindow imageSelection = new ImageSelectionWindow("imgSelection");
     
     private WebviewerLinkProvider webviewerLinkProvider;
     
@@ -206,6 +210,16 @@ public class StudyListPage extends Panel {
         msgWin.setTitle(MessageWindow.TITLE_WARNING);
         add(msgWin);
         add(linkPage);
+        add(imageSelection);
+        imageSelection.setWindowClosedCallback(new WindowClosedCallback(){
+            private static final long serialVersionUID = 1L;
+
+            public void onClose(AjaxRequestTarget target) {
+                if (imageSelection.isSelectionChanged())
+                    target.addComponent(form);
+            }
+            
+        });
         initModalitiesAndSourceAETs();
     }
 
@@ -872,6 +886,18 @@ public class StudyListPage extends Panel {
             .add(tooltip)));
             item.add(getEditLink(studyModel, tooltip));
             item.add(getAddSeriesLink(studyModel, tooltip));
+            item.add(new AjaxLink<Object>("imgSelect") {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    imageSelection.setInitialWidth(new Integer(getString("folder.imageSelection.window.width")))
+                    .setInitialHeight(new Integer(getString("folder.imageSelection.window.height")));
+                    imageSelection.show(target, studyModel);
+                }
+                
+            }.add(new Image("selectImg",ImageManager.IMAGE_COMMON_SEARCH)
+            .add(new ImageSizeBehaviour())) );
             item.add( new AjaxCheckBox("selected") {
 
                 private static final long serialVersionUID = 1L;
@@ -1124,6 +1150,18 @@ public class StudyListPage extends Panel {
                 }
             }.setOutputMarkupId(true)
             .add(tooltip));
+            item.add(new AjaxLink<Object>("imgSelect") {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    imageSelection.setInitialWidth(new Integer(getString("folder.imageSelection.window.width")))
+                    .setInitialHeight(new Integer(getString("folder.imageSelection.window.height")));
+                    imageSelection.show(target, seriesModel);
+                }
+                
+            }.add(new Image("selectImg",ImageManager.IMAGE_COMMON_SEARCH)
+            .add(new ImageSizeBehaviour())) );
             final WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;

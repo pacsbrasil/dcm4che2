@@ -7,7 +7,8 @@
 </head>
 <wicket:panel>
     <div wicket:id="msgWin" >MessageWindow</div>
-    <div wicket:id="linkPage" >MessageWindow</div>
+    <div wicket:id="linkPage" >LinkPage</div>
+    <div wicket:id="imgSelection" >ImageSelection</div>
 	<form style="clear: both" wicket:id="form">
 		<div wicket:id="confirmDelete" >ConfirmDelete</div>
 		<div wicket:id="confirmUnlink" >ConfirmUnlink</div>	
@@ -300,7 +301,10 @@
 		      <td>
 		      	<a wicket:id="webview" href="#"><img wicket:id="webviewImg" alt="V" /></a>
 		      </td>
-		      <td><input wicket:id="selected" type="checkbox" /></td>
+		      <td>
+		      	<input wicket:id="selected" type="checkbox" />
+		      	<a wicket:id="imgSelect" href="#"><img wicket:id="selectImg" alt="S" /></a>
+		      </td>
 		    </tr>
 		    <tr wicket:id="details" class="study" style="border-top-style: none;">
 		      <td colspan="16">
@@ -335,7 +339,9 @@
 		      <td>
 		        <a wicket:id="unlinkBtn" href="#"><img wicket:id="unlinkImg" alt="L" /></a>
 		      </td>
-		      <td><input wicket:id="selected" type="checkbox" /></td>
+		      <td>
+		      	<input wicket:id="selected" type="checkbox" />
+		      </td>
 		    </tr>
 		    <tr wicket:id="details" class="pps" style="border-top-style: none;">
 		      <td colspan="15">
@@ -365,7 +371,10 @@
 		      </td>
 		      <td>
 		      </td>
-		      <td><input wicket:id="selected" type="checkbox" /></td>
+		      <td>
+		      	<input wicket:id="selected" type="checkbox" />
+		      	<a wicket:id="imgSelect" href="#"><img wicket:id="selectImg" alt="S" /></a>
+		      </td>
 		    </tr>
 		    <tr wicket:id="details" class="series" style="border-top-style: none;">
 		      <td colspan="14">

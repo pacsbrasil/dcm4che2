@@ -129,7 +129,7 @@ public class WADODelegate extends BaseMBeanDelegate {
         super();
     }
 
-    private String getWadoBaseUrl() {
+    public String getWadoBaseUrl() {
         String wadoBaseURL = ((WebApplication)Application.get()).getInitParameter("wadoBaseURL");
         if (wadoBaseURL==null) {
             HttpServletRequest request = ((WebRequestCycle)RequestCycle.get()).getWebRequest()
