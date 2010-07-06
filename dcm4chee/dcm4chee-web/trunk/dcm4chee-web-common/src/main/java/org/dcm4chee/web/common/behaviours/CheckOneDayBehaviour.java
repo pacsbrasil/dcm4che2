@@ -88,9 +88,6 @@ public class CheckOneDayBehaviour extends AjaxFormSubmitBehavior {
         Date startDate = dtfStart.getModelObject();
         Date endDate = dtfEnd.getModelObject();
         IModel<Date> mEnd = dtfEnd.getModel();
-        System.out.println("startDate:"+startDate);
-        System.out.println("endDate:"+endDate);
-        System.out.println("oldStart:"+oldStart);
         if (startDate != null && (endDate == null || endDate.equals(oldStart))) {
             Calendar cal = Calendar.getInstance();
             cal.setTime(startDate);
