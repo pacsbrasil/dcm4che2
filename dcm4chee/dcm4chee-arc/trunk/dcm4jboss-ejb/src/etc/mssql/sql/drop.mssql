@@ -14,6 +14,7 @@ DROP TABLE hpdef;
 DROP TABLE hp;
 DROP TABLE ups_glob_subscr;
 DROP TABLE ups_subscr;
+DROP TABLE ups_repl_ps;
 DROP TABLE ups_rel_ps;
 DROP TABLE ups_req;
 DROP TABLE rel_ups_performer;

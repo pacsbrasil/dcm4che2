@@ -48,6 +48,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.UPSState;
 import org.dcm4chex.archive.common.Priority;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+import org.dcm4chex.archive.ejb.jdbc.Match.Node;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -65,12 +66,6 @@ public class UPSQueryCmd extends BaseDSQueryCmd {
             "UPS.encodedAttributes"};
 
     private static final String ITEM_CODE = "item_code";
-    private static final String APP_CODE = "app_code";
-    private static final String DEVNAME_CODE = "devname_code";
-    private static final String DEVCLASS_CODE = "devclass_code";
-    private static final String DEVLOC_CODE = "devloc_code";
-    private static final String PERF_CODE = "perf_code";
-    private static final String RELPS_CODE = "relps_code";
 
     public UPSQueryCmd(Dataset keys) throws SQLException {
         super(keys, true, false, transactionIsolationLevel);
@@ -110,46 +105,42 @@ public class UPSQueryCmd extends BaseDSQueryCmd {
         sqlBuilder.addRangeMatch(null, "UPS.expectedCompletionDateTime",
                 type2,
                 keys.getDateRange(Tags.ExpectedCompletionDateAndTime));
-        addCodeMatch(Tags.ScheduledWorkitemCodeSeq, ITEM_CODE);
-        addCodeMatch(Tags.ScheduledProcessingApplicationsCodeSeq, APP_CODE);
-        addCodeMatch(Tags.ScheduledStationNameCodeSeq, DEVNAME_CODE);
-        addCodeMatch(Tags.ScheduledStationClassCodeSeq, DEVCLASS_CODE);
-        addCodeMatch(Tags.ScheduledStationGeographicLocationCodeSeq, DEVLOC_CODE);
-        Dataset item = keys.getItem(Tags.ScheduledHumanPerformersSeq);
-        if (item != null)
-            addCodeMatch(item.getItem(Tags.HumanPerformerCodeSeq), PERF_CODE);
-        item = keys.getItem(Tags.RefRequestSeq);
-        if (item != null) {
-            sqlBuilder.addWildCardMatch(null,
-                    "UPSRequest.requestedProcedureId",
-                    type2,
-                    item.getStrings(Tags.RequestedProcedureID));
-            sqlBuilder.addWildCardMatch(null,
-                    "UPSRequest.accessionNumber",
-                    type2,
-                    item.getStrings(Tags.AccessionNumber));
-            sqlBuilder.addWildCardMatch(null,
-                    "UPSRequest.confidentialityCode",
-                    type2,
-                    item.getStrings(Tags.ConfidentialityCode));
-            sqlBuilder.addWildCardMatch(null,
-                    "UPSRequest.requestingService",
-                    type2,
-                    item.getStrings(Tags.RequestingService));
-        }
-        item = keys.getItem(Tags.RelatedProcedureStepSeq);
-        if (item != null) {
-            sqlBuilder.addSingleValueMatch(null,
-                    "UPSRelatedPS.refSOPInstanceUID",
-                    SqlBuilder.TYPE1,
-                    item.getString(Tags.RefSOPInstanceUID));
-            sqlBuilder.addSingleValueMatch(null,
-                    "UPSRelatedPS.refSOPClassUID",
-                    SqlBuilder.TYPE1,
-                    item.getString(Tags.RefSOPClassUID));
-            addCodeMatch(item.getItem(Tags.PurposeOfReferenceCodeSeq),
-                    RELPS_CODE);
-        }
+        sqlBuilder.addCodeMatch(ITEM_CODE,
+                keys.getItem(Tags.ScheduledWorkitemCodeSeq));
+        addNestedCodeMatch(Tags.ScheduledProcessingApplicationsCodeSeq,
+                new String[]{ "UPS.pk", "rel_ups_appcode.ups_fk"},
+                new String[]{ "rel_ups_appcode", "Code" },
+                new String[]{ "rel_ups_appcode.appcode_fk", "Code.pk"});
+        addNestedCodeMatch(Tags.ScheduledStationNameCodeSeq,
+                new String[]{ "UPS.pk", "rel_ups_devname.ups_fk"},
+                new String[]{ "rel_ups_devname", "Code" },
+                new String[]{ "rel_ups_devname.devname_fk", "Code.pk"});
+        addNestedCodeMatch(Tags.ScheduledStationClassCodeSeq,
+                new String[]{ "UPS.pk", "rel_ups_devclass.ups_fk"},
+                new String[]{ "rel_ups_devclass", "Code" },
+                new String[]{ "rel_ups_devclass.devclass_fk", "Code.pk"});
+        addNestedCodeMatch(Tags.ScheduledStationGeographicLocationCodeSeq,
+                new String[]{ "UPS.pk", "rel_ups_devloc.ups_fk"},
+                new String[]{ "rel_ups_devloc", "Code" },
+                new String[]{ "rel_ups_devloc.devloc_fk", "Code.pk"});
+        addNestedCodeMatch(Tags.ScheduledHumanPerformersSeq,
+                Tags.HumanPerformerCodeSeq, 
+                new String[] { "UPS.pk", "rel_ups_performer.ups_fk" },
+                new String[] { "rel_ups_performer", "Code" },
+                new String[] { "rel_ups_performer.performer_fk", "Code.pk" });
+        addRefRequestMatch();
+        sqlBuilder.addRefSOPMatch(
+                new String[]{ "UPS.pk", "UPSRelatedPS.ups_fk"},
+                "UPSRelatedPS", "UPSRelatedPS.refSOPClassUID", 
+                "UPSRelatedPS.refSOPInstanceUID",
+                keys.getItem(Tags.RelatedProcedureStepSeq), type2);
+// TODO Tags.ReplacedProcedureStepSeq not yet defined
+//        sqlBuilder.addRefSOPMatch(
+//                new String[]{ "UPS.pk", "UPSReplacedPS.ups_fk"},
+//                "UPSReplacedPS", "UPSReplacedPS.refSOPClassUID", 
+//                "UPSReplacedPS.refSOPInstanceUID",
+//                keys.getItem(Tags.Tags.ReplacedProcedureStepSeq), type2);
+
         sqlBuilder.addWildCardMatch(null, "UPS.admissionID",
                 type2,
                 keys.getStrings(Tags.AdmissionID));
@@ -183,74 +174,76 @@ public class UPSQueryCmd extends BaseDSQueryCmd {
                 patAttrFilter.getStrings(keys, Tags.PatientSex));
     }
 
-    private void addCodeMatch(int tag, String alias) {
-        addCodeMatch(keys.getItem(tag), alias);
-    }
+    private void addRefRequestMatch() {
+        Dataset item = keys.getItem(Tags.RefRequestSeq);
+        if (item == null || item.isEmpty())
+            return;
+        
+        SqlBuilder subQuery = new SqlBuilder();
+        subQuery.setSelect1();
+        String[] from = { "UPSRequest" };
+        subQuery.setFrom(from);
+        subQuery.addFieldValueMatch(null, "UPS.pk", false, null,
+                "UPSRequest.ups_fk");
+        boolean universalMatch = subQuery.addWildCardMatch(null,
+                "UPSRequest.requestedProcedureId", type2,
+                item.getStrings(Tags.RequestedProcedureID)) == null;
+        universalMatch = subQuery.addWildCardMatch(null,
+                "UPSRequest.accessionNumber", type2,
+                item.getStrings(Tags.AccessionNumber)) == null
+                && universalMatch;
+        universalMatch = subQuery.addWildCardMatch(null,
+                "UPSRequest.confidentialityCode", type2,
+                item.getStrings(Tags.ConfidentialityCode)) == null
+                && universalMatch;
+        universalMatch = subQuery.addWildCardMatch(null,
+                "UPSRequest.requestingService", type2,
+                item.getStrings(Tags.RequestingService)) == null
+                && universalMatch;
 
-    private void addCodeMatch(Dataset item, String alias) {
-        if (item != null) {
-            sqlBuilder.addSingleValueMatch(alias, "Code.codeValue",
-                    SqlBuilder.TYPE1,
-                    item.getString(Tags.CodeValue));
-            sqlBuilder.addSingleValueMatch(alias, "Code.codingSchemeDesignator",
-                    SqlBuilder.TYPE1,
-                    item.getString(Tags.CodingSchemeDesignator));
-            sqlBuilder.addSingleValueMatch(alias, "Code.codingSchemeVersion",
-                    SqlBuilder.TYPE1,
-                    item.getString(Tags.CodingSchemeVersion));
+        if (universalMatch)
+            return;
+
+        if (!type2) {
+            sqlBuilder.addCorrelatedSubquery(subQuery);
+        } else {
+            SqlBuilder subQuery2 = new SqlBuilder();
+            subQuery2.setSelect1();
+            subQuery2.setFrom(from);
+            subQuery2.addFieldValueMatch(null, "UPS.pk", false, null, 
+                    "UPSRequest.ups_fk");
+            Match match2 = new Match.Subquery(subQuery2, null, null);
+            Node notNode = new  Match.Node(null, true);
+            notNode.addMatch(match2);
+            Node orMatch = sqlBuilder.addNodeMatch(" OR", false);
+            orMatch.addMatch(new Match.Subquery(subQuery, null, null));
+            orMatch.addMatch(notNode);
         }
     }
 
-    private boolean isMatchCode(int tag) {
-        return isMatchCode(keys.getItem(tag));
+    private void addNestedCodeMatch(int tag, String[] parentRelation,
+            String[] tables, String[] relations) {
+        addNestedCodeMatch(keys.getItem(tag), parentRelation, tables, relations);
     }
 
-    private boolean isMatchCode(Dataset code) {
-        return code != null
-                && (code.containsValue(Tags.CodeValue) 
-                        || code.containsValue(Tags.CodingSchemeDesignator));
+    private void addNestedCodeMatch(int tag1, int tag2, String[] parentRelation,
+            String[] tables, String[] relations) {
+        Dataset item = keys.getItem(tag1);
+        addNestedCodeMatch(item.getItem(tag2), parentRelation, tables, relations);
     }
 
-    private boolean isMatchRefRequest() {
-        Dataset refrq = keys.getItem(Tags.RefRequestSeq);
-        return refrq != null
-                && (refrq.containsValue(Tags.RequestedProcedureID)
-                        || refrq.containsValue(Tags.AccessionNumber)
-                        || refrq.containsValue(Tags.ConfidentialityCode)
-                        || refrq.containsValue(Tags.RequestingService));
+    private void addNestedCodeMatch(Dataset item, String[] parentRelation,
+            String[] tables, String[] relations) {
+        sqlBuilder.addNestedCodeMatch(parentRelation, tables, relations, item, 
+                type2);
     }
-    
+
     private String[] getLeftJoin() {
-        boolean workitem, appcode, devname, devclass, devloc, performer, request;
+        boolean workitem;
         int index = 4;
-        if (workitem = isMatchCode(Tags.ScheduledWorkitemCodeSeq))
+        if (workitem = SqlBuilder.isCodeMatch(
+                keys.getItem(Tags.ScheduledWorkitemCodeSeq)))
             index += 4;
-        if (appcode = isMatchCode(Tags.ScheduledProcessingApplicationsCodeSeq))
-            index += 8;
-        if (devname = isMatchCode(Tags.ScheduledStationNameCodeSeq))
-            index += 8;
-        if (devclass = isMatchCode(Tags.ScheduledStationClassCodeSeq))
-            index += 8;
-        if (devloc = isMatchCode(Tags.ScheduledStationGeographicLocationCodeSeq))
-            index += 8;
-        Dataset performerItem = keys.getItem(Tags.ScheduledHumanPerformersSeq);
-        if (performer = performerItem != null 
-                && isMatchCode(performerItem.getItem(Tags.HumanPerformerCodeSeq)))
-            index += 8;
-        if (request = isMatchRefRequest())
-            index += 4;
-        Dataset relpsitem = keys.getItem(Tags.RelatedProcedureStepSeq);
-        boolean relatedps = false;
-        boolean relatedpscode = false;
-        if (relpsitem != null) {
-            if (relatedpscode = isMatchCode(
-                    relpsitem.getItem(Tags.PurposeOfReferenceCodeSeq))) {
-                relatedps = true;
-                index += 8;
-            } else if (relatedps = relpsitem.containsValue(Tags.RefSOPInstanceUID)
-                    || relpsitem.containsValue(Tags.RefSOPClassUID))
-                index += 4;
-        }
         String[] leftJoin = new String[index];
         leftJoin[0] = "Patient";
         leftJoin[1] = null;
@@ -262,81 +255,6 @@ public class UPSQueryCmd extends BaseDSQueryCmd {
             leftJoin[index++] = ITEM_CODE;
             leftJoin[index++] = "UPS.code_fk";
             leftJoin[index++] = "Code.pk";
-        }
-        if (appcode) {
-            sqlBuilder.setDistinct(true);
-            leftJoin[index++] = "rel_ups_appcode";
-            leftJoin[index++] = null;
-            leftJoin[index++] = "UPS.pk";
-            leftJoin[index++] = "rel_ups_appcode.ups_fk";
-            leftJoin[index++] = "Code";
-            leftJoin[index++] = APP_CODE;
-            leftJoin[index++] = "rel_ups_appcode.appcode_fk";
-            leftJoin[index++] = "Code.pk";
-        }
-        if (devname) {
-            sqlBuilder.setDistinct(true);
-            leftJoin[index++] = "rel_ups_devname";
-            leftJoin[index++] = null;
-            leftJoin[index++] = "UPS.pk";
-            leftJoin[index++] = "rel_ups_devname.ups_fk";
-            leftJoin[index++] = "Code";
-            leftJoin[index++] = DEVNAME_CODE;
-            leftJoin[index++] = "rel_ups_devname.devname_fk";
-            leftJoin[index++] = "Code.pk";
-        }
-        if (devclass) {
-            sqlBuilder.setDistinct(true);
-            leftJoin[index++] = "rel_ups_devclass";
-            leftJoin[index++] = null;
-            leftJoin[index++] = "UPS.pk";
-            leftJoin[index++] = "rel_ups_devclass.ups_fk";
-            leftJoin[index++] = "Code";
-            leftJoin[index++] = DEVCLASS_CODE;
-            leftJoin[index++] = "rel_ups_devclass.devclass_fk";
-            leftJoin[index++] = "Code.pk";
-        }
-        if (devloc) {
-            sqlBuilder.setDistinct(true);
-            leftJoin[index++] = "rel_ups_devloc";
-            leftJoin[index++] = null;
-            leftJoin[index++] = "UPS.pk";
-            leftJoin[index++] = "rel_ups_devloc.ups_fk";
-            leftJoin[index++] = "Code";
-            leftJoin[index++] = DEVLOC_CODE;
-            leftJoin[index++] = "rel_ups_devloc.devloc_fk";
-            leftJoin[index++] = "Code.pk";
-        }
-        if (performer) {
-            sqlBuilder.setDistinct(true);
-            leftJoin[index++] = "rel_ups_performer";
-            leftJoin[index++] = null;
-            leftJoin[index++] = "UPS.pk";
-            leftJoin[index++] = "rel_ups_performer.ups_fk";
-            leftJoin[index++] = "Code";
-            leftJoin[index++] = PERF_CODE;
-            leftJoin[index++] = "rel_ups_performer.performer_fk";
-            leftJoin[index++] = "Code.pk";
-        }
-        if (request) {
-            sqlBuilder.setDistinct(true);
-            leftJoin[index++] = "UPSRequest";
-            leftJoin[index++] = null;
-            leftJoin[index++] = "UPS.pk";
-            leftJoin[index++] = "UPSRequest.ups_fk";
-        }
-        if (relatedps) {
-            sqlBuilder.setDistinct(true);
-            leftJoin[index++] = "UPSRelatedPS";
-            leftJoin[index++] = null;
-            leftJoin[index++] = "UPS.pk";
-            leftJoin[index++] = "UPSRelatedPS.ups_fk";
-            if (relatedpscode) {
-                leftJoin[index++] = "Code";
-                leftJoin[index++] = RELPS_CODE;
-                leftJoin[index++] = "UPSRelatedPS.code_fk";
-                leftJoin[index++] = "Code.pk";
-            }
         }
         return leftJoin;
     }

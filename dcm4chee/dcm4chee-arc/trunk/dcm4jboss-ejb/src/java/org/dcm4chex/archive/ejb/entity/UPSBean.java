@@ -64,6 +64,8 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.UPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.UPSRelatedPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.UPSRelatedPSLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.UPSReplacedPSLocal;
+import org.dcm4chex.archive.ejb.interfaces.UPSReplacedPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.UPSRequestLocal;
 import org.dcm4chex.archive.ejb.interfaces.UPSRequestLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.UPSSubscriptionLocal;
@@ -90,6 +92,7 @@ import org.dcm4chex.archive.ejb.interfaces.UPSSubscriptionLocal;
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  * @ejb.ejb-ref ejb-name="UPSRequest" view-type="local" ref-name="ejb/UPSRequest"
  * @ejb.ejb-ref ejb-name="UPSRelatedPS" view-type="local" ref-name="ejb/UPSRelatedPS"
+ * @ejb.ejb-ref ejb-name="UPSReplacedPS" view-type="local" ref-name="ejb/UPSReplacedPS"
  */
 public abstract class UPSBean implements EntityBean {
 
@@ -99,6 +102,7 @@ public abstract class UPSBean implements EntityBean {
     private CodeLocalHome codeHome;
     private UPSRequestLocalHome rqHome;
     private UPSRelatedPSLocalHome relPSHome;
+    private UPSReplacedPSLocalHome replPSHome;
 
     public void setEntityContext(EntityContext ctx) {
         ejbctx = ctx;
@@ -111,6 +115,8 @@ public abstract class UPSBean implements EntityBean {
                     jndiCtx.lookup("java:comp/env/ejb/UPSRequest");
             relPSHome = (UPSRelatedPSLocalHome)
                     jndiCtx.lookup("java:comp/env/ejb/UPSRelatedPS");
+            replPSHome = (UPSReplacedPSLocalHome)
+                    jndiCtx.lookup("java:comp/env/ejb/UPSReplacedPS");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -127,6 +133,7 @@ public abstract class UPSBean implements EntityBean {
         codeHome = null;
         rqHome = null;
         relPSHome = null;
+        replPSHome = null;
         ejbctx = null;
     }
 
@@ -160,6 +167,8 @@ public abstract class UPSBean implements EntityBean {
                     ds.get(Tags.ScheduledHumanPerformersSeq));
             updateRefRequests(ds.get(Tags.RefRequestSeq));
             updateRelatedPS(ds.get(Tags.RelatedProcedureStepSeq));
+            // TODO Tags.ReplacedProcedureStepSeq not yet defined
+            // updateReplacedPS(ds.get(Tags.ReplacedProcedureStepSeq)
         } catch (Exception e) {
             throw new EJBException(e);
         }
@@ -209,6 +218,14 @@ public abstract class UPSBean implements EntityBean {
             c.add(relPSHome.create(sq.getItem(i), ups));
     }
 
+    private void updateReplacedPS(DcmElement sq) throws CreateException {
+        if (sq == null) return;
+        Collection<UPSReplacedPSLocal> c = getReplacedProcedureSteps();
+        c.clear();
+        UPSLocal ups = (UPSLocal) ejbctx.getEJBLocalObject();
+        for (int i = 0, n = sq.countItems(); i < n; i++)
+            c.add(replPSHome.create(sq.getItem(i), ups));
+    }
 
     /**
      * Auto-generated Primary Key
@@ -436,6 +453,13 @@ public abstract class UPSBean implements EntityBean {
     public abstract Collection<UPSRelatedPSLocal> getRelatedProcedureSteps();
 
     public abstract void setRelatedProcedureSteps(Collection<UPSRelatedPSLocal> relPSs);
+
+    /**
+     * @ejb.relation name="ups-replaced-ps" role-name="ups-with-replaced-ps"
+     */
+    public abstract Collection<UPSReplacedPSLocal> getReplacedProcedureSteps();
+
+    public abstract void setReplacedProcedureSteps(Collection<UPSReplacedPSLocal> relPSs);
 
     /**
      * @ejb.interface-method

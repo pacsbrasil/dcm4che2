@@ -50,18 +50,18 @@ import org.dcm4chex.archive.ejb.interfaces.UPSLocal;
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date:: xxxx-xx-xx $
- * @since Apr 2, 2010
+ * @since Jul 5, 2010
  * 
- * @ejb.bean name="UPSRelatedPS" type="CMP" view-type="local"
- *           local-jndi-name="ejb/UPSRelatedPS" primkey-field="pk"
+ * @ejb.bean name="UPSReplacedPS" type="CMP" view-type="local"
+ *           local-jndi-name="ejb/UPSReplacedPS" primkey-field="pk"
  * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
- * @ejb.persistence table-name="ups_rel_ps"
+ * @ejb.persistence table-name="ups_repl_ps"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
  */
-public abstract class UPSRelatedPSBean implements EntityBean {
+public abstract class UPSReplacedPSBean implements EntityBean {
 
-    private static final Logger LOG = Logger.getLogger(UPSRelatedPSBean.class);
+    private static final Logger LOG = Logger.getLogger(UPSReplacedPSBean.class);
 
     /**
      * @ejb.create-method
@@ -74,11 +74,11 @@ public abstract class UPSRelatedPSBean implements EntityBean {
 
     public void ejbPostCreate(Dataset ds, UPSLocal ups) throws CreateException {
         setUPS(ups);
-        LOG.info(prompt("Created UPSRelatedPS[pk=]"));
+        LOG.info(prompt("Created UPSReplacedPS[pk=]"));
     }
 
     public void ejbRemove() throws RemoveException {
-        LOG.info(prompt("Deleting UPSRelatedPS[pk="));
+        LOG.info(prompt("Deleting UPSReplacedPS[pk="));
     }
 
     private String prompt(String prefix) {
@@ -117,7 +117,7 @@ public abstract class UPSRelatedPSBean implements EntityBean {
     public abstract void setRefSOPClassUID(String uid);
 
     /**
-     * @ejb.relation name="ups-related-ps" role-name="related-ps-of-ups"
+     * @ejb.relation name="ups-replaced-ps" role-name="replaced-ps-of-ups"
      *               cascade-delete="yes"
      * @jboss.relation fk-column="ups_fk" related-pk-field="pk"
      */

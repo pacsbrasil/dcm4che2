@@ -42,8 +42,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
+import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.PersonName;
+import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.ejb.jdbc.Match.Node;
 
 /**
  * @author Gunter.Zeilinger <gunterze@gmail.com>
@@ -64,6 +67,7 @@ class SqlBuilder {
     private static final String DATE_FORMAT = "''yyyy-MM-dd HH:mm:ss.SSS''";
     private static final String ORA_DATE_FORMAT = 
         "'TO_TIMESTAMP('''yyyy-MM-dd HH:mm:ss.SSS'','''YYYY-MM-DD HH24:MI:SS.FF''')";
+    private static final String[] ONE = { "1" };
     private String[] select;
     private String[] from;
     private String[] leftJoin;
@@ -94,6 +98,10 @@ class SqlBuilder {
     }
     public void setFieldNamesForSelect(String[] fields) {
         select = fields;
+    }
+
+    public void setSelect1() {
+        select = ONE;
     }
 
     public void setSelectCount( String[] fields, boolean distinct) {
@@ -265,7 +273,7 @@ class SqlBuilder {
 
     public Match addWildCardMatch(String alias, String field, boolean type2,
             String[] vals) {
-        if ( vals == null || vals.length < 1 ) return null;
+        if ( vals == null || vals.length == 0 ) return null;
         if ( vals.length > 1 ) {
             if ( containsWildCard(vals) ) {
                 matchNotSupported = true;
@@ -622,4 +630,99 @@ class SqlBuilder {
         }
     }
 
+    public static boolean isCodeMatch(Dataset item) {
+        return item != null && !item.isEmpty()
+                && (item.containsValue(Tags.CodeValue)
+                        || item.containsValue(Tags.CodingSchemeDesignator)
+                        || item.containsValue(Tags.CodingSchemeVersion));
+    }
+
+    public boolean addCodeMatch(String alias, Dataset item) {
+        if (item == null || item.isEmpty())
+            return false;
+
+        boolean universalMatch = addSingleValueMatch(alias,
+                "Code.codeValue", SqlBuilder.TYPE1,
+                item.getString(Tags.CodeValue)) == null;
+        universalMatch = addSingleValueMatch(alias,
+                "Code.codingSchemeDesignator", SqlBuilder.TYPE1,
+                item.getString(Tags.CodingSchemeDesignator)) == null
+                && universalMatch;
+        universalMatch = addSingleValueMatch(alias,
+                "Code.codingSchemeVersion", SqlBuilder.TYPE1,
+                item.getString(Tags.CodingSchemeVersion)) == null
+                && universalMatch;
+        return !universalMatch;
+    }
+
+    public void addNestedCodeMatch(String[] parentRelations,
+            String[] tables, String[] relations, Dataset item, boolean type2) {
+
+        if (item == null || item.isEmpty())
+            return;
+
+        SqlBuilder subQuery = new SqlBuilder();
+        subQuery.setSelect1();
+        subQuery.setFrom(tables);
+        subQuery.setRelations(relations);
+        if (!subQuery.addCodeMatch(null, item))
+            return;
+        
+        Match match = new Match.Subquery(subQuery, null, null);
+        if (!type2) {
+            addMatch(match);
+        } else {
+            SqlBuilder subQuery2 = new SqlBuilder();
+            subQuery2.setSelect1();
+            subQuery2.setFrom(new String[] { tables[0] });
+            subQuery2.addFieldValueMatch(null, parentRelations[0], false, null, 
+                    parentRelations[1]);
+            Match match2 = new Match.Subquery(subQuery2, null, null);
+            Node notNode = new  Match.Node(null, true);
+            notNode.addMatch(match2);
+            Node orMatch = addNodeMatch(" OR", false);
+            orMatch.addMatch(match);
+            orMatch.addMatch(notNode);
+        }
+    }
+
+    public void addRefSOPMatch(String[] parentRelations, String table,
+            String cuidField, String iuidField, Dataset item, boolean type2) {
+
+        if (item == null || item.isEmpty())
+            return;
+
+        SqlBuilder subQuery = new SqlBuilder();
+        subQuery.setSelect1();
+        String[] tables = { table };
+        subQuery.setFrom(tables);
+        subQuery.addFieldValueMatch(null, parentRelations[0], false, null, 
+                parentRelations[1]);
+        boolean universalMatch = subQuery.addSingleValueMatch(null,
+                cuidField, SqlBuilder.TYPE1,
+                item.getString(Tags.RefSOPClassUID)) == null;
+        universalMatch = subQuery.addSingleValueMatch(null,
+                iuidField, SqlBuilder.TYPE1,
+                item.getString(Tags.RefSOPInstanceUID)) == null
+                && universalMatch;
+        if (universalMatch)
+            return;
+        
+        Match match = new Match.Subquery(subQuery, null, null);
+        if (!type2) {
+            addMatch(match);
+        } else {
+            SqlBuilder subQuery2 = new SqlBuilder();
+            subQuery2.setSelect1();
+            subQuery2.setFrom(tables);
+            subQuery2.addFieldValueMatch(null, parentRelations[0], false, null, 
+                    parentRelations[1]);
+            Match match2 = new Match.Subquery(subQuery2, null, null);
+            Node notNode = new  Match.Node(null, true);
+            notNode.addMatch(match2);
+            Node orMatch = addNodeMatch(" OR", false);
+            orMatch.addMatch(match);
+            orMatch.addMatch(notNode);
+        }
+    }
 }

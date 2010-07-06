@@ -606,7 +606,7 @@ abstract class Match {
     }
 
     static class Subquery extends Match {
-        private String subQueryStr;
+        private final String subQueryStr;
 
         public Subquery(SqlBuilder subQuery, String field, String alias) {
             subQuery.setSubQueryMode(true);

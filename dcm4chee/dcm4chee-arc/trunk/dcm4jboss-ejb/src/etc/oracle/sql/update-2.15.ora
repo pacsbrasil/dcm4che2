@@ -108,18 +108,27 @@ CREATE INDEX ups_req_service ON ups_req(req_service);
 
 CREATE SEQUENCE ups_rel_ps_pk_seq;
 CREATE TABLE ups_rel_ps (
-    pk                NUMBER(38,0) NOT NULL CONSTRAINT ups_rel_ps_pk PRIMARY KEY,
-    ups_fk            NUMBER(38,0),
-    code_fk           NUMBER(38,0),
+    pk                NUMERIC(38,0) NOT NULL CONSTRAINT ups_rel_ps_pk PRIMARY KEY,
+    ups_fk            NUMERIC(38,0),
     sop_iuid          VARCHAR2(255) NOT NULL,
     sop_cuid          VARCHAR2(255) NOT NULL,
- FOREIGN KEY (ups_fk) REFERENCES ups(pk),
- FOREIGN KEY (code_fk) REFERENCES code(pk)
+ FOREIGN KEY (ups_fk) REFERENCES ups(pk)
 );
 CREATE INDEX ups_rel_ps_ups_fk ON ups_rel_ps(ups_fk);
-CREATE INDEX ups_rel_ps_code_fk ON ups_rel_ps(code_fk);
 CREATE INDEX ups_rel_ps_iuid ON ups_rel_ps(sop_iuid);
 CREATE INDEX ups_rel_ps_cuid ON ups_rel_ps(sop_cuid);
+
+CREATE SEQUENCE ups_repl_ps_pk_seq;
+CREATE TABLE ups_repl_ps (
+    pk                NUMERIC(38,0) NOT NULL CONSTRAINT ups_repl_ps_pk PRIMARY KEY,
+    ups_fk            NUMERIC(38,0),
+    sop_iuid          VARCHAR2(255) NOT NULL,
+    sop_cuid          VARCHAR2(255) NOT NULL,
+ FOREIGN KEY (ups_fk) REFERENCES ups(pk)
+);
+CREATE INDEX ups_repl_ps_ups_fk ON ups_repl_ps(ups_fk);
+CREATE INDEX ups_repl_ps_iuid ON ups_repl_ps(sop_iuid);
+CREATE INDEX ups_repl_ps_cuid ON ups_repl_ps(sop_cuid);
 
 CREATE SEQUENCE ups_subscr_pk_seq;
 CREATE TABLE ups_subscr (
