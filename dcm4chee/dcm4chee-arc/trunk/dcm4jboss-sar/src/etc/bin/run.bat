@@ -87,7 +87,7 @@ rem Add -server to the JVM options, if supported
 if not errorlevel == 1 (set JAVA_OPTS=%JAVA_OPTS% -server)
 
 rem JVM memory allocation pool parameters. Modify as appropriate.
-set JAVA_OPTS=%JAVA_OPTS% -Xms128m -Xmx512m
+set JAVA_OPTS=%JAVA_OPTS% -Xms128m -Xmx512m -XX:MaxPermSize=128m
 
 rem Specify the ID of the ServerPeer used by JBoss Messaging. Must be unique per JBoss instance
 set JAVA_OPTS=%JAVA_OPTS% -Djboss.messaging.ServerPeerID=0
