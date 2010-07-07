@@ -220,9 +220,6 @@ public class DisplayReportTablePanel extends Panel {
             }
             .add(new Label("table-download-xml-image", "XML"))
             .add(new TooltipBehaviour("dashboard.report.reporttable.", "xml.downloadlink"))
-//            .add(new Image("table-download-xml-image", ImageManager.IMAGE_REPORT_XML)
-//                .add(new ImageSizeBehaviour())
-//                )
             );
 
             addOrReplace(new Link<Object>("table-download-csv") {
@@ -263,9 +260,6 @@ public class DisplayReportTablePanel extends Panel {
             }
             .add(new Label("table-download-csv-image", "CSV"))
             .add(new TooltipBehaviour("dashboard.report.reporttable.", "csv.downloadlink"))
-//            .add(new Image("table-download-csv-image", ImageManager.IMAGE_REPORT_CSV)
-//                .add(new ImageSizeBehaviour())
-//                )
             );
 
             addOrReplace(new Image("table-print-image", ImageManager.IMAGE_DASHBOARD_REPORT_PRINT)

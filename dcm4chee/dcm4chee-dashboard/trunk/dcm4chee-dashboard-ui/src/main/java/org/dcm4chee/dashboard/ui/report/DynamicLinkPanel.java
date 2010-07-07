@@ -107,7 +107,7 @@ public class DynamicLinkPanel extends Panel {
                                 getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT_ADD) :
                                     getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT_EDIT) : 
                     (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.RemoveLink) ? 
-                            getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT_DELETE) : 
+                            getRequestCycle().urlFor(ImageManager.IMAGE_COMMON_REMOVE) : 
                     (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.DisplayDiagramLink) ?
                             getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT_CHART) : 
                     (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.DisplayTableLink) ?
