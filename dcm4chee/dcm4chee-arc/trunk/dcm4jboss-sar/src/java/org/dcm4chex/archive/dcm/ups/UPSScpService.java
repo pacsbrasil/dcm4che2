@@ -95,6 +95,8 @@ public class UPSScpService extends AbstractScpService
     private static final int PCID_UPSEVENT = 1;
     private static final UIDGenerator uidgen = UIDGenerator.getInstance();
 
+    private boolean noMatchForNoValue;
+
     private String worklistLabel;
 
     private final Map<String, String> cuidMap =
@@ -109,7 +111,7 @@ public class UPSScpService extends AbstractScpService
 
     private int soCloseDelay = 500;
 
-    private RetryIntervalls reportRetryIntervalls = new RetryIntervalls();
+    private RetryIntervalls.Map reportRetryIntervalls;
 
     private int concurrency = 1;
 
@@ -142,13 +144,16 @@ public class UPSScpService extends AbstractScpService
         }
     }
 
-    public final String getReportRetryIntervalls() {
-        return reportRetryIntervalls.toString();
+    public String getReportRetryIntervalls() {
+        return reportRetryIntervalls != null 
+                ? reportRetryIntervalls.toString()
+                : "NEVER\n";
     }
 
-    public final void setReportRetryIntervalls(String s) {
-        this.reportRetryIntervalls = new RetryIntervalls(s);
+    public void setReportRetryIntervalls(String text) {
+        reportRetryIntervalls = new RetryIntervalls.Map(text);
     }
+
 
     public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
@@ -232,6 +237,14 @@ public class UPSScpService extends AbstractScpService
 
     public void setAcceptedSOPClasses(String s) {
         updateAcceptedSOPClass(cuidMap, s, null);
+    }
+
+    public final boolean isNoMatchForNoValue() {
+        return noMatchForNoValue;
+    }
+
+    public final void setNoMatchForNoValue(boolean noMatchForNoValue) {
+        this.noMatchForNoValue = noMatchForNoValue;
     }
 
     public final boolean getAccessBlobAsLongVarBinary() {
@@ -521,7 +534,8 @@ public class UPSScpService extends AbstractScpService
                 order.setThrowable(e);
                 final int failureCount = order.getFailureCount() + 1;
                 order.setFailureCount(failureCount);
-                final long delay = reportRetryIntervalls.getIntervall(failureCount);
+                final long delay = reportRetryIntervalls.getIntervall(
+                        order.getCalledAET(), failureCount);
                 if (delay == -1L) {
                     log.error("Give up to process " + order, e);
                     jmsDelegate.fail(queueName, order);

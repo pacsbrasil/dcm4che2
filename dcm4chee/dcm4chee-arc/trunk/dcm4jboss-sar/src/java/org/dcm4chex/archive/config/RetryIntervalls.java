@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.config;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 
 /**
@@ -67,16 +69,20 @@ public final class RetryIntervalls {
     }
 
     public RetryIntervalls(String text) {
-        try {
-            StringTokenizer stk = new StringTokenizer(text, ", \t\n\r");
-            counts = new int[stk.countTokens()];
-            intervalls = new long[counts.length];
-            for (int i = 0; i < counts.length; i++) {
-                init(i, stk.nextToken());
+        if (text.trim().equalsIgnoreCase("NEVER")) {
+            counts = new int[0];
+            intervalls = new long[0];
+        } else
+            try {
+                StringTokenizer stk = new StringTokenizer(text, ", \t\n\r");
+                counts = new int[stk.countTokens()];
+                intervalls = new long[counts.length];
+                for (int i = 0; i < counts.length; i++) {
+                    init(i, stk.nextToken());
+                }
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(text);
             }
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(text);
-        }
     }
 
     private void init(int i, String item) {
@@ -88,7 +94,7 @@ public final class RetryIntervalls {
     }
 
     public String toString() {
-        if (counts.length == 0) { return ""; }
+        if (counts.length == 0) { return "NEVER"; }
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < counts.length; i++) {
             sb.append(counts[i]).append('x');
@@ -154,4 +160,46 @@ public final class RetryIntervalls {
         return -1L;
     }
 
+    public static final class Map {
+
+        private final ArrayList<String> keys = new ArrayList<String>();
+        private final ArrayList<RetryIntervalls> values =
+                new ArrayList<RetryIntervalls>();
+        private RetryIntervalls defval = null;
+
+        public Map(String s) {
+            StringTokenizer st = new StringTokenizer(s,";\r\n");
+            String token;
+            int pos;
+            while (st.hasMoreTokens()) {
+                token = st.nextToken().trim();
+                pos = token.indexOf(']');
+                if ( pos > 0 ) {
+                    keys.add(token.substring(1,pos));
+                    values.add(new RetryIntervalls(token.substring(pos+1)));
+                } else {
+                    defval = new RetryIntervalls(token);
+                }
+            }
+            keys.trimToSize();
+            values.trimToSize();
+        }
+
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            int size = keys.size();
+            for (int i = 0; i < size; i++)
+                sb.append('[').append(keys.get(i)).append(']')
+                        .append(values.get(i)).append('\n');
+            if (defval != null)
+                sb.append(defval).append('\n');
+            return sb.toString();
+        }
+
+        public long getIntervall(String key, int failureCount) {
+            int index = keys.indexOf(key);
+            RetryIntervalls val = index >= 0 ? values.get(index) : defval;
+            return val != null ? val.getIntervall(failureCount) : -1L;
+        }
+    }
 }

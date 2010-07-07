@@ -67,8 +67,9 @@ public class UPSQueryCmd extends BaseDSQueryCmd {
 
     private static final String ITEM_CODE = "item_code";
 
-    public UPSQueryCmd(Dataset keys) throws SQLException {
-        super(keys, true, false, transactionIsolationLevel);
+    public UPSQueryCmd(Dataset keys, boolean noMatchForNoValue)
+            throws SQLException {
+        super(keys, true, noMatchForNoValue, transactionIsolationLevel);
         AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
         defineColumnTypes(new int[] { blobAccessType, blobAccessType });
         String s;

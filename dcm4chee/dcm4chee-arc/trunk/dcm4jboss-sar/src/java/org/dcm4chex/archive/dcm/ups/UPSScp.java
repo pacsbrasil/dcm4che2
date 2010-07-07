@@ -528,7 +528,8 @@ class UPSScp extends DcmServiceBase {
         try {
             service.logDicomQuery(a, rqCmd.getAffectedSOPClassUID(),
                     rqData);
-            UPSQueryCmd queryCmd = new UPSQueryCmd(rqData);
+            UPSQueryCmd queryCmd = 
+                    new UPSQueryCmd(rqData, service.isNoMatchForNoValue());
             queryCmd.execute();
             return new MultiCFindRsp(queryCmd);
         } catch (Exception e) {

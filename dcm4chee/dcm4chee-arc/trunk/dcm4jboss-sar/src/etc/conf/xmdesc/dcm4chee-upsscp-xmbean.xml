@@ -108,6 +108,18 @@ received UPS N-CREATE request *and* in the matching Patient Record.
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isNoMatchForNoValue"
+      setMethod="setNoMatchForNoValue">
+      <description>Do not match entities with zero-length value for specified
+      matching keys (= non DICOM conform matching behavior).
+      </description>
+      <name>NoMatchForNoValue</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getAcceptedSOPClasses"
       setMethod="setAcceptedSOPClasses">
       <description><![CDATA[
@@ -291,34 +303,31 @@ received UPS N-CREATE request *and* in the matching Patient Record.
       getMethod="getReportRetryIntervalls"
       setMethod="setReportRetryIntervalls">
       <description><![CDATA[Number and interval of retries made to notify a
-      SCU of a change in state of a UPS instance.
-      <br>Format:
-      <br>Comma separated list of <i>number</i>x<i>interval</i> pairs or NEVER to disable retry for any destinations.
-      <br>The interval can be specified in seconds (##s),
-      minutes (##m), hours (##h) or days (##d).
-      <br/>Optional: Individual settings for specific Destination AETs. e.g. [AET1]3x1m,5x1h
-      <br/>Several AET settings can be seperated with new line or ';'. 
-      A entry without AET will be treated as default for AETs not listed here.
-      <br/>Example: 
-      <br/>5x1m,10x10m means retry a total of 5 times, one minute
-      apart for each retry; then retry a total of 10 times, 10 minutes 
-      <br/>Example: 
-      <br/>[AET1]2x1m,3x10m 
-      <br/>[AET2] 
-      <br/>5x1m,10x10m 
-      <br/>means: for SCU AET1 retry a total of 2 times, one minute
-      apart for each retry; then retry a total of 3 times, 10 minutes 
-      apart for each retry.
-      <br/>Retries are disabled for SCU AET2!
-      <br/>for all other SCUs retry a total of 5 times, one minute
-      apart for each retry; then retry a total of 10 times, 10 minutes 
-      apart for each retry.
-      ]]>
+SCU of a change in state of a UPS instance.
+<p>Format:
+<br>Comma separated list of <i>number</i>x<i>interval</i> pairs or NEVER.
+<br>The interval can be specified in seconds (##s), minutes (##m), hours (##h)
+or days (##d).
+<br/>Individual settings for specific Destination AETs can be specified by
+prefix [AET], separating several AET setting by new line. An entry without
+[AET] prefix will be treated as default.
+<p>Example: 5x1m,10x10m 
+<br/>=> retry a total of 5 times, one minute apart for each retry; then retry
+a total of 10 times, 10 minutes apart for each retry.
+<p>Example: 
+<br/>[AET1]2x1m,3x10m 
+<br/>[AET2]NEVER
+<br/>5x1m,10x10m 
+<br/>=> for destination AET1 retry a total of 2 times, one minute apart for
+each retry; then retry a total of 3 times, 10 minutes apart for each retry.
+Retries are disabled for destination AET2. For all other destinations retry a 
+total of 5 times, one minute apart for each retry; then retry a total of 10
+times, 10 minutes  apart for each retry. ]]>
       </description>
       <name>RetryIntervals</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="5x1m,12x5m,24x1h,7x1d" />
+         <value value="NEVER" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

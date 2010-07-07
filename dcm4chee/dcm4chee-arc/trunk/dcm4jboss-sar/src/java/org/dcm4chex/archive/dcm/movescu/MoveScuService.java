@@ -40,10 +40,6 @@
 package org.dcm4chex.archive.dcm.movescu;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -78,7 +74,8 @@ public class MoveScuService extends AbstractScuService implements
 
     private String calledAET = DEF_CALLED_AET;
 
-    private HashMap retryIntervalls = new HashMap();
+    private RetryIntervalls.Map retryIntervalls;
+
     private int concurrency = 1;
 
     private String queueName;
@@ -129,44 +126,13 @@ public class MoveScuService extends AbstractScuService implements
     }
 
     public String getRetryIntervalls() {
-        StringBuffer sb = new StringBuffer();
-        Map.Entry entry;
-        String key;
-        String defaultIntervalls = null;
-        for ( Iterator iter = retryIntervalls.entrySet().iterator() ; iter.hasNext() ; ) {
-            entry = (Map.Entry) iter.next();
-            key = (String)entry.getKey();
-            if ( key == null ) {
-                defaultIntervalls = ((RetryIntervalls) entry.getValue()).toString();
-            } else {
-                sb.append('[').append(key).append(']').append( (RetryIntervalls) entry.getValue() );
-                sb.append(System.getProperty("line.separator", "\n"));
-            }
-        }
-        if ( defaultIntervalls != null ) {
-            sb.append(defaultIntervalls);
-            sb.append(System.getProperty("line.separator", "\n"));
-        }
-        
-        return sb.length() > 1 ? sb.toString() : "NEVER";
+        return retryIntervalls != null
+                ? retryIntervalls.toString()
+                : "NEVER\n";
     }
 
     public void setRetryIntervalls(String text) {
-        retryIntervalls.clear();
-        if ( "NEVER".equals(text)) return;
-        StringTokenizer st = new StringTokenizer(text,";\r\n");
-        String token, key;
-        int pos;
-        while ( st.hasMoreTokens()) {
-            token = st.nextToken();
-            pos = token.indexOf(']');
-            if ( pos == -1 ) {
-                retryIntervalls.put(null, new RetryIntervalls(token));
-            } else {
-                key = token.substring(1,pos);
-                retryIntervalls.put(key, new RetryIntervalls(token.substring(pos+1)));
-            }
-        }
+        retryIntervalls = new RetryIntervalls.Map(text);
     }
 
     public boolean isForceCalledAET() {
@@ -225,9 +191,8 @@ public class MoveScuService extends AbstractScuService implements
                 order.setThrowable(e);
                 final int failureCount = order.getFailureCount() + 1;
                 order.setFailureCount(failureCount);
-                RetryIntervalls retry = (RetryIntervalls)retryIntervalls.get(order.getMoveDestination());
-                if ( retry == null ) retry = (RetryIntervalls)retryIntervalls.get(null);
-                final long delay = retry == null ? -1l : retry.getIntervall(failureCount);
+                final long delay = retryIntervalls
+                        .getIntervall(order.getMoveDestination(), failureCount);
                 if (delay == -1L) {
                     log.error("Give up to process " + order, e);
                     jmsDelegate.fail(queueName, order);
