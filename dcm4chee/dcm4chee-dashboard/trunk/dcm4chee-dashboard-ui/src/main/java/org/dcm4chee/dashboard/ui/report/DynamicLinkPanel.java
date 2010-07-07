@@ -102,17 +102,6 @@ public class DynamicLinkPanel extends Panel {
     
                 @Override
                 public Object getObject() {
-                    System.out.println("getObject: is a CreateOrEditReportLink ? : " + (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.CreateOrEditReportLink));
-                    System.out.println("getObject: report is null ? : " + (report == null));
-                    if (report != null) {
-                        System.out.println("getObject: report.groupUuid is null ? : " + (report.getGroupUuid() == null));
-                        if (report.getGroupUuid() != null) {
-                            System.out.println("getObject: report.groupUuid is : " + (report.getGroupUuid()));
-                        }
-                    }
-                    
-                    
-                    
                     return (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.CreateOrEditReportLink) ? 
                         (report == null || report.getGroupUuid() == null) ? 
                                 getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT_ADD) :
