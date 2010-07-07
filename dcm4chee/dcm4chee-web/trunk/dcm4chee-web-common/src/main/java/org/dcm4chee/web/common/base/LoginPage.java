@@ -41,7 +41,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.apache.wicket.Component;
-import org.apache.wicket.authentication.panel.SignInPanel;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
@@ -64,7 +63,7 @@ public class LoginPage extends BaseWicketPage {
         }
         add(new Label("loginLabel", new StringResourceModel("loginLabel", LoginPage.this, 
                 null, new Object[]{nodeInfo})));
-        add(new SignInPanel("signInPanel") {
+        add(new CustomSignInPanel("signInPanel") {
 
             private static final long serialVersionUID = 1L;
 
@@ -73,7 +72,7 @@ public class LoginPage extends BaseWicketPage {
                 user.add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour());
             }
         });  
-        this.get("signInPanel:signInForm").add(new FocusOnLoadBehaviour()); 
+        this.get("signInPanel:signInForm").add(new FocusOnLoadBehaviour());
     }
     
     @Override

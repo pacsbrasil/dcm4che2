@@ -9,7 +9,6 @@
 		<project>dcm4chee-web-sar-ianscu</project>
 		<project>dcm4chee-web-sar-movescu</project>
 		<project>dcm4chee-dashboard-sar</project>
-		<project>dcm4chee-web-war</project>
 		<project>dcm4chee-web-sar-echo</project>
 		<project>dcm4chee-web-sar-hl7send</project>
 		<project>dcm4chee-web-sar-bridge-store</project>
@@ -19,6 +18,7 @@
 		<project>dcm4chee-usr-entity</project>
 		<project>dcm4chee-arc-entities-${db}</project>
 		<project>dcm4chee-usr-dao</project>
+		<project>dcm4chee-web-war</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
