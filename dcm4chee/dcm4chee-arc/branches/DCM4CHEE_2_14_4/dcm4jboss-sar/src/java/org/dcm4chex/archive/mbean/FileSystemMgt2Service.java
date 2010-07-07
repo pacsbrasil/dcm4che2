@@ -806,11 +806,15 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     public FileSystemDTO updateFileSystemAvailability(String dirPath,
             String availability, String availabilityOfExternalRetrievable)
             throws Exception {
-        return fileSystemMgt().updateFileSystemAvailability(
-                        getFileSystemGroupID(), dirPath,
-                        Availability.toInt(availability), 
-                        Availability.toInt(availabilityOfExternalRetrievable), 
-                        updateStudiesBatchSize);
+        String fsGroupID = getFileSystemGroupID();
+        FileSystemMgt2 fsMgt = fileSystemMgt();
+        return fsMgt.updateFileSystemAvailability(fsGroupID, dirPath,
+                Availability.toInt(availability)) 
+                ? fsMgt.updateAvailabilityForStudyOnFileSystem(fsGroupID,
+                        dirPath,
+                        Availability.toInt(availabilityOfExternalRetrievable),
+                        updateStudiesBatchSize)
+                : fsMgt.getFileSystemOfGroup(fsGroupID, dirPath);
     }
 
     public FileSystemDTO updateFileSystemRetrieveAETitle(String dirPath,
