@@ -365,21 +365,11 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public FileSystemDTO updateFileSystemAvailability(String groupID,
-            String dirPath, int availability, int availabilityOfExtRetr,
-            int limit) throws FinderException {
-        FileSystemLocal fs =
-                fileSystemHome.findByGroupIdAndDirectoryPath(groupID, dirPath);
-        if (fs.getAvailability() != availability) {
-            fs.setAvailability(availability);
-            updateAvailabilityForStudyOnFileSystem(fs, availabilityOfExtRetr,
-                    limit);
-        }
-        return fs.toDTO();
-    }
-
-    private void updateAvailabilityForStudyOnFileSystem(FileSystemLocal fs,
-            int availabilityOfExtRetr, int batchsize) throws FinderException {
+    public FileSystemDTO updateAvailabilityForStudyOnFileSystem(String groupID,
+            String dirPath, int availabilityOfExtRetr, int batchsize)
+            throws FinderException {
+        FileSystemLocal fs = fileSystemHome.findByGroupIdAndDirectoryPath(
+                groupID, dirPath);
         for (int offset = 0; ; offset += batchsize) {
             Collection studies = studyHome.findStudiesWithFilesOnFileSystem(fs,
                     offset, batchsize);
@@ -393,6 +383,20 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 break;
             }
         }
+        return fs.toDTO();
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateFileSystemAvailability(String groupID, String dirPath,
+            int availability) throws FinderException {
+        FileSystemLocal fs =
+            fileSystemHome.findByGroupIdAndDirectoryPath(groupID, dirPath);
+        if (fs.getAvailability() == availability)
+            return false;
+        fs.setAvailability(availability);
+        return true;
     }
 
     /**
