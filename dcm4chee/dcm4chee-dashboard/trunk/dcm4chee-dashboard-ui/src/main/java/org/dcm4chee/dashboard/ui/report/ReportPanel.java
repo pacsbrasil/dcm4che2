@@ -251,8 +251,8 @@ public class ReportPanel extends Panel {
                 protected void onComponentTag(ComponentTag tag) {
                     super.onComponentTag(tag);
                     tag.put("src",form.isVisible() ? 
-                            getRequestCycle().urlFor(ImageManager.IMAGE_COMMON_COLLAPSE)
-                            : getRequestCycle().urlFor(ImageManager.IMAGE_COMMON_EXPAND)
+                            getRequestCycle().urlFor(ImageManager.IMAGE_COMMON_REMOVE)
+                            : getRequestCycle().urlFor(ImageManager.IMAGE_COMMON_ADD)
                     );
                 }
             }).add(new ImageSizeBehaviour("vertical-align: middle;")));

@@ -271,6 +271,7 @@ public class DashboardService extends ServiceMBeanSupport {
                 } else {
                     if (!delete) {
                         JSONObject jsonObject = JSONObject.fromObject(report);
+                        if (report.getGroupUuid() == null) jsonObject.put("groupUuid", JSONNull.getInstance());
                         if (report.getDiagram() == null) jsonObject.put("diagram", JSONNull.getInstance());
                         writer.write(jsonObject.toString());
                         writer.newLine();
@@ -291,7 +292,7 @@ public class DashboardService extends ServiceMBeanSupport {
 
     private void sort(String filename) {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(filename));// : this.reportFilename));
+            BufferedReader reader = new BufferedReader(new FileReader(filename));
             File reportFile = new File(filename);            
             String tempFilename = reportFile.getAbsolutePath().substring(0, reportFile.getAbsolutePath().length() - reportFile.getName().length()) 
                                 + UUID.randomUUID().toString();
@@ -300,13 +301,12 @@ public class DashboardService extends ServiceMBeanSupport {
             
             // store here
             List<ReportModel> reports = new ArrayList<ReportModel>();
-            
             while ((line = reader.readLine()) != null) {
                 reports.add((ReportModel) JSONObject.toBean(JSONObject.fromObject(line), ReportModel.class));
                 
             }
             Collections.sort(reports, new Comparator<ReportModel>() {
-            
+           
                 @Override
                 public int compare(ReportModel rm1, ReportModel rm2) {
                     return (rm1.getTitle().toUpperCase().compareTo(rm2.getTitle().toUpperCase()));
@@ -314,6 +314,8 @@ public class DashboardService extends ServiceMBeanSupport {
             });
             for (ReportModel rm : reports) {
                 JSONObject jsonObject = JSONObject.fromObject(rm);
+                if (rm.getGroupUuid() == null) jsonObject.put("groupUuid", JSONNull.getInstance());
+                if (rm.getDiagram() == null) jsonObject.put("diagram", JSONNull.getInstance());
                 writer.write(jsonObject.toString());
                 writer.newLine();
             }

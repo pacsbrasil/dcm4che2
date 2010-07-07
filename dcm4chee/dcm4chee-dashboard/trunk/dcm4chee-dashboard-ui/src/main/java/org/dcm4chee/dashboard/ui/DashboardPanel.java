@@ -47,7 +47,6 @@ import org.apache.wicket.extensions.markup.html.tabs.AbstractTab;
 import org.apache.wicket.extensions.markup.html.tabs.ITab;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.dashboard.ui.filesystem.FileSystemPanel;
 import org.dcm4chee.dashboard.ui.messaging.QueuePanel;
 import org.dcm4chee.dashboard.ui.report.ReportPanel;
@@ -69,7 +68,7 @@ public class DashboardPanel extends AjaxTabbedPanel {
     public DashboardPanel(String id) {
     
         this(id, new ArrayList<ITab>(Arrays.asList(
-            new AbstractTab(new StringResourceModel("dashboard.tabs.tab1.name", null)) {
+            new AbstractTab(new ResourceModel("dashboard.tabs.tab1.name")) {
             
                 private static final long serialVersionUID = 1L;
             
