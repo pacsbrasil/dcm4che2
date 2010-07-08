@@ -10,7 +10,7 @@ and install:
 
 - Apache FOP 0.95 [http://xmlgraphics.apache.org/fop/]
 
-dcm4chee-cdw-2.14.9 also relies on
+dcm4chee-cdw-2.15.0 also relies on
 
 - dcm4che-1.4.28 : dcm4che DICOM Library
 
