@@ -70,16 +70,16 @@
     </xsl:template>
     <xsl:template match="dicomdir" mode="left">
         <!-- Include IHE Logo -->
-        <fo:wrapper text-align="center" font-family="Helvetica" font-weight="bold" font-size="12pt">
+        <!-- fo:wrapper text-align="center" font-family="Helvetica" font-weight="bold" font-size="12pt" -->
             <fo:block padding-top="5mm">
                 <fo:external-graphic src="ihe_logo.jpg"/>
             </fo:block>
             <fo:block>PDI - Demo</fo:block>
             <fo:block>IHE-E 2006</fo:block>
-        </fo:wrapper>
+        <!-- /fo:wrapper -->
     </xsl:template>
     <xsl:template match="dicomdir" mode="right">
-        <fo:wrapper text-align="left" font-family="Helvetica" font-size="8pt">
+        <!-- fo:wrapper text-align="left" font-family="Helvetica" font-size="8pt" -->
             <!-- Creation Date and Institution -->
             <fo:block padding-top="10mm"> Created at <xsl:call-template name="formatDate">
                     <xsl:with-param name="date" select="$today"/>
@@ -91,7 +91,7 @@
             <fo:block>CITY</fo:block>
             <fo:block>COUNTRY</fo:block>
             <fo:block>http://your.company.url</fo:block>
-        </fo:wrapper>
+        <!-- /fo:wrapper -->
     </xsl:template>
     <xsl:template match="dicomdir" mode="upper">
         <!-- if Label Using Information Extracted From Instances -->
@@ -247,7 +247,7 @@
         </xsl:if>
     </xsl:template>
     <xsl:template match="dicomdir" mode="bottom">
-        <fo:wrapper text-align="center" font-family="Helvetica" font-size="10pt">
+        <!-- fo:wrapper text-align="center" font-family="Helvetica" font-size="10pt" -->
             <xsl:variable name="nonDICOM" select="attr[@tag='(2200,0008)']"/>
             <xsl:variable name="viewer" select="attr[@tag='(2200,0009)']"/>
             <fo:block>Content Type: <fo:inline font-weight="bold">
@@ -277,6 +277,6 @@
                     </xsl:if>
                 </fo:block>
             </xsl:if>
-        </fo:wrapper>
+        <!-- /fo:wrapper -->
     </xsl:template>
 </xsl:stylesheet>

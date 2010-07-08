@@ -39,12 +39,24 @@
       getMethod="getLabelFileFormat"
       setMethod="setLabelFileFormat">
       <description>Defines Format of created Label file. 
-      NO(=no Label File), PDF or PS(=Postscript).
+      NO(=no Label File), PNG, TIFF, PDF or PS(=Postscript).
       </description>
       <name>LabelFileFormat</name>
       <type>java.lang.String</type>      
       <descriptors>
          <value value="NO" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getLabelResolution"
+      setMethod="setLabelResolution">
+      <description>Label resolution in dpi (dots/pixels per inch) for
+      bitmap label file formats PNG and TIFF.
+      </description>
+      <name>LabelResolution</name>
+      <type>float</type>
+      <descriptors>
+         <value value="300" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

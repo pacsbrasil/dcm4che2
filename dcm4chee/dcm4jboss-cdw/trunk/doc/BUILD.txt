@@ -8,22 +8,22 @@ and install:
 
 - JBoss Application Server 4.2.3.GA [http://labs.jboss.com/jbossas/downloads]
 
-- Apache FOP 0.20.5 [http://xmlgraphics.apache.org/fop/]
+- Apache FOP 0.95 [http://xmlgraphics.apache.org/fop/]
 
-dcm4chee-cdw-2.14.2 also relies on
+dcm4chee-cdw-2.14.9 also relies on
 
-- dcm4che-1.4.23 : dcm4che DICOM Library
+- dcm4che-1.4.28 : dcm4che DICOM Library
 
 which binary and source distribution package is also available at
 http://sourceforge.net/projects/dcm4che. The binary package is sufficient to
 build dcm4chee-cdw. If you download the source package, you have to build
-all components of dcm4che-1.4.23 (ant release) before building dcm4chee-cdw.
+all components of dcm4che-1.4.28 (ant release) before building dcm4chee-cdw.
 
 Create an environment variable pointing to the Ant home directory (ANT_HOME)
 and add the $ANT_HOME/bin directory to your PATH.
 
 The build script (dcm4jboss-all/dcm4jboss-cdw/build.xml) assumes following
-locations of dcm4che-1.4.23, JBoss and Apache FOP:
+locations of dcm4che-1.4.28, JBoss and Apache FOP:
 
 dcm4che14.home=${user.home}/dcm4che14/build/dcm4che-1.4.19
 jboss.home=${user.home}/jboss-4.2.3.GA

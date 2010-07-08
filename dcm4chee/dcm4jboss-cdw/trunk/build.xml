@@ -4,7 +4,7 @@
     <property file="build.properties" />
     <property file="../build.properties" />
 
-    <property name="version" value="2.14.8"/>
+    <property name="version" value="2.15.0"/>
 
     <property name="javac.debug" value="on"/>
     <property name="javac.deprecation" value="off"/>
@@ -17,7 +17,7 @@
     <property name="jboss.dtd" value="${jboss.home}/docs/dtd"/>
 
     <!-- Override with your FOP dist location -->
-    <property name="fop.home" value="${user.home}/fop-0.20.5"/>
+    <property name="fop.home" value="${user.home}/fop-0.95"/>
 
     <!-- Override with your dcm4che-1.4.x dist location -->
 	<property name="dcm4che14.home" value="${user.home}/dcm4che14/build/dcm4che-1.4.28"/>
@@ -33,7 +33,6 @@
     <path id="build.path">
         <pathelement location="${dcm4che.jar}"/>
         <pathelement location="${fop.home}/build/fop.jar"/>
-    	<pathelement location="${fop.home}/lib/avalon-framework-cvs-20020806.jar"/>
         <pathelement location="${jboss.home}/lib/jboss-common.jar"/>
         <pathelement location="${jboss.home}/lib/jboss-system.jar"/>
         <pathelement location="${jboss.home}/lib/jboss-jmx.jar"/>
@@ -154,8 +153,10 @@
         <include name="fop.jar"/>
       </zipfileset>
       <zipfileset dir="${fop.home}" prefix="${dist.db.config}">
-        <include name="lib/avalon-framework-cvs-20020806.jar"/>
-        <include name="lib/batik.jar"/>
+        <include name="lib/avalon-framework-4.2.0.jar"/>
+        <include name="lib/batik-all-1.7.jar"/>
+        <include name="lib/commons-io-1.3.1.jar"/>
+        <include name="lib/xmlgraphics-commons-1.3.1.jar"/>
       </zipfileset>
     </zip>
   </target>

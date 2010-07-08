@@ -450,6 +450,14 @@ public class MediaComposerService extends ServiceMBeanSupport {
         labelCreator.setLabelFileFormat(format);
     }
 
+    public float getLabelResolution() {
+        return labelCreator.getTargetResolution();
+    }
+
+    public void setLabelResolution(float dpi) {
+        labelCreator.setTargetResolution(dpi);
+    }
+
     public final boolean isMakeIsoImage() {
         return makeIsoImage;
     }

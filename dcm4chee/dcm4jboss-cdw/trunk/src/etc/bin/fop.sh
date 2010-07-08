@@ -37,9 +37,13 @@ fi
 
 LIB_DIR=${JBOSS_HOME}/server/default/lib
 LOCALCLASSPATH=${LIB_DIR}/fop.jar
-LOCALCLASSPATH=${LIB_DIR}/avalon-framework-cvs-20020806.jar:$LOCALCLASSPATH
+LOCALCLASSPATH=${LIB_DIR}/avalon-framework-4.2.0.jar:$LOCALCLASSPATH
+LOCALCLASSPATH=${LIB_DIR}/batik-all-1.7.jar:$LOCALCLASSPATH
+LOCALCLASSPATH=${LIB_DIR}/commons-io-1.3.1.jar:$LOCALCLASSPATH
+LOCALCLASSPATH=${LIB_DIR}/commons-logging.jar:$LOCALCLASSPATH
+LOCALCLASSPATH=${LIB_DIR}/xmlgraphics-commons-1.3.1.jar:$LOCALCLASSPATH
 
 $JAVACMD -Djava.endorsed.dirs="$JBOSS_ENDORSED_DIRS" \
-         -classpath "$LOCALCLASSPATH" org.apache.fop.apps.Fop \
-         -c ${JBOSS_HOME}/bin/fopcfg.xml "$@"
+         -classpath "$LOCALCLASSPATH" org.apache.fop.cli.Main \
+         -c ${JBOSS_HOME}/bin/fop.xconf "$@"
 

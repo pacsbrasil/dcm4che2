@@ -12,4 +12,4 @@ dcm4che14.home=${user.home}/dcm4che14/build/dcm4che-1.4.28
 jboss.home=${user.home}/jboss-4.2.3.GA
 
 #Override with your FOP dist location
-fop.home=${user.home}/fop-0.20.5
+fop.home=${user.home}/fop-0.95

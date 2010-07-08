@@ -39,92 +39,93 @@
 package org.dcm4chex.cdw.mbean;
 
 import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 
-import org.apache.avalon.framework.logger.Log4JLogger;
-import org.apache.fop.apps.Driver;
-import org.apache.fop.configuration.Configuration;
-import org.apache.fop.messaging.MessageHandler;
+import org.apache.fop.apps.Fop;
+import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.MimeConstants;
 import org.apache.log4j.Logger;
 import org.dcm4chex.cdw.common.ExecutionStatusInfo;
 import org.dcm4chex.cdw.common.MediaCreationException;
 import org.dcm4chex.cdw.common.MediaCreationRequest;
 
 /**
- * @author gunter.zeilinger@tiani.com
+ * @author gunterze@gmail.com
  * @version $Revision$ $Date$
  * @since 15.08.2004
  *
  */
 class LabelCreator {
 
-    private static final String NO = "NO";
+    enum FileFormat {
+        NO(null),
+        PS(MimeConstants.MIME_POSTSCRIPT),
+        PDF(MimeConstants.MIME_PDF),
+        PNG(MimeConstants.MIME_PNG),
+        TIFF(MimeConstants.MIME_TIFF);
+        
+        final String mimeConstant;
 
-    private static final String PS = "PS";
+        FileFormat(String mimeConstant) {
+            this.mimeConstant = mimeConstant;
+        }
+    }
+    private final FopFactory fopFactory;
 
-    private static final String PDF = "PDF";
-
-    private final Driver fop = new Driver();
-
-    private int renderer = 0;
+    private FileFormat fileFormat = FileFormat.NO;
 
     private final Logger log = Logger.getLogger(LabelCreator.class);
 
     public LabelCreator() {
-        Configuration.put("baseDir", "resource:dcm4chee-cdw/");
-        Log4JLogger logger = new Log4JLogger(log);
-        fop.setLogger(logger);
-        MessageHandler.setScreenLogger(logger);
+        fopFactory = FopFactory.newInstance();
+        try {
+            fopFactory.setBaseURL("resource:dcm4chee-cdw/");
+        } catch (MalformedURLException e) {
+            throw new AssertionError(e);
+        }
     }
 
     public final boolean isActive() {
-        return renderer > 0;
+        return fileFormat != FileFormat.NO;
     }
 
     public final String getLabelFileFormat() {
-        switch (renderer) {
-        case Driver.RENDER_PDF:
-            return PDF;
-        case Driver.RENDER_PS:
-            return PS;
-        default:
-            return NO;
-        }
+        return fileFormat.toString();
     }
 
     public final void setLabelFileFormat(String format) {
-        if (PS.equalsIgnoreCase(format)) {
-            fop.setRenderer(renderer = Driver.RENDER_PS);
-        } else if (PDF.equalsIgnoreCase(format)) {
-            fop.setRenderer(renderer = Driver.RENDER_PDF);
-        } else {
-            renderer = 0;
-        }
+        fileFormat = FileFormat.valueOf(format);
+    }
+
+    public float getTargetResolution() {
+        return fopFactory.getTargetResolution();
+    }
+
+    public void setTargetResolution(float dpi) {
+        fopFactory.setTargetResolution(dpi);
     }
 
     public void createLabel(MediaCreationRequest rq, DicomDirDOM dom)
             throws MediaCreationException {
-        if (renderer == 0) return;
-        OutputStream out;
+        if (!isActive()) return;
+        OutputStream out = null;
         try {
             out = new BufferedOutputStream(new FileOutputStream(rq
                     .getLabelFile()));
-        } catch (FileNotFoundException e) {
+            Fop fop = fopFactory.newFop(fileFormat.mimeConstant, out);
+            dom.createLabel(rq, fop.getDefaultHandler());
+        } catch (Exception e) {
             throw new MediaCreationException(ExecutionStatusInfo.PROC_FAILURE,
                     e);
-        }
-        try {
-            fop.setOutputStream(out);
-            dom.createLabel(rq, fop.getContentHandler());
         } finally {
-            fop.reset();
-            try {
-                out.close();
-            } catch (IOException ignore) {
-            }
+            if (out != null)
+                try {
+                    out.close();
+                } catch (IOException ignore) {
+                }
         }
     }
 }

@@ -16,8 +16,12 @@ set JBOSS_ENDORSED_DIRS=%JBOSS_HOME%\lib\endorsed
 set LIBDIR=%JBOSS_HOME%\server\default\lib
 
 set LOCALCLASSPATH=%LIBDIR%\fop.jar
-set LOCALCLASSPATH=%LOCALCLASSPATH%;%LIBDIR%\avalon-framework-cvs-20020806.jar
+set LOCALCLASSPATH=%LOCALCLASSPATH%;%LIBDIR%\avalon-framework-4.2.0.jar
+set LOCALCLASSPATH=%LOCALCLASSPATH%;%LIBDIR%\batik-all-1.7.jar
+set LOCALCLASSPATH=%LOCALCLASSPATH%;%LIBDIR%\commons-io-1.3.1.jar
+set LOCALCLASSPATH=%LOCALCLASSPATH%;%LIBDIR%\commons-logging.jar
+set LOCALCLASSPATH=%LOCALCLASSPATH%;%LIBDIR%\xmlgraphics-commons-1.3.1.jar
 
 java "-Djava.endorsed.dirs=%JBOSS_ENDORSED_DIRS%" ^
-     --classpath "%LOCALCLASSPATH%" org.apache.fop.apps.Fop ^
-     -c %JBOSS_HOME%\bin\fopcfg.xml %*
+     --classpath "%LOCALCLASSPATH%" org.apache.fop.cli.Main ^
+     -c %JBOSS_HOME%\bin\fop.xconf %*
