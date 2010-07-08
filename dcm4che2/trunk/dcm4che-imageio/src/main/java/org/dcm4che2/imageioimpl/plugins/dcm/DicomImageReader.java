@@ -563,8 +563,8 @@ public class DicomImageReader extends ImageReader {
     /** Sub-samples RGB buffered images when the reader doesn't support it.  */
     public static BufferedImage subsampleRGB(BufferedImage src, Rectangle sourceRegion, int subSampleX, int subSampleY) {
         if( sourceRegion==null ) sourceRegion = new Rectangle(src.getWidth(), src.getHeight());
-        int dWidth = sourceRegion.width/subSampleX;
-        int dHeight = sourceRegion.height/subSampleY;
+        int dWidth = (int)Math.ceil((double)sourceRegion.width/subSampleX);
+        int dHeight = (int)Math.ceil((double)sourceRegion.height/subSampleY);
         
     	BufferedImage dest = createRGBBufferedImage(dWidth, dHeight);
 
