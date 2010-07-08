@@ -45,6 +45,7 @@ import java.util.List;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.markup.ComponentTag;
@@ -96,9 +97,10 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
     private static final long serialVersionUID = 1L;
 
-    // TODO: put this into .properties file
-    private static int PAGESIZE = 10;
-    
+    private static int PAGESIZE_ENTRIES = 6;
+    private static int PAGESIZE_STEP = 5;
+    private Model<Integer> pagesize = new Model<Integer>();
+
     private static final String MODULE_NAME = "mw";
     private static List<String> scheduledStationAETs = new ArrayList<String>();
     private static List<String> modalities = new ArrayList<String>();
@@ -281,7 +283,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         form.addLabeledCheckBox("latestItemsFirst", null);
     }
 
-    protected void addNavigation(BaseForm form) {
+    protected void addNavigation(final BaseForm form) {
         
         Button resetBtn = new AjaxButton("resetBtn") {
             
@@ -334,13 +336,35 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         
         navPanel = form.createAjaxParent("navPanel");
         
+        List<Integer> pagesizes = new ArrayList<Integer>();
+        pagesizes.add(1);
+        for (int i = 1; i <= PAGESIZE_ENTRIES; i++)
+            pagesizes.add(i * PAGESIZE_STEP);
+        pagesize.setObject((PAGESIZE_ENTRIES / 2) * PAGESIZE_STEP);
+        form.addDropDownChoice("pagesize", pagesize, pagesizes, new Model<Boolean>(true), true).setNullValid(false)
+        .add(new AjaxFormSubmitBehavior(form, "onchange") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target) {
+                queryMWLItems();
+                target.addComponent(navPanel);
+                target.addComponent(listPanel);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target) {
+            }
+        });
+
         form.addComponent(new AjaxFallbackLink<Object>("prev") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                viewport.setOffset(Math.max(0, viewport.getOffset() - PAGESIZE));
+                viewport.setOffset(Math.max(0, viewport.getOffset() - pagesize.getObject()));
                 queryMWLItems();
                 target.addComponent(navPanel);
                 target.addComponent(listPanel);
@@ -362,7 +386,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                viewport.setOffset(viewport.getOffset() + PAGESIZE);
+                viewport.setOffset(viewport.getOffset() + pagesize.getObject());
                 queryMWLItems();
                 target.addComponent(navPanel);
                 target.addComponent(listPanel);
@@ -370,7 +394,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
             @Override
             public boolean isVisible() {
-                return (!notSearched && !(viewport.getTotal() - viewport.getOffset() <= PAGESIZE));
+                return (!notSearched && !(viewport.getTotal() - viewport.getOffset() <= pagesize.getObject()));
             }
         }
         .add(new Image("nextImg", ImageManager.IMAGE_COMMON_FORWARD)
@@ -399,7 +423,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             @Override
             protected Object[] getParameters() {
                 return new Object[]{viewport.getOffset()+1,
-                        Math.min(viewport.getOffset()+PAGESIZE, viewport.getTotal()),
+                        Math.min(viewport.getOffset() + pagesize.getObject(), viewport.getTotal()),
                         viewport.getTotal()};
             }
         }));
@@ -424,7 +448,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         viewport.setTotal(dao.countMWLItems(viewport.getFilter()));
              
         List<MWLItemModel> current = viewport.getMWLItemModels();
-        for (MWLItem mwlItem : dao.findMWLItems(viewport.getFilter(), PAGESIZE, viewport.getOffset()))
+        for (MWLItem mwlItem : dao.findMWLItems(viewport.getFilter(), pagesize.getObject(), viewport.getOffset()))
             current.add(new MWLItemModel(mwlItem, new Model<Boolean>(false)));
         notSearched = false;
     }

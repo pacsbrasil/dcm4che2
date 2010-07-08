@@ -47,6 +47,7 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
@@ -112,8 +113,9 @@ public class TrashListPage extends Panel {
 
     private static final ResourceReference CSS = new CompressedResourceReference(TrashListPage.class, "trash-style.css");
 
-    // TODO: put this into .properties file
-    private static int PAGESIZE = 10;
+    private static int PAGESIZE_ENTRIES = 6;
+    private static int PAGESIZE_STEP = 5;
+    private Model<Integer> pagesize = new Model<Integer>();
     
     private static final String MODULE_NAME = "trash";
     private static final long serialVersionUID = 1L;
@@ -219,7 +221,7 @@ public class TrashListPage extends Panel {
         form.addLabeledCheckBox("patientsWithoutStudies", null);
     }
 
-    private void addNavigation(BaseForm form) {
+    private void addNavigation(final BaseForm form) {
         
         Button resetBtn = new AjaxButton("resetBtn") {
             
@@ -268,14 +270,35 @@ public class TrashListPage extends Panel {
         form.setDefaultButton(searchBtn);
         
         form.clearParent();
-        
+
+        List<Integer> pagesizes = new ArrayList<Integer>();
+        pagesizes.add(1);
+        for (int i = 1; i <= PAGESIZE_ENTRIES; i++)
+            pagesizes.add(i * PAGESIZE_STEP);
+        pagesize.setObject((PAGESIZE_ENTRIES / 2) * PAGESIZE_STEP);
+        form.addDropDownChoice("pagesize", pagesize, pagesizes, new Model<Boolean>(true), true).setNullValid(false)
+        .add(new AjaxFormSubmitBehavior(form, "onchange") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target) {
+                queryStudies();
+                target.addComponent(form);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target) {
+            }
+        });
+
         form.add(new Link<Object>("prev") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             public void onClick() {
-                viewport.setOffset(Math.max(0, viewport.getOffset() - PAGESIZE));
+                viewport.setOffset(Math.max(0, viewport.getOffset() - pagesize.getObject()));
                 queryStudies();               
             }
             
@@ -295,13 +318,13 @@ public class TrashListPage extends Panel {
 
             @Override
             public void onClick() {
-                viewport.setOffset(viewport.getOffset() + PAGESIZE);
+                viewport.setOffset(viewport.getOffset() + pagesize.getObject());
                 queryStudies();
             }
 
             @Override
             public boolean isVisible() {
-                return (!notSearched && !(viewport.getTotal() - viewport.getOffset() <= PAGESIZE));
+                return (!notSearched && !(viewport.getTotal() - viewport.getOffset() <= pagesize.getObject()));
             }
         }
         .add(new Image("nextImg", ImageManager.IMAGE_COMMON_FORWARD)
@@ -330,7 +353,7 @@ public class TrashListPage extends Panel {
             @Override
             protected Object[] getParameters() {
                 return new Object[]{viewport.getOffset()+1,
-                        Math.min(viewport.getOffset()+PAGESIZE, viewport.getTotal()),
+                        Math.min(viewport.getOffset() + pagesize.getObject(), viewport.getTotal()),
                         viewport.getTotal()};
             }
         }));
@@ -521,7 +544,7 @@ public class TrashListPage extends Panel {
         TrashListLocal dao = (TrashListLocal)
                 JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
         viewport.setTotal(dao.countStudies(viewport.getFilter()));
-        updatePatients(dao.findStudies(viewport.getFilter(), PAGESIZE, viewport.getOffset()));
+        updatePatients(dao.findStudies(viewport.getFilter(), pagesize.getObject(), viewport.getOffset()));
         notSearched = false;
     }
 

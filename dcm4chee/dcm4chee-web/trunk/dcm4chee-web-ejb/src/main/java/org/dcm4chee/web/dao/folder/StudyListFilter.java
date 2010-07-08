@@ -69,6 +69,7 @@ public class StudyListFilter implements Serializable {
     private boolean patientsWithoutStudies;
     private boolean latestStudiesFirst;
     private boolean ppsWithoutMwl;
+    private int pagesize;
 
     public StudyListFilter(Map<String, List<String>> sourceAetGroups) {
         this.sourceAetGroups = sourceAetGroups;
@@ -221,6 +222,14 @@ public class StudyListFilter implements Serializable {
 
     public void setLatestStudiesFirst(boolean latestStudiesFirst) {
         this.latestStudiesFirst = latestStudiesFirst;
+    }
+
+    public void setPagesize(int pagesize) {
+        this.pagesize = pagesize;
+    }
+
+    public int getPagesize() {
+        return pagesize;
     }
 
 }

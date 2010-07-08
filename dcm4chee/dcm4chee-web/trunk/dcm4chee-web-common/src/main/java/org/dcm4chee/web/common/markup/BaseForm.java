@@ -46,9 +46,6 @@ import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.behavior.IBehavior;
-import org.apache.wicket.datetime.StyleDateConverter;
-import org.apache.wicket.datetime.markup.html.form.DateTextField;
-import org.apache.wicket.extensions.yui.calendar.DateField;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -60,7 +57,6 @@ import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.form.AbstractTextComponent.ITextFormatProvider;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.validation.IValidator;
@@ -72,8 +68,6 @@ import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.model.DicomElementModel;
 import org.dcm4chee.web.common.util.DateUtils;
 import org.dcm4chee.web.common.validators.UIDValidator;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 
 /**
@@ -228,8 +222,9 @@ public class BaseForm extends Form<Object> {
         return ch;
     }
 
-    public DropDownChoice<?> addDropDownChoice(String id, IModel<Object> model, List<String> values, final IModel<Boolean> enabledModel, boolean addLabel) {
-        DropDownChoice<?> ch = model == null ? new DropDownChoice<Object>(id, values)  {
+    @SuppressWarnings("unchecked")
+    public DropDownChoice addDropDownChoice(String id, final IModel model, List<? extends Object> values, final IModel<Boolean> enabledModel, boolean addLabel) {
+        DropDownChoice ch = model == null ? new DropDownChoice(id, values)  {
 
                                                 private static final long serialVersionUID = 1L;
                                     
@@ -238,14 +233,14 @@ public class BaseForm extends Form<Object> {
                                                     return enabledModel == null ? true : enabledModel.getObject();
                                                 }
                                             } : 
-                                            new DropDownChoice<Object>(id, model, values) {
+                                            new DropDownChoice(id, model, values) {
 
                                                 private static final long serialVersionUID = 1L;
 
                                                 @Override
                                                 public boolean isEnabled() {
                                                     return enabledModel == null ? true : enabledModel.getObject();
-                                                }
+                                                }                                                
                                             };
         if (addLabel) 
             addInternalLabel(id);

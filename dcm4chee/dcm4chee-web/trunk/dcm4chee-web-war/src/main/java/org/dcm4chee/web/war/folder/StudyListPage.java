@@ -69,7 +69,9 @@ import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.ExternalLink;
@@ -126,8 +128,9 @@ import org.slf4j.LoggerFactory;
 
 public class StudyListPage extends Panel {
 
-    // TODO: put this into .properties file
-    private static int PAGESIZE = 10;
+    private static int PAGESIZE_ENTRIES = 6;
+    private static int PAGESIZE_STEP = 5;
+    private Model<Integer> pagesize = new Model<Integer>();
 
     private static final String MODULE_NAME = "folder";
     private static final long serialVersionUID = 1L;
@@ -159,6 +162,7 @@ public class StudyListPage extends Panel {
     
     public StudyListPage(final String id) {
         super(id);
+        
         webviewerLinkProvider = new WebviewerLinkProvider(((WebApplication)Application.get()).getInitParameter("webviewerName"));
         webviewerLinkProvider.setBaseUrl(((WebApplication)Application.get()).getInitParameter("webviewerBaseUrl"));
         add(CSSPackageResource.getHeaderContribution(StudyListPage.class, "folder-style.css"));
@@ -337,7 +341,7 @@ public class StudyListPage extends Panel {
         form.addLabeledCheckBox("ppsWithoutMwl", null);
     }
 
-    private void addNavigation(BaseForm form) {
+    private void addNavigation(final BaseForm form) {
 
         Button resetBtn = new AjaxButton("resetBtn") {
             
@@ -360,7 +364,7 @@ public class StudyListPage extends Panel {
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
         form.addComponent(resetBtn);
-        
+            
         Button searchBtn = new AjaxButton("searchBtn") {
             
             private static final long serialVersionUID = 1L;
@@ -388,13 +392,34 @@ public class StudyListPage extends Panel {
         
         form.clearParent();
         
+        List<Integer> pagesizes = new ArrayList<Integer>();
+        pagesizes.add(1);
+        for (int i = 1; i <= PAGESIZE_ENTRIES; i++)
+            pagesizes.add(i * PAGESIZE_STEP);
+        pagesize.setObject((PAGESIZE_ENTRIES / 2) * PAGESIZE_STEP);
+        form.addDropDownChoice("pagesize", pagesize, pagesizes, new Model<Boolean>(true), true).setNullValid(false)
+        .add(new AjaxFormSubmitBehavior(form, "onchange") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target) {
+                queryStudies();
+                target.addComponent(form);
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target) {
+            }
+        });
+
         form.add(new Link<Object>("prev") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             public void onClick() {
-                viewport.setOffset(Math.max(0, viewport.getOffset() - PAGESIZE));
+                viewport.setOffset(Math.max(0, viewport.getOffset() - pagesize.getObject()));
                 queryStudies();               
             }
             
@@ -407,20 +432,20 @@ public class StudyListPage extends Panel {
         .add(new ImageSizeBehaviour("vertical-align: middle;"))
         .add(new TooltipBehaviour("folder.search.")))
         );
- 
+
         form.add(new Link<Object>("next") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             public void onClick() {
-                viewport.setOffset(viewport.getOffset() + PAGESIZE);
+                viewport.setOffset(viewport.getOffset() + pagesize.getObject());
                 queryStudies();
             }
 
             @Override
             public boolean isVisible() {
-                return (!notSearched && !(viewport.getTotal() - viewport.getOffset() <= PAGESIZE));
+                return (!notSearched && !(viewport.getTotal() - viewport.getOffset() <= pagesize.getObject()));
             }
         }
         .add(new Image("nextImg", ImageManager.IMAGE_COMMON_FORWARD)
@@ -449,7 +474,7 @@ public class StudyListPage extends Panel {
             @Override
             protected Object[] getParameters() {
                 return new Object[]{viewport.getOffset()+1,
-                        Math.min(viewport.getOffset()+PAGESIZE, viewport.getTotal()),
+                        Math.min(viewport.getOffset() + pagesize.getObject(), viewport.getTotal()),
                         viewport.getTotal()};
             }
         }));
@@ -644,7 +669,7 @@ public class StudyListPage extends Panel {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         viewport.setTotal(dao.countStudies(viewport.getFilter()));
-        updatePatients(dao.findStudies(viewport.getFilter(), PAGESIZE, viewport.getOffset()));
+        updatePatients(dao.findStudies(viewport.getFilter(), pagesize.getObject(), viewport.getOffset()));
         notSearched = false;
     }
 
