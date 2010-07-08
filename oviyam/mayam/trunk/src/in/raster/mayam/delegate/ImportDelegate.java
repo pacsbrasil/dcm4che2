@@ -138,6 +138,7 @@ public class ImportDelegate extends Thread{
             if (data != null) {
                 ApplicationContext.databaseRef.importDataToDatabase(data,parseFile);
             }
+            dis.close();
         } catch (IOException ex) {
            ex.printStackTrace();
         } catch (Exception e) {
