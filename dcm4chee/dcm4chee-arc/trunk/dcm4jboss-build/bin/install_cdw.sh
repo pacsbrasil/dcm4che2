@@ -23,7 +23,7 @@ fi
 cp -v "$CDW_HOME"/bin/acroread.bat \
   "$CDW_HOME"/bin/fop.bat \
   "$CDW_HOME"/bin/fop.sh \
-  "$CDW_HOME"/bin/fopcfg.xml \
+  "$CDW_HOME"/bin/fop.xconf \
   "$CDW_HOME"/bin/xalan.bat \
   "$CDW_HOME"/bin/xalan.sh \
   "$DCM4CHEE_HOME"/bin

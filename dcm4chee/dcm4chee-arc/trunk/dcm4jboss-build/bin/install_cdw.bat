@@ -35,7 +35,7 @@ set DCM4CHEE_BIN=%DCM4CHEE_HOME%\bin
 copy "%CDW_BIN%\acroread.bat" "%DCM4CHEE_BIN%"
 copy "%CDW_BIN%\fop.bat" "%DCM4CHEE_BIN%"
 copy "%CDW_BIN%\fop.sh" "%DCM4CHEE_BIN%"
-copy "%CDW_BIN%\fopcfg.xml" "%DCM4CHEE_BIN%"
+copy "%CDW_BIN%\fop.xconf" "%DCM4CHEE_BIN%"
 copy "%CDW_BIN%\xalan.bat" "%DCM4CHEE_BIN%"
 copy "%CDW_BIN%\xalan.sh" "%DCM4CHEE_BIN%"
 

@@ -49,7 +49,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
-import javax.activation.DataHandler;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -57,13 +56,13 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.fop.apps.Driver;
+import org.apache.fop.apps.Fop;
+import org.apache.fop.apps.MimeConstants;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.net.DataSource;
 import org.dcm4chee.docstore.BaseDocument;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.rid.common.RIDRequestObject;
@@ -87,8 +86,6 @@ public class ECGSupport {
     private static final DcmObjectFactory factory = DcmObjectFactory
             .getInstance();
     private RIDSupport ridSupport;
-
-    private final Driver fop = new Driver();
 
     private RIDStorageDelegate storage = RIDStorageDelegate.getInstance();
 
@@ -283,13 +280,12 @@ public class ECGSupport {
                     28.6f), new Float(20.3f));
             fopCreator.toXML(tmpOut);
             tmpOut.close();
-            fop.setRenderer(Driver.RENDER_PDF);
-            fop.setOutputStream(out);
+            Fop fop = ridSupport.newFop(MimeConstants.MIME_PDF, out);
             SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
                     .newInstance();
             Transformer t = tf.newTransformer();
             t.transform(new StreamSource(new FileInputStream(tmpFile)),
-                    new SAXResult(fop.getContentHandler()));
+                    new SAXResult(fop.getDefaultHandler()));
             out.close();
             tmpFile.delete();
             InputStream in = doc.getInputStream();

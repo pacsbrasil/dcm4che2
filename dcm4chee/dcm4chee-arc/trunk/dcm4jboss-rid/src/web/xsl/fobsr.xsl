@@ -22,8 +22,8 @@
             <fo:layout-master-set>
                 <fo:simple-page-master master-name="page" page-height="297mm" page-width="210mm"
                     margin-left="45mm" margin-right="45mm" margin-top="20mm" margin-bottom="20mm">
-                      <fo:region-before extent="3cm"/>
                       <fo:region-body margin-top="3cm"/>
+                      <fo:region-before extent="3cm"/>
                       <fo:region-after extent="1.5cm"/>
                 </fo:simple-page-master>
             </fo:layout-master-set>

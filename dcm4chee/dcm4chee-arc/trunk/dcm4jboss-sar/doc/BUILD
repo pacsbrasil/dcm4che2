@@ -10,7 +10,7 @@ to download and install:
 
 - JBoss Application Server 4.2.3.GA [http://labs.jboss.com/jbossas/downloads]
 
-- Apache FOP 0.20.5 [http://xmlgraphics.apache.org/fop/]
+- Apache FOP 0.95 [http://xmlgraphics.apache.org/fop/]
 
 - Jakarta Cactus 1.8.1 [http://jakarta.apache.org/cactus/]
 (only needed to build test suite for dcm4jboss-ejb - not need to build
@@ -70,7 +70,7 @@ your local Maven2 Repository:
 dcm4che14.home=${user.home}/dcm4che14/build/dcm4che-1.4.27
 xdoclet.home=${user.home}/xdoclet-1.2.3
 jboss.home=${user.home}/jboss-4.2.3.GA
-fop.home=${user.home}/fop-0.20.5
+fop.home=${user.home}/fop-0.95
 cactus.home=${user.home}/cactus-1.8.1-bin
 m2.repos=${user.home}/.m2/repository.
 

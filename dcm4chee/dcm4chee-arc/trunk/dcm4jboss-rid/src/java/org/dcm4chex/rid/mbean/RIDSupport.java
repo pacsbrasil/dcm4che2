@@ -78,7 +78,10 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.fop.apps.Driver;
+import org.apache.fop.apps.FOPException;
+import org.apache.fop.apps.Fop;
+import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.MimeConstants;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
@@ -155,7 +158,7 @@ public class RIDSupport {
     private static final DcmObjectFactory factory = DcmObjectFactory.getInstance();
 
     private static final String FOBSR_XSL_URI = "resource:xsl/fobsr.xsl";
-    private final Driver fop = new Driver();
+    private final FopFactory fopFactory = FopFactory.newInstance();
 
     private static MBeanServer server;
     private Map<String, String> ecgSopCuids = new TreeMap<String, String>();
@@ -846,12 +849,12 @@ public class RIDSupport {
      * @return
      * @throws IOException
      * @throws TransformerException
+     * @throws FOPException 
      */
-    private void renderSRFile(InputStream input, OutputStream out ) throws IOException, TransformerException {
+    private void renderSRFile(InputStream input, OutputStream out ) throws IOException, TransformerException, FOPException {
         DataInputStream in = new DataInputStream(new BufferedInputStream(input));
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
-        fop.setRenderer(Driver.RENDER_PDF);
-        fop.setOutputStream( out );
+        Fop fop = newFop(MimeConstants.MIME_PDF, out);
         Templates template = tf.newTemplates(new StreamSource(FOBSR_XSL_URI));
         TransformerHandler th = tf.newTransformerHandler(template);
         if ( srImageRows != null ) {
@@ -859,10 +862,14 @@ public class RIDSupport {
             t.setParameter("srImageRows", srImageRows);
         }
         th.getTransformer().setParameter("wadoURL", wadoURL);
-        th.setResult(new SAXResult( fop.getContentHandler() ));
+        th.setResult(new SAXResult( fop.getDefaultHandler() ));
         DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
         parser.setSAXHandler2(th,DictionaryFactory.getInstance().getDefaultTagDictionary(), null, 4000, null );//4000 ~ one text page.
         parser.parseDcmFile(null, -1);
+    }
+
+    public Fop newFop(String mime, OutputStream out) throws FOPException {
+        return fopFactory.newFop(mime, out);
     }
 
     /**

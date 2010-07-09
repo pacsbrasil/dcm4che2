@@ -18,7 +18,7 @@ dcm4chee-sar.home=../dcm4jboss-sar
 jboss.home=${user.home}/jboss-4.2.3.GA
 
 #Override with your FOP dist location
-fop.home=${user.home}/fop-0.20.5
+fop.home=${user.home}/fop-0.95
 
 #Override with the version of dcm4chee-docstore to use.
 docstore-version=1.0.0-SNAPSHOT
