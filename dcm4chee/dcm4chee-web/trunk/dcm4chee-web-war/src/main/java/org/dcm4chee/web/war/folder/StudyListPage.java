@@ -47,6 +47,7 @@ import java.util.List;
 
 import org.apache.wicket.Application;
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.Page;
 import org.apache.wicket.PageMap;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
@@ -96,6 +97,7 @@ import org.dcm4chee.archive.common.PrivateTag;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.dashboard.ui.report.CreateOrEditReportPage;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.CheckOneDayBehaviour;
@@ -155,6 +157,7 @@ public class StudyListPage extends Panel {
     private Mpps2MwlLinkPage linkPage = new Mpps2MwlLinkPage("linkPage");
     private ConfirmationWindow<PPSModel> confirmUnlinkMpps;
     private ImageSelectionWindow imageSelection = new ImageSelectionWindow("imgSelection");
+    private ModalWindow wadoWindow = new ModalWindow("wadoWindow");
     
     private WebviewerLinkProvider webviewerLinkProvider;
     
@@ -221,9 +224,9 @@ public class StudyListPage extends Panel {
             public void onClose(AjaxRequestTarget target) {
                 if (imageSelection.isSelectionChanged())
                     target.addComponent(form);
-            }
-            
+            }            
         });
+        add(wadoWindow);
         initModalitiesAndSourceAETs();
     }
 
@@ -1278,17 +1281,31 @@ public class StudyListPage extends Panel {
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
             .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
             .add(tooltip)));
-            item.add(new ExternalLink("wado", WADODelegate.getInstance().getURL(instModel)){
 
+            item.add(new AjaxLink<Object>("wado") {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public boolean isVisible() {
-                    return WADODelegate.getInstance().getRenderType(instModel.getSopClassUID()) != WADODelegate.NOT_RENDERABLE;
+                public void onClick(AjaxRequestTarget target) {
+
+                    wadoWindow.setInitialWidth(new Integer(getString("folder.wadoImage.window.width")))
+                    .setInitialHeight(new Integer(getString("folder.wadoImage.window.height")));
+                    wadoWindow.setPageCreator(new ModalWindow.PageCreator() {
+                          
+                        private static final long serialVersionUID = 1L;
+                          
+                        @Override
+                        public Page createPage() {
+                            return new WadoImagePage(wadoWindow, instModel);                        
+                        }
+                    });
+                    wadoWindow.show(target);
                 }
-                
-            }.add(new Image("wadoImg",ImageManager.IMAGE_FOLDER_WADO).add(new ImageSizeBehaviour())
-                    .add(tooltip)));
+            }
+            .add(new Image("wadoImg",ImageManager.IMAGE_FOLDER_WADO)
+            .add(new ImageSizeBehaviour())
+            .add(tooltip)));
+
             item.add(new AjaxCheckBox("selected"){
 
                 private static final long serialVersionUID = 1L;

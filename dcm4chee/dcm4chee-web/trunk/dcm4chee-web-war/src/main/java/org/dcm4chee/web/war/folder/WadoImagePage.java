@@ -38,34 +38,51 @@
 
 package org.dcm4chee.web.war.folder;
 
-import org.apache.wicket.model.IModel;
+import org.apache.wicket.ResourceReference;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.WebComponent;
+import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.war.folder.model.InstanceModel;
 
 /**
- * @author Franz Willer <franz.willer@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since 28.09.2009
+ * @since 08.08.2010
  */
-public class WadoPage extends BaseWicketPage {
+public class WadoImagePage extends WebPage {
     
-    private IModel<String> urlModel;
-    public WadoPage() {
-        super();
-        initPage();
+    private static final long serialVersionUID = 1L;
+
+    private static final ResourceReference CSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    
+    public WadoImagePage(ModalWindow modalWindow, final InstanceModel instanceModel) {
+        if (WadoImagePage.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(WadoImagePage.CSS));
+        add(new WadoImage("wadoImg", instanceModel));
     }
-    
-    public WadoPage(final IModel<String> url) {
-        super();
-        urlModel = url;
-        initPage();
-    }
-    
-    private void initPage() {
-        getModuleSelectorPanel().addInstance(new WadoPanel("panel", urlModel, false), 
-                new ResourceModel("wado.tabTitle"));
-        getModuleSelectorPanel().addInstance(new WadoPanel("panel", urlModel, true), 
-                new ResourceModel("showAttrs.tabTitle"));
-        getModuleSelectorPanel().setShowLogoutLink(false);
+            
+    private class WadoImage extends WebComponent {
+
+        private static final long serialVersionUID = 1L;
+        private InstanceModel instanceModel;
+
+        public WadoImage(String id, InstanceModel instanceModel) {
+            super(id);
+            this.instanceModel = instanceModel;
+        }
+
+        protected void onComponentTag(ComponentTag tag) {
+            super.onComponentTag(tag);
+            checkComponentTag(tag, "img");
+            String wadoUrl = WADODelegate.getInstance().getURL(instanceModel);
+            tag.put("src", wadoUrl);
+            tag.put("title", wadoUrl);
+            tag.put("alt", new ResourceModel("folder.wadoImage.alt.text").wrapOnAssignment(this).getObject());
+        }
     }
 }

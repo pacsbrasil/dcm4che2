@@ -9,6 +9,7 @@
     <div wicket:id="msgWin" >MessageWindow</div>
     <div wicket:id="linkPage" >LinkPage</div>
     <div wicket:id="imgSelection" >ImageSelection</div>
+    <div wicket:id="wadoWindow" >WadoWindow</div>
 	<form style="clear: both" wicket:id="form">
 		<div wicket:id="confirmDelete" >ConfirmDelete</div>
 		<div wicket:id="confirmUnlink" >ConfirmUnlink</div>	
@@ -181,8 +182,7 @@
 		      <th>Birth Date</th>
 		      <th>Sex</th>
 		      <th colspan="3">Comments</th>
-		      <th></th>
-		      <th></th>
+			  <th colspan="3" />
 		    </tr>
 		    <tr class="study">
 		      <td rowspan="5">
@@ -195,8 +195,7 @@
 		      <th>Description</th>
 		      <th>#S/#I</th>
 		      <th>Availability</th>
-		      <th></th>
-		      <th></th>
+			  <th colspan="3" />
 		    </tr>
 		    <tr class="pps">
 		      <td rowspan="4">
@@ -209,8 +208,7 @@
 		      <th>Description</th>
 		      <th>#S/#I</th>
 		      <th>Status</th>
-		      <th></th>
-		      <th></th>
+			  <th colspan="3" />
 		    </tr>
 		    <tr class="series">
 		      <td rowspan="3">
@@ -223,8 +221,7 @@
 		      <th>Description</th>
 		      <th>#I</th>
 		      <th>Availability</th>
-		      <th></th>
-		      <th></th>
+			  <th colspan="3" />
 		    </tr>
 		    <tr class="instance">
 		      <td rowspan="2">
@@ -235,8 +232,7 @@
 		      <th colspan="2">SOP Class UID</th>
 		      <th colspan="2">Description</th>
 		      <th>Availability</th>
-		      <th></th>
-		      <th></th>
+			  <th colspan="3" />
 		    </tr>
 		    <tr class="file">
 		      <th>File Date/Time</th>
@@ -244,8 +240,7 @@
 		      <th colspan="2">Transfer Syntax UID</th>
 		      <th colspan="2">File Path</th>
 		      <th>Availability</th>
-		      <th></th>
-		      <th></th>
+			  <th colspan="3" />
 		    </tr>
 		    </wicket:remove>
 		  </thead>
@@ -272,10 +267,14 @@
 		      <td>
 		      	<a wicket:id="webview" href="#"><img wicket:id="webviewImg" alt="V" /></a>
 		      </td>
-		      <td><input wicket:id="selected" type="checkbox" /></td>
+		      <td>
+		      </td>
+		      <td>
+		      	<input wicket:id="selected" type="checkbox" />
+			  </td>
 		    </tr>
 		    <tr wicket:id="details" class="patient" style="border-top-style: none;">
-		      <td colspan="17">
+		      <td colspan="18">
 		        <div wicket:id="dicomobject"></div>
 		      </td>
 		    </tr>
@@ -306,12 +305,16 @@
 		      	<a wicket:id="webview" href="#"><img wicket:id="webviewImg" alt="V" /></a>
 		      </td>
 		      <td>
+		      	<a wicket:id="imgSelect" href="#">
+		      		<img wicket:id="selectImg" alt="S" />
+				</a>
+		      </td>
+		      <td>
 		      	<input wicket:id="selected" type="checkbox" />
-		      	<a wicket:id="imgSelect" href="#"><img wicket:id="selectImg" alt="S" /></a>
 		      </td>
 		    </tr>
 		    <tr wicket:id="details" class="study" style="border-top-style: none;">
-		      <td colspan="16">
+		      <td colspan="17">
 		        <div wicket:id="dicomobject"></div>
 		      </td>
 		    </tr>
@@ -344,11 +347,13 @@
 		        <a wicket:id="unlinkBtn" href="#"><img wicket:id="unlinkImg" alt="L" /></a>
 		      </td>
 		      <td>
+			  </td>
+		      <td>
 		      	<input wicket:id="selected" type="checkbox" />
 		      </td>
 		    </tr>
 		    <tr wicket:id="details" class="pps" style="border-top-style: none;">
-		      <td colspan="15">
+		      <td colspan="16">
 		        <div wicket:id="dicomobject"></div>
 		      </td>
 		    </tr>
@@ -376,12 +381,16 @@
 		      <td>
 		      </td>
 		      <td>
+		      	<a wicket:id="imgSelect" href="#">
+		      		<img wicket:id="selectImg" alt="S" />
+		      	</a>
+			  </td>
+		      <td>
 		      	<input wicket:id="selected" type="checkbox" />
-		      	<a wicket:id="imgSelect" href="#"><img wicket:id="selectImg" alt="S" /></a>
 		      </td>
 		    </tr>
 		    <tr wicket:id="details" class="series" style="border-top-style: none;">
-		      <td colspan="14">
+		      <td colspan="15">
 		        <div wicket:id="dicomobject"></div>
 		      </td>
 		    </tr>
@@ -402,14 +411,18 @@
 		        <a wicket:id="edit" href="#"><img wicket:id="editImg" alt="E" /></a>
 		      </td>
 		      <td>
-		      	<a wicket:id="wado" href="#" target="_blank"><img wicket:id="wadoImg" alt="V" /></a>
 		      </td>
 		      <td>
+		      </td>
+		      <td>
+				<a wicket:id="wado" href="#">
+					<img wicket:id="wadoImg" alt="V" />
+				</a>
 		      </td>
 		      <td><input wicket:id="selected" type="checkbox" /></td>
 		    </tr>
 		    <tr wicket:id="details" class="instance" style="border-top-style: none;">
-		      <td colspan="13">
+		      <td colspan="14">
 		        <div wicket:id="dicomobject"></div>
 		      </td>
 		    </tr>
@@ -432,10 +445,12 @@
 		      </td>
 		      <td>
 		      </td>
-		      <td><input wicket:id="selected" type="checkbox" /></td>
+		      <td>
+		      </td>
+ 		      <td><input wicket:id="selected" type="checkbox" /></td>
 		    </tr>
 		    <tr wicket:id="details" class="file" style="border-top-style: none;">
-		      <td colspan="13">
+		      <td colspan="14">
 		        <div wicket:id="file"></div>
 		      </td>
 		    </tr>
