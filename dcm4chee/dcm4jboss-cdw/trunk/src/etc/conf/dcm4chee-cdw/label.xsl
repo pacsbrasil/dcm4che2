@@ -20,31 +20,32 @@
                 <!-- ajust page-size and margins according the label printer -->
                 <fo:simple-page-master master-name="page" page-height="120mm" page-width="120mm"
                     margin-left="0mm" margin-right="0mm" margin-top="0mm" margin-bottom="0mm">
-                    <fo:region-body>
-                        <xsl:attribute name="background-image">url(label_bg.jpg)</xsl:attribute>
-                        <xsl:attribute name="background-attachment">fixed</xsl:attribute>
-                        <xsl:attribute name="background-repeat">no-repeat</xsl:attribute>
-                    </fo:region-body>
+                    <fo:region-body/>
                 </fo:simple-page-master>
             </fo:layout-master-set>
             <fo:page-sequence master-reference="page">
-                <fo:flow flow-name="xsl-region-body">
-                    <fo:block-container position="absolute" top="3mm" left="35mm" right="85mm" bottom="20mm">
+                 <fo:flow flow-name="xsl-region-body">
+                   <fo:block-container absolute-position="absolute">
+                     <fo:block>
+                       <fo:external-graphic src="label_bg.jpg" content-height="120mm"/>
+                     </fo:block>
+                   </fo:block-container>
+                   <fo:block-container absolute-position="absolute" top="3mm">
                         <xsl:apply-templates select="dicomdir" mode="top"/>
                     </fo:block-container>
-                    <fo:block-container position="absolute" top="20mm" left="20mm" right="100mm" bottom="40mm">
+                    <fo:block-container absolute-position="absolute" top="20mm" left="20mm" right="20mm">
                         <xsl:apply-templates select="dicomdir" mode="upper"/>
                     </fo:block-container>
-                    <fo:block-container position="absolute" top="40mm" left="5mm" right="35mm" bottom="85mm">
+                    <fo:block-container absolute-position="absolute" top="40mm" left="5mm" right="85mm">
                         <xsl:apply-templates select="dicomdir" mode="left"/>
                     </fo:block-container>
-                    <fo:block-container position="absolute" top="40mm" left="85mm" right="115mm" bottom="85mm">
+                    <fo:block-container absolute-position="absolute" top="40mm" left="85mm" right="5mm">
                         <xsl:apply-templates select="dicomdir" mode="right"/>
                     </fo:block-container>
-                    <fo:block-container position="absolute" top="85mm" left="20mm" right="100mm" bottom="105mm">
+                    <fo:block-container absolute-position="absolute" top="85mm" left="20mm" right="20mm">
                         <xsl:apply-templates select="dicomdir" mode="lower"/>
                     </fo:block-container>
-                    <fo:block-container position="absolute" top="105mm" left="20mm" right="100mm" bottom="120mm">
+                    <fo:block-container absolute-position="absolute" top="105mm">
                         <xsl:apply-templates select="dicomdir" mode="bottom"/>
                     </fo:block-container>
                 </fo:flow>
@@ -70,28 +71,24 @@
     </xsl:template>
     <xsl:template match="dicomdir" mode="left">
         <!-- Include IHE Logo -->
-        <!-- fo:wrapper text-align="center" font-family="Helvetica" font-weight="bold" font-size="12pt" -->
-            <fo:block padding-top="5mm">
+            <fo:block padding-top="5mm" text-align="center">
                 <fo:external-graphic src="ihe_logo.jpg"/>
             </fo:block>
-            <fo:block>PDI - Demo</fo:block>
-            <fo:block>IHE-E 2006</fo:block>
-        <!-- /fo:wrapper -->
+            <fo:block text-align="center" font-family="Helvetica" font-weight="bold" font-size="12pt">PDI - Demo</fo:block>
+            <fo:block text-align="center" font-family="Helvetica" font-weight="bold" font-size="12pt">IHE-E 2006</fo:block>
     </xsl:template>
     <xsl:template match="dicomdir" mode="right">
-        <!-- fo:wrapper text-align="left" font-family="Helvetica" font-size="8pt" -->
             <!-- Creation Date and Institution -->
-            <fo:block padding-top="10mm"> Created at <xsl:call-template name="formatDate">
+            <fo:block padding-top="10mm" text-align="left" font-family="Helvetica" font-size="8pt"> Created at <xsl:call-template name="formatDate">
                     <xsl:with-param name="date" select="$today"/>
                 </xsl:call-template>
             </fo:block>
-            <fo:block>by <fo:inline font-weight="bold">YOUR COMPANY NAME</fo:inline>
+            <fo:block text-align="left" font-family="Helvetica" font-size="8pt">by <fo:inline font-weight="bold">YOUR COMPANY NAME</fo:inline>
             </fo:block>
-            <fo:block>STREET</fo:block>
-            <fo:block>CITY</fo:block>
-            <fo:block>COUNTRY</fo:block>
-            <fo:block>http://your.company.url</fo:block>
-        <!-- /fo:wrapper -->
+            <fo:block text-align="left" font-family="Helvetica" font-size="8pt">STREET</fo:block>
+            <fo:block text-align="left" font-family="Helvetica" font-size="8pt">CITY</fo:block>
+            <fo:block text-align="left" font-family="Helvetica" font-size="8pt">COUNTRY</fo:block>
+            <fo:block text-align="left" font-family="Helvetica" font-size="8pt">http://your.company.url</fo:block>
     </xsl:template>
     <xsl:template match="dicomdir" mode="upper">
         <!-- if Label Using Information Extracted From Instances -->
@@ -109,7 +106,7 @@
                         <fo:table-body font-family="Helvetica" font-size="10pt">
                             <fo:table-row>
                                 <fo:table-cell padding="1pt" text-align="right">
-                                    <fo:block>Patient Name:</fo:block>
+                                    <fo:block>Patient&#160;Name:</fo:block>
                                 </fo:table-cell>
                                 <fo:table-cell padding="1pt" text-align="left">
                                     <fo:block font-weight="bold">
@@ -121,7 +118,7 @@
                             </fo:table-row>
                             <fo:table-row>
                                 <fo:table-cell padding="1pt" text-align="right">
-                                    <fo:block>Birth Date:</fo:block>
+                                    <fo:block>Birth&#160;Date:</fo:block>
                                 </fo:table-cell>
                                 <fo:table-cell padding="1pt" text-align="left">
                                     <fo:block font-weight="bold">
@@ -142,10 +139,10 @@
                         <fo:table-header>
                             <fo:table-row>
                                 <fo:table-cell padding="1pt" border="0.5pt solid black">
-                                    <fo:block font-weight="bold">Patient Name</fo:block>
+                                    <fo:block font-weight="bold">Patient&#160;Name</fo:block>
                                 </fo:table-cell>
                                 <fo:table-cell padding="1pt" border="0.5pt solid black">
-                                    <fo:block font-weight="bold">Birth Date</fo:block>
+                                    <fo:block font-weight="bold">Birth&#160;Date</fo:block>
                                 </fo:table-cell>
                             </fo:table-row>
                         </fo:table-header>
@@ -195,13 +192,13 @@
                 <fo:table-header>
                     <fo:table-row>
                         <fo:table-cell padding="1pt" border="0.5pt solid black">
-                            <fo:block font-weight="bold">Study Date</fo:block>
+                            <fo:block font-weight="bold">Study&#160;Date</fo:block>
                         </fo:table-cell>
                         <fo:table-cell padding="1pt" border="0.5pt solid black">
                             <fo:block font-weight="bold">Modality</fo:block>
                         </fo:table-cell>
                         <fo:table-cell padding="1pt" border="0.5pt solid black">
-                            <fo:block font-weight="bold">Study Description</fo:block>
+                            <fo:block font-weight="bold">Study&#160;Description</fo:block>
                         </fo:table-cell>
                     </fo:table-row>
                 </fo:table-header>
@@ -247,10 +244,9 @@
         </xsl:if>
     </xsl:template>
     <xsl:template match="dicomdir" mode="bottom">
-        <!-- fo:wrapper text-align="center" font-family="Helvetica" font-size="10pt" -->
             <xsl:variable name="nonDICOM" select="attr[@tag='(2200,0008)']"/>
             <xsl:variable name="viewer" select="attr[@tag='(2200,0009)']"/>
-            <fo:block>Content Type: <fo:inline font-weight="bold">
+            <fo:block text-align="center" font-family="Helvetica" font-size="10pt">Content Type: <fo:inline font-weight="bold">
                     <xsl:choose>
                         <!-- With or without Web Content -->
                         <xsl:when test="$nonDICOM!='NO' and $seqno = 1">DICOM AND WEB</xsl:when>
@@ -266,7 +262,7 @@
             </fo:block>
             <!-- if File-set ID defined or several disks -->
             <xsl:if test="$fsid!='' or $size &gt; 1">
-                <fo:block>
+                <fo:block text-align="center" font-family="Helvetica" font-size="10pt">
                     <xsl:text>Media</xsl:text>
                     <!-- if several disks -->
                     <xsl:if test="$size &gt; 1">[<xsl:value-of select="$seqno"/>/<xsl:value-of select="$size"/>]</xsl:if>
@@ -277,6 +273,5 @@
                     </xsl:if>
                 </fo:block>
             </xsl:if>
-        <!-- /fo:wrapper -->
     </xsl:template>
 </xsl:stylesheet>
