@@ -47,7 +47,6 @@ import in.raster.mayam.delegate.SendingDelegate;
 import in.raster.mayam.delegate.SeriesThumbUpdator;
 import in.raster.mayam.delegate.ShowViewerDelegate;
 import in.raster.mayam.delegate.StudyListUpdator;
-import in.raster.mayam.delegate.ThumbnailUpdator;
 import in.raster.mayam.form.dialog.About;
 import in.raster.mayam.form.dialog.ConfirmDelete;
 import in.raster.mayam.form.dialog.FileChooserDialog;
@@ -61,7 +60,6 @@ import in.raster.mayam.model.AEModel;
 import in.raster.mayam.model.Study;
 import in.raster.mayam.model.table.StudyListModel;
 import in.raster.mayam.model.table.renderer.CellRenderer;
-import in.raster.mayam.model.table.renderer.HeaderRenderer;
 import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
@@ -852,7 +850,7 @@ public class MainScreen extends javax.swing.JFrame {
     private void queueMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queueMenuItemActionPerformed
         sndRcvFrm.setVisible(true);
     }//GEN-LAST:event_queueMenuItemActionPerformed
-    private ThumbnailUpdator thumbnailUpdator = new ThumbnailUpdator();
+ 
     private void resetMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetMenuItemActionPerformed
         ApplicationContext.databaseRef.rebuild();
         MainScreen.showLocalDBStorage();
