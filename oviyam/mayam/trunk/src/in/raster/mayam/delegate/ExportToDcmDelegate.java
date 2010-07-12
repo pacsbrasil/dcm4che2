@@ -53,6 +53,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
 /**
  *
  * @author  BabuHussain
@@ -103,17 +104,16 @@ public class ExportToDcmDelegate {
 
     private void doExport(String inputFilePath, String outputFilePath) {
         InputStream in = null;
+        OutputStream out=null;
         try {
             File inputFile=new File(inputFilePath);
             in = new FileInputStream(inputFile);
-            OutputStream out = new FileOutputStream(new File(outputFilePath,inputFile.getName()));
+            out = new FileOutputStream(new File(outputFilePath,inputFile.getName()));
             byte[] buf = new byte[4096];
             int len;
             while ((len = in.read(buf)) > 0) {
                 out.write(buf, 0, len);
-            }
-            in.close();
-            out.close();
+            }         
         }
         catch(FileNotFoundException ex)
         {
@@ -124,9 +124,11 @@ public class ExportToDcmDelegate {
         } finally {
             try {
                 in.close();
+                out.close();
             } catch (IOException ex) {
                 Logger.getLogger(ExportToDcmDelegate.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
 }
+

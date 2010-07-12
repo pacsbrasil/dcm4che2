@@ -79,8 +79,8 @@ public class NetworkQueueUpdateDelegate {
      * @param calledAET
      */
     public void updateReceiveTable(File fileObj, String calledAET) {
+        DicomInputStream dis = null;
         try {
-            DicomInputStream dis = null;
             File parseFile = fileObj;
             try {
                 dis = new DicomInputStream(parseFile);
@@ -119,11 +119,18 @@ public class NetworkQueueUpdateDelegate {
                     });
                     SendReceivePanel.receiveTableModel.insertRow(SendReceivePanel.receiveTableModel.getRowCount(), new Object[]{calledAET, data.getString(Tag.PatientID), data.getString(Tag.PatientName), data.getString(Tag.StudyDate), data.getString(Tag.StudyDescription), "1", "1", "", getCurrentTime(), ""});
                 }
-            }
-            dis.close();
+            }           
         } catch (IOException ex) {
             ex.printStackTrace();
             //  Logger.getLogger(NetworkQueueUpdate.clas   s.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            if (dis != null) {
+                try {
+                    dis.close();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
         }
 
     }
