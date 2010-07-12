@@ -105,9 +105,7 @@ public class ImageView extends javax.swing.JFrame {
 
     private void windowCloseHandler(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_windowCloseHandler
         imageToolbar1.resetCineTimer();
-        ApplicationContext.imgView=null;
-        System.gc();
-       
+        ApplicationContext.imgView=null;        
     }//GEN-LAST:event_windowCloseHandler
       
     /**

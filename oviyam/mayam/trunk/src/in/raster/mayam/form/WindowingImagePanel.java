@@ -863,8 +863,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         mouseLocY1 = e.getY();
     }
 
-    public void mouseReleased(MouseEvent e) {
-        System.gc();
+    public void mouseReleased(MouseEvent e) {      
     }
 
     public void mouseEntered(MouseEvent e) {

@@ -295,9 +295,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
         }
         if (!instanceListAdded) {
             updateInstanceList();
-        }
-
-        System.gc();
+        }       
     }
 
     public void mouseReleased(MouseEvent e) {
@@ -322,7 +320,6 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
         if (image != null) {
             image.flush();
         }
-
         image = null;
         fileUrl = null;
     }
