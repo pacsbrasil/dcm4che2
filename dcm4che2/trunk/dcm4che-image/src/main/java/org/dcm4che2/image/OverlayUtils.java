@@ -145,8 +145,12 @@ public class OverlayUtils {
                     + Integer.toString(overlayNumber));
         int position = ds.getInt(overlayNumber | Tag.OverlayBitPosition);
         byte[] data;
-        if (position == 0) {
-            data = ds.getBytes(overlayNumber | Tag.OverlayData);
+        if (position == 0) {       
+            byte[] unpaddedData = ds.getBytes(overlayNumber | Tag.OverlayData);
+            
+            //Need to ensure that every row starts at a byte boundary
+            data = padToFixRowByteBoundary(unpaddedData, rows, cols);
+            
             // Extract a sub-frame IF there is a sub-frame, and one is
             // specified. There must be at least 2 frames worth
             // of data to even consider this operation.
@@ -192,6 +196,50 @@ public class OverlayUtils {
         reorderBytes.lookup(bi.getRaster(), bi.getRaster());
 
         return bi;
+    }
+
+    /**
+     * This method is used for soon-to-be-rasterized bit arrays that are contained within byte arrays (e.g.
+     * certain overlays). This method accepts a byte array (containing the bit array) and fixes the byte array
+     * so that the beginnings of rows in the bit array coincide with byte-boundaries. This method pads (with 0's)
+     * and logically forward bit shifts across byte boundaries as necessary to accomplish this fix.
+     * @param unpaddedData  The byte array containing the bit array to be padded as necessary
+     * @param rows          The height of the image in pixels
+     * @param cols          The width of the image in pixels
+     * @return              The byte array fixed to have bit-level row beginnings coincide with byte array
+     *                          boundaries
+     */
+    protected static byte[] padToFixRowByteBoundary(byte[] unpaddedData,
+            int rows, int cols) {
+        int numRowBytes = (cols+7)/8;
+        int paddedLength = (int)(rows * numRowBytes);
+        if( unpaddedData.length==paddedLength ) return unpaddedData;
+        
+        byte[] data = new byte[paddedLength];
+        
+        for(int y=0; y<rows; y++) {
+            int posnPad = y*numRowBytes;
+            int posnUnpad = y*cols;
+            // Bits from the current byte needed
+            int bits = posnUnpad % 8;
+            posnUnpad /= 8;
+            int nextBits = 8-bits;
+            if( bits==0 ) {
+                // Not only an optimization for performance - also prevents an exception if the last pixel doesn't need to overflw
+                // from the next unpadded byte...
+                System.arraycopy(unpaddedData,posnUnpad,data, posnPad, numRowBytes);
+                continue;
+            }
+            int mask = (0xFF << nextBits) & 0xFF;
+            int nextMask = (0xFF >> bits) & 0xFF;
+            for(int x=0; x<numRowBytes; x++) {
+                data[posnPad+x] = (byte) (
+                        ((unpaddedData[posnUnpad+x] & mask)>>nextBits) | 
+                        ((unpaddedData[posnUnpad+x+1] & nextMask) << bits));
+            }
+        }
+        
+        return data;
     }
 
     /**

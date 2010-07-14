@@ -44,7 +44,9 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
+import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.Raster;
+import java.awt.image.SampleModel;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -150,19 +152,29 @@ public abstract class LookupTable {
     }
     
     public void lookup(Raster src, Raster dst, int alpha) {
-    	lookup(src,dst,alpha,1,0);    	
+     lookup(src,dst,alpha,1,0);     
     }
     
     public void lookup(Raster src, Raster dst, int alpha, int channels, int skip) {
         int srcWidth = src.getWidth();
+        int dstWidth = dst.getWidth();
         int srcHeight = src.getHeight();
-        int srcScanlineStride = ((ComponentSampleModel) src.getSampleModel())
-                .getScanlineStride();
+        int dstHeight = dst.getHeight();
+        
+        SampleModel sourceSm = src.getSampleModel();
+        SampleModel destSm = src.getSampleModel();
+        int srcScanlineStride;
+        int dstScanlineStride;
+        if (sourceSm instanceof MultiPixelPackedSampleModel) {
+            srcScanlineStride = ((MultiPixelPackedSampleModel)sourceSm).getScanlineStride();
+            dstScanlineStride = ((MultiPixelPackedSampleModel)destSm).getScanlineStride();
+        } else {
+            srcScanlineStride = ((ComponentSampleModel)sourceSm).getScanlineStride();
+            dstScanlineStride = ((ComponentSampleModel)destSm).getScanlineStride();
+        }
+        
         DataBuffer srcdata = src.getDataBuffer();
-        int dstWidth = src.getWidth();
-        int dstHeight = src.getHeight();
-        int dstScanlineStride = ((ComponentSampleModel) dst.getSampleModel())
-                .getScanlineStride();
+        
         DataBuffer dstdata = dst.getDataBuffer();
         if (srcWidth != dstWidth) {
             throw new IllegalArgumentException("src.width:" + srcWidth
@@ -186,20 +198,20 @@ public abstract class LookupTable {
         case DataBuffer.TYPE_BYTE:
             byte[][] data = ((DataBufferByte) dstdata).getBankData(); 
             for(int bank=0; bank<data.length; bank++) {
-                lookup(srcdata, srcWidth, srcHeight, srcScanlineStride,
+                lookup(srcdata, srcScanlineStride, srcHeight, srcScanlineStride,
                     data[bank], dstScanlineStride, channels, skip, bank);
             }
             break;
         case DataBuffer.TYPE_USHORT:
-            lookup(srcdata, srcWidth, srcHeight, srcScanlineStride,
+            lookup(srcdata, srcScanlineStride, srcHeight, srcScanlineStride,
                     ((DataBufferUShort) dstdata).getData(), dstScanlineStride);
             break;
         case DataBuffer.TYPE_SHORT:
-            lookup(srcdata, srcWidth, srcHeight, srcScanlineStride,
+            lookup(srcdata, srcScanlineStride, srcHeight, srcScanlineStride,
                     ((DataBufferShort) dstdata).getData(), dstScanlineStride);
             break;
         case DataBuffer.TYPE_INT:
-            lookup(srcdata, srcWidth, srcHeight, srcScanlineStride,
+            lookup(srcdata, srcScanlineStride, srcHeight, srcScanlineStride,
                     ((DataBufferInt) dstdata).getData(), dstScanlineStride, alpha);
             break;
         default:
@@ -273,10 +285,10 @@ public abstract class LookupTable {
 
     public void lookup(byte[] src, int srcWidth, int srcHeight,
             int srcScanlineStride, byte[] dst, int dstScanlineStride, int channels, int skip) {
-   		for (int y = 0; y < srcHeight; y++) {
-   			lookup(src, y * srcScanlineStride, dst, y * dstScanlineStride,
-   					srcWidth, channels, skip);
-   		}
+     for (int y = 0; y < srcHeight; y++) {
+      lookup(src, y * srcScanlineStride, dst, y * dstScanlineStride,
+        srcWidth, channels, skip);
+     }
     }
 
     public void lookup(short[] src, int srcWidth, int srcHeight,
@@ -398,7 +410,7 @@ public abstract class LookupTable {
     public static LookupTable createLut(int inBits, boolean signed,
             int outBits, float slope, float intercept, float center,
             float width, String vlutFct, boolean inverse, short[] pval2out) {
-    	log.debug("Creating a slope/intercept LUT  "+slope+"/"+intercept+" WL c/w= "+center+"/"+width);
+     log.debug("Creating a slope/intercept LUT  "+slope+"/"+intercept+" WL c/w= "+center+"/"+width);
         if (width == 0 || vlutFct == null || LINEAR.equals(vlutFct)) {
             return createRampLut(inBits, signed, outBits, slope, intercept,
                     center, width, inverse, pval2out);
@@ -414,7 +426,7 @@ public abstract class LookupTable {
     private static LookupTable createRampLut(int inBits, boolean signed,
                 int outBits, float slope, float intercept, float center,
                 float width, boolean inverse, short[] pval2out) {
-    	log.debug("Ramp LUT "+slope+"/"+intercept+" c/w="+center+"/"+width+" inverse "+inverse);
+     log.debug("Ramp LUT "+slope+"/"+intercept+" c/w="+center+"/"+width+" inverse "+inverse);
         if (slope < 0) {
             slope = -slope;
             intercept = -intercept;
@@ -424,8 +436,8 @@ public abstract class LookupTable {
         // Some of the IHE Image Display COnsistency tests use
         // a negative width, so this should not throw an exception.
         if( width<0 ) {
-        	width = -width;
-        	inverse = !inverse;
+         width = -width;
+         inverse = !inverse;
         }
         int inRange = 1 << inBits;
         int inMin = signed ? -inRange / 2 : 0;
@@ -572,7 +584,7 @@ public abstract class LookupTable {
     public static LookupTable createLut(int inBits, boolean signed,
             int outBits, DicomObject mLut, float center, float width,
             String vlutFct, boolean inverse, short[] pval2out) {
-    	log.debug("Creating MLUT WL c/w="+center+"/"+width);
+     log.debug("Creating MLUT WL c/w="+center+"/"+width);
         LookupTable mlut = createLut(inBits, signed, mLut);
         if (width == 0) {
             return mlut.scale(outBits, inverse, pval2out);
@@ -584,7 +596,7 @@ public abstract class LookupTable {
 
     private static LookupTable createLut(int inBits, boolean signed,
             DicomObject ds) {
-    	int[] desc = ds.getInts(Tag.LUTDescriptor);
+     int[] desc = ds.getInts(Tag.LUTDescriptor);
         byte[] data = ds.getBytes(Tag.LUTData);
         if (desc == null) {
             throw new IllegalArgumentException("Missing LUT Descriptor!");
@@ -614,12 +626,12 @@ public abstract class LookupTable {
             // Get the actual number of bits in this lookup table.
             bits = 0;
             for( int maxVal = Math.max(sdata[0] & 0xFFFF, sdata[sdata.length-1] & 0xFFFF); maxVal!=0; maxVal >>>=1 ) {
-            	bits++;
+             bits++;
             }
             ShortLookupTable ret = new ShortLookupTable(inBits, signed, off, bits, sdata, true);
             // Uncomment out the following to print out the resulting table.
             //for(int i=0; i<sdata.length; i += (1+sdata.length/10)) {
-            //	log.info("Sdata[i] = "+sdata[i] +" offset "+(i+off)+" lookup "+ret.lookup(i+off));
+            // log.info("Sdata[i] = "+sdata[i] +" offset "+(i+off)+" lookup "+ret.lookup(i+off));
             //}
             return ret;
         }
@@ -664,7 +676,7 @@ public abstract class LookupTable {
 
     private static LookupTable createLut(int inBits, boolean signed,
             float slope, float intercept, DicomObject voiLut) {
-    	log.debug("Creating slope/intercept LUT with V-LUT "+slope+"/"+intercept);
+     log.debug("Creating slope/intercept LUT with V-LUT "+slope+"/"+intercept);
         if (slope == 1) {
             LookupTable lut = createLut(inBits, signed, voiLut);
             lut.off -= intercept;
@@ -721,7 +733,7 @@ public abstract class LookupTable {
             int outBits, float slope, float intercept, float center,
             float width, String vlutFct, DicomObject pLut, boolean inverse,
             short[] pval2out) {
-    	log.debug("Creating LUT for slope/intercept="+slope+"/"+intercept+" center/width="+center+"/"+width);
+     log.debug("Creating LUT for slope/intercept="+slope+"/"+intercept+" center/width="+center+"/"+width);
         LookupTable plut = createLut(0, false, pLut);
         LookupTable vlut = createLut(inBits, signed, plut.inBits, slope,
                 intercept, center, width, vlutFct, false, null);
@@ -757,7 +769,7 @@ public abstract class LookupTable {
     public static LookupTable createLut(int inBits, boolean signed,
             int outBits, DicomObject mLut, DicomObject voiLut, boolean inverse,
             short[] pval2out) {
-    	log.debug("Creating a combined m/v LUT, assuming MLUT output is unsigned.");
+     log.debug("Creating a combined m/v LUT, assuming MLUT output is unsigned.");
         LookupTable mlut = createLut(inBits, signed, voiLut);
         LookupTable vlut = createLut(mlut.outBits, false, voiLut);
         return mlut.combine(vlut, outBits, inverse, pval2out);
@@ -908,7 +920,7 @@ public abstract class LookupTable {
      */
     public static LookupTable createLutForImage(DicomObject img, int outBits,
             short[] pval2out) {
-    	return createLutForImageWithPR(img, null, 1, 0f, 0f, null, outBits, pval2out);
+     return createLutForImageWithPR(img, null, 1, 0f, 0f, null, outBits, pval2out);
     }
 
 
@@ -1019,28 +1031,28 @@ public abstract class LookupTable {
      */
     public static LookupTable createLutForImageWithPR(DicomObject img,
             DicomObject pr, int frame, float center, float width, String vlutFct, int outBits, short[] pval2out) {
-    	DicomObject mlutObj = VOIUtils.selectModalityLUTObject(img, pr, frame);
-    	DicomObject voiObj = VOIUtils.selectVoiObject(img, pr, frame);
-    	
-    	boolean inverse;
-    	if( pr!=null ) {
+     DicomObject mlutObj = VOIUtils.selectModalityLUTObject(img, pr, frame);
+     DicomObject voiObj = VOIUtils.selectVoiObject(img, pr, frame);
+     
+     boolean inverse;
+     if( pr!=null ) {
            inverse = "INVERSE".equals(pr.getString(Tag.PresentationLUTShape));
-    	}
-    	else {
-    		inverse = isInverse(img);
-    	}
+     }
+     else {
+      inverse = isInverse(img);
+     }
         DicomObject pLut = pr!=null ? pr.getNestedDicomObject(Tag.PresentationLUTSequence) : null;
-    	return createLutForImage(img, mlutObj, voiObj, pLut, center, width, vlutFct, inverse, outBits, pval2out);
+     return createLutForImage(img, mlutObj, voiObj, pLut, center, width, vlutFct, inverse, outBits, pval2out);
     }
 
     /**
      * Creates a LUT based on a set of provided objects.  These can come from different places within images, so providing them separately is important, even thought
      * the common use case will be that mlutObj, voiObj are the same as img. Allows a custom center/width/function to be applied that overrides the voi obj values.
-     * @param img 		The image dicom object header
-     * @param mlutObj  	The object containing the modality LUT information
-     * @param voiObj  	The object containing the VOI LUT information (or null if none)
-     * @param pLut    	The Presentation LUT Sequence (or null if none)
-     * @param center	An over-riding window center
+     * @param img   The image dicom object header
+     * @param mlutObj   The object containing the modality LUT information
+     * @param voiObj   The object containing the VOI LUT information (or null if none)
+     * @param pLut     The Presentation LUT Sequence (or null if none)
+     * @param center An over-riding window center
      * @param width     An over-riding window width
      * @param vlutFct   An over-riding VOI LUT Function.  Must be non-null to override.
      * @param inverse   True if the image should be inverted.
@@ -1054,14 +1066,14 @@ public abstract class LookupTable {
         boolean signed = img.getInt(Tag.PixelRepresentation) != 0;
         float slope = mlutObj.getFloat(Tag.RescaleSlope, 1.f);
         float intercept = mlutObj.getFloat(Tag.RescaleIntercept, 0.f);
-    	
+     
         DicomObject mLut = mlutObj.getNestedDicomObject(Tag.ModalityLUTSequence);
         DicomObject voiLut = (voiObj!=null && vlutFct==null) ? voiObj.getNestedDicomObject(Tag.VOILUTSequence) : null;
 
         if( voiLut==null && width==0 && voiObj!=null) {
-        	vlutFct = voiObj.getString(Tag.VOILUTFunction);
-        	center = voiObj.getFloat(Tag.WindowCenter,0f);
-        	width = voiObj.getFloat(Tag.WindowWidth,0f);
+         vlutFct = voiObj.getString(Tag.VOILUTFunction);
+         center = voiObj.getFloat(Tag.WindowCenter,0f);
+         width = voiObj.getFloat(Tag.WindowWidth,0f);
         }
         if (mLut == null) {
             if (voiLut == null ) {
@@ -1074,7 +1086,7 @@ public abstract class LookupTable {
                         slope, intercept, center, width, vlutFct, pLut,
                         false, pval2out);
             }
-        	if (pLut == null) {
+         if (pLut == null) {
                     return LookupTable.createLut(stored, signed, outBits,
                         slope, intercept, voiLut, inverse, pval2out);
             }
