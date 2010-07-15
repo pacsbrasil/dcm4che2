@@ -181,8 +181,8 @@ public abstract class LookupTable {
                     + " != dst.width:" + dstWidth);
         }
         if (srcHeight != dstHeight) {
-            throw new IllegalArgumentException("src.height:" + srcWidth
-                    + " != dst.height:" + dstWidth);
+            throw new IllegalArgumentException("src.height:" + srcHeight
+                    + " != dst.height:" + dstHeight);
         }
         if (srcHeight * srcScanlineStride != srcdata.getSize()) {
             throw new IllegalArgumentException("srcHeight:" + srcHeight
