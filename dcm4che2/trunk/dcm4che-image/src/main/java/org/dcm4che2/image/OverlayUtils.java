@@ -209,11 +209,10 @@ public class OverlayUtils {
      * @return              The byte array fixed to have bit-level row beginnings coincide with byte array
      *                          boundaries
      */
-    protected static byte[] padToFixRowByteBoundary(byte[] unpaddedData,
-            int rows, int cols) {
+    protected static byte[] padToFixRowByteBoundary(byte[] unpaddedData, int rows, int cols) {
         int numRowBytes = (cols+7)/8;
         int paddedLength = (int)(rows * numRowBytes);
-        if( unpaddedData.length==paddedLength ) return unpaddedData;
+        if( (unpaddedData.length == paddedLength ) && (cols%8)==0 ) return unpaddedData;
         
         byte[] data = new byte[paddedLength];
         
@@ -223,19 +222,28 @@ public class OverlayUtils {
             // Bits from the current byte needed
             int bits = posnUnpad % 8;
             posnUnpad /= 8;
-            int nextBits = 8-bits;
+            int prevBits = 8-bits;
             if( bits==0 ) {
-                // Not only an optimization for performance - also prevents an exception if the last pixel doesn't need to overflw
-                // from the next unpadded byte...
+                // Not only an optimization for performance - also prevents an exception if the last pixel doesn't need 
+                // to overflow from the next unpadded byte...
                 System.arraycopy(unpaddedData,posnUnpad,data, posnPad, numRowBytes);
                 continue;
             }
-            int mask = (0xFF << nextBits) & 0xFF;
-            int nextMask = (0xFF >> bits) & 0xFF;
+            int mask = (0xFF << bits) & 0xFF;
+            int nextMask = (0xFF >> prevBits) & 0xFF;
             for(int x=0; x<numRowBytes; x++) {
-                data[posnPad+x] = (byte) (
-                        ((unpaddedData[posnUnpad+x] & mask)>>nextBits) | 
-                        ((unpaddedData[posnUnpad+x+1] & nextMask) << bits));
+                try {
+                    data[posnPad+x] = (byte) (
+                            ((unpaddedData[posnUnpad+x] & mask)>>bits) | 
+                            ((unpaddedData[posnUnpad+x+1] & nextMask) << prevBits));
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    ArrayIndexOutOfBoundsException newEx = new ArrayIndexOutOfBoundsException(
+                            "Did not find enough source data in overlay to pad data for " 
+                            + rows + " rows, " 
+                            + cols + "columns");
+                    newEx.initCause(e);
+                    throw newEx;
+                }
             }
         }
         
