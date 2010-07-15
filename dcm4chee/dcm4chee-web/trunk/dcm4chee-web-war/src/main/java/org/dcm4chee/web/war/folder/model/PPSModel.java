@@ -106,7 +106,11 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
         return dataset != null
                 ? dataset.getString(new int[] { 
                         Tag.ScheduledStepAttributesSequence, 0,
-                        Tag.AccessionNumber })
+                        Tag.AccessionNumber }) != null
+                                ? dataset.getString(new int[] { 
+                                        Tag.ScheduledStepAttributesSequence, 0,
+                                        Tag.AccessionNumber })
+                                : dataset.getString(Tag.AccessionNumber)
                 : null;
     }
 
