@@ -437,16 +437,16 @@ public abstract class GPWLManagerBean implements SessionBean {
 
     private Dataset selectItem(DcmElement dstSeq, Dataset srcItem,
             int uidTag, int sqTag) {
-        String uid = srcItem.getString(Tags.StudyInstanceUID);
+        String uid = srcItem.getString(uidTag);
         for (int i = 0, n = dstSeq.countItems(); i < n; i++) {
             Dataset sty = dstSeq.getItem(i);
-            if (uid.equals(sty.getString(Tags.StudyInstanceUID))) {
+            if (uid.equals(sty.getString(uidTag))) {
                 return sty;
             }
         }
         Dataset sty = dstSeq.addNewItem();
-        sty.putUI(Tags.StudyInstanceUID, uid);
-        sty.putSQ(Tags.RefSeriesSeq);
+        sty.putUI(uidTag, uid);
+        sty.putSQ(sqTag);
         return sty;
     }
 
