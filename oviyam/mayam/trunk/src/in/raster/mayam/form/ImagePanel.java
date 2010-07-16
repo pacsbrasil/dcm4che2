@@ -39,6 +39,7 @@
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
+import in.raster.mayam.delegate.ImageOrientation;
 import in.raster.mayam.delegate.LocalizerDelegate;
 import in.raster.mayam.delegate.SeriesChooserDelegate;
 import in.raster.mayam.model.Instance;
@@ -343,7 +344,6 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
 
         String inverted = dataset.getString(Tags.PhotometricInterpretation, null);
         if ("MONOCHROME1".equals(inverted) || "MONOCHROME2".equals(inverted)) {
-
             cmParam = cmFactory.makeParam(dataset);
             int bits = dataset.getInt(Tags.BitsStored, 8);
             int size = 1 << bits;
@@ -925,11 +925,11 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 g.rotate((Math.PI * 3) / 2, this.getSize().width / 2, this.getSize().height / 2);
             }
         }
-        if (flipHorizontalFlag) {
+        if (flipHorizontalFlag) {         
             g.translate(this.getSize().width, 0);
             g.scale(-1, 1);
         }
-        if (flipVerticalFlag) {
+        if (flipVerticalFlag) {           
             g.translate(0, this.getSize().height);
             g.scale(1, -1);
         }
@@ -1296,6 +1296,14 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
     }
 
+    public boolean isInvertFlag() {
+        return invertFlag;
+    }
+
+    public void setInvertFlag(boolean invertFlag) {
+        this.invertFlag = invertFlag;
+    }
+
     public static boolean isProbeFlag() {
         return probeFlag;
     }
@@ -1475,9 +1483,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             newWindowWidth = 1.0;
         }
         double newWindowLevel = windowLevel + mouseLocDiffY * 5;
-        windowChanged(windowLevel, windowWidth);
-        windowLevel = (int) newWindowLevel;
-        windowWidth = (int) newWindowWidth;
+        windowChanged((int) newWindowLevel, (int) newWindowWidth);
     }
 
     private void mouseDragStack(int mouseLocX2, int mouseLocY2) {

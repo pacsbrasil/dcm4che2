@@ -39,8 +39,12 @@
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
+import in.raster.mayam.delegate.ImageOrientation;
 import java.awt.Color;
+import java.awt.FontMetrics;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 /**
  *
@@ -55,6 +59,11 @@ public class Canvas extends javax.swing.JPanel {
     public boolean focusGained = false;
     private boolean firstTime = true;
     private LayeredCanvas layeredCanvas;
+    private String columnRight = "";
+    private String columnLeft = "";
+    private String rowTop = "";
+    private String rowDown = "";
+   
 
     public Canvas(LayeredCanvas canvas) {
         initComponents();
@@ -132,7 +141,7 @@ public class Canvas extends javax.swing.JPanel {
                 g.drawLine(hx, y1, hx, y2);
                 g.drawLine(hx, y1, hx + 12, y1);
                 g.drawLine(hx, y2, hx + 12, y2);
-                double viewScaleHeightUnit = (viewScaleHeight + 0.000f) / 10;              
+                double viewScaleHeightUnit = (viewScaleHeight + 0.000f) / 10;
                 g.drawLine(hx, (int) (y1 + (viewScaleHeightUnit * 1)), hx + 6, (int) (y1 + (viewScaleHeightUnit * 1)));
                 g.drawLine(hx, (int) (y1 + (viewScaleHeightUnit * 2)), hx + 6, (int) (y1 + (viewScaleHeightUnit * 2)));
                 g.drawLine(hx, (int) (y1 + (viewScaleHeightUnit * 3)), hx + 6, (int) (y1 + (viewScaleHeightUnit * 3)));
@@ -149,7 +158,7 @@ public class Canvas extends javax.swing.JPanel {
                 g.drawLine(wx1, wy, wx2, wy);
                 g.drawLine(wx1, wy, wx1, wy - 12);
                 g.drawLine(wx2, wy, wx2, wy - 12);
-                double viewScaleWidthUnit = (viewScaleWidth + 0.000f) / 10;               
+                double viewScaleWidthUnit = (viewScaleWidth + 0.000f) / 10;
                 g.drawLine((int) (wx1 + (viewScaleWidthUnit * 5)), wy, (int) (wx1 + (viewScaleWidthUnit * 5)), wy - 12);
                 g.drawLine((int) (wx1 + (viewScaleWidthUnit * 1)), wy, (int) (wx1 + (viewScaleWidthUnit * 1)), wy - 6);
                 g.drawLine((int) (wx1 + (viewScaleWidthUnit * 2)), wy, (int) (wx1 + (viewScaleWidthUnit * 2)), wy - 6);
@@ -159,6 +168,58 @@ public class Canvas extends javax.swing.JPanel {
                 g.drawLine((int) (wx1 + (viewScaleWidthUnit * 7)), wy, (int) (wx1 + (viewScaleWidthUnit * 7)), wy - 6);
                 g.drawLine((int) (wx1 + (viewScaleWidthUnit * 8)), wy, (int) (wx1 + (viewScaleWidthUnit * 8)), wy - 6);
                 g.drawLine((int) (wx1 + (viewScaleWidthUnit * 9)), wy, (int) (wx1 + (viewScaleWidthUnit * 9)), wy - 6);
+            }
+            Graphics2D g2d = (Graphics2D) g;
+            int gradientHeight = 260;
+            int gradientWidth = 30;
+            int fromRight = 40;
+            GradientPaint gp1 = null;
+
+            gp1 = new GradientPaint(this.getSize().width - fromRight, ((this.getSize().height / 2) - (gradientHeight / 2)), Color.WHITE, (this.getSize().width - fromRight) + gradientWidth, ((this.getSize().height / 2) - (gradientHeight / 2)) + gradientHeight, Color.BLACK);
+            g2d.setPaint(gp1);
+            if (this.layeredCanvas.imgpanel.isInvertFlag()) {
+                gp1 = new GradientPaint(this.getSize().width - fromRight, ((this.getSize().height / 2) - (gradientHeight / 2)), Color.BLACK, (this.getSize().width - fromRight) + gradientWidth, ((this.getSize().height / 2) - (gradientHeight / 2)) + gradientHeight, Color.WHITE);
+                g2d.setPaint(gp1);
+            }
+
+            g2d.fillRect(this.getSize().width - fromRight, ((this.getSize().height / 2) - (gradientHeight / 2)), gradientWidth, gradientHeight);
+            g.setColor(Color.gray);
+            g.drawRect(this.getSize().width - fromRight, ((this.getSize().height / 2) - (gradientHeight / 2)), gradientWidth, gradientHeight);
+            FontMetrics font = g.getFontMetrics();
+            g.setColor(Color.white);
+            int wMin = this.layeredCanvas.imgpanel.getWindowLevel() - (this.layeredCanvas.imgpanel.getWindowWidth() / 2);
+            int wMax = this.layeredCanvas.imgpanel.getWindowLevel() + (this.layeredCanvas.imgpanel.getWindowWidth() / 2);
+            int wMinWidth = font.stringWidth("" + wMin);
+            int wMaxWidth = font.stringWidth("" + wMax);
+            int wlWdith = font.stringWidth("" + this.layeredCanvas.imgpanel.getWindowLevel());
+            g.drawString("" + wMax, this.getSize().width - fromRight - wMaxWidth - 2, ((this.getSize().height / 2) - (gradientHeight / 2)));
+            g.drawString("" + wMin, this.getSize().width - fromRight - wMinWidth - 2, ((this.getSize().height / 2) + (gradientHeight / 2)));
+            g.drawString("" + this.layeredCanvas.imgpanel.getWindowLevel(), this.getSize().width - fromRight - wlWdith - 2, ((this.getSize().height / 2)));
+
+            if (this.layeredCanvas.imgpanel.getImageOrientation() != null) {
+                this.getOrientation(this.layeredCanvas.imgpanel.getImageOrientation());
+                columnLeft = getOppositeOrientation(columnRight);
+                rowTop = getOppositeOrientation(rowDown);
+                if (this.layeredCanvas.imgpanel.isFlipHorizontalFlag()) {
+                    flipOrientationToHorizontal();
+                }
+                if (this.layeredCanvas.imgpanel.isFlipVerticalFlag()) {
+
+                    flipOrientationToVertical();
+                }
+                if (this.layeredCanvas.imgpanel.isIsRotate()) {
+                    if (this.layeredCanvas.imgpanel.getRotateRightAngle() == 90 || this.layeredCanvas.imgpanel.getRotateLeftAngle() == -270) {
+                        changeOrientationTo90();
+                    } else if (this.layeredCanvas.imgpanel.getRotateRightAngle() == 180 || this.layeredCanvas.imgpanel.getRotateLeftAngle() == -180) {
+                        changeOrientationTo180();
+                    } else if (this.layeredCanvas.imgpanel.getRotateRightAngle() == 270 || this.layeredCanvas.imgpanel.getRotateLeftAngle() == -90) {
+                        changeOrientationTo270();
+                    }
+                }
+                g.drawString(rowTop, (this.getSize().width / 2) - 1, 20);
+                g.drawString(rowDown, (this.getSize().width / 2) - 1, this.getSize().height - 7);
+                g.drawString(columnLeft, 10, (this.getSize().height / 2) - 1);
+                g.drawString(columnRight, this.getSize().width - 30, (this.getSize().height / 2) - 1);
             }
         }
     }
@@ -197,6 +258,99 @@ public class Canvas extends javax.swing.JPanel {
     public void setSelectionColoring() {
         focusGained = true;
         repaint();
+    }
+
+    public void changeOrientationTo90() {
+        String tempLeft, tempRight, tempTop, tempBottom;
+        tempLeft = columnLeft;
+        tempRight = columnRight;
+        tempTop = rowTop;
+        tempBottom = rowDown;
+        columnLeft = tempBottom;
+        rowTop = tempLeft;
+        columnRight = tempTop;
+        rowDown = tempRight;
+    }
+
+    public void changeOrientationTo180() {
+        String tempLeft, tempRight, tempTop, tempBottom;
+        tempLeft = columnLeft;
+        tempRight = columnRight;
+        tempTop = rowTop;
+        tempBottom = rowDown;
+        columnLeft = tempRight;
+        rowTop = tempBottom;
+        columnRight = tempLeft;
+        rowDown = tempTop;
+    }
+
+    public void changeOrientationTo270() {
+        String tempLeft, tempRight, tempTop, tempBottom;
+        tempLeft = columnLeft;
+        tempRight = columnRight;
+        tempTop = rowTop;
+        tempBottom = rowDown;
+        columnLeft = tempTop;
+        rowTop = tempRight;
+        columnRight = tempBottom;
+        rowDown = tempLeft;
+    }
+
+    public void flipOrientationToHorizontal() {
+        String tempLeft, tempRight;
+        tempLeft = columnLeft;
+        tempRight = columnRight;
+        columnLeft = tempRight;
+        columnRight = tempLeft;
+    }
+
+    public void flipOrientationToVertical() {
+        String tempTop, tempBottom;
+        tempTop = rowTop;
+        tempBottom = rowDown;
+        rowTop = tempBottom;
+        rowDown = tempTop;
+    }
+
+    public void getOrientation(String imageOrientation) {
+        String imageOrientationArray[];
+        imageOrientationArray = imageOrientation.split("\\\\");
+        float _imgRowCosx = Float.parseFloat(imageOrientationArray[0]);
+        float _imgRowCosy = Float.parseFloat(imageOrientationArray[1]);
+        float _imgRowCosz = Float.parseFloat(imageOrientationArray[2]);
+        float _imgColCosx = Float.parseFloat(imageOrientationArray[3]);
+        float _imgColCosy = Float.parseFloat(imageOrientationArray[4]);
+        float _imgColCosz = Float.parseFloat(imageOrientationArray[5]);
+        columnRight = ImageOrientation.getOrientation(_imgRowCosx, _imgRowCosy, _imgRowCosz);
+        rowDown = ImageOrientation.getOrientation(_imgColCosx, _imgColCosy, _imgColCosz);
+    }
+
+    public String getOppositeOrientation(String orientation) {
+        String oppositePrcl = "";
+        char[] temp = orientation.toCharArray();
+        for (char c : temp) {
+            oppositePrcl += getOpposite(c);
+        }
+        return oppositePrcl;
+    }
+
+    public char getOpposite(char c) {
+        char opposite = ' ';
+        switch (c) {
+            case 'L':
+                return 'R';
+            case 'R':
+                return 'L';
+            case 'P':
+                return 'A';
+            case 'A':
+                return 'P';
+            case 'H':
+                return 'F';
+            case 'F':
+                return 'H';
+        }
+        return opposite;
     }
 
     /**

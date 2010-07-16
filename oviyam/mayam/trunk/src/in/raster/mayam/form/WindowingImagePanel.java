@@ -146,6 +146,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
     private int row;
     private int column;
     private double scaleFactor = 1;
+    private String imageOrientation;
 
     public WindowingImagePanel() {
         initComponents();
@@ -262,6 +263,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
                 WC = windowLevel = c = (int) w / 2;
             }
         }
+         imageOrientation = dataset.getString(Tags.ImageOrientation) != null ? dataset.getString(Tags.ImageOrientation, 0) + "\\" + dataset.getString(Tags.ImageOrientation, 1) + "\\" + dataset.getString(Tags.ImageOrientation, 2) + "\\" + dataset.getString(Tags.ImageOrientation, 3) + "\\" + dataset.getString(Tags.ImageOrientation, 4) + "\\" + dataset.getString(Tags.ImageOrientation, 5) : null;
     }
 
     /**
@@ -342,6 +344,16 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             e.printStackTrace();
         }
     }
+     public void setImage(Instance instance) {
+        try {
+            newBufferedImage = true;
+            currentbufferedimage = instance.getPixelData();
+            windowChanged(this.windowLevel, this.windowWidth);
+            imageOrientation=instance.getImageOrientation();
+        } catch (ImageReadingException e) {
+            e.printStackTrace();
+        }
+    }
 
     public BufferedImage getCurrentbufferedimage() {
         return currentbufferedimage;
@@ -368,7 +380,8 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
                     Series series = seriesList.get(i);
                     if (series.getSeriesInstanceUID().equalsIgnoreCase(this.seriesUID)) {
                         Instance instance = series.getImageList().get(0);
-                        setImage(instance.getPixelData());
+                        //setImage(instance.getPixelData());
+                        setImage(instance);
                     }
                 }
             }
@@ -804,7 +817,8 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         currentInstanceNo--;
         Instance instance = instanceArray.get(currentInstanceNo);
         dicomFileUrl = instance.getFilepath();
-        setImage(instance.getPixelData());
+       // setImage(instance.getPixelData());
+        setImage(instance);
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
     }
 
@@ -815,7 +829,8 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         }
         Instance instance = instanceArray.get(currentInstanceNo);
         dicomFileUrl = instance.getFilepath();
-        setImage(instance.getPixelData());
+        //setImage(instance.getPixelData());
+        setImage(instance);
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
     }
 
@@ -845,6 +860,14 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
                 }
             }
         }
+    }
+
+    public String getImageOrientation() {
+        return imageOrientation;
+    }
+
+    public void setImageOrientation(String imageOrientation) {
+        this.imageOrientation = imageOrientation;
     }
 
     public void setFirstTime(boolean firstTime) {

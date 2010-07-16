@@ -38,6 +38,7 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
+import in.raster.mayam.delegate.ImageOrientation;
 import java.awt.Color;
 import java.awt.Graphics;
 
@@ -52,6 +53,10 @@ public class WindowingCanvas extends javax.swing.JPanel {
     /** Creates new form DateFormatPanel */
     private boolean firstTime = true;
     private WindowingLayeredCanvas layeredCanvas;
+    private String columnRight = "";
+    private String columnLeft = "";
+    private String rowTop = "";
+    private String rowDown = "";
 
     public WindowingCanvas(WindowingLayeredCanvas canvas) {
         initComponents();
@@ -137,6 +142,16 @@ public class WindowingCanvas extends javax.swing.JPanel {
                 g.drawLine((int) (wx1 + (viewScaleWidthUnit * 7)), wy, (int) (wx1 + (viewScaleWidthUnit * 7)), wy - 6);
                 g.drawLine((int) (wx1 + (viewScaleWidthUnit * 8)), wy, (int) (wx1 + (viewScaleWidthUnit * 8)), wy - 6);
                 g.drawLine((int) (wx1 + (viewScaleWidthUnit * 9)), wy, (int) (wx1 + (viewScaleWidthUnit * 9)), wy - 6);
+                  if (this.layeredCanvas.imgpanel.getImageOrientation() != null) {
+                g.setColor(Color.WHITE);
+                this.getOrientation(this.layeredCanvas.imgpanel.getImageOrientation());
+                columnLeft = getOppositeOrientation(columnRight);
+                rowTop = getOppositeOrientation(rowDown);                
+                g.drawString(rowTop, (this.getSize().width / 2) - 1, 20);
+                g.drawString(rowDown, (this.getSize().width / 2) - 1, this.getSize().height - 7);
+                g.drawString(columnLeft, 10, (this.getSize().height / 2) - 1);
+                g.drawString(columnRight, this.getSize().width - 30, (this.getSize().height / 2) - 1);
+            }
             }
         }
     }
@@ -156,7 +171,98 @@ public class WindowingCanvas extends javax.swing.JPanel {
         int yPosition = (this.getSize().height - this.getComponent(0).getSize().height) / 2;
         this.getComponent(0).setBounds(xPosition, yPosition, this.getComponent(0).getSize().width, this.getComponent(0).getSize().height);
     }
+     public void changeOrientationTo90() {
+        String tempLeft, tempRight, tempTop, tempBottom;
+        tempLeft = columnLeft;
+        tempRight = columnRight;
+        tempTop = rowTop;
+        tempBottom = rowDown;
+        columnLeft = tempBottom;
+        rowTop = tempLeft;
+        columnRight = tempTop;
+        rowDown = tempRight;
+    }
 
+    public void changeOrientationTo180() {
+        String tempLeft, tempRight, tempTop, tempBottom;
+        tempLeft = columnLeft;
+        tempRight = columnRight;
+        tempTop = rowTop;
+        tempBottom = rowDown;
+        columnLeft = tempRight;
+        rowTop = tempBottom;
+        columnRight = tempLeft;
+        rowDown = tempTop;
+    }
+
+    public void changeOrientationTo270() {
+        String tempLeft, tempRight, tempTop, tempBottom;
+        tempLeft = columnLeft;
+        tempRight = columnRight;
+        tempTop = rowTop;
+        tempBottom = rowDown;
+        columnLeft = tempTop;
+        rowTop = tempRight;
+        columnRight = tempBottom;
+        rowDown = tempLeft;
+    }
+
+    public void flipOrientationToHorizontal() {
+        String tempLeft, tempRight;
+        tempLeft = columnLeft;
+        tempRight = columnRight;
+        columnLeft = tempRight;
+        columnRight = tempLeft;
+    }
+
+    public void flipOrientationToVertical() {
+        String tempTop, tempBottom;
+        tempTop = rowTop;
+        tempBottom = rowDown;
+        rowTop = tempBottom;
+        rowDown = tempTop;
+    }
+
+    public void getOrientation(String imageOrientation) {
+        String imageOrientationArray[];
+        imageOrientationArray = imageOrientation.split("\\\\");
+        float _imgRowCosx = Float.parseFloat(imageOrientationArray[0]);
+        float _imgRowCosy = Float.parseFloat(imageOrientationArray[1]);
+        float _imgRowCosz = Float.parseFloat(imageOrientationArray[2]);
+        float _imgColCosx = Float.parseFloat(imageOrientationArray[3]);
+        float _imgColCosy = Float.parseFloat(imageOrientationArray[4]);
+        float _imgColCosz = Float.parseFloat(imageOrientationArray[5]);
+        columnRight = ImageOrientation.getOrientation(_imgRowCosx, _imgRowCosy, _imgRowCosz);
+        rowDown = ImageOrientation.getOrientation(_imgColCosx, _imgColCosy, _imgColCosz);
+    }
+
+    public String getOppositeOrientation(String orientation) {
+        String oppositePrcl = "";
+        char[] temp = orientation.toCharArray();
+        for (char c : temp) {
+            oppositePrcl += getOpposite(c);
+        }
+        return oppositePrcl;
+    }
+
+    public char getOpposite(char c) {
+        char opposite = ' ';
+        switch (c) {
+            case 'L':
+                return 'R';
+            case 'R':
+                return 'L';
+            case 'P':
+                return 'A';
+            case 'A':
+                return 'P';
+            case 'H':
+                return 'F';
+            case 'F':
+                return 'H';
+        }
+        return opposite;
+    }
     public WindowingLayeredCanvas getLayeredCanvas() {
         return layeredCanvas;
     }
