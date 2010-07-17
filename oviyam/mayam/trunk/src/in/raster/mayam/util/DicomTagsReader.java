@@ -119,7 +119,8 @@ public class DicomTagsReader {
                 dcmTags.setTagLength(tagLength);
                 dcmTags.setTagValue(dcmObject.getString(tag));
 
-            } catch (Exception e) {
+            }catch(UnsupportedOperationException e){}
+            catch (Exception e) {
                 e.printStackTrace();
             }
 

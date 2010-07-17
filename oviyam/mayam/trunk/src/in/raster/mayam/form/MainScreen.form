@@ -355,10 +355,10 @@
                 <Component class="javax.swing.JLabel" name="jLabel2">
                   <Properties>
                     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="cc" green="66" red="0" type="rgb"/>
+                      <Color blue="71" green="71" red="75" type="rgb"/>
                     </Property>
                     <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="ff" green="ff" red="ff" type="rgb"/>
+                      <Color blue="68" green="0" red="0" type="rgb"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Series "/>
                     <Property name="opaque" type="boolean" value="true"/>
@@ -396,7 +396,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="exportButton" min="-2" pref="70" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="cdImportButton" min="-2" pref="72" max="-2" attributes="0"/>
+                      <Component id="cdImportButton" min="-2" pref="85" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="deleteButton" min="-2" pref="75" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -409,7 +409,7 @@
                       <Component id="viewerButton" min="-2" pref="67" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="queueButton" min="-2" pref="72" max="-2" attributes="0"/>
-                      <EmptySpace pref="614" max="32767" attributes="0"/>
+                      <EmptySpace pref="601" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

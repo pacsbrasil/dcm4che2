@@ -71,7 +71,6 @@ import javax.swing.event.ListSelectionEvent;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.util.DcmURL;
 import in.raster.mayam.model.table.renderer.CellRenderer;
-import in.raster.mayam.model.table.renderer.HeaderRenderer;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableModel;
@@ -520,23 +519,23 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
         });
         jScrollPane2.setViewportView(studyListTable);
 
-        serverNameLabel.setBackground(new java.awt.Color(41, 116, 217));
-        serverNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
-        serverNameLabel.setForeground(new java.awt.Color(255, 255, 255));
+        serverNameLabel.setBackground(new java.awt.Color(117, 113, 113));
+        serverNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        serverNameLabel.setForeground(new java.awt.Color(0, 0, 104));
         serverNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         serverNameLabel.setText(" Server Name");
         serverNameLabel.setOpaque(true);
 
-        headerLabel.setBackground(new java.awt.Color(41, 116, 217));
-        headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
-        headerLabel.setForeground(new java.awt.Color(255, 255, 255));
+        headerLabel.setBackground(new java.awt.Color(117, 113, 113));
+        headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        headerLabel.setForeground(new java.awt.Color(0, 0, 104));
         headerLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         headerLabel.setText(" DICOM Nodes ");
         headerLabel.setOpaque(true);
 
-        jLabel1.setBackground(new java.awt.Color(41, 116, 217));
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13));
-        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel1.setBackground(new java.awt.Color(117, 113, 113));
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(0, 0, 104));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Query Filter");
         jLabel1.setOpaque(true);

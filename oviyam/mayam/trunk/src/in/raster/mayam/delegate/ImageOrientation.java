@@ -41,7 +41,7 @@ package in.raster.mayam.delegate;
 /**
  *
  * @author  BabuHussain
- * @version 0.5
+ * @version 0.6
  *
  */
 public class ImageOrientation {
@@ -64,17 +64,16 @@ public class ImageOrientation {
             } else if ((absY > 0.0001) && (absY > absX) && (absY > absZ)) {
                 orientation += orientationY;
                 absY = 0;
-            } else {
-                if ((absZ <= 0.0001) || (absZ <= absX) || (absZ <= absY)) {
-                    break;
-                }
-                orientation += orientationZ;
-                absZ = 0;
             }
+            else if (absZ>0.0001 && absZ>absX && absZ>absY)
+            {
+                orientation+=orientationZ;
+                absZ=0;
+            }
+            else break;
         }
         return orientation;
     }
-
     public static void getOrientation(String imageOrientation) {
         String imageOrientationArray[], columnRowArray[];
         imageOrientationArray = imageOrientation.split("\\\\");

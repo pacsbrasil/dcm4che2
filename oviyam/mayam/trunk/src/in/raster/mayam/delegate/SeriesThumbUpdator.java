@@ -1,5 +1,3 @@
-
-
 /* ***** BEGIN LICENSE BLOCK *****
 * Version: MPL 1.1/GPL 2.0/LGPL 2.1
 *
@@ -102,7 +100,6 @@ public class SeriesThumbUpdator extends Thread {
         setThumbnailDisplayPanelSize(tempRef.size());
         for (File f : tempRef) {
             final SeriesPanel thumbnail = new SeriesPanel(f.getAbsolutePath());
-
             thumbnail.setPreferredSize(new Dimension((int) mainScreenRef.getThumbnailDisplay().getSize().getWidth()-1,96));
             thumbnail.setVisible(true);
             if (i == 0) {
@@ -113,8 +110,10 @@ public class SeriesThumbUpdator extends Thread {
                 ApplicationContext.selectedSeriesPanel = thumbnail;
                 ApplicationContext.selectedSeriesPanel.setSelectionColoring();
                 thumbnail.updateInstanceList();
+                if(MainScreen.dicomTagsViewer.isVisible()){
                 ArrayList<DicomTags> dcmTags = DicomTagsReader.getTags(new File(thumbnail.getFileUrl()));
                 MainScreen.dicomTagsViewer.setDataModelOnTable(dcmTags);
+                }
             }          
             if (canRun) {
                 mainScreenRef.getThumbnailDisplay().add(thumbnail);

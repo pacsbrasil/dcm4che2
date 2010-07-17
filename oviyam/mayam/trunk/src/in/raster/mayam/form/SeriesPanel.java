@@ -51,16 +51,13 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.swing.ImageIcon;
-import javax.swing.border.EtchedBorder;
+import javax.swing.border.LineBorder;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.imageio.plugins.DcmMetadata;
@@ -197,8 +194,8 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
                 imageIcon = null;
                 loadedImage = null;
 
-            } catch (IOException ex) {
-                Logger.getLogger(ThumbnailImage.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception ex) {
+               // Logger.getLogger(ThumbnailImage.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -218,7 +215,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
      * This routine used to set the selection coloring
      */
     public void setSelectionColoring() {
-        this.setBorder(new EtchedBorder(Color.YELLOW, Color.RED));
+        this.setBorder(new LineBorder(Color.DARK_GRAY,2));
         seriesDescriptionText.setForeground(Color.black);
         totalImagesText.setForeground(Color.black);
         modalityText.setForeground(Color.black);
@@ -229,11 +226,11 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
      * This routine used to remove the selection coloring.
      */
     public void setNoSelectionColoring() {
-        this.setBorder(new EtchedBorder(Color.GRAY, Color.GRAY));
-        seriesDescriptionText.setForeground(Color.CYAN);
-        totalImagesText.setForeground(Color.CYAN);
-        modalityText.setForeground(Color.CYAN);
-        institutionText.setForeground(Color.CYAN);
+        this.setBorder(new LineBorder(Color.lightGray));
+        seriesDescriptionText.setForeground(new Color(0,70,104));
+        totalImagesText.setForeground(new Color(0,70,104));
+        modalityText.setForeground(new Color(0,70,104));
+        institutionText.setForeground(new Color(0,70,104));
     }
 
     private void setTotalInstacne() {

@@ -53,14 +53,13 @@ public class CellRenderer extends DefaultTableCellRenderer {
 
     private Color whiteColor = new Color(254, 254, 254);
     private Color alternateColor = new Color(237, 243, 254);   
-    private Color selectedColor = new Color(61, 128, 223);
-
+    private Color selectedColor = new Color(142,104,104);
    
     public Component getTableCellRendererComponent(JTable table,
             Object value, boolean selected, boolean focused,
             int row, int column) {
         super.getTableCellRendererComponent(table, value,
-                selected, focused, row, column);
+                selected, false, row, column);
 
         // Set the background color
         Color bg;

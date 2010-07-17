@@ -71,9 +71,9 @@ public class SendReceivePanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         receiveTable = new javax.swing.JTable();
 
-        jLabel1.setBackground(new java.awt.Color(41, 116, 217));
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14));
-        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel1.setBackground(new java.awt.Color(117, 113, 113));
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(0, 0, 104));
         jLabel1.setText("  Receive");
         jLabel1.setOpaque(true);
 

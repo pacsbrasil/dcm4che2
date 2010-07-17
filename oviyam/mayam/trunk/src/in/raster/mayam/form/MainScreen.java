@@ -60,7 +60,6 @@ import in.raster.mayam.model.AEModel;
 import in.raster.mayam.model.Study;
 import in.raster.mayam.model.table.StudyListModel;
 import in.raster.mayam.model.table.renderer.CellRenderer;
-import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -70,7 +69,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.border.MatteBorder;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -104,6 +102,7 @@ public class MainScreen extends javax.swing.JFrame {
     }
 
     private void setTheme() {
+        systemLFmenu.setText(System.getProperty("os.name"));
         String activeTheme = ApplicationContext.databaseRef.getActiveTheme();
         if (activeTheme.equalsIgnoreCase("Nimrod")) {
             setNimrodTheme();
@@ -114,10 +113,6 @@ public class MainScreen extends javax.swing.JFrame {
         }
     }
 
-    /* private void setTableHeaders() {
-    studyListTable.getTableHeader().setDefaultRenderer(new HeaderRenderer());
-    studyListTable.setDefaultRenderer(Object.class, new CellRenderer());
-    }*/
     /**
      * This routine used to initialize the sending progress
      */
@@ -212,7 +207,6 @@ public class MainScreen extends javax.swing.JFrame {
         StudyListModel studyListModel = new StudyListModel();
         studyListModel.setData(ApplicationContext.databaseRef.listAllStudiesOfDB());
         studyListTable.setModel((TableModel) studyListModel);
-        //studyListModel.fireTableRowsInserted(0,studyListModel.getStudyList().size()-1);
         TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(studyListModel);
         studyListTable.setRowSorter(sorter);
         if (studyListTable.getRowCount() > 0) {
@@ -291,7 +285,7 @@ public class MainScreen extends javax.swing.JFrame {
         );
         windowingPanelCanvasLayout.setVerticalGroup(
             windowingPanelCanvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 530, Short.MAX_VALUE)
+            .add(0, 532, Short.MAX_VALUE)
         );
 
         studyListTable.setModel(new StudyListModel());
@@ -312,8 +306,8 @@ public class MainScreen extends javax.swing.JFrame {
         thumbnailDisplay.setMinimumSize(new java.awt.Dimension(13, 2));
         thumbnailScroll.setViewportView(thumbnailDisplay);
 
-        jLabel2.setBackground(new java.awt.Color(0, 102, 204));
-        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel2.setBackground(new java.awt.Color(117, 113, 113));
+        jLabel2.setForeground(new java.awt.Color(0, 0, 104));
         jLabel2.setText("Series ");
         jLabel2.setOpaque(true);
 
@@ -324,7 +318,7 @@ public class MainScreen extends javax.swing.JFrame {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, studyAndSeriesDisplayPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, studyTableScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1274, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, studyTableScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1278, Short.MAX_VALUE)
                     .add(studyAndSeriesDisplayPanelLayout.createSequentialGroup()
                         .add(studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
@@ -343,7 +337,7 @@ public class MainScreen extends javax.swing.JFrame {
                         .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -357,7 +351,7 @@ public class MainScreen extends javax.swing.JFrame {
             .add(contentAreaLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel1)
-                .addContainerGap(1171, Short.MAX_VALUE))
+                .addContainerGap(1189, Short.MAX_VALUE))
             .add(studyAndSeriesDisplayPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         contentAreaLayout.setVerticalGroup(
@@ -507,7 +501,7 @@ public class MainScreen extends javax.swing.JFrame {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(exportButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 70, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cdImportButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(cdImportButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 85, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(deleteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 75, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -520,7 +514,7 @@ public class MainScreen extends javax.swing.JFrame {
                 .add(viewerButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(queueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(567, Short.MAX_VALUE))
+                .addContainerGap(601, Short.MAX_VALUE))
         );
         headerPanelLayout.setVerticalGroup(
             headerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -715,7 +709,7 @@ public class MainScreen extends javax.swing.JFrame {
     }//GEN-LAST:event_exportButtonActionPerformed
     private void exportHandler() {
         if (studyListTable.getSelectedRow() != -1) {
-            int selection=studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
+            int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
             String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
             ExportLocationChooser jpegChooser = new ExportLocationChooser(ApplicationContext.imgView, true);
             Display.alignScreen(jpegChooser);
@@ -747,7 +741,7 @@ public class MainScreen extends javax.swing.JFrame {
             forwardHost = ae.getHostName();
             forwardPort = ae.getPort();
             if (studyListTable.getSelectedRow() != -1) {
-                int selection=studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
+                int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
                 String studyIUID = (String) studyListTable.getModel().getValueAt(selection, 8);
                 SendingDelegate sendingDelegate = new SendingDelegate(studyIUID, ae);
             }
@@ -755,7 +749,7 @@ public class MainScreen extends javax.swing.JFrame {
     }//GEN-LAST:event_sendButtonActionPerformed
     private void viewerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewerButtonActionPerformed
         if (studyListTable.getSelectedRow() != -1) {
-            int selection=studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
+            int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
             String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
             int rowColumnArray[] = new int[2];
             try {
@@ -807,7 +801,7 @@ public class MainScreen extends javax.swing.JFrame {
     private void studyListTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studyListTableMouseClicked
         if (evt.getClickCount() == 2) {
             if (studyListTable.getSelectedRow() != -1) {
-                int selection=studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
+                int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
                 String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
                 int rowColumnArray[] = ApplicationContext.databaseRef.getRowColumnBasedStudyUID(siuid);
                 ArrayList tempRef = ApplicationContext.databaseRef.getUrlBasedOnStudyIUID(siuid);
@@ -822,7 +816,7 @@ public class MainScreen extends javax.swing.JFrame {
     private void metaDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_metaDataButtonActionPerformed
         try {
             if (studyListTable.getSelectedRow() != -1) {
-                int selection=studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
+                int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
                 String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
                 ArrayList<DicomTags> dcmTags = DicomTagsReader.getTags(new File(this.canvas.getFilePath()));
                 dicomTagsViewer.setDataModelOnTable(dcmTags);
@@ -850,7 +844,7 @@ public class MainScreen extends javax.swing.JFrame {
     private void queueMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queueMenuItemActionPerformed
         sndRcvFrm.setVisible(true);
     }//GEN-LAST:event_queueMenuItemActionPerformed
- 
+
     private void resetMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetMenuItemActionPerformed
         ApplicationContext.databaseRef.rebuild();
         MainScreen.showLocalDBStorage();
@@ -924,7 +918,6 @@ public class MainScreen extends javax.swing.JFrame {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             updateComponentsTreeUI();
-            //osSpecificColoring();
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
@@ -933,18 +926,6 @@ public class MainScreen extends javax.swing.JFrame {
             Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
         } catch (UnsupportedLookAndFeelException ex) {
             Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    /**
-     * This routine used to set the os specific properties
-     */
-    private void osSpecificColoring() {
-        if (System.getProperty("os.name").startsWith("Mac")) {
-            headerPanel.setBorder(new MatteBorder(0, 0, 1, 0, Color.DARK_GRAY));
-            contentArea.setBackground(new Color(216, 216, 216));
-            studyAndSeriesDisplayPanel.setBackground(new Color(216, 216, 216));
-            thumbnailDisplay.setBackground(new Color(216, 216, 216));
         }
     }
 
@@ -969,7 +950,7 @@ public class MainScreen extends javax.swing.JFrame {
                 thumbUpdator.setCanRun(false);
                 removeThumbnailComponents();
             }
-            int selection=studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
+            int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
             String studyUID = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
             thumbUpdator = new SeriesThumbUpdator(studyUID);
         }

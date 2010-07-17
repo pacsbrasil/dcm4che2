@@ -184,6 +184,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     private int scoutLine2Y1;
     private int scoutLine2X2;
     private int scoutLine2Y2;
+    private String orientationLabel = "";
     private int boundaryLine1X1;
     private int boundaryLine1Y1;
     private int boundaryLine1X2;
@@ -331,12 +332,14 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                     isLocalizer = false;
                 }
             }
+            findOrientation();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
+    
     /**
      * This routine used to retrive the instance related information
      */
@@ -925,11 +928,11 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 g.rotate((Math.PI * 3) / 2, this.getSize().width / 2, this.getSize().height / 2);
             }
         }
-        if (flipHorizontalFlag) {         
+        if (flipHorizontalFlag) {
             g.translate(this.getSize().width, 0);
             g.scale(-1, 1);
         }
-        if (flipVerticalFlag) {           
+        if (flipVerticalFlag) {
             g.translate(0, this.getSize().height);
             g.scale(1, -1);
         }
@@ -956,13 +959,13 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             if (displayScout) {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g.setColor(Color.YELLOW);
-                if (boundaryLine1X1 != boundaryLine1X2) {
+                if (orientationLabel.equalsIgnoreCase("SAGITTAL")) {
                     g.drawLine((int) (boundaryLine1X1 * this.getCurrentScaleFactor() + startX), (int) (boundaryLine1Y1 * this.getCurrentScaleFactor() + startY), (int) (boundaryLine1X2 * this.getCurrentScaleFactor() + startX), (int) (boundaryLine1Y2 * this.getCurrentScaleFactor() + startY));
                     g.drawLine((int) (boundaryLine2X1 * this.getCurrentScaleFactor() + startX), (int) (boundaryLine2Y1 * this.getCurrentScaleFactor() + startY), (int) (boundaryLine2X2 * this.getCurrentScaleFactor() + startX), (int) (boundaryLine2Y2 * this.getCurrentScaleFactor() + startY));
                     g.setColor(Color.GREEN);
                     g.drawLine((int) (scoutLine1X1 * this.getCurrentScaleFactor() + startX), (int) (scoutLine1Y1 * this.getCurrentScaleFactor() + startY), (int) (scoutLine1X2 * this.getCurrentScaleFactor() + startX), (int) (scoutLine1Y2 * this.getCurrentScaleFactor() + startY));
                     g.drawLine((int) (scoutLine2X1 * this.getCurrentScaleFactor() + startX), (int) (scoutLine2Y1 * this.getCurrentScaleFactor() + startY), (int) (scoutLine2X2 * this.getCurrentScaleFactor() + startX), (int) (scoutLine2Y2 * this.getCurrentScaleFactor() + startY));
-                } else {
+                } else if (orientationLabel.equalsIgnoreCase("CORONAL")) {
                     g.drawLine((int) (axis1LeftX * this.getCurrentScaleFactor() + startX), (int) (axis1LeftY * this.getCurrentScaleFactor() + startY), (int) (axis1RightX * this.getCurrentScaleFactor() + startX), (int) (axis1RightY * this.getCurrentScaleFactor() + startY));
                     g.drawLine((int) (axis2LeftX * this.getCurrentScaleFactor() + startX), (int) (axis2LeftY * this.getCurrentScaleFactor() + startY), (int) (axis2RightX * this.getCurrentScaleFactor() + startX), (int) (axis2RightY * this.getCurrentScaleFactor() + startY));
                     g.setColor(Color.GREEN);
@@ -1083,26 +1086,55 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         axisBottomX = bottomx;
         axisBottomY = bottomy;
     }
+    private void findOrientation() {
+        String imageOrientationArray[];
+        if(imageOrientation!=null){
+        imageOrientationArray = imageOrientation.split("\\\\");
+        float _imgRowCosx = Float.parseFloat(imageOrientationArray[0]);
+        float _imgRowCosy = Float.parseFloat(imageOrientationArray[1]);
+        float _imgRowCosz = Float.parseFloat(imageOrientationArray[2]);
+        float _imgColCosx = Float.parseFloat(imageOrientationArray[3]);
+        float _imgColCosy = Float.parseFloat(imageOrientationArray[4]);
+        float _imgColCosz = Float.parseFloat(imageOrientationArray[5]);
+        orientationLabel = getOrientationLabelFromImageOrientation(_imgRowCosx, _imgRowCosy, _imgRowCosz, _imgColCosx, _imgColCosy, _imgColCosz);
+        if (orientationLabel.equalsIgnoreCase("CORONAL") || orientationLabel.equalsIgnoreCase("SAGITTAL")) {
+            isLocalizer = true;
+        }
+        }
+    }
+
+    public String getOrientationLabelFromImageOrientation(double rowX, double rowY, double rowZ, double colX, double colY, double colZ) {
+        String label = null;
+        String ColumnRight = ImageOrientation.getOrientation(rowX, rowY, rowZ);
+        String rowDown = ImageOrientation.getOrientation(colX, colY, colZ);
+        String axis1 = ColumnRight.substring(0, 1);
+        String axis2 = rowDown.substring(0, 1);
+        if ((axis1 != null) && (axis2 != null)) {
+            if ((((axis1.equals("R")) || (axis1.equals("L")))) && (((axis2.equals("A")) || (axis2.equals("P"))))) {
+                label = "AXIAL";
+            } else if ((((axis2.equals("R")) || (axis2.equals("L")))) && (((axis1.equals("A")) || (axis1.equals("P"))))) {
+                label = "AXIAL";
+            } else if ((((axis1.equals("R")) || (axis1.equals("L")))) && (((axis2.equals("H")) || (axis2.equals("F"))))) {
+                label = "CORONAL";
+            } else if ((((axis2.equals("R")) || (axis2.equals("L")))) && (((axis1.equals("H")) || (axis1.equals("F"))))) {
+                label = "CORONAL";
+            } else if ((((axis1.equals("A")) || (axis1.equals("P")))) && (((axis2.equals("H")) || (axis2.equals("F"))))) {
+                label = "SAGITTAL";
+            } else if ((((axis2.equals("A")) || (axis2.equals("P")))) && (((axis1.equals("H")) || (axis1.equals("F"))))) {
+                label = "SAGITTAL";
+            }
+
+        } else {
+            label = "OBLIQUE";
+        }
+
+        return label;
+    }
 
     private void setEnclosingSizes(int finalWidth, int finalHeight) {
         this.getCanvas().getLayeredCanvas().getAnnotationPanel().setSize(finalWidth, finalHeight);
         this.getCanvas().getLayeredCanvas().getAnnotationPanel().setBounds(xPosition, yPosition, this.getSize().width, this.getSize().height);
-
     }
-    int finalHeight;
-    int finalWidth;
-
-    private void calculateHeightAndWidthBasedonAspectRatio(int first, int second) {
-        int h = image.getHeight();
-        int w = image.getWidth();
-        float firstValue = first;
-        float secondValue = second;
-        float a = firstValue / secondValue;
-        float modifiedHeight = h * a;
-        finalHeight = Math.round(modifiedHeight);
-        finalWidth = w;
-    }
-
     /**
      * This routine used to zoom in the image box using the scale factor
      */
@@ -1516,6 +1548,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         setImage(instance.getPixelData());
         setInstanceInfo(instance);
         if (displayScout) {
+            findOrientation();
             if (!this.isLocalizer) {
                 LocalizerDelegate localizer = new LocalizerDelegate();
                 localizer.drawScoutLineWithBorder();
@@ -1534,6 +1567,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         setImage(instance.getPixelData());
         setInstanceInfo(instance);
         if (displayScout) {
+            findOrientation();
             if (!this.isLocalizer) {
                 LocalizerDelegate localizer = new LocalizerDelegate();
                 localizer.drawScoutLineWithBorder();

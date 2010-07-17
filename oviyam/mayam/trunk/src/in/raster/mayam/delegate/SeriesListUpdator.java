@@ -45,6 +45,7 @@ import in.raster.mayam.model.Series;
 import in.raster.mayam.model.Study;
 import java.io.File;
 import java.io.IOException;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -147,6 +148,7 @@ public class SeriesListUpdator extends Thread {
                 selFile = new File(img.getFilepath());
             }
             iis = ImageIO.createImageInputStream(selFile);
+            ImageIO.scanForPlugins();
             iter = ImageIO.getImageReadersByFormatName("DICOM");
             reader = (ImageReader) iter.next();
             reader.setInput(iis, false);
@@ -177,17 +179,15 @@ public class SeriesListUpdator extends Thread {
             } catch (NullPointerException e) {
             } catch (RuntimeException e) {
             }
-        } catch (Exception e) {
+        }catch(ConcurrentModificationException e){}
+        catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
                 iis.close();
                 iter = null;
                 reader.dispose();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                Logger.getLogger(StudyListUpdator.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            } catch (Exception ex) {}
         }
     }
 }
