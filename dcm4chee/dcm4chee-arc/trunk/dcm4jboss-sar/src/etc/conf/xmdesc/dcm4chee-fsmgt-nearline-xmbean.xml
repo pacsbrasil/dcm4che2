@@ -185,7 +185,7 @@
 
   <attribute access="read-only" getMethod="getFreeDiskSpace">
     <description><![CDATA[Get free available disk space on writable file
-      systems of the file system group managed my this service.]]>
+      systems of the file system group managed by this service.]]>
     </description>
     <name>FreeDiskSpace</name>
     <type>long</type>
@@ -193,7 +193,7 @@
 
   <attribute access="read-only" getMethod="getFreeDiskSpaceString">
     <description><![CDATA[Get free available disk space on writable file
-      systems of the file system group managed my this service as string.]]>
+      systems of the file system group managed by this service as string.]]>
     </description>
     <name>FreeDiskSpaceString</name>
     <type>java.lang.String</type>
@@ -201,7 +201,7 @@
 
   <attribute access="read-only" getMethod="getUsableDiskSpace">
     <description><![CDATA[Get usable free disk space on writable file
-      systems of the file system group managed my this service, considering
+      systems of the file system group managed by this service, considering
       the configured value for <i>MinimumFreeDiskSpace</i>, in bytes.]]>
     </description>
     <name>UsableDiskSpace</name>
@@ -210,7 +210,7 @@
 
   <attribute access="read-only" getMethod="getUsableDiskSpaceString">
     <description><![CDATA[Get usable free disk space on writable file
-      systems of the file system group managed my this service, considering
+      systems of the file system group managed by this service, considering
       the configured value for <i>MinimumFreeDiskSpace</i>, as string.]]>
     </description>
     <name>UsableDiskSpaceString</name>
@@ -278,7 +278,7 @@
       configured set of constraints.
       <p>Format: HOUR:##MB or HOUR:##GB or HOUR:##h, multiple thresholds with
       different (start) hour separated by ';'. NONE = disable deletion of
-      studies on file systems of the file system group managed my this service.
+      studies on file systems of the file system group managed by this service.
       <p>E.g.: 7:1h;19:24h => free space for expected data volume received in
       24 hours between  7pm and 7am. Between 7am and 7pm only delete studies if
       the usable free space falls below the expected data volume received in
@@ -341,7 +341,7 @@
     setMethod="setDeleteStudyIfNotAccessedFor">
     <description><![CDATA[Defines when a study not accessed for the specified
       time will be deleted from file systems of the file system group managed
-      my this service, if it satisfies the configured set of constraints.
+      by this service, if it satisfies the configured set of constraints.
       <p>Format: 
       <br>##h (in hours) | ##d (in days) | ##w (in weeks) | NEVER
       <br>NEVER = deletion of studies is only triggered by running out of disk
@@ -376,7 +376,7 @@
     setMethod="setDeleteStudyOnlyIfStorageNotCommited">
     <description><![CDATA[Defines if no Storage Commitment request must have
       been accepted for any instances of a study to become a candidate for
-      deletion from file systems of the file system group managed my this
+      deletion from file systems of the file system group managed by this
       service triggered by running out of disk space or being not accessed
       longer than configured <i>DeleteStudiesNotAccessedFor</i>. Typically only
       activated if no other constraint for study deletion is configured.]]>
@@ -393,7 +393,7 @@
     setMethod="setDeleteStudyOnlyIfCopyExternalRetrievable">
     <description><![CDATA[Defines if all instances of a study must be
       retrievable from an external Application Entity to become a candidate
-      for deletion from file systems of the file system group managed my this
+      for deletion from file systems of the file system group managed by this
       service triggered by running out of disk space or being not accessed
       longer than configured <i>DeleteStudiesNotAccessedFor</i>.]]>
     </description>
@@ -423,7 +423,7 @@
     setMethod="setDeleteStudyOnlyIfCopyOnMedia">
     <description><![CDATA[Defines if all instances of a study must be
       stored on Media to become a candidate for deletion from file systems of
-      the file system group managed my this service triggered by running out of
+      the file system group managed by this service triggered by running out of
       disk space or being not accessed longer than configured
       <i>DeleteStudiesNotAccessedFor</i>.]]>
     </description>
@@ -440,7 +440,7 @@
     <description><![CDATA[Defines if all instances of a study must be
       stored on a file system of the specified different file system group to
       become a candidate for deletion from file systems of the file system
-      group managed my this service triggered by running out of disk space or
+      group managed by this service triggered by running out of disk space or
       being not accessed longer than configured <i>DeleteStudiesNotAccessedFor</i>.
       "NONE" = no such constraint.]]>
     </description>
@@ -457,7 +457,7 @@
     <description><![CDATA[Defines if all instances of a study must be stored
       on a file system of a different file system group with file status:
       ARCHIVED to become a candidate for deletion from file systems of the file
-      system group managed my this service triggered by running out of disk
+      system group managed by this service triggered by running out of disk
       space or being not accessed longer than configured
       <i>DeleteStudiesNotAccessedFor</i>. Typically the file system group of
       the file system holding the archived copy is specified by
@@ -476,7 +476,7 @@
     <description><![CDATA[Defines if all instances of a study must be stored
       on a read-only file system of a different file system group to become a
       candidate for deletion from file systems of the file system group managed
-      my this service triggered by running out of disk space or being not
+      by this service triggered by running out of disk space or being not
       accessed longer than configured <i>DeleteStudiesNotAccessedFor</i>.
       Typically the file system group of the read-only file systems is
       specified by <i>DeleteStudyIfCopyOnFileSystemOfFileSystemGroup</i>.]]> 
@@ -509,7 +509,7 @@
       <i>scheduleStudiesForDeletion</i> is invoked to schedule deletion of most
       infrequently accessed studies which satisfies the configured set of
       constraints from writable file systems of the file system group managed
-      my this service, if they were not accessed longer than configured
+      by this service, if they were not accessed longer than configured
       <i>DeleteStudiesNotAccessedFor</i> or if <i>UsableDiskSpace</i>
       falls below <i>CurrentDeleterThreshold</i>.
       <p>Format: ##s (in seconds), ##m (in minutes), ##h (in hours).
@@ -517,7 +517,7 @@
       by timer thread automatically. => If also
       <i>scheduleStudiesForDeletionOnSeriesStored</i> is not activated, no
       studies will be deleted automatically from file systems of the file
-      system group managed my this service.]]>
+      system group managed by this service.]]>
     </description>
     <name>ScheduleStudiesForDeletionInterval</name>
     <type>java.lang.String</type>
@@ -544,13 +544,13 @@
     setMethod="setDeleteOrphanedPrivateFilesInterval">
     <description><![CDATA[Interval in which operation
       <i>deleteOrphanedPrivateFiles</i> is invoked to delete orphaned private
-      files from writable file systems of the file system group managed my this
+      files from writable file systems of the file system group managed by this
       service. Orphaned private files are the result of deleting instances
       from the web trash folder.
       <p>Format: ##s (in seconds), ##m (in minutes), ##h (in hours).
       <br>NEVER = do not invoke operation <i>deleteOrphanedPrivateFiles</i>
       automatically => never delete orphaned private files from the file
-      system group managed my this service automatically.]]>
+      system group managed by this service automatically.]]>
     </description>
     <name>DeleteOrphanedPrivateFilesInterval</name>
     <type>java.lang.String</type>
@@ -643,7 +643,7 @@
 
   <operation impact="INFO">
     <description><![CDATA[List all configured file systems associated with the
-      file system group managed my this service.]]>
+      file system group managed by this service.]]>
     </description>
     <name>listFileSystems</name>
     <return-type>java.lang.String</return-type>
@@ -651,7 +651,7 @@
 
   <operation impact="INFO">
     <description><![CDATA[Return Directory Paths for all configured file
-      systems associated with the file system group managed my this service
+      systems associated with the file system group managed by this service
       as array of Files.]]>
     </description>
     <name>listFileSystemDirectories</name>
@@ -660,7 +660,7 @@
 
   <operation impact="ACTION">
     <description><![CDATA[Add RW file system to the file system group managed
-      my this service. The file system is also linked to existing other file
+      by this service. The file system is also linked to existing other file
       systems of the group.]]>
     </description>
     <name>addRWFileSystem</name>
@@ -674,7 +674,7 @@
 
   <operation impact="ACTION">
     <description><![CDATA[Remove empty file system from the file system group
-      managed my this service. Will fail, if there are already/still file
+      managed by this service. Will fail, if there are already/still file
       records associated with the file system.]]>
     </description>
     <name>removeFileSystem</name>
@@ -688,7 +688,7 @@
 
   <operation impact="ACTION">
     <description><![CDATA[Link or unlink two file systems of the file system
-      group managed my this service.]]>
+      group managed by this service.]]>
     </description>
     <name>linkFileSystems</name>
     <parameter>
@@ -798,7 +798,7 @@
   <operation impact="ACTION">
     <description><![CDATA[Schedules deletion of most infrequently accessed
       studies which satisfies the configured set of constraints from writable
-      file systems of the file system group managed my this service, if they
+      file systems of the file system group managed by this service, if they
       were not accessed longer than configured
       <i>DeleteStudiesNotAccessedFor</i> or if  <i>UsableDiskSpace</i> falls
       below <i>CurrentDeleterThreshold</i>.
@@ -826,7 +826,7 @@
 
   <operation impact="ACTION">
     <description><![CDATA[Delete orphaned private files from writable file
-      systems of the file system group managed my this service. Orphaned
+      systems of the file system group managed by this service. Orphaned
       private files are the result of deleting instances from the web trash
       folder. Returns the number of deleted files.]]>
     </description>
