@@ -100,7 +100,7 @@ public class ConfigProperties extends Properties {
             throw new IOException("Could not load configuration from " + url);
         } finally {
             if (in != null) {
-                try { in.close(); } catch (IOException ignore) {}
+                try { in.close(); } catch (IOException ignore) {ignore.printStackTrace();}
             }
         }
     }

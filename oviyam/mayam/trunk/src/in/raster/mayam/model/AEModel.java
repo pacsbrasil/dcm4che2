@@ -48,8 +48,7 @@ public class AEModel {
     private String hostName="";    
     private String aeTitle="";
     private int port=0; 
-    public AEModel() {
-    }
+   
     public AEModel(String serverName,String host,String aeTitle,int port)
     {
         this.serverName=serverName;

@@ -140,7 +140,7 @@ public class ImportDelegate extends Thread {
             if (dis != null) {
                 try {
                     dis.close();
-                } catch (Exception e) {
+                } catch (Exception e) {e.printStackTrace();
                     // ignore
                 }
             }

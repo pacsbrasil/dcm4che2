@@ -201,7 +201,7 @@ public final class TranscoderMain
                     return quality / 100.f;
                 }
             } catch (IllegalArgumentException e)
-            {}
+            {e.printStackTrace();}
             System.out.println(
                 MessageFormat.format(
                     rb.getString("ignoreQuality"),
@@ -222,7 +222,7 @@ public final class TranscoderMain
                     return rate;
                 }
             } catch (IllegalArgumentException e)
-            {}
+            {e.printStackTrace();}
             System.out.println(
                 MessageFormat.format(
                     rb.getString("ignoreRate"),

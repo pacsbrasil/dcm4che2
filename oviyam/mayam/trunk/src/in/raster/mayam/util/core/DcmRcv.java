@@ -1119,7 +1119,7 @@ public class DcmRcv {
             int i = Integer.parseInt(s);
             if (i >= min && i <= max)
                 return i;
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {e.printStackTrace();
             // parameter is not a valid integer; fall through to exit
         }
         exit(errPrompt);

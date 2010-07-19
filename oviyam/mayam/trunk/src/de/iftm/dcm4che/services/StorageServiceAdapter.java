@@ -343,7 +343,7 @@ public class StorageServiceAdapter implements StorageServiceEventListener {
         } finally {
             try {
                 fos.close();
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {ignore.printStackTrace();}
         }
     }
     

@@ -194,7 +194,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
                 imageIcon = null;
                 loadedImage = null;
 
-            } catch (Exception ex) {
+            } catch (Exception ex) {ex.printStackTrace();
                // Logger.getLogger(ThumbnailImage.class.getName()).log(Level.SEVERE, null, ex);
             }
         }

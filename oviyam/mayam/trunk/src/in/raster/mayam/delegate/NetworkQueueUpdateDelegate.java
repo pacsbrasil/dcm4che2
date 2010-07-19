@@ -128,6 +128,7 @@ public class NetworkQueueUpdateDelegate {
                 try {
                     dis.close();
                 } catch (Exception e) {
+                    e.printStackTrace();
                     // ignore
                 }
             }

@@ -850,7 +850,7 @@ public class DcmSnd extends StorageCommitmentService {
             }
             try {
                 dcmsnd.initTLS();
-            } catch (Exception e) {
+            } catch (Exception e) {e.printStackTrace();
              //   System.err.println("ERROR: Failed to initialize TLS context:"
                //         + e.getMessage());
                // System.exit(2);
@@ -858,7 +858,7 @@ public class DcmSnd extends StorageCommitmentService {
         }        
         try {
             dcmsnd.start();
-        } catch (Exception e) {
+        } catch (Exception e) {e.printStackTrace();
            // System.err.println("ERROR: Failed to start server for receiving " +
            //         "Storage Commitment results:" + e.getMessage());
            // System.exit(2);
@@ -867,7 +867,7 @@ public class DcmSnd extends StorageCommitmentService {
             t1 = System.currentTimeMillis();
             try {
                 dcmsnd.open();
-            } catch (Exception e) {
+            } catch (Exception e) {e.printStackTrace();
               //  System.err.println("ERROR: Failed to establish association:"
                //         + e.getMessage());
               //  System.exit(2);
@@ -902,7 +902,7 @@ public class DcmSnd extends StorageCommitmentService {
                 t1 = System.currentTimeMillis();
                 try {
                     dcmsnd.openToStgcmtAE();
-                } catch (Exception e) {
+                } catch (Exception e) {e.printStackTrace();
                   //  System.err.println("ERROR: Failed to establish association:"
                    //         + e.getMessage());
                    // System.exit(2);
@@ -1015,7 +1015,7 @@ public class DcmSnd extends StorageCommitmentService {
             int i = Integer.parseInt(s);
             if (i >= min && i <= max)
                 return i;
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {e.printStackTrace();
             // parameter is not a valid integer; fall through to exit
         }
         exit(errPrompt);

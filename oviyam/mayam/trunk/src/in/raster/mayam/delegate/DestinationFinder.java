@@ -63,7 +63,7 @@ public class DestinationFinder {
                 } else {
                     fileDest = importFileTranscodedDestination(file);
                 }
-            } catch (Exception e) {
+            } catch (Exception e) {e.printStackTrace();
             }
         } else {
             fileDest = file.getAbsolutePath();

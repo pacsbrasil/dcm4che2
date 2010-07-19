@@ -137,6 +137,7 @@ public class ApplicationContext {
             fileOutputStream = new FileOutputStream(logFile, true);
             fileOutputStream.write(logMessage.getBytes());
         } catch (Exception ex) {
+           ex.printStackTrace();
         } finally {
             try {
                 fileOutputStream.close();

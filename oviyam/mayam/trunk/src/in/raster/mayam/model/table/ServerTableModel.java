@@ -127,14 +127,14 @@ public class ServerTableModel extends AbstractTableModel {
                 try {
                     row.setAeTitle(aValue.toString());
                     ApplicationContext.databaseRef.updateServerListValues(row);
-                } catch (Exception e) {
+                } catch (Exception e) {e.printStackTrace();
                 }
                 break;
             case 2:
                 try {
                     row.setHostName(aValue.toString());
                     ApplicationContext.databaseRef.updateServerListValues(row);
-                } catch (Exception e) {
+                } catch (Exception e) {e.printStackTrace();
                 }
                 break;
             case 3:
@@ -142,7 +142,7 @@ public class ServerTableModel extends AbstractTableModel {
                     int port = Integer.parseInt(aValue.toString());
                     row.setPort("" + port);
                     ApplicationContext.databaseRef.updateServerListValues(row);
-                } catch (Exception e) {
+                } catch (Exception e) {e.printStackTrace();
                 }
                 break;
 

@@ -252,7 +252,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
                 initialPixelSpacingX = pixelSpacingX = Double.parseDouble(dataset.getString(
                         Tags.PixelSpacing, 1));
 
-            } catch (NullPointerException e) {
+            } catch (NullPointerException e) {e.printStackTrace();
             }
             int nWindow = cmParam.getNumberOfWindows();
             if (nWindow > 0) {

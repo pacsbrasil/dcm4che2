@@ -82,7 +82,7 @@ class Configuration extends Properties
                + url, e);
       } finally {
          if (in != null) {
-            try { in.close(); } catch (IOException ignore) {}
+            try { in.close(); } catch (IOException ignore) {ignore.printStackTrace();}
          }
       }
    }

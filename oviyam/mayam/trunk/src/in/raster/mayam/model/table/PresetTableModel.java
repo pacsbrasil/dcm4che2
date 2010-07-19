@@ -124,7 +124,7 @@ public class PresetTableModel extends AbstractTableModel {
 
                     row.setWindowLevel("" + level);
                     ApplicationContext.databaseRef.updatePresetValues(row);
-                } catch (Exception e) {
+                } catch (Exception e) {e.printStackTrace();
                 }
                 break;
             case 2:
@@ -132,7 +132,7 @@ public class PresetTableModel extends AbstractTableModel {
                     int width = Integer.parseInt(aValue.toString());
                     row.setWindowWidth("" + width);
                     ApplicationContext.databaseRef.updatePresetValues(row);
-                } catch (Exception e) {
+                } catch (Exception e) {e.printStackTrace();
                 }
                 break;
         }

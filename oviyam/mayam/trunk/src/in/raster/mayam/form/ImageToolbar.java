@@ -1034,7 +1034,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             for (int j = 0; j < ((JPanel) ApplicationContext.imgView.jTabbedPane1.getComponent(i)).getComponentCount(); j++) {
                 try {
                     ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getComponent(i)).getComponent(j)).imgpanel.storeAnnotation();
-                } catch (Exception e) {
+                } catch (Exception e) {e.printStackTrace();
                     //Class cast exception because it is not a layered canvas
                 }
             }

@@ -176,10 +176,10 @@ public class SeriesListUpdator extends Thread {
                 img.setColumn(column);
                 img.setReferenceSOPInstanceUID(referencedSOPInstanceUID);
                 img.setFrameOfReferenceUID(frameOfReferenceUID);
-            } catch (NullPointerException e) {
-            } catch (RuntimeException e) {
+            } catch (NullPointerException e) {e.printStackTrace();
+            } catch (RuntimeException e) {e.printStackTrace();
             }
-        }catch(ConcurrentModificationException e){}
+        }catch(ConcurrentModificationException e){e.printStackTrace();}
         catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -187,7 +187,7 @@ public class SeriesListUpdator extends Thread {
                 iis.close();
                 iter = null;
                 reader.dispose();
-            } catch (Exception ex) {}
+            } catch (Exception ex) {ex.printStackTrace();}
         }
     }
 }

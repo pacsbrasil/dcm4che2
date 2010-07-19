@@ -195,13 +195,13 @@ public class JpegConvertorDelegate {
             if (ios != null) {
                 try {
                     ios.close();
-                } catch (Exception e) {
+                } catch (Exception e) {e.printStackTrace();
                     // ignore
                 }
                 if (writer != null) {
                     try {
                         writer.dispose();
-                    } catch (Exception e) {
+                    } catch (Exception e) {e.printStackTrace();
                         // ignore
                     }
                 }
@@ -227,7 +227,7 @@ public class JpegConvertorDelegate {
                 if (extension.equalsIgnoreCase(".dcm")) {
                     outputFileName = inputDicomFile.getName().replace(extension, "");
                 }
-            } catch (StringIndexOutOfBoundsException e) {
+            } catch (StringIndexOutOfBoundsException e) {e.printStackTrace();
             }
             File outputJpegFile = new File(outputPath, outputFileName + ".jpg");
             ImageInputStream iis = ImageIO.createImageInputStream(inputDicomFile);
@@ -282,13 +282,13 @@ public class JpegConvertorDelegate {
             if (ios != null) {
                 try {
                     ios.close();
-                } catch (Exception e) {
+                } catch (Exception e) {e.printStackTrace();
                     // ignore
                 }
                 if (writer != null) {
                     try {
                         writer.dispose();
-                    } catch (Exception e) {
+                    } catch (Exception e) {e.printStackTrace();
                         // ignore
                     }
                 }
@@ -325,7 +325,7 @@ public class JpegConvertorDelegate {
                 if (output != null) {
                     output.close();
                 }
-            } catch (IOException ex) {
+            } catch (IOException ex) {ex.printStackTrace();
                 //Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -353,13 +353,13 @@ public class JpegConvertorDelegate {
             if (ios != null) {
                 try {
                     ios.close();
-                } catch (Exception e) {
+                } catch (Exception e) {e.printStackTrace();
                     // ignore
                 }
                 if (writer != null) {
                     try {
                         writer.dispose();
-                    } catch (Exception e) {
+                    } catch (Exception e) {e.printStackTrace();
                         // ignore
                     }
                 }

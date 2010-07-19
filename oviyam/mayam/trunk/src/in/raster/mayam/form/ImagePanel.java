@@ -366,7 +366,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 initialPixelSpacingX = pixelSpacingX = Double.parseDouble(dataset.getString(
                         Tags.PixelSpacing, 1));
 
-            } catch (NullPointerException e) {
+            } catch (NullPointerException e) {e.printStackTrace();
             }
             int nWindow = cmParam.getNumberOfWindows();
             if (nWindow > 0) {
@@ -488,7 +488,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 Graphics2D g2 = image.createGraphics();
                 g2.drawImage(loadedImage, 0, 0, null);
                 repaint();
-            } catch (RuntimeException e) {
+            } catch (RuntimeException e) {e.printStackTrace();
             }
         } catch (Exception e) {
             System.out.println("io exception");
@@ -1297,12 +1297,12 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             data = new BasicDicomObject();
             data = dis.readDicomObject();
 
-        } catch (IOException ex) {
+        } catch (IOException ex) {ex.printStackTrace();
             // Logger.getLogger(ModelUpdator.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 dis.close();
-            } catch (IOException ex) {
+            } catch (IOException ex) {ex.printStackTrace();
                 //   Logger.getLogger(ModelUpdator.class.getName()).log(Level.SEVERE, null, ex);
             }
         }

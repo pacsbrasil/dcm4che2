@@ -81,7 +81,7 @@ public class LocalizerDelegate {
                             //}
                         }
                     } catch (Exception e) {
-                        //e.printStackTrace();
+                        e.printStackTrace();
                     }
                 }
             }
@@ -169,7 +169,7 @@ public class LocalizerDelegate {
                             }
                         }
 
-                    } catch (NullPointerException e) {
+                    } catch (NullPointerException e) {e.printStackTrace();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

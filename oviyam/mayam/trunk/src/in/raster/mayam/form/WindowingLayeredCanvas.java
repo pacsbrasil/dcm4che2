@@ -177,7 +177,7 @@ public class WindowingLayeredCanvas extends JLayeredPane implements ComponentLis
             this.canvas.resizeHandler();
             this.imgpanel.resizeHandler();
             this.textOverlay.resizeHandler();
-        } catch (Exception ex) {
+        } catch (Exception ex) {ex.printStackTrace();
         }
 
     }
