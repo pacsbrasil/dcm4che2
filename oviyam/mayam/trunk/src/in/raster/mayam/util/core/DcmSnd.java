@@ -963,7 +963,7 @@ public class DcmSnd extends StorageCommitmentService {
     }
 
     private synchronized DicomObject waitForStgCmtResult() throws InterruptedException {
-        while (stgCmtResult == null) wait();
+        while (stgCmtResult == null) {wait();}
         return stgCmtResult;
     }
 

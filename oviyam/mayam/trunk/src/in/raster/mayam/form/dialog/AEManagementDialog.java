@@ -315,7 +315,7 @@ public class AEManagementDialog extends javax.swing.JDialog {
                         echoStatus.setVisible(true);
                     }
                 } catch (Exception e) {
-                    System.out.println(e.getStackTrace());
+                    e.printStackTrace();
                 }
             } else {
                 FieldValidator sd=new FieldValidator(this, true);

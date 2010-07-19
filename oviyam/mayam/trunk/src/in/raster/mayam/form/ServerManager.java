@@ -286,7 +286,7 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener{
                     echoStatus.setVisible(true);
                 }
             } catch (Exception e) {
-                System.out.println(e.getStackTrace());
+                e.printStackTrace();
             }
         } catch (Exception e) {
            e.printStackTrace();

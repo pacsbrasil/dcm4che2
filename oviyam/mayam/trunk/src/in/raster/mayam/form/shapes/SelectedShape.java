@@ -48,7 +48,7 @@ import java.awt.geom.Rectangle2D;
  */
 public class SelectedShape extends Rectangle2D {
 
-    private String type="";
+   // private String type="";
 
     public SelectedShape() {
     }

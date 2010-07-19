@@ -1719,8 +1719,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     public void mouseMoved(MouseEvent e) {
         mouseLocX2 = e.getX();
         mouseLocY2 = e.getY();
-        if (mousePressed) {
-        }
+       // if (mousePressed) {
+       // }
         if (probeFlag) {
             String probeParameter[] = new String[3];
             probeParameter[0] = "" + (int) Math.round(mouseLocX2 / this.scaleFactor);

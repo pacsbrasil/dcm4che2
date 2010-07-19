@@ -40,7 +40,7 @@ package in.raster.mayam.util.database;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.facade.ApplicationFacade;
-import in.raster.mayam.form.dialog.NumberFormatValidator;
+//import in.raster.mayam.form.dialog.NumberFormatValidator;
 import in.raster.mayam.model.AEModel;
 import in.raster.mayam.model.Instance;
 import in.raster.mayam.model.PresetModel;
@@ -62,7 +62,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Vector;
-import javax.swing.JOptionPane;
+//import javax.swing.JOptionPane;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;

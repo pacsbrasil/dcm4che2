@@ -726,7 +726,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
                     echoStatus.setVisible(true);
                 }
             } catch (Exception e) {
-                System.out.println(e.getStackTrace());
+                e.printStackTrace();
             }
         } catch (Exception e) {
             System.out.println("Select a Server");
