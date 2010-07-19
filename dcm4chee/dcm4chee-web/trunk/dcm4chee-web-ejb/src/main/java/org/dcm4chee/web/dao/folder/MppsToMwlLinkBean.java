@@ -135,6 +135,7 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
                 reason);
         String ssaSpsID, studyIUID = null;
         boolean spsNotInList = true;
+        boolean invalidSSAItem0 = false;
         for (int i = 0, len = ssaSQ.countItems(); i < len; i++) {
             ssa = ssaSQ.getDicomObject(i);
             if (ssa != null) {
@@ -148,12 +149,20 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
                     ssa.putString(Tag.RequestedProcedureID, VR.SH, rpid);
                     ssa.putString(Tag.StudyInstanceUID, VR.UI, studyIUID);
                     spsNotInList = false;
+                } else if (ssaSpsID != null && ssa.getString(Tag.AccessionNumber) == null) {
+                    log.warn("MPPS contains an invalid ScheduledStepAttributes item! (with SPS Id but no Accession Number):"+ssa);
+                    if (i==0)
+                        invalidSSAItem0 = true;
                 }
             }
         }
         if (spsNotInList) {
             ssa = new BasicDicomObject();
-            ssaSQ.addDicomObject(ssa);
+            if (invalidSSAItem0) {
+                ssaSQ.addDicomObject(0, ssa);
+            } else {
+                ssaSQ.addDicomObject(ssa);
+            }
             DicomObject spsDS = spsSq.getDicomObject();
             ssa.putString(Tag.StudyInstanceUID, VR.UI, studyIUID);
             ssa.putString(Tag.ScheduledProcedureStepID, VR.SH, spsid);
@@ -175,8 +184,10 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
             }
             log.debug("Add new ScheduledStepAttribute item: {}", ssa);
             log.debug("New mppsAttrs:{}", mppsAttrs);
+        } else if (invalidSSAItem0) {
+            ssa = ssaSQ.removeDicomObject(0);
+            ssaSQ.addDicomObject(ssa);
         }
-        mppsAttrs.putString(Tag.AccessionNumber, VR.SH, accNo);
         mpps.setAttributes(mppsAttrs);
         em.merge(mpps);
         Set<Series> series = mpps.getSeries();
@@ -232,7 +243,6 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         item.putString(Tag.ScheduledProcedureStepDescription, VR.LO, null);
         item.putSequence(Tag.ScheduledProtocolCodeSequence);
         mppsAttrs.putSequence(Tag.ScheduledStepAttributesSequence).addDicomObject(item);
-        mppsAttrs.putString(Tag.AccessionNumber, VR.SH, null);
         mpps.setAttributes(mppsAttrs);
         em.merge(mpps);
         if (rpspsIDs.size() > 0) {
