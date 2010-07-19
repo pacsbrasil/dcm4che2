@@ -957,7 +957,7 @@ public abstract class LookupTable {
         boolean signed = img.getInt(Tag.PixelRepresentation) != 0;
         float slope = mLut.getFloat(Tag.RescaleSlope, 1.f);
         float intercept = mLut.getFloat(Tag.RescaleIntercept, 0.f);
-        DicomObject tableMLut = mLut.getNestedDicomObject(Tag.ModalityLUTSequence);
+        DicomObject tableMLut = VOIUtils.getLUT(mLut, Tag.ModalityLUTSequence);
         if (tableMLut != null) {
             return createLut(stored, signed, outBits, tableMLut, center, width,
                     vlutFct, inverse, pval2out);
@@ -999,7 +999,7 @@ public abstract class LookupTable {
         boolean signed = img.getInt(Tag.PixelRepresentation) != 0;
         float slope = mLut.getFloat(Tag.RescaleSlope, 1.f);
         float intercept = mLut.getFloat(Tag.RescaleIntercept, 0.f);
-        DicomObject tableMLut = img.getNestedDicomObject(Tag.ModalityLUTSequence);
+        DicomObject tableMLut = VOIUtils.getLUT(img, Tag.ModalityLUTSequence);
         if (tableMLut != null) {
             return createLut(stored, signed, outBits, tableMLut, voiLut, inverse,
                     pval2out);
@@ -1041,7 +1041,7 @@ public abstract class LookupTable {
      else {
       inverse = isInverse(img);
      }
-        DicomObject pLut = pr!=null ? pr.getNestedDicomObject(Tag.PresentationLUTSequence) : null;
+        DicomObject pLut = pr!=null ? VOIUtils.getLUT(pr, Tag.PresentationLUTSequence) : null;
      return createLutForImage(img, mlutObj, voiObj, pLut, center, width, vlutFct, inverse, outBits, pval2out);
     }
 
@@ -1067,8 +1067,8 @@ public abstract class LookupTable {
         float slope = mlutObj.getFloat(Tag.RescaleSlope, 1.f);
         float intercept = mlutObj.getFloat(Tag.RescaleIntercept, 0.f);
      
-        DicomObject mLut = mlutObj.getNestedDicomObject(Tag.ModalityLUTSequence);
-        DicomObject voiLut = (voiObj!=null && vlutFct==null) ? voiObj.getNestedDicomObject(Tag.VOILUTSequence) : null;
+        DicomObject mLut = VOIUtils.getLUT(mlutObj, Tag.ModalityLUTSequence);
+        DicomObject voiLut = (voiObj!=null && vlutFct==null) ? VOIUtils.getLUT(voiObj, Tag.VOILUTSequence) : null;
 
         if( voiLut==null && width==0 && voiObj!=null) {
          vlutFct = voiObj.getString(Tag.VOILUTFunction);

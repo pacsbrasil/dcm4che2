@@ -49,6 +49,7 @@ import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
+import org.dcm4che2.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +68,24 @@ public class VOIUtils {
     public static boolean containsVOIAttributes(DicomObject dobj) {
         return dobj.containsValue(Tag.WindowCenter)
                 && dobj.containsValue(Tag.WindowWidth)
-                || dobj.containsValue(Tag.VOILUTSequence);
+                || getLUT(dobj, Tag.VOILUTSequence) != null;
+    }
+
+    public static DicomObject getLUT(DicomObject dobj, int sqTag) {
+        DicomObject lut = dobj.getNestedDicomObject(sqTag);
+        if (lut != null) {
+            if (!lut.containsValue(Tag.LUTData)) {
+                log.info("Ignore " + TagUtils.toString(sqTag)
+                        + " with missing LUT Data (0028,3006)");
+                return null;
+            }
+            if (!lut.containsValue(Tag.LUTDescriptor)) {
+                log.info("Ignore " + TagUtils.toString(sqTag)
+                        + " with missing LUT Descriptor (0028,3002)");
+                return null;
+            }
+        }
+        return lut;
     }
 
     /**
@@ -169,8 +187,7 @@ public class VOIUtils {
             if (frame >= 1 && frame <= size) {
                 DicomObject frameObj = framed.getDicomObject(frame - 1);
                 if (frameObj != null) {
-                    DicomObject voiObj = frameObj
-                            .getNestedDicomObject(Tag.FrameVOILUTSequence);
+                    DicomObject voiObj = VOIUtils.getLUT(frameObj, Tag.FrameVOILUTSequence);
                     if (voiObj != null) {
                         return voiObj;
                     }
@@ -180,8 +197,7 @@ public class VOIUtils {
         DicomObject shared = img
                 .getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
         if (shared != null) {
-            DicomObject voiObj = shared
-                    .getNestedDicomObject(Tag.FrameVOILUTSequence);
+            DicomObject voiObj = VOIUtils.getLUT(shared, Tag.FrameVOILUTSequence);
             if (voiObj != null) {
                 return voiObj;
             }
@@ -258,7 +274,7 @@ public class VOIUtils {
         float slope;
         float intercept;
         DicomObject mObj = selectModalityLUTObject(img, pr, frame);
-        DicomObject mLut = mObj.getNestedDicomObject(Tag.ModalityLUTSequence);
+        DicomObject mLut = VOIUtils.getLUT(mObj, Tag.ModalityLUTSequence);
         if (mLut != null) {
             slope = 1;
             intercept = 0;
