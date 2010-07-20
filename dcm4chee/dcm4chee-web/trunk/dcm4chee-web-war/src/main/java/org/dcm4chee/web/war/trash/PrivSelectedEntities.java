@@ -159,6 +159,15 @@ public class PrivSelectedEntities implements Serializable {
         }
     }
     
+    public void refreshView(boolean deselect) {
+        for (PrivInstanceModel m : instances) 
+            m.getSeries().expand();
+        for (PrivSeriesModel m : seriess) 
+            m.getStudy().expand();
+        for (PrivStudyModel m : studies) 
+            m.getPatient().expand();
+    }
+    
     public String toString() {
         StringBuilder sb = new StringBuilder();
         if (patients.size()>0) sb.append(" Patients:").append(patients.size());

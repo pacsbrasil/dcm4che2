@@ -126,10 +126,11 @@ public class PrivPatientModel extends AbstractDicomModel implements Serializable
 
     @Override
     public void expand() {
+        this.studies.clear();
         TrashListLocal dao = (TrashListLocal)
                 JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
         for (PrivateStudy study : dao.findStudiesOfPatient(getPk())) {
-            this.studies.add(new PrivStudyModel(study));
+            this.studies.add(new PrivStudyModel(study, this));
         }
     }
 
@@ -141,5 +142,5 @@ public class PrivPatientModel extends AbstractDicomModel implements Serializable
     @Override
     public List<? extends AbstractDicomModel> getDicomModelsOfNextLevel() {
         return studies;
-    }    
+    }
 }

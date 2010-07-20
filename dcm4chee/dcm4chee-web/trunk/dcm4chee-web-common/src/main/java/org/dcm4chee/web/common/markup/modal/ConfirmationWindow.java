@@ -69,10 +69,16 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     private boolean showCancel = false;
     
     protected boolean ajaxRunning = false;
+    protected boolean ajaxDone = false;
     protected Label msgLabel;
     protected Image hourglassImage;
     protected AjaxFallbackLink<Object> okBtn;
 
+    public ConfirmationWindow(String id, String titleResource) {
+        this(id);
+        setTitle(new ResourceModel(titleResource));
+    }
+    
     public ConfirmationWindow(String id) {
         this(id, new ResourceModel("yesBtn"), new ResourceModel("noBtn"), new ResourceModel("cancelBtn"));
         
@@ -81,11 +87,15 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
             private static final long serialVersionUID = 1L;
 
             public boolean onCloseButtonClicked(AjaxRequestTarget target) {
+                if (!ajaxRunning) {
+                    msg = null;
+                    close(target);
+                }
                 return !ajaxRunning;
             }
         });
     }
-    
+
     public ConfirmationWindow(String id, IModel<?> confirm, IModel<?> decline, IModel<?> cancel) {
         super(id);
         this.confirm = confirm;
@@ -97,13 +107,12 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     protected void initContent() {
         setInitialWidth(400);
         setInitialHeight(300);
-        setTitle("ConfirmationWindow");
         setContent(new MessageWindowPanel("content"));
     }
     
     public abstract void onConfirmation(AjaxRequestTarget target, T userObject);
-    public void onDecline(AjaxRequestTarget target, T userObject){}
-    public void onCancel(AjaxRequestTarget target, T userObject){}
+    public void onDecline(AjaxRequestTarget target, T userObject) {}
+    public void onCancel(AjaxRequestTarget target, T userObject) {}
     public void onOk(AjaxRequestTarget target) {}
     
     @Override
@@ -120,7 +129,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject, String focusElementId) {
         confirm(target, msg, userObject, focusElementId, false);
     }
-    public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject, String focusElementId, boolean showCancel){
+    public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject, String focusElementId, boolean showCancel) {
         this.msg = msg;
         this.userObject = userObject;
         this.focusElementId = focusElementId;
@@ -156,7 +165,10 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                 public boolean isVisible() {
                     return ajaxRunning;
                 }
-            }).setOutputMarkupId(true));
+            })
+            .setOutputMarkupPlaceholderTag(true)
+            .setOutputMarkupId(true)
+            );
 
             add((msgLabel = new Label("msg", new AbstractReadOnlyModel<Object>() {
 
@@ -243,8 +255,9 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                 }
             });
             okBtn.add(new Label("okLabel", new ResourceModel("okBtn")));
-            okBtn.setOutputMarkupId(true);     
-            okBtn.setOutputMarkupPlaceholderTag(true);
+            okBtn
+            .setOutputMarkupId(true)     
+            .setOutputMarkupPlaceholderTag(true);
             this.setOutputMarkupId(true);
         }
         

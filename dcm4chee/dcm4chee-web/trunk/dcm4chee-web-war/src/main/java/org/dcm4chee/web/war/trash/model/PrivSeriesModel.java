@@ -63,10 +63,19 @@ public class PrivSeriesModel extends AbstractDicomModel implements Serializable 
     private String sourceAET;
     private List<PrivInstanceModel> instances = new ArrayList<PrivInstanceModel>();
 
-    public PrivSeriesModel(PrivateSeries series) {
+    public PrivSeriesModel(PrivateSeries series, PrivStudyModel studyModel) {
         setPk(series.getPk());
         this.sourceAET = series.getSourceAET();
         this.dataset = series.getAttributes();
+        setStudy(studyModel);
+    }
+
+    public void setStudy(PrivStudyModel m) {
+        setParent(m);
+    }
+
+    public PrivStudyModel getStudy() {
+        return (PrivStudyModel) getParent();
     }
 
     public String getSeriesInstanceUID() {
@@ -177,10 +186,11 @@ public class PrivSeriesModel extends AbstractDicomModel implements Serializable 
 
     @Override
     public void expand() {
+        this.instances.clear();
         TrashListLocal dao = (TrashListLocal)
                 JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
         for (PrivateInstance inst : dao.findInstancesOfSeries(getPk())) {
-            this.instances.add(new PrivInstanceModel(inst));
+            this.instances.add(new PrivInstanceModel(inst, this));
         }
     }
 

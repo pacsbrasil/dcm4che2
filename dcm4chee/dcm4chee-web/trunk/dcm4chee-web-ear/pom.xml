@@ -159,7 +159,7 @@
             <webModule>
               <groupId>dcm4che.dcm4chee</groupId>
               <artifactId>dcm4chee-web-war</artifactId>
-              <contextRoot>/web3</contextRoot>
+              <contextRoot>/dcm4chee-web3</contextRoot>
             </webModule>
             <sarModule>
               <groupId>dcm4che.dcm4chee</groupId>

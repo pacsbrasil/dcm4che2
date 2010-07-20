@@ -88,7 +88,8 @@ public class AEListPanel extends Panel {
                 target.addComponent(AEListPanel.this);
             }});
         add(mw);
-        final ConfirmationWindow<AE> confirm = new ConfirmationWindow<AE>("confirm"){
+        
+        final ConfirmationWindow<AE> confirm = new ConfirmationWindow<AE>("confirm") {
 
             private static final long serialVersionUID = 1L;
             
@@ -98,7 +99,9 @@ public class AEListPanel extends Panel {
                 target.addComponent(AEListPanel.this);
             }
         };
+        confirm.setInitialHeight(150);
         add(confirm);
+
         add( new Label("titleHdrLabel", new ResourceModel("aet.titleHdr")));
         add( new Label("hostHdrLabel", new ResourceModel("aet.hostHdr")));
         add( new Label("portHdrLabel", new ResourceModel("aet.portHdr")));

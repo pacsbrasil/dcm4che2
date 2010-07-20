@@ -51,6 +51,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
+import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.web.war.common.WadoImage;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
@@ -70,10 +71,14 @@ public class ImageSelectionWindow extends ModalWindow {
     private Model<Integer> imgSizeModel = new Model<Integer>(128);
     private boolean selectionChanged;
 
+    public ImageSelectionWindow(String id, String titleResource) {
+        this(id);
+        setTitle(new ResourceModel(titleResource));
+    }
+    
     public ImageSelectionWindow(String id) {
         super(id);
         initWadoBaseUrl();
-        setTitle("ImageSelectionWindow");
         setContent(new ImageSelectionPanel());
     }
     

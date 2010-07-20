@@ -56,9 +56,18 @@ public class PrivInstanceModel extends AbstractDicomModel implements Serializabl
 
     private static final long serialVersionUID = 1L;
     
-    public PrivInstanceModel(PrivateInstance inst) {
+    public PrivInstanceModel(PrivateInstance inst, PrivSeriesModel seriesModel) {
         setPk(inst.getPk());
         this.dataset = inst.getAttributes();
+        setSeries(seriesModel);
+    }
+
+    private void setSeries(PrivSeriesModel seriesModel) {
+        setParent(seriesModel);
+    }
+
+    public PrivSeriesModel getSeries() {
+        return (PrivSeriesModel) getParent();
     }
 
     public String getSOPInstanceUID() {

@@ -89,7 +89,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     private PPSModel ppsModelForInfo;
     private PatientModel ppsPatModelForInfo;
     private Component comp;
-
+    
     private static final ResourceReference CSS = new CompressedResourceReference(Mpps2MwlLinkPage.class, "mpps-link-style.css");
     private static Logger log = LoggerFactory.getLogger(Mpps2MwlLinkPage.class);
     

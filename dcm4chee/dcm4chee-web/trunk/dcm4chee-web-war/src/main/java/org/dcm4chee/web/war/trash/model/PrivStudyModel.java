@@ -63,9 +63,18 @@ public class PrivStudyModel extends AbstractDicomModel implements Serializable {
     
     private List<PrivSeriesModel> seriess = new ArrayList<PrivSeriesModel>();
 
-    public PrivStudyModel(PrivateStudy study) {
+    public PrivStudyModel(PrivateStudy study, PrivPatientModel patientModel) {
         setPk(study.getPk());
         dataset = study.getAttributes();
+        setPatient(patientModel);
+    }
+
+    public void setPatient(PrivPatientModel m) {
+        setParent(m);
+    }
+
+    public PrivPatientModel getPatient() {
+        return (PrivPatientModel) getParent();
     }
 
     public String getStudyInstanceUID() {
@@ -165,10 +174,11 @@ public class PrivStudyModel extends AbstractDicomModel implements Serializable {
 
     @Override
     public void expand() {
+        this.seriess.clear();
         TrashListLocal dao = (TrashListLocal)
                 JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
         for (PrivateSeries series : dao.findSeriesOfStudy(getPk())) {
-            seriess.add(new PrivSeriesModel(series));
+            seriess.add(new PrivSeriesModel(series, this));
         }
     }
 

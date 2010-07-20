@@ -99,7 +99,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
     private static int PAGESIZE_ENTRIES = 6;
     private static int PAGESIZE_STEP = 5;
-    private Model<Integer> pagesize = new Model<Integer>();
+    public Model<Integer> pagesize = new Model<Integer>();
 
     private static final String MODULE_NAME = "mw";
     private static List<String> scheduledStationAETs = new ArrayList<String>();
@@ -448,8 +448,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         viewport.setTotal(dao.countMWLItems(viewport.getFilter()));
              
         List<MWLItemModel> current = viewport.getMWLItemModels();
-        for (MWLItem mwlItem : dao.findMWLItems(viewport.getFilter(), pagesize.getObject(), viewport.getOffset()))
+        for (MWLItem mwlItem : dao.findMWLItems(viewport.getFilter(), pagesize.getObject(), viewport.getOffset())) {
             current.add(new MWLItemModel(mwlItem, new Model<Boolean>(false)));
+        }
         notSearched = false;
     }
 

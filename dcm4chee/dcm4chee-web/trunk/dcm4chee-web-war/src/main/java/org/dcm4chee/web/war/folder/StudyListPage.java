@@ -94,6 +94,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.common.PrivateTag;
+import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -115,6 +116,7 @@ import org.dcm4chee.web.dao.folder.StudyListFilter;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.war.WicketSession;
+import org.dcm4chee.web.war.ae.EchoDelegate;
 import org.dcm4chee.web.war.common.EditDicomObjectPage;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPage;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
@@ -486,8 +488,17 @@ public class StudyListPage extends Panel {
     private void addActions(final BaseForm form) {
         
         final ConfirmationWindow<SelectedEntities> confirmDelete = new ConfirmationWindow<SelectedEntities>("confirmDelete") {
-
+ // TODO: 
             private static final long serialVersionUID = 1L;
+
+            private transient ContentEditDelegate delegate;
+            
+            private ContentEditDelegate getDelegate() {
+                if (delegate == null) {
+                    delegate = ContentEditDelegate.getInstance();
+                }
+                return delegate;
+            }
 
             @Override
             public void onOk(AjaxRequestTarget target) {
@@ -495,31 +506,57 @@ public class StudyListPage extends Panel {
             }
 
             @Override
-            public void onConfirmation(AjaxRequestTarget target, final SelectedEntities selected) {
+            public void close(AjaxRequestTarget target) {
+                target.addComponent(form);
+                super.close(target);
+            }
 
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, final SelectedEntities selected) {
+                ajaxRunning = false;
+                ajaxDone = false;
+                
                 this.setStatus(new StringResourceModel("folder.message.delete.running", StudyListPage.this, null));
                 okBtn.setVisible(false);
-                ajaxRunning = true;
-
+                
                 msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
                     
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    protected void onTimer(AjaxRequestTarget target) {
-                        if (ContentEditDelegate.getInstance().moveToTrash(selected)) {
-                            setStatus(new StringResourceModel("folder.message.deleteDone", StudyListPage.this,null));
-                            if (selected.hasPatients()) {
-                                viewport.getPatients().clear();
-                                queryStudies();
-                            } else
-                                selected.refreshView(true);
-                        } else
-                            setStatus(new StringResourceModel("folder.message.deleteFailed", StudyListPage.this,null));
-                        this.stop();
-                        ajaxRunning = false;
-                        okBtn.setVisible(true);
-                        
+                    protected void onTimer(final AjaxRequestTarget target) {
+
+                        if (!ajaxRunning) {
+                            if (!ajaxDone) {
+                                ajaxRunning = true;
+                                getDelegate();
+                                new Thread(new Runnable() {
+                                    public void run() {
+                                        try {
+                                            if (getDelegate().moveToTrash(selected)) {
+                                                setStatus(new StringResourceModel("folder.message.deleteDone", StudyListPage.this,null));
+                                                if (selected.hasPatients()) {
+                                                    viewport.getPatients().clear();
+                                                    queryStudies();
+                                                } else
+                                                    selected.refreshView(true);
+                                            } else
+                                                setStatus(new StringResourceModel("folder.message.deleteFailed", StudyListPage.this,null));
+                                        } catch (Throwable t) {
+                                            log.error("moveToTrash failed: ", t);
+                                        } finally {
+                                            ajaxRunning = false;
+                                            ajaxDone = true;
+                                        }
+                                    }
+                                }).start();
+                            } else {
+                                okBtn.setVisible(true);
+                                this.stop();        
+                            }
+                        } else {
+                            okBtn.setVisible(false);
+                        }
                         target.addComponent(msgLabel);
                         target.addComponent(hourglassImage);
                         target.addComponent(okBtn);
@@ -541,7 +578,7 @@ public class StudyListPage extends Panel {
         };
         confirmDelete.setInitialHeight(150);
         form.add(confirmDelete);
-        
+
         AjaxButton deleteBtn = new AjaxButton("deleteBtn") {
                     
             private static final long serialVersionUID = 1L;
@@ -613,8 +650,17 @@ public class StudyListPage extends Panel {
         form.add(exportBtn);
 
         confirmUnlinkMpps = new ConfirmationWindow<PPSModel>("confirmUnlink") {
-            
+ 
             private static final long serialVersionUID = 1L;
+
+            private transient ContentEditDelegate delegate;
+                       
+            private ContentEditDelegate getDelegate() {
+                if (delegate == null) {
+                    delegate = ContentEditDelegate.getInstance();
+                }
+                return delegate;
+            }
 
             @Override
             public void onOk(AjaxRequestTarget target) {
@@ -622,30 +668,57 @@ public class StudyListPage extends Panel {
             }
 
             @Override
+            public void close(AjaxRequestTarget target) {
+                target.addComponent(form);
+                super.close(target);
+            }
+
+            @Override
             public void onConfirmation(AjaxRequestTarget target, final PPSModel ppsModel) {
-                
+                ajaxRunning = false;
+                ajaxDone = false;
+                           
                 this.setStatus(new StringResourceModel("folder.message.unlink.running", StudyListPage.this, null));
                 okBtn.setVisible(false);
-                ajaxRunning = true;
-                
+                           
                 msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                    
+                   
                     private static final long serialVersionUID = 1L;
-
+            
                     @Override
-                    protected void onTimer(AjaxRequestTarget target) {
-                        try {
-                            if (ContentEditDelegate.getInstance().unlink(ppsModel))
-                                setStatus(new StringResourceModel("folder.message.unlinkDone", StudyListPage.this,null));
-                        } catch (Exception x) {
-                            log.error("Unlink of MPPS failed:"+ppsModel, x);
-                            setStatus(new StringResourceModel("folder.message.unlinkFailed", StudyListPage.this,null));
+                    protected void onTimer(final AjaxRequestTarget target) {
+            
+                        if (!ajaxRunning) {
+                            if (!ajaxDone) {
+                                ajaxRunning = true;
+                                getDelegate();
+                                new Thread(new Runnable() {
+                                    public void run() {
+                                        try {
+                                            if (ContentEditDelegate.getInstance().unlink(ppsModel)) {
+                                                setStatus(new StringResourceModel("folder.message.unlinkDone", StudyListPage.this,null));
+                                                if (selected.hasPatients()) {
+                                                    viewport.getPatients().clear();
+                                                    queryStudies();
+                                                } else
+                                                    selected.refreshView(true);
+                                            } else 
+                                                setStatus(new StringResourceModel("folder.message.unlinkFailed", StudyListPage.this,null));
+                                        } catch (Throwable t) {
+                                            log.error("Unlink of MPPS failed:"+ppsModel, t);
+                                        } finally {
+                                            ajaxRunning = false;
+                                            ajaxDone = true;
+                                        }
+                                    }
+                                }).start();
+                            } else {
+                                okBtn.setVisible(true);
+                                this.stop();        
+                            }
+                        } else {
+                            okBtn.setVisible(false);
                         }
-                        queryStudies();
-                        this.stop();
-                        ajaxRunning = false;
-                        okBtn.setVisible(true);
-                        
                         target.addComponent(msgLabel);
                         target.addComponent(hourglassImage);
                         target.addComponent(okBtn);
@@ -653,6 +726,7 @@ public class StudyListPage extends Panel {
                 });
             }
         };
+        confirmUnlinkMpps.setInitialHeight(150);
         form.add(confirmUnlinkMpps);
     }
 

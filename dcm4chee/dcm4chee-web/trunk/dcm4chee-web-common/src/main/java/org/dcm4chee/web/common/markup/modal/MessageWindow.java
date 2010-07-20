@@ -69,6 +69,11 @@ public class MessageWindow extends AutoOpenModalWindow {
         initContent();
     }
 
+    public MessageWindow(String id, String titleResource) {
+        this(id);
+        setTitle(new ResourceModel(titleResource));
+    }
+
     protected void initContent() {
         setInitialWidth(300);
         setInitialHeight(200);
