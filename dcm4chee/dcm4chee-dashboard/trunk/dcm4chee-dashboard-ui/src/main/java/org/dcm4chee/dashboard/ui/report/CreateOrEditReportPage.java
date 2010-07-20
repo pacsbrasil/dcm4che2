@@ -247,6 +247,7 @@ public class CreateOrEditReportPage extends WebPage {
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
+                        thisReport.setStatement(thisReport.getStatement().replaceAll("(, )|(,)", ", "));
                         if (thisReport == null || thisReport.getUuid() == null)
                             DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).createReport(thisReport, false);
                         else 
