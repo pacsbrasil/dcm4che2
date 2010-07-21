@@ -70,7 +70,7 @@ public class MarkInvalidBehaviour extends AbstractBehavior {
     @Override
     public void onComponentTag(Component c, ComponentTag tag) {
         if ( msg != null ) {
-            tag.put("class", "invalid");
+            tag.put("class", tag.getAttribute("class") + " invalid");
             tag.put("title", msg);
         }
     }

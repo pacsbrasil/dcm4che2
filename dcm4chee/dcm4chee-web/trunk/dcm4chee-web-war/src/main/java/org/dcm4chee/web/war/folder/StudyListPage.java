@@ -488,7 +488,7 @@ public class StudyListPage extends Panel {
     private void addActions(final BaseForm form) {
         
         final ConfirmationWindow<SelectedEntities> confirmDelete = new ConfirmationWindow<SelectedEntities>("confirmDelete") {
- // TODO: 
+
             private static final long serialVersionUID = 1L;
 
             private transient ContentEditDelegate delegate;

@@ -43,8 +43,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.management.MalformedObjectNameException;
-
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
@@ -96,10 +94,7 @@ import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.service.common.FileImportOrder;
 import org.dcm4chee.web.war.WicketApplication;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
-import org.dcm4chee.web.war.folder.ContentEditDelegate;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
-import org.dcm4chee.web.war.folder.SelectedEntities;
-import org.dcm4chee.web.war.folder.StudyListPage;
 import org.dcm4chee.web.war.trash.model.PrivInstanceModel;
 import org.dcm4chee.web.war.trash.model.PrivPatientModel;
 import org.dcm4chee.web.war.trash.model.PrivSeriesModel;
@@ -369,64 +364,6 @@ public class TrashListPage extends Panel {
         final ConfirmationWindow<PrivSelectedEntities> confirmRestore = new ConfirmationWindow<PrivSelectedEntities>("confirmRestore") {
 
             private static final long serialVersionUID = 1L;
-            
-//            @Override
-//            public void onOk(AjaxRequestTarget target) {
-//                target.addComponent(form);
-//            }
-//
-//            @Override
-//            public void onConfirmation(AjaxRequestTarget target, PrivSelectedEntities selected) {
-//                
-//                this.setStatus(new StringResourceModel("trash.message.restore.running", TrashListPage.this, null));
-//                okBtn.setVisible(false);
-//                ajaxRunning = true;
-//                
-//                msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-//                    
-//                    private static final long serialVersionUID = 1L;
-//
-//                    @Override
-//                    protected void onTimer(AjaxRequestTarget target) {
-//                        try {
-//                            FileImportOrder fio = new FileImportOrder();
-//                            List<PrivateFile> files = getFilesToRestore();
-//                            TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
-//                            
-//                            for (PrivateFile privateFile : files) {
-//                                DicomObject dio = dao.getDicomAttributes(privateFile.getPk());
-//                                File file = new File();
-//                                file.setFilePath(privateFile.getFilePath());
-//                                file.setFileSize(privateFile.getFileSize());
-//                                file.setFileStatus(privateFile.getFileStatus());
-//                                file.setFileSystem(privateFile.getFileSystem());
-//                                file.setMD5Sum(privateFile.getFileMD5());
-//                                file.setTransferSyntaxUID(privateFile.getTransferSyntaxUID());
-//                                Instance instance = new Instance();
-//                                file.setInstance(instance);
-//                                fio.addFile(file, dio);
-//                            }
-//        
-//                            StoreBridgeDelegate.getInstance(((WicketApplication) getApplication()).getInitParameter("storeBridgeServiceName")).importFile(fio);
-//                            removeRestoredEntries();                            
-//                                    
-//                            setStatus(new StringResourceModel("trash.message.restoreDone", TrashListPage.this,null));
-//                        } catch (Exception e) {
-//                            log.error("Exception restoring entry:"+e.getMessage(), e);
-//                            setStatus(new StringResourceModel("trash.message.restoreFailed", TrashListPage.this,null));
-//                        }
-//                        viewport.getPatients().clear();
-//                        queryStudies();
-//                        this.stop();
-//                        ajaxRunning = false;
-//                        okBtn.setVisible(true);
-//                        
-//                        target.addComponent(msgLabel);
-//                        target.addComponent(hourglassImage);
-//                        target.addComponent(okBtn);
-//                    }
-//                });
-//            }
             
             private transient StoreBridgeDelegate delegate;
             
