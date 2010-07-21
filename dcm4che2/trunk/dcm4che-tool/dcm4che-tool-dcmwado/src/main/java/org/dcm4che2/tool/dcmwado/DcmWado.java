@@ -271,7 +271,7 @@ public class DcmWado {
 			System.out.println("dcmwado v" + p.getImplementationVersion());
 			System.exit(0);
 		}
-		if (cl.hasOption('h')) {
+		if (cl.hasOption('h') || cl.getArgList().isEmpty()) {
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
 			System.exit(0);
