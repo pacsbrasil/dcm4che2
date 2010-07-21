@@ -8,6 +8,7 @@
 	</head>
 	<body>
 	<wicket:panel>
+		<div wicket:id="modal-window" />
 		<div wicket:id="change-password-window" />
 		<div wicket:id="confirmation-window" />
 		<div style="clear: both; margin-top: 5px;" />
@@ -15,41 +16,6 @@
 			<img wicket:id="toggle-user-form-image" alt="New user" />
 			<span wicket:id="userlist.add-user-form.title" />
 		</button>
-		<form wicket:id="add-user-form">
-			 <table class="content-table">
-			 	<tr>
-			 		<td>
-						<span wicket:id="new-username-label" />
-					</td>
-					<td>
-						<input wicket:id="userlist.add-user-form.username.input" type="text" size="15" autocomplete="off" />
-					</td>
-				</tr>
-			 	<tr>
-			 		<td>
-						<span wicket:id="password-label-1" />
-					</td>
-					<td>
-						<input wicket:id="userlist.add-user-form.password_1.input" type="password" size="15" autocomplete="off" />
-					</td>
-				</tr>
-			 	<tr>
-			 		<td>
-						<span wicket:id="password-label-2" />
-					</td>
-					<td>
-						<input wicket:id="userlist.add-user-form.password_2.input" type="password" size="15" autocomplete="off" />
-					</td>
-				</tr>
-				<tr class="submit">
-					<td>
-					</td>
-					<td>
-						<input wicket:id="add-user-submit" type="submit" wicket:message="value:userlist.add-user-form.save" />
-					</td>
-				</tr>
-			</table>
-		</form>
 		<table rules="groups" class="content-table" style="clear: both; margin-top: 9px;">
 		  <thead>
 		    <tr>

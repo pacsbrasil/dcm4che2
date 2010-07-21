@@ -93,7 +93,6 @@ public class UserAccessBean implements UserAccess {
     private EntityManager em;
 
     private ObjectName serviceObjectName;
-//    private final MBeanServer server = MBeanServerLocator.locate();
     private MBeanServerConnection server = null;
 
     private String userRoleName;
@@ -102,11 +101,11 @@ public class UserAccessBean implements UserAccess {
     @SuppressWarnings("unused")
     @PostConstruct
     private void initMBeanServer() {
-        if (server == null) {
+        if (this.server == null) {
             List<?> servers = MBeanServerFactory.findMBeanServer(null);
             if (servers != null && !servers.isEmpty()) {
                 this.server = (MBeanServerConnection) servers.get(0);
-                log.debug("Found MBeanServer:"+server);
+                log.debug("Found MBeanServer:"+this.server);
             } else {
                 log.error("Failed to get MBeanServerConnection! MbeanDelegate class:"+getClass().getName());
                 return;
