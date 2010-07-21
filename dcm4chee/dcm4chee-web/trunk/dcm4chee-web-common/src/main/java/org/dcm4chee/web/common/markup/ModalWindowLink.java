@@ -26,6 +26,16 @@ public class ModalWindowLink extends AjaxFallbackLink<Object> {
     
     @Override
     public void onClick(AjaxRequestTarget target) {
+        modalWindow.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
+            
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClose(AjaxRequestTarget target) {
+                modalWindow.getPage().setOutputMarkupId(true);
+                target.addComponent(modalWindow.getPage());
+            }
+        });
         modalWindow.add(new DisableDefaultConfirmBehavior());
         modalWindow.show(target);
     }
