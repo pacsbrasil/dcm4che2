@@ -98,16 +98,6 @@ public class ReportPanel extends Panel {
             add(CSSPackageResource.getHeaderContribution(ReportPanel.CSS));
 
         add(modalWindow = new ModalWindow("modal-window")
-            .setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
-                
-                private static final long serialVersionUID = 1L;
-    
-                @Override
-                public void onClose(AjaxRequestTarget target) {
-                    modalWindow.getPage().setOutputMarkupId(true);
-                    target.addComponent(modalWindow.getPage());
-                }
-            })
             .setPageCreator(new ModalWindow.PageCreator() {
                 
                 private static final long serialVersionUID = 1L;
@@ -123,39 +113,6 @@ public class ReportPanel extends Panel {
                 new Integer(new ResourceModel("dashboard.report.creategroup.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
                 new Integer(new ResourceModel("dashboard.report.creategroup.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
         )
-//        add(new AjaxFallbackLink<Object>("toggle-group-form-link") {
-//            
-//            private static final long serialVersionUID = 1L;
-//            
-//            @Override
-//            public void onClick(AjaxRequestTarget target) {
-//
-//                modalWindow.setPageCreator(new ModalWindow.PageCreator() {
-//                      
-//                    private static final long serialVersionUID = 1L;
-//                      
-//                    @Override
-//                    public Page createPage() {
-//                        return new CreateGroupPage(modalWindow);                        
-//                    }
-//                });
-//                
-//                ((ModalWindow) modalWindow.add(new DisableDefaultConfirmBehavior()))
-//                .setInitialWidth(new Integer(new ResourceModel("dashboard.report.creategroup.window.width").wrapOnAssignment(this).getObject().toString()))
-//                .setInitialHeight(new Integer(new ResourceModel("dashboard.report.creategroup.window.height").wrapOnAssignment(this).getObject().toString()))
-//                .show(target);
-//            }
-//            
-//            class DisableDefaultConfirmBehavior extends AbstractBehavior implements IHeaderContributor {
-//
-//                private static final long serialVersionUID = 1L;
-//
-//                @Override
-//                public void renderHead(IHeaderResponse response) {
-//                    response.renderOnDomReadyJavascript ("Wicket.Window.unloadConfirmation = false");
-//                }
-//            }
-//        }
         .add(new Image("toggle-group-form-image", ImageManager.IMAGE_COMMON_ADD)
         .add(new ImageSizeBehaviour("vertical-align: middle;")))
         .add(new Label("dashboard.report.add-group-form.title", new ResourceModel("dashboard.report.add-group-form.title")))
