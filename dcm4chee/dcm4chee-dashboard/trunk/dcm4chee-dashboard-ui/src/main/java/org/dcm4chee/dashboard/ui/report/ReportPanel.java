@@ -49,9 +49,7 @@ import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
-import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.tree.table.AbstractColumn;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
@@ -62,8 +60,6 @@ import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Alignm
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Unit;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.IHeaderContributor;
-import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
@@ -76,6 +72,7 @@ import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,56 +97,69 @@ public class ReportPanel extends Panel {
         if (ReportPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(ReportPanel.CSS));
 
-        add(modalWindow = new ModalWindow("modal-window"));
-        modalWindow.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
-            
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClose(AjaxRequestTarget target) {
-                modalWindow.getPage().setOutputMarkupId(true);
-                target.addComponent(modalWindow.getPage());
-            }
-        });
-        
-        add(new AjaxFallbackLink<Object>("toggle-group-form-link") {
-            
-            private static final long serialVersionUID = 1L;
-            
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-
-                modalWindow.setPageCreator(new ModalWindow.PageCreator() {
-                      
-                    private static final long serialVersionUID = 1L;
-                      
-                    @Override
-                    public Page createPage() {
-                        return new CreateGroupPage(modalWindow);                        
-                    }
-                });
+        add(modalWindow = new ModalWindow("modal-window")
+            .setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
                 
-                ((ModalWindow) modalWindow.add(new DisableDefaultConfirmBehavior()))
-                .setInitialWidth(new Integer(new ResourceModel("dashboard.report.creategroup.window.width").wrapOnAssignment(this).getObject().toString()))
-                .setInitialHeight(new Integer(new ResourceModel("dashboard.report.creategroup.window.height").wrapOnAssignment(this).getObject().toString()))
-                .show(target);
-            }
-            
-            class DisableDefaultConfirmBehavior extends AbstractBehavior implements IHeaderContributor {
-
                 private static final long serialVersionUID = 1L;
-
+    
                 @Override
-                public void renderHead(IHeaderResponse response) {
-                    response.renderOnDomReadyJavascript ("Wicket.Window.unloadConfirmation = false");
+                public void onClose(AjaxRequestTarget target) {
+                    modalWindow.getPage().setOutputMarkupId(true);
+                    target.addComponent(modalWindow.getPage());
                 }
-            }
-        }
+            })
+            .setPageCreator(new ModalWindow.PageCreator() {
+                
+                private static final long serialVersionUID = 1L;
+                  
+                @Override
+                public Page createPage() {
+                    return new CreateGroupPage(modalWindow);
+                }
+            })
+        );       
+
+        add(new ModalWindowLink("toggle-group-form-link", modalWindow, 
+                new Integer(new ResourceModel("dashboard.report.creategroup.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
+                new Integer(new ResourceModel("dashboard.report.creategroup.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
+        )
+//        add(new AjaxFallbackLink<Object>("toggle-group-form-link") {
+//            
+//            private static final long serialVersionUID = 1L;
+//            
+//            @Override
+//            public void onClick(AjaxRequestTarget target) {
+//
+//                modalWindow.setPageCreator(new ModalWindow.PageCreator() {
+//                      
+//                    private static final long serialVersionUID = 1L;
+//                      
+//                    @Override
+//                    public Page createPage() {
+//                        return new CreateGroupPage(modalWindow);                        
+//                    }
+//                });
+//                
+//                ((ModalWindow) modalWindow.add(new DisableDefaultConfirmBehavior()))
+//                .setInitialWidth(new Integer(new ResourceModel("dashboard.report.creategroup.window.width").wrapOnAssignment(this).getObject().toString()))
+//                .setInitialHeight(new Integer(new ResourceModel("dashboard.report.creategroup.window.height").wrapOnAssignment(this).getObject().toString()))
+//                .show(target);
+//            }
+//            
+//            class DisableDefaultConfirmBehavior extends AbstractBehavior implements IHeaderContributor {
+//
+//                private static final long serialVersionUID = 1L;
+//
+//                @Override
+//                public void renderHead(IHeaderResponse response) {
+//                    response.renderOnDomReadyJavascript ("Wicket.Window.unloadConfirmation = false");
+//                }
+//            }
+//        }
         .add(new Image("toggle-group-form-image", ImageManager.IMAGE_COMMON_ADD)
         .add(new ImageSizeBehaviour("vertical-align: middle;")))
         .add(new Label("dashboard.report.add-group-form.title", new ResourceModel("dashboard.report.add-group-form.title")))
         );
-
     }
     
     @Override
