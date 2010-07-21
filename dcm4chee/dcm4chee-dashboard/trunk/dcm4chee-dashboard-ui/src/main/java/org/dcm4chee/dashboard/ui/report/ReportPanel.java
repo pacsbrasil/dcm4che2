@@ -43,14 +43,15 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 
-import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
+import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.tree.table.AbstractColumn;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
@@ -61,24 +62,20 @@ import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Alignm
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Unit;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.IHeaderContributor;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Button;
-import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
-import org.dcm4chee.web.common.markup.BaseForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,12 +100,56 @@ public class ReportPanel extends Panel {
         if (ReportPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(ReportPanel.CSS));
 
-        add(this.modalWindow = new ModalWindow("modal-window"));
-        add(new ToggleFormLink("toggle-group-form-link", 
-                new AddGroupForm("add-group-form"), 
-                this, 
-                "toggle-group-form-image")
+        add(modalWindow = new ModalWindow("modal-window"));
+        modalWindow.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
+            
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClose(AjaxRequestTarget target) {
+                modalWindow.getPage().setOutputMarkupId(true);
+                target.addComponent(modalWindow.getPage());
+            }
+        });
+        
+        add(new AjaxFallbackLink<Object>("toggle-group-form-link") {
+            
+            private static final long serialVersionUID = 1L;
+            
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+
+                modalWindow.setPageCreator(new ModalWindow.PageCreator() {
+                      
+                    private static final long serialVersionUID = 1L;
+                      
+                    @Override
+                    public Page createPage() {
+                        return new CreateGroupPage(modalWindow);                        
+                    }
+                });
+                
+                ((ModalWindow) modalWindow.add(new DisableDefaultConfirmBehavior()))
+                .setInitialWidth(new Integer(new ResourceModel("dashboard.report.creategroup.window.width").wrapOnAssignment(this).getObject().toString()))
+                .setInitialHeight(new Integer(new ResourceModel("dashboard.report.creategroup.window.height").wrapOnAssignment(this).getObject().toString()))
+                .show(target);
+            }
+            
+            class DisableDefaultConfirmBehavior extends AbstractBehavior implements IHeaderContributor {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void renderHead(IHeaderResponse response) {
+                    response.renderOnDomReadyJavascript ("Wicket.Window.unloadConfirmation = false");
+                }
+            }
+        }
+        .add(new Image("toggle-group-form-image", ImageManager.IMAGE_COMMON_ADD)
+        .add(new ImageSizeBehaviour("vertical-align: middle;")))
+        .add(new Label("dashboard.report.add-group-form.title", new ResourceModel("dashboard.report.add-group-form.title")))
         );
+
     }
     
     @Override
@@ -230,81 +271,7 @@ public class ReportPanel extends Panel {
             return new DynamicLinkPanel(id, this.className, (ReportModel) ((DefaultMutableTreeNode) node).getUserObject(), this.modalWindow);
         }
     }
-
-    private final class ToggleFormLink extends AjaxFallbackLink<Object> {
-        
-        private static final long serialVersionUID = 1L;
-        
-        private Form<?> form;
-        
-        public ToggleFormLink(String id, final Form<?> form, MarkupContainer container, String toggleFormImageId) {
-            super(id);
-
-            newAjaxComponent(this);
-            container.add(this.form = form);
-            
-            this.add(newAjaxComponent(new Image("toggle-group-form-image") {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void onComponentTag(ComponentTag tag) {
-                    super.onComponentTag(tag);
-                    tag.put("src",form.isVisible() ? 
-                            getRequestCycle().urlFor(ImageManager.IMAGE_COMMON_REMOVE)
-                            : getRequestCycle().urlFor(ImageManager.IMAGE_COMMON_ADD)
-                    );
-                }
-            }).add(new ImageSizeBehaviour("vertical-align: middle;")));
-            this.add(newAjaxComponent(new Label("dashboard.report.add-group-form.title", new ResourceModel("dashboard.report.add-group-form.title"))
-            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))));
-        }
-
-        @Override
-        public void onClick(AjaxRequestTarget target) {
-            this.form.setVisible(!this.form.isVisible()); 
-            target.addComponent(this);
-            target.addComponent(this.form);
-        }
-    };
-    
-    private final class AddGroupForm extends BaseForm {
-        
-        private static final long serialVersionUID = 1L;
-        
-        private Model<String> newGroupname = new Model<String>();
-
-        public AddGroupForm(String id) {
-            super(id);
-                      
-            newAjaxComponent(this);
-            this.setVisible(false);
-
-            this.add(newAjaxComponent(
-                    new Label("new-groupname-label", new ResourceModel("dashboard.report.add-group-form.label").wrapOnAssignment(this))));
-            final TextField<String> groupnameTf;
-            this.add(newAjaxComponent((groupnameTf = new TextField<String>("dashboard.report.add-group-form.groupname.input", newGroupname))
-            .add(new PatternValidator("^[A-Za-z0-9]+$"))
-            .setRequired(true)));
-            this.add(new Button("add-group-submit") {
-        
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onSubmit() {
-                    try {
-                        DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).createReport(new ReportModel(null, newGroupname.getObject(), null, null, null, false, null, null), true);
-                        this.getParent().setVisible(false);
-                        groupnameTf.setModelObject("");
-                    } catch (final Exception e) {
-                        log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
-                        log.debug("Exception: ", e);
-                    }
-                }
-            });
-        }
-    }
-    
+   
     private Component newAjaxComponent(Component component) {
         component.setOutputMarkupId(true);
         component.setOutputMarkupPlaceholderTag(true);
