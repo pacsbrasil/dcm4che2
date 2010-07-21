@@ -106,7 +106,8 @@ public class ExportToDcmDelegate {
         InputStream in = null;
         OutputStream out=null;
         try {
-            File inputFile=new File(inputFilePath);
+            DestinationFinder destFinder=new DestinationFinder();
+            File inputFile=new File(destFinder.getFileDestination(new File(inputFilePath)));
             in = new FileInputStream(inputFile);
             out = new FileOutputStream(new File(outputFilePath,inputFile.getName()));
             byte[] buf = new byte[4096];
