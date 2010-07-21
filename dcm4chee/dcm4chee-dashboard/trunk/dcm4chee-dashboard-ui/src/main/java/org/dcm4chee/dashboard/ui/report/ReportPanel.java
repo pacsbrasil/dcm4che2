@@ -48,7 +48,6 @@ import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
-import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.tree.table.AbstractColumn;
@@ -110,8 +109,8 @@ public class ReportPanel extends Panel {
         );       
 
         add(new ModalWindowLink("toggle-group-form-link", modalWindow, 
-                new Integer(new ResourceModel("dashboard.report.creategroup.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                new Integer(new ResourceModel("dashboard.report.creategroup.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
+                new Integer(new ResourceModel("dashboard.report.create-group.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
+                new Integer(new ResourceModel("dashboard.report.create-group.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
         )
         .add(new Image("toggle-group-form-image", ImageManager.IMAGE_COMMON_ADD)
         .add(new ImageSizeBehaviour("vertical-align: middle;")))
@@ -237,11 +236,5 @@ public class ReportPanel extends Panel {
         public Component newCell(MarkupContainer parent, String id, final TreeNode node, int level) {
             return new DynamicLinkPanel(id, this.className, (ReportModel) ((DefaultMutableTreeNode) node).getUserObject(), this.modalWindow);
         }
-    }
-   
-    private Component newAjaxComponent(Component component) {
-        component.setOutputMarkupId(true);
-        component.setOutputMarkupPlaceholderTag(true);
-        return component;
     }
 }
