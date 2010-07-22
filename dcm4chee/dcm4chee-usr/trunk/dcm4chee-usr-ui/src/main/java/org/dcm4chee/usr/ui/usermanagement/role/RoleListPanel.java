@@ -45,12 +45,14 @@ import java.util.List;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
+import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -69,6 +71,8 @@ import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.usr.dao.Role;
 import org.dcm4chee.usr.dao.UserAccess;
+import org.dcm4chee.usr.ui.usermanagement.UserManagementPanel;
+import org.dcm4chee.usr.ui.usermanagement.user.AddUserPage;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.ui.validator.RoleValidator;
 import org.dcm4chee.usr.util.JNDIUtils;
@@ -76,6 +80,7 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.base.JaasWicketSession;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 
 /**
@@ -88,7 +93,7 @@ public class RoleListPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
-    private static final ResourceReference CSS = new CompressedResourceReference(RoleListPanel.class, "usr-style.css");
+    private static final ResourceReference CSS = new CompressedResourceReference(UserManagementPanel.class, "usr-style.css");
     
     String serviceObjectName;
     
@@ -96,8 +101,11 @@ public class RoleListPanel extends Panel {
 
     private ConfirmationWindow<Role> confirmationWindow;
 
+    private ModalWindow modalWindow;
+    
     public RoleListPanel(String id) {
         super(id);
+        
         add(CSSPackageResource.getHeaderContribution(BaseWicketPage.class, "base-style.css"));
         if (RoleListPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(RoleListPanel.CSS));
@@ -120,12 +128,27 @@ public class RoleListPanel extends Panel {
                 allRolenames.setObject(getAllRolenames());
             }
         });
-        
-        add(new ToggleFormLink("toggle-role-form-link", 
-                new AddRoleForm("add-role-form"), 
-                this, 
-                new Image("toggle-role-form-image", ImageManager.IMAGE_USER_ROLE_ADD),  
-                Arrays.asList("rolelist.toggle-role-form-link.title.tooltip", "rolelist.toggle-role-form-link.close.tooltip"))
+
+        add(modalWindow = new ModalWindow("modal-window")
+            .setPageCreator(new ModalWindow.PageCreator() {
+                
+                private static final long serialVersionUID = 1L;
+                  
+                @Override
+                public Page createPage() {
+                    return new AddRolePage(modalWindow, allRolenames);
+                }
+            })
+        );
+    
+        add(new ModalWindowLink("toggle-role-form-link", modalWindow, 
+                new Integer(new ResourceModel("rolelist.add-role.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
+                new Integer(new ResourceModel("rolelist.add-role.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
+        )
+        .add(new Image("toggle-role-form-image", ImageManager.IMAGE_USER_ROLE_ADD)
+        .add(new ImageSizeBehaviour("vertical-align: middle;")))
+        .add(new Label("rolelist.add-role-form.title", new ResourceModel("rolelist.add-role-form.title")))
+        .add(new TooltipBehaviour("rolelist."))
         );
     }
 
@@ -160,85 +183,9 @@ public class RoleListPanel extends Panel {
         }
     }
 
-    private final class AddRoleForm extends BaseForm {
-        
-        private static final long serialVersionUID = 1L;
-        
-        private Model<String> newRolename = new Model<String>();
-        private TextField<String> rolenameTextField= new TextField<String>("rolelist.add-role-form.rolename.input", newRolename);
-        public AddRoleForm(String id) {
-            super(id);
-            
-            newAjaxComponent(this)
-                .setVisible(false);
-            
-            add(new Label("new-rolename-label", new ResourceModel("rolelist.add-role-form.rolename.label")));
-            add(rolenameTextField
-                    .setRequired(true)
-                    .add(new RoleValidator(allRolenames))
-            );
-            
-            add(new Button("add-role-submit") {
-                
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onSubmit() {
-                    JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceObjectName).addRole(new Role(newRolename.getObject()));
-                    rolenameTextField.setModelObject("");
-                    getParent().setVisible(false);
-                    allRolenames.setObject(getAllRolenames());
-                    
-                }
-            });
-        }
-    };
-    
-    private final class ToggleFormLink extends AjaxFallbackLink<Object> {
-        
-        private static final long serialVersionUID = 1L;
-        
-        private Form<?> forForm;
-        private List<String> open_close_tooltip_texts; 
-        
-        public ToggleFormLink(String id, Form<?> forForm, MarkupContainer container, Image toggleFormImage, List<String> open_close_tooltip_texts) {
-            super(id);
-
-            newAjaxComponent(this);
-
-            container.addOrReplace(this.forForm = forForm);
-            this.open_close_tooltip_texts = open_close_tooltip_texts;
-            this.add(newAjaxComponent(toggleFormImage)
-                    .add(new ImageSizeBehaviour("vertical-align: middle;")));
-            this.add(newAjaxComponent(new Label("rolelist.add-role-form.title", new ResourceModel("rolelist.add-role-form.title"))
-            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))));
-        }
-
-        @Override
-        public void onComponentTag(ComponentTag tag) {
-            super.onComponentTag(tag);
-            if ((this.open_close_tooltip_texts != null) && (this.open_close_tooltip_texts.size() == 2))
-                tag.put("title", new ResourceModel(this.open_close_tooltip_texts.get(forForm.isVisible() ? 1 : 0)).wrapOnAssignment(this).getObject());            
-        }
-        
-        @Override
-        public void onClick(AjaxRequestTarget target) {
-            this.forForm.setVisible(!this.forForm.isVisible()); 
-            target.addComponent(this);
-            target.addComponent(this.forForm);
-        }
-    };
-
     private ArrayList<Role> getAllRolenames() {
-
         ArrayList<Role> allRolenames = new ArrayList<Role>(2);
         allRolenames.addAll(JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceObjectName).getAllRolenames());
         return allRolenames;
-    }
-    
-    private Component newAjaxComponent(Component component) {
-        component.setOutputMarkupId(true);
-        component.setOutputMarkupPlaceholderTag(true);
-        return component;
     }    
 }

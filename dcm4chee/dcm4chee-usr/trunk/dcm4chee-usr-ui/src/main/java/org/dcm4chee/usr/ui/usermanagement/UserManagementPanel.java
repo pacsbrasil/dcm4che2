@@ -68,7 +68,6 @@ public class UserManagementPanel extends AjaxTabbedPanel {
 
     public UserManagementPanel(String id) {
 
-       
         this(id, new ArrayList<ITab>(Arrays.asList(
             new AbstractTab(new ResourceModel("usermanagement.tabs.tab1.name")) {
             

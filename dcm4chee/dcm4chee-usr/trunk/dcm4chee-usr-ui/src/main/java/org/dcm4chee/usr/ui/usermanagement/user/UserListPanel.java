@@ -72,6 +72,7 @@ import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordLink;
+import org.dcm4chee.usr.ui.usermanagement.UserManagementPanel;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
@@ -90,7 +91,7 @@ public class UserListPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
-    private static final ResourceReference CSS = new CompressedResourceReference(UserListPanel.class, "usr-style.css");
+    private static final ResourceReference CSS = new CompressedResourceReference(UserManagementPanel.class, "usr-style.css");
     
     private ListModel<User> allUsers;
     private ListModel<Role> allRolenames;
@@ -136,7 +137,7 @@ public class UserListPanel extends Panel {
                   
                 @Override
                 public Page createPage() {
-                    return new AddUserPage(modalWindow);
+                    return new AddUserPage(modalWindow, allUsers);
                 }
             })
         );
@@ -229,89 +230,6 @@ public class UserListPanel extends Panel {
         }
     }
 
-//    private final class AddUserForm extends BaseForm {
-//        
-//        private static final long serialVersionUID = 1L;
-//        
-//        private Model<String> newUsername = new Model<String>();
-//        private Model<String> password = new Model<String>();
-//        
-//        public AddUserForm(String id) {
-//            super(id);
-//
-//            newAjaxComponent(this)
-//                .setVisible(false);
-//            
-//            add(new Label("new-username-label", new ResourceModel("userlist.add-user-form.username.label")));
-//            add((new TextField<String>("userlist.add-user-form.username.input", newUsername))
-//                    .setRequired(true)
-//                    .add(new UserValidator(allUsers))
-//            );
-//            
-//            add(new Label("password-label-1", new ResourceModel("userlist.add-user-form.password_1.label")));
-//            add(new Label("password-label-2", new ResourceModel("userlist.add-user-form.password_2.label")));
-//            
-//            PasswordTextField passwordTf1 = null;
-//            PasswordTextField passwordTf2 = null;
-//            add(passwordTf1 = new PasswordTextField("userlist.add-user-form.password_1.input", password));
-//            add(passwordTf2 = new PasswordTextField("userlist.add-user-form.password_2.input", new Model<String>("")));
-//            add(new EqualPasswordInputValidator(passwordTf1, passwordTf2));
-//        
-//            add(new Button("add-user-submit") {
-//                
-//                private static final long serialVersionUID = 1L;
-//
-//                @Override
-//                public void onSubmit() {
-//                    User user = new User();
-//                    user.setUserID(newUsername.getObject());
-//                    user.setPassword(SecurityUtils.encodePassword(password.getObject()));
-//                    ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).createUser(user);
-//
-//                    newUsername.setObject("");
-//                    clearInput();
-//                    getParent().setVisible(false);
-//                    allUsers.setObject(getAllUsers());
-//                }
-//            });
-//        }
-//    };
-    
-//    private final class ToggleFormLink extends AjaxFallbackLink<Object> {
-//        
-//        private static final long serialVersionUID = 1L;
-//        
-//        private Form<?> forForm;
-//        private List<String> open_close_tooltip_texts; 
-//        
-//        public ToggleFormLink(String id, Form<?> forForm, MarkupContainer container, Image toggleFormImage, List<String> open_close_tooltip_texts) {
-//            super(id);
-//
-//            newAjaxComponent(this);
-//
-//            container.addOrReplace(this.forForm = forForm);
-//            this.open_close_tooltip_texts = open_close_tooltip_texts;
-//            this.add(newAjaxComponent(toggleFormImage)
-//                    .add(new ImageSizeBehaviour("vertical-align: middle;")));
-//            this.add(newAjaxComponent(new Label("userlist.add-user-form.title", new ResourceModel("userlist.add-user-form.title"))
-//            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))));
-//        }
-//
-//        @Override
-//        public void onComponentTag(ComponentTag tag) {
-//            super.onComponentTag(tag);
-//            if ((this.open_close_tooltip_texts != null) && (this.open_close_tooltip_texts.size() == 2))
-//                tag.put("title", new ResourceModel(this.open_close_tooltip_texts.get(forForm.isVisible() ? 1 : 0)).wrapOnAssignment(this).getObject());            
-//        }
-//        
-//        @Override
-//        public void onClick(AjaxRequestTarget target) {
-//            this.forForm.setVisible(!this.forForm.isVisible()); 
-//            target.addComponent(this);
-//            target.addComponent(this.forForm);
-//        }
-//    };
-
     private final class HasRoleModel implements IModel<Boolean> {
         
         private static final long serialVersionUID = 1L;
@@ -356,14 +274,12 @@ public class UserListPanel extends Panel {
     }
     
     private List<User> getAllUsers() {
-        
         List<User> allUsers = new ArrayList<User>();
         allUsers.addAll(((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).findAll());
         return allUsers;
     }
     
     private List<Role> getAllRolenames() {
-
         List<Role> allRolenames = new ArrayList<Role>(2);
         allRolenames.addAll(JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, 
                 ((AuthenticatedWebApplication) getApplication()).getInitParameter("UserAccessServiceName"))

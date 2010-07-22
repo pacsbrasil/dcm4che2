@@ -36,31 +36,27 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.ui.usermanagement.user;
+package org.dcm4chee.usr.ui.usermanagement.role;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
+import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.TextField;
-import org.apache.wicket.markup.html.form.validation.EqualPasswordInputValidator;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
+import org.dcm4chee.usr.dao.Role;
 import org.dcm4chee.usr.dao.UserAccess;
-import org.dcm4chee.usr.entity.User;
-import org.dcm4chee.usr.entity.UserRoleAssignment;
-import org.dcm4chee.usr.ui.util.SecurityUtils;
-import org.dcm4chee.usr.ui.validator.UserValidator;
+import org.dcm4chee.usr.ui.validator.RoleValidator;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
@@ -70,76 +66,69 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since 28.09.2009
+ * @since 21.07.2010
  */
-public class AddUserPage extends WebPage {
+public class AddRolePage extends WebPage {
     
     private static final long serialVersionUID = 1L;
     
-    private static Logger log = LoggerFactory.getLogger(AddUserPage.class);
+    private static Logger log = LoggerFactory.getLogger(AddRolePage.class);
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
 
     protected ModalWindow window;
-    
-    public AddUserPage(final ModalWindow window, ListModel<User> allUsers) {
+   
+    public AddRolePage(final ModalWindow window, ListModel<Role> allRolenames) {
         super();
         
-        if (AddUserPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(AddUserPage.BaseCSS));
+        if (AddRolePage.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(AddRolePage.BaseCSS));
 
         this.window = window;
         
-        add(new Label("page-title", new ResourceModel("userlist.add-user-form.title")));
-        add(new AddUserForm("add-user-form", allUsers));        
+        add(new Label("page-title", new ResourceModel("rolelist.add-role-form.title")));
+        add(new AddRoleForm("add-role-form", allRolenames));        
     }
 
-    private final class AddUserForm extends BaseForm {
+    private final class AddRoleForm extends BaseForm {
         
         private static final long serialVersionUID = 1L;
-        
-        private Model<String> newUsername = new Model<String>();
-        private Model<String> password = new Model<String>();
 
-        public AddUserForm(String id, final ListModel<User> allUsers) {
+        String serviceObjectName;
+        
+        private Model<String> newRolename = new Model<String>();
+        private TextField<String> rolenameTextField= new TextField<String>("rolelist.add-role-form.rolename.input", newRolename);
+
+        public AddRoleForm(String id, final ListModel<Role> allRolenames) {
             super(id);
 
-            add(new Label("new-username-label", new ResourceModel("userlist.add-user-form.username.label")));
-            add((new TextField<String>("userlist.add-user-form.username.input", newUsername))
+            serviceObjectName = ((AuthenticatedWebApplication) getApplication()).getInitParameter("UserAccessServiceName");
+
+            add(new Label("new-rolename-label", new ResourceModel("rolelist.add-role-form.rolename.label")));
+            add(rolenameTextField
                     .setRequired(true)
-                    .add(new UserValidator(allUsers))
+                    .add(new RoleValidator(allRolenames))
             );
             
-            add(new Label("password-label-1", new ResourceModel("userlist.add-user-form.password_1.label")));
-            add(new Label("password-label-2", new ResourceModel("userlist.add-user-form.password_2.label")));
-            
-            PasswordTextField passwordTf1 = null;
-            PasswordTextField passwordTf2 = null;
-            add(passwordTf1 = new PasswordTextField("userlist.add-user-form.password_1.input", password));
-            add(passwordTf2 = new PasswordTextField("userlist.add-user-form.password_2.input", new Model<String>("")));
-            add(new EqualPasswordInputValidator(passwordTf1, passwordTf2));
-        
-            add(new AjaxFallbackButton("add-user-submit", AddUserForm.this) {
+            add(new AjaxFallbackButton("add-role-submit", AddRoleForm.this) {
                 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
-                        User user = new User();
-                        user.setUserID(newUsername.getObject());
-                        user.setPassword(SecurityUtils.encodePassword(password.getObject()));
-                        user.setRoles(new ArrayList<UserRoleAssignment>());
-                        ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).createUser(user);
-                        List<User> currentUsers = allUsers.getObject();
-                        currentUsers.add(user);
-                        allUsers.setObject(currentUsers);
+                        Role role = new Role(newRolename.getObject());
+                        JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceObjectName)
+                            .addRole(role);
+                        List<Role> currentRolenames = allRolenames.getObject();
+                        currentRolenames.add(role);
+                        allRolenames.setObject(currentRolenames);
                         window.close(target);
                     } catch (final Exception e) {
                         log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());
                         log.debug("Exception: ", e);
                     }
                 }
-            
+                
                 @Override
                 protected void onError(AjaxRequestTarget target, Form<?> form) {
                     target.addComponent(form);
