@@ -45,12 +45,10 @@ import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
@@ -80,8 +78,6 @@ public class CreateGroupPage extends WebPage {
             add(CSSPackageResource.getHeaderContribution(CreateGroupPage.BaseCSS));
 
         this.window = window;
-        
-        add(new Label("page-title", new ResourceModel("dashboard.report.add-group-form.title")));
         add(new AddGroupForm("add-group-form"));        
     }
 
@@ -94,7 +90,6 @@ public class CreateGroupPage extends WebPage {
         public AddGroupForm(String id) {
             super(id);
                       
-            add(new Label("new-groupname-label", new ResourceModel("dashboard.report.add-group-form.label").wrapOnAssignment(this)));
             add((new TextField<String>("dashboard.report.add-group-form.groupname.input", newGroupname)
             .add(new PatternValidator("^[A-Za-z0-9]+$"))
             .setRequired(true)));
