@@ -113,7 +113,13 @@ public class DicomInputStream extends FilterInputStream implements
     }
 
     public DicomInputStream(File f) throws IOException {
-        this(new BufferedInputStream(new FileInputStream(f)));
+        super(new BufferedInputStream(new FileInputStream(f)));
+        try {
+            this.ts = guessTransferSyntax();
+        } catch (IOException e) {
+            try { close(); } catch (IOException ignore) {}
+            throw e;
+        }
     }
 
     public DicomInputStream(ImageInputStream iis, TransferSyntax ts)
