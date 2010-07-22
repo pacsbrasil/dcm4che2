@@ -41,10 +41,11 @@ package org.dcm4chee.usr.ui.usermanagement;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.authorization.strategies.role.Roles;
+import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
@@ -52,7 +53,6 @@ import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.validation.EqualPasswordInputValidator;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.ui.util.SecurityUtils;
@@ -95,13 +95,14 @@ public class ChangePasswordPage extends WebPage {
                     ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getUser(userId)
                     : forUser;
 
-            final Label oldPasswordLabel = new Label("old-password-label", new ResourceModel("change_password.old_password.label").wrapOnAssignment(this));
+            WebMarkupContainer oldPasswordLabel = new WebMarkupContainer("old-password-label");
             this.add(oldPasswordLabel);
-
+                    
             final PasswordTextField oldPasswordTf = new PasswordTextField("change_password.old_password.input", oldPassword);
             this.add(oldPasswordTf);
 
             Label forUserLabel = new Label("for-user-label", this.forUser.getUserID());
+            this.add(forUserLabel);
             
             if (this.forUser.getUserID().equals(userId)) {
                 forUserLabel.setVisible(false);
@@ -110,7 +111,6 @@ public class ChangePasswordPage extends WebPage {
                 oldPasswordLabel.setVisible(false);
                 oldPasswordTf.setVisible(false);
             }
-            this.add(forUserLabel);
             
             final PasswordTextField newPasswordTf1 = new PasswordTextField("change_password.new_password_1.input", newPassword);
             this.add(newPasswordTf1);

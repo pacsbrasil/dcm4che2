@@ -47,14 +47,12 @@ import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.form.validation.EqualPasswordInputValidator;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.entity.User;
@@ -88,8 +86,6 @@ public class AddUserPage extends WebPage {
             add(CSSPackageResource.getHeaderContribution(AddUserPage.BaseCSS));
 
         this.window = window;
-        
-        add(new Label("page-title", new ResourceModel("userlist.add-user-form.title")));
         add(new AddUserForm("add-user-form", allUsers));        
     }
 
@@ -103,14 +99,10 @@ public class AddUserPage extends WebPage {
         public AddUserForm(String id, final ListModel<User> allUsers) {
             super(id);
 
-            add(new Label("new-username-label", new ResourceModel("userlist.add-user-form.username.label")));
             add((new TextField<String>("userlist.add-user-form.username.input", newUsername))
                     .setRequired(true)
                     .add(new UserValidator(allUsers))
             );
-            
-            add(new Label("password-label-1", new ResourceModel("userlist.add-user-form.password_1.label")));
-            add(new Label("password-label-2", new ResourceModel("userlist.add-user-form.password_2.label")));
             
             PasswordTextField passwordTf1 = null;
             PasswordTextField passwordTf2 = null;

@@ -47,12 +47,10 @@ import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.usr.dao.Role;
 import org.dcm4chee.usr.dao.UserAccess;
@@ -84,8 +82,6 @@ public class AddRolePage extends WebPage {
             add(CSSPackageResource.getHeaderContribution(AddRolePage.BaseCSS));
 
         this.window = window;
-        
-        add(new Label("page-title", new ResourceModel("rolelist.add-role-form.title")));
         add(new AddRoleForm("add-role-form", allRolenames));        
     }
 
@@ -103,7 +99,6 @@ public class AddRolePage extends WebPage {
 
             serviceObjectName = ((AuthenticatedWebApplication) getApplication()).getInitParameter("UserAccessServiceName");
 
-            add(new Label("new-rolename-label", new ResourceModel("rolelist.add-role-form.rolename.label")));
             add(rolenameTextField
                     .setRequired(true)
                     .add(new RoleValidator(allRolenames))
