@@ -61,6 +61,7 @@ import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
@@ -126,6 +127,9 @@ public class CreateOrEditReportPage extends WebPage {
         add(resultMessage = new Label("result-message"));
         resultMessage.setOutputMarkupId(true);
         resultMessage.setDefaultModel(new Model<String>(""));
+        
+        add(new WebMarkupContainer("create-page-title").setVisible(this.report.getUuid() == null));
+        add(new WebMarkupContainer("edit-page-title").setVisible(this.report.getUuid() != null));
     }
 
     @Override
@@ -135,9 +139,7 @@ public class CreateOrEditReportPage extends WebPage {
         try {
             diagramOptionsTypes = new ResourceModel("dashboard.report.createoredit.diagram.options.types").wrapOnAssignment(this).getObject().split(";");
             diagramOptionsTooltips = new ResourceModel("dashboard.report.createoredit.diagram.options.tooltips").wrapOnAssignment(this).getObject().split(";");
-            
             addOrReplace(new CreateOrEditReportForm("create-or-edit-report-form", this.report, resultMessage, this.window));
-            addOrReplace(new Label("page-title", new ResourceModel(this.report.getUuid() == null ? "dashboard.report.createoredit.create.title" : "dashboard.report.createoredit.edit.title")));
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
@@ -156,9 +158,9 @@ public class CreateOrEditReportPage extends WebPage {
             this.add(new TextField<String>("dashboard.report.createoredit.form.title.input", new PropertyModel<String>(thisReport, "title"))
             .setRequired(true)
             .add(new ReportTitleValidator())
-            .add(new AttributeModifier("size", true, new ResourceModel("dashboard.report.createoredit.form.title.columns"))));
+            .add(new AttributeModifier("size", true, new ResourceModel("dashboard.report.createoredit.form.title.columns")))
+            );
             
-            add(new Label("report-datasource-dropdown-label", new ResourceModel("dashboard.report.createoredit.form.datasource.dropdown.title")));
             add(new DropDownChoice<String>("report-datasource-dropdown-choice", new PropertyModel<String>(thisReport, "dataSource"), Arrays.asList(DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).getDataSources())).setNullValid(true));
 
             this.add(new TextArea<String>("dashboard.report.createoredit.form.statement.input", new PropertyModel<String>(thisReport, "statement"))
@@ -216,7 +218,6 @@ public class CreateOrEditReportPage extends WebPage {
                 }
             });
 
-            add(new Label("report-diagram-dropdown-label", new ResourceModel("dashboard.report.createoredit.form.diagram.dropdown.title")));
             add(new DropDownChoice<Integer>("report-diagram-dropdown-choice", new PropertyModel<Integer>(thisReport, "diagram"), new ListModel<Integer>() {
 
                 private static final long serialVersionUID = 1L;

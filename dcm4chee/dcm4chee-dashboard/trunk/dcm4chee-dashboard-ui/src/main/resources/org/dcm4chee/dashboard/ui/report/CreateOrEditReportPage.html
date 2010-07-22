@@ -8,72 +8,67 @@
 	</head>
 	<body>
     	<div class="msgWindow">
-			<div wicket:id="page-title" />
+    		<div wicket:id="create-page-title" class="edit-title">
+				<wicket:message key="dashboard.report.createoredit.create.title" />
+			</div>
+    		<div wicket:id="edit-page-title" class="edit-title">
+				<wicket:message key="dashboard.report.createoredit.edit.title" />
+			</div>
 			<form wicket:id="create-or-edit-report-form">
-				 <table class="content-table">
-				 	<tr>
-				 		<td>
-							<wicket:message key="dashboard.report.createoredit.form.title.title" />
-						</td>
-						<td>
-							<input wicket:id="dashboard.report.createoredit.form.title.input" type="text" />
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<div wicket:id="report-datasource-dropdown-label" />
-						</td>
-						<td>
-							<select wicket:id="report-datasource-dropdown-choice" size="1"></select>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<wicket:message key="dashboard.report.createoredit.form.statement.title" />
-						</td>
-						<td>
-							<textarea wicket:id="dashboard.report.createoredit.form.statement.input">
+				 <div class="edit-content">
+				 	<div class="edit-table-panel">
+	          			<div class="edit-table-row">
+	          				<div class="edit-desc">
+								<wicket:message key="dashboard.report.createoredit.form.title.title" />
+							</div>
+							<input wicket:id="dashboard.report.createoredit.form.title.input" class="edit-value" type="text" size="15" />
+						</div>
+	          			<div class="edit-table-row">
+	          				<div class="edit-desc">
+								<wicket:message key="dashboard.report.createoredit.form.datasource.dropdown.title" />
+							</div>
+							<select wicket:id="report-datasource-dropdown-choice" size="1" class="edit-value"></select>
+						</div>
+	          			<div class="edit-table-row" style="height: 150px;">
+	          				<div class="edit-desc">
+								<wicket:message key="dashboard.report.createoredit.form.statement.title" />
+							</div>
+							<textarea wicket:id="dashboard.report.createoredit.form.statement.input" class="edit-value">
 							</textarea>
-						</td>
-					</tr>
-					<tr>
-						<td>
-						</td>
-						<td>
-							<input wicket:id="statement-test-submit" type="submit" wicket:message="value:dashboard.report.createoredit.form.statement.test" style="clear: left" />
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<div wicket:id="report-diagram-dropdown-label" />
-						</td>
-						<td>
-							<select wicket:id="report-diagram-dropdown-choice" size="1"></select>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<wicket:message key="dashboard.report.createoredit.form.table.option.title" />
-						</td>
-						<td>
-							<input wicket:id="report-table-checkbox" type="checkbox" style="float: left" />
-						</td>
-					</tr>
-					<tr>
-						<td>
-						</td>
-						<td>
-							<input wicket:id="form-submit" type="submit" wicket:message="value:dashboard.report.createoredit.form.submit" style="clear: left" />
-						</td>
-					</tr>
-				</table>
+						</div>
+	          			<div class="edit-table-row">
+	          				<div class="edit-desc">
+	          				</div>
+							<input wicket:id="statement-test-submit" type="submit" wicket:message="value:dashboard.report.createoredit.form.statement.test" class="edit-value" />
+						</div>
+	          			<div class="edit-table-row">
+	          				<div class="edit-desc">
+								<wicket:message key="dashboard.report.createoredit.form.diagram.dropdown.title" />
+							</div>
+							<select wicket:id="report-diagram-dropdown-choice" size="1" class="edit-value"></select>
+						</div>
+	          			<div class="edit-table-row">
+	          				<div class="edit-desc">
+								<wicket:message key="dashboard.report.createoredit.form.table.option.title" />
+							</div>
+							<input wicket:id="report-table-checkbox" type="checkbox" class="edit-value" />
+						</div>
+					</div>
+					<div class="edit-buttons">
+						<input wicket:id="form-submit" type="submit" wicket:message="value:dashboard.report.createoredit.form.submit" />
+					</div>
+        		</div>
 			</form>
-			<div wicket:id="result-message" style="clear: both; margin-top: 9px;">
+        </div>
+		<div style="clear: both; margin-top: 9px; height: 50px; text-align: center; vertical-align: middle;">
+			<div wicket:id="result-message">
 				[Result message]
 			</div>
-			<wicket:message key="dashboard.report.createoredit.documentation" style="clear: both; margin-top: 9px;">
+		</div>
+		<div style="clear: both; margin-top: 9px; height: 50px; text-align: center; vertical-align: middle;">
+			<wicket:message key="dashboard.report.createoredit.documentation">
            		[Documentation]
-			</wicket:message>				
-        </div>
+			</wicket:message>
+		</div>
  	</body>
 </html>
