@@ -45,6 +45,7 @@ import in.raster.mayam.util.DicomTags;
 import in.raster.mayam.util.DicomTagsReader;
 import in.raster.mayam.form.display.Display;
 import in.raster.mayam.delegate.CineTimer;
+import in.raster.mayam.form.tab.component.ButtonTabComp;
 import in.raster.mayam.model.Instance;
 import in.raster.mayam.model.PresetModel;
 import in.raster.mayam.model.Series;
@@ -1032,10 +1033,16 @@ public class ImageToolbar extends javax.swing.JPanel {
     public void storeAnnotationHook() {
         for (int i = 0; i < ApplicationContext.imgView.jTabbedPane1.getComponentCount(); i++) {
             for (int j = 0; j < ((JPanel) ApplicationContext.imgView.jTabbedPane1.getComponent(i)).getComponentCount(); j++) {
-                try {
-                    ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getComponent(i)).getComponent(j)).imgpanel.storeAnnotation();
-                } catch (Exception e) {e.printStackTrace();
-                    //Class cast exception because it is not a layered canvas
+                try {                   
+                    if(((JPanel) ApplicationContext.imgView.jTabbedPane1.getComponent(i)).getComponent(j) instanceof LayeredCanvas)
+                    {                       
+                       LayeredCanvas tempCanvas= ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getComponent(i)).getComponent(j));
+                       if(tempCanvas.imgpanel!=null)
+                       tempCanvas.imgpanel.storeAnnotation();                
+                    }
+                }
+                catch (Exception e) {
+                  e.printStackTrace();
                 }
             }
         }
