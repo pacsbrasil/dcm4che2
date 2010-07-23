@@ -137,7 +137,7 @@ public class SeriesListUpdator extends Thread {
         }
     }
 
-    private void readDicomFile(Instance img) {
+    private synchronized void readDicomFile(Instance img) {
         ImageInputStream iis = null;
         Iterator iter = null;
         ImageReader reader = null;

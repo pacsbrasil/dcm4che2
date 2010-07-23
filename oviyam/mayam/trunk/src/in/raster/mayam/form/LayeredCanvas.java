@@ -273,10 +273,13 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
 
     public void componentResized(ComponentEvent e) {
         try {
+            if(canvas!=null)
+            {
             this.canvas.resizeHandler();
             this.imgpanel.resizeHandler();
             this.textOverlay.resizeHandler();
             this.annotationPanel.resizeHandler();
+            }
         } catch (Exception ex) {ex.printStackTrace();
         }
     }
