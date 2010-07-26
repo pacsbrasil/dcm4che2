@@ -218,7 +218,8 @@ public abstract class MPPSEmulatorBean implements SessionBean {
                 LOG.warn("Study with multiple Procedure Codes - only include first in emulated MPPS");
                 mpps.putSQ(Tags.ProcedureCodeSeq).addItem(procCodeSeq.getItem());
             }
-            DcmElement rqaSq = seriesAttrs.get(Tags.RequestAttributesSeq);
+            DcmElement rqaSq = studyAttrs.getString(Tags.AccessionNumber) == null ? 
+                    null : seriesAttrs.get(Tags.RequestAttributesSeq);
             int rqaSqSize = rqaSq != null ? rqaSq.countItems() : 0;
             DcmElement ssaSq = mpps.putSQ(Tags.ScheduledStepAttributesSeq);
             if (rqaSqSize == 0) { // unscheduled case
