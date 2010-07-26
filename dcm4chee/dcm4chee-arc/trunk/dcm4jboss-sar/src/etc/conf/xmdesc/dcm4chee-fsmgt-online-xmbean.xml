@@ -848,6 +848,17 @@
     <return-type>int</return-type>
   </operation>
 
+  <operation impact="ACTION">
+    <description>Show current Deleter criteria.</description>
+    <name>showDeleterCriteria</name>
+    <return-type>java.lang.String</return-type>
+  </operation>
+  <operation impact="ACTION">
+    <description>Stop current Deleter Thread. (finish loop even there is still remaining size to delete)</description>
+    <name>stopCurrentDeleterThread</name>
+    <return-type>void</return-type>
+  </operation>
+
   <!-- Notifications -->
 
   <notification>
