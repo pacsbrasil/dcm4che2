@@ -41,7 +41,7 @@
 shall trigger prefetch of studies. For each listed message type a value for a
 particular message field can be specified as additional condition.
 <p>Format:<br/>
-<i>message-type</i> '^' <i>trigger-event</i> [<i>condition</i>] [,...]<br/>
+<i>message-type</i> '^' <i>trigger-event</i> [<i>condition</i>[|<i>condition</i>[|...]]] [,...]<br/>
  | 'NONE' (* prefetch disabled *)<br/>
 <i>condition</i> := '[' <i>field-name</i> '=' <i>field-value</i> ']'<br/>
 <i>field-name</i> := <i>segment</i> '-' <i>seq</i>
