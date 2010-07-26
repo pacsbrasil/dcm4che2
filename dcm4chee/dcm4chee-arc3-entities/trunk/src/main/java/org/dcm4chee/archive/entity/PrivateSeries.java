@@ -139,5 +139,4 @@ public class PrivateSeries extends BaseEntity implements Serializable {
                 PrivateTag.CallingAET, PrivateTag.CreatorID));
         this.encodedAttributes = DicomObjectUtils.encode(attrs, null);
     }
-
 }
