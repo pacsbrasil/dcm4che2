@@ -248,6 +248,39 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
         }
     }
 
+    public int emulateMPPS(long studyPk) {
+        try {
+            MPPSEmulator mppsEmulator = getMPPSEmulatorHome().create();
+            Dataset[] studyMpps = mppsEmulator.generateMPPS(studyPk);
+            int num = 0;
+            Dataset mpps;
+            for ( int j = 0 ; j < studyMpps.length ; j++) {
+                mpps = studyMpps[j];
+                Dataset ssa = mpps.getItem(Tags.ScheduledStepAttributesSeq);
+                String suid = ssa.getString(Tags.StudyInstanceUID);
+                log.info("Emulate MPPS for Study:" + suid + " of Patient:"
+                    + mpps.getString(Tags.PatientName)
+                        + " received from Station:" + mpps.getString(Tags.PerformedStationAET)+" ("
+                        + mpps.getString(Tags.Modality)+ ")");
+                try {
+                    createMPPS(mpps);
+                    updateMPPS(mpps);
+                    num++;
+                } catch (Exception e) {
+                    log.error("Failed to emulate MPPS for Study:" + suid 
+                            + " of Patient:" + mpps.getString(Tags.PatientName)
+                            + " received from Station:" + mpps.getString(Tags.PerformedStationAET)+" ("
+                            + mpps.getString(Tags.Modality)+ "):",
+                            e);
+                }
+            }
+            return num;
+        } catch (Exception e) {
+            log.error("Failed to emulate MPPS:", e);
+            return -1;
+        }
+    }
+
     private void fillType2Attrs(Dataset ds, int[] tags) {
         for (int i = 0; i < tags.length; i++) {
             if (!ds.contains(tags[i]))
