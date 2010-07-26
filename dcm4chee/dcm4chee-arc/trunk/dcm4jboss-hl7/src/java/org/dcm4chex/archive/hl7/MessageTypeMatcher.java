@@ -38,6 +38,7 @@
 package org.dcm4chex.archive.hl7;
 
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -52,9 +53,9 @@ class MessageTypeMatcher {
 
     private String messageType;
     private String triggerEvent;
-    private String segment;
-    private int field;
-    private String value;
+    private String[] segment;
+    private int[] field;
+    private String[] value;
 
     public MessageTypeMatcher(String pattern) {
         int messageTypeEnd = pattern.indexOf('^');
@@ -65,6 +66,9 @@ class MessageTypeMatcher {
         int triggerEventEnd = pattern.indexOf('[', messageTypeEnd+1);
         if (triggerEventEnd == -1) {
             triggerEvent = pattern.substring(messageTypeEnd+1);
+            segment = null;
+            field = null;
+            value = null;
         } else {
             int valueEnd = pattern.length()-1;
             if (pattern.charAt(valueEnd) != ']') {
@@ -72,36 +76,50 @@ class MessageTypeMatcher {
             }
             triggerEvent = pattern.substring(messageTypeEnd+1,
                     triggerEventEnd);
-            int segmentEnd = triggerEventEnd + 4;
-            if (valueEnd < segmentEnd + 3) {
-                throw new IllegalArgumentException(pattern);
+            StringTokenizer st =  new StringTokenizer(pattern.substring(triggerEventEnd+1, valueEnd), "|");
+            int nrOfConditions = st.countTokens();
+            segment = new String[nrOfConditions];
+            field = new int[nrOfConditions];
+            value = new String[nrOfConditions];
+            String cond;
+            int fieldEnd;
+            for( int i = 0 ;st.hasMoreTokens(); i++) {
+                cond = st.nextToken();
+                if (cond.length() < 7) {
+                    throw new IllegalArgumentException(pattern);
+                }
+                if ( cond.charAt(3) != '-') {
+                    throw new IllegalArgumentException(pattern);                    
+                }
+                fieldEnd = cond.indexOf('=');
+                if (fieldEnd == -1) {
+                    throw new IllegalArgumentException(pattern);                    
+                }
+                segment[i] = cond.substring(0,3); 
+                try {
+                    field[i] = Integer.parseInt(
+                            cond.substring(4, fieldEnd));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(pattern);
+                }
+                if (field[i] <= 0) {
+                    throw new IllegalArgumentException(pattern);
+                }
+                value[i] = cond.substring(fieldEnd+1);
             }
-            if (pattern.charAt(segmentEnd) != '-') {
-                throw new IllegalArgumentException(pattern);
-            }
-            segment = pattern.substring(triggerEventEnd+1, segmentEnd);
-            int fieldEnd = pattern.indexOf('=', segmentEnd + 2);
-            if (fieldEnd == -1) {
-                throw new IllegalArgumentException(pattern);
-            }
-            try {
-                field = Integer.parseInt(
-                        pattern.substring(segmentEnd+1, fieldEnd));
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(pattern);
-            }
-            if (field <= 0) {
-                throw new IllegalArgumentException(pattern);
-            }
-            value = pattern.substring(fieldEnd+1, valueEnd);
         }
     }
 
     public StringBuffer toString(StringBuffer sb) {
         sb.append(messageType).append('^').append(triggerEvent);
         if (segment != null) {
-            sb.append('[').append(segment).append('-').append(field)
-                .append('=').append(value).append(']');
+            sb.append('[');
+            for ( int i = 0, len = segment.length ; i < len ; i++ ) {
+                sb.append(segment[i]).append('-').append(field[i])
+                    .append('=').append(value[i]).append('|');
+            }
+            sb.setLength(sb.length()-1);
+            sb.append(']');
         }
         return sb;
     }
@@ -118,16 +136,21 @@ class MessageTypeMatcher {
         if (segment == null) {
             return true;
         }
-        Element seg = msg.getRootElement().element(segment);
-        if (seg == null) {
-            return false;
+        for ( int i = 0, len = segment.length ; i < len ; i++) {
+            Element seg = msg.getRootElement().element(segment[i]);
+            if (seg == null) {
+                return false;
+            }
+            List<Element> fds = seg.elements(HL7XMLLiterate.TAG_FIELD);
+            if (fds.size() <= field[i]) {
+                return false;
+            }
+            Element fd = fds.get(field[i]-1);
+            if (!value.equals(maskNull(fd.getText())) ) {
+                return false;
+            }
         }
-        List<Element> fds = seg.elements(HL7XMLLiterate.TAG_FIELD);
-        if (fds.size() <= field) {
-            return false;
-        }
-        Element fd = fds.get(field-1);
-        return value.equals(maskNull(fd.getText()));
+        return true;
     }
 
     private static String maskNull(String s) {
