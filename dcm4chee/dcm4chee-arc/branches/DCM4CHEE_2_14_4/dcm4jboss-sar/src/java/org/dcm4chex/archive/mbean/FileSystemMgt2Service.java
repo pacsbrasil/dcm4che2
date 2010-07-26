@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 
 import javax.ejb.FinderException;
@@ -1122,9 +1123,52 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                     countStudies++;
                 }
             }
-            minAccessTime = deleteOrdersAndAccessTime.maxAccessTime;
-        } while (sizeToDel > 0);
+            if (deleteOrdersAndAccessTime.deleteStudyOrders.size() == 0 && 
+                    minAccessTime == deleteOrdersAndAccessTime.maxAccessTime) {
+                log.warn("Possible infinite loop in deleter thread detected! Please check access_time in study_on_fs! Current minAccessTime:"+minAccessTime);
+                minAccessTime++;
+            } else {
+                minAccessTime = deleteOrdersAndAccessTime.maxAccessTime;
+            }
+        } while (sizeToDel > 0 && isRunningScheduleStudiesForDeletion);
+        if (countStudies == 0 && sizeToDel > 0) {
+            log.warn("No study found for deletion on filesystem group "+getFileSystemGroupID()+"! Please check your configuration!");
+            log.warn(showDeleterCriteria());
+        }
         return countStudies;
+    }
+
+    public String showDeleterCriteria() {
+        StringBuilder sb = new StringBuilder();
+        if (maxNotAccessedFor==0) {
+            sb.append("Only triggered by running out of disk space! Studies not accessed for ")
+            .append(getDeleteStudyOnlyIfNotAccessedFor());
+        } else {
+            sb.append("Delete all studies not accessed for ").append(getDeleteStudyIfNotAccessedFor());
+            sb.append(".\n And studies not accessed for ").append(getDeleteStudyOnlyIfNotAccessedFor())
+            .append(" when running out of disk space!");
+        }
+        sb.append("\nDeleter Criteria: ");
+        int i = 0;
+        if (externalRetrievable)
+            sb.append("\n  ").append(++i).append(") External Retrievable");
+        if (copyOnFSGroup != null)
+            sb.append("\n  ").append(++i).append(") Copy on Filesystem Group "+copyOnFSGroup);
+        if (copyArchived)
+            sb.append("\n  ").append(++i).append(") Copy must be archived");
+        if (copyOnReadOnlyFS)
+            sb.append("\n  ").append(++i).append(") Copy on a ReadOnly Filesystem");
+        if (copyOnMedia)
+            sb.append("\n  ").append(++i).append(") Copy on Media");
+        if (storageNotCommited)
+            sb.append("\n  ").append(++i).append(") Storage Not Commited");
+        if (i==0) 
+            sb.append("\n  WARNING! No Deletion criteria configured!");
+        return sb.toString();
+    }
+    
+    public void stopCurrentDeleterThread() {
+        isRunningScheduleStudiesForDeletion = false;
     }
 
     private boolean checkExternalRetrievable(DeleteStudyOrder order) {
