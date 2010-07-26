@@ -104,5 +104,17 @@
       <name>emulateMPPS</name>
       <return-type>int</return-type>
    </operation>
+   
+   <operation impact="ACTION">
+      <description><![CDATA[Emulate MPPS messages for a specific study with given Study Pk.]]>
+      </description>
+      <name>emulateMPPS</name>
+      <parameter>
+	    <description>Study Primary Key.</description>
+	    <name>studyPk</name>
+	    <type>long</type>
+	  </parameter>
+      <return-type>int</return-type>
+   </operation>
 
 </mbean>
