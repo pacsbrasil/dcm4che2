@@ -138,18 +138,15 @@ public class CreateOrEditAETPage extends WebPage {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
                     ((AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME)).updateOrCreateAET(ae);
-                    resultMessage.setObject("");
                     window.close(target);
                 } catch (Exception e) {
                     resultMessage.setObject(e.getLocalizedMessage());
-                } finally {
                     target.addComponent(CreateOrEditAETPage.this);
                 }
             }
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-//                form.setOutputMarkupId(true);
                 target.addComponent(form);
             }
         });
