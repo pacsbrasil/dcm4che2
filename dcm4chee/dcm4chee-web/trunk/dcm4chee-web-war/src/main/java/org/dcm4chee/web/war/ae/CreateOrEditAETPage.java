@@ -42,25 +42,32 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
+import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
-import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.CompoundPropertyModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.validation.validator.RangeValidator;
 import org.dcm4chee.archive.entity.AE;
+import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
-import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.validators.UrlValidator1;
+import org.dcm4chee.web.dao.ae.AEHomeLocal;
+import org.dcm4chee.web.dao.fs.FileSystemHomeLocal;
 import org.dcm4chee.web.war.ae.model.CipherModel;
+import org.dcm4chee.web.war.util.CyphersuiteUtils;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -68,41 +75,45 @@ import org.dcm4chee.web.war.ae.model.CipherModel;
  * @since June 4, 2009
  */
 
-public class EditAETPanel extends Panel {
+public class CreateOrEditAETPage extends WebPage {
     
     private static final long serialVersionUID = 1L;
+
+    private static final ResourceReference CSS = new CompressedResourceReference(CreateOrEditAETPage.class, "ae-style.css");
+
+    private Model<String> resultMessage;
     
-    private static final ResourceReference CSS = new CompressedResourceReference(EditAETPanel.class, "ae-style.css");
-    
-    transient AEMgtDelegate delegate = AEMgtDelegate.getInstance();
-    private MessageWindow msgWin = new MessageWindow("feedbackWin");
-    
-    public EditAETPanel( String id, final AEMgtPanel page, final AE ae) {
-        super(id);
-        
-        if (EditAETPanel.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(EditAETPanel.CSS));
+    public CreateOrEditAETPage(final ModalWindow window, final AE ae) {
+        super();
+
+        add(CSSPackageResource.getHeaderContribution(BaseWicketPage.class, "base-style.css"));
+        if (CreateOrEditAETPage.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(CreateOrEditAETPage.CSS));
+
+        add(new WebMarkupContainer("create-aet-title").setVisible(ae.getPk() == -1));
+        add(new WebMarkupContainer("edit-aet-title").setVisible(ae.getPk() != -1));
 
         setOutputMarkupId(true);
         BaseForm form = new BaseForm("form");
         form.setResourceIdPrefix("aet.");
         add(form);
         CompoundPropertyModel<AE> model = new CompoundPropertyModel<AE>(ae);
-        setDefaultModel(model);
+        form.setDefaultModel(model);
         form.addLabeledTextField("title").add(new AETitleValidator())
             .setRequired(true).add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour());
         form.addLabeledTextField("hostName").setRequired(true); 
         form.addLabeledNumberTextField("port").add(new RangeValidator<Integer>(1,65535));
-        form.add(new Label("ciphers1.label", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{1} ) ) );
-        form.add(new DropDownChoice<String>("ciphersuite1", new CipherModel(ae, 0), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
-        form.add(new Label("ciphers2.label", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{2} ) ) );
-        form.add(new DropDownChoice<String>("ciphersuite2", new CipherModel(ae, 1), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
-        form.add(new Label("ciphers3.label", new StringResourceModel("aet.ciphers", EditAETPanel.this, null, new Object[]{3} ) ) );
-        form.add(new DropDownChoice<String>("ciphersuite3", new CipherModel(ae, 2), AEMgtDelegate.AVAILABLE_CIPHERSUITES));
+        form.add(new Label("ciphers1.label", new StringResourceModel("aet.ciphers", CreateOrEditAETPage.this, null, new Object[]{1} ) ) );
+        form.add(new DropDownChoice<String>("ciphersuite1", new CipherModel(ae, 0), CyphersuiteUtils.AVAILABLE_CIPHERSUITES));
+        form.add(new Label("ciphers2.label", new StringResourceModel("aet.ciphers", CreateOrEditAETPage.this, null, new Object[]{2} ) ) );
+        form.add(new DropDownChoice<String>("ciphersuite2", new CipherModel(ae, 1), CyphersuiteUtils.AVAILABLE_CIPHERSUITES));
+        form.add(new Label("ciphers3.label", new StringResourceModel("aet.ciphers", CreateOrEditAETPage.this, null, new Object[]{3} ) ) );
+        form.add(new DropDownChoice<String>("ciphersuite3", new CipherModel(ae, 2), CyphersuiteUtils.AVAILABLE_CIPHERSUITES));
         form.addLabeledTextField("description"); 
         form.addLabeledTextField("issuerOfPatientID"); 
         form.addLabeledDropDownChoice("fileSystemGroupID", null, 
-                delegate.getFSGroupIDs()).setNullValid(true);
+                ((FileSystemHomeLocal) JNDIUtils.lookup(FileSystemHomeLocal.JNDI_NAME)).listGroupIDs()
+                ).setNullValid(true);
         form.addLabeledTextField("wadoURL").add(new UrlValidator1()); //Wicket UrlValidator doesn't accept http://hostname:8080/web!
         form.addLabeledTextField("userID"); 
         form.add(new Label("password.label", new ResourceModel("aet.password") ) );
@@ -118,26 +129,37 @@ public class EditAETPanel extends Panel {
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
             }
-        }); 
-        form.add(new Button("submit", new ResourceModel("saveBtn")) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public final void onSubmit() {
-                if (submit() ) {
-                    AEMgtDelegate.getInstance().updateAEList();
-                    page.setListPage();
-                }
-            }            
         });
-        form.add(new Button("cancel", new ResourceModel("cancelBtn")) {
+        form.add(new AjaxFallbackButton("submit", new ResourceModel("saveBtn"), form) {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onSubmit() {
-                page.setListPage();
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                try {
+                    ((AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME)).updateOrCreateAET(ae);
+                    resultMessage.setObject("");
+                    window.close(target);
+                } catch (Exception e) {
+                    resultMessage.setObject(e.getLocalizedMessage());
+                } finally {
+                    target.addComponent(CreateOrEditAETPage.this);
+                }
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
+//                form.setOutputMarkupId(true);
+                target.addComponent(form);
+            }
+        });
+        form.add(new AjaxFallbackButton("cancel", new ResourceModel("cancelBtn"), form) {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                window.close(target);
             }}.setDefaultFormProcessing(false));
 
         final DicomEchoWindow mw = new DicomEchoWindow("echoPanel", true);
@@ -146,10 +168,9 @@ public class EditAETPanel extends Panel {
             private static final long serialVersionUID = 1L;
 
             public void onClose(AjaxRequestTarget target) {
-                AEMgtDelegate.getInstance().updateAEList();
-                target.addComponent(EditAETPanel.this);
-            }});
-        
+                target.addComponent(CreateOrEditAETPage.this);
+            }
+        });
         add(mw);
         form.add(new AjaxButton("echo", new ResourceModel("aet.echoButton")) {
 
@@ -159,21 +180,12 @@ public class EditAETPanel extends Panel {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 mw.show(target, ae);
             }
+            
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
                 mw.show(target, ae);
-            }});
-        this.add(msgWin);
+            }
+        });
+        add(new Label("result-message", (resultMessage = new Model<String>(""))));
     }
-    
-    private boolean submit() {
-        try {
-            delegate.update((AE) getDefaultModelObject());
-            return true;
-        } catch ( Exception x ) {
-            msgWin.setErrorMessage(getString("aet.titleAlreadyExist"));
-            return false;
-        }
-    }
-      
  }

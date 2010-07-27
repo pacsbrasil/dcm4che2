@@ -39,7 +39,6 @@
 package org.dcm4chee.web.war.ae;
 
 import org.apache.wicket.markup.html.WebPage;
-import org.dcm4chee.web.war.ae.AEMgtPanel;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -49,7 +48,7 @@ import org.dcm4chee.web.war.ae.AEMgtPanel;
 public class AETestPage extends WebPage {
     
     public AETestPage() {
-        add(new AEMgtPanel("aemgt"));
+        add(new AEListPanel("aelist"));
     }
 
 }

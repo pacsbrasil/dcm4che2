@@ -62,5 +62,4 @@ public interface AEHomeLocal {
     void updateOrCreateAET(AE ae);
 
     void removeAET(long pk);
-
 }

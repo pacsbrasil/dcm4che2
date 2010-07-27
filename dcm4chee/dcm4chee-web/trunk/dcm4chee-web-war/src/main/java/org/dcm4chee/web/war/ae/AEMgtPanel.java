@@ -38,10 +38,7 @@
 
 package org.dcm4chee.web.war.ae;
 
-import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.web.common.base.BaseWicketPage;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -52,28 +49,27 @@ public class AEMgtPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
-    private boolean editMode = false;
-    private EditAETPanel editPanel;
+    //    private EditAETPanel editPanel;
     private AEListPanel listPanel;
 
     public AEMgtPanel(final String id) {
         super(id);
-        add(CSSPackageResource.getHeaderContribution(BaseWicketPage.class, "base-style.css"));
-        AEMgtDelegate.getInstance().updateAEList();
-        if ( listPanel == null ) {
-            listPanel = new AEListPanel("ae_panel", this);
-        }
-        this.addOrReplace( editMode ? editPanel : listPanel);
+//        add(CSSPackageResource.getHeaderContribution(BaseWicketPage.class, "base-style.css"));
+//        AEMgtDelegate.getInstance().updateAEList();
+//        if ( listPanel == null ) {
+//            listPanel = new AEListPanel("ae_panel");
+//        }
+//        this.addOrReplace( editMode ? editPanel : listPanel);
+//        this.addOrReplace(listPanel);
     }
     
-    public void setEditPage(AE ae) {
-        editMode = true;
-        editPanel = new EditAETPanel("ae_panel", this, ae);
-        this.addOrReplace(editPanel);
-    }
+//    public void setEditPage(AE ae) {
+//        editMode = true;
+//        editPanel = new EditAETPanel("ae_panel", this, ae);
+//        this.addOrReplace(editPanel);
+//    }
     
     public void setListPage() {
-        editMode = false;
         addOrReplace(listPanel);
 }
     

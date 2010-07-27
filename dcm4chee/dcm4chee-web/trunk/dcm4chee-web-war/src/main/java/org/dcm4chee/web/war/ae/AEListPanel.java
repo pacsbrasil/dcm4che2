@@ -38,10 +38,17 @@
 
 package org.dcm4chee.web.war.ae;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.Component;
+import org.apache.wicket.Page;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.CloseButtonCallback;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
@@ -55,11 +62,16 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.archive.entity.AE;
+import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.dashboard.ui.report.CreateGroupPage;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
+import org.dcm4chee.web.dao.ae.AEHomeLocal;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -69,136 +81,65 @@ import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 public class AEListPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
-
-    private AEMgtPanel page;
+    
+    private ModalWindow modalWindow;
     private DicomEchoWindow mw;
-    public AEListPanel(String id, AEMgtPanel p) {
+    private ConfirmationWindow<AE> confirm; 
+    
+    PropertyListView<AE> list;
+    
+    public AEListPanel(String id) {
         super(id);
         
         add(CSSPackageResource.getHeaderContribution(AEListPanel.class, "ae-style.css"));
         
+        add(modalWindow = new ModalWindow("modal-window"));
+        
         setOutputMarkupId(true);
         mw = new DicomEchoWindow("echoPanel", true);
-        mw.setWindowClosedCallback(new WindowClosedCallback(){
+        mw.setWindowClosedCallback(new WindowClosedCallback() {
 
             private static final long serialVersionUID = 1L;
 
             public void onClose(AjaxRequestTarget target) {
-                AEMgtDelegate.getInstance().updateAEList();
                 target.addComponent(AEListPanel.this);
             }});
         add(mw);
         
-        final ConfirmationWindow<AE> confirm = new ConfirmationWindow<AE>("confirm") {
+        confirm = new ConfirmationWindow<AE>("confirm") {
 
             private static final long serialVersionUID = 1L;
             
             @Override
             public void onConfirmation(AjaxRequestTarget target, AE ae) {
-                AEMgtDelegate.getInstance().removeAET(ae);
+                removeAE(ae.getPk());
+                AEListPanel.this.setOutputMarkupId(true);
                 target.addComponent(AEListPanel.this);
             }
         };
         confirm.setInitialHeight(150);
         add(confirm);
 
-        add( new Label("titleHdrLabel", new ResourceModel("aet.titleHdr")));
-        add( new Label("hostHdrLabel", new ResourceModel("aet.hostHdr")));
-        add( new Label("portHdrLabel", new ResourceModel("aet.portHdr")));
-        add( new Label("cipherHdrLabel", new ResourceModel("aet.cipherHdr")));
-        add( new Label("descriptionHdrLabel", new ResourceModel("aet.descriptionHdr")));
-        add( new Label("issuerHdrLabel", new ResourceModel("aet.issuerHdr")));
-        add( new Label("fsgrpHdrLabel", new ResourceModel("aet.fsgrpHdr")));
-        add( new Label("wadoHdrLabel", new ResourceModel("aet.wadoHdr")));
-        add( new Label("userHdrLabel", new ResourceModel("aet.userHdr")));
-        add( new Label("stationHdrLabel", new ResourceModel("aet.stationHdr")));
-        add( new Label("institutionHdrLabel", new ResourceModel("aet.institutionHdr")));
-        add( new Label("departmentHdrLabel", new ResourceModel("aet.departmentHdr")));
-        add( new Label("installedHdrLabel", new ResourceModel("aet.installedHdr")));
-        page = p;
-        add(new PropertyListView<AE>("list", AEMgtDelegate.getInstance().getAEList() ) {
-
+        ModalWindowLink newAET = 
+            new ModalWindowLink("newAET", modalWindow,
+                new Integer(new ResourceModel("aet.editAET.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
+                new Integer(new ResourceModel("aet.editAET.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
+        ) {
             private static final long serialVersionUID = 1L;
 
             @Override
-            protected ListItem<AE> newItem(final int index) {
-                return new OddEvenListItem<AE>(index, getListItemModel(getModel(), index));
-            }
-
-            @Override
-            protected void populateItem(final ListItem<AE> item) {
-                item.add(new Label("title"));
-                item.add(new Label("hostName"));
-                item.add(new Label("port"));
-                item.add(new ListView<Object>("cipherSuites", item.getModelObject().getCipherSuites()) {
-
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    protected void populateItem(final ListItem<Object> item1) {
-                        item1.add(new Label("ciphersuite", item1.getModel()));
-                    }
-                });
-                item.add(new Label("description"));
-                item.add(new Label("issuerOfPatientID"));
-                item.add(new Label("fileSystemGroupID"));
-                item.add(new Label("wadoURL"));
-                item.add(new Label("userID"));
-                item.add(new Label("stationName"));
-                item.add(new Label("institution"));
-                item.add(new Label("department"));
-                item.add(new Label("installed"));
-                Link<?> editAET = new Link<Object>("editAET") {
+            public void onClick(AjaxRequestTarget target) {
+                modalWindow
+                .setPageCreator(new ModalWindow.PageCreator() {
                     
                     private static final long serialVersionUID = 1L;
-
+                      
                     @Override
-                    public void onClick() {
-                        page.setEditPage(item.getModelObject());
+                    public Page createPage() {
+                        return new CreateOrEditAETPage(modalWindow, new AE());
                     }
-                };
-                editAET.add(new Image("img-editAET",ImageManager.IMAGE_AE_EDIT)
-                .add(new ImageSizeBehaviour()));
-                editAET.add(new TooltipBehaviour("aet."));
-                item.add(editAET);
-                MetaDataRoleAuthorizationStrategy.authorize(editAET, RENDER, "WebAdmin");
-                AjaxLink<?> removeAET = new AjaxLink<Object>("removeAET") {
-
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    public void onClick(AjaxRequestTarget target) {
-                        AE ae = item.getModelObject();
-                        confirm.confirm(target, new StringResourceModel("aet.confirmDelete",AEListPanel.this, null,new Object[]{ae}), ae);
-                    }
-                };
-                removeAET.add(new Image("img-removeAET", ImageManager.IMAGE_COMMON_REMOVE)
-                .add(new ImageSizeBehaviour()));
-                removeAET.add(new TooltipBehaviour("aet."));
-                item.add(removeAET);
-                MetaDataRoleAuthorizationStrategy.authorize(removeAET, RENDER, "WebAdmin");
-                item.add(new AjaxLink<Object>("echo") {
-
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    public void onClick(AjaxRequestTarget target) {
-                        mw.show(target, item.getModelObject());
-                    }
-                }.add(new Image("img-echoAET", ImageManager.IMAGE_AE_ECHO)
-                .add(new ImageSizeBehaviour()))
-                .add(new TooltipBehaviour("aet."))
-                );
-            }
-            
-        });
-        Link<?> newAET = new Link<Object>("newAET") {
-            
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClick() {
-                page.setEditPage(new AE());
+                });
+                super.onClick(target);
             }
         };
         newAET.add(new Image("newAETImg",ImageManager.IMAGE_COMMON_ADD)
@@ -210,5 +151,139 @@ public class AEListPanel extends Panel {
         );
         add(newAET);
         MetaDataRoleAuthorizationStrategy.authorize(newAET, RENDER, "WebAdmin");
+
+        add( new Label("titleHdrLabel", new ResourceModel("aet.titleHdr")));
+        add( new Label("hostHdrLabel", new ResourceModel("aet.hostHdr")));
+        add( new Label("portHdrLabel", new ResourceModel("aet.portHdr")));
+        add( new Label("cipherHdrLabel", new ResourceModel("aet.cipherHdr")));
+        add( new Label("issuerHdrLabel", new ResourceModel("aet.issuerHdr")));
+        add( new Label("fsgrpHdrLabel", new ResourceModel("aet.fsgrpHdr")));
+        add( new Label("wadoHdrLabel", new ResourceModel("aet.wadoHdr")));
+        add( new Label("userHdrLabel", new ResourceModel("aet.userHdr")));
+        add( new Label("stationHdrLabel", new ResourceModel("aet.stationHdr")));
+        add( new Label("institutionHdrLabel", new ResourceModel("aet.institutionHdr")));
+        add( new Label("departmentHdrLabel", new ResourceModel("aet.departmentHdr")));
+        add( new Label("installedHdrLabel", new ResourceModel("aet.installedHdr")));
+        
+        add((list = new PropertyListView<AE>("list") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected ListItem<AE> newItem(final int index) {
+                return new OddEvenListItem<AE>(index, getListItemModel(getModel(), index));
+            }
+
+            @Override
+            protected void populateItem(final ListItem<AE> item) {
+                item.add(new Label("title").add(new AttributeModifier("title", true, new Model<String>(item.getModelObject().getDescription()))));
+                item.add(new Label("hostName"));
+                item.add(new Label("port"));
+                item.add(new ListView<Object>("cipherSuites", item.getModelObject().getCipherSuites()) {
+
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    protected void populateItem(final ListItem<Object> item1) {
+                        item1.add(new Label("ciphersuite", item1.getModel()));
+                    }
+                });
+                item.add(new Label("issuerOfPatientID"));
+                item.add(new Label("fileSystemGroupID"));
+                item.add(new Label("wadoURL"));
+                item.add(new Label("userID"));
+                item.add(new Label("stationName"));
+                item.add(new Label("institution"));
+                item.add(new Label("department"));
+                item.add(new Label("installed"));
+
+                ModalWindowLink editAET;
+                item.add((editAET = new ModalWindowLink("editAET", modalWindow,
+                        new Integer(new ResourceModel("aet.editAET.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
+                        new Integer(new ResourceModel("aet.editAET.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
+                ) {
+                    private static final long serialVersionUID = 1L;
+    
+                    @Override
+                    public void onClick(AjaxRequestTarget target) {
+                        modalWindow
+                        .setPageCreator(new ModalWindow.PageCreator() {
+                            
+                            private static final long serialVersionUID = 1L;
+                              
+                            @Override
+                            public Page createPage() {
+                                return new CreateOrEditAETPage(modalWindow, item.getModelObject());
+                            }
+                        });
+                        super.onClick(target);
+                    }
+                })
+                .add(new Image("aet.list.editAET.image", ImageManager.IMAGE_AE_EDIT)
+                .add(new ImageSizeBehaviour("vertical-align: middle;")))
+                .add(new TooltipBehaviour("aet.list."))
+                );
+                MetaDataRoleAuthorizationStrategy.authorize(editAET, RENDER, "WebAdmin");
+                    
+                AjaxLink<?> removeAET = new AjaxLink<Object>("removeAET") {
+    
+                    private static final long serialVersionUID = 1L;
+    
+                    @Override
+                    public void onClick(AjaxRequestTarget target) {
+                        confirm.confirm(target, new StringResourceModel("aet.confirmDelete", AEListPanel.this, null, new Object[]{item.getModelObject()}), item.getModelObject());
+                    }
+                };
+                removeAET.add(new Image("aet.list.removeAET.image", ImageManager.IMAGE_COMMON_REMOVE)
+                .add(new ImageSizeBehaviour()));
+                removeAET.add(new TooltipBehaviour("aet."));
+                item.add(removeAET);
+                MetaDataRoleAuthorizationStrategy.authorize(removeAET, RENDER, "WebAdmin");
+                
+                item.add(new AjaxLink<Object>("echo") {
+
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    public void onClick(AjaxRequestTarget target) {
+                        mw.show(target, item.getModelObject());
+                    }
+                }.add(new Image("aet.list.echoAET.image", ImageManager.IMAGE_AE_ECHO)
+                .add(new ImageSizeBehaviour()))
+                .add(new TooltipBehaviour("aet."))
+                );
+            }
+        }));
+        updateAETList();
+    }
+
+    @Override
+    public void onBeforeRender() {
+        super.onBeforeRender();
+        updateAETList();
+    }
+    
+    private void updateAETList() {
+        list.setModel(new ListModel<AE>());
+        AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
+        List<AE> updatedList = new ArrayList<AE>();
+        updatedList.addAll(aeHome.findAll());
+        list.setModelObject(updatedList);      
+    }
+    
+    private void removeAE(long pk) {
+        ((AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME)).removeAET(pk);
+        List<AE> updatedList = list.getModelObject();
+        for (int i = 0; i < updatedList.size(); i++) {
+            if (updatedList.get(i).getPk() == pk) {
+                updatedList.remove(i);
+                break;
+            }
+        }
+        list.setModelObject(updatedList);
+    }
+
+    public static String getModuleName() {
+        return "aet";
     }
 }

@@ -50,7 +50,7 @@ import org.dcm4chee.usr.ui.usermanagement.UserManagementPanel;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.base.ModuleSelectorPanel;
-import org.dcm4chee.web.war.ae.AEMgtPanel;
+import org.dcm4chee.web.war.ae.AEListPanel;
 import org.dcm4chee.web.war.folder.StudyListPage;
 import org.dcm4chee.web.war.trash.TrashListPage;
 import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
@@ -71,7 +71,7 @@ public class MainPage extends BaseWicketPage {
     private void addModules(ModuleSelectorPanel selectorPanel) {
         selectorPanel.addModule(StudyListPage.class);
         selectorPanel.addModule(TrashListPage.class);
-        selectorPanel.addModule(AEMgtPanel.class);
+        selectorPanel.addModule(AEListPanel.class);
 
         if (new RoleAuthorizationStrategy((WicketApplication) this.getApplication()).isInstantiationAuthorized(UserManagementPanel.class))           
             selectorPanel.addInstance(new UserManagementPanel("panel"));

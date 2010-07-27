@@ -36,29 +36,17 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.ae;
+package org.dcm4chee.web.war.util;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dcm4chee.archive.entity.AE;
-import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.dao.ae.AEHomeLocal;
-import org.dcm4chee.web.dao.fs.FileSystemHomeLocal;
-
 /**
- * @author Franz Willer <franz.willer@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since Oct 1, 2009
+ * @since 23.07.2010
  */
-public class AEMgtDelegate {
-
-    private static final long serialVersionUID = 1L;
-    
-    private static AEMgtDelegate singleton;
-    private List<AE> list = new ArrayList<AE>();
-    private AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
-    private FileSystemHomeLocal fsHome = (FileSystemHomeLocal) JNDIUtils.lookup(FileSystemHomeLocal.JNDI_NAME);    
+public class CyphersuiteUtils {
 
     public static List<String> AVAILABLE_CIPHERSUITES = new ArrayList<String>();
     static {
@@ -67,35 +55,4 @@ public class AEMgtDelegate {
         AVAILABLE_CIPHERSUITES.add("TLS_RSA_WITH_AES_128_CBC_SHA");
         AVAILABLE_CIPHERSUITES.add("SSL_RSA_WITH_3DES_EDE_CBC_SHA");
     }
-        
-    private AEMgtDelegate() {
-    }
-    
-    public static AEMgtDelegate getInstance() {
-        if ( singleton == null )
-            singleton = new AEMgtDelegate();
-        return singleton;
-    }
-    
-    public List<AE> getAEList() {
-        return list;
-    }
-    
-    public List<String> getFSGroupIDs() {
-        return fsHome.listGroupIDs();        
-    }
-    
-    public void updateAEList() {
-        list.clear();
-        list.addAll(aeHome.findAll());
-    }
-    public void removeAET(AE ae) {
-        aeHome.removeAET(ae.getPk());
-        updateAEList();
-    }
-    
-    public void update(AE ae) {
-        aeHome.updateOrCreateAET(ae);
-    }
-    
 }

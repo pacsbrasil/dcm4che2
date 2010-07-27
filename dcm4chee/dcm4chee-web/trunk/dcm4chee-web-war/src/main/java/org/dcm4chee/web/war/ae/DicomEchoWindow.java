@@ -69,6 +69,7 @@ import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.war.ae.model.CipherModel;
+import org.dcm4chee.web.war.util.CyphersuiteUtils;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -246,9 +247,9 @@ public class DicomEchoWindow extends ModalWindow {
         form.add(new TextField<String>("title").add(new AETitleValidator()).setRequired(true).setOutputMarkupId(true)); 
         form.add(new TextField<String>("hostName").add(StringValidator.minimumLength(1)).setRequired(true).setOutputMarkupId(true)); 
         form.add(new TextField<Integer>("port").add(new RangeValidator<Integer>(1,65535)).setOutputMarkupId(true));
-        form.add(new DropDownChoice<String>("ciphersuite1", new CipherModel(aeEcho, 0), AEMgtDelegate.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
-        form.add(new DropDownChoice<String>("ciphersuite2", new CipherModel(aeEcho, 1), AEMgtDelegate.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
-        form.add(new DropDownChoice<String>("ciphersuite3", new CipherModel(aeEcho, 2), AEMgtDelegate.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+        form.add(new DropDownChoice<String>("ciphersuite1", new CipherModel(aeEcho, 0), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+        form.add(new DropDownChoice<String>("ciphersuite2", new CipherModel(aeEcho, 1), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+        form.add(new DropDownChoice<String>("ciphersuite3", new CipherModel(aeEcho, 2), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
         form.add(new TextField<Integer>("nrOfTests", nrOfTestsModel, Integer.class).add(new RangeValidator<Integer>(1,2000)).setOutputMarkupId(true));
         resultLabel.setOutputMarkupId(true).setEnabled(false);
         form.add(resultLabel);
@@ -416,7 +417,7 @@ public class DicomEchoWindow extends ModalWindow {
         @Override
         protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
             try {
-                AEMgtDelegate.getInstance().update(copyNetCfg(aeEcho, aeOri));
+//                AEMgtDelegate.getInstance().update(copyNetCfg(aeEcho, aeOri));
                 saveFailed = false;
                 saveBtn.setEnabled(false);
                 close(target);
