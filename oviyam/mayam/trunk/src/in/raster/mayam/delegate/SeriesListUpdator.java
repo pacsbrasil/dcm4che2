@@ -187,7 +187,9 @@ public class SeriesListUpdator extends Thread {
                 iis.close();
                 iter = null;
                 reader.dispose();
-            } catch (Exception ex) {ex.printStackTrace();}
+            } catch (Exception ex) 
+            {//ignore
+            }
         }
     }
 }

@@ -132,7 +132,7 @@ public class Canvas extends javax.swing.JPanel {
         }
         g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
         if (this.layeredCanvas.imgpanel != null) {
-            if (this.layeredCanvas.imgpanel.getPixelSpacingY() != -1) {
+            if (this.layeredCanvas.imgpanel.getPixelSpacingY() != -1&&this.layeredCanvas.imgpanel.getPixelSpacingY()!=0) {
                 int viewScaleHeight = (int) ((int) (100 / this.layeredCanvas.imgpanel.getPixelSpacingY()) * this.layeredCanvas.imgpanel.getScaleFactor() * this.layeredCanvas.imgpanel.getCurrentScaleFactor());
                 int y1 = (this.getHeight() - viewScaleHeight) / 2;
                 int hx = 20;

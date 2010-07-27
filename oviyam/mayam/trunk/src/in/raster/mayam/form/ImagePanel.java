@@ -339,7 +339,6 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
 
     }
 
-    
     /**
      * This routine used to retrive the instance related information
      */
@@ -366,7 +365,9 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 initialPixelSpacingX = pixelSpacingX = Double.parseDouble(dataset.getString(
                         Tags.PixelSpacing, 1));
 
-            } catch (NullPointerException e) {e.printStackTrace();
+            } catch (NullPointerException e) {
+                initialPixelSpacingX=0;
+                initialPixelSpacingY=0;
             }
             int nWindow = cmParam.getNumberOfWindows();
             if (nWindow > 0) {
@@ -488,7 +489,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 Graphics2D g2 = image.createGraphics();
                 g2.drawImage(loadedImage, 0, 0, null);
                 repaint();
-            } catch (RuntimeException e) {e.printStackTrace();
+            } catch (RuntimeException e) {
+                e.printStackTrace();
             }
         } catch (Exception e) {
             System.out.println("io exception");
@@ -1024,7 +1026,6 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     private void displayZoomLevel() {
         int currentZoomLevel = (int) Math.round(this.scaleFactor * currentScaleFactor * 100);
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setZoomLevel(" Zoom: " + currentZoomLevel + "%");
-        this.getCanvas().getLayeredCanvas().textOverlay.repaint();
     }
 
     public double getCurrentScaleFactor() {
@@ -1086,20 +1087,21 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         axisBottomX = bottomx;
         axisBottomY = bottomy;
     }
+
     private void findOrientation() {
         String imageOrientationArray[];
-        if(imageOrientation!=null){
-        imageOrientationArray = imageOrientation.split("\\\\");
-        float _imgRowCosx = Float.parseFloat(imageOrientationArray[0]);
-        float _imgRowCosy = Float.parseFloat(imageOrientationArray[1]);
-        float _imgRowCosz = Float.parseFloat(imageOrientationArray[2]);
-        float _imgColCosx = Float.parseFloat(imageOrientationArray[3]);
-        float _imgColCosy = Float.parseFloat(imageOrientationArray[4]);
-        float _imgColCosz = Float.parseFloat(imageOrientationArray[5]);
-        orientationLabel = getOrientationLabelFromImageOrientation(_imgRowCosx, _imgRowCosy, _imgRowCosz, _imgColCosx, _imgColCosy, _imgColCosz);
-        if (orientationLabel.equalsIgnoreCase("CORONAL") || orientationLabel.equalsIgnoreCase("SAGITTAL")) {
-            isLocalizer = true;
-        }
+        if (imageOrientation != null) {
+            imageOrientationArray = imageOrientation.split("\\\\");
+            float _imgRowCosx = Float.parseFloat(imageOrientationArray[0]);
+            float _imgRowCosy = Float.parseFloat(imageOrientationArray[1]);
+            float _imgRowCosz = Float.parseFloat(imageOrientationArray[2]);
+            float _imgColCosx = Float.parseFloat(imageOrientationArray[3]);
+            float _imgColCosy = Float.parseFloat(imageOrientationArray[4]);
+            float _imgColCosz = Float.parseFloat(imageOrientationArray[5]);
+            orientationLabel = getOrientationLabelFromImageOrientation(_imgRowCosx, _imgRowCosy, _imgRowCosz, _imgColCosx, _imgColCosy, _imgColCosz);
+            if (orientationLabel.equalsIgnoreCase("CORONAL") || orientationLabel.equalsIgnoreCase("SAGITTAL")) {
+                isLocalizer = true;
+            }
         }
     }
 
@@ -1135,6 +1137,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         this.getCanvas().getLayeredCanvas().getAnnotationPanel().setSize(finalWidth, finalHeight);
         this.getCanvas().getLayeredCanvas().getAnnotationPanel().setBounds(xPosition, yPosition, this.getSize().width, this.getSize().height);
     }
+
     /**
      * This routine used to zoom in the image box using the scale factor
      */
@@ -1297,12 +1300,14 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             data = new BasicDicomObject();
             data = dis.readDicomObject();
 
-        } catch (IOException ex) {ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
             // Logger.getLogger(ModelUpdator.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 dis.close();
-            } catch (IOException ex) {ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
                 //   Logger.getLogger(ModelUpdator.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -1719,8 +1724,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     public void mouseMoved(MouseEvent e) {
         mouseLocX2 = e.getX();
         mouseLocY2 = e.getY();
-       // if (mousePressed) {
-       // }
+        // if (mousePressed) {
+        // }
         if (probeFlag) {
             String probeParameter[] = new String[3];
             probeParameter[0] = "" + (int) Math.round(mouseLocX2 / this.scaleFactor);
