@@ -70,7 +70,7 @@ public class CreateGroupPage extends WebPage {
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
 
     protected ModalWindow window;
-    
+
     public CreateGroupPage(final ModalWindow window) {
         super();
         
