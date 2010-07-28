@@ -213,8 +213,8 @@ public class UserListPanel extends Panel {
                 };
                 
                 if (this.userId.equals(user.getUserID())) {
-                    AuthenticatedWebApplication awa = (AuthenticatedWebApplication) getApplication(); 
-                    if (role.getRolename().equals(awa.getInitParameter("userRoleName")) || role.getRolename().equals(awa.getInitParameter("adminRoleName"))) {
+                    UserAccess ua = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);
+                    if (role.getRolename().equals(ua.getUserRoleName()) || role.getRolename().equals(ua.getAdminRoleName())) {
                         for (UserRoleAssignment ura : user.getRoles()) {
                             if (ura.getRole().equals(role.getRolename()))
                                 roleCheckbox.setEnabled(false)
