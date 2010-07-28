@@ -117,13 +117,11 @@
 					<input type="checkbox" id="latestItemsFirst" wicket:id="latestItemsFirst" />
 					<label for="latestItemsFirst" wicket:id="latestItemsFirst.label" />
 				</td>
-				<td style="text-align: right;">
+				<td style="text-align: right;" colspan="2">
 					<button wicket:id="resetBtn" >
 						<img wicket:id="resetImg" alt="Search" />
 						<span wicket:id="resetText" />
 					</button>
-				</td>
-				<td style="text-align: right;">
 					<button wicket:id="searchBtn" >
 						<img wicket:id="searchImg" alt="Search" />
 						<span wicket:id="searchText" />
@@ -148,6 +146,7 @@
 			</div>			  
 		</div>
 	</form>
+	<br />
 	<div wicket:id="listPanel" style="clear: both;">
 		<table class="content-table">
 			<thead>

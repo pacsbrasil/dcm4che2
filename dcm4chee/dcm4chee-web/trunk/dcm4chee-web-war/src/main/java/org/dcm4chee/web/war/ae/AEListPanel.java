@@ -52,6 +52,7 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.CloseButt
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -152,18 +153,14 @@ public class AEListPanel extends Panel {
         add(newAET);
         MetaDataRoleAuthorizationStrategy.authorize(newAET, RENDER, "WebAdmin");
 
-        add( new Label("titleHdrLabel", new ResourceModel("aet.titleHdr")));
-        add( new Label("hostHdrLabel", new ResourceModel("aet.hostHdr")));
-        add( new Label("portHdrLabel", new ResourceModel("aet.portHdr")));
-        add( new Label("cipherHdrLabel", new ResourceModel("aet.cipherHdr")));
-        add( new Label("issuerHdrLabel", new ResourceModel("aet.issuerHdr")));
-        add( new Label("fsgrpHdrLabel", new ResourceModel("aet.fsgrpHdr")));
-        add( new Label("wadoHdrLabel", new ResourceModel("aet.wadoHdr")));
-        add( new Label("userHdrLabel", new ResourceModel("aet.userHdr")));
-        add( new Label("stationHdrLabel", new ResourceModel("aet.stationHdr")));
-        add( new Label("institutionHdrLabel", new ResourceModel("aet.institutionHdr")));
-        add( new Label("departmentHdrLabel", new ResourceModel("aet.departmentHdr")));
-        add( new Label("installedHdrLabel", new ResourceModel("aet.installedHdr")));
+        add( new Label("titleHdr.label", new ResourceModel("aet.titleHdr.label")));
+        add( new Label("hostHdr.label", new ResourceModel("aet.hostHdr.label")));
+        add( new Label("portHdr.label", new ResourceModel("aet.portHdr.label")));
+        add( new Label("descriptionHdr.label", new ResourceModel("aet.descriptionHdr.label")));        
+        add( new Label("cipherHdr.label", new ResourceModel("aet.cipherHdr.label")));
+        add( new Label("stationHdr.label", new ResourceModel("aet.stationHdr.label")));
+        add( new Label("institutionHdr.label", new ResourceModel("aet.institutionHdr.label")));
+        add( new Label("departmentHdr.label", new ResourceModel("aet.departmentHdr.label")));
         
         add((list = new PropertyListView<AE>("list") {
 
@@ -176,26 +173,17 @@ public class AEListPanel extends Panel {
 
             @Override
             protected void populateItem(final ListItem<AE> item) {
-                item.add(new Label("title").add(new AttributeModifier("title", true, new Model<String>(item.getModelObject().getDescription()))));
+                item.add(new Label("title"));
                 item.add(new Label("hostName"));
                 item.add(new Label("port"));
-                item.add(new ListView<Object>("cipherSuites", item.getModelObject().getCipherSuites()) {
-
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    protected void populateItem(final ListItem<Object> item1) {
-                        item1.add(new Label("ciphersuite", item1.getModel()));
-                    }
-                });
-                item.add(new Label("issuerOfPatientID"));
-                item.add(new Label("fileSystemGroupID"));
-                item.add(new Label("wadoURL"));
-                item.add(new Label("userID"));
+                item.add(new Label("description", new Model<String>(item.getModelObject().getDescription())));
+                CheckBox cipherSuites = new CheckBox("cipherSuites");
+                cipherSuites.setModel(new Model<Boolean>(item.getModelObject().getCipherSuites().size() > 0));
+                cipherSuites.setEnabled(false);
+                item.add(cipherSuites);
                 item.add(new Label("stationName"));
                 item.add(new Label("institution"));
                 item.add(new Label("department"));
-                item.add(new Label("installed"));
 
                 ModalWindowLink editAET;
                 item.add((editAET = new ModalWindowLink("editAET", modalWindow,
@@ -219,9 +207,9 @@ public class AEListPanel extends Panel {
                         super.onClick(target);
                     }
                 })
-                .add(new Image("aet.list.editAET.image", ImageManager.IMAGE_AE_EDIT)
+                .add(new Image("aet.editAET.image", ImageManager.IMAGE_AE_EDIT)
                 .add(new ImageSizeBehaviour("vertical-align: middle;")))
-                .add(new TooltipBehaviour("aet.list."))
+                .add(new TooltipBehaviour("aet."))
                 );
                 MetaDataRoleAuthorizationStrategy.authorize(editAET, RENDER, "WebAdmin");
                     
@@ -234,7 +222,7 @@ public class AEListPanel extends Panel {
                         confirm.confirm(target, new StringResourceModel("aet.confirmDelete", AEListPanel.this, null, new Object[]{item.getModelObject()}), item.getModelObject());
                     }
                 };
-                removeAET.add(new Image("aet.list.removeAET.image", ImageManager.IMAGE_COMMON_REMOVE)
+                removeAET.add(new Image("aet.removeAET.image", ImageManager.IMAGE_COMMON_REMOVE)
                 .add(new ImageSizeBehaviour()));
                 removeAET.add(new TooltipBehaviour("aet."));
                 item.add(removeAET);
@@ -248,7 +236,7 @@ public class AEListPanel extends Panel {
                     public void onClick(AjaxRequestTarget target) {
                         mw.show(target, item.getModelObject());
                     }
-                }.add(new Image("aet.list.echoAET.image", ImageManager.IMAGE_AE_ECHO)
+                }.add(new Image("aet.echoAET.image", ImageManager.IMAGE_AE_ECHO)
                 .add(new ImageSizeBehaviour()))
                 .add(new TooltipBehaviour("aet."))
                 );

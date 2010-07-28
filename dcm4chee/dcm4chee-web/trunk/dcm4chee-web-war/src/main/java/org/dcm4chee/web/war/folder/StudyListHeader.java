@@ -9,6 +9,7 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
@@ -20,7 +21,7 @@ public class StudyListHeader extends Panel {
     
     private int headerExpandLevel = 1;
     private int expandAllLevel = 5;
-    private Model<Boolean> autoExpand = new Model<Boolean>(false);
+    private IModel<Boolean> autoExpand = new Model<Boolean>(false);
  
     private final class Row extends WebMarkupContainer {
 
@@ -83,26 +84,8 @@ public class StudyListHeader extends Panel {
     public StudyListHeader(String id) {
         super(id);
         setOutputMarkupId(true);
-        Cell patCell = new Cell("cell", 0);
-        patCell.add(new AjaxFallbackLink<Object>("expandAll"){
-
-            private static final long serialVersionUID = 1L;
-            
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                if (target != null) {
-                    headerExpandLevel = expandAllLevel;
-                    target.addComponent(StudyListHeader.this);
-                }
-            }
-            @Override
-            public boolean isVisible() {
-                return headerExpandLevel < expandAllLevel;
-            }
-        }.add(new Image("expandAllImg", ImageManager.IMAGE_COMMON_EXPAND)
-        .add(new ImageSizeBehaviour())));
-
-        patCell.add(new AjaxCheckBox("autoExpand", autoExpand){
+        
+        add(new AjaxCheckBox("autoExpand", autoExpand) {
 
             private static final long serialVersionUID = 1L;
 
@@ -112,7 +95,12 @@ public class StudyListHeader extends Panel {
                     headerExpandLevel = expandAllLevel;
                     target.addComponent(StudyListHeader.this);
                 }
-            }}.add(new TooltipBehaviour("folder.search.","autoExpand")));
+            }
+        }
+        .add(new TooltipBehaviour("folder.search.","autoExpand")));
+
+        Cell patCell = new Cell("cell", 0);
+        
         add(new Row("patient", 0).add(patCell));
         add(new Row("study", 1).add(new Cell("cell", 1)));
         add(new Row("pps", 2).add(new Cell("cell", 2)));
@@ -120,7 +108,6 @@ public class StudyListHeader extends Panel {
         add(new Row("instance", 4).add(new Cell("cell", 4)));
         add(new Row("file", 5));
     }
-
 
     public void setExpandAllLevel(int expandAllLevel) {
         this.expandAllLevel = expandAllLevel;
@@ -135,5 +122,4 @@ public class StudyListHeader extends Panel {
     public void expandToLevel(int level) {
         headerExpandLevel = level;
     }
-
 }

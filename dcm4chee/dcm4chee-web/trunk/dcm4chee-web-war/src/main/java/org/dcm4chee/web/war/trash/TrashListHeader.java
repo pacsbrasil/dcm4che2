@@ -83,26 +83,8 @@ public class TrashListHeader extends Panel {
     public TrashListHeader(String id) {
         super(id);
         setOutputMarkupId(true);
-        Cell patCell = new Cell("cell", 0);
-        patCell.add(new AjaxFallbackLink<Object>("expandAll"){
 
-            private static final long serialVersionUID = 1L;
-            
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                if (target != null) {
-                    headerExpandLevel = expandAllLevel;
-                    target.addComponent(TrashListHeader.this);
-                }
-            }
-            @Override
-            public boolean isVisible() {
-                return headerExpandLevel < expandAllLevel;
-            }
-        }.add(new Image("expandAllImg", ImageManager.IMAGE_COMMON_EXPAND)
-        .add(new ImageSizeBehaviour())));
-
-        patCell.add(new AjaxCheckBox("autoExpand", autoExpand){
+        add(new AjaxCheckBox("autoExpand", autoExpand) {
 
             private static final long serialVersionUID = 1L;
 
@@ -112,7 +94,12 @@ public class TrashListHeader extends Panel {
                     headerExpandLevel = expandAllLevel;
                     target.addComponent(TrashListHeader.this);
                 }
-            }}.add(new TooltipBehaviour("trash.search.","autoExpand")));
+            }
+        }
+        .add(new TooltipBehaviour("trash.search.","autoExpand")));
+
+        Cell patCell = new Cell("cell", 0);
+
         add(new Row("patient", 0).add(patCell));
         add(new Row("study", 1).add(new Cell("cell", 1)));
         add(new Row("series", 2).add(new Cell("cell", 2)));

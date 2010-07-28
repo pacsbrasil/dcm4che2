@@ -9,11 +9,15 @@
 <table border="1">
   <thead align="left" valign="top">
   <wicket:panel>
+	<tr class="study">
+      	<td class="expand">
+			<input wicket:id="autoExpand" type="checkbox" />
+		</td>
+		<td colspan="17">Spaltentitel anzeigen</td>
+	</tr>
     <tr wicket:id="patient" class="patient">
       <td wicket:id="cell" rowspan="6" class="expand">
         <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="(+)" /></a>
-        <a wicket:id="expandAll" href="#"><img wicket:id="expandAllImg" alt="(*)" /></a>
-        <input wicket:id="autoExpand" type="checkbox"></input>
       </td>
       <th colspan="5">Patientenname</th>
       <th>Patienten ID/Aussteller</th>
