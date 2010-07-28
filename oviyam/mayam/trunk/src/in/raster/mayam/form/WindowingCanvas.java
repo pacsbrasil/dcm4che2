@@ -99,14 +99,14 @@ public class WindowingCanvas extends javax.swing.JPanel {
     @Override
     public void paint(Graphics g) {
         super.paint(g);
-        if (firstTime) {
+        if (firstTime) {           
             this.setSize(layeredCanvas.getSize().width, layeredCanvas.getSize().height);
             firstTime = false;
             centerImage();
             repaint();
-        }
+        }        
          if (this.layeredCanvas.imgpanel != null) {
-            if (this.layeredCanvas.imgpanel.getPixelSpacingY() != -1) {
+            if (this.layeredCanvas.imgpanel.getPixelSpacingY() != -1&&this.layeredCanvas.imgpanel.getPixelSpacingY() != 0) {
                 int viewScaleHeight = (int) ((int) (100 / this.layeredCanvas.imgpanel.getPixelSpacingY()) * this.layeredCanvas.imgpanel.getScaleFactor() * this.layeredCanvas.imgpanel.getCurrentScaleFactor());
                 int y1 = (this.getHeight() - viewScaleHeight) / 2;
                 int hx = 20;

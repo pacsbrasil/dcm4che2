@@ -228,14 +228,15 @@ public class MainScreen extends javax.swing.JFrame {
 
         container = new javax.swing.JPanel();
         contentArea = new javax.swing.JPanel();
-        studyAndSeriesDisplayPanel = new javax.swing.JPanel();
-        windowingPanelCanvas = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jSplitPane1 = new javax.swing.JSplitPane();
         studyTableScroll = new javax.swing.JScrollPane();
         studyListTable = new javax.swing.JTable();
+        studyAndSeriesDisplayPanel = new javax.swing.JPanel();
+        windowingPanelCanvas = new javax.swing.JPanel();
         thumbnailScroll = new javax.swing.JScrollPane();
         thumbnailDisplay = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
         headerPanel = new javax.swing.JPanel();
         importButton = new javax.swing.JButton();
         exportButton = new javax.swing.JButton();
@@ -273,20 +274,12 @@ public class MainScreen extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Raster Images | Mayam");
 
-        windowingPanelCanvas.setBackground(new java.awt.Color(0, 0, 0));
-        windowingPanelCanvas.setAutoscrolls(true);
-        windowingPanelCanvas.setPreferredSize(new java.awt.Dimension(50, 50));
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14));
+        jLabel1.setText(" Local Database");
 
-        org.jdesktop.layout.GroupLayout windowingPanelCanvasLayout = new org.jdesktop.layout.GroupLayout(windowingPanelCanvas);
-        windowingPanelCanvas.setLayout(windowingPanelCanvasLayout);
-        windowingPanelCanvasLayout.setHorizontalGroup(
-            windowingPanelCanvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 950, Short.MAX_VALUE)
-        );
-        windowingPanelCanvasLayout.setVerticalGroup(
-            windowingPanelCanvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 532, Short.MAX_VALUE)
-        );
+        jSplitPane1.setDividerLocation(256);
+        jSplitPane1.setDividerSize(4);
+        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
         studyListTable.setModel(new StudyListModel());
         studyListTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -297,6 +290,23 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
         studyTableScroll.setViewportView(studyListTable);
+
+        jSplitPane1.setTopComponent(studyTableScroll);
+
+        windowingPanelCanvas.setBackground(new java.awt.Color(0, 0, 0));
+        windowingPanelCanvas.setAutoscrolls(true);
+        windowingPanelCanvas.setPreferredSize(new java.awt.Dimension(50, 50));
+
+        org.jdesktop.layout.GroupLayout windowingPanelCanvasLayout = new org.jdesktop.layout.GroupLayout(windowingPanelCanvas);
+        windowingPanelCanvas.setLayout(windowingPanelCanvasLayout);
+        windowingPanelCanvasLayout.setHorizontalGroup(
+            windowingPanelCanvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 927, Short.MAX_VALUE)
+        );
+        windowingPanelCanvasLayout.setVerticalGroup(
+            windowingPanelCanvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 501, Short.MAX_VALUE)
+        );
 
         thumbnailScroll.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         thumbnailScroll.getVerticalScrollBar().setUnitIncrement(24);
@@ -315,34 +325,23 @@ public class MainScreen extends javax.swing.JFrame {
         studyAndSeriesDisplayPanel.setLayout(studyAndSeriesDisplayPanelLayout);
         studyAndSeriesDisplayPanelLayout.setHorizontalGroup(
             studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, studyAndSeriesDisplayPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, studyTableScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1278, Short.MAX_VALUE)
-                    .add(studyAndSeriesDisplayPanelLayout.createSequentialGroup()
-                        .add(studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 950, Short.MAX_VALUE)))
-                .addContainerGap())
+            .add(studyAndSeriesDisplayPanelLayout.createSequentialGroup()
+                .add(studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 927, Short.MAX_VALUE))
         );
         studyAndSeriesDisplayPanelLayout.setVerticalGroup(
             studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(studyAndSeriesDisplayPanelLayout.createSequentialGroup()
-                .add(studyTableScroll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 261, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, studyAndSeriesDisplayPanelLayout.createSequentialGroup()
-                        .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE))
-                .addContainerGap())
+                .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE))
+            .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
         );
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14));
-        jLabel1.setText(" Local Database");
+        jSplitPane1.setRightComponent(studyAndSeriesDisplayPanel);
 
         org.jdesktop.layout.GroupLayout contentAreaLayout = new org.jdesktop.layout.GroupLayout(contentArea);
         contentArea.setLayout(contentAreaLayout);
@@ -350,9 +349,10 @@ public class MainScreen extends javax.swing.JFrame {
             contentAreaLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(contentAreaLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
-                .addContainerGap(1189, Short.MAX_VALUE))
-            .add(studyAndSeriesDisplayPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(contentAreaLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1280, Short.MAX_VALUE)
+                    .add(jLabel1))
+                .addContainerGap())
         );
         contentAreaLayout.setVerticalGroup(
             contentAreaLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -360,7 +360,7 @@ public class MainScreen extends javax.swing.JFrame {
                 .addContainerGap()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(studyAndSeriesDisplayPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 763, Short.MAX_VALUE))
         );
 
         headerPanel.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(13, 13, 13)));
@@ -514,7 +514,7 @@ public class MainScreen extends javax.swing.JFrame {
                 .add(viewerButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(queueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(601, Short.MAX_VALUE))
+                .addContainerGap(603, Short.MAX_VALUE))
         );
         headerPanelLayout.setVerticalGroup(
             headerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -547,7 +547,8 @@ public class MainScreen extends javax.swing.JFrame {
             .add(containerLayout.createSequentialGroup()
                 .add(headerPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(contentArea, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(contentArea, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jMenu1.setText("File");
@@ -1045,6 +1046,7 @@ public class MainScreen extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
+    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JButton metaDataButton;
     private javax.swing.JMenuItem motifLFMenu;

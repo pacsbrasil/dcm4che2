@@ -287,8 +287,10 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
     public void mousePressed(MouseEvent e) {
         if (!ApplicationContext.mainScreen.getCanvas().getFilePath().equalsIgnoreCase(this.getFileUrl())) {
             WindowingPanelLoader.loadImageOnWindowingPanel(this.getFileUrl());
+            if(MainScreen.dicomTagsViewer.isVisible()){
             ArrayList<DicomTags> dcmTags = DicomTagsReader.getTags(new File(this.getFileUrl()));
             MainScreen.dicomTagsViewer.setDataModelOnTable(dcmTags);
+            }
         }
         if (!instanceListAdded) {
             updateInstanceList();
