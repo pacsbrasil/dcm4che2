@@ -184,6 +184,7 @@ public class WadoPrefetchService extends ServiceMBeanSupport implements MessageL
         try {
             tpl = templates.getTemplatesForAET(
                 stored.getSourceAET(), WADO_PREFETCH_XSL);
+            log.debug("Got template for WADO_PREFETCH:"+tpl);
         } catch (Throwable t) {
             log.error("Failed to get Template for wado-prefetch.xsl!", t );
         }
@@ -203,6 +204,7 @@ public class WadoPrefetchService extends ServiceMBeanSupport implements MessageL
                             WadoPrefetchOrder order = new WadoPrefetchOrder(attrs.getValue("wadourl"),
                                     attrs.getValue("exportPath"), stored.getIAN());
                             try {
+                                log.debug("Schedule WADO Prefetch order:"+order);
                                 jmsDelegate.queue(queueName, order, 
                                         Message.DEFAULT_PRIORITY, 0L);
                             } catch (Exception e) {
@@ -213,6 +215,7 @@ public class WadoPrefetchService extends ServiceMBeanSupport implements MessageL
             } catch (Exception e) {
                 log.error("Applying WADO prefetch rules to " + stored + " fails:", e);
             }
+            log.debug("Handle SeriesStored Notification finished!");
         }
     }
 

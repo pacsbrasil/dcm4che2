@@ -94,13 +94,21 @@ public class TemplatesService extends ServiceMBeanSupport {
     }
 
     private File getFile(String dir, String aet, String fname) {
+        if (log.isDebugEnabled()) 
+            log.debug("### getFile dir:"+dir+" aet:"+aet+" fname:"+fname);
         if (aet != null) {
             File f =  FileUtils.resolve(new File(new File(dir, aet), fname));
+            log.debug("### File for aet:"+f);
             if (f.exists()) {
+                log.debug("### File for aet exists!");
                 return f;
             }
         }
-        return FileUtils.resolve(new File(dir, fname));
+        File f = FileUtils.resolve(new File(dir, fname));
+        log.debug("### File without aet:"+f);
+        if (f.exists())
+            log.debug("### File without aet exists!");
+        return f;
     }
 
     public void clearCache() {
