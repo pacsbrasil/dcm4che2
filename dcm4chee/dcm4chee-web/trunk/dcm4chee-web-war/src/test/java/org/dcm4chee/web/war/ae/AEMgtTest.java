@@ -12,6 +12,7 @@ import javax.management.ObjectName;
 import org.apache.wicket.authorization.strategies.role.IRoleCheckingStrategy;
 import org.apache.wicket.authorization.strategies.role.RoleAuthorizationStrategy;
 import org.apache.wicket.authorization.strategies.role.Roles;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.util.tester.FormTester;
 import org.apache.wicket.util.tester.WicketTester;
 import org.dcm4chee.archive.entity.AE;
@@ -56,75 +57,79 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
         wicketTester.assertComponent("aelist", AEListPanel.class);
     }
     @Test
-    public void testEditAERequiredFields() {
+    public void testOpenEditWindow() {
         wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
                 new RoleAuthorizationStrategy(new UserRolesAuthorizer("WebAdmin")));
         wicketTester.startPage(AETestPage.class);
         wicketTester.getComponentFromLastRenderedPage("aelist").getSession().setLocale(new Locale("en"));
         wicketTester.clickLink("aelist:newAET");
         wicketTester.assertNoErrorMessage();
-//        wicketTester.assertComponent("aelist:modal-window:content", CreateOrEditAETPage.class);
-//        FormTester formTester = wicketTester.newFormTester("aelist:modal-window:form");
-//        formTester.setValue("title", "");
-//        formTester.setValue("hostName", "");
-//        formTester.setValue("port", "0");
-//        formTester.submit();
-//        String[] expectedErrors = new String[]{"Field 'title' is required.",
-//                "Field 'hostName' is required.",
-//                "0 is not between 1 and 65535."};
-//        wicketTester.assertErrorMessages(expectedErrors);
+        assertTrue("ModalWindow.isShown:", ((ModalWindow)wicketTester.getComponentFromLastRenderedPage("aelist:modal-window")).isShown());
+    }
+    @Test
+    public void testEditAERequiredFields() {
+        wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
+                new RoleAuthorizationStrategy(new UserRolesAuthorizer("WebAdmin")));
+        wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE()));
+        wicketTester.getComponentFromLastRenderedPage("form").getSession().setLocale(new Locale("en"));
+        FormTester formTester = wicketTester.newFormTester("form");
+        formTester.setValue("title", "");
+        formTester.setValue("hostName", "");
+        formTester.setValue("port", "0");
+        formTester.submit();
+        String[] expectedErrors = new String[]{"Field 'title' is required.",
+                "Field 'hostName' is required.",
+                "0 is not between 1 and 65535."};
+        wicketTester.assertErrorMessages(expectedErrors);
     }
     
     @Test
     public void testEditAEValidators() {
         wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
                 new RoleAuthorizationStrategy(new UserRolesAuthorizer("WebAdmin")));
-        wicketTester.startPage(AETestPage.class);
-        wicketTester.getComponentFromLastRenderedPage("aelist").getSession().setLocale(new Locale("en"));
-        wicketTester.clickLink("aelist:newAET");
-//        FormTester formTester = wicketTester.newFormTester("aelist:form");
-//        formTester.setValue("title", "AE_TEST_TO_LONGLONG");
-//        formTester.setValue("hostName", "");
-//        formTester.setValue("port", "100000000");
-//        formTester.setValue("wadoURL", "http://127.0.0.1.1/wado");
-//        formTester.submit();
-//        wicketTester.assertComponent("aelist", CreateOrEditAETPage.class);
-//        String[] expectedErrors = new String[]{"'AE_TEST_TO_LONGLONG' is not between 1 and 16 characters long.",
-//              "Field 'hostName' is required.",
-//              "100000000 is not between 1 and 65535.",
-//              "'http://127.0.0.1.1/wado' is not a valid URL."};
-//        wicketTester.assertErrorMessages(expectedErrors);
+        wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE()));
+        wicketTester.getComponentFromLastRenderedPage("form").getSession().setLocale(new Locale("en"));
+        FormTester formTester = wicketTester.newFormTester("form");
+        formTester.setValue("title", "AE_TEST_TO_LONGLONG");
+        formTester.setValue("hostName", "");
+        formTester.setValue("port", "100000000");
+        formTester.setValue("wadoURL", "http://127.0.0.1.1/wado");
+        formTester.submit();
+        String[] expectedErrors = new String[]{"'AE_TEST_TO_LONGLONG' is not between 1 and 16 characters long.",
+              "Field 'hostName' is required.",
+              "100000000 is not between 1 and 65535.",
+              "'http://127.0.0.1.1/wado' is not a valid URL."};
+        wicketTester.assertErrorMessages(expectedErrors);
     }
     
     @Test
     public void testNewAE() {
         wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
                 new RoleAuthorizationStrategy(new UserRolesAuthorizer("WebAdmin")));
+        for ( AE ae : aeList ) {
+            wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE()));
+            FormTester formTester = wicketTester.newFormTester("form");
+            formTester.setValue("title", ae.getTitle());
+            formTester.setValue("hostName", ae.getHostName());
+            formTester.setValue("port", String.valueOf(ae.getPort()));
+            getEntityManager().getTransaction().begin();
+            formTester.submit("submit");
+            getEntityManager().getTransaction().commit();
+            wicketTester.assertNoErrorMessage();
+        }
         wicketTester.startPage(AETestPage.class);
-//        for ( AE ae : aeList ) {
-//            wicketTester.clickLink("aelist:newAET");
-//            wicketTester.assertComponent("aelist", CreateOrEditAETPage.class);
-//            FormTester formTester = wicketTester.newFormTester("aelist:form");
-//            formTester.setValue("title", ae.getTitle());
-//            formTester.setValue("hostName", ae.getHostName());
-//            formTester.setValue("port", String.valueOf(ae.getPort()));
-//            getEntityManager().getTransaction().begin();
-//            formTester.submit("submit");
-//            getEntityManager().getTransaction().commit();
-//            wicketTester.assertNoErrorMessage();
-//            wicketTester.assertComponent("aelist", AEListPanel.class);
-//        }
-//        wicketTester.assertListView("aelist:list", aeList);
+        wicketTester.assertListView("aelist:list", aeList);
     }
 
     @Test
     public void testOpenEchoFromList() {
         initDummyMBean();
         wicketTester.startPage(AETestPage.class);
-//        wicketTester.assertListView("aelist:list", aeList);
-//        wicketTester.clickLink("aelist:list:0:echo");
-//        wicketTester.assertNoErrorMessage();
-//        wicketTester.assertComponent("aelist:echoPanel:content", DicomEchoWindow.DicomEchoPanel.class);        
+        wicketTester.assertListView("aelist:list", aeList);
+        wicketTester.clickLink("aelist:list:0:echo");
+        wicketTester.assertNoErrorMessage();
+        wicketTester.assertComponent("aelist:echoPanel:content", DicomEchoWindow.DicomEchoPanel.class);        
+        assertTrue("DicomEchoWindow.isShown:", ((ModalWindow)wicketTester.getComponentFromLastRenderedPage("aelist:echoPanel")).isShown());
     }
 
     private AE getTestAE(String title, String host, int port) {
@@ -135,16 +140,16 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
         return ae;
     }
     
-//    @Test
-//    public void testUnauthorizedEdit() {
-//        wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
-//                new RoleAuthorizationStrategy(new UserRolesAuthorizer("dummy")));
-//        wicketTester.startPage(AETestPage.class);
-//        wicketTester.getComponentFromLastRenderedPage("aelist").getSession().setLocale(new Locale("en"));
-//        wicketTester.assertInvisible("aelist:newAET");
-//        wicketTester.assertInvisible("aelist:list:0:editAET");
-//        wicketTester.assertInvisible("aelist:list:0:removeAET");
-//    }
+    @Test
+    public void testUnauthorizedEdit() {
+        wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
+                new RoleAuthorizationStrategy(new UserRolesAuthorizer("dummy")));
+        wicketTester.startPage(AETestPage.class);
+        wicketTester.getComponentFromLastRenderedPage("aelist").getSession().setLocale(new Locale("en"));
+        wicketTester.assertInvisible("aelist:newAET");
+        wicketTester.assertInvisible("aelist:list:0:editAET");
+        wicketTester.assertInvisible("aelist:list:0:removeAET");
+    }
     
     private void initDummyMBean() {
         MBeanServer mbServer = MBeanServerFactory.createMBeanServer();
