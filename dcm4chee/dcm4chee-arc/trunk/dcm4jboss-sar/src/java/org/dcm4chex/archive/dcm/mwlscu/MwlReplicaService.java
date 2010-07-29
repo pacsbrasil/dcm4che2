@@ -495,7 +495,7 @@ public class MwlReplicaService extends AbstractScuService {
         dsSPS.putLO( Tags.SPSDescription );
         dsSPS.putSH( Tags.ScheduledStationName );
         dsSPS.putSH( Tags.SPSLocation );
-        ds.putSQ(Tags.ScheduledProtocolCodeSeq);
+        dsSPS.putSQ(Tags.ScheduledProtocolCodeSeq);
         dsSPS.putLO( Tags.PreMedication );
         dsSPS.putSH( Tags.SPSID );
         dsSPS.putLO( Tags.RequestedContrastAgent );
