@@ -613,7 +613,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.imgPanel.reset();
             ApplicationContext.annotationPanel.reset();
-            ApplicationContext.annotationPanel.clearAllMeasurement();
+           // ApplicationContext.annotationPanel.clearAllMeasurement();
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
         }

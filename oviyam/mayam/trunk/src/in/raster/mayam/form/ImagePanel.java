@@ -800,10 +800,13 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                     if (series.getSeriesInstanceUID().equalsIgnoreCase(this.seriesUID)) {
                         Instance instance = series.getImageList().get(0);
                         setImage(instance.getPixelData());
+                         this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getAnnotation());
+
                     }
                 }
             }
         }
+         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
     }
 
     /**
