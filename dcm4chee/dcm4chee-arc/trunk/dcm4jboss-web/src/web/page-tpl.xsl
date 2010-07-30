@@ -68,6 +68,14 @@
           <img src="images/select_fr.gif" alt="&French;" border="0"
            title="&French;" />
          </a>
+		 <a>
+          <xsl:attribute name="href">
+           <xsl:value-of select="$request_uri" />
+           <xsl:text>?language=jp</xsl:text>
+          </xsl:attribute>
+          <img src="images/select_jp.gif" alt="&Japanese;" border="0"
+           title="&Japanese;" />
+         </a>
         </td>
        </tr>
       </table>
