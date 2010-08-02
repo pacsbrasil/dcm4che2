@@ -139,7 +139,7 @@ public abstract class MPPSEmulatorBean implements SessionBean {
      * @throws FinderException 
      * @ejb.interface-method
      */
-    public Dataset[] generateMPPS(Long studyPk) throws FinderException {
+    public Dataset[] generateMPPS(Long studyPk, boolean ignoreReqAttrIfNoStudyAccNo) throws FinderException {
         StudyLocal study = studyHome.findByPrimaryKey(studyPk);
         String suid = study.getStudyIuid();
         SeriesLocal series;
@@ -148,7 +148,7 @@ public abstract class MPPSEmulatorBean implements SessionBean {
         for ( Iterator iter = study.getSeries().iterator() ; iter.hasNext() ; ) {
             series = (SeriesLocal) iter.next();
             if ( series.getPpsIuid() == null ) {
-                addSeries(series, mppsMap, suid, study);
+                addSeries(series, mppsMap, suid, study, ignoreReqAttrIfNoStudyAccNo);
             }
         }
         Dataset[] result = new Dataset[mppsMap.size()];
@@ -198,7 +198,7 @@ public abstract class MPPSEmulatorBean implements SessionBean {
         return mpps;
     }
     
-    private void addSeries(SeriesLocal series, HashMap mppsMap, String suid, StudyLocal study) throws FinderException {
+    private void addSeries(SeriesLocal series, HashMap mppsMap, String suid, StudyLocal study, boolean ignoreReqAttrIfNoStudyAccNo) throws FinderException {
         final String md = series.getModality() == null ? "OT" : series.getModality();
         final String srcAet = series.getSourceAET();
         final Dataset seriesAttrs = series.getAttributes(false);
@@ -218,7 +218,7 @@ public abstract class MPPSEmulatorBean implements SessionBean {
                 LOG.warn("Study with multiple Procedure Codes - only include first in emulated MPPS");
                 mpps.putSQ(Tags.ProcedureCodeSeq).addItem(procCodeSeq.getItem());
             }
-            DcmElement rqaSq = studyAttrs.getString(Tags.AccessionNumber) == null ? 
+            DcmElement rqaSq = ignoreReqAttrIfNoStudyAccNo && studyAttrs.getString(Tags.AccessionNumber) == null ? 
                     null : seriesAttrs.get(Tags.RequestAttributesSeq);
             int rqaSqSize = rqaSq != null ? rqaSq.countItems() : 0;
             DcmElement ssaSq = mpps.putSQ(Tags.ScheduledStepAttributesSeq);
