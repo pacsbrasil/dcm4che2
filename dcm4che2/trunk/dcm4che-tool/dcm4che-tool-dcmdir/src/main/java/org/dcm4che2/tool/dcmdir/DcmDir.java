@@ -411,18 +411,16 @@ public class DcmDir {
             System.out.println("dcmdir v" + p.getImplementationVersion());
             System.exit(0);
         }
-        if (cl.hasOption('h') || cl.getArgList().isEmpty()) {
+        if (cl.hasOption('h')
+                || !(cl.hasOption("a")
+                        || cl.hasOption("c")
+                        || cl.hasOption("d")
+                        || cl.hasOption("p")
+                        || cl.hasOption("t")
+                        || cl.hasOption("z"))) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
             System.exit(0);
-        }
-        if (!(cl.hasOption("a") 
-        	|| cl.hasOption("c") 
-        	|| cl.hasOption("d") 
-        	|| cl.hasOption("p") 
-        	|| cl.hasOption("t") 
-        	|| cl.hasOption("z"))) {
-            exit("dcmdir: You must specify one of the -acdptz options");
         }
         return cl;
     }
