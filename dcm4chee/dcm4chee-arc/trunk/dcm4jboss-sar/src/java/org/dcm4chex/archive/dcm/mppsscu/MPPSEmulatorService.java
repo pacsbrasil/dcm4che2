@@ -99,6 +99,8 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
     
     private String timerIDCheckSeriesWithoutMPPS;
     private boolean isRunning;
+    
+    private boolean ignoreReqAttrIfNoStudyAccNo;
 
     public ObjectName getSchedulerServiceName() {
         return scheduler.getSchedulerServiceName();
@@ -167,6 +169,14 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
         }
     }
 
+    public boolean isIgnoreReqAttrIfNoStudyAccNo() {
+        return ignoreReqAttrIfNoStudyAccNo;
+    }
+
+    public void setIgnoreReqAttrIfNoStudyAccNo(boolean ignoreReqAttrIfNoStudyAccNo) {
+        this.ignoreReqAttrIfNoStudyAccNo = ignoreReqAttrIfNoStudyAccNo;
+    }
+
     public boolean isRunning() {
         return isRunning;
     }
@@ -215,7 +225,7 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
                 Dataset mpps;
                 for ( Long studyPk : studyPks ) {
                     try {
-                        studyMpps = mppsEmulator.generateMPPS(studyPk);
+                        studyMpps = mppsEmulator.generateMPPS(studyPk, ignoreReqAttrIfNoStudyAccNo);
                     } catch (Exception x) {
                         log.error("Failed to emulate MPPS for Study pk:" + studyPk, x);
                         continue;
@@ -251,7 +261,7 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
     public int emulateMPPS(long studyPk) {
         try {
             MPPSEmulator mppsEmulator = getMPPSEmulatorHome().create();
-            Dataset[] studyMpps = mppsEmulator.generateMPPS(studyPk);
+            Dataset[] studyMpps = mppsEmulator.generateMPPS(studyPk, ignoreReqAttrIfNoStudyAccNo);
             int num = 0;
             Dataset mpps;
             for ( int j = 0 ; j < studyMpps.length ; j++) {

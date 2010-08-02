@@ -56,6 +56,16 @@
          <value value="DCM4CHEE"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="isIgnoreReqAttrIfNoStudyAccNo" setMethod="setIgnoreReqAttrIfNoStudyAccNo">
+      <description><![CDATA[Ignore Request Attribute Sequence if study has no Accession Number.<br/>
+      	This will force an unscheduled MPPS and should only be used when the Request Attribute Sequence wrongly contains request attributes!<br/>
+      ]]></description>
+      <name>IgnoreReqAttrIfNoStudyAccNo</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
   
    <attribute access="read-only"
       getMethod="isRunning">
