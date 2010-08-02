@@ -199,7 +199,7 @@ public class DocumentStoreNoPoolTest extends DocStoreTestBase {
         } catch (Exception ignore) {}
         TestUtil.createDummyDocument(docStore, docUidBase+idx++, null);
         TestUtil.createDummyDocument(docStore, docUidBase+idx++, "");
-        TestUtil.createDummyDocument(docStore, docUidBase+idx++, illegalChars);
+        TestUtil.createDummyDocument(docStore, docUidBase+idx++, "application/dicom+xml");
         BaseDocument doc;
         String uid;
         for ( int i = 0 ; i < idx ; i++) {
