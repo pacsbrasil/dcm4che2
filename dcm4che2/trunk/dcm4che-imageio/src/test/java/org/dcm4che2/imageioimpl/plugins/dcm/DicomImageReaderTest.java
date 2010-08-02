@@ -110,9 +110,9 @@ public class DicomImageReaderTest extends TestCase {
 	 * view of a chest. If you see a side view, you're looking at the wrong
 	 * frame (0).</em>
 	 */
-	public void testReadMultiframe() throws Exception {
-		assertImage("/misc/ct-multiframe.dcm", "/misc/ct-multiframe-frame2", 1,null);
-	}
+//	public void testReadMultiframe() throws Exception {
+//		assertImage("/misc/ct-multiframe.dcm", "/misc/ct-multiframe-frame2", 1,null);
+//	}
 
 	/**
 	 * Tests the reading of a CR instance, with MONOCHROME1 photometric
