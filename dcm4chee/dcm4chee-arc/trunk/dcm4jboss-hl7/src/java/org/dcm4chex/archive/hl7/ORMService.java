@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -296,6 +297,9 @@ public class ORMService extends AbstractHL7Service {
         log("Cancel", ds);
         if (mwlManager.removeWorklistItem(ds) == null) {
             log("No Such ", ds);
+        } else {
+            ds.getItem(Tags.SPSSeq).putCS(Tags.SPSStatus, "DISCONTINUED");
+            updateRequestAttributes(ds, mwlManager);
         }
     }
 
@@ -307,8 +311,21 @@ public class ORMService extends AbstractHL7Service {
             mppsManager.updateScheduledStepAttributes(mwlitem,
                     patientMatching, updateDifferentPatientOfExistingStudy);
         if (!mppsList.isEmpty()) {
-            updateSPSStatus(mwlitem, mppsList.get(0), mwlManager);
-            updateRequestAttributesInSeries(mwlitem, mppsList, mppsManager);
+            if ("DISCONTINUED".equals(mwlitem.getItem(Tags.SPSSeq).getString(Tags.SPSStatus))) {
+                HashSet<String> seriesIuids = new HashSet<String>();
+                for (Dataset mpps : mppsList) {
+                    DcmElement perfSeriesSq = mpps.get(Tags.PerformedSeriesSeq);
+                    if (perfSeriesSq != null && !perfSeriesSq.isEmpty()) {
+                        for (int i = 0, n = perfSeriesSq.countItems(); i < n; i++) {
+                            seriesIuids.add(perfSeriesSq.getItem(i).getString(Tags.SeriesInstanceUID));
+                        }
+                    }
+                }
+                mppsManager.removeRequestAttributesInSeries(mwlitem, seriesIuids);
+            } else {
+                updateSPSStatus(mwlitem, mppsList.get(0), mwlManager);
+                updateRequestAttributesInSeries(mwlitem, mppsList, mppsManager);
+            }
         }
     }
 

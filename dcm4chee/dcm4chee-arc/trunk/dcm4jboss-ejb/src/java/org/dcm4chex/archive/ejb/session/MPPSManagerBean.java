@@ -653,6 +653,43 @@ public abstract class MPPSManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
+    public void removeRequestAttributesInSeries(Dataset mwlAttrs, Collection seriesIuids) throws CreateException, FinderException {
+        String mwlID = mwlAttrs.getString(Tags.RequestedProcedureID) + "_" +
+                        mwlAttrs.getItem(Tags.SPSSeq).getString(Tags.SPSID);
+        String suid;
+        SeriesLocal series;
+        Dataset seriesAttrs=null, item;
+        DcmElement reqAttrSQ, newReqAttrSQ;
+        seriesloop: for ( Iterator iter = seriesIuids.iterator() ; iter.hasNext() ; ) {
+            suid = (String) iter.next();
+            try {
+                series = seriesHome.findBySeriesIuid(suid);
+            } catch (FinderException x) {
+                log.info("Series "+suid+" not found! Remove of Request Attributes Ignored!");
+                continue seriesloop;
+            }
+            seriesAttrs = series.getAttributes(true);
+            reqAttrSQ = seriesAttrs.get(Tags.RequestAttributesSeq);
+            if ( reqAttrSQ != null && reqAttrSQ.countItems() > 0 ) {
+                newReqAttrSQ = seriesAttrs.putSQ(Tags.RequestAttributesSeq);
+                seqloop: for ( int i = 0, len = reqAttrSQ.countItems() ; i < len ; i++) {
+                    item = reqAttrSQ.getItem(i);
+                    if ( !mwlID.equals(item.getString(Tags.RequestedProcedureID)+"_"+item.getString(Tags.SPSID))) {
+                        newReqAttrSQ.addItem(item);
+                    }
+                }
+                if (newReqAttrSQ.countItems() != reqAttrSQ.countItems()) {
+                    if (newReqAttrSQ.countItems() == 0)
+                        seriesAttrs.putSH(Tags.AccessionNumber);
+                    series.updateAttributes(seriesAttrs, true, null);
+                }
+            }
+        }
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
     public Collection getSeriesIUIDs(String mppsIUID) throws FinderException {
         Collection col = new ArrayList();
         Collection series = seriesHome.findByPpsIuid(mppsIUID);
@@ -768,6 +805,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         if (c.isEmpty()) {
             return Collections.EMPTY_LIST;
         }
+        boolean discontinued = "DISCONTINUED".equals(mwlitem.getItem(Tags.SPSSeq).getString(Tags.SPSStatus));
         PatientLocal pat;
         try {
             pat = patHome.selectPatient(mwlitem, matching, false);
@@ -796,7 +834,7 @@ public abstract class MPPSManagerBean implements SessionBean {
                 log.debug(attrs);
             }
             DcmElement ssasq = attrs.get(Tags.ScheduledStepAttributesSeq);
-            if (updateScheduledStepAttributes(mwlitem, ssasq)) {
+            if (updateScheduledStepAttributes(mwlitem, ssasq, discontinued)) {
                 mpps.setAttributes(attrs);
                 updated.add(attrs);
                 log.info("Updated Scheduled Step Attributes of "
@@ -845,8 +883,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         return false;
     }
 
-    private boolean updateScheduledStepAttributes(Dataset mwlitem,
-            DcmElement ssasq) {
+    private boolean updateScheduledStepAttributes(Dataset mwlitem, DcmElement ssasq, boolean discontinued) {
         String suid = mwlitem.getString(Tags.StudyInstanceUID);
         String rpid = mwlitem.getString(Tags.RequestedProcedureID);
         Dataset sps = mwlitem.getItem(Tags.SPSSeq);
@@ -857,6 +894,17 @@ public abstract class MPPSManagerBean implements SessionBean {
                     && isNullOrEquals(ssa.getString(Tags.RequestedProcedureID),
                             rpid)
                     && isNullOrEquals(ssa.getString(Tags.SPSID), spsid)) {
+                if (discontinued) {
+                    ssa.clear();
+                    ssa.putUI(Tags.StudyInstanceUID, suid);
+                    ssa.putSH(Tags.SPSID, (String) null);
+                    ssa.putSH(Tags.AccessionNumber, (String) null);
+                    ssa.putSQ(Tags.RefStudySeq);
+                    ssa.putSH(Tags.RequestedProcedureID, (String) null);
+                    ssa.putLO(Tags.SPSDescription, (String) null);
+                    ssa.putSQ(Tags.ScheduledProtocolCodeSeq);
+                    return true;
+                }
                 boolean updated = updateRefStudySeq(ssa, suid);
                 if (updateSH(ssa, Tags.AccessionNumber, mwlitem
                         .getString(Tags.AccessionNumber))) {
