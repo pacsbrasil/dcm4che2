@@ -44,7 +44,7 @@ fi
 CP="$DCM4CHE_HOME/etc/logger/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
 CP="$CP:$DCM4CHE_HOME/lib/dcm4che-audit-2.0.24-SNAPSHOT.jar"
-CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.13.jar"
+CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.16.jar"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
