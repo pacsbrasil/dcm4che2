@@ -18,5 +18,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/slf4j-api-1.4.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/slf4j-log4j12-1.4.3.jar"/>
 	<classpathentry kind="lib" path="lib/dcm4che-imageio-rle-2.0.21.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.6.1.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
