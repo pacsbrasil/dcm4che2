@@ -241,8 +241,9 @@ public class MWLItem extends BaseEntity implements Serializable {
                 .componentGroupString(PersonName.IDEOGRAPHIC, false);
         this.scheduledPerformingPhysicianPhoneticName = pn
                 .componentGroupString(PersonName.PHONETIC, false);
-        this.status = SPSStatus.valueOf(spsItem
-                .getString(Tag.ScheduledProcedureStepStatus));
+        String status = spsItem.getString(Tag.ScheduledProcedureStepStatus);
+        if (status != null)
+            this.status = SPSStatus.valueOf(status);
         this.encodedAttributes = DicomObjectUtils.encode(AttributeFilter
                 .exludePatientAttributes(attrs),
                 UID.DeflatedExplicitVRLittleEndian);
