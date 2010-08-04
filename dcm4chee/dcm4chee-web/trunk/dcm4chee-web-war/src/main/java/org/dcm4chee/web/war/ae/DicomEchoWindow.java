@@ -43,6 +43,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.Page;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
@@ -50,12 +52,14 @@ import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuth
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
@@ -66,6 +70,7 @@ import org.apache.wicket.validation.validator.RangeValidator;
 import org.apache.wicket.validation.validator.StringValidator;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.war.ae.model.CipherModel;
@@ -80,6 +85,9 @@ public class DicomEchoWindow extends ModalWindow {
 
     private static final long serialVersionUID = 1L;
 
+    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    private static final ResourceReference CSS = new CompressedResourceReference(DicomEchoWindow.class, "ae-style.css");
+    
     private boolean echoOnShow;
     private AE aeOri;
     private final AE aeEcho = new AE();
@@ -89,15 +97,22 @@ public class DicomEchoWindow extends ModalWindow {
     private boolean echoRunning = false;
     private Image hourglassImage;
     private boolean saveFailed;
-    
+
     private transient EchoDelegate delegate;
     
     public DicomEchoWindow(String id, boolean echoOnShow) {
         super(id);
         this.echoOnShow = echoOnShow;
         setTitle(new ResourceModel("aet.echoPanelTitle"));
-        setContent(new DicomEchoPanel("content"));
-
+        setPageCreator(new ModalWindow.PageCreator() {
+                            
+            private static final long serialVersionUID = 1L;
+              
+            @Override
+            public Page createPage() {
+                return new DicomEchoPage();
+            }
+        });
         setCloseButtonCallback(new CloseButtonCallback() {
 
             private static final long serialVersionUID = 1L;
@@ -161,7 +176,7 @@ public class DicomEchoWindow extends ModalWindow {
         return false;
     }
     
-    public class DicomEchoPanel extends Panel {
+    public class DicomEchoPage extends WebPage {
     
     private static final long serialVersionUID = 1L;
     private BaseForm form;
@@ -171,7 +186,7 @@ public class DicomEchoWindow extends ModalWindow {
     private AjaxButton pingBtn = new PingButton("ping");
     private AjaxButton cancelBtn;
     private AbstractAjaxTimerBehavior timer;
-    
+
     private IModel<Integer> nrOfTestsModel = new IModel<Integer>() {
 
         private static final long serialVersionUID = 1L;
@@ -225,18 +240,28 @@ public class DicomEchoWindow extends ModalWindow {
     
             @Override
             public void onComponentTag(ComponentTag tag) {
+
                 tag.getAttributes().put("class", saveFailed ? "ae_save_failed" : 
                          ((!echoPerformed || echoRunning) ? "ae_echo_pending" : 
-                         (result.indexOf("success") != -1 ? "ae_echo_succeed" : "ae_echo_failed")));
+                         (result.indexOf("success") != -1 ? "ae_echo_succeed" : 
+                             (result.contains(getString("aet.ping_success")) ? "ae_ping_succeed" :  
+                             "ae_echo_failed"))));
                 super.onComponentTag(tag);
             }
         };
         
-    public DicomEchoPanel(String id) {
-        super(id);
+    public DicomEchoPage() {
+        super();
+        
+        if (DicomEchoWindow.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(DicomEchoWindow.BaseCSS));
+        if (DicomEchoWindow.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(DicomEchoWindow.CSS));
+
+
         form = new BaseForm("form");
         form.setResourceIdPrefix("aet.");
-        add(CSSPackageResource.getHeaderContribution(DicomEchoPanel.class, "ae-style.css"));
+        
         add(form);
         CompoundPropertyModel<AE> model = new CompoundPropertyModel<AE>(aeEcho);
         setDefaultModel(model);

@@ -58,11 +58,13 @@ public class WadoImagePage extends WebPage {
     
     private static final long serialVersionUID = 1L;
 
-    private static final ResourceReference CSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     
     public WadoImagePage(ModalWindow modalWindow, final InstanceModel instanceModel) {
-        if (WadoImagePage.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(WadoImagePage.CSS));
+        
+        if (WadoImagePage.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(WadoImagePage.BaseCSS));
+        
         add(new WadoImage("wadoImg", instanceModel));
     }
             

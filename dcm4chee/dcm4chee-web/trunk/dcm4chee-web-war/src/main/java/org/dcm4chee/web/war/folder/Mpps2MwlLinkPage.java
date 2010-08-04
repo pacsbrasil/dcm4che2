@@ -84,18 +84,23 @@ import org.slf4j.LoggerFactory;
 public class Mpps2MwlLinkPage extends ModalWindow {
 
     private static final long serialVersionUID = 1L;
+    
+    private static final ResourceReference CSS = new CompressedResourceReference(Mpps2MwlLinkPage.class, "mpps-link-style.css");
+    
     private Mpps2MwlLinkPanelM panel = new Mpps2MwlLinkPanelM("content");
     private List<PPSModel> ppsModels;
     private PPSModel ppsModelForInfo;
     private PatientModel ppsPatModelForInfo;
     private Component comp;
     
-    private static final ResourceReference CSS = new CompressedResourceReference(Mpps2MwlLinkPage.class, "mpps-link-style.css");
     private static Logger log = LoggerFactory.getLogger(Mpps2MwlLinkPage.class);
     
     public Mpps2MwlLinkPage(String id) {
         super(id);
-        add(CSSPackageResource.getHeaderContribution(Mpps2MwlLinkPage.CSS));
+        
+        if (Mpps2MwlLinkPage.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(Mpps2MwlLinkPage.CSS));
+        
         setContent(panel);
     }
 

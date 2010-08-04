@@ -48,6 +48,8 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -56,7 +58,6 @@ import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
-import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
@@ -66,6 +67,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.common.SPSStatus;
 import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -74,6 +76,7 @@ import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.CheckOneDayBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.SimpleDateTimeField;
 import org.dcm4chee.web.common.validators.UIDValidator;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
@@ -81,7 +84,7 @@ import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklist;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
 import org.dcm4chee.web.war.WicketSession;
-import org.dcm4chee.web.war.common.EditDicomObjectPage;
+import org.dcm4chee.web.war.common.EditDicomObjectPanel;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
 import org.dcm4chee.web.war.worklist.modality.MWLItemListView.MwlActionProvider;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
@@ -93,10 +96,12 @@ import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
  */
 public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
+    private static final long serialVersionUID = 1L;
+    
     private static final ResourceReference CSS = new CompressedResourceReference(ModalityWorklistPanel.class, "modality-worklist-style.css");
 
-    private static final long serialVersionUID = 1L;
-
+    private ModalWindow modalWindow;
+    
     private static int PAGESIZE_ENTRIES = 6;
     private static int PAGESIZE_STEP = 5;
     public Model<Integer> pagesize = new Model<Integer>();
@@ -118,9 +123,20 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
     public ModalityWorklistPanel(final String id) {
         super(id);
-        viewport = initViewPort();
+
         if (ModalityWorklistPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(ModalityWorklistPanel.CSS));
+
+        add(modalWindow = new ModalWindow("modal-window"));
+        modalWindow.setWindowClosedCallback(new WindowClosedCallback() {
+            private static final long serialVersionUID = 1L;
+
+            public void onClose(AjaxRequestTarget target) {
+                getPage().setOutputMarkupId(true);
+                target.addComponent(getPage());
+            }            
+        });
+        viewport = initViewPort();
 
         final ModalityWorklistFilter filter = viewport.getFilter();
         add(form = new BaseForm("form", new CompoundPropertyModel<Object>(filter)));
@@ -159,11 +175,19 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         addNavigation(form);
         
         form.setResourceIdPrefix("mw.");
+
         listPanel = new WebMarkupContainer("listPanel");
         add(listPanel);
         listPanel.setOutputMarkupId(true);
         listPanel.add(new MWLItemListView("mwlitems", viewport.getMWLItemModels(), this));
+
         initModalitiesAndStationAETs();
+    }
+    
+    @Override
+    protected void onBeforeRender() {
+        super.onBeforeRender();
+        queryMWLItems();
     }
     
     protected ViewPort initViewPort() {
@@ -541,13 +565,35 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         }.add(new Image("detailImg", ImageManager.IMAGE_COMMON_DICOM_DETAILS)
         .add(new ImageSizeBehaviour())
         .add(new TooltipBehaviour("mw.", "detailImg"))))
-        .add( new Link<Object>("edit") {
+        .add(new ModalWindowLink("edit", modalWindow,
+                    new Integer(new ResourceModel("mw.edit.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
+                    new Integer(new ResourceModel("mw.edit.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
+            ) {
+                private static final long serialVersionUID = 1L;
+    
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    modalWindow.setContent(new EditDicomObjectPanel(
+                            "content", 
+                            modalWindow, 
+                            (DicomObject) mwlItemModel.getDataset(), 
+                            mwlItemModel.getClass().getSimpleName()
+                    ) {
+                       private static final long serialVersionUID = 1L;
+    
+                       @Override
+                       protected void onApply() {
+                           mwlItemModel.update(getDicomObject());
+                       }
 
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClick() {
-                setResponsePage(new EditDicomObjectPage(mwlListView.getPage(), mwlItemModel));
+                       @Override
+                       protected void onSubmit() {
+                           mwlItemModel.update(getDicomObject());
+                           super.onCancel();
+                       }                       
+                });
+                modalWindow.show(target);
+                super.onClick(target);
             }
         }.add(new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT)
         .add(new ImageSizeBehaviour())

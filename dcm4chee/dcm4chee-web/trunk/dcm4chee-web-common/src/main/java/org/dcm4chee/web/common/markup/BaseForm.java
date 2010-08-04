@@ -313,7 +313,6 @@ public class BaseForm extends Form<Object> {
         private static final long serialVersionUID = 0L;
 
         public Object component(Component c) {
-            
             if (componentHasNoTooltip(c)) 
                 c.add(new TooltipBehaviour(generateResourcePrefix(c), c.getId()));
             if (c instanceof FormComponent<?>) {

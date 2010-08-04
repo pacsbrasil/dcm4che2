@@ -38,16 +38,23 @@
 
 package org.dcm4chee.web.war.common;
 
+import org.apache.wicket.ResourceReference;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.CloseButtonCallback;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
-import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
@@ -55,6 +62,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.ElementDictionary;
 import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.util.TagUtils;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 
@@ -67,23 +75,36 @@ public class SimpleEditDicomObjectPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
+    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    
     private static ElementDictionary dict = ElementDictionary.getDictionary();
     private final DicomObject dcmObj;
     private final BaseForm form;
-    private final WebMarkupContainer table;
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("dicom.");
+    private Model<String> resultMessage;
     
-    public SimpleEditDicomObjectPanel(String id, IModel<String> title, DicomObject dcmObj, final int[][] tagPaths) {
+    public SimpleEditDicomObjectPanel(String id, final ModalWindow window, DicomObject dcmObj, String title, final int[][] tagPaths, final boolean close) {
         super(id);
+    
+        if (SimpleEditDicomObjectPanel.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(SimpleEditDicomObjectPanel.BaseCSS));
+        
+        window.setCloseButtonCallback(new CloseButtonCallback() {
+
+            private static final long serialVersionUID = 1L;
+
+            public boolean onCloseButtonClicked(AjaxRequestTarget target) {
+                onClose();
+                return true;
+            }
+        });
+        
         this.dcmObj = new BasicDicomObject();
         dcmObj.copyTo(this.dcmObj);
-        add(new Label("title", title));
-        form = new BaseForm("form");
-        add(form);
-        table = new WebMarkupContainer("table");
-        addHdrLabels(table);
-        table.setOutputMarkupId(true);
-        form.add(table);
+        add(new Label("title", new Model<String>(title)));
+        add(form = new BaseForm("form"));
+        form.setOutputMarkupId(true);
+        addHdrLabels(form);
         RepeatingView rv = new RepeatingView("elements") {
 
             private static final long serialVersionUID = 1L;
@@ -93,26 +114,44 @@ public class SimpleEditDicomObjectPanel extends Panel {
                 removeAll();
                 addDicomObject(this, tagPaths);
             }
-            
         };
-        table.add(rv);
-        form.add(new Button("submit", new ResourceModel("saveBtn")) {
+        form.add(rv);
+        form.add(new AjaxFallbackButton("submit", new ResourceModel("saveBtn"), form) {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onSubmit() {
-                SimpleEditDicomObjectPanel.this.onSubmit();
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                try {
+                    SimpleEditDicomObjectPanel.this.onSubmit();
+                    getPage().setOutputMarkupId(true);
+                    target.addComponent(getPage());
+                    if (close)
+                        window.close(target);
+                } catch (Exception e) {
+                    resultMessage.setObject(e.getLocalizedMessage());
+                    SimpleEditDicomObjectPanel.this.setOutputMarkupId(true);
+                    target.addComponent(SimpleEditDicomObjectPanel.this);
+                }
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
+                BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
             }
         });
-        form.add(new Button("cancel", new ResourceModel("cancelBtn")) {
+        form.add(new AjaxFallbackButton("cancel", new ResourceModel("cancelBtn"), form) {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onSubmit() {
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 SimpleEditDicomObjectPanel.this.onCancel();
-            }}.setDefaultFormProcessing(false));
+                window.close(target);
+            }
+        }
+        .setDefaultFormProcessing(false));
+        form.add(new Label("result-message", (resultMessage = new Model<String>(""))));
     }
 
     private void addHdrLabels(WebMarkupContainer table) {
@@ -128,6 +167,8 @@ public class SimpleEditDicomObjectPanel extends Panel {
 
     protected void onCancel() {}
 
+    protected void onClose() {}
+    
     private void addDicomObject(RepeatingView rv, int[][] tagPaths) {
         final SpecificCharacterSet cs = dcmObj.getSpecificCharacterSet();
         int[] tagPath;
@@ -152,6 +193,7 @@ public class SimpleEditDicomObjectPanel extends Panel {
             super(id, "element", SimpleEditDicomObjectPanel.this);
             final int tag = tagPath[tagPath.length-1];
             add(new Label("name", new AbstractReadOnlyModel<String>(){
+                
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -169,10 +211,9 @@ public class SimpleEditDicomObjectPanel extends Panel {
             }));
             FormComponent<?> c = form.getDicomObjectField("value", dcmObj, tagPath);
             add(c);
-            if (c instanceof FormComponentPanel) {
+            if (c instanceof FormComponentPanel<?>) {
                 setMarkupTagReferenceId("date_element");
             }
         }
     }
-    
 }

@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.wicket.MetaDataKey;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
@@ -55,6 +56,7 @@ import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.link.PopupCloseLink.ClosePopupPage;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
@@ -87,14 +89,19 @@ import org.slf4j.LoggerFactory;
  * @since Jan 11, 2010
  */
 public class ExportPage extends BaseWicketPage {
+    
+    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    
     private static final MetaDataKey<AE> LAST_DESTINATION_AET_ATTRIBUTE = new MetaDataKey<AE>(){
 
         private static final long serialVersionUID = 1L;
     };
+    
     private static final MetaDataKey<HashMap<Integer,ExportResult>> EXPORT_RESULTS = new MetaDataKey<HashMap<Integer,ExportResult>>(){
 
         private static final long serialVersionUID = 1L;
     };
+    
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss,SSS");
     private AE destinationAET;
     private boolean closeOnFinished;
@@ -122,6 +129,10 @@ public class ExportPage extends BaseWicketPage {
     
     public ExportPage(List<PatientModel> list) {
         super();
+        
+        if (ExportPage.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(ExportPage.BaseCSS));
+
         this.getModuleSelectorPanel().setShowLogoutLink(false);
         HashMap<Integer,ExportResult> results = getSession().getMetaData(EXPORT_RESULTS);
         exportInfo = new ExportInfo(list);

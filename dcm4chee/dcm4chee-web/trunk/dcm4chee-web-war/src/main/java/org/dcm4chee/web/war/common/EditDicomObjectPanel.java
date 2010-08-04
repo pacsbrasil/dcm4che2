@@ -40,17 +40,21 @@ package org.dcm4chee.web.war.common;
 
 import java.util.Iterator;
 
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
@@ -64,6 +68,7 @@ import org.dcm4che2.data.VR;
 import org.dcm4che2.util.TagUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
@@ -77,14 +82,21 @@ public class EditDicomObjectPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
+    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    
     private static ElementDictionary dict = ElementDictionary.getDictionary();
     private final DicomObject dcmObj;
     private final WebMarkupContainer table;
     private MessageWindow mw = new MessageWindow("mw");
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("dicom.");
-
-    public EditDicomObjectPanel(String id, DicomObject dcmObj, String title) {
+    private Model<String> resultMessage;
+    
+    public EditDicomObjectPanel(String id, final ModalWindow window, DicomObject dcmObj, String title) {
         super(id);
+        
+        if (EditDicomObjectPanel.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(EditDicomObjectPanel.BaseCSS));
+        
         add(mw);
         add(new Label("title", new ResourceModel("dicom.edit.title."+title)));
         this.dcmObj = new BasicDicomObject();
@@ -108,32 +120,52 @@ public class EditDicomObjectPanel extends Panel {
             
         };
         table.add(rv);
-        form.add(new Button("apply", new ResourceModel("applyBtn")){
+        form.add(new AjaxFallbackButton("apply", new ResourceModel("applyBtn"), form){
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onSubmit() {
-                EditDicomObjectPanel.this.onApply();
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                try {
+                    EditDicomObjectPanel.this.onApply();
+                } catch (Exception e) {
+                    resultMessage.setObject(e.getLocalizedMessage());
+                    target.addComponent(EditDicomObjectPanel.this);
+                }
             }
         });
-        form.add(new Button("submit", new ResourceModel("saveBtn")) {
+        form.add(new AjaxFallbackButton("submit", new ResourceModel("saveBtn"), form) {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onSubmit() {
-                EditDicomObjectPanel.this.onSubmit();
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                try {
+                    EditDicomObjectPanel.this.onSubmit();
+                    window.close(target);
+                } catch (Exception e) {
+                    resultMessage.setObject(e.getLocalizedMessage());
+                    target.addComponent(form);
+                }
+            }
+
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
+                target.addComponent(form);
             }
         });
-        form.add(new Button("cancel", new ResourceModel("cancelBtn")) {
+        form.add(new AjaxFallbackButton("cancel", new ResourceModel("cancelBtn"), form) {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onSubmit() {
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 EditDicomObjectPanel.this.onCancel();
-            }}.setDefaultFormProcessing(false));
+                window.close(target);
+            }
+        }
+        .setDefaultFormProcessing(false));
+        form.add(new Label("result-message", (resultMessage = new Model<String>(""))));
     }
 
     private void addHdrLabels(WebMarkupContainer table) {

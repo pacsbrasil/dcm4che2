@@ -45,11 +45,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -75,7 +75,6 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.exceptions.SelectionException;
 import org.dcm4chee.web.dao.common.DicomEditLocal;
-import org.dcm4chee.web.war.common.SimpleEditDicomObjectPage;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
@@ -107,11 +106,10 @@ public class MoveEntitiesPage extends WebPage {
     private static final int MISSING_SERIES = 2;
 
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    private static final ResourceReference EditCSS = new CompressedResourceReference(SimpleEditDicomObjectPage.class, "edit-style.css");
+    private static final ResourceReference EditCSS = new CompressedResourceReference(SimpleEditDicomObjectPanel.class, "edit-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(MoveEntitiesPage.class, "move-style.css");
 
     private SelectedEntities selected;
-    private Page page;
     private List<PatientModel> allPatients;
     
     private int missingState = MISSING_NOTHING;
@@ -127,22 +125,33 @@ public class MoveEntitiesPage extends WebPage {
     private String infoMsgId;
     private StringResourceModel selectedInfoModel;
     
-    public MoveEntitiesPage(Page page, SelectedEntities selectedEntities, List<PatientModel> all) {
+    private ModalWindow window;
+    
+    public MoveEntitiesPage(ModalWindow window, SelectedEntities selectedEntities, List<PatientModel> all) {
         super();
-        add(CSSPackageResource.getHeaderContribution(MoveEntitiesPage.BaseCSS));
-        add(CSSPackageResource.getHeaderContribution(MoveEntitiesPage.EditCSS));
-        add(CSSPackageResource.getHeaderContribution(MoveEntitiesPage.CSS));
+        
+        if (MoveEntitiesPage.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(MoveEntitiesPage.BaseCSS));
+        if (MoveEntitiesPage.EditCSS != null)
+            add(CSSPackageResource.getHeaderContribution(MoveEntitiesPage.EditCSS));
+        if (MoveEntitiesPage.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(MoveEntitiesPage.CSS));
+        
+        this.window = window;
         this.selected = selectedEntities;
-        this.page = page;
         allPatients = all;
         this.add(infoPanel = new InfoPanel());
         infoMsgId = checkSelection(selected);
-        if (infoMsgId == null) {
+        if (infoMsgId == null) 
             infoPanel.setSrcInfo(selected);
-        }
-        selectPanel();
     }
 
+    @Override
+    protected void onBeforeRender() {
+        super.onBeforeRender();
+        prepareForMove();
+    }
+    
     public String checkSelection(SelectedEntities selected) {
         if (selected.getPpss().size() > 0) {
             return MSGID_ERR_SELECTION_MOVE_PPS;
@@ -234,25 +243,37 @@ public class MoveEntitiesPage extends WebPage {
         missingState = missingState | MISSING_STUDY;
         studyModel = new StudyModel(null, pat);
         presetStudy(sourceStudy);
-        newStudyPanel = new SimpleEditDicomObjectPanel("panel", new ResourceModel("move.newStudyForMove.text"),
-                studyModel.getDataset(), getStudyEditAttributes() ) {
-            private static final long serialVersionUID = 1L;
+        newStudyPanel = 
+            new SimpleEditDicomObjectPanel(
+                    "content", 
+                    window, 
+                    studyModel.getDataset(), 
+                    new ResourceModel("move.newStudyForMove.text").wrapOnAssignment(this).getObject(),
+                    getStudyEditAttributes(), 
+                    false
+            ) {
+                private static final long serialVersionUID = 1L;
+              
+                @Override
+                protected void onCancel() {
+                    doCancel();
+                }
+               
+                @Override
+                protected void onClose() {
+                    doCancel();
+                }
 
-            @Override
-            protected void onCancel() {
-                doCancel();
-            }
-
-            @Override
-            protected void onSubmit() {
-                studyModel.update(getDicomObject());
-                pat.getStudies().add(studyModel);
-                selected.getPatients().clear();
-                selected.getStudies().add(studyModel);
-                missingState = missingState & ~MISSING_STUDY;
-                selectPanel();
-            }
-        };
+                @Override
+                protected void onSubmit() {
+                    studyModel.update(getDicomObject());
+                    pat.getStudies().add(studyModel);
+                    selected.getPatients().clear();
+                    selected.getStudies().add(studyModel);
+                    missingState = missingState & ~MISSING_STUDY;
+                    setResponsePage(MoveEntitiesPage.this);
+                }
+            };
     }
 
     private void presetStudy(StudyModel sourceStudy) {
@@ -270,24 +291,36 @@ public class MoveEntitiesPage extends WebPage {
         seriesModel = new SeriesModel(null, null);
         new PPSModel(null, seriesModel, study);
         presetSeries(sourceSeries);
-        newSeriesPanel = new SimpleEditDicomObjectPanel("panel", new ResourceModel("move.newSeriesForMove.text"),
-                seriesModel.getDataset(), getSeriesEditAttributes() ) {
-            private static final long serialVersionUID = 1L;
+        newSeriesPanel = 
+            new SimpleEditDicomObjectPanel(
+                    "content", 
+                    window, 
+                    seriesModel.getDataset(),
+                    new ResourceModel("move.newSeriesForMove.text").wrapOnAssignment(this).getObject(),
+                    getSeriesEditAttributes(), 
+                    false
+            ) {
+                private static final long serialVersionUID = 1L;
+    
+                @Override
+                protected void onCancel() {
+                    doCancel();
+                }
 
-            @Override
-            protected void onCancel() {
-                doCancel();
-            }
+                @Override
+                protected void onClose() {
+                    doCancel();
+                }
 
-            @Override
-            protected void onSubmit() {
-                seriesModel.update(getDicomObject());
-                selected.getStudies().clear();
-                selected.getSeries().add(seriesModel);
-                missingState = missingState & ~MISSING_SERIES;
-                selectPanel();
-            }
-        };
+                @Override
+                protected void onSubmit() {
+                    seriesModel.update(getDicomObject());
+                    selected.getStudies().clear();
+                    selected.getSeries().add(seriesModel);
+                    missingState = missingState & ~MISSING_SERIES;
+                    setResponsePage(MoveEntitiesPage.this);
+                }
+            };
     }
 
     private void presetSeries(SeriesModel sourceSeries) {
@@ -312,17 +345,18 @@ public class MoveEntitiesPage extends WebPage {
             dao.removeStudy(studyModel.getPk());
             studyModel.getPatient().getStudies().remove(studyModel);
         }
-        setResponsePage(page);
     }
 
-    private void selectPanel() {
+    private boolean prepareForMove() {
         if ((missingState & MISSING_STUDY) != 0) {
             this.addOrReplace(this.newStudyPanel);
         } else if ((missingState & MISSING_SERIES) != 0) {
             this.addOrReplace(this.newSeriesPanel);
         } else {
             this.addOrReplace(this.infoPanel);
+            return false;
         }
+        return true;
     }
     
     private int[][] getStudyEditAttributes() {
@@ -365,7 +399,7 @@ public class MoveEntitiesPage extends WebPage {
         };
         
         public InfoPanel() {
-            super("panel");
+            super("content");
             add( new Label("infoTitle", new ResourceModel("move.pageTitle")));
             add( infoLabel = new Label("info", infoModel));
             infoLabel.setOutputMarkupId(true);
@@ -380,9 +414,12 @@ public class MoveEntitiesPage extends WebPage {
             }).setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true));
             
             okBtn = new AjaxFallbackLink<Object>("moveFinishedBtn") {
+                
                 private static final long serialVersionUID = 1L;
+                
                 @Override
                 public void onClick(AjaxRequestTarget target) {
+                    
                     selected.clear();
                     SelectedEntities.deselectAll(allPatients);
                     if (studyModel == null && seriesModel == null) {
@@ -408,7 +445,7 @@ public class MoveEntitiesPage extends WebPage {
                         }
                         refreshStudyAndSeries(m);
                     }
-                    setResponsePage(page);
+                    window.close(target);
                 }
             };
             okBtn.add(new TooltipBehaviour("folder.", "moveFinishedBtn"));
@@ -417,10 +454,18 @@ public class MoveEntitiesPage extends WebPage {
             okBtn.setVisible(false).setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true);
             add(okBtn);
             moveBtn = new AjaxFallbackLink<Object>("moveBtn") {
+                
                 private static final long serialVersionUID = 1L;
+                
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     try {
+                        if (prepareForMove()) {
+                            getPage().setOutputMarkupId(true);
+                            target.addComponent(getPage());
+                            return;
+                        }
+
                         infoMsgId = "move.message.move.running";
                         okBtn.setVisible(false);
                         cancelBtn.setVisible(false);
@@ -444,7 +489,6 @@ public class MoveEntitiesPage extends WebPage {
                                     }
                                     okBtn.setVisible(true);
                                     moveBtn.setVisible(false);
-                                    
                                 } catch (SelectionException x) {
                                     log.warn(x.getMessage());
                                     infoMsgId = x.getMsgId();
@@ -479,9 +523,10 @@ public class MoveEntitiesPage extends WebPage {
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     doCancel();
+                    window.close(target);
                 }
             };
-            add(cancelBtn.add(new Label("cancelLabel", new ResourceModel("cancelBtn"))).setOutputMarkupId(true) );
+            add(cancelBtn.add(new Label("cancelLabel", new ResourceModel("cancelBtn"))).setOutputMarkupId(true));
         }
 
         private void refreshStudyAndSeries(AbstractDicomModel parent) {

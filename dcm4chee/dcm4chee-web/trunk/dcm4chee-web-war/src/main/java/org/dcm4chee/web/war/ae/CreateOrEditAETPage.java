@@ -79,16 +79,15 @@ public class CreateOrEditAETPage extends WebPage {
     
     private static final long serialVersionUID = 1L;
 
-    private static final ResourceReference CSS = new CompressedResourceReference(CreateOrEditAETPage.class, "ae-style.css");
-
+    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    
     private Model<String> resultMessage;
     
     public CreateOrEditAETPage(final ModalWindow window, final AE ae) {
         super();
-
-        add(CSSPackageResource.getHeaderContribution(BaseWicketPage.class, "base-style.css"));
-        if (CreateOrEditAETPage.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(CreateOrEditAETPage.CSS));
+        
+        if (CreateOrEditAETPage.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(CreateOrEditAETPage.BaseCSS));
 
         add(new WebMarkupContainer("create-aet-title").setVisible(ae.getPk() == -1));
         add(new WebMarkupContainer("edit-aet-title").setVisible(ae.getPk() != -1));

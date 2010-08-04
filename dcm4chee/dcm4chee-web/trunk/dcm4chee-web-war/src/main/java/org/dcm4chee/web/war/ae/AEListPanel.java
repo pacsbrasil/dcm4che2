@@ -44,6 +44,7 @@ import java.util.List;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
@@ -60,6 +61,7 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.list.OddEvenListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
@@ -73,6 +75,8 @@ import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
+import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
+import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -82,7 +86,9 @@ import org.dcm4chee.web.dao.ae.AEHomeLocal;
 public class AEListPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
-    
+
+    private static final ResourceReference CSS = new CompressedResourceReference(AEListPanel.class, "ae-style.css");
+
     private ModalWindow modalWindow;
     private DicomEchoWindow mw;
     private ConfirmationWindow<AE> confirm; 
@@ -92,7 +98,8 @@ public class AEListPanel extends Panel {
     public AEListPanel(String id) {
         super(id);
         
-        add(CSSPackageResource.getHeaderContribution(AEListPanel.class, "ae-style.css"));
+        if (AEListPanel.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(AEListPanel.CSS));
         
         add(modalWindow = new ModalWindow("modal-window"));
         

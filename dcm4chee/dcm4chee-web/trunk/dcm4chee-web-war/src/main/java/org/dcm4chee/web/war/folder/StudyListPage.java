@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.folder;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -51,28 +50,22 @@ import org.apache.wicket.Page;
 import org.apache.wicket.PageMap;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
-import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.IAjaxCallDecorator;
-import org.apache.wicket.ajax.calldecorator.CancelEventIfNoAjaxDecorator;
-import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
+import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.CloseButtonCallback;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
-import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.ExternalLink;
@@ -81,6 +74,7 @@ import org.apache.wicket.markup.html.link.PopupSettings;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
@@ -92,20 +86,16 @@ import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.VR;
-import org.dcm4chee.archive.common.PrivateTag;
-import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.dashboard.ui.report.CreateOrEditReportPage;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.CheckOneDayBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
-import org.dcm4chee.web.common.exceptions.SelectionException;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
+import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.PopupLink;
 import org.dcm4chee.web.common.markup.SimpleDateTimeField;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
@@ -116,9 +106,8 @@ import org.dcm4chee.web.dao.folder.StudyListFilter;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.war.WicketSession;
-import org.dcm4chee.web.war.ae.EchoDelegate;
-import org.dcm4chee.web.war.common.EditDicomObjectPage;
-import org.dcm4chee.web.war.common.SimpleEditDicomObjectPage;
+import org.dcm4chee.web.war.common.EditDicomObjectPanel;
+import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 import org.dcm4chee.web.war.folder.model.FileModel;
@@ -132,6 +121,10 @@ import org.slf4j.LoggerFactory;
 
 public class StudyListPage extends Panel {
 
+    private static final ResourceReference CSS = new CompressedResourceReference(StudyListPage.class, "folder-style.css");
+    
+    private ModalWindow modalWindow;
+    
     private static int PAGESIZE_ENTRIES = 6;
     private static int PAGESIZE_STEP = 5;
     private Model<Integer> pagesize = new Model<Integer>();
@@ -168,10 +161,22 @@ public class StudyListPage extends Panel {
     public StudyListPage(final String id) {
         super(id);
         
+        if (StudyListPage.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
+        
+        add(modalWindow = new ModalWindow("modal-window"));
+        modalWindow.setWindowClosedCallback(new WindowClosedCallback() {
+            private static final long serialVersionUID = 1L;
+
+            public void onClose(AjaxRequestTarget target) {
+                getPage().setOutputMarkupId(true);
+                target.addComponent(getPage());
+            }            
+        });
+        
         webviewerLinkProvider = new WebviewerLinkProvider(((WebApplication)Application.get()).getInitParameter("webviewerName"));
         webviewerLinkProvider.setBaseUrl(((WebApplication)Application.get()).getInitParameter("webviewerBaseUrl"));
-        add(CSSPackageResource.getHeaderContribution(StudyListPage.class, "folder-style.css"));
-
+        
         final StudyListFilter filter = viewport.getFilter();
         add(form = new BaseForm("form", new CompoundPropertyModel<Object>(filter)));
         form.setResourceIdPrefix("folder.");
@@ -211,7 +216,7 @@ public class StudyListPage extends Panel {
 
         addQueryFields(filter, form);
         addQueryOptions(form);
-        addNavigation(form);               
+        addNavigation(form);
         addActions(form);
         
         form.add(header);
@@ -604,7 +609,7 @@ public class StudyListPage extends Panel {
         );
         form.add(deleteBtn);
         
-        AjaxButton moveBtn = new AjaxButton("moveBtn") {
+        AjaxFallbackButton moveBtn = new AjaxFallbackButton("moveBtn", form) {
             
             private static final long serialVersionUID = 1L;
             
@@ -613,9 +618,23 @@ public class StudyListPage extends Panel {
                 selected.update(viewport.getPatients(), true);
                 //selected.deselectChildsOfSelectedEntities();
                 log.info("Selected Entities:"+selected);
-                if (selected.hasDicomSelection())
-                    setResponsePage(new MoveEntitiesPage(StudyListPage.this.getPage(), selected, viewport.getPatients()));
-                else
+                if (selected.hasDicomSelection()) {
+                    modalWindow
+                    .setPageCreator(new ModalWindow.PageCreator() {
+                        
+                        private static final long serialVersionUID = 1L;
+                          
+                        @Override
+                        public Page createPage() {
+                            return new MoveEntitiesPage(
+                                  modalWindow, 
+                                  selected, 
+                                  viewport.getPatients()
+                          );
+                        }
+                    });
+                    modalWindow.show(target);
+                } else
                     msgWin.show(target, getString("folder.message.noSelection"));
             }
         };
@@ -891,7 +910,7 @@ public class StudyListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
             .add(tooltip)));
-            item.add(getEditLink(patModel, tooltip)
+            item.add(getEditLink(modalWindow, patModel, tooltip)
                     .add(tooltip));
             item.add(getAddStudyLink(patModel, tooltip)
                     .add(tooltip));
@@ -986,7 +1005,7 @@ public class StudyListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
             .add(tooltip)));
-            item.add(getEditLink(studyModel, tooltip));
+            item.add(getEditLink(modalWindow, studyModel, tooltip));
             item.add(getAddSeriesLink(studyModel, tooltip));
             item.add(new AjaxLink<Object>("imgSelect") {
                 private static final long serialVersionUID = 1L;
@@ -1103,7 +1122,7 @@ public class StudyListPage extends Panel {
             .add(new ImageSizeBehaviour())
                 .add(tooltip))
             );
-            item.add(getEditLink(ppsModel,tooltip));
+            item.add(getEditLink(modalWindow, ppsModel,tooltip));
             
             AjaxFallbackLink<?> linkBtn = new AjaxFallbackLink<Object>("linkBtn") {
                 
@@ -1241,7 +1260,7 @@ public class StudyListPage extends Panel {
             .add(new ImageSizeBehaviour())
                 .add(tooltip))
             );
-            item.add(getEditLink(seriesModel, tooltip));
+            item.add(getEditLink(modalWindow, seriesModel, tooltip));
             item.add(new AjaxCheckBox("selected") {
 
                 private static final long serialVersionUID = 1L;
@@ -1343,7 +1362,7 @@ public class StudyListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
             .add(tooltip)));
-            item.add(getEditLink(instModel, tooltip));
+            item.add(getEditLink(modalWindow, instModel, tooltip));
             item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForInstance(instModel.getSOPInstanceUID())) {
                 private static final long serialVersionUID = 1L;
                 @Override
@@ -1470,89 +1489,142 @@ public class StudyListPage extends Panel {
         }
     }
     
-    private Link<Object> getEditLink(final AbstractEditableDicomModel model, TooltipBehaviour tooltip) {
-        Link<Object> link = new Link<Object>("edit") {
-            
+    private Link<Object> getEditLink(final ModalWindow modalWindow, final AbstractEditableDicomModel model, TooltipBehaviour tooltip) {
+       
+        ModalWindowLink editLink
+         = new ModalWindowLink("edit", modalWindow,
+                new Integer(new ResourceModel("folder.edit.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
+                new Integer(new ResourceModel("folder.edit.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
+        ) {
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onClick() {
-                setResponsePage(
-                        new EditDicomObjectPage(StudyListPage.this.getPage(), model));
+            public void onClick(AjaxRequestTarget target) {
+                modalWindow.setContent(new EditDicomObjectPanel(
+                        "content", 
+                        modalWindow, 
+                        (DicomObject) model.getDataset(), 
+                        model.getClass().getSimpleName()
+                ) {
+                   private static final long serialVersionUID = 1L;
+
+                   @Override
+                   protected void onSubmit() {
+                       model.update(getDicomObject());
+                       super.onCancel();
+                   }
+                });
+                modalWindow.show(target);
+                super.onClick(target);
             }
+            
             @Override
             public boolean isVisible() {
                 return model.getDataset() != null;
             }
         };
         Image image = new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT);
-        image.add(new ImageSizeBehaviour());
+        image.add(new ImageSizeBehaviour("vertical-align: middle;"));
         if (tooltip != null) image.add(tooltip);
-        link.add(image);
-
+        editLink.add(image);
         
-        MetaDataRoleAuthorizationStrategy.authorize(link, RENDER, "WebAdmin");
-        return link;
+        MetaDataRoleAuthorizationStrategy.authorize(editLink, RENDER, "WebAdmin");
+        return editLink;
     }
 
     private Link<Object> getAddStudyLink(final PatientModel model, TooltipBehaviour tooltip) {
-        Link<Object> link = new Link<Object>("add") {
-            
-            private static final long serialVersionUID = 1L;
+        
+        final ModalWindowLink addStudyLink 
+            = new ModalWindowLink("add", modalWindow,
+                    new Integer(new ResourceModel("folder.add.study.window.width").wrapOnAssignment(this).getObject().toString()).intValue(),                
+                    new Integer(new ResourceModel("folder.add.study.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
+       ) {
+           private static final long serialVersionUID = 1L;
 
-            @Override
-            public void onClick() {
-                StudyModel newStudyModel = new StudyModel(null, model);
-                setResponsePage(
-                        new SimpleEditDicomObjectPage(StudyListPage.this.getPage(), new ResourceModel("folder.addStudy", "Add Study"),
-                                newStudyModel, new int[][]{{Tag.StudyInstanceUID},
-                                                    {Tag.StudyID},
-                                                    {Tag.StudyDescription},
-                                                    {Tag.AccessionNumber},
-                                                    {Tag.StudyDate, Tag.StudyTime}}, model));
-            }
-            @Override
-            public boolean isVisible() {
-                return model.getDataset() != null;
-            }
+           @Override
+           public void onClick(AjaxRequestTarget target) {
+               modalWindow.setContent(new SimpleEditDicomObjectPanel(
+                     "content", 
+                     modalWindow, 
+                     (DicomObject) model.getDataset(), 
+                     new ResourceModel("folder.add.study.text").wrapOnAssignment(getParent()).getObject(), 
+                     new int[][]{{Tag.StudyInstanceUID},
+                                 {Tag.StudyID},
+                                 {Tag.StudyDescription},
+                                 {Tag.AccessionNumber},
+                                 {Tag.StudyDate, Tag.StudyTime}}, 
+                     true
+             ) {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onSubmit() {
+                    model.update(getDicomObject());
+                    super.onCancel();
+                }
+               });
+               modalWindow.show(target);
+               super.onClick(target);
+           }
+           
+           @Override
+           public boolean isVisible() {
+               return model.getDataset() != null;
+           }
         };
         Image image = new Image("addImg",ImageManager.IMAGE_COMMON_ADD);
         image.add(new ImageSizeBehaviour());
         if (tooltip != null) image.add(tooltip);
-        link.add(image);
-        return link;
+        addStudyLink.add(image);
+        return addStudyLink;
     }
 
     private Link<Object> getAddSeriesLink(final StudyModel model, TooltipBehaviour tooltip) {
-        Link<Object> link = new Link<Object>("add") {
-            
-            private static final long serialVersionUID = 1L;
+        
+        ModalWindowLink addSeriesLink
+            = new ModalWindowLink("add", modalWindow,
+                    new Integer(new ResourceModel("folder.add.series.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
+                    new Integer(new ResourceModel("folder.add.series.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
+           ) {
+               private static final long serialVersionUID = 1L;
+           
+               @Override
+               public void onClick(AjaxRequestTarget target) {
+                   modalWindow.setContent(new SimpleEditDicomObjectPanel(
+                           "content", 
+                           modalWindow, 
+                           (DicomObject) model.getDataset(), 
+                           new ResourceModel("folder.add.series.text").wrapOnAssignment(getParent()).getObject(), 
+                           new int[][]{{Tag.SeriesInstanceUID},
+                                       {Tag.SeriesNumber},
+                                       {Tag.Modality},
+                                       {Tag.SeriesDate, Tag.SeriesTime},
+                                       {Tag.SeriesDescription},
+                                       {Tag.BodyPartExamined},{Tag.Laterality}}, 
+                           true
+           ) {
+               private static final long serialVersionUID = 1L;
 
-            @Override
-            public void onClick() {
-                SeriesModel newSeriesModel = new SeriesModel(null, null);
-                DicomObject attrs = newSeriesModel.getDataset();
-                attrs.putString(attrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), VR.AE, "created");
-                new PPSModel(null, newSeriesModel, model);
-                setResponsePage(
-                        new SimpleEditDicomObjectPage(StudyListPage.this.getPage(), new ResourceModel("folder.addSeries", "Add Series"),
-                                newSeriesModel, new int[][]{{Tag.SeriesInstanceUID},
-                                                    {Tag.SeriesNumber},
-                                                    {Tag.Modality},
-                                                    {Tag.SeriesDate, Tag.SeriesTime},
-                                                    {Tag.SeriesDescription},
-                                                    {Tag.BodyPartExamined},{Tag.Laterality}}, model));
-            }
-            @Override
-            public boolean isVisible() {
-                return model.getDataset() != null;
-            }
-        };
+               @Override
+                  protected void onSubmit() {
+                      model.update(getDicomObject());
+                      super.onCancel();
+                  }
+              });
+              modalWindow.show(target);
+              super.onClick(target);
+          }
+          
+          @Override
+          public boolean isVisible() {
+              return model.getDataset() != null;
+          }
+       };
         Image image = new Image("addImg",ImageManager.IMAGE_COMMON_ADD);
         image.add(new ImageSizeBehaviour());
         if (tooltip != null) image.add(tooltip);
-        link.add(image);
-        return link;
+        addSeriesLink.add(image);
+        return addSeriesLink;
     }
 
     private class ExpandCollapseLink extends AjaxFallbackLink<Object> {
