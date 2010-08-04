@@ -87,15 +87,15 @@ public class ReportPanel extends Panel {
     
     private static Logger log = LoggerFactory.getLogger(ReportPanel.class);
 
-    private static final ResourceReference CSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
+    private static final ResourceReference DashboardCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
 
     private ModalWindow modalWindow;
     
     public ReportPanel(String id) {
         super(id);
 
-        if (ReportPanel.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(ReportPanel.CSS));
+        if (ReportPanel.DashboardCSS != null)
+            add(CSSPackageResource.getHeaderContribution(ReportPanel.DashboardCSS));
 
         add(modalWindow = new ModalWindow("modal-window")
             .setPageCreator(new ModalWindow.PageCreator() {

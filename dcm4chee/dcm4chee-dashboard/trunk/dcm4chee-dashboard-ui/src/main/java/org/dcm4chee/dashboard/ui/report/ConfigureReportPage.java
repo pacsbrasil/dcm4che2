@@ -86,7 +86,7 @@ public class ConfigureReportPage extends WebPage {
     private static Logger log = LoggerFactory.getLogger(ConfigureReportPage.class);
 
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    private static final ResourceReference CSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
+    private static final ResourceReference DashboardBaseCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
 
     private ReportModel report;
     protected ModalWindow window;
@@ -101,8 +101,8 @@ public class ConfigureReportPage extends WebPage {
 
         if (ConfigureReportPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(ConfigureReportPage.BaseCSS));
-        if (ConfigureReportPage.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(ConfigureReportPage.CSS));
+        if (ConfigureReportPage.DashboardBaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(ConfigureReportPage.DashboardBaseCSS));
 
         try {
             this.report = report;

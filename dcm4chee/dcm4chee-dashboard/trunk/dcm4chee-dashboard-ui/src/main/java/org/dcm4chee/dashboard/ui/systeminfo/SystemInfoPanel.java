@@ -92,13 +92,13 @@ public class SystemInfoPanel extends Panel {
     
     private static Logger log = LoggerFactory.getLogger(SystemInfoPanel.class);
 
-    private static final ResourceReference CSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
+    private static final ResourceReference DashboardCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
 
     public SystemInfoPanel(String id) {
         super(id);
         
-        if (SystemInfoPanel.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(SystemInfoPanel.CSS));
+        if (SystemInfoPanel.DashboardCSS != null)
+            add(CSSPackageResource.getHeaderContribution(SystemInfoPanel.DashboardCSS));
     }
     
     @Override

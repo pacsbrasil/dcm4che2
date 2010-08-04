@@ -89,15 +89,15 @@ public class QueuePanel extends Panel {
     
     private static Logger log = LoggerFactory.getLogger(QueuePanel.class);
 
-    private static final ResourceReference CSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
+    private static final ResourceReference DashboardCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
     
     public static final String CONNECTION_FACTORY = "java:ConnectionFactory";
 
     public QueuePanel(String id) {
         super(id);
         
-        if (QueuePanel.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(QueuePanel.CSS));
+        if (QueuePanel.DashboardCSS != null)
+            add(CSSPackageResource.getHeaderContribution(QueuePanel.DashboardCSS));
     }
     
     @SuppressWarnings("unchecked")
