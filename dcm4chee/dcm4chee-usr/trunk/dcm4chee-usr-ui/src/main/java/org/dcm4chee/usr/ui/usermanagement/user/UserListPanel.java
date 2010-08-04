@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -91,6 +90,7 @@ public class UserListPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
+    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(UserManagementPanel.class, "usr-style.css");
     
     private ListModel<User> allUsers;
@@ -106,7 +106,8 @@ public class UserListPanel extends Panel {
     public UserListPanel(String id) {
         super(id);
         
-        add(CSSPackageResource.getHeaderContribution(BaseWicketPage.class, "base-style.css"));
+        if (UserListPanel.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(UserListPanel.BaseCSS));
         if (UserListPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(UserListPanel.CSS));
 

@@ -39,12 +39,8 @@
 package org.dcm4chee.usr.ui.usermanagement.role;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.Component;
-import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -53,13 +49,9 @@ import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Button;
-import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
@@ -72,14 +64,11 @@ import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.usr.dao.Role;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.ui.usermanagement.UserManagementPanel;
-import org.dcm4chee.usr.ui.usermanagement.user.AddUserPage;
 import org.dcm4chee.usr.ui.util.CSSUtils;
-import org.dcm4chee.usr.ui.validator.RoleValidator;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.base.JaasWicketSession;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
-import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 
@@ -93,6 +82,7 @@ public class RoleListPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
+    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(UserManagementPanel.class, "usr-style.css");
     
     String serviceObjectName;
@@ -106,7 +96,8 @@ public class RoleListPanel extends Panel {
     public RoleListPanel(String id) {
         super(id);
         
-        add(CSSPackageResource.getHeaderContribution(BaseWicketPage.class, "base-style.css"));
+        if (RoleListPanel.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(RoleListPanel.BaseCSS));
         if (RoleListPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(RoleListPanel.CSS));
 

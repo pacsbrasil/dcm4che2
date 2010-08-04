@@ -75,6 +75,7 @@ public class ChangePasswordPage extends WebPage {
     private static final ResourceReference CSS = new CompressedResourceReference(ChangePasswordPage.class, "usr-style.css");
     
     public ChangePasswordPage(String userId, final User forUser, final ModalWindow window) {
+        
         if (ChangePasswordPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(ChangePasswordPage.BaseCSS));
         if (ChangePasswordPage.CSS != null)

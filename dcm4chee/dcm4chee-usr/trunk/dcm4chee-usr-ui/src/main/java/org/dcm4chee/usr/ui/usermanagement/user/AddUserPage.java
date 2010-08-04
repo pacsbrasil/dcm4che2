@@ -73,9 +73,10 @@ import org.slf4j.LoggerFactory;
 public class AddUserPage extends WebPage {
     
     private static final long serialVersionUID = 1L;
+
+    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     
     private static Logger log = LoggerFactory.getLogger(AddUserPage.class);
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
 
     protected ModalWindow window;
     
