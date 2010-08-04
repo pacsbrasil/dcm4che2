@@ -15,10 +15,11 @@
 	<property name="jboss.server.lib" value="${jboss.home}/server/default/lib"/>
 
     <!-- Override with your dcm4che-1.4.x source dist location -->
-    <property name="dcm4che14.home"
+    <property name="dcm4che14.home" 
       value="${user.home}/dcm4che14/build/dcm4che-1.4.28"/>
     <property name="dcm4che.jar" value="${dcm4che14.home}/lib/dcm4che.jar"/>
-
+	<property name="dcm4che14.lib" value="../dcm4che14/lib"/>
+	
 	<!-- Override with your dcm4chee-ejb working directory -->
 	<property name="dcm4chee-ejb.home" value="../dcm4jboss-ejb" />
 	<property name="dcm4chee-ejb.target" value="${dcm4chee-ejb.home}/target" />
@@ -61,6 +62,8 @@
 		<pathelement location="${dcm4chee-ejb-server.jar}"/>
 		<pathelement location="${dcm4chee.jar}"/>
 		<pathelement location="${dcm4chee-sar.lib}/dcm4che-audit-2.0.21.jar"/>		
+		<pathelement location="${dcm4che14.lib}/slf4j-api-1.6.1.jar"/>
+		<pathelement location="${dcm4che14.lib}/slf4j-log4j12-1.6.1.jar"/>
 		<fileset dir="${jboss.lib}">
 			<include name="*.jar"/>
 		</fileset>
