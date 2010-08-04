@@ -33,16 +33,16 @@
 			<tr wicket:id="searchLabels">
 				<td></td>
 				<td>
-					<div wicket:id="patientName.label">Patient Name</div>
+					<div wicket:id="patientName.label" class="search-header">Patient Name</div>
 				</td>
 				<td colspan="2">
-					<div  wicket:id="patientIDDescr.label">Patient ID</div>
+					<div  wicket:id="patientIDDescr.label" class="search-header">Patient ID</div>
 				</td>
 				<td colspan="2">
-					<div wicket:id="studyDate.label">Study Date</div>
+					<div wicket:id="studyDate.label" class="search-header">Study Date</div>
 				</td>
 				<td>
-					<div wicket:id="accessionNumber.label">Accession Number</div>
+					<div wicket:id="accessionNumber.label" class="search-header">Accession Number</div>
 				</td>
 				<td></td>
 			</tr>
@@ -75,11 +75,11 @@
 			<tr wicket:id="searchDropdowns">
 				<td></td>
 				<td>
-					<div wicket:id="modality.label">Modality</div>
+					<div wicket:id="modality.label" class="search-header">Modality</div>
 			      	<select wicket:id="modality" />			
 				</td>
 				<td>
-					<div wicket:id="sourceAET.label">Source AET</div>
+					<div wicket:id="sourceAET.label" class="search-header">Source AET</div>
 					<select wicket:id="sourceAET" />
 				</td>
 				<td colspan="4"></td>
@@ -88,7 +88,7 @@
              <tr wicket:id="extendedFilter" class="search-table-extended">
 	            <td></td>
 	            <td>
-	                <div wicket:id="birthDate.label">Birth Date</div>
+	                <div wicket:id="birthDate.label" class="search-header">Birth Date</div>
 					<div wicket:id="birthDateMin.label">from</div>
 					<div wicket:id="birthDateMin" id="birthDateMin" />
 	            </td>
@@ -98,12 +98,14 @@
 				</td>
 				<td></td>
 				<td>
-					<div wicket:id="studyInstanceUID.label">Study Instance UID</div>
+					<div wicket:id="studyInstanceUID.label" class="search-header">Study Instance UID</div>
+					<br />
 					<input wicket:id="studyInstanceUID" id="studyInstanceUID" type="text"/>
 				</td>
 				<td></td>
 				<td>
-					<div wicket:id="seriesInstanceUID.label">Series Instance UID</div>
+					<div wicket:id="seriesInstanceUID.label" class="search-header">Series Instance UID</div>
+					<br />
 					<input wicket:id="seriesInstanceUID" id="seriesInstanceUID" type="text"/>
 				</td>
 				<td></td>

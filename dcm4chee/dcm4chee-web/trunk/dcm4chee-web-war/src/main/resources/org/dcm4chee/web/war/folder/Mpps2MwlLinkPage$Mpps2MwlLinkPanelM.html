@@ -48,16 +48,16 @@
 			<tr wicket:id="searchLabels">
 				<td></td>
 				<td>
-					<div wicket:id="patientName.label">Patient Name</div>
+					<div wicket:id="patientName.label" class="search-header">Patient Name</div>
 				</td>
 				<td colspan="2">
-					<div  wicket:id="patientIDDescr.label">Patient ID</div>
+					<div  wicket:id="patientIDDescr.label" class="search-header">Patient ID</div>
 				</td>
 				<td colspan="2">
-					<div wicket:id="startDate.label">Start Date</div>
+					<div wicket:id="startDate.label" class="search-header">Start Date</div>
 				</td>
 				<td>
-					<div wicket:id="accessionNumber.label">Accession Number</div>
+					<div wicket:id="accessionNumber.label" class="search-header">Accession Number</div>
 				</td>
 				<td></td>
 			</tr>
@@ -90,19 +90,19 @@
 			<tr wicket:id="searchDropdowns">
 				<td></td>
 				<td>
-					<div wicket:id="modality.label">Mod</div>
+					<div wicket:id="modality.label" class="search-header">Mod</div>
 			      	<select wicket:id="modality" />			
 				</td>
 				<td>
-					<div wicket:id="scheduledStationAET.label">Station AET</div>
+					<div wicket:id="scheduledStationAET.label" class="search-header">Station AET</div>
 					<select wicket:id="scheduledStationAET" />
 				</td>
 				<td>
-					<div wicket:id="scheduledStationName.label">Station Name</div>
+					<div wicket:id="scheduledStationName.label" class="search-header">Station Name</div>
 					<select wicket:id="scheduledStationName" />
 				</td>
 				<td>
-					<div wicket:id="SPSStatus.label">SPS Status</div>
+					<div wicket:id="SPSStatus.label" class="search-header">SPS Status</div>
 					<select wicket:id="SPSStatus" />
 				</td>
 				<td colspan="2"></td>
@@ -111,7 +111,7 @@
              <tr wicket:id="extendedFilter" class="search-table-extended">
 	            <td></td>
 	            <td>
-	                <div wicket:id="birthDate.label">Birth Date</div>
+	                <div wicket:id="birthDate.label" class="search-header">Birth Date</div>
 					<div wicket:id="birthDateMin.label">from</div>
 					<div wicket:id="birthDateMin" id="birthDateMin" />
 	            </td>
@@ -120,7 +120,8 @@
 					<div wicket:id="birthDateMax" id="birthDateMax" />
 				</td>
 				<td>
-					<div wicket:id="studyInstanceUID.label">Study Instance UID</div>
+					<div wicket:id="studyInstanceUID.label" class="search-header">Study Instance UID</div>
+					<br />
 					<input wicket:id="studyInstanceUID" id="studyInstanceUID" type="text"/>
 				</td>
 	            <td colspan="5"></td>

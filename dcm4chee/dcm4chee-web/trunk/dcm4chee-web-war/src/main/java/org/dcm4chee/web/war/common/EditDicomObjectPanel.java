@@ -117,7 +117,6 @@ public class EditDicomObjectPanel extends Panel {
                 addDicomObject(this, EditDicomObjectPanel.this.dcmObj, "",
                         new int[0]);
             }
-            
         };
         table.add(rv);
         form.add(new AjaxFallbackButton("apply", new ResourceModel("applyBtn"), form){
@@ -388,5 +387,4 @@ public class EditDicomObjectPanel extends Panel {
             super.setObject(object);
         }
     }
-
 }
