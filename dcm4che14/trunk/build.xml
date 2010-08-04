@@ -65,6 +65,8 @@
       <pathelement location="${build.res.dir}" />
       <pathelement location="${test.conf.dir}" />
       <pathelement location="${lib.dir}/jai_imageio.jar" />
+	  <pathelement location="${lib.dir}/slf4j-log4j12-1.4.3.jar" />
+	  <pathelement location="${lib.dir}/slf4j-api-1.4.3.jar" />
    </path>
            
    <target name="fetch"
@@ -465,7 +467,7 @@
       <mkdir dir="${dist.dir}"/>
       <copy todir="${dist.dir}">
          <fileset dir="${build.dir}" includes="lib/**,bin/**,doc/**"/>
-         <fileset dir="${basedir}" includes="lib/log4j.jar,lib/slf4j-api-1.4.3.jar,lib/slf4j-log4j12-1.4.3.jar,lib/jai_imageio.jar,lib/clibwrapper_jiio.jar,lib/dcm4che-imageio-rle-2.0.21.jar,bin/*"/>
+         <fileset dir="${basedir}" includes="lib/log4j.jar,lib/slf4j-api-1.6.1.jar,lib/slf4j-log4j12-1.6.1.jar,lib/jai_imageio.jar,lib/clibwrapper_jiio.jar,lib/dcm4che-imageio-rle-2.0.21.jar,bin/*"/>
          <fileset dir="${doc.dir}" excludes="BUILD,**/.nbattrs"/>
          <fileset dir="${src.dir}" includes="etc/NativeMetadataFormat.dtd"/>
       </copy>
