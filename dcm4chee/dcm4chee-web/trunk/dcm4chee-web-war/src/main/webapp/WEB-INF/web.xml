@@ -34,6 +34,10 @@
 			<param-value>conf/dcm4chee-web3</param-value>
  		</init-param>
 	    <init-param>
+	      <param-name>ArchiveName</param-name>
+	      <param-value>dcm4chee.archive</param-value>
+	    </init-param>
+	    <init-param>
 	      <param-name>DashboardServiceName</param-name>
 	      <param-value>dcm4chee.dashboard:service=DashboardService</param-value>
 	    </init-param>
