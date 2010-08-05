@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
+<!--  Version $Revision:$ $Date:$ -->
+<server>
+  <mbean code="org.dcm4chee.web.service.webcfg.WebCfgService" 
+         name="dcm4chee.web:service=WebConfig"
+         xmbean-dd="">
+
+    <xmbean>
+      <description><![CDATA[<b>Web3 Configuration Service</b>
+		]]> </description>
+
+    <descriptors>
+       <persistence persistPolicy="OnUpdate"/>
+       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+    </descriptors>
+
+    <class>org.dcm4chee.web.service.webcfg.WebCfgService</class>
+
+    <constructor>
+         <description>The default constructor</description>
+         <name>WebCfgService</name>
+    </constructor>
+
+   <attribute access="read-write"
+      getMethod="getWebConfigPath"
+      setMethod="setWebConfigPath">
+      <description><![CDATA[
+        Configuration Path for web specific config files.<br/>
+        A relative path name is resolved relative to archive-install-directory/server/default/.]]>
+      </description>
+      <name>WebConfigPath</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-web3"/>
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
+      getMethod="getWadoBaseURL"
+      setMethod="setWadoBaseURL">
+      <description><![CDATA[
+        WADO Base URL if WADO Service is not in the same WEB container.<br/>
+        NONE: WADO service is in same container.]]>
+      </description>
+      <name>WadoBaseURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-only" getMethod="getInstalledWebViewer" >
+      <description>Name(s) of installed WebViewer</description>
+      <name>InstalledWebViewer</name>
+      <type>java.lang.String</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getWebviewerName"
+      setMethod="setWebviewerName">
+      <description><![CDATA[
+        Name of WebViewer that is used to view Dicom Objects.<br/>
+        NONE: Use the first installed Web Viewer.]]>
+      </description>
+      <name>WebviewerName</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getWebviewerBaseUrl"
+      setMethod="setWebviewerBaseUrl">
+      <description><![CDATA[
+        Base URL to open WebViewer.<br/>
+        NONE: use default URL of the Web Viewer.]]>
+      </description>
+      <name>WebviewerBaseUrl</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+      
+   <attribute access="read-write"
+      getMethod="getImageCUIDS"
+      setMethod="setImageCUIDS">
+      <description><![CDATA[
+        List of image SOP Classes.
+        Use either the SOP Class UID value, or the name specified in 
+        DICOM Part 6, Annex A Registry of DICOM unique identifiers,
+        concatenating individual words without spaces.]]>
+      </description>
+      <name>ImageSOPClasses</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+           ComputedRadiographyImageStorage
+           DigitalXRayImageStorageForPresentation
+           DigitalXRayImageStorageForProcessing
+           DigitalMammographyXRayImageStorageForPresentation
+           DigitalMammographyXRayImageStorageForProcessing
+           DigitalIntraoralXRayImageStorageForPresentation
+           DigitalIntraoralXRayImageStorageForProcessing
+           CTImageStorage
+           EnhancedCTImageStorage
+           UltrasoundMultiframeImageStorage
+           MRImageStorage
+           EnhancedMRImageStorage
+           UltrasoundImageStorage
+           SecondaryCaptureImageStorage
+           MultiframeSingleBitSecondaryCaptureImageStorage
+           MultiframeGrayscaleByteSecondaryCaptureImageStorage
+           MultiframeGrayscaleWordSecondaryCaptureImageStorage
+           MultiframeTrueColorSecondaryCaptureImageStorage
+           XRayAngiographicImageStorage
+           EnhancedXAImageStorage
+           XRayRadiofluoroscopicImageStorage
+           EnhancedXRFImageStorage
+           NuclearMedicineImageStorage
+           VLEndoscopicImageStorage
+           VLMicroscopicImageStorage
+           VLSlideCoordinatesMicroscopicImageStorage
+           VLPhotographicImageStorage
+           OphthalmicPhotography8BitImageStorage
+           OphthalmicPhotography16BitImageStorage
+           PositronEmissionTomographyImageStorage
+           RTImageStorage
+           HardcopyGrayscaleImageStorageSOPClassRetired
+           HardcopyColorImageStorageSOPClassRetired
+           NuclearMedicineImageStorageRetired
+           UltrasoundMultiframeImageStorageRetired
+           UltrasoundMultiframeImageStorageRetired
+           UltrasoundImageStorageRetired
+           XRayAngiographicBiPlaneImageStorageRetired
+           VLImageStorageTrialRetired
+           VLMultiframeImageStorageTrialRetired
+           "/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getVideoCUIDS"
+      setMethod="setVideoCUIDS">
+      <description><![CDATA[
+        List of Video SOP Classes.
+        Use either the SOP Class UID value, or the name specified in 
+        DICOM Part 6, Annex A Registry of DICOM unique identifiers,
+        concatenating individual words without spaces.]]>
+      </description>
+      <name>VideoSOPClasses</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+           VideoEndoscopicImageStorage
+           VideoMicroscopicImageStorage
+           VideoPhotographicImageStorage"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getWaveformCUIDS"
+      setMethod="setWaveformCUIDS">
+      <description><![CDATA[
+        List of Waveform SOP Classes.
+        Use either the SOP Class UID value, or the name specified in 
+        DICOM Part 6, Annex A Registry of DICOM unique identifiers,
+        concatenating individual words without spaces.]]>
+      </description>
+      <name>WaveformSOPClasses</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+           _12leadECGWaveformStorage
+           GeneralECGWaveformStorage
+           AmbulatoryECGWaveformStorage
+           HemodynamicWaveformStorage
+           CardiacElectrophysiologyWaveformStorage
+           BasicVoiceAudioWaveformStorage
+           "/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSrCUIDS"
+      setMethod="setSrCUIDS">
+      <description><![CDATA[
+        List of Structured Report Document SOP Classes.
+        Use either the SOP Class UID value, or the name specified in 
+        DICOM Part 6, Annex A Registry of DICOM unique identifiers,
+        concatenating individual words without spaces.]]>
+      </description>
+      <name>SRSOPClasses</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+           BasicTextSRStorage
+           EnhancedSRStorage
+           ComprehensiveSRStorage
+           ProcedureLogStorage
+           MammographyCADSRStorage
+           KeyObjectSelectionDocumentStorage
+           ChestCADSRStorage
+           XRayRadiationDoseSRStorage
+           "/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getEncapsulatedCUIDS"
+      setMethod="setEncapsulatedCUIDS">
+      <description><![CDATA[
+        List of Encapsulated Document SOP Classes.
+        Use either the SOP Class UID value, or the name specified in 
+        DICOM Part 6, Annex A Registry of DICOM unique identifiers,
+        concatenating individual words without spaces.]]>
+      </description>
+      <name>EncapsulatedCUIDS</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+           EncapsulatedPDFStorage
+           EncapsulatedCDAStorage
+           "/>
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getMoveScuServiceName"
+      setMethod="setMoveScuServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>moveScuServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.web:service=MoveScu"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getEchoServiceName"
+      setMethod="setEchoServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>echoServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.web:service=EchoService"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getContentEditServiceName"
+      setMethod="setContentEditServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>contentEditServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.web:service=ContentEditService"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getStoreBridgeServiceName"
+      setMethod="setStoreBridgeServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>storeBridgeServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.web:service=StoreBridge"/>
+      </descriptors>
+   </attribute>
+
+   &defaultAttributes;
+   
+   <!-- Operations -->
+   &defaultOperations;
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Checks if given SOP Class UID is an image.
+      		]]> </description>
+      <name>isImage</name>
+      <parameter>
+        <description>SOP Class UID</description>
+        <name>sopClassUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Checks if given SOP Class UID is an image.
+      		]]> </description>
+      <name>isImage</name>
+      <parameter>
+        <description>SOP Class UID</description>
+        <name>sopClassUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   
+
+    </xmbean>
+  </mbean>
+</server>

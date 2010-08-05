@@ -13,6 +13,7 @@
       <modules>
          <module>dcm4chee-web-sar-common</module>
          <module>dcm4chee-web-sar-movescu</module>
+         <module>dcm4chee-web-sar-webcfg</module>
          <module>dcm4chee-web-sar-contentedit</module>
          <module>dcm4chee-web-sar-rejnotescu</module>
          <module>dcm4chee-web-sar-ianscu</module>
@@ -45,12 +46,12 @@
 		<dependency>
 			<groupId>dcm4che</groupId>
 			<artifactId>dcm4che-core</artifactId>
-			<version>2.0.22-SNAPSHOT</version>
+			<version>2.0.23</version>
 		</dependency>
 		<dependency>
 			<groupId>dcm4che</groupId>
 			<artifactId>dcm4che-net</artifactId>
-			<version>2.0.22-SNAPSHOT</version>
+			<version>2.0.23</version>
 		</dependency>
 		<dependency>
 			<groupId>dcm4che.dcm4chee</groupId>

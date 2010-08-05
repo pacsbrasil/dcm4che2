@@ -29,11 +29,11 @@
 		</repository>
 	</repositories>
 	<dependencies>
-		<dependency>
+	<!-- <dependency>
 		   <groupId>org.apache.wicket.wicket-security</groupId>
 		   <artifactId>swarm</artifactId>
 		   <version>1.4-SNAPSHOT</version>
-		</dependency>
+		</dependency> -->
     <dependency>
 	  <groupId>dcm4che.dcm4chee</groupId>
 	  <artifactId>dcm4chee-arc-entities</artifactId>
@@ -70,6 +70,12 @@
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-war</artifactId>
       <type>war</type>
+      <version>3.0.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>dcm4che.dcm4chee</groupId>
+      <artifactId>dcm4chee-web-sar-webcfg</artifactId>
+      <type>sar</type>
       <version>3.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>
@@ -163,11 +169,15 @@
             </webModule>
             <sarModule>
               <groupId>dcm4che.dcm4chee</groupId>
+              <artifactId>dcm4chee-web-sar-webcfg</artifactId>
+            </sarModule>
+            <sarModule>
+              <groupId>dcm4che.dcm4chee</groupId>
               <artifactId>dcm4chee-dashboard-sar</artifactId>
             </sarModule>
             <sarModule>
               <groupId>dcm4che.dcm4chee</groupId>
-              <artifactId>dcm4chee-web-sar-rejnotescu</artifactId>
+              <artifactId>dcm4chee-web-sar-webcfg</artifactId>
             </sarModule>
             <sarModule>
               <groupId>dcm4che.dcm4chee</groupId>
