@@ -57,11 +57,11 @@ import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
-import org.dcm4chee.usr.ui.util.SecurityUtils;
 import org.dcm4chee.usr.ui.validator.UserValidator;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.util.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
