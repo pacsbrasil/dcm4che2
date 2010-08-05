@@ -39,7 +39,6 @@
 package org.dcm4chee.web.common.util;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 import org.apache.wicket.Component;
 import org.joda.time.format.DateTimeFormat;
