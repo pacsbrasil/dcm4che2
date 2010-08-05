@@ -51,7 +51,6 @@
         </description>
         <name>otherList</name>
         <type>java.lang.String</type>
-
     </attribute>
 	<attribute access="read-write" getMethod="getPropertyList" setMethod="setPropertyList">
         <description>
@@ -181,5 +180,14 @@ Java;Version;java.version</value>
       <description>MBean Operation.</description>
       <name>listQueueNames</name>
 	  <return-type>[Ljava.lang.String;</return-type>
+   </operation>
+   <operation>
+      <description>MBean Operation.</description>
+      <name>listQueueAttributes</name>
+      <parameter>
+         <name>queueName</name>
+         <type>java.lang.String</type>
+      </parameter>
+	  <return-type>[I</return-type>
    </operation>
 </mbean>

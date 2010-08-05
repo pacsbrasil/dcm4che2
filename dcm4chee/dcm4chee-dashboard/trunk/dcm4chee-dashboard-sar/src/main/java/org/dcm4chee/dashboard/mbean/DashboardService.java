@@ -332,9 +332,21 @@ public class DashboardService extends ServiceMBeanSupport {
         List<String> queueNameList = new ArrayList<String>();
         for (ObjectInstance oi : 
             (Set<ObjectInstance>) this.server.queryMBeans(
-                new ObjectName(this.domainName + ":service=Queue,*"), null))
+                new ObjectName(this.domainName + ":service=Queue,*"), null)) {
             queueNameList.add(oi.getObjectName().getKeyProperty("name"));
+        }
         return queueNameList.toArray(new String[0]);
+    }
+
+    public int[] listQueueAttributes(String queueName) throws MalformedObjectNameException, NullPointerException {
+        int[] queueAttributesList = new int[4];
+        try {
+            queueAttributesList[0] = new Integer(server.getAttribute(new ObjectName(queueName), "MessageCount").toString()).intValue();
+            queueAttributesList[1] = new Integer(server.getAttribute(new ObjectName(queueName), "DeliveringCount").toString()).intValue();
+            queueAttributesList[2] = new Integer(server.getAttribute(new ObjectName(queueName), "ScheduledMessageCount").toString()).intValue();
+            queueAttributesList[3] = new Integer(server.getAttribute(new ObjectName(queueName), "ConsumerCount").toString()).intValue();
+        } catch (Exception ignore) {}
+        return queueAttributesList;        
     }
 
     private String[] tokenize(String sourceString) {

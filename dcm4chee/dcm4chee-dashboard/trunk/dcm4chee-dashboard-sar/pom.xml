@@ -14,6 +14,16 @@
   </parent>
   <name>Service Components for DASHBOARD</name>
   <dependencies>
+<dependency>
+    <groupId>jboss</groupId>
+    <artifactId>jbosssx</artifactId>
+    <version>3.2.3</version>
+</dependency>
+<dependency>
+    <groupId>jboss</groupId>
+    <artifactId>jboss-jmx-rmi-connector-client</artifactId>
+    <version>3.0.4</version>
+</dependency>
     <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-system</artifactId>

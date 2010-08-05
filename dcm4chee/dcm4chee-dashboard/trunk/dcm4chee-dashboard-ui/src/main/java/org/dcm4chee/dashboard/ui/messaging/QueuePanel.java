@@ -115,42 +115,63 @@ public class QueuePanel extends Panel {
 
                 DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new QueueModel());
 
-                String[] queueNames = DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).listQueueNames();
-                for (String queueName : queueNames) {
+                DashboardDelegator dashboardDelegator = DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName")));
+                for (String queueName : dashboardDelegator.listQueueNames()) {
+                        int[] counts = dashboardDelegator.listQueueAttributes(
+                                            ((AuthenticatedWebApplication) getApplication())
+                                                .getInitParameter("ArchiveName") + 
+                                            ":service=Queue,name=" + 
+                                            queueName
+                                        );
+                    
+                    
                         QueueModel queueModel = new QueueModel(queueName);
                         DefaultMutableTreeNode queueNode;
                         queueModel.setQueue(true);
-                        queueModel.setQueueDepth(0);
+                        queueModel.setMessageCount(counts[0]);
+                        queueModel.setDeliveringCount(counts[1]);
+                        queueModel.setScheduledMessageCount(counts[2]);
+                        queueModel.setConsumerCount(counts[3]);
                         rootNode.add(queueNode = new DefaultMutableTreeNode(queueModel));
 
                     try {
-                        Enumeration<Message> e = session.createBrowser((Queue) new InitialContext().lookup(queueName)).getEnumeration();
-                        int j = 0;
+                        Enumeration<Message> e = session.createBrowser((Queue) new InitialContext().lookup("/queue/" + queueName)).getEnumeration();
                         while(e.hasMoreElements()) {
                             Message m = e.nextElement();
-                            
                             QueueModel queueMessage = new QueueModel(m.getJMSMessageID());
-                            queueMessage.setQueue(false);
-                            queueMessage.setQueueDepth(null);                       
+                            queueMessage.setQueue(false);                      
                             queueNode.add(new DefaultMutableTreeNode(queueMessage));
-                            j++;
                         }
-                        queueModel.setQueueDepth(j);
                     } catch (Exception ignore) {}
                 }
 
                 QueueTreeTable queueTreeTable = new QueueTreeTable("queue-tree-table", 
                        new DefaultTreeModel(rootNode), new IColumn[] {
                    new PropertyTreeColumn(new ColumnLocation(
-                           Alignment.LEFT, 80, Unit.PERCENT), 
+                           Alignment.LEFT, 40, Unit.PERCENT), 
                            new ResourceModel(
                                    "dashboard.queue.table.column.name").wrapOnAssignment(this).getObject(), 
                                    "userObject.jndiName"),
                    new PropertyRenderableColumn(new ColumnLocation(
-                           Alignment.RIGHT, 20, Unit.PERCENT),
+                           Alignment.RIGHT, 14, Unit.PERCENT),
                            new ResourceModel(
-                                   "dashboard.queue.table.column.queuedepth").wrapOnAssignment(this).getObject(),
-                                   "userObject.queueDepth")
+                                   "dashboard.queue.table.column.messageCount").wrapOnAssignment(this).getObject(),
+                                   "userObject.messageCount"), 
+                   new PropertyRenderableColumn(new ColumnLocation(
+                           Alignment.RIGHT, 14, Unit.PERCENT),
+                           new ResourceModel(
+                                   "dashboard.queue.table.column.deliveringCount").wrapOnAssignment(this).getObject(),
+                                   "userObject.deliveringCount"), 
+                   new PropertyRenderableColumn(new ColumnLocation(
+                           Alignment.RIGHT, 18, Unit.PERCENT),
+                           new ResourceModel(
+                                   "dashboard.queue.table.column.scheduledMessageCount").wrapOnAssignment(this).getObject(),
+                                   "userObject.scheduledMessageCount"), 
+                   new PropertyRenderableColumn(new ColumnLocation(
+                           Alignment.RIGHT, 14, Unit.PERCENT),
+                           new ResourceModel(
+                                   "dashboard.queue.table.column.consumerCount").wrapOnAssignment(this).getObject(),
+                                   "userObject.consumerCount")
                });
                queueTreeTable.getTreeState().setAllowSelectMultiple(true);
                queueTreeTable.getTreeState().collapseAll();
@@ -210,8 +231,11 @@ public class QueuePanel extends Panel {
         private static final long serialVersionUID = -1L;
 
         private String jndiName;
-        private Integer queueDepth;
-        private Integer scheduledMessageCount;
+        
+        private int messageCount;
+        private int deliveringCount;
+        private int scheduledMessageCount;
+        private int consumerCount;
         
         private boolean isQueue;
         
@@ -229,22 +253,38 @@ public class QueuePanel extends Panel {
             return jndiName;
         }
         
-        public void setQueueDepth(Integer queueDepth) {
-            this.queueDepth = queueDepth;
-        }
-        
-        public Integer getQueueDepth() {
-            return queueDepth;
+        public void setMessageCount(int messageCount) {
+            this.messageCount = messageCount;
         }
 
-        public void setScheduledMessageCount(Integer scheduledMessageCount) {
+        public int getMessageCount() {
+            return messageCount;
+        }
+
+        public void setDeliveringCount(int deliveringCount) {
+            this.deliveringCount = deliveringCount;
+        }
+
+        public int getDeliveringCount() {
+            return deliveringCount;
+        }
+
+        public void setScheduledMessageCount(int scheduledMessageCount) {
             this.scheduledMessageCount = scheduledMessageCount;
         }
 
-        public Integer getScheduledMessageCount() {
+        public int getScheduledMessageCount() {
             return scheduledMessageCount;
         }
         
+        public void setConsumerCount(int consumerCount) {
+            this.consumerCount = consumerCount;
+        }
+
+        public int getConsumerCount() {
+            return consumerCount;
+        }
+
         public void setQueue(boolean isQueue) {
             this.isQueue = isQueue;
         }
