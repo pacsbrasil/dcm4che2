@@ -9,7 +9,7 @@
 </head>
 <body>  
 	<wicket:extend> 
-		<form style="clear: both" wicket:id="form" class="folder">
+		<form style="clear: both" wicket:id="form" class="msgWindow">
 	  		<span wicket:id="label">LABEL</span>
 	  		<table class="export-info">
 		  		<th wicket:id="selectedItems">LABEL</th>
@@ -23,11 +23,11 @@
 	        	<option>DCM4CHEE</option>
 	        	<option>DCMRCV</option>
 	        </select>
-			<div class="export-result">
-				<span wicket:id="exportResultLabel">Export Results</span>
+			<p class="export-result">
+				<div wicket:id="exportResultLabel">Export Results</div>
 				<textarea name="exportResult" class="export-result" wicket:id="exportResult" 
 					rows="6" cols="60">[ExportResult]</textarea>
-			</div>
+			</p>
 	  		<input type="submit" wicket:id="export" />
 	  		<input type="submit" wicket:id="close" />
 	  		<input type="checkbox" wicket:id="closeOnFinished" />
