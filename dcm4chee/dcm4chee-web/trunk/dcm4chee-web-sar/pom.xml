@@ -13,7 +13,6 @@
       <modules>
          <module>dcm4chee-web-sar-common</module>
          <module>dcm4chee-web-sar-movescu</module>
-         <module>dcm4chee-web-sar-webcfg</module>
          <module>dcm4chee-web-sar-contentedit</module>
          <module>dcm4chee-web-sar-rejnotescu</module>
          <module>dcm4chee-web-sar-ianscu</module>
