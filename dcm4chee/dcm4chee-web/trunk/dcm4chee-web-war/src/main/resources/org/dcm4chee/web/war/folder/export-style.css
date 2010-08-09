@@ -1,0 +1,7 @@
+/*
+	Export CSS
+*/
+
+.export_succeed {background: none #AAFFFF; }
+.export_failed {background: none #FF6666; }
+.export_nop {background: none #FFFFFF; }
