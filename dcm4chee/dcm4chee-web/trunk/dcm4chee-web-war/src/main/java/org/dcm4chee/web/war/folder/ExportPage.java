@@ -50,7 +50,9 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
+import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -75,6 +77,7 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
+import org.dcm4chee.web.war.ae.DicomEchoWindow;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
@@ -88,9 +91,10 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Jan 11, 2010
  */
-public class ExportPage extends BaseWicketPage {
+public class ExportPage extends WebPage {
     
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    private static final ResourceReference CSS = new CompressedResourceReference(ExportPage.class, "export-style.css");
     
     private static final MetaDataKey<AE> LAST_DESTINATION_AET_ATTRIBUTE = new MetaDataKey<AE>(){
 
@@ -124,6 +128,9 @@ public class ExportPage extends BaseWicketPage {
         }
         public void detach() {}
     };
+
+    protected ExportResult r;
+    private boolean exportPerformed = false;
         
     private static Logger log = LoggerFactory.getLogger(ExportPage.class);
     
@@ -132,8 +139,9 @@ public class ExportPage extends BaseWicketPage {
         
         if (ExportPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(ExportPage.BaseCSS));
+        if (ExportPage.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(ExportPage.CSS));
 
-        this.getModuleSelectorPanel().setShowLogoutLink(false);
         HashMap<Integer,ExportResult> results = getSession().getMetaData(EXPORT_RESULTS);
         exportInfo = new ExportInfo(list);
         if ( results == null ) {
@@ -184,19 +192,37 @@ public class ExportPage extends BaseWicketPage {
         }.setNullValid(false).setOutputMarkupId(true));
         form.addLabel("destinationAETsLabel");
         form.addLabel("exportResultLabel");
-        form.add( new Label("exportResult", new AbstractReadOnlyModel<String>() {
+        form.add(new Label("exportResult", new AbstractReadOnlyModel<String>() {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             public String getObject() {
                 if (exportInfo.hasSelection()) {
-                    ExportResult r = getExportResults().get(resultId);
+                    r = getExportResults().get(resultId);
                     return (r == null ? getString("export.message.exportDone") : r.getResultString());
                 } else {
                     return getString("export.message.noSelectionForExport");
                 }
-            }}).setOutputMarkupId(true));
+            }
+        }) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onComponentTag(ComponentTag tag) {
+
+                tag.getAttributes().put("class", exportPerformed ? 
+                                                    r == null ? 
+                                                            "export_succeed" : 
+                                                            "export_failed"
+                                                    :
+                                                    "export_nop"
+                );
+                super.onComponentTag(tag);
+            }
+        }.setOutputMarkupId(true));
+        
+        
         form.add( new Button("export", new ResourceModel("export.exportBtn.text")){
 
             private static final long serialVersionUID = 1L;
@@ -285,6 +311,7 @@ public class ExportPage extends BaseWicketPage {
     }
 
     private void exportSelected() {
+        exportPerformed = true;
         ExportResult result = getExportResults().get(resultId);
         if ( result == null ) {
             result = new ExportResult(resultId);
