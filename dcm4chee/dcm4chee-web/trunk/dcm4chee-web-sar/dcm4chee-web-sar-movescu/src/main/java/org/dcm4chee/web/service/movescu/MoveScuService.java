@@ -368,7 +368,7 @@ public class MoveScuService extends AbstractScuService implements MessageListene
                 order.getPatientId(), order.getStudyIuids(), order.getSeriesIuids(), 
                 order.getSopIuids(), rspHandler, true);
         if (rspHandler.status != 0) {
-            String[] failedUIDs = rspHandler.cmd.getStrings(Tag.FailedSOPInstanceUIDList);
+            String[] failedUIDs = rspHandler.getCmd().getStrings(Tag.FailedSOPInstanceUIDList);
             if (failedUIDs != null && failedUIDs.length > 0) {
                 order.setSopIuids(failedUIDs);
             }
