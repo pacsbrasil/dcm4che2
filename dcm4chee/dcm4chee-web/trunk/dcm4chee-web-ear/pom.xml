@@ -74,12 +74,6 @@
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
-      <artifactId>dcm4chee-web-sar-webcfg</artifactId>
-      <type>sar</type>
-      <version>3.0.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-sar-common</artifactId>
       <type>jar</type>
       <version>3.0.0-SNAPSHOT</version>
@@ -167,10 +161,6 @@
               <artifactId>dcm4chee-web-war</artifactId>
               <contextRoot>/dcm4chee-web3</contextRoot>
             </webModule>
-            <sarModule>
-              <groupId>dcm4che.dcm4chee</groupId>
-              <artifactId>dcm4chee-web-sar-webcfg</artifactId>
-            </sarModule>
             <sarModule>
               <groupId>dcm4che.dcm4chee</groupId>
               <artifactId>dcm4chee-dashboard-sar</artifactId>
