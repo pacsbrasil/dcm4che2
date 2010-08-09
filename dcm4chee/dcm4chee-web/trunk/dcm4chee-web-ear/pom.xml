@@ -167,10 +167,6 @@
             </sarModule>
             <sarModule>
               <groupId>dcm4che.dcm4chee</groupId>
-              <artifactId>dcm4chee-web-sar-webcfg</artifactId>
-            </sarModule>
-            <sarModule>
-              <groupId>dcm4che.dcm4chee</groupId>
               <artifactId>dcm4chee-web-sar-rejnotescu</artifactId>
             </sarModule>
             <sarModule>
