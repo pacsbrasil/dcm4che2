@@ -77,7 +77,6 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
-import org.dcm4chee.web.war.ae.DicomEchoWindow;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
@@ -200,6 +199,7 @@ public class ExportPage extends WebPage {
             public String getObject() {
                 if (exportInfo.hasSelection()) {
                     r = getExportResults().get(resultId);
+                    exportPerformed = true;
                     return (r == null ? getString("export.message.exportDone") : r.getResultString());
                 } else {
                     return getString("export.message.noSelectionForExport");
@@ -311,7 +311,6 @@ public class ExportPage extends WebPage {
     }
 
     private void exportSelected() {
-        exportPerformed = true;
         ExportResult result = getExportResults().get(resultId);
         if ( result == null ) {
             result = new ExportResult(resultId);
@@ -324,11 +323,17 @@ public class ExportPage extends WebPage {
         }
     }
 
-
     private void export(String destAET, String patID, String[] studyIUIDs, String[] seriesIUIDs, String[] sopIUIDs, String descr, ExportResult result) {
         ExportResponseHandler rq = result.newRequest(destAET, descr);
-        if ( !ExportDelegate.getInstance().export(destAET, patID, studyIUIDs, seriesIUIDs, sopIUIDs, rq )) {
-            rq.reqDescr += " failed!";
+        try {
+            ExportDelegate.getInstance().export(destAET, patID, studyIUIDs, seriesIUIDs, sopIUIDs, rq );
+        } catch (Exception e) {
+            rq.reqDescr += " failed. Reason: ";
+            String lastException = null;
+            Throwable cause = e;
+            while ((cause = cause.getCause()) != null) 
+                lastException = cause.getClass().getCanonicalName() + ": " + cause.getLocalizedMessage();
+            rq.reqDescr += lastException;
             result.requestDone(rq, false);
         }
     }

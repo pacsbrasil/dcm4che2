@@ -40,8 +40,6 @@ package org.dcm4chee.web.war.folder;
 
 import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -52,26 +50,17 @@ public class ExportDelegate extends BaseMBeanDelegate {
 
     private static ExportDelegate delegate;
 
-    private static Logger log = LoggerFactory.getLogger(ExportDelegate.class);
-
     private ExportDelegate() {
         super();
     }
 
-    public boolean export(String destAET, String patID, String[] studyIUIDs, String[] seriesIUIDs, String[] sopIUIDs, 
-            DimseRSPHandler handler) {
-        try {
+    public void export(String destAET, String patID, String[] studyIUIDs, String[] seriesIUIDs, String[] sopIUIDs, 
+            DimseRSPHandler handler) throws Exception {
             server.invoke(serviceObjectName, "move", 
                     new Object[]{null, destAET, patID, studyIUIDs, seriesIUIDs, sopIUIDs, handler, false}, 
                     new String[]{String.class.getName(), String.class.getName(), String.class.getName(),
                     String[].class.getName(), String[].class.getName(), String[].class.getName(), 
                     DimseRSPHandler.class.getName(), boolean.class.getName()});
-            return true;
-        } catch (Exception x) {
-            String msg = "DICOM Export failed! Reason:"+x.getMessage();
-            log.error(msg,x);
-            return false;
-        }
     }
 
     @Override
