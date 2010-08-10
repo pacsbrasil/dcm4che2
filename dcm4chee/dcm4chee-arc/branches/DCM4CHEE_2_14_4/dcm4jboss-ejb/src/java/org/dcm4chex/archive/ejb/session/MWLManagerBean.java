@@ -149,10 +149,10 @@ public abstract class MWLManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset removeWorklistItem(Dataset ds)
+    public Dataset removeWorklistItem(Dataset ds, PatientMatching matching)
             throws PatientMismatchException, FinderException, RemoveException {
         try {
-            MWLItemLocal mwlItem = getWorklistItem(ds, false);
+            MWLItemLocal mwlItem = getWorklistItem(ds, matching, false);
             Dataset attrs = toAttributes(mwlItem);
             mwlItem.remove();
             return attrs;
@@ -161,7 +161,7 @@ public abstract class MWLManagerBean implements SessionBean {
         }
     }
 
-    private MWLItemLocal getWorklistItem(Dataset ds, boolean updatePatient)
+    private MWLItemLocal getWorklistItem(Dataset ds, PatientMatching matching, boolean updatePatient)
             throws FinderException, PatientMismatchException {
         Dataset sps = ds.getItem(Tags.SPSSeq);
         MWLItemLocal mwlItem = mwlItemHome.findByRpIdAndSpsId(
@@ -169,8 +169,7 @@ public abstract class MWLManagerBean implements SessionBean {
                     sps.getString(Tags.SPSID));
         PatientLocal pat = mwlItem.getPatient();
         try {
-            if (patHome.selectPatient(ds.getString(Tags.PatientID),
-                    ds.getString(Tags.IssuerOfPatientID)).isIdentical(pat)) {
+            if (patHome.selectPatient(ds, matching, false).isIdentical(pat)) {
                 if (updatePatient) {
                     pat.updateAttributes(ds.subSet(PATIENT_ATTRS_WITH_CHARSET));
                 }
@@ -206,10 +205,10 @@ public abstract class MWLManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public boolean updateSPSStatus(Dataset ds) throws PatientMismatchException {
+    public boolean updateSPSStatus(Dataset ds, PatientMatching matching) throws PatientMismatchException {
         MWLItemLocal mwlItem;
         try {
-            mwlItem = getWorklistItem(ds, true);
+            mwlItem = getWorklistItem(ds, matching, true);
         } catch (ObjectNotFoundException e) {
             return false;
         } catch (FinderException e) {
@@ -265,11 +264,11 @@ public abstract class MWLManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public boolean updateWorklistItem(Dataset ds)
+    public boolean updateWorklistItem(Dataset ds, PatientMatching matching)
             throws PatientMismatchException {
         MWLItemLocal mwlItem;
         try {
-            mwlItem = getWorklistItem(ds, true);
+            mwlItem = getWorklistItem(ds, matching, true);
         } catch (ObjectNotFoundException e) {
             return false;
         } catch (FinderException e) {
