@@ -175,6 +175,7 @@ public class TrashListPage extends Panel {
         })))
         .add(new ImageSizeBehaviour())));
 
+        initModalitiesAndSourceAETs();
         addQueryFields(filter, form);
         addQueryOptions(form);
         addNavigation(form);
@@ -184,9 +185,9 @@ public class TrashListPage extends Panel {
         form.add(new PatientListView("patients", viewport.getPatients()));
         msgWin.setTitle(MessageWindow.TITLE_WARNING);
         add(msgWin);
-        initModalitiesAndSourceAETs();
     }
 
+    @SuppressWarnings("unchecked")
     private void addQueryFields(final TrashListFilter filter, BaseForm form) {
         IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
             private static final long serialVersionUID = 1L;
@@ -209,10 +210,7 @@ public class TrashListPage extends Panel {
         form.addTextField("patientID", enabledModel, true);
         form.addTextField("issuerOfPatientID", enabledModel, true);
         form.addTextField("accessionNumber", enabledModel, false);
-        List<String> choices = viewport.getSourceAetChoices(sourceAETs);
-        if (choices.size() > 0)
-            filter.setSourceAET(choices.get(0));
-        form.addDropDownChoice("sourceAET", null, choices, enabledModel, false);
+        form.addDropDownChoice("sourceAET", null, viewport.getSourceAetChoices(sourceAETs), enabledModel, false).setModelObject("*");
 
         searchTableComponents.add(form.createAjaxParent("searchFooter"));
     }
@@ -601,7 +599,6 @@ public class TrashListPage extends Panel {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         sourceAETs.clear();
-        sourceAETs.add("*");
         sourceAETs.addAll(dao.selectDistinctSourceAETs());
     }
 

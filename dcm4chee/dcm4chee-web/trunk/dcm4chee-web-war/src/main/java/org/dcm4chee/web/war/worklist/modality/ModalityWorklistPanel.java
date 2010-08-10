@@ -170,6 +170,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         .add(new TooltipBehaviour("mw.", "searchToggleImg", showSearchModel)))
         .add(new ImageSizeBehaviour()));
 
+        initModalitiesAndStationAETs();
         addQueryFields(filter, form);
         addQueryOptions(form);
         addNavigation(form);
@@ -180,8 +181,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         add(listPanel);
         listPanel.setOutputMarkupId(true);
         listPanel.add(new MWLItemListView("mwlitems", viewport.getMWLItemModels(), this));
-
-        initModalitiesAndStationAETs();
     }
     
     @Override
@@ -198,6 +197,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         return viewport;
     }
 
+    @SuppressWarnings("unchecked")
     protected void addQueryFields(final ModalityWorklistFilter filter, final BaseForm form) {
         final IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
 
@@ -234,13 +234,10 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         form.addInternalLabel("scheduledStationName");
         form.addInternalLabel("SPSStatus");
 
-        form.addDropDownChoice("modality", null, modalities, enabledModel, false);
-        List<String> choices = viewport.getStationAetChoices(scheduledStationAETs);
-        if (choices.size() > 0)
-            filter.setScheduledStationAET(choices.get(0));
-        form.addDropDownChoice("scheduledStationAET", null, choices, enabledModel, false);
-        form.addDropDownChoice("scheduledStationName", null, getStationNameChoices(), enabledModel, false);
-        form.addDropDownChoice("SPSStatus", null, getSpsStatusChoices(), enabledModel, false);
+        form.addDropDownChoice("modality", null, modalities, enabledModel, false).setModelObject("*");
+        form.addDropDownChoice("scheduledStationAET", null, viewport.getStationAetChoices(scheduledStationAETs), enabledModel, false).setModelObject("*");
+        form.addDropDownChoice("scheduledStationName", null, getStationNameChoices(), enabledModel, false).setModelObject("*");
+        form.addDropDownChoice("SPSStatus", null, getSpsStatusChoices(), enabledModel, false).setModelObject("*");
 
         final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
 

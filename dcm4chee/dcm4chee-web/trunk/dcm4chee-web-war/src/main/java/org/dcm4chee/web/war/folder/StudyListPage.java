@@ -214,6 +214,7 @@ public class StudyListPage extends Panel {
         })))
         .add(new ImageSizeBehaviour())));
 
+        initModalitiesAndSourceAETs();
         addQueryFields(filter, form);
         addQueryOptions(form);
         addNavigation(form);
@@ -234,9 +235,9 @@ public class StudyListPage extends Panel {
             }            
         });
         add(wadoWindow);
-        initModalitiesAndSourceAETs();
     }
 
+    @SuppressWarnings("unchecked")
     private void addQueryFields(final StudyListFilter filter, final BaseForm form) {
         final IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
 
@@ -272,11 +273,8 @@ public class StudyListPage extends Panel {
         form.addInternalLabel("modality");
         form.addInternalLabel("sourceAET");
         
-        form.addDropDownChoice("modality", null, modalities, enabledModel, false);
-        List<String> choices = viewport.getSourceAetChoices(sourceAETs);
-        if (choices.size() > 0)
-            filter.setSourceAET(choices.get(0));
-        form.addDropDownChoice("sourceAET", null, choices, enabledModel, false);
+        form.addDropDownChoice("modality", null, modalities, enabledModel, false).setModelObject("*");
+        form.addDropDownChoice("sourceAET", null, viewport.getSourceAetChoices(sourceAETs), enabledModel, false).setModelObject("*");
 
         final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
 
