@@ -102,7 +102,7 @@ public class NetworkQueueUpdateDelegate {
                             DateFormat df = new SimpleDateFormat("kk:mm:ss");
                             Date d = new Date();
                             int receivedCount = ApplicationContext.databaseRef.getReceiveCount(data.getString(Tag.StudyInstanceUID));
-                            receivedCount = receivedCount;
+                            //receivedCount = receivedCount;
                             SendReceivePanel.receiveTableModel.setValueAt(df.format(d), i, 8);
                             SendReceivePanel.receiveTableModel.setValueAt(String.valueOf(receivedCount), i, 5);
                             SendReceivePanel.receiveTableModel.setValueAt(String.valueOf(receivedCount), i, 6);

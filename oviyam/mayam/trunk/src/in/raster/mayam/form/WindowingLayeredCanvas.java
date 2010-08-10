@@ -79,8 +79,8 @@ public class WindowingLayeredCanvas extends JLayeredPane implements ComponentLis
     }
 
     private void createLayers() {
-        this.add(canvas, new Integer(0));
-        this.add(textOverlay, new Integer(1));
+        this.add(canvas, Integer.valueOf(0));
+        this.add(textOverlay, Integer.valueOf(1));
     }
 
     private void createImageCanvas(String filePath) {

@@ -124,9 +124,9 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
     }
 
     private void createLayers() {
-        this.add(canvas, new Integer(0));
-        this.add(annotationPanel, new Integer(2));
-        this.add(textOverlay, new Integer(1));
+        this.add(canvas, Integer.valueOf(0));
+        this.add(annotationPanel, Integer.valueOf(2));
+        this.add(textOverlay, Integer.valueOf(1));
     }
 
     private void createImageCanvas(String filePath) {

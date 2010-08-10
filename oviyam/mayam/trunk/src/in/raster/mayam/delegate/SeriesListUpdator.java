@@ -188,7 +188,7 @@ public class SeriesListUpdator extends Thread {
                 iter = null;
                 reader.dispose();
             } catch (Exception ex) 
-            {//ignore
+            {ex.printStackTrace();
             }
         }
     }
