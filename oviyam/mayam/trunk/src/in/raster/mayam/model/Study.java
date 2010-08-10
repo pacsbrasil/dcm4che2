@@ -58,18 +58,18 @@ public class Study implements Serializable {
     private List<Series> seriesList;
 
     public Study() {
-        studyInstanceUID = new String();
-        studyDate = new String();
-        studyDesc = new String();
-        studyID = new String();
+        studyInstanceUID = "";
+        studyDate = "";
+        studyDesc = "";
+        studyID = "";
         seriesList = new ArrayList<Series>();
     }
 
     public Study(String siuid) {
         studyInstanceUID = siuid;
-        studyDate = new String();
-        studyDesc = new String();
-        studyID = new String();
+        studyDate = "";
+        studyDesc = "";
+        studyID = "";
         seriesList = new ArrayList<Series>();
     }
 

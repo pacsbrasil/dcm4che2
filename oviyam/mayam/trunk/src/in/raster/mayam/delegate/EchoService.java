@@ -74,7 +74,7 @@ public class EchoService {
 	public EchoService() {
              String[] s = ApplicationContext.databaseRef.getListenerDetails();
              CDimseService.DEFAULT_CALLING_AET=s[0];
-		status = new String();
+		status = "";
 	}
 	/**
 	 * Used to find whether the configured server is available(running) or not.

@@ -67,9 +67,9 @@ public class Instance implements Serializable {
    
 
     public Instance() {
-        sop_iuid = new String();
-        instance_no = new String();
-        filepath = new String();
+        sop_iuid = "";
+        instance_no = "";
+        filepath = "";
     }
 
     /**

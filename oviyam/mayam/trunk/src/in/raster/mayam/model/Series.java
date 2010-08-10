@@ -61,11 +61,11 @@ public class Series implements Serializable {
     private int seriesRelatedInstance;
 
     public Series() {
-        SeriesInstanceUID = new String();
-        StudyInstanceUID=new String();
-        Modality = new String();        
-        SeriesNumber = new String();
-        seriesDesc=new String();
+        SeriesInstanceUID = "";
+        StudyInstanceUID="";
+        Modality = "";
+        SeriesNumber = "";
+        seriesDesc="";
         imageList = new ArrayList<Instance>();
     }
 
