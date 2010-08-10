@@ -92,6 +92,10 @@ import org.slf4j.LoggerFactory;
  * @since Jan 11, 2010
  */
 public class MoveEntitiesPage extends WebPage {
+    
+    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    private final static ResourceReference CSS = new CompressedResourceReference(MoveEntitiesPage.class, "move-style.css");
+    
     private static Logger log = LoggerFactory.getLogger(MoveEntitiesPage.class);
 
     private static final String MSGID_ERR_SELECTION_MOVE_SOURCE_LEVEL = "move.message.error.moveSelectionSrcLevel";
@@ -104,10 +108,6 @@ public class MoveEntitiesPage extends WebPage {
     private static final int MISSING_NOTHING = 0;
     private static final int MISSING_STUDY = 1;
     private static final int MISSING_SERIES = 2;
-
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    private static final ResourceReference EditCSS = new CompressedResourceReference(SimpleEditDicomObjectPanel.class, "edit-style.css");
-    private static final ResourceReference CSS = new CompressedResourceReference(MoveEntitiesPage.class, "move-style.css");
 
     private SelectedEntities selected;
     private List<PatientModel> allPatients;
@@ -129,14 +129,12 @@ public class MoveEntitiesPage extends WebPage {
     
     public MoveEntitiesPage(ModalWindow window, SelectedEntities selectedEntities, List<PatientModel> all) {
         super();
-        
+
         if (MoveEntitiesPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(MoveEntitiesPage.BaseCSS));
-        if (MoveEntitiesPage.EditCSS != null)
-            add(CSSPackageResource.getHeaderContribution(MoveEntitiesPage.EditCSS));
         if (MoveEntitiesPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(MoveEntitiesPage.CSS));
-        
+
         this.window = window;
         this.selected = selectedEntities;
         allPatients = all;
@@ -378,6 +376,7 @@ public class MoveEntitiesPage extends WebPage {
     private class InfoPanel extends Panel {
 
         private static final long serialVersionUID = 1L;
+        
         private Label infoLabel;
         private AjaxFallbackLink<Object> moveBtn;
         private AjaxFallbackLink<Object> okBtn;
@@ -400,6 +399,7 @@ public class MoveEntitiesPage extends WebPage {
         
         public InfoPanel() {
             super("content");
+            
             add( new Label("infoTitle", new ResourceModel("move.pageTitle")));
             add( infoLabel = new Label("info", infoModel));
             infoLabel.setOutputMarkupId(true);
