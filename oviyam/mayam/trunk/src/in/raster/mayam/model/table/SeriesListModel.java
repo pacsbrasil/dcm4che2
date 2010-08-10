@@ -90,7 +90,7 @@ public class SeriesListModel extends AbstractTableModel {
             case 2:
                 return row.getModality();
             case 3:
-                return "" + row.getSeriesRelatedInstance();
+                return Integer.toString(row.getSeriesRelatedInstance());
             case 4:
                 return row.getInstitutionName();
             case 5:

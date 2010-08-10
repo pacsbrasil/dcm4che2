@@ -562,7 +562,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
      * This routine used to change the text overlay of the image box
      */
     public void changeTextOverlay() {
-        this.getCanvas().getLayeredCanvas().textOverlay.setWindowingParameter("" + this.windowLevel, "" + this.windowWidth);
+        this.getCanvas().getLayeredCanvas().textOverlay.setWindowingParameter(Integer.toString(this.windowLevel), Integer.toString(this.windowWidth));
     }
 
     private void addlisteners() {
@@ -786,8 +786,8 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             currentbufferedimage = reader.read(currentFrame);
             convertToRGBImage();
             repaint();
-            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
-            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance("" + this.totalInstance);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(this.totalInstance));
         } catch (Exception ex) {
             ex.printStackTrace();
             Logger.getLogger(ImagePanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -805,8 +805,8 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             currentbufferedimage = reader.read(currentFrame);
             convertToRGBImage();
             repaint();
-            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
-            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance("" + this.totalInstance);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(this.totalInstance));
         } catch (IOException ex) {
             ex.printStackTrace();
             Logger.getLogger(ImagePanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -822,7 +822,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         dicomFileUrl = instance.getFilepath();
        // setImage(instance.getPixelData());
         setImage(instance);
-        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
     }
 
     private void selectNextInstance() {
@@ -834,7 +834,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         dicomFileUrl = instance.getFilepath();
         //setImage(instance.getPixelData());
         setImage(instance);
-        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
     }
 
     private void previousInstance() {

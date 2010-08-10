@@ -83,7 +83,7 @@ public class AEManagementDialog extends javax.swing.JDialog {
         serverNameText.setText(serverName);
         hostText.setText(host);      
         aeTitleText.setText(aeTitle);
-        portText.setText(""+port);      
+        portText.setText(Integer.toString(port));
     }
     /** This method is called from within the constructor to
      * initialize the form.

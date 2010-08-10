@@ -140,7 +140,7 @@ public class ServerTableModel extends AbstractTableModel {
             case 3:
                 try {
                     int port = Integer.parseInt(aValue.toString());
-                    row.setPort("" + port);
+                    row.setPort(Integer.toString(port));
                     ApplicationContext.databaseRef.updateServerListValues(row);
                 } catch (Exception e) {e.printStackTrace();
                 }

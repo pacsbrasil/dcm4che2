@@ -133,19 +133,19 @@ public class WindowingLayeredCanvas extends JLayeredPane implements ComponentLis
         }
 
         if (imgpanel.getWindowLevel() != -1) {
-            textOverlayParam.setWindowLevel("" + imgpanel.getWindowLevel());
+            textOverlayParam.setWindowLevel(Integer.toString(imgpanel.getWindowLevel()));
         }
 
         if (imgpanel.getWindowWidth() != -1) {
-            textOverlayParam.setWindowWidth("" + imgpanel.getWindowWidth());
+            textOverlayParam.setWindowWidth(Integer.toString(imgpanel.getWindowWidth()));
         }
 
         if (imgpanel.getCurrentInstanceNo() != -1) {
-            textOverlayParam.setCurrentInstance("" + imgpanel.getCurrentInstanceNo());
+            textOverlayParam.setCurrentInstance(Integer.toString(imgpanel.getCurrentInstanceNo()));
         }
 
         if (imgpanel.getTotalInstance() != -1) {
-            textOverlayParam.setTotalInstance("" + imgpanel.getTotalInstance());
+            textOverlayParam.setTotalInstance(Integer.toString(imgpanel.getTotalInstance()));
         }
 
         textOverlay.setTextOverlayParam(textOverlayParam);

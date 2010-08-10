@@ -93,7 +93,7 @@ public class TextOverlay extends javax.swing.JPanel {
     }
 
     public void updateCurrentInstanceNo(int currentInstanceNo) {
-        textOverlayParam.setCurrentInstance("" + currentInstanceNo);
+        textOverlayParam.setCurrentInstance(Integer.toString(currentInstanceNo));
         this.repaint();
     }
 

@@ -283,8 +283,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         textOverlayParam.setInstitutionName(dataset.getString(Tags.InstitutionName));
         textOverlayParam.setWindowLevel(dataset.getString(Tags.WindowCenter) != null ? dataset.getString(Tags.WindowCenter) : "");
         textOverlayParam.setWindowWidth(dataset.getString(Tags.WindowWidth) != null ? dataset.getString(Tags.WindowWidth) : "");
-        textOverlayParam.setCurrentInstance("" + currentInstanceNo);
-        textOverlayParam.setTotalInstance("" + totalInstance);
+        textOverlayParam.setCurrentInstance(Integer.toString(currentInstanceNo));
+        textOverlayParam.setTotalInstance(Integer.toString(totalInstance));
 
     }
 
@@ -509,8 +509,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             currentbufferedimage = reader.read(currentFrame);
             convertToRGBImage();
             repaint();
-            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
-            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance("" + this.totalInstance);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(this.totalInstance));
         } catch (Exception ex) {
             ex.printStackTrace();
             Logger.getLogger(ImagePanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -528,8 +528,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             currentbufferedimage = reader.read(currentFrame);
             convertToRGBImage();
             repaint();
-            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
-            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance("" + this.totalInstance);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(this.totalInstance));
         } catch (IOException ex) {
             ex.printStackTrace();
             Logger.getLogger(ImagePanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -806,7 +806,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 }
             }
         }
-         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
+         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
     }
 
     /**
@@ -1285,7 +1285,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
      * This routine used to change the text overlay of the image box
      */
     public void changeTextOverlay() {
-        this.getCanvas().getLayeredCanvas().textOverlay.setWindowingParameter("" + this.windowLevel, "" + this.windowWidth);
+        this.getCanvas().getLayeredCanvas().textOverlay.setWindowingParameter(Integer.toString(this.windowLevel), Integer.toString(this.windowWidth));
     }
 
     /**
@@ -1411,8 +1411,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         currentInstanceNo--;
         if (!isMulitiFrame()) {
             totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
-            textOverlayParam.setCurrentInstance("" + currentInstanceNo);
-            textOverlayParam.setTotalInstance("" + totalInstance);
+            textOverlayParam.setCurrentInstance(Integer.toString(currentInstanceNo));
+            textOverlayParam.setTotalInstance(Integer.toString(totalInstance));
         } else {
             totalInstance = nFrames;
             currentInstanceNo = 0;
@@ -1563,7 +1563,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             }
         }
         this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getAnnotation());
-        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
     }
 
     private void selectNextInstance() {
@@ -1582,7 +1582,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             }
         }
         this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getAnnotation());
-        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance("" + this.currentInstanceNo);
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
     }
 
     private void setInstanceInfo(Instance img) {
@@ -1714,9 +1714,9 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                     currentbufferedimage.getRaster().getDataBuffer());
             pixelValue = pixelValueArray[0];
             try {
-                hu = "" + (pixelValue * Integer.parseInt(rescaleSlope) + Integer.parseInt(rescaleIntercept));
+                hu = Integer.toString(pixelValue * Integer.parseInt(rescaleSlope) + Integer.parseInt(rescaleIntercept));
             } catch (Exception e) {
-                hu = "" + (pixelValue * 1 - 1024);
+                hu =Integer.toString(pixelValue * 1 - 1024);
             }
         } catch (Exception e) {
             System.out.println("Array index out of bound exception");
@@ -1731,8 +1731,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         // }
         if (probeFlag) {
             String probeParameter[] = new String[3];
-            probeParameter[0] = "" + (int) Math.round(mouseLocX2 / this.scaleFactor);
-            probeParameter[1] = "" + (int) Math.round(mouseLocY2 / this.scaleFactor);
+            probeParameter[0] = Integer.toString((int) Math.round(mouseLocX2 / this.scaleFactor));
+            probeParameter[1] = Integer.toString((int) Math.round(mouseLocY2 / this.scaleFactor));
             probeParameter[2] = calculateHU((int) Math.round(mouseLocX2 / this.scaleFactor), (int) Math.round(mouseLocY2 / this.scaleFactor));
             this.getCanvas().getLayeredCanvas().textOverlay.setProbeParameters(probeParameter);
         }
