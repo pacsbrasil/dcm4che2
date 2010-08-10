@@ -283,7 +283,7 @@ public class ORMService extends AbstractHL7Service {
     protected void processXO(Dataset ds, MWLManager mwlManager) throws Exception {
         log("Update", ds);
         logDataset("Update MWL Item:", ds);
-        if (!mwlManager.updateWorklistItem(ds)) {
+        if (!mwlManager.updateWorklistItem(ds, patientMatching)) {
             log("No Such ", ds);
             addMissingAttributes(ds);
             log("->Schedule New ", ds);
@@ -295,7 +295,7 @@ public class ORMService extends AbstractHL7Service {
 
     protected void processCA(Dataset ds, MWLManager mwlManager) throws Exception {
         log("Cancel", ds);
-        if (mwlManager.removeWorklistItem(ds) == null) {
+        if (mwlManager.removeWorklistItem(ds, patientMatching) == null) {
             log("No Such ", ds);
         } else {
             ds.getItem(Tags.SPSSeq).putCS(Tags.SPSStatus, "DISCONTINUED");
@@ -383,7 +383,7 @@ public class ORMService extends AbstractHL7Service {
     protected void updateSPSStatus(Dataset ds, MWLManager mwlManager)
             throws PatientMismatchException, RemoteException {
         log("Change SPS status of MWL Item:", ds);
-        if (!mwlManager.updateSPSStatus(ds)) {
+        if (!mwlManager.updateSPSStatus(ds, patientMatching)) {
             log("No Such ", ds);
         }
     }

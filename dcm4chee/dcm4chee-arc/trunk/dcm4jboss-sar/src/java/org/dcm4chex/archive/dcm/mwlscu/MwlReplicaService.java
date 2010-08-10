@@ -115,6 +115,7 @@ public class MwlReplicaService extends AbstractScuService {
     private int countEqualErrors=0;
     private int errorCount=0;
     private int totalErrorCount=0;
+    public PatientMatching patientMatching;
 
     /** DICOM priority. Used for move and media creation action. */
     private int priority = 0;
@@ -221,6 +222,14 @@ public class MwlReplicaService extends AbstractScuService {
         this.forceIssuerCoercion = forceIssuerCoercion;
     }
 
+    public String getPatientMatching() {
+        return patientMatching.toString();
+    }
+
+    public void setPatientMatching(String s) {
+        this.patientMatching = new PatientMatching(s.trim());
+    }
+    
     public boolean isDebugMode() {
         return debugMode;
     }
@@ -384,8 +393,8 @@ public class MwlReplicaService extends AbstractScuService {
                                     }
                                 }
                                 rsp = coerceAttributes(rsp, aet, MWL_REPLICA_RSP_XSL);
-                                if ( !manager.updateWorklistItem(rsp) ) {
-                                    manager.addWorklistItem(rsp, PatientMatching.BY_ID);
+                                if ( !manager.updateWorklistItem(rsp, patientMatching) ) {
+                                    manager.addWorklistItem(rsp, patientMatching);
                                 }
                                 result.add(rsp);
                             } catch (Exception e) {
