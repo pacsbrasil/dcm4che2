@@ -278,10 +278,27 @@ public abstract class MPPSManagerBean implements SessionBean {
         } catch (FinderException e) {
             throw new EJBException(e);
         }
+        if (mpps.getPpsStatus().equals("IN PROGRESS")) {
+            log.debug("Sending IAN is postponed! MPPS is still 'In Progress'. mppsIUID:"+mpps.getSopIuid());
+            log.debug("MPPS dataset:");log.debug(mpps.getAttributes());
+            return null;
+        }
+        if (mpps.getPpsStatus().equals("DISCONTINUED")) {
+            Dataset item = mpps.getAttributes().getItem(Tags.PPSDiscontinuationReasonCodeSeq);
+            if ("110514".equals(item.getString(Tags.CodeValue)) && 
+                    "DCM".equals(item.getString(Tags.CodingSchemeDesignator))) {
+                log.warn("IAN is not sent for discontinued MPPS with reason 'Incorrect worklist entry selected' mppsIUID:"+mpps.getSopIuid());
+                return null;
+            }
+            if (!containsInstances(mpps.getAttributes())) {
+                log.debug("IAN not sent for discontinued and empty MPPS. mppsIUID:"+mpps.getSopIuid());
+                return null;
+            }
+        }
         Dataset attrs = mpps.getAttributes();
         Dataset ian = DcmObjectFactory.getInstance().newDataset();
-        DcmElement refSeriesSq = ian.putSQ(Tags.RefSeriesSeq);
         DcmElement perfSeriesSq = attrs.get(Tags.PerformedSeriesSeq);
+        DcmElement refSeriesSq = ian.putSQ(Tags.RefSeriesSeq);
         for (int i = 0, n = perfSeriesSq.countItems(); i < n; i++) {
             Dataset perfSeries = perfSeriesSq.getItem(i);
             String seriesIUID = perfSeries.getString(Tags.SeriesInstanceUID);
@@ -297,6 +314,11 @@ public abstract class MPPSManagerBean implements SessionBean {
             int countImage = refImageSeq != null ? refImageSeq.countItems() : 0;
             int countNonImage = refNonImageSeq != null ? refNonImageSeq
                     .countItems() : 0;
+            if (countImage == 0 && countNonImage == 0) {
+                log.warn("Performed Series item "+i+" of mpps (iuid:"+mpps.getSopIuid()+
+                        ") neither has image nor nonimage references! Leave this series out. iuid:"+seriesIUID);
+                continue;
+            }
             if (insts.size() < countImage + countNonImage) {
                 return null;
             }
@@ -326,6 +348,21 @@ public abstract class MPPSManagerBean implements SessionBean {
         ian.putPN(Tags.PatientName, patAttrs.getString(Tags.PatientName));
         ian.putLO(Tags.PatientID, patAttrs.getString(Tags.PatientID));
         return ian;
+    }
+
+    private boolean containsInstances(Dataset attrs) {
+        DcmElement perfSeriesSq = attrs.get(Tags.PerformedSeriesSeq);
+        for (int i = 0, n = perfSeriesSq.countItems(); i < n; i++) {
+            Dataset perfSeries = perfSeriesSq.getItem(i);
+            DcmElement refImageSeq = perfSeries.get(Tags.RefImageSeq);
+            if (refImageSeq != null && refImageSeq.countItems() > 0)
+                return true;
+            DcmElement refNonImageSeq = perfSeries
+                    .get(Tags.RefNonImageCompositeSOPInstanceSeq);
+            if (refNonImageSeq != null && refNonImageSeq.countItems() > 0)
+                return true;
+        }
+        return false;
     }
 
     private static boolean containsAll(Collection insts,
