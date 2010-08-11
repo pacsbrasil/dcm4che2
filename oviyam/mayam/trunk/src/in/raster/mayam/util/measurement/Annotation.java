@@ -38,6 +38,7 @@
 * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.util.measurement;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -46,7 +47,7 @@ import java.util.ArrayList;
  * @version 0.5
  *
  */
-public class Annotation {
+public class Annotation implements Serializable{
 
     private ArrayList<AnnotationObj> line;
     private ArrayList<AnnotationObj> rect;

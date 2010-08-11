@@ -760,9 +760,9 @@ public class MainScreen extends javax.swing.JFrame {
                 rowColumnArray[1] = 1;
             }
             ArrayList tempRef = ApplicationContext.databaseRef.getUrlBasedOnStudyIUID(siuid);
-            StudyListUpdator studyListUpdator = new StudyListUpdator();
-            studyListUpdator.addStudyToStudyList(siuid, studyList);
             openImageView(siuid, tempRef, rowColumnArray[0], rowColumnArray[1]);
+            StudyListUpdator studyListUpdator = new StudyListUpdator();
+            studyListUpdator.addStudyToStudyList(siuid, studyList, ((File) tempRef.get(0)).getAbsolutePath());
         }
     }//GEN-LAST:event_viewerButtonActionPerformed
     /**
@@ -806,9 +806,9 @@ public class MainScreen extends javax.swing.JFrame {
                 String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
                 int rowColumnArray[] = ApplicationContext.databaseRef.getRowColumnBasedStudyUID(siuid);
                 ArrayList tempRef = ApplicationContext.databaseRef.getUrlBasedOnStudyIUID(siuid);
-                StudyListUpdator studyListUpdator = new StudyListUpdator();
-                studyListUpdator.addStudyToStudyList(siuid, studyList);
                 openImageView(siuid, tempRef, rowColumnArray[0], rowColumnArray[1]);
+                StudyListUpdator studyListUpdator = new StudyListUpdator();
+                studyListUpdator.addStudyToStudyList(siuid, studyList, ((File) tempRef.get(0)).getAbsolutePath());
             }
         } else {
             showThumbnails();
@@ -953,6 +953,7 @@ public class MainScreen extends javax.swing.JFrame {
             }
             int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
             String studyUID = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
+            selectedStudy = studyUID;
             thumbUpdator = new SeriesThumbUpdator(studyUID);
         }
     }
@@ -1074,6 +1075,8 @@ public class MainScreen extends javax.swing.JFrame {
     private WindowingLayeredCanvas canvas = null;
     public static MainScreen mainScreenObj;
     public static DicomTagsViewer dicomTagsViewer = new DicomTagsViewer();
+    public static String selectedStudy = "";
+    public static String selectedSeries = "";
 
     public static MainScreen getInstance() {
         if (mainScreenObj == null) {

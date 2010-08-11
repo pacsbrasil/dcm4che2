@@ -38,63 +38,43 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.delegate;
 
-import in.raster.mayam.form.LayeredCanvas;
 import in.raster.mayam.form.MainScreen;
-import in.raster.mayam.model.Instance;
 import in.raster.mayam.model.Series;
 import in.raster.mayam.model.Study;
-import java.io.File;
 
 /**
  *
  * @author  BabuHussain
- * @version 0.5
+ * @version 0.6
  *
  */
-public class SeriesChooserDelegate extends Thread {
+public class RemoveStudy {
 
-    private String studyUID;
-    private String seriesUID;
-    private LayeredCanvas canvas;
-
-    public SeriesChooserDelegate() {
+    public RemoveStudy() {
     }
 
-    public SeriesChooserDelegate(String studyUID, String seriesUID, LayeredCanvas canvas) {
-        this.studyUID = studyUID;
-        this.seriesUID = seriesUID;
-        this.canvas = canvas;
-        this.start();
-    }
-
-    /**
-     * This routine used to change the series in the tile.
-     */
-    private void changeSeries() {
-        for (Study study : MainScreen.studyList) {
-            if (study.getStudyInstanceUID().equalsIgnoreCase(studyUID)) {
-                for (Series series : study.getSeriesList()) {
-                    if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
-                        for (Instance instance : series.getImageList()) {
-                            File file = new File(System.getProperty("user.dir") + File.separator + instance.getFilepath());
-                            if (file.exists()) {
-                                canvas.createSubComponents(System.getProperty("user.dir") + File.separator + instance.getFilepath());
-                                canvas.annotationPanel.setAnnotation(instance.getAnnotation());
-                            } else {
-                                canvas.createSubComponents(instance.getFilepath());
-                                canvas.annotationPanel.setAnnotation(instance.getAnnotation());
+    public synchronized static void removeStudyFromStudylist(Study study) {
+        if (MainScreen.selectedStudy.equalsIgnoreCase(study.getStudyInstanceUID())) {
+            for (Study tempStudy : MainScreen.studyList) {
+                synchronized (MainScreen.studyList) {
+                    if (tempStudy.getStudyInstanceUID().equalsIgnoreCase(study.getStudyInstanceUID())) {
+                        synchronized (tempStudy.getSeriesList()) {
+                            Series notTobeDeleted = null;
+                            for (Series series : tempStudy.getSeriesList()) {
+                                if (series.getSeriesInstanceUID().equalsIgnoreCase(MainScreen.selectedSeries)) {
+                                    notTobeDeleted = series;
+                                    break;
+                                }
                             }
-                            break;
+                            tempStudy.getSeriesList().clear();
+                            tempStudy.addSeries(notTobeDeleted);
+                            notTobeDeleted = null;
                         }
                     }
                 }
             }
+        } else {
+            MainScreen.studyList.remove(study);
         }
-        canvas.revalidate();
-        canvas.repaint();
-    }
-
-    public void run() {
-        changeSeries();
     }
 }

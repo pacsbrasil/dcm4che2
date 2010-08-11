@@ -98,9 +98,9 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
 
     private Canvas canvas;
     //Image manipulation Flags
-    private boolean isRotate = false;
-    private boolean flipHorizontalFlag = false;
-    private boolean flipVerticalFlag = false;
+    public boolean isRotate = false;
+    public boolean flipHorizontalFlag = false;
+    public boolean flipVerticalFlag = false;
     private boolean invertFlag = false;
     private boolean newBufferedImage = false;
     private boolean scaleFlag = false;
@@ -109,7 +109,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     private static boolean widowingFlag = false;
     private static boolean probeFlag;
     private double scaleFactor = 1;
-    private int rotateRightAngle = 0;
+    public int rotateRightAngle = 0;
     private int rotateLeftAngle = 0;
     public static String tool = "windowing";
     //Windowing, Hu related variables
@@ -749,6 +749,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
      * This routine used to reset the image box with the original buffered image
      */
     public void reset() {
+        this.getCanvas().getLayeredCanvas().annotationPanel.resetAnnotation();
         windowLevel = (int) WC;
         windowWidth = (int) WW;
         windowChanged(windowLevel, windowWidth);

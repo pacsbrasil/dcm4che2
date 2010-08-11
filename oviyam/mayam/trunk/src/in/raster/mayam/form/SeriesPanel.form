@@ -19,19 +19,12 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" pref="112" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="totalImagesText" pref="146" max="32767" attributes="1"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="seriesDescriptionText" alignment="0" pref="146" max="32767" attributes="1"/>
-                          <Component id="modalityText" alignment="0" pref="146" max="32767" attributes="1"/>
-                          <Component id="institutionText" alignment="1" pref="146" max="32767" attributes="1"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="totalImagesText" alignment="0" pref="146" max="32767" attributes="1"/>
+                  <Component id="seriesDescriptionText" alignment="0" pref="146" max="32767" attributes="1"/>
+                  <Component id="modalityText" alignment="0" pref="146" max="32767" attributes="1"/>
+                  <Component id="institutionText" alignment="1" pref="146" max="32767" attributes="1"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

@@ -45,6 +45,7 @@ import in.raster.mayam.util.DicomTags;
 import in.raster.mayam.util.DicomTagsReader;
 import in.raster.mayam.form.display.Display;
 import in.raster.mayam.delegate.CineTimer;
+import in.raster.mayam.delegate.DestinationFinder;
 import in.raster.mayam.model.Instance;
 import in.raster.mayam.model.PresetModel;
 import in.raster.mayam.model.Series;
@@ -613,7 +614,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.imgPanel.reset();
             ApplicationContext.annotationPanel.reset();
-           // ApplicationContext.annotationPanel.clearAllMeasurement();
+            // ApplicationContext.annotationPanel.clearAllMeasurement();
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
         }
@@ -816,6 +817,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     private void moveMeasurementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveMeasurementActionPerformed
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.imgPanel.tool = "";
+            ApplicationContext.annotationPanel.tool="";
             ApplicationContext.annotationPanel.doMoveMeasurement();
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
@@ -1075,11 +1077,15 @@ public class ImageToolbar extends javax.swing.JPanel {
                 File file = (File) tempRef.get(i);
                 LayeredCanvas canvas = new LayeredCanvas(file.getAbsolutePath());
                 ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).add(canvas, i);
+
                 for (int x = 0; x < instanceArray.size(); x++) {
-                    if (file.getAbsolutePath().equalsIgnoreCase(instanceArray.get(x).getFilepath())) {
-                        ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(i)).annotationPanel.setAnnotation(instanceArray.get(x).getAnnotation());
-                    }
+//                if (file.getAbsolutePath().equalsIgnoreCase(new DestinationFinder().getFileDestination(new File(instanceArray.get(x).getFilepath())))) {
+                  if (file.getAbsolutePath().equalsIgnoreCase(new DestinationFinder().getFileDestination(instanceArray.get(x).getFilepath()))) {
+                    ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(i)).annotationPanel.setAnnotation(instanceArray.get(x).getAnnotation());
+                    break;
+                  }
                 }
+
             } else {
                 LayeredCanvas j = new LayeredCanvas();
                 j.setStudyUID(siuid);
@@ -1108,10 +1114,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         } else {
             studyUID = ApplicationContext.layeredCanvas.getStudyUID();
         }
-
-        Iterator<Study> studyItr = MainScreen.studyList.iterator();
-        while (studyItr.hasNext()) {
-            Study study = studyItr.next();
+        for (Study study : MainScreen.studyList) {
             if (study.getStudyInstanceUID().equalsIgnoreCase(studyUID)) {
                 ArrayList<Series> seriesList = (ArrayList<Series>) study.getSeriesList();
                 for (int i = 0; i < seriesList.size(); i++) {

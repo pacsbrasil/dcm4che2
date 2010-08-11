@@ -208,7 +208,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         studyTime = dataset.getString(Tags.StudyTime);
         studyUID = dataset.getString(Tags.StudyInstanceUID);
         seriesUID = dataset.getString(Tags.SeriesInstanceUID);
-
+        MainScreen.selectedSeries=seriesUID;
         bodyPartExamined = dataset.getString(Tags.BodyPartExamined);
         slicePosition = dataset.getString(Tags.SliceLocation);
         patientPosition = dataset.getString(Tags.PatientPosition);
@@ -247,14 +247,14 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             int wMax = cMax - cMin;
             int w = wMax;
             try {
-                 initialPixelSpacingY = pixelSpacingY = Double.parseDouble(dataset.getString(
+                initialPixelSpacingY = pixelSpacingY = Double.parseDouble(dataset.getString(
                         Tags.PixelSpacing, 0));
                 initialPixelSpacingX = pixelSpacingX = Double.parseDouble(dataset.getString(
                         Tags.PixelSpacing, 1));
 
             } catch (NullPointerException e) {
-                initialPixelSpacingX=0;
-                initialPixelSpacingY=0;
+                initialPixelSpacingX = 0;
+                initialPixelSpacingY = 0;
             }
             int nWindow = cmParam.getNumberOfWindows();
             if (nWindow > 0) {
@@ -265,7 +265,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
                 WC = windowLevel = c = (int) w / 2;
             }
         }
-         imageOrientation = dataset.getString(Tags.ImageOrientation) != null ? dataset.getString(Tags.ImageOrientation, 0) + "\\" + dataset.getString(Tags.ImageOrientation, 1) + "\\" + dataset.getString(Tags.ImageOrientation, 2) + "\\" + dataset.getString(Tags.ImageOrientation, 3) + "\\" + dataset.getString(Tags.ImageOrientation, 4) + "\\" + dataset.getString(Tags.ImageOrientation, 5) : null;
+        imageOrientation = dataset.getString(Tags.ImageOrientation) != null ? dataset.getString(Tags.ImageOrientation, 0) + "\\" + dataset.getString(Tags.ImageOrientation, 1) + "\\" + dataset.getString(Tags.ImageOrientation, 2) + "\\" + dataset.getString(Tags.ImageOrientation, 3) + "\\" + dataset.getString(Tags.ImageOrientation, 4) + "\\" + dataset.getString(Tags.ImageOrientation, 5) : null;
     }
 
     /**
@@ -346,12 +346,13 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             e.printStackTrace();
         }
     }
-     public void setImage(Instance instance) {
+
+    public void setImage(Instance instance) {
         try {
             newBufferedImage = true;
             currentbufferedimage = instance.getPixelData();
             windowChanged(this.windowLevel, this.windowWidth);
-            imageOrientation=instance.getImageOrientation();
+            imageOrientation = instance.getImageOrientation();
         } catch (ImageReadingException e) {
             e.printStackTrace();
         }
@@ -373,9 +374,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
      * This routine used to select the first instance of series
      */
     public void selectFirstInstance() {
-        Iterator<Study> studyItr = MainScreen.studyList.iterator();
-        while (studyItr.hasNext()) {
-            Study study = studyItr.next();
+        for(Study study:MainScreen.studyList){
             if (study.getStudyInstanceUID().equalsIgnoreCase(ApplicationContext.imgPanel.getStudyUID())) {
                 ArrayList<Series> seriesList = (ArrayList<Series>) study.getSeriesList();
                 for (int i = 0; i < seriesList.size(); i++) {
@@ -432,7 +431,8 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         }
     }
     int finalHeight;
-    int finalWidth;  
+    int finalWidth;
+
     private void calculateNewHeightAndWidthBasedonAspectRatio() {
         thumbRatio = thumbWidth / thumbHeight;
         double imageWidth = image.getWidth();
@@ -456,10 +456,8 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             thumbWidth = (int) Math.round((thumbHeight + 0.00f) * imageRatio);
         }
         startX = (maxWidth - thumbWidth) / 2;
-        startY = (maxHeight - thumbHeight) / 2;       
+        startY = (maxHeight - thumbHeight) / 2;
     }
-
-    
 
     public double getCurrentScaleFactor() {
         double imageWidth = image.getWidth();
@@ -691,9 +689,9 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         if (!ApplicationContext.imageViewExist()) {
             ApplicationContext.createImageView();
         }
-        StudyListUpdator studyListUpdator = new StudyListUpdator();
-        studyListUpdator.addStudyToStudyList(this.studyUID, MainScreen.studyList);
         ShowImageViewDelegate showImgView = new ShowImageViewDelegate(filePath);
+        StudyListUpdator studyListUpdator = new StudyListUpdator();
+        studyListUpdator.addStudyToStudyList(this.studyUID, MainScreen.studyList, filePath);
 
     }
     private void formMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
@@ -737,6 +735,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
     }
     }
     }*/
+
     public double getScaleFactor() {
         return scaleFactor;
     }
@@ -744,6 +743,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
     public void setScaleFactor(double scaleFactor) {
         this.scaleFactor = scaleFactor;
     }
+
     private void setTotalInstacne() {
         currentInstanceNo--;
         totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
@@ -768,7 +768,6 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
                 selectNextInstance();
             }
         }
-
     }
 
     public boolean isMulitiFrame() {
@@ -820,7 +819,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         currentInstanceNo--;
         Instance instance = instanceArray.get(currentInstanceNo);
         dicomFileUrl = instance.getFilepath();
-       // setImage(instance.getPixelData());
+        // setImage(instance.getPixelData());
         setImage(instance);
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
     }
@@ -889,7 +888,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         mouseLocY1 = e.getY();
     }
 
-    public void mouseReleased(MouseEvent e) {      
+    public void mouseReleased(MouseEvent e) {
     }
 
     public void mouseEntered(MouseEvent e) {

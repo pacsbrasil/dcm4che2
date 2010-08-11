@@ -38,13 +38,15 @@
 * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.util.measurement;
 
+import java.io.Serializable;
+
 /**
  *
  * @author  BabuHussain
  * @version 0.5
  *
  */
-public class AnnotationObj {
+public class AnnotationObj implements Serializable{
 
     //original X,Y coordinates
     private int x1;

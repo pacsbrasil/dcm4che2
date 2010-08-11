@@ -86,7 +86,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     private static boolean addEllipse = false;
     private boolean deleteMeasurement = false;
     private boolean resizeMeasurement = false;
-    private boolean moveMeasurement = false;
+    private static boolean moveMeasurement = false;
     private float cosninety = 0;
     private float sineninety = 1;
     private Shape seletedShape = null;
@@ -100,7 +100,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     private ArrayList<AnnotationObj> scoutObj;
     private Annotation annotation;
     private boolean focusGained;
-    private static String tool = "";
+    public static String tool = "";
 
     /** Creates new form DateFormatPanel */
     public AnnotationPanel(LayeredCanvas l) {
@@ -552,6 +552,45 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
 
     }
 
+    public void resetAnnotation() {
+        if (this.layeredCanvas.imgpanel.isRotate) {
+            if (this.layeredCanvas.imgpanel.rotateRightAngle == 90) {
+                doRotateLeft();
+            } else if (this.layeredCanvas.imgpanel.rotateRightAngle == 180) {
+                doRotateLeft();
+                doRotateLeft();
+            } else if (this.layeredCanvas.imgpanel.rotateRightAngle == 270) {
+                doRotateRight();
+            }
+        }
+        if (this.layeredCanvas.imgpanel.flipHorizontalFlag) {
+            doFlipHorizontal();
+        }
+        if (this.layeredCanvas.imgpanel.flipVerticalFlag) {
+            doFlipVertical();
+        }
+
+    }
+
+    public void setCurrentAnnotation() {
+        if (this.layeredCanvas.imgpanel.isRotate) {
+            if (this.layeredCanvas.imgpanel.rotateRightAngle == 90) {
+                doRotateRight();
+            } else if (this.layeredCanvas.imgpanel.rotateRightAngle == 180) {
+                doRotateRight();
+                doRotateRight();
+            } else if (this.layeredCanvas.imgpanel.rotateRightAngle == 270) {
+                doRotateLeft();
+            }
+        }
+        if (this.layeredCanvas.imgpanel.flipHorizontalFlag) {
+            doFlipHorizontal();
+        }
+        if (this.layeredCanvas.imgpanel.flipVerticalFlag) {
+            doFlipVertical();
+        }
+    }
+
     /**
      * This routine used to reset the mouse points stored in the annotation overlay.
      */
@@ -799,6 +838,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         seletedShape = null;
         boundingRect = null;
         this.repaint();
+        this.layeredCanvas.imgpanel.storeAnnotation();
     }
 
     public void stopPanning() {
@@ -1047,11 +1087,11 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     private String calculateDiff(int mouseLocX1, int mouseLocY1, int mouseLocX2, int mouseLocY2) {
         double diff;
         if (mouseLocX1 == mouseLocX2) {
-            diff = (double) (((mouseLocY2 - mouseLocY1)/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * (this.layeredCanvas.imgpanel.getPixelSpacingY()));
+            diff = (double) (((mouseLocY2 - mouseLocY1) / this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * (this.layeredCanvas.imgpanel.getPixelSpacingY()));
         } else if (mouseLocY1 == mouseLocY2) {
-            diff = (double) (((mouseLocX2 - mouseLocX1)/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * (this.layeredCanvas.imgpanel.getPixelSpacingX()));
+            diff = (double) (((mouseLocX2 - mouseLocX1) / this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * (this.layeredCanvas.imgpanel.getPixelSpacingX()));
         } else {
-            diff = (double) Math.sqrt(Math.pow(((mouseLocY2 - mouseLocY1)/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * (this.layeredCanvas.imgpanel.getPixelSpacingY()), 2) + Math.pow(((mouseLocX2 - mouseLocX1)/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * (this.layeredCanvas.imgpanel.getPixelSpacingX()), 2));
+            diff = (double) Math.sqrt(Math.pow(((mouseLocY2 - mouseLocY1) / this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * (this.layeredCanvas.imgpanel.getPixelSpacingY()), 2) + Math.pow(((mouseLocX2 - mouseLocX1) / this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * (this.layeredCanvas.imgpanel.getPixelSpacingX()), 2));
         }
         double diff1 = diff / 10;
         NumberFormat nf = NumberFormat.getInstance();
@@ -1082,7 +1122,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         } else {
             diffX = mouseLocX2 - mouseLocX1;
         }
-        diff = (double) (((diffY/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * this.layeredCanvas.imgpanel.getPixelSpacingY()) * ((diffX/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * this.layeredCanvas.imgpanel.getPixelSpacingX()));
+        diff = (double) (((diffY / this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * this.layeredCanvas.imgpanel.getPixelSpacingY()) * ((diffX / this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * this.layeredCanvas.imgpanel.getPixelSpacingX()));
         double diff1 = diff / 100;
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(3);
@@ -1113,8 +1153,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             diffX = mouseLocX2 - mouseLocX1;
         }
 
-        width = ((diffX/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * this.layeredCanvas.imgpanel.getPixelSpacingX());
-        height = ((diffY/this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * this.layeredCanvas.imgpanel.getPixelSpacingY());
+        width = ((diffX / this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * this.layeredCanvas.imgpanel.getPixelSpacingX());
+        height = ((diffY / this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * this.layeredCanvas.imgpanel.getPixelSpacingY());
 
         diff = (double) (Math.PI * (width * 0.5) * (height * 0.5));
 
@@ -1152,9 +1192,11 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     }
 
     public Annotation getAnnotation() {
+        resetAnnotation();
         annotation = new Annotation();
-        if(seletedShape!=null)
+        if (seletedShape != null) {
             addShapeToArray();
+        }
         annotation.setEllipse(ellipseObj);
         annotation.setRect(rectObj);
         annotation.setLine(lineObj);
@@ -1183,6 +1225,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             rectObj = new ArrayList<AnnotationObj>();
             ellipseObj = new ArrayList<AnnotationObj>();
         }
+        setCurrentAnnotation();
         this.repaint();
     }
 

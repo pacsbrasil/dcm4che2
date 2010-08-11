@@ -152,7 +152,8 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
      */
     public void updateInstanceList() {
         SeriesListUpdator series = new SeriesListUpdator(studyUID, seriesUID, false);
-        // series.addSeriesToStudyList(studyUID, seriesUID, false);
+        series.setDicomReader();
+        series.addSeriesToStudyList(studyUID, seriesUID, false);
     }
 
     /**
@@ -193,9 +194,9 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
                 currentbufferedimage = null;
                 imageIcon = null;
                 loadedImage = null;
-
-            } catch (Exception ex) {ex.printStackTrace();
-               // Logger.getLogger(ThumbnailImage.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                // Logger.getLogger(ThumbnailImage.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -215,7 +216,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
      * This routine used to set the selection coloring
      */
     public void setSelectionColoring() {
-        this.setBorder(new LineBorder(Color.DARK_GRAY,2));
+        this.setBorder(new LineBorder(Color.DARK_GRAY, 2));
         seriesDescriptionText.setForeground(Color.black);
         totalImagesText.setForeground(Color.black);
         modalityText.setForeground(Color.black);
@@ -227,10 +228,10 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
      */
     public void setNoSelectionColoring() {
         this.setBorder(new LineBorder(Color.lightGray));
-        seriesDescriptionText.setForeground(new Color(0,70,104));
-        totalImagesText.setForeground(new Color(0,70,104));
-        modalityText.setForeground(new Color(0,70,104));
-        institutionText.setForeground(new Color(0,70,104));
+        seriesDescriptionText.setForeground(new Color(0, 70, 104));
+        totalImagesText.setForeground(new Color(0, 70, 104));
+        modalityText.setForeground(new Color(0, 70, 104));
+        institutionText.setForeground(new Color(0, 70, 104));
     }
 
     private void setTotalInstacne() {
@@ -275,10 +276,8 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
         if (ApplicationContext.selectedSeriesPanel != null) {
             ApplicationContext.selectedSeriesPanel.setNoSelectionColoring();
         }
-
         ApplicationContext.selectedSeriesPanel = this;
         ApplicationContext.selectedSeriesPanel.setSelectionColoring();
-
         if (e.getClickCount() == 2) {
             // openSingleImage(this.fileUrl);
         }
@@ -287,14 +286,14 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
     public void mousePressed(MouseEvent e) {
         if (!ApplicationContext.mainScreen.getCanvas().getFilePath().equalsIgnoreCase(this.getFileUrl())) {
             WindowingPanelLoader.loadImageOnWindowingPanel(this.getFileUrl());
-            if(MainScreen.dicomTagsViewer.isVisible()){
-            ArrayList<DicomTags> dcmTags = DicomTagsReader.getTags(new File(this.getFileUrl()));
-            MainScreen.dicomTagsViewer.setDataModelOnTable(dcmTags);
+            if (MainScreen.dicomTagsViewer.isVisible()) {
+                ArrayList<DicomTags> dcmTags = DicomTagsReader.getTags(new File(this.getFileUrl()));
+                MainScreen.dicomTagsViewer.setDataModelOnTable(dcmTags);
             }
         }
         if (!instanceListAdded) {
             updateInstanceList();
-        }       
+        }
     }
 
     public void mouseReleased(MouseEvent e) {

@@ -40,7 +40,6 @@ package in.raster.mayam.delegate;
 
 import in.raster.mayam.util.core.TranscoderMain;
 import java.io.File;
-import java.util.Calendar;
 
 /**
  *
@@ -63,7 +62,8 @@ public class DestinationFinder {
                 } else {
                     fileDest = importFileTranscodedDestination(file);
                 }
-            } catch (Exception e) {e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         } else {
             fileDest = file.getAbsolutePath();
@@ -71,6 +71,19 @@ public class DestinationFinder {
         return fileDest;
     }
 
+    public String getFileDestination(String filePath)
+    {
+         String fileDest = filePath;
+        try {
+                String archiveDir = "archive";
+                if (filePath.startsWith(archiveDir)) {
+                    fileDest = System.getProperty("user.dir")+File.separator+filePath;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+         return fileDest;
+    }
     /**
      *
      * @param file -
@@ -97,13 +110,14 @@ public class DestinationFinder {
     private String importFileTranscodedDestination(File file) throws Exception {
         String userDir = System.getProperty("user.dir");
         String archiveDir = userDir + File.separator + "archive";
-        Calendar today = Calendar.getInstance();
-        String parent = archiveDir + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + "UnCompressed";
+        //In order to avoid duplication it has been changed.
+        //Calendar today = Calendar.getInstance();
+        // String parent = archiveDir + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + "UnCompressed";
+        String parent = archiveDir + File.separator + "UnCompressed";
         File parentFile = new File(parent);
         if (!parentFile.exists()) {
             parentFile.mkdirs();
         }
-
         String dest = parent + File.separator + file.getName();
         String transParam[] = {"--ivle", file.getAbsolutePath(), dest};
         if (file.isFile()) {

@@ -122,6 +122,12 @@ public class Study implements Serializable {
     }
 
     public void addSeries(Series series) {
+        if(this.seriesList==null)
+        this.seriesList= new ArrayList<Series>();
         this.seriesList.add(series);
+    }
+    public void removeSeries(Series series)
+    {
+        this.seriesList.remove(series);
     }
 }

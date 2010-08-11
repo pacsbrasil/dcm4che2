@@ -39,19 +39,23 @@
 package in.raster.mayam.delegate;
 
 import in.raster.mayam.context.ApplicationContext;
+import in.raster.mayam.form.LayeredCanvas;
 import in.raster.mayam.form.MainScreen;
 import in.raster.mayam.model.Instance;
 import in.raster.mayam.model.Series;
 import in.raster.mayam.model.Study;
+import in.raster.mayam.util.measurement.InstanceAnnotation;
+import in.raster.mayam.util.measurement.SeriesAnnotation;
+import in.raster.mayam.util.measurement.StudyAnnotation;
 import java.io.File;
-//import java.io.IOException;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
-//import java.util.logging.Level;
-//import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import javax.swing.JPanel;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.imageio.plugins.DcmMetadata;
@@ -63,13 +67,15 @@ import org.dcm4che2.data.Tag;
  * @version 0.5
  *
  */
-public class SeriesListUpdator extends Thread {
+public class SeriesListUpdator {
 
     Study tempStudy = null;
     boolean studyAlreadyPresent = false;
     private String studyUID;
     private String seriesUID;
     private boolean skipStudyParsing;
+    private StudyAnnotation studyAnnotation = null;
+    private ImageReader reader = null;
 
     public SeriesListUpdator() {
     }
@@ -78,10 +84,9 @@ public class SeriesListUpdator extends Thread {
         this.studyUID = studyUID;
         this.seriesUID = seriesUID;
         this.skipStudyParsing = skipStudyParsing;
-        this.start();
+        //this.start();
     }
 
-    @Override
     public void run() {
         addSeriesToStudyList(studyUID, seriesUID, skipStudyParsing);
     }
@@ -95,6 +100,7 @@ public class SeriesListUpdator extends Thread {
     public void addSeriesToStudyList(String studyUID, String seriesUID, boolean skipStudyParsing) {
 
         boolean seriesAlreadyPresent = false;
+        this.studyUID = studyUID;
         if (!skipStudyParsing) {
             findStudyFromStudyList(studyUID);
         }
@@ -103,6 +109,12 @@ public class SeriesListUpdator extends Thread {
             for (Series series : tempStudy.getSeriesList()) {
                 if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
                     seriesAlreadyPresent = true;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(SeriesListUpdator.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    updateAnnotation(series);
                 }
             }
         }
@@ -113,10 +125,13 @@ public class SeriesListUpdator extends Thread {
                 MainScreen.studyList.add(tempStudy);
             }
             tempStudy.addSeries(series);
+
             try {
                 for (Instance img : series.getImageList()) {
                     readDicomFile(img);
                 }
+                updateAnnotation(series);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -137,10 +152,51 @@ public class SeriesListUpdator extends Thread {
         }
     }
 
+    public void updateAnnotation(Series series) {
+        if (studyAnnotation != null) {
+            SeriesAnnotation seriesAnnotation = (SeriesAnnotation) studyAnnotation.getSeriesAnnotation().get(series.getSeriesInstanceUID());
+            for (Instance instance : series.getImageList()) {
+                if (seriesAnnotation != null && seriesAnnotation.getInstanceArray() != null) {
+                    InstanceAnnotation instanceAnnotation = (InstanceAnnotation) seriesAnnotation.getInstanceArray().get(instance.getSop_iuid());
+                    instance.setAnnotation(instanceAnnotation.getAnnotation());
+                }
+            }
+            updateFirstInstanceAnnotation(series.getSeriesInstanceUID());
+        }
+    }
+
+    private void updateFirstInstanceAnnotation(String seriesUID) {
+        boolean matchingTab = false;
+        if (ApplicationContext.imgView != null && ApplicationContext.imgView.jTabbedPane1 != null) {
+            for (int x = 0; x < ApplicationContext.imgView.jTabbedPane1.getComponentCount(); x++) {
+                for (int y = 0; y < ((JPanel) ApplicationContext.imgView.jTabbedPane1.getComponent(x)).getComponentCount(); y++) {
+                    if (((JPanel) ApplicationContext.imgView.jTabbedPane1.getComponent(x)).getComponent(y) instanceof LayeredCanvas) {
+                        LayeredCanvas tempCanvas = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getComponent(x)).getComponent(y));
+                        if (tempCanvas.imgpanel != null && tempCanvas.imgpanel.getStudyUID().equalsIgnoreCase(studyUID)) {
+                            matchingTab = true;
+                            if (tempCanvas.imgpanel.getSeriesUID().equalsIgnoreCase(seriesUID)) {
+                                SeriesAnnotation seriesAnnotation = (SeriesAnnotation) studyAnnotation.getSeriesAnnotation().get(seriesUID);
+                                tempCanvas.annotationPanel.setAnnotation(((InstanceAnnotation) seriesAnnotation.getInstanceArray().get(tempCanvas.imgpanel.getInstanceUID())).getAnnotation());
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (matchingTab) {
+                    break;
+                }
+            }
+        }
+    }
+
+    public void setDicomReader() {
+        ImageIO.scanForPlugins();
+        Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
+        reader = (ImageReader) iter.next();
+    }
+
     private synchronized void readDicomFile(Instance img) {
         ImageInputStream iis = null;
-        Iterator iter = null;
-        ImageReader reader = null;
         Dataset dataset;
         try {
             File selFile = new File(System.getProperty("user.dir") + File.separator + img.getFilepath());
@@ -148,9 +204,6 @@ public class SeriesListUpdator extends Thread {
                 selFile = new File(img.getFilepath());
             }
             iis = ImageIO.createImageInputStream(selFile);
-            ImageIO.scanForPlugins();
-            iter = ImageIO.getImageReadersByFormatName("DICOM");
-            reader = (ImageReader) iter.next();
             reader.setInput(iis, false);
             dataset = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
             try {
@@ -176,20 +229,29 @@ public class SeriesListUpdator extends Thread {
                 img.setColumn(column);
                 img.setReferenceSOPInstanceUID(referencedSOPInstanceUID);
                 img.setFrameOfReferenceUID(frameOfReferenceUID);
-            } catch (NullPointerException e) {e.printStackTrace();
-            } catch (RuntimeException e) {e.printStackTrace();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            } catch (RuntimeException e) {
+                e.printStackTrace();
             }
-        }catch(ConcurrentModificationException e){e.printStackTrace();}
-        catch (Exception e) {
+        } catch (ConcurrentModificationException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
                 iis.close();
-                iter = null;
                 reader.dispose();
-            } catch (Exception ex) 
-            {ex.printStackTrace();
+            } catch (Exception ex) {//ignore
             }
         }
+    }
+
+    public StudyAnnotation getStudyAnnotation() {
+        return studyAnnotation;
+    }
+
+    public void setStudyAnnotation(StudyAnnotation studyAnnotation) {
+        this.studyAnnotation = studyAnnotation;
     }
 }
