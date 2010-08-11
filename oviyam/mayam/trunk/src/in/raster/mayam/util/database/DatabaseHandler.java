@@ -121,7 +121,7 @@ public class DatabaseHandler {
 
     /** It initializes the Java Derby Databse.It creates the database if it is not available. */
     public void openOrCreateDB() {
-        try {           
+        try {
             try {
                 Class.forName(driver).newInstance();
             } catch (InstantiationException e) {
@@ -134,35 +134,28 @@ public class DatabaseHandler {
                 StringWriter str = new StringWriter();
                 e.printStackTrace(new PrintWriter(str));
             }
-            try
-            {
-            ds = new org.apache.derby.jdbc.EmbeddedSimpleDataSource();
-            ds.setDatabaseName(databasename);
+            try {
+                ds = new org.apache.derby.jdbc.EmbeddedSimpleDataSource();
+                ds.setDatabaseName(databasename);
+            } catch (NoClassDefFoundError e) {
+                System.err.println("ERROR: ClassNotFoundException:" + e.getMessage());
+                ApplicationFacade.exitApp("ERROR: ClassNotFoundException:" + e.getMessage() + ": Exiting the program");
             }
-            catch(NoClassDefFoundError e)
-            {
-                System.err.println("ERROR: ClassNotFoundException:"+e.getMessage());
-                ApplicationFacade.exitApp("ERROR: ClassNotFoundException:"+e.getMessage()+": Exiting the program");
-            }
-            this.dbExists = checkDBexists(System.getProperty("user.dir"));           
-            try
-            {
-            if (!dbExists) {
-                conn = DriverManager.getConnection(protocol + databasename + ";create=true",
-                        username, password);
-            } else {
-                conn = DriverManager.getConnection(protocol + databasename + ";create=false", username, password);
-            }
-            }
-            catch(SQLException e)
-            {               
-                if(conn==null)
-                {                    
-                 System.err.println("ERROR: Database connection cannot be created:"+e.getMessage());
-                 System.err.println("A instance of application is already running");
-                 ApplicationFacade.exitApp("A instance of Mayam is already running: Exiting the program");
+            this.dbExists = checkDBexists(System.getProperty("user.dir"));
+            try {
+                if (!dbExists) {
+                    conn = DriverManager.getConnection(protocol + databasename + ";create=true",
+                            username, password);
+                } else {
+                    conn = DriverManager.getConnection(protocol + databasename + ";create=false", username, password);
                 }
-            }    
+            } catch (SQLException e) {
+                if (conn == null) {
+                    System.err.println("ERROR: Database connection cannot be created:" + e.getMessage());
+                    System.err.println("A instance of application is already running");
+                    ApplicationFacade.exitApp("A instance of Mayam is already running: Exiting the program");
+                }
+            }
 
             statement = conn.createStatement();
             if (!dbExists) {
@@ -172,12 +165,12 @@ public class DatabaseHandler {
                 insertDefaultLayoutDetail();
                 insertDefaultPresets();
                 insertDefaultThemes();
-            }          
+            }
             conn.setAutoCommit(false);
         } catch (SQLException e) {
             StringWriter str = new StringWriter();
             e.printStackTrace(new PrintWriter(str));
-        }      
+        }
     }
 
     /**
@@ -249,8 +242,8 @@ public class DatabaseHandler {
             conn.createStatement().execute("insert into" + "ae values('" + serverName + "','" + host + "','" + location + "','" + aeTitle + "'," + port + "," + headerPort + "," + imagePort + ")");
             conn.commit();
         } catch (SQLException ex) {
-              Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void insertListenerDetail(String aeTitle, int port, String storageLocation) {
@@ -268,7 +261,7 @@ public class DatabaseHandler {
     public String[] getListenerDetails() {
         ResultSet rs = null;
         String detail[] = new String[3];
-        try {            
+        try {
             rs = conn.createStatement().executeQuery("select * from listener");
             while (rs.next()) {
                 detail[0] = rs.getString("aetitle");
@@ -277,9 +270,9 @@ public class DatabaseHandler {
             }
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }      
+        }
         return detail;
-    }  
+    }
 
     // checks the existence of the file
     public boolean TableExists(String TableName) throws SQLException {
@@ -306,7 +299,7 @@ public class DatabaseHandler {
             statement.executeUpdate(sql);
 
             //creating series table if it is not exist already
-            sql = "create table " + seriesTable + " (SeriesInstanceUID varchar(255) NOT NULL CONSTRAINT SeriesInstanceUID_pk PRIMARY KEY ," + "SeriesNo varchar(50)," + "Modality varchar(10)," + "SeriesDescription varchar(100)," +"BodyPartExamined varchar(100)," + "InstitutionName varchar(255)," + "NoOfSeriesRelatedInstances integer," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255), foreign key (StudyInstanceUID) references Study(StudyInstanceUID))";
+            sql = "create table " + seriesTable + " (SeriesInstanceUID varchar(255) NOT NULL CONSTRAINT SeriesInstanceUID_pk PRIMARY KEY ," + "SeriesNo varchar(50)," + "Modality varchar(10)," + "SeriesDescription varchar(100)," + "BodyPartExamined varchar(100)," + "InstitutionName varchar(255)," + "NoOfSeriesRelatedInstances integer," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255), foreign key (StudyInstanceUID) references Study(StudyInstanceUID))";
             statement.executeUpdate(sql);
 
             //creating is instance table if it is not exist already
@@ -331,9 +324,9 @@ public class DatabaseHandler {
             sql = "create table theme(pk integer primary key GENERATED ALWAYS AS IDENTITY,name varchar(255),status varchar(255))";
             statement.executeUpdate(sql);
         } catch (SQLException ex) {
-             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }    
+    }
 
     /**
      * This routine is used to list studies of local db
@@ -393,7 +386,7 @@ public class DatabaseHandler {
     }
 
     public void insertModalities() {
-        String modality[] = {"CT", "MR", "XA", "CR", "SC", "NM", "RF", "DX", "US", "PX", "OT", "DR","SR","MG","RG"};
+        String modality[] = {"CT", "MR", "XA", "CR", "SC", "NM", "RF", "DX", "US", "PX", "OT", "DR", "SR", "MG", "RG"};
         for (int i = 0; i < modality.length; i++) {
             try {
                 conn.createStatement().execute("insert into modality(logicalname,shortname) values('Dummy','" + modality[i] + "')");
@@ -428,7 +421,7 @@ public class DatabaseHandler {
         }
     }
 
-     private void insertDefaultThemes() {
+    private void insertDefaultThemes() {
         try {
             String sql1 = "insert into theme(name,status)values('Nimrod','active')";
             String sql2 = "insert into theme(name,status)values('Motif','idle')";
@@ -444,20 +437,21 @@ public class DatabaseHandler {
 
         }
     }
-      public void updateThemeStatus(String themeName) {
+
+    public void updateThemeStatus(String themeName) {
         try {
             String str = "select name from theme where status='active'";
             ResultSet rs = conn.createStatement().executeQuery(str);
             rs.next();
-            int n = conn.createStatement().executeUpdate("update theme set status='idle' where name='"+rs.getString("name")+"'");
-            int m = conn.createStatement().executeUpdate("update theme set status='active' where name='"+themeName+"'");
+            int n = conn.createStatement().executeUpdate("update theme set status='idle' where name='" + rs.getString("name") + "'");
+            int m = conn.createStatement().executeUpdate("update theme set status='active' where name='" + themeName + "'");
             conn.commit();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-      public String getActiveTheme()
-      {
+
+    public String getActiveTheme() {
         String activeTheme = "";
         try {
             String str = "select name from theme where status='active'";
@@ -468,7 +462,8 @@ public class DatabaseHandler {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
         return activeTheme;
-      }
+    }
+
     public String[] getModalities() {
         String[] modalities = null;
         try {
@@ -659,7 +654,7 @@ public class DatabaseHandler {
 
         } catch (SQLException ex) {
             rowColumn[0] = 1;
-            rowColumn[1] = 1;            
+            rowColumn[1] = 1;
         }
         return rowColumn;
     }
@@ -720,8 +715,6 @@ public class DatabaseHandler {
         }
     }
 
-    
-
     public void writeDataToDatabase(DicomObject dataset) {
         insertPatientData(dataset);
         insertStudyData(dataset);
@@ -737,20 +730,22 @@ public class DatabaseHandler {
     }
 
     public void insertPatientData(DicomObject dataset) {
-
         if (checkRecordExists(patientTable, "PatientId", dataset.getString(Tag.PatientID))) {
         } else {
             try {
-
                 String dat = null;
                 if ((dataset.getString(Tag.PatientBirthDate) != null) && dataset.getString(Tag.PatientBirthDate).length() > 0) {
-
-                    dat = "date('" + dateFormat.format(dataset.getDate(Tags.PatientBirthDate)) + "')";
+                    dat = (dataset.getDate(Tags.PatientBirthDate) != null) ? dateFormat.format(dataset.getDate(Tags.PatientBirthDate)) : "";
                 }
-                conn.createStatement().execute("insert into " + patientTable + " values('" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.PatientName) + "'," + dat + ",'" + dataset.getString(Tag.PatientSex) + "')");
+                PreparedStatement prepareStatement = conn.prepareStatement("insert into " + patientTable + " values(?,?,?,?)");
+                prepareStatement.setString(1, dataset.getString(Tag.PatientID));
+                prepareStatement.setString(2, dataset.getString(Tag.PatientName));
+                prepareStatement.setString(3, dat);
+                prepareStatement.setString(4, dataset.getString(Tag.PatientSex));
+                prepareStatement.execute();
                 conn.commit();
             } catch (SQLException ex) {
-                 Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -803,7 +798,7 @@ public class DatabaseHandler {
                 String seriesNo = "null";
                 String modality = "null";
                 String studyDesc = "null";
-                String bodyPartExamined="null";
+                String bodyPartExamined = "null";
                 if (dataset.getString(Tag.SeriesDate) != null && dataset.getString(Tag.SeriesDate).length() > 0) {
                     dat = "date('" + dateFormat.format(dataset.getDate(Tag.SeriesDate)) + "')";
                 }
@@ -825,10 +820,10 @@ public class DatabaseHandler {
                 if (dataset.getString(Tag.BodyPartExamined) != null && dataset.getString(Tag.BodyPartExamined).length() > 0) {
                     bodyPartExamined = dataset.getString(Tag.BodyPartExamined).replace('\'', ' ');
                 }
-                conn.createStatement().execute("insert into " + seriesTable + " values('" + dataset.getString(Tag.SeriesInstanceUID) + "','" + seriesNo + "','" + modality + "','" + studyDesc + "','" +bodyPartExamined + "','" + institution + "'," + noSeries + ",'" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "')");
+                conn.createStatement().execute("insert into " + seriesTable + " values('" + dataset.getString(Tag.SeriesInstanceUID) + "','" + seriesNo + "','" + modality + "','" + studyDesc + "','" + bodyPartExamined + "','" + institution + "'," + noSeries + ",'" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "')");
                 conn.commit();
             } catch (SQLException ex) {
-                 Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
 
         }
@@ -838,7 +833,7 @@ public class DatabaseHandler {
         if (checkRecordExists(instanceTable, "SopUID", dataset.getString(Tag.SOPInstanceUID))) {
         } else {
             try {
-                Calendar today = Calendar.getInstance();                
+                Calendar today = Calendar.getInstance();
                 String struturedDestination = "archive" + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + dataset.getString(Tag.StudyInstanceUID) + File.separator + dataset.getString(Tag.SOPInstanceUID);
                 conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "','" + dataset.getString(Tag.InstanceNumber) + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "','" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
                 conn.commit();
@@ -879,7 +874,7 @@ public class DatabaseHandler {
                 list.add(value);
             }
         } catch (Exception e) {
-           e.printStackTrace();
+            e.printStackTrace();
         }
         Root = list.toArray();
         return Root;
@@ -912,7 +907,7 @@ public class DatabaseHandler {
                 ae = new AEModel(rs.getString("logicalname"), rs.getString("hostname"), rs.getString("aetitle"), rs.getInt("port"));
             }
         } catch (Exception ex) {
-             ex.printStackTrace();
+            ex.printStackTrace();
         }
         return ae;
 
@@ -982,7 +977,7 @@ public class DatabaseHandler {
                     if (rs2.next()) {
                         imageUrl = new File(rs2.getString("FileStoreUrl"));
                     }
-                }                
+                }
                 fileArray.add(imageUrl);
             }
         } catch (SQLException ex) {
@@ -1226,15 +1221,15 @@ public class DatabaseHandler {
             conn.commit();
 
         } catch (SQLException e) {
-             e.printStackTrace();            
+            e.printStackTrace();
         }
     }
 
     public String getSendStatus(String studyIUID) {
         String status = null;
         try {
-            String str = "select sendstatus " +
-                    "from study where studyinstanceuid='" + studyIUID + "'";
+            String str = "select sendstatus "
+                    + "from study where studyinstanceuid='" + studyIUID + "'";
             ResultSet rs = conn.createStatement().executeQuery(str);
             while (rs.next()) {
                 status = rs.getString("sendstatus");
@@ -1250,8 +1245,8 @@ public class DatabaseHandler {
     public int getSendCount(String studyIUID) {
         int count = 0;
         try {
-            String str = "select SendImgCnt " +
-                    "from study where StudyInstanceUID='" + studyIUID + "'";
+            String str = "select SendImgCnt "
+                    + "from study where StudyInstanceUID='" + studyIUID + "'";
             ResultSet rs = conn.createStatement().executeQuery(str);
             while (rs.next()) {
                 count = rs.getInt("SendImgCnt");
@@ -1267,8 +1262,8 @@ public class DatabaseHandler {
     public String getReceiveStatus(String studyIUID) {
         String status = null;
         try {
-            String str = "select receivestatus " +
-                    "from study where studyinstanceuid='" + studyIUID + "'";
+            String str = "select receivestatus "
+                    + "from study where studyinstanceuid='" + studyIUID + "'";
             ResultSet rs = conn.createStatement().executeQuery(str);
             while (rs.next()) {
                 status = rs.getString("receivestatus");
@@ -1284,8 +1279,8 @@ public class DatabaseHandler {
     public int getReceiveCount(String studyIUID) {
         int count = 0;
         try {
-            String str = "select RecdImgCnt " +
-                    "from study where StudyInstanceUID='" + studyIUID + "'";
+            String str = "select RecdImgCnt "
+                    + "from study where StudyInstanceUID='" + studyIUID + "'";
             ResultSet rs = conn.createStatement().executeQuery(str);
             while (rs.next()) {
                 count = rs.getInt("RecdImgCnt");
@@ -1321,7 +1316,7 @@ public class DatabaseHandler {
             conn.commit();
         } catch (Exception e) {
             e.printStackTrace();
-            }
+        }
     }
 
     public void doDeleteRecords(String serverName) {
