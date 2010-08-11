@@ -720,25 +720,7 @@ public class DatabaseHandler {
         }
     }
 
-    public void parseDCMFile(File parseFile) {
-        try {
-            DicomInputStream dis = new DicomInputStream(parseFile);
-            DicomObject data = new BasicDicomObject();
-            try {
-                data = dis.readDicomObject();
-            } catch (EOFException e) {
-                e.printStackTrace();
-            }
-            if (data != null) {
-                writeDataToDatabase(data);
-            }
-
-            dis.close();
-            parseFile.delete();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    
 
     public void writeDataToDatabase(DicomObject dataset) {
         insertPatientData(dataset);
