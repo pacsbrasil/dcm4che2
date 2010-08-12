@@ -1097,7 +1097,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(3);
 
-        return "" + nf.format(diff1);
+        return nf.format(diff1);
 
     }
 
@@ -1126,7 +1126,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         double diff1 = diff / 100;
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(3);
-        return "" + nf.format(diff1);
+        return  nf.format(diff1);
 
     }
 
@@ -1164,7 +1164,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(3);
 
-        return "" + nf.format(diff1);
+        return nf.format(diff1);
     }
 
     public ArrayList<AnnotationObj> getEllipseObj() {

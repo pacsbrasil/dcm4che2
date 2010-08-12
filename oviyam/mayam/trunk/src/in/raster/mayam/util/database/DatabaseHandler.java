@@ -261,7 +261,7 @@ public class DatabaseHandler {
             rs = conn.createStatement().executeQuery("select * from listener");
             while (rs.next()) {
                 detail[0] = rs.getString("aetitle");
-                detail[1] = "" + rs.getInt("port");
+                detail[1] = Integer.toString(rs.getInt("port"));
                 detail[2] = rs.getString("storagelocation");
             }
         } catch (SQLException ex) {
@@ -624,7 +624,7 @@ public class DatabaseHandler {
                 serverModel.setServerName(rs1.getString("logicalname"));
                 serverModel.setHostName(rs1.getString("hostname"));
                 serverModel.setAeTitle(rs1.getString("aetitle"));
-                serverModel.setPort("" + rs1.getInt("port"));
+                serverModel.setPort(Integer.toString(rs1.getInt("port")));
                 serverList.add(serverModel);
             }
 
