@@ -48,9 +48,7 @@ import in.raster.mayam.model.Series;
 import in.raster.mayam.model.ServerModel;
 import in.raster.mayam.model.Study;
 import in.raster.mayam.model.StudyModel;
-import java.io.EOFException;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.logging.Level;
@@ -64,10 +62,8 @@ import java.util.Calendar;
 import java.util.Vector;
 //import javax.swing.JOptionPane;
 import org.dcm4che.dict.Tags;
-import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.io.DicomInputStream;
 
 /**
  *

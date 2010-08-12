@@ -57,7 +57,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Timer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
