@@ -615,6 +615,24 @@
     </antcall>
     <antcall target="xslt">
       <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-upsfeed-xmbean.xml" />
+      <param name="out" value="upsfeed-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=UPSFeed" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-upsscp-xmbean.xml" />
+      <param name="out" value="upsscp-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=UPSScp" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
+             value="${dcm4jboss-sar.xmdesc}/dcm4chee-wadoprefetch-xmbean.xml" />
+      <param name="out" value="wadoprefetch-xmbean.xml" />
+      <param name="mbean" value="dcm4chee.archive:service=WADOPrefetch" />
+    </antcall>
+    <antcall target="xslt">
+      <param name="in"
              value="${dcm4jboss-sar.xmdesc}/dcm4chee-xdsi-xmbean.xml" />
       <param name="out" value="xdsi-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=XDS-I" />

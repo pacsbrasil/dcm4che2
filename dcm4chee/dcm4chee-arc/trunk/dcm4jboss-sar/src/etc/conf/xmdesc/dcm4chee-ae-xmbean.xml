@@ -183,6 +183,8 @@
          dcm4chee.archive:service=StudyMgtScp#CalledAETitles
          dcm4chee.archive:service=StudyMgtScp#CallingAETitles
          dcm4chee.archive:service=StudyMgtScu#CallingAETitle
+         dcm4chee.archive:service=UPSScp#CalledAETitles
+         dcm4chee.archive:service=UPSScp#CallingAETitles
          dcm4chee.archive:service=XDS-I#DocRepositoryAET
          " />
       </descriptors>

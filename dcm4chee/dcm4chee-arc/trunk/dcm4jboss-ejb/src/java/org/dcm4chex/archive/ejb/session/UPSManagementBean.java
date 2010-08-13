@@ -220,6 +220,40 @@ public abstract class UPSManagementBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
+    @SuppressWarnings("unchecked")
+    public boolean updateMatchingUPS(Dataset ds) throws FinderException {
+        Dataset refRequest = ds.getItem(Tags.RefRequestSeq);
+        if (refRequest == null)
+            return false;
+        String rpid = refRequest.getString(Tags.RequestedProcedureID);
+        Dataset wkitem = ds.getItem(Tags.ScheduledWorkitemCodeSeq);
+        String codeValue = wkitem.getString(Tags.CodeValue);
+        String codingSchemeDesignator =
+                wkitem.getString(Tags.CodingSchemeDesignator);
+        String codingSchemeVersion =
+                wkitem.getString(Tags.CodingSchemeVersion);
+        int state = UPSState.toInt(ds.getString(Tags.UPSState));
+        Collection<UPSLocal> matchingUPS = (Collection<UPSLocal>) (codingSchemeVersion == null
+                ? upsHome.findByStateAndRequestedProcedureIdAndWorkItemCode(
+                        state, rpid, codeValue, codingSchemeDesignator)
+                : upsHome.findByStateAndRequestedProcedureIdAndWorkItemCode(
+                        state, rpid, codeValue, codingSchemeDesignator,
+                        codingSchemeVersion));
+        if (matchingUPS.isEmpty())
+            return false;
+        if (matchingUPS.size() > 1) {
+            LOG.info("More than one UPS (" + codeValue + ", "
+                    + codingSchemeDesignator + ", \"" + codingSchemeVersion
+                    + "\") with rpid: " + rpid + " found");
+            return false;
+        }
+        matchingUPS.iterator().next().updateAttributes(ds);
+        return true;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
     public void updateUPS(String iuid, Dataset ds) throws DcmServiceException {
         UPSLocal ups = findUPS(iuid);
         switch (ups.getStateAsInt()) {

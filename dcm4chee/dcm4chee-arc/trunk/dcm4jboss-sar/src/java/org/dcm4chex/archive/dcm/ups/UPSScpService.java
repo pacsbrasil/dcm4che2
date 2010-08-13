@@ -287,6 +287,13 @@ public class UPSScpService extends AbstractScpService
         return uidgen.createUID();
     }
 
+    public void updateOrCreateUPS(Dataset ups) throws Exception {
+        if (!upsManager().updateMatchingUPS(ups)) {
+            ups.putUI(Tags.SOPInstanceUID, createUID());
+            createUPS(calledAETs[0], ups);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public void createUPS(String scpAET, Dataset ds)
             throws DcmServiceException {

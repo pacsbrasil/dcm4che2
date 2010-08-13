@@ -405,6 +405,18 @@ times, 10 minutes  apart for each retry. ]]>
   </operation>
 
   <operation impact="ACTION">
+    <description>Update UPS with matching Work Item Code and Requested
+    Procedure ID or create new UPS.</description>
+    <name>updateOrCreateUPS</name>
+    <parameter>
+      <description>Attribute List</description>
+      <name>dataset</name>
+      <type>org.dcm4che.data.Dataset</type>
+    </parameter>
+    <return-type>void</return-type>
+  </operation>
+
+  <operation impact="ACTION">
     <description>Update specified UPS.</description>
     <name>updateUPS</name>
     <parameter>
