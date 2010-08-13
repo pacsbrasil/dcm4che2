@@ -133,9 +133,7 @@ public class ButtonTabComp extends JPanel {
             }
         }
 
-        private void saveAnnotation(int i) {
-            int status = JOptionPane.showConfirmDialog(null, "Do you want to save the annotation");
-            if (status == 0) {
+        private void saveAnnotation(int i) {           
                 Study studyTobeDelete = null;
                 LayeredCanvas tempCanvas = null;
                 StudyAnnotation studyAnnotation = new StudyAnnotation();
@@ -164,8 +162,7 @@ public class ButtonTabComp extends JPanel {
                         RemoveStudy.removeStudyFromStudylist(studyTobeDelete);
                         break;
                     }
-                }
-            }
+                }          
         }
 
         private void writeToFile(String studyDir, StudyAnnotation studyAnnotation) {

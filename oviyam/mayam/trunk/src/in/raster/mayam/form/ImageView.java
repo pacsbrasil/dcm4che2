@@ -40,10 +40,7 @@ package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegate.AnnotationDelegate;
-import in.raster.mayam.model.Series;
-import in.raster.mayam.model.Study;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 
 /**
  *
@@ -110,9 +107,7 @@ public class ImageView extends javax.swing.JFrame {
 
     private void windowCloseHandler(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_windowCloseHandler
         imageToolbar1.resetCineTimer();
-        if (!annotationAlreadyStored) {
-            int status = JOptionPane.showConfirmDialog(null, "Do you want to save the annotation");
-            if (status == 0) {
+        if (!annotationAlreadyStored) {     
                 if (ApplicationContext.imgView != null && ApplicationContext.imgView.jTabbedPane1 != null) {
                     int count = ApplicationContext.imgView.jTabbedPane1.getComponentCount();
                     AnnotationDelegate annotationDelegate = new AnnotationDelegate();
@@ -120,8 +115,7 @@ public class ImageView extends javax.swing.JFrame {
                         annotationDelegate.storeAnnotationHook(x);
                         annotationDelegate.saveAnnotation(x);
                     }
-                }
-            }
+                }          
         }
         annotationAlreadyStored = false;
         ApplicationContext.imgView = null;
