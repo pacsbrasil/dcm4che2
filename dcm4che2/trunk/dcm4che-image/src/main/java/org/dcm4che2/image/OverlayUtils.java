@@ -233,12 +233,14 @@ public class OverlayUtils {
             int nextMask = (0xFF >> prevBits) & 0xFF;
             for(int x=0; x<numRowBytes; x++) {
                 try {
-                    data[posnPad+x] = (byte) (
-                            ((unpaddedData[posnUnpad+x] & mask)>>bits) | 
-                            ((unpaddedData[posnUnpad+x+1] & nextMask) << prevBits));
+                    byte firstByte = (byte) ((unpaddedData[posnUnpad+x] & mask)>>bits);
+                    byte secondByte = 0;
+                    // The very last byte can use nothing from the next byte if there are unused bits in it
+                    if( posnUnpad+x+1 < unpaddedData.length ) secondByte = (byte) ((unpaddedData[posnUnpad+x+1] & nextMask) << prevBits);
+                    data[posnPad+x] = (byte) (firstByte | secondByte);
                 } catch (ArrayIndexOutOfBoundsException e) {
                     ArrayIndexOutOfBoundsException newEx = new ArrayIndexOutOfBoundsException(
-                            "Did not find enough source data in overlay to pad data for " 
+                            "Did not find enough source data ("+unpaddedData.length+") in overlay to pad data for " 
                             + rows + " rows, " 
                             + cols + "columns");
                     newEx.initCause(e);
