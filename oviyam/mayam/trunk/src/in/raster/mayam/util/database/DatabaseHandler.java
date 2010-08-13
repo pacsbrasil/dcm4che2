@@ -40,7 +40,6 @@ package in.raster.mayam.util.database;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.facade.ApplicationFacade;
-//import in.raster.mayam.form.dialog.NumberFormatValidator;
 import in.raster.mayam.model.AEModel;
 import in.raster.mayam.model.Instance;
 import in.raster.mayam.model.PresetModel;
@@ -60,7 +59,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Vector;
-//import javax.swing.JOptionPane;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -177,7 +175,6 @@ public class DatabaseHandler {
             statement.close();
             conn.commit();
             conn.close();
-
         } catch (SQLException e) {
             StringWriter str = new StringWriter();
             e.printStackTrace(new PrintWriter(str));
@@ -299,7 +296,7 @@ public class DatabaseHandler {
             statement.executeUpdate(sql);
 
             //creating is instance table if it is not exist already
-            sql = "create table " + instanceTable + " (SopUID varchar(255) NOT NULL CONSTRAINT SopUID_pk PRIMARY KEY ," + "InstanceNo varchar(50)," + "SendStatus varchar(50)," + "ForwardDateTime varchar(30)," + "ReceivedDateTime varchar(30)," + "ReceiveStatus varchar(50)," + "FileStoreUrl varchar(750)," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255), foreign key (StudyInstanceUID) references Study(StudyInstanceUID)," + "SeriesInstanceUID varchar(255), foreign key (SeriesInstanceUID) references Series(SeriesInstanceUID))";
+            sql = "create table " + instanceTable + " (SopUID varchar(255) NOT NULL CONSTRAINT SopUID_pk PRIMARY KEY ," + "InstanceNo integer," + "SendStatus varchar(50)," + "ForwardDateTime varchar(30)," + "ReceivedDateTime varchar(30)," + "ReceiveStatus varchar(50)," + "FileStoreUrl varchar(750)," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255), foreign key (StudyInstanceUID) references Study(StudyInstanceUID)," + "SeriesInstanceUID varchar(255), foreign key (SeriesInstanceUID) references Series(SeriesInstanceUID))";
             statement.executeUpdate(sql);
 
             sql = "create table ae(pk integer primary key GENERATED ALWAYS AS IDENTITY,logicalname varchar(255),hostname varchar(255),aetitle varchar(255),port integer)";
@@ -831,7 +828,7 @@ public class DatabaseHandler {
             try {
                 Calendar today = Calendar.getInstance();
                 String struturedDestination = "archive" + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + dataset.getString(Tag.StudyInstanceUID) + File.separator + dataset.getString(Tag.SOPInstanceUID);
-                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "','" + dataset.getString(Tag.InstanceNumber) + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "','" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
+                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber) + ",'" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "','" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
                 conn.commit();
                 int receivedCount = this.getReceiveCount(dataset.getString(Tag.StudyInstanceUID));
                 receivedCount = receivedCount + 1;
@@ -848,7 +845,7 @@ public class DatabaseHandler {
             try {
                 Calendar today = Calendar.getInstance();
                 String struturedDestination = dicomFile.getAbsolutePath();
-                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "','" + dataset.getString(Tag.InstanceNumber) + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "','" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
+                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber) + ",'" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "','" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
                 conn.commit();
                 int receivedCount = this.getReceiveCount(dataset.getString(Tag.StudyInstanceUID));
                 receivedCount = receivedCount + 1;
@@ -961,7 +958,7 @@ public class DatabaseHandler {
             rs = conn.createStatement().executeQuery(sql);
             while (rs.next()) {
                 ResultSet rs1 = null;
-                String sql1 = "select FileStoreUrl from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "' AND " + "InstanceNo='1'";
+                String sql1 = "select FileStoreUrl from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "' AND " + "InstanceNo=1";
                 rs1 = conn.createStatement().executeQuery(sql1);
                 File imageUrl = null;
                 if (rs1.next()) {
@@ -1044,7 +1041,7 @@ public class DatabaseHandler {
                 series.setSeriesDesc(rs.getString("SeriesDescription"));
                 series.setBodyPartExamined(rs.getString("BodyPartExamined"));
                 ResultSet rs1 = null;
-                String sql1 = "select FileStoreUrl,SopUID,InstanceNo from image where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'";
+                String sql1 = "select FileStoreUrl,SopUID,InstanceNo from image where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" + " order by InstanceNo asc";
                 rs1 = conn.createStatement().executeQuery(sql1);
                 while (rs1.next()) {
                     Instance img = new Instance();
