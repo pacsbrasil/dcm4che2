@@ -166,7 +166,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             retrievePatientInformation();
             retrieveInstanceInformation();
             addlisteners();
-            setTotalInstacne();
+            setTotalInstance();
             //setSizing();
         } catch (Exception e) {
             e.printStackTrace();
@@ -190,7 +190,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             initComponents();
             addlisteners();
             retrieveInstanceInformation();
-            setTotalInstacne();
+            setTotalInstance();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -700,7 +700,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
 
     In future multiframe instance will listed as new series so the following lines of code will be useful.
 
-    private void setTotalInstacne() {
+    private void setTotalInstance() {
     currentInstanceNo--;
     if(!isMulitiFrame())
     totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
@@ -744,10 +744,9 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         this.scaleFactor = scaleFactor;
     }
 
-    private void setTotalInstacne() {
+    private void setTotalInstance() {
         currentInstanceNo--;
         totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
-
     }
 
     public void mouseWheelMoved(MouseWheelEvent e) {
