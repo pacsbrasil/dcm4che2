@@ -198,7 +198,7 @@ public abstract class LookupTable {
         case DataBuffer.TYPE_BYTE:
             byte[][] data = ((DataBufferByte) dstdata).getBankData(); 
             for(int bank=0; bank<data.length; bank++) {
-                lookup(srcdata, srcScanlineStride, srcHeight, srcScanlineStride,
+                lookup(srcdata, srcWidth, srcHeight, srcScanlineStride,
                     data[bank], dstScanlineStride, channels, skip, bank);
             }
             break;
@@ -222,6 +222,8 @@ public abstract class LookupTable {
 
     public void lookup(DataBuffer src, int srcWidth, int srcHeight,
             int srcScanlineStride, byte[] dst, int dstScanlineStride, int channels, int skip, int bank) {
+        // It is possible to have partial-byte encodings, and in that case, the src scanline isn't correct
+        if( srcScanlineStride < srcWidth*(channels+skip) ) srcWidth = srcScanlineStride/(channels+skip);
         switch (src.getDataType()) {
         case DataBuffer.TYPE_BYTE:
             lookup(((DataBufferByte) src).getData(bank), srcWidth, srcHeight,
@@ -444,6 +446,15 @@ public abstract class LookupTable {
         int inMax = inMin + inRange - 1;
         int in1;
         int in2;
+        
+        // Handle special case of width==1
+        if( width==1 ) {
+            width = 2;
+            // Adjust the center if it is not an integer so that the calculation below is of hte nearest
+            // whole inegeter <= center - not perfectly accurate, but the closest for integer math.
+            center = (float) Math.ceil(center);
+        }
+        
         if (width == 0) {
             in1 = inMin;
             in2 = inMax;
@@ -454,7 +465,7 @@ public abstract class LookupTable {
             in2 = (int) (((c_05 + w_2) - intercept) / slope);
         }
         int off = Math.min(inMax,Math.max(in1, inMin));
-        int iMax = Math.max(inMin, Math.min(in2, inMax)) - off;
+        int iMax = Math.max(1,Math.max(inMin, Math.min(in2, inMax)) - off);
         int size = iMax + 1;
         int outBits1 = pval2out == null ? outBits : inBits(pval2out);
         int outRange = 1 << outBits1;
