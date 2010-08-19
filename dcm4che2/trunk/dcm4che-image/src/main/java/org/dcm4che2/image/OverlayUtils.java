@@ -211,7 +211,7 @@ public class OverlayUtils {
      */
     protected static byte[] padToFixRowByteBoundary(byte[] unpaddedData, int rows, int cols) {
         int numRowBytes = (cols+7)/8;
-        int paddedLength = (int)(rows * numRowBytes);
+        int paddedLength = rows * numRowBytes;
         if( (unpaddedData.length == paddedLength ) && (cols%8)==0 ) return unpaddedData;
         
         byte[] data = new byte[paddedLength];

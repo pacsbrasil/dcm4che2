@@ -79,6 +79,7 @@ public class Tag {
                     tagPath[i] = 0;
                     i++;
                 }
+                //$FALL-THROUGH$
             case '[':
             case ']':
                 delim = ch0;              

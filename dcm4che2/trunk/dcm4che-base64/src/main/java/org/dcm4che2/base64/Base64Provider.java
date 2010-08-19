@@ -113,8 +113,7 @@ public class Base64Provider extends CharsetProvider {
         protected CoderResult decodeLoop(ByteBuffer in, CharBuffer out) {
             if (in.hasArray() && out.hasArray())
                 return decodeLoopArray(in, out);
-            else
-                return decodeLoopBuffer(in, out);
+            return decodeLoopBuffer(in, out);
         }
 
         @Override
@@ -254,8 +253,7 @@ public class Base64Provider extends CharsetProvider {
         protected CoderResult encodeLoop(CharBuffer in, ByteBuffer out) {
             if (in.hasArray() && out.hasArray())
                 return encodeLoopArray(in, out);
-            else
-                return encodeLoopBuffer(in, out);
+            return encodeLoopBuffer(in, out);
         }
 
         private CoderResult encodeLoopArray(CharBuffer in, ByteBuffer out) {

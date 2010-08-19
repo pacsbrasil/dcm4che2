@@ -60,6 +60,7 @@ import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.data.VRMap;
 import org.dcm4che2.util.ByteUtils;
+import org.dcm4che2.util.CloseUtils;
 import org.dcm4che2.util.TagUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,7 +118,7 @@ public class DicomInputStream extends FilterInputStream implements
         try {
             this.ts = guessTransferSyntax();
         } catch (IOException e) {
-            try { close(); } catch (IOException ignore) {}
+            CloseUtils.safeClose(this);
             throw e;
         }
     }
