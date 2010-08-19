@@ -157,4 +157,9 @@ public class TransferSyntax
     	if( ! (o2 instanceof TransferSyntax) ) return false;
     	return uid().equals(((TransferSyntax) o2).uid());
     }
+
+    @Override
+    public int hashCode() {
+        return uid.hashCode();
+    }
 }

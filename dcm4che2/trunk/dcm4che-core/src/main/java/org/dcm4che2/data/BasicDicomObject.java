@@ -349,6 +349,11 @@ public class BasicDicomObject extends AbstractDicomObject {
         }
         return !it.hasNext() && !otherIt.hasNext();
     }
+    
+    @Override
+    public int hashCode() {
+        return table.hashCode();
+    }
 
     public boolean accept(final Visitor visitor) {
         return table.accept(new IntHashtable.Visitor() {

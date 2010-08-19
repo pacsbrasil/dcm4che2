@@ -100,6 +100,11 @@ public final class SimpleYBRColorSpace extends ColorSpace {
     public boolean equals(Object o) {
         return o != null && o instanceof SimpleYBRColorSpace;
     }
+    
+    @Override
+    public int hashCode() {
+        return 1;
+    }
 
     @Override
     public float[] toRGB(float[] ybr) {
