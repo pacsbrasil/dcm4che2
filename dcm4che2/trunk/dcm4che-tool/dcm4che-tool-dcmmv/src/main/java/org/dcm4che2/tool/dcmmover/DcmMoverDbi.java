@@ -13,6 +13,7 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.dcm4che2.net.NewThreadExecutor;
+import org.dcm4che2.util.CloseUtils;
 
 /**
  * Provides a database interface to monitor the DICOM study move.
@@ -191,10 +192,7 @@ public class DcmMoverDbi extends DcmMover implements CheckCancelTimerOwner {
             lastError.set(e.getMessage());
             return 0;
         } finally {
-            try {
-                stmt.close();
-            } catch (Exception e) {
-            }
+            CloseUtils.safeClose(stmt);
         }
 
         // Start the move process
@@ -302,10 +300,7 @@ public class DcmMoverDbi extends DcmMover implements CheckCancelTimerOwner {
             log.error(fn + "Failed to update move instance database record. Exception:\n" + ex.getMessage());
             lastError.set(ex.getMessage());
         } finally {
-            try {
-                stmt.close();
-            } catch (Exception ex) {
-            }
+            CloseUtils.safeClose(stmt);
         }
         log.debug(fn + "Move processing is complete");
     }

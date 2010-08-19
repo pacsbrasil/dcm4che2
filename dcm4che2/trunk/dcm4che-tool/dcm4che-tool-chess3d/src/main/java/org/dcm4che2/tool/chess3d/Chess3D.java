@@ -103,9 +103,6 @@ public class Chess3D {
     private String studyUID;
     private String seriesUID;
 
-    public Chess3D() {
-    }
-    
     public final void setDest(String dest) {
         this.destDir = new File(dest);
         if ( ! this.destDir.isDirectory() ) {

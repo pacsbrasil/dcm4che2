@@ -42,6 +42,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.imageio.stream.ImageInputStream;
 
@@ -112,6 +114,23 @@ public final class CloseUtils {
             }
         } catch (IOException e) {
             log(is, e);
+        }
+    }
+    
+    /**
+     * Safely close a JDBC Statement, absorbing exceptions and handling
+     * <code>null</code> graciously.
+     * 
+     * @param statement
+     *            to close.
+     */
+    public static void safeClose(Statement statement) {
+        try {
+            if (statement != null) {
+                statement.close();
+            }
+        } catch (SQLException e) {
+            log(statement, e);
         }
     }
 

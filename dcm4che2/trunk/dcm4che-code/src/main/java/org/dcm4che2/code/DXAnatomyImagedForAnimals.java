@@ -46,4 +46,5 @@ package org.dcm4che2.code;
  * @since Jun 2, 2010
  */
 public class DXAnatomyImagedForAnimals {
+    // empty
 }

@@ -59,6 +59,7 @@ public class DcmMoverCli {
             if (i >= min && i <= max)
                 return i;
         } catch (NumberFormatException e) {
+            // ignore
         }
         exit(errPrompt);
         throw new RuntimeException();

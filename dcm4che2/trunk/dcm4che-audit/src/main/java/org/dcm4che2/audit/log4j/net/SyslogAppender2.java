@@ -887,7 +887,7 @@ public class SyslogAppender2 extends AppenderSkeleton {
             tmp = null;
         } finally {
             if (tmp != null)
-                try { tmp.close(); } catch (Exception ignore) {}
+                try { tmp.close(); } catch (Exception ignore) { /* ignore */ }
         }
     }
 
@@ -901,8 +901,8 @@ public class SyslogAppender2 extends AppenderSkeleton {
 
 
     private void closeSocket() {
-        try { sockout.close(); } catch (Exception ignore) {}
-        try { sock.close(); } catch (Exception ignore) {}
+        try { sockout.close(); } catch (Exception ignore) { /* ignore */ }
+        try { sock.close(); } catch (Exception ignore) { /* ignore */ }
         sockout = null;
         sock = null;
     }
