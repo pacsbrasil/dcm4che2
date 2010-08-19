@@ -442,7 +442,8 @@ public class RLEImageReader extends ImageReader {
             }
         } catch (EOFException e) {
             log.warn("RLE Segment #{} too short, set missing {} bytes to 0",
-                    curSeg, (bs.length - pos + off) / pixelStride);
+                    Integer.valueOf(curSeg),
+                    Integer.valueOf((bs.length - pos + off) / pixelStride));
         }
     }
 
@@ -465,14 +466,14 @@ public class RLEImageReader extends ImageReader {
             }
         } catch (EOFException e) {
             log.warn("RLE Segment #{} too short, set missing {} bytes to 0",
-                    curSeg, bs.length - pos);
+                    Integer.valueOf(curSeg), Integer.valueOf(bs.length - pos));
         }
     }
 
     private int checkLengthTooLong(int length, int max) {
         if (length > max) {
             log.warn("RLE Segment #{} too long, truncate {} bytes",
-                    curSeg, length - max);
+                    Integer.valueOf(curSeg), Integer.valueOf(length - max));
             return max;
         }
         return length;
@@ -499,7 +500,7 @@ public class RLEImageReader extends ImageReader {
             }
         } catch (EOFException e) {
             log.warn("RLE Segment #{} too short, set missing {} bytes to 0",
-                    curSeg, ss.length - pos);
+                    Integer.valueOf(curSeg), Integer.valueOf(ss.length - pos));
         }
     }
 
