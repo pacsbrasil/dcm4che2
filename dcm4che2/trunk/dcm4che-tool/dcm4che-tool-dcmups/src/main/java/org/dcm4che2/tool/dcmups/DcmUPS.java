@@ -238,9 +238,9 @@ public class DcmUPS {
         Operation(String uid) { this.sopClassUID = uid; }
         public abstract void execute(DcmUPS dcmups)
                 throws IOException, InterruptedException;
-    };
+    }
     
-    private enum Priority { NORMAL, HIGH, LOW };
+    private enum Priority { NORMAL, HIGH, LOW }
 
     private final Executor executor;
     private final NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();

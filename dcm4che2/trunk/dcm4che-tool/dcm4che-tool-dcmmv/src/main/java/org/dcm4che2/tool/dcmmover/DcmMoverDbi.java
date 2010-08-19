@@ -41,7 +41,7 @@ public class DcmMoverDbi extends DcmMover implements CheckCancelTimerOwner {
                 PARAM_MOVE_STARTED = 10;
 
         static final int RETURN_COL_ID = 1;
-    };
+    }
 
     final class UpdateStmt {
         static final String SQL = "update moves set num_objects_found = ?, num_objects_moved = ?, uid_mapping_doc = ?, "
@@ -51,7 +51,7 @@ public class DcmMoverDbi extends DcmMover implements CheckCancelTimerOwner {
                 PARAM_STG_CMMT_FAILURES_DOC = 4, PARAM_MOVE_UPDATED = 5;
 
         static final int CONSTRAINTS_ID = 6;
-    };
+    }
 
     PreparedStatement updateStatement = null;
 
@@ -63,7 +63,7 @@ public class DcmMoverDbi extends DcmMover implements CheckCancelTimerOwner {
                 PARAM_MAPPING_DOC = 6, PARAM_STG_CMMT_FAILURES_DOC = 7, PARAM_MOVE_ENDED = 8;
 
         static final int CONSTRAINTS_ID = 9;
-    };
+    }
 
     final class CheckCancelQry {
         static final String SQL = "select status from moves where id = ?";
@@ -71,7 +71,7 @@ public class DcmMoverDbi extends DcmMover implements CheckCancelTimerOwner {
         static final int COL_STATUS = 1;
 
         static final int CONSTRAINTS_ID = 1;
-    };
+    }
 
     PreparedStatement checkCancelStatement = null;
 
@@ -195,7 +195,6 @@ public class DcmMoverDbi extends DcmMover implements CheckCancelTimerOwner {
                 stmt.close();
             } catch (Exception e) {
             }
-            ;
         }
 
         // Start the move process
@@ -307,7 +306,6 @@ public class DcmMoverDbi extends DcmMover implements CheckCancelTimerOwner {
                 stmt.close();
             } catch (Exception ex) {
             }
-            ;
         }
         log.debug(fn + "Move processing is complete");
     }

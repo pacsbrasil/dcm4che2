@@ -99,7 +99,7 @@ public class SyslogAppender2 extends AppenderSkeleton {
         LOCAL5,   // 21 local use 5  (local5)
         LOCAL6,   // 22 local use 6  (local6)
         LOCAL7    // 23 local use 7  (local7)
-    };
+    }
 
     private enum Severity {
         EMERGENCY,     // 0 Emergency: system is unusable
@@ -110,7 +110,7 @@ public class SyslogAppender2 extends AppenderSkeleton {
         NOTICE,        // 5 Notice: normal but significant condition
         INFORMATIONAL, // 6 Informational: informational messages
         DEBUG          // 7 Debug: debug-level messages
-    };
+    }
 
     private enum Protocol { 
         UDP {
@@ -150,7 +150,7 @@ public class SyslogAppender2 extends AppenderSkeleton {
         abstract void init(SyslogAppender2 app);
         abstract void send(SyslogAppender2 app) throws IOException;
         abstract void close(SyslogAppender2 app);
-    };
+    }
 
     private String host = "localhost";
     private int port = 514;

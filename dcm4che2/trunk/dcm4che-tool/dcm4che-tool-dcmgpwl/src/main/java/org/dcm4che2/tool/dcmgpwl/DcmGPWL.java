@@ -216,7 +216,7 @@ public class DcmGPWL {
         UID.ExplicitVRLittleEndian, 
         UID.ImplicitVRLittleEndian };
     
-    private final Executor executor;;
+    private final Executor executor;
     private final NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
     private final NetworkConnection remoteConn = new NetworkConnection();
     private final Device device;
