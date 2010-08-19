@@ -72,6 +72,7 @@ public class NCreateService extends DicomService implements NCreateSCP {
         as.writeDimseRSP(pcid, rsp, doNCreate(as, pcid, rq, data, rsp));
     }
 
+    @SuppressWarnings("unused")
     protected DicomObject doNCreate(Association as, int pcid, DicomObject rq,
             DicomObject data, DicomObject rsp) throws DicomServiceException {
         return null;

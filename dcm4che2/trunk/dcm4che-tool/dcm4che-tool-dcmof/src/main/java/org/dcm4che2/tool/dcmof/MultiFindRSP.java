@@ -39,7 +39,6 @@
 package org.dcm4che2.tool.dcmof;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -76,7 +75,7 @@ class MultiFindRSP implements DimseRSP {
         }
     }
 
-    public synchronized boolean next() throws IOException, InterruptedException {
+    public synchronized boolean next() {
         if (cur < 0)
             return false;
         if (files == null) {
@@ -113,7 +112,7 @@ class MultiFindRSP implements DimseRSP {
         return mwl != null ? mwl.subSet(keys) : null;
     }
 
-    public synchronized void cancel(Association a) throws IOException {
+    public synchronized void cancel(Association a) {
         files = null;
     }
 

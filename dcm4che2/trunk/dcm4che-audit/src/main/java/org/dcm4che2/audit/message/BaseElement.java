@@ -255,6 +255,7 @@ class BaseElement {
      * @param out the writer to write the output to.
      * @throws IOException thrown by derived classes if an error occurs.
      */
+    @SuppressWarnings("unused")
     protected void outputContent(Writer out) throws IOException {
         // empty
     }

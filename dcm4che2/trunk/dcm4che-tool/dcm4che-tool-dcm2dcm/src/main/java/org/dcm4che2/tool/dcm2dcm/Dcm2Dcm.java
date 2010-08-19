@@ -199,7 +199,7 @@ public class Dcm2Dcm {
     }
 
     @SuppressWarnings("unchecked")
-	public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         CommandLine cl = parse(args);
         Dcm2Dcm dcm2dcm = new Dcm2Dcm();
         dcm2dcm.setNoFileMetaInformation(cl.hasOption("no-fmi"));

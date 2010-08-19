@@ -51,31 +51,26 @@ import org.dcm4che2.net.Status;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2008-09-06 14:52:22 +0200 (za, 06 sep 2008)
+ *          $
  * @since Jan 22, 2006
- *
+ * 
  */
-public class CFindService 
-extends DicomService 
-implements CFindSCP
-{
+public class CFindService extends DicomService implements CFindSCP {
     private final Executor executor;
 
-    public CFindService(String[] sopClasses, Executor executor)
-    {
+    public CFindService(String[] sopClasses, Executor executor) {
         super(sopClasses);
         this.executor = executor;
     }
 
-    public CFindService(String sopClass, Executor executor)
-    {
+    public CFindService(String sopClass, Executor executor) {
         super(sopClass);
         this.executor = executor;
     }
-        
+
     public void cfind(Association as, int pcid, DicomObject rq, DicomObject data)
-            throws DicomServiceException, IOException
-    {
+            throws DicomServiceException, IOException {
         DicomObject cmdrsp = CommandUtils.mkRSP(rq, CommandUtils.SUCCESS);
         DimseRSP rsp = doCFind(as, pcid, rq, data, cmdrsp);
         try {
@@ -84,20 +79,18 @@ implements CFindSCP
             throw new DicomServiceException(rq, Status.ProcessingFailure);
         }
         cmdrsp = rsp.getCommand();
-        if (CommandUtils.isPending(cmdrsp))
-        {
+        if (CommandUtils.isPending(cmdrsp)) {
             as.registerCancelRQHandler(rq, rsp);
             executor.execute(new WriteMultiDimseRsp(as, pcid, rsp));
-        }
-        else
-        {
+        } else {
             as.writeDimseRSP(pcid, cmdrsp, rsp.getDataset());
         }
     }
 
+    @SuppressWarnings("unused")
     protected DimseRSP doCFind(Association as, int pcid, DicomObject cmd,
             DicomObject data, DicomObject rsp) throws DicomServiceException {
         return new SingleDimseRSP(rsp);
     }
-    
+
 }

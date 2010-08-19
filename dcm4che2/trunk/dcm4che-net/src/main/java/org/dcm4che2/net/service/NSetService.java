@@ -47,7 +47,8 @@ import org.dcm4che2.net.DicomServiceException;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2008-08-21 12:25:53 +0200 (do, 21 aug 2008)
+ *          $
  * @since Jan 22, 2006
  * 
  */
@@ -62,6 +63,7 @@ public class NSetService extends DicomService implements NSetSCP {
         as.writeDimseRSP(pcid, rsp, doNSet(as, pcid, rq, data, rsp));
     }
 
+    @SuppressWarnings("unused")
     protected DicomObject doNSet(Association as, int pcid, DicomObject rq,
             DicomObject data, DicomObject rsp) throws DicomServiceException {
         return null;

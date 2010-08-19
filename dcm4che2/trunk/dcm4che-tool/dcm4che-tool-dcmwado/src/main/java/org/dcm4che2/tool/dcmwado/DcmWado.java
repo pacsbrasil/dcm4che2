@@ -582,7 +582,7 @@ public class DcmWado {
         this.noKeepAlive = noKeepAlive;
     }
 
-    public void setUIDs(String[] uid) throws MalformedURLException
+    public void setUIDs(String[] uid)
     {
          uids.add(uid);
     }

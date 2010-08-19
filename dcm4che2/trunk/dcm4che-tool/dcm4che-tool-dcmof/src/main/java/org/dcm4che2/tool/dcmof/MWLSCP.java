@@ -50,32 +50,29 @@ import org.dcm4che2.net.service.CFindService;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2008-09-06 14:52:22 +0200 (za, 06 sep 2008)
+ *          $
  * @since Feb 2, 2006
- *
+ * 
  */
-class MWLSCP extends CFindService
-{
+class MWLSCP extends CFindService {
     protected final DcmOF dcmOF;
     protected File source;
 
-    public MWLSCP(Executor executor, DcmOF dcmOF)
-    {
+    public MWLSCP(Executor executor, DcmOF dcmOF) {
         super(UID.ModalityWorklistInformationModelFIND, executor);
         this.dcmOF = dcmOF;
     }
 
-    public final void setSource(File source)
-    {
+    public final void setSource(File source) {
         source.mkdirs();
         this.source = source;
-    }    
-    
-    @Override
-    protected DimseRSP doCFind(Association as, int pcid, DicomObject cmd, 
-            DicomObject keys, DicomObject rsp) throws DicomServiceException
-    {
-        return new MultiFindRSP(dcmOF, keys, rsp, source);
     }
 
+    @SuppressWarnings("unused")
+    @Override
+    protected DimseRSP doCFind(Association as, int pcid, DicomObject cmd,
+            DicomObject keys, DicomObject rsp) throws DicomServiceException {
+        return new MultiFindRSP(dcmOF, keys, rsp, source);
+    }
 }
