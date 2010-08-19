@@ -281,7 +281,7 @@ public class DcmMoverCli {
         
         if (cl.hasOption("stgcmt")) {
         	dcmMover.setStorageCommitment(true);
-        	String stgcmtArg = (String) cl.getOptionValue("stgcmt");
+        	String stgcmtArg = cl.getOptionValue("stgcmt");
         	if (null != stgcmtArg) {
 	        	String[] hostPort = split(stgcmtArg, ':');
 	        	if ((hostPort[0] != null) && (hostPort[0].length() != 0)) {
@@ -358,11 +358,11 @@ public class DcmMoverCli {
         	// Get the database configuration options
         	String adapter = null;
             if (cl.hasOption("dbAdapter")) {
-            	adapter = (String) cl.getOptionValue("dbAdapter");
+            	adapter = cl.getOptionValue("dbAdapter");
             }
         	String host = null;
             if (cl.hasOption("dbHost")) {
-            	host = (String) cl.getOptionValue("dbHost");
+            	host = cl.getOptionValue("dbHost");
             }
         	Integer port = null;
             if (cl.hasOption("dbPort")) {
@@ -372,15 +372,15 @@ public class DcmMoverCli {
             }
         	String db = null;
             if (cl.hasOption("db")) {
-            	db = (String) cl.getOptionValue("db");
+            	db = cl.getOptionValue("db");
             }
         	String user = null;
             if (cl.hasOption("dbUser")) {
-            	user = (String) cl.getOptionValue("dbUser");
+            	user = cl.getOptionValue("dbUser");
             }
         	String pwd = null;
             if (cl.hasOption("dbPwd")) {
-            	pwd = (String) cl.getOptionValue("dbPwd");
+            	pwd = cl.getOptionValue("dbPwd");
             }
         	// Return a dcm mover with a database interface
         	return new DcmMoverDbi(adapter, host, port, db, user, pwd);

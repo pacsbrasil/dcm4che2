@@ -438,8 +438,7 @@ public class DcmHPQR {
                             + remoteAE.getAETitle());
         String cuid = tc.getSopClass();
         for (int i = 0, n = Math.min(findResults.size(), cancelAfter); i < n; ++i) {
-            DicomObject keys = ((DicomObject) findResults.get(i))
-                    .subSet(MOVE_KEYS);
+            DicomObject keys = findResults.get(i).subSet(MOVE_KEYS);
             System.out.println("Send Retrieve Request using "
                     + UIDDictionary.getDictionary().prompt(cuid) + ":");
             System.out.println(keys.toString());

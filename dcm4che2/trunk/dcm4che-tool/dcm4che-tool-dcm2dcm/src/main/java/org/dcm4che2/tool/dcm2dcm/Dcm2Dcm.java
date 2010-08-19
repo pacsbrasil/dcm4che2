@@ -221,16 +221,16 @@ public class Dcm2Dcm {
 
         }
 
-        List<String> argList = (List<String>) cl.getArgList();
+        List<String> argList = cl.getArgList();
         int argc = argList.size();
 
-        File dest = new File((String) argList.get(argc - 1));
+        File dest = new File(argList.get(argc - 1));
         long t1 = System.currentTimeMillis();
         int count;
         if (dest.isDirectory()) {
             count = dcm2dcm.mconvert(argList, 0, dest);
         } else {
-            File src = new File((String) argList.get(0));
+            File src = new File(argList.get(0));
             if (argc > 2 || src.isDirectory()) {
                 exit("dcm2dcm: when converting several files, "
                         + "last argument must be a directory\n");

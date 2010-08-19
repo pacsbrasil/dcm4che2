@@ -806,7 +806,7 @@ public class DcmGPWL {
                         cl.getOptionValue("perfname"), cl.getOptionValue("perforg"));
             }
             for (int i = 1, n = argList.size(); i < n; i++) {
-                addOutput(dcmgpwl, new File((String) argList.get(i)));
+                addOutput(dcmgpwl, new File(argList.get(i)));
             }
         } else if (cl.hasOption("setpps")) {
             dcmgpwl.initSetPPS();
@@ -814,7 +814,7 @@ public class DcmGPWL {
                 dcmgpwl.setPPSStatus(cl.getOptionValue("status").toUpperCase());
             }
             for (int i = 1, n = argList.size(); i < n; i++) {
-                addOutput(dcmgpwl, new File((String) argList.get(i)));
+                addOutput(dcmgpwl, new File(argList.get(i)));
             }
         } else {
             dcmgpwl.initQuery();
