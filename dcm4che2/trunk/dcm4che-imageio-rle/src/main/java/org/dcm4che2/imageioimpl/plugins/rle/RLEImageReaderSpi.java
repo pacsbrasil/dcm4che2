@@ -38,10 +38,8 @@
 
 package org.dcm4che2.imageioimpl.plugins.rle;
 
-import java.io.IOException;
 import java.util.Locale;
 
-import javax.imageio.IIOException;
 import javax.imageio.ImageReader;
 import javax.imageio.spi.ImageReaderSpi;
 
@@ -82,14 +80,13 @@ public class RLEImageReaderSpi extends ImageReaderSpi {
     }
 
     @Override
-    public boolean canDecodeInput(Object source) throws IOException {
+    public boolean canDecodeInput(Object source) {
         // never auto-selected by ImageIO
         return false;
     }
 
     @Override
-    public ImageReader createReaderInstance(Object extension)
-            throws IIOException {
+    public ImageReader createReaderInstance(Object extension) {
         return new RLEImageReader(this);
     }
 }

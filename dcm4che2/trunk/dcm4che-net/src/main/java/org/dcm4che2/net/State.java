@@ -516,6 +516,7 @@ public class State
      * @param rq The {@link AAssociateRQ} object.
      * @throws IOException If there was a problem in the network interaction.
      */
+    @SuppressWarnings("unused")
     void sendAssociateRQ(Association as, AAssociateRQ rq) throws IOException {
         // as.illegalStateForSending("A-ASSOCIATE-RQ");
         throw new IllegalStateException(toString());

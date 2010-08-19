@@ -55,7 +55,7 @@ public class IntHashtableTest extends TestCase {
 	}
 
 	@Override
-        protected void setUp() throws Exception {
+        protected void setUp() {
 		this.table = new IntHashtable<Integer>();
 		for (int i = -10; i < 10; i++) {
 			table.put(i, new Integer(i));

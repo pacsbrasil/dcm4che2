@@ -281,7 +281,7 @@ public final class VRMap implements Serializable {
 
         @Override
         public void startElement(String uri, String localName, String qName,
-                Attributes attributes) throws SAXException {
+                Attributes attributes) {
             if ("element".equals(qName)) {
                 int tag = (int) Long.parseLong(attributes.getValue("tag")
                         .replace('x', '0'), 16);

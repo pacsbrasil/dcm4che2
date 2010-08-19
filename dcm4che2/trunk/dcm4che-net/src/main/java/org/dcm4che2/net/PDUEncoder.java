@@ -460,7 +460,7 @@ class PDUEncoder extends PDVOutputStream
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         if (th != Thread.currentThread())
             throw new IllegalStateException("Entered by wrong thread");
         encodePDVHeader(PDVType.LAST);

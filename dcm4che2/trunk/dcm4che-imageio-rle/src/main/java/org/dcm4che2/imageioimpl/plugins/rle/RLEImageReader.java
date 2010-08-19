@@ -102,33 +102,32 @@ public class RLEImageReader extends ImageReader {
     }
 
     @Override
-    public int getHeight(int imageIndex) throws IOException {
+    public int getHeight(int imageIndex) {
         return height;
     }
 
     @Override
-    public int getWidth(int imageIndex) throws IOException {
+    public int getWidth(int imageIndex) {
         return width;
     }
 
     @Override
-    public int getNumImages(boolean allowSearch) throws IOException {
+    public int getNumImages(boolean allowSearch) {
         return 1;
     }
 
     @Override
-    public Iterator<ImageTypeSpecifier> getImageTypes(int imageIndex)
-            throws IOException {
+    public Iterator<ImageTypeSpecifier> getImageTypes(int imageIndex) {
         return null;
     }
 
     @Override
-    public IIOMetadata getStreamMetadata() throws IOException {
+    public IIOMetadata getStreamMetadata() {
         return null;
     }
 
     @Override
-    public IIOMetadata getImageMetadata(int imageIndex) throws IOException {
+    public IIOMetadata getImageMetadata(int imageIndex) {
         return null;
     }
 

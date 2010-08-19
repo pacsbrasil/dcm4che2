@@ -244,7 +244,7 @@ public class DicomImageReader extends ImageReader {
      * blocks for enhanced multi-frame, but currently it merely returns null.
      */
     @Override
-    public IIOMetadata getImageMetadata(int imageIndex) throws IOException {
+    public IIOMetadata getImageMetadata(int imageIndex) {
         return null;
     }
 

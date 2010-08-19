@@ -38,7 +38,6 @@
  
 package org.dcm4che2.imageio.plugins.dcm;
 
-import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
 
 import org.dcm4che2.data.DicomObject;
@@ -64,8 +63,7 @@ public class DicomStreamMetaData extends IIOMetadata {
     }
 
     @Override
-    public void mergeTree(String formatName, Node root)
-            throws IIOInvalidTreeException {
+    public void mergeTree(String formatName, Node root) {
         throw new IllegalStateException();       
     }
 

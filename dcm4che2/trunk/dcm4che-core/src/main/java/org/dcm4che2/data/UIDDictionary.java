@@ -136,8 +136,7 @@ public class UIDDictionary implements Serializable {
 		StringBuffer name = new StringBuffer(80);
 
 		@Override
-		public void characters(char[] ch, int start, int length)
-				throws SAXException {
+		public void characters(char[] ch, int start, int length) {
 			if (uid != null) {
 				name.append(ch, start, length);
 			}
@@ -145,15 +144,14 @@ public class UIDDictionary implements Serializable {
 
 		@Override
 		public void startElement(String uri, String localName, String qName,
-				Attributes attributes) throws SAXException {
+				Attributes attributes) {
 			if ("uid".equals(qName)) {
 				uid = attributes.getValue("value");
 			}
 		}
 
 		@Override
-		public void endElement(String uri, String localName, String qName)
-				throws SAXException {
+		public void endElement(String uri, String localName, String qName) {
 			if ("uid".equals(qName)) {
 				table.put(uid, name.toString());
 				name.setLength(0);

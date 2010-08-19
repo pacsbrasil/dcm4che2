@@ -84,7 +84,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
 
     @Override
     public void startElement(String namespaceURI, String localName,
-            String qName, Attributes atts) throws SAXException {
+            String qName, Attributes atts) {
         if ("attr".equals(qName)) {
             onStartElement(atts.getValue("tag"), atts.getValue("vr"),
                     atts.getValue("src"));
@@ -104,8 +104,7 @@ public class ContentHandlerAdapter extends DefaultHandler {
     }
 
     @Override
-    public void characters(char[] ch, int start, int length)
-            throws SAXException {
+    public void characters(char[] ch, int start, int length) {
         if ((state == State.EXPECT_VAL_OR_FIRST_ITEM && vr != VR.SQ)
                 || state == State.EXPECT_FRAG) {
             sb.append(ch, start, length);
