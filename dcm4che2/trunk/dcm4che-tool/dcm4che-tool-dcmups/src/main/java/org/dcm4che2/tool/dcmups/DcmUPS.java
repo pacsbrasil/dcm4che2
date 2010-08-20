@@ -262,6 +262,7 @@ public class DcmUPS {
     private Association assoc;
 
     private final DimseRSPHandler rspHandler = new DimseRSPHandler(){
+        @Override
         public void onDimseRSP(Association as, DicomObject cmd, DicomObject data) {
             if (data != null)
                 LOG.info("Data:\n{}", data);

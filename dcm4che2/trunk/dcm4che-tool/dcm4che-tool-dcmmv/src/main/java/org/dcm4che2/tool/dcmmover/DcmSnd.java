@@ -338,6 +338,7 @@ class DcmSnd extends StorageCommitmentService {
         try {
             log.debug(fn + "Starting the C-STORE response listener.");
             DimseRSPHandler rspHandler = new DimseRSPHandler() {
+                @Override
                 public void onDimseRSP(Association as, DicomObject cmd, DicomObject data) {
                     DcmSnd.this.onDimseRSP(as, cmd, data);
                 }
@@ -493,6 +494,7 @@ class DcmSnd extends StorageCommitmentService {
         }
     }
 
+    @Override
     protected synchronized void onNEventReportRSP(Association as, int pcid, DicomObject rq, DicomObject info, DicomObject rsp) {
         stgCmtResult = info;
         // Add the event type id from the command set

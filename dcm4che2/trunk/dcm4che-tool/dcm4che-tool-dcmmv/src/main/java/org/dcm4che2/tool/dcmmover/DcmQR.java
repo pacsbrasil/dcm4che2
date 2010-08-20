@@ -494,6 +494,7 @@ class DcmQR {
         log.info(fn + "Send Retrieve Request using class '" + UIDDictionary.getDictionary().prompt(cuid) + "' and transfer syntax '"
                 + UIDDictionary.getDictionary().prompt(tsuid) + "':\n" + keys.toString());
         DimseRSPHandler rspHandler = new DimseRSPHandler() {
+            @Override
             public void onDimseRSP(Association as, DicomObject cmd, DicomObject data) {
                 DcmQR.this.onMoveRSP(as, cmd, data);
             }

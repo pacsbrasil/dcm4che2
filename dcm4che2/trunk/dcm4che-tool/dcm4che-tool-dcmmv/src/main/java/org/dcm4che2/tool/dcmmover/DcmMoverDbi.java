@@ -84,6 +84,7 @@ public class DcmMoverDbi extends DcmMover implements CheckCancelTimerOwner {
             this.status = status;
         }
 
+        @Override
         public String toString() {
             return status;
         }
@@ -113,6 +114,7 @@ public class DcmMoverDbi extends DcmMover implements CheckCancelTimerOwner {
                 + "&password=" + password;
     }
 
+    @Override
     public void finalize() {
         final String fn = "finalize: ";
 
@@ -232,6 +234,7 @@ public class DcmMoverDbi extends DcmMover implements CheckCancelTimerOwner {
         });
     }
 
+    @Override
     protected void handleMoveEvent(ActionEvent e) {
         final String fn = "handleMoveEvent: ";
 
