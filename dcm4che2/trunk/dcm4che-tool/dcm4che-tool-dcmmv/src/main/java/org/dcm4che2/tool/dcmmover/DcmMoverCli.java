@@ -385,10 +385,9 @@ public class DcmMoverCli {
             }
         	// Return a dcm mover with a database interface
         	return new DcmMoverDbi(adapter, host, port, db, user, pwd);
-        } else {
-        	// Return the normal dcm mover
-        	return new DcmMover();
         }
+        // Return the normal dcm mover
+        return new DcmMover();
 	}
 	
 	private static void doMove(DcmMover mover, String studyUid, ObjectTransformData psd) {

@@ -308,9 +308,8 @@ public class DcmMoverDbi extends DcmMover implements CheckCancelTimerOwner {
     private Connection getDbConnection() throws SQLException {
         if (dbConnection == null || dbConnection.isClosed()) {
             return dbConnection = DriverManager.getConnection(dbUrl);
-        } else {
-            return dbConnection;
         }
+        return dbConnection;
     }
 
     public void timerFired() {
