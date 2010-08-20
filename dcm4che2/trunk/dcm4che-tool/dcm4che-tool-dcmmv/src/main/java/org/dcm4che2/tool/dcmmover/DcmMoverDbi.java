@@ -94,7 +94,7 @@ public class DcmMoverDbi extends DcmMover implements CheckCancelTimerOwner {
         }
     }
 
-    Integer moveId = 0;
+    int moveId = 0;
 
     int num_objects_found_cache = 0;
 
