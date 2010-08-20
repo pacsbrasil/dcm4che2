@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Executor;
 
 import org.dcm4che2.data.BasicDicomObject;
@@ -66,7 +67,7 @@ class DcmSnd extends StorageCommitmentService {
 
     private NetworkConnection conn = new NetworkConnection();
 
-    private HashMap as2ts = new HashMap();
+    private HashMap<String, HashSet<String>> as2ts = new HashMap<String, HashSet<String>>();
 
     private Association assoc;
 
@@ -226,9 +227,9 @@ class DcmSnd extends StorageCommitmentService {
     }
 
     private void addTransferCapability(String cuid, String tsuid) {
-        HashSet ts = (HashSet) as2ts.get(cuid);
+        HashSet<String> ts = as2ts.get(cuid);
         if (ts == null) {
-            ts = new HashSet();
+            ts = new HashSet<String>();
             ts.add(UID.ImplicitVRLittleEndian);
             as2ts.put(cuid, ts);
         }
@@ -241,12 +242,12 @@ class DcmSnd extends StorageCommitmentService {
         if (stgcmt) {
             tc[0] = new TransferCapability(UID.StorageCommitmentPushModelSOPClass, DcmMover.ONLY_IVRLE_TS, TransferCapability.SCU);
         }
-        Iterator iter = as2ts.entrySet().iterator();
+        Iterator<Entry<String, HashSet<String>>> iter = as2ts.entrySet().iterator();
         for (int i = off; i < tc.length; i++) {
-            Map.Entry e = (Map.Entry) iter.next();
-            String cuid = (String) e.getKey();
-            HashSet ts = (HashSet) e.getValue();
-            tc[i] = new TransferCapability(cuid, (String[]) ts.toArray(new String[ts.size()]), TransferCapability.SCU);
+            Entry<String, HashSet<String>> e = iter.next();
+            String cuid = e.getKey();
+            HashSet<String> ts = e.getValue();
+            tc[i] = new TransferCapability(cuid, ts.toArray(new String[ts.size()]), TransferCapability.SCU);
         }
         ae.setTransferCapability(tc);
     }
