@@ -83,7 +83,7 @@ class DcmMover {
         File logConfigFile = new File(log4jConfigFileName);
         if (logConfigFile.exists()) {
             try {
-                log4jConfigFileUrl = logConfigFile.toURL();
+                log4jConfigFileUrl = logConfigFile.toURI().toURL();
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
