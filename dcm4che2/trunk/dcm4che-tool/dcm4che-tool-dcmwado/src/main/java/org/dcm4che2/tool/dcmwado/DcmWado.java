@@ -422,8 +422,8 @@ public class DcmWado {
                 dcmwado.setBufferSize(parseInt(cl.getOptionValue("bs"), 
                         "Invalid value of -bs", 1, 1000) * KB);
             }
-            List<String> argList = cl.getArgList();
-            dcmwado.setBaseURL(argList.get(0));
+            List argList = cl.getArgList();
+            dcmwado.setBaseURL((String)argList.get(0));
             if (cl.hasOption("uid")) {
                 dcmwado.setUIDs(cl.getOptionValues("uid"));
             } else {
@@ -431,7 +431,7 @@ public class DcmWado {
                 System.out.println("Scanning files for uids");
                 long t1 = System.currentTimeMillis();
                 for (int i = 1, n = argList.size(); i < n; i++) {
-                    dcmwado.addFile(new File(argList.get(i)));
+                    dcmwado.addFile(new File((String)argList.get(i)));
                 }
                 long t2 = System.currentTimeMillis();
                 System.out.println("\nScanned " + dcmwado.getNumberOfRequests() 
