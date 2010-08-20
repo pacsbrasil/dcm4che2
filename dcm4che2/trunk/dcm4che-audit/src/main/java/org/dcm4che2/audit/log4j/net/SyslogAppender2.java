@@ -718,12 +718,15 @@ public class SyslogAppender2 extends AppenderSkeleton {
         case 4:
             writeDigit(out, q = d / 1000);
             d -= (q << 10) - (q << 4) - (q << 3); // d -= q * 1000
+            //$FALL-THROUGH$
         case 3:
             writeDigit(out, q = d / 100);
             d -= (q << 7) + (q << 2) - (q << 5); // d -= q * 100
+            //$FALL-THROUGH$
         case 2:
             writeDigit(out, q = d / 10);
             d -= (q << 3) + (q << 1); // d -= q * 10
+            //$FALL-THROUGH$
         case 1:
             writeDigit(out, d);
             break;
