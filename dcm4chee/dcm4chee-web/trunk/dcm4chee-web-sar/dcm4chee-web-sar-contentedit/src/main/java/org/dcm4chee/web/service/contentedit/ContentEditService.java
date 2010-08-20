@@ -477,7 +477,6 @@ public class ContentEditService extends ServiceMBeanSupport {
     private void importFiles(EntityTree entityTree, DicomObject targetAttrs, int[] excludeTags) {
         FileImportOrder order = new FileImportOrder();
         DicomObject headerAttrs, studyAttrs, seriesAttrs;
-        File file;
         for ( Map<Study, Map<Series, Set<Instance>>> studies : entityTree.getEntityTreeMap().values() ) {
             for (Map.Entry<Study, Map<Series, Set<Instance>>> entry : studies.entrySet() ) {
                 if (targetAttrs.containsValue(Tag.StudyInstanceUID)) {
@@ -507,8 +506,10 @@ public class ContentEditService extends ServiceMBeanSupport {
                         }
                         i.getAttributes(false).copyTo(headerAttrs);
                         headerAttrs.putString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
-                        file = i.getFiles().iterator().next();
-                        order.addFile(file, headerAttrs.exclude(excludeTags));
+                        DicomObject importHeader = headerAttrs.exclude(excludeTags);
+                        for ( File f :  i.getFiles()) {
+                            order.addFile(f, importHeader);
+                        }
                     }
                 }
             }
