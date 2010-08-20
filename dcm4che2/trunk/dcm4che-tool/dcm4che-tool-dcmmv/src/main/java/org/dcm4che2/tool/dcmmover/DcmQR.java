@@ -568,7 +568,7 @@ class DcmQR {
         str.append("\n\tRemote Port: " + remoteConn.getPort());
         str.append("\n\tMove Priority: " + priority);
         str.append("\n\tNo Extended Negotiation: " + noExtNegotiation);
-        str.append("\n\tMove Response Timeout: " + ae.getMoveRspTimeout());
+        str.append("\n\tMove Response Timeout: " + ae.getRetrieveRspTimeout());
         str.append("\n\tIdle Timeout: " + ae.getIdleTimeout());
         str.append("\n\tTransfer Capability:");
         for (TransferCapability tc : ae.getTransferCapability()) {
