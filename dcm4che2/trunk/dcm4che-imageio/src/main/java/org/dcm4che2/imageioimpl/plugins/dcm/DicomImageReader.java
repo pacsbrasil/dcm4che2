@@ -152,6 +152,9 @@ public class DicomImageReader extends ImageReader {
     private SegmentedImageInputStream siis;
     
     private String pmi;
+    
+    private Float autoWindowCenter;
+    private Float autoWindowWidth;
 
     /**
      * Store the transfer syntax locally in case it gets modified to re-write
@@ -216,6 +219,8 @@ public class DicomImageReader extends ImageReader {
         }
         itemParser = null;
         siis = null;
+        autoWindowCenter = null;
+        autoWindowWidth = null;
     }
 
     @Override
@@ -403,6 +408,26 @@ public class DicomImageReader extends ImageReader {
         if (OverlayUtils.isOverlay(imageIndex))
             return OverlayUtils.getOverlayWidth(ds, imageIndex);
         return width;
+    }
+
+    /**
+     * Exposes the window center value that was determined during the last
+     * {@link #read(int, ImageReadParam)} call.
+     * 
+     * @return the window center value, or <code>null</code> if auto windowing was not applied.
+     */
+    public Float getAutoWindowCenter() {
+        return autoWindowCenter;
+    }
+
+    /**
+     * Exposes the window width value that was determined during the last
+     * {@link #read(int, ImageReadParam)} call.
+     * 
+     * @return the window width value, or <code>null</code> if auto windowing was not applied.
+     */
+    public Float getAutoWindowWidth() {
+        return autoWindowWidth;
     }
 
     @Override
@@ -685,6 +710,8 @@ public class DicomImageReader extends ImageReader {
                 c = cw[0];
                 w = cw[1];
                 vlutFct = LookupTable.LINEAR;
+                this.autoWindowCenter = Float.valueOf(c);
+                this.autoWindowWidth = Float.valueOf(w);
             }
         }
 
