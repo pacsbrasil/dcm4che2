@@ -90,8 +90,6 @@ class DcmQR {
 
     private String moveDest;
 
-    private boolean evalRetrieveAET = false;
-
     private DicomObject keys = new BasicDicomObject();
 
     private int cancelAfter = Integer.MAX_VALUE;
@@ -115,8 +113,6 @@ class DcmQR {
     private boolean dateTimeMatching;
 
     private boolean fuzzySemanticPersonNameMatching;
-
-    private boolean caseSensitivePersonNameMatching;
 
     private boolean noExtNegotiation;
 
@@ -231,24 +227,12 @@ class DcmQR {
         conn.setSendBufferSize(bufferSize);
     }
 
-    public void setEvalRetrieveAET(boolean evalRetrieveAET) {
-        this.evalRetrieveAET = evalRetrieveAET;
-    }
-
-    private boolean isEvalRetrieveAET() {
-        return evalRetrieveAET;
-    }
-
     public void setNoExtNegotiation(boolean b) {
         this.noExtNegotiation = b;
     }
 
     public void setSemanticPersonNameMatching(boolean b) {
         this.fuzzySemanticPersonNameMatching = b;
-    }
-
-    public void setCaseSensitivePersonNameMatching(boolean b) {
-        this.caseSensitivePersonNameMatching = b;
     }
 
     public void setDateTimeMatching(boolean b) {

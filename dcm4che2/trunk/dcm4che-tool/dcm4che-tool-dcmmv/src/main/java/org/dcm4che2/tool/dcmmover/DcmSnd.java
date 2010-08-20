@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Executor;
 
@@ -72,8 +71,6 @@ class DcmSnd extends StorageCommitmentService {
     private Association assoc;
 
     private int priority = 0;
-
-    private int transcoderBufferSize = 1024;
 
     private int objectsSent = 0;
 
@@ -206,10 +203,6 @@ class DcmSnd extends StorageCommitmentService {
 
     public final void setSendBufferSize(int bufferSize) {
         conn.setSendBufferSize(bufferSize);
-    }
-
-    public final void setTranscoderBufferSize(int transcoderBufferSize) {
-        this.transcoderBufferSize = transcoderBufferSize;
     }
 
     public final int getTotalSent() {
