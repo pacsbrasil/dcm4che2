@@ -98,6 +98,7 @@ public class StoreBridge extends ServiceMBeanSupport {
         dto.setDirectoryPath(f.getFileSystem().getDirectoryPath());
         dto.setFilePath(f.getFilePath());
         dto.setFileSize(f.getFileSize());
+        dto.setFileMd5(md5StringtoBytes(f.getMD5Sum()));
         dto.setAvailability(f.getFileSystem().getAvailability().ordinal());
         dto.setFileStatus(f.getFileStatus());
         dto.setFileSystemGroupID(f.getFileSystem().getGroupID());
@@ -122,6 +123,18 @@ public class StoreBridge extends ServiceMBeanSupport {
         ds.putAE(PrivateTag.CallingAET, srcAet);
         ds.setPrivateCreatorID(null);
         return ds;
+    }
+
+    public static byte[] md5StringtoBytes(String s) {
+        if (s == null)
+            return null;
+        char[] md5Hex = s.toCharArray();
+        byte[] md5 = new byte[16];
+        for (int i = 0; i < md5.length; i++) {
+            md5[i] = (byte) ((Character.digit(md5Hex[i << 1], 16) << 4)
+                    + Character.digit(md5Hex[(i << 1) + 1], 16));
+        }
+        return md5;        
     }
 
     public void importFile(FileDTO fileDTO, Dataset ds, String prevseriuid,
