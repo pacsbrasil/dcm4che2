@@ -823,10 +823,8 @@ public class StoreScpService extends AbstractScpService
         FileMetaInfo fmi = DcmObjectFactory.getInstance().newFileMetaInfo(cuid,
                 iuid, fileDTO.getFileTsuid());
         ds.setFileMetaInfo(fmi);
-        String fsPath = fileDTO.getDirectoryPath();
         String filePath = fileDTO.getFilePath();
-        File f = FileUtils.toFile(fsPath, filePath);
-        scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, f.length(),
+        scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, fileDTO.getFileSize(),
                 fileDTO.getFileMd5(), true, this);
         if (last) {
             logInstancesStoredAndSendSeriesStoredNotification(store, seriuid);
