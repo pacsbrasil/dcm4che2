@@ -315,12 +315,14 @@ class DcmQR {
             assocGetException.setAccessible(true);
         } catch (Exception e) {
             log.error(fn + "Failed to check for association exception.", e);
+            return e;
         }
 
         try {
             assocE = (Exception) assocGetException.invoke(assoc, new Object[0]);
         } catch (Exception e) {
             log.error(fn + "Failed to check for association exception.", e);
+            return e;
         }
 
         return assocE;

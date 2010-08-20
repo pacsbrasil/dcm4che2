@@ -189,6 +189,7 @@ public class DcmMoverCli {
             cl = new GnuParser().parse(opts, args);
         } catch (ParseException e) {
             exit("dcmmover: " + e.getMessage());
+            throw new RuntimeException("unreachable");
         }
         if (cl.hasOption('V')) {
             Package p = DcmMover.class.getPackage();
