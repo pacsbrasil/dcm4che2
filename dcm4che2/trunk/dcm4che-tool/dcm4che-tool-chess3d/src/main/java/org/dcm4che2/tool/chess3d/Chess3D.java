@@ -222,7 +222,7 @@ public class Chess3D {
 		destPos++;//again 2*rectWidth
 		int copyLen = destPos;
 		int len = 0;
-		for( int x = colorFields >> 1 ; x > 0 ; x = x >> 1, len++ ); 
+		for( int x = colorFields >> 1 ; x > 0 ; x = x >> 1) len++; 
 		for ( int i = 1 ; i < len ; i++ ) {
 			System.arraycopy(lineBuffer, 0, lineBuffer, destPos, copyLen);
 			copyLen = copyLen << 1;
