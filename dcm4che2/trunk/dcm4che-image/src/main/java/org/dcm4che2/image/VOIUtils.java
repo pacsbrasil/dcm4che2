@@ -170,8 +170,7 @@ public class VOIUtils {
      * @param db
      * @return DicomObject containing the VOI LUT to use for this frame.
      */
-    public static DicomObject selectVoiObject(DicomObject img, DicomObject pr,
-            int frame) {
+    public static DicomObject selectVoiObject(DicomObject img, DicomObject pr, int frame) {
         String iuid = img.getString(Tag.SOPInstanceUID);
         DicomObject voi = selectVoiItemFromPr(iuid, pr, frame);
         if (voi != null) {
@@ -187,18 +186,17 @@ public class VOIUtils {
             if (frame >= 1 && frame <= size) {
                 DicomObject frameObj = framed.getDicomObject(frame - 1);
                 if (frameObj != null) {
-                    DicomObject voiObj = VOIUtils.getLUT(frameObj, Tag.FrameVOILUTSequence);
-                    if (voiObj != null) {
+                    DicomObject voiObj = frameObj.getNestedDicomObject(Tag.FrameVOILUTSequence);
+                    if (voiObj != null && containsVOIAttributes(voiObj)) {
                         return voiObj;
                     }
                 }
             }
         }
-        DicomObject shared = img
-                .getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
+        DicomObject shared = img.getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
         if (shared != null) {
-            DicomObject voiObj = VOIUtils.getLUT(shared, Tag.FrameVOILUTSequence);
-            if (voiObj != null) {
+            DicomObject voiObj = shared.getNestedDicomObject(Tag.FrameVOILUTSequence);
+            if (voiObj != null && containsVOIAttributes(voiObj)) {
                 return voiObj;
             }
         }
