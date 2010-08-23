@@ -1000,7 +1000,7 @@ abstract class AbstractDicomObject implements DicomObject {
     }
     
     public DicomElement putBytes(int[] tagPath, VR vr, byte[] val) {
-        return putBytes(tagPath, vr, val);
+        return putBytes(tagPath, vr, val, false);
     }
 
     public DicomElement putBytes(int[] tagPath, VR vr, byte[] val,
