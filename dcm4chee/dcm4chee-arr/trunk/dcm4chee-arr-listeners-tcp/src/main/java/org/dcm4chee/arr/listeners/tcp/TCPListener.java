@@ -384,6 +384,8 @@ public class TCPListener extends AbstractSyslogListener {
                     int len = readMessageLength(bis, s);
                     if (len == -1)
                         break;
+                    if (len > data.length)
+                        data = new byte[len];
                     readMessage(bis, len);
                     onMessage(data, 0, len, addr);
                 }
