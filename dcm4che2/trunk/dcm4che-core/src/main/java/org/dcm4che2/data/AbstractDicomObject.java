@@ -89,7 +89,7 @@ abstract class AbstractDicomObject implements DicomObject {
                             }
                         }
                     } else
-                        dest.putBytes(destTag, vr, getBytes(tag));
+                        dest.putBytes(destTag, vr, attr.getBytes(), attr.bigEndian());
                 }
                 return true;
             }
