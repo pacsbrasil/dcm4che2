@@ -50,6 +50,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
@@ -135,7 +136,7 @@ public class NetworkConnection {
 
     private int maxScpAssociations = 50;
 
-    private int associationCount;
+    private AtomicInteger associationCount = new AtomicInteger();
 
     private InetAddress addr;
 
@@ -686,17 +687,15 @@ public class NetworkConnection {
      * Increment the number of active associations.
      */
     protected void incListenerConnectionCount() {
-        ++associationCount;
+        associationCount.incrementAndGet();
     }
 
     /**
      * Decrement the number of active associations.
      */
     protected void decListenerConnectionCount() {
-        if (associationCount == 0)
-            return;
-
-        --associationCount;
+        if (associationCount.decrementAndGet() < 0)
+            associationCount.set(0);
     }
 
     /**
@@ -708,7 +707,7 @@ public class NetworkConnection {
      * @return boolean True if the max association count has not been exceeded.
      */
     public boolean checkConnectionCountWithinLimit() {
-        return associationCount <= maxScpAssociations;
+        return associationCount.intValue() <= maxScpAssociations;
     }
 
     public synchronized void unbind() {
@@ -720,7 +719,7 @@ public class NetworkConnection {
         catch (Throwable e) {
             // Ignore errors when closing the server socket.
         }
-        associationCount = 0;
+        associationCount.set(0);
         server = null;
     }
 
