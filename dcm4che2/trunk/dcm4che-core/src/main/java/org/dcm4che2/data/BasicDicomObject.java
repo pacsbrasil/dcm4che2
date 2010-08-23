@@ -301,7 +301,8 @@ public class BasicDicomObject extends AbstractDicomObject {
     }
 
     public boolean contains(int tag) {
-        return table.get(tag) != null;
+        return table.get(tag) != null
+                || (defaults != null && defaults.contains(tag));
     }
 
     public DicomElement get(int tag) {
