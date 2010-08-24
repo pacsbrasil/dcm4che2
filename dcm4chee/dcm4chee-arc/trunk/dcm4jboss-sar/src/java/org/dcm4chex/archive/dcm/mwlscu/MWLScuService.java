@@ -89,6 +89,8 @@ public class MWLScuService extends AbstractScuService {
 
 	private boolean forceMatchingKeyCheck;
 
+    private boolean noMatchForNoValue;
+
     /**
      * Returns the AET that holds the work list (Modality Work List SCP).
      * 
@@ -131,6 +133,14 @@ public class MWLScuService extends AbstractScuService {
 
 	public final boolean isLocal() {
         return "LOCAL".equalsIgnoreCase(calledAET);
+    }
+
+    public final boolean isNoMatchForNoValue() {
+        return noMatchForNoValue;
+    }
+
+    public final void setNoMatchForNoValue(boolean noMatchForNoValue) {
+        this.noMatchForNoValue = noMatchForNoValue;
     }
 
     /**
@@ -212,7 +222,7 @@ public class MWLScuService extends AbstractScuService {
     public int findMWLEntriesLocal(Dataset searchDS, List result) {
         MWLQueryCmd queryCmd = null;
         try {
-            queryCmd = new MWLQueryCmd(searchDS);
+            queryCmd = new MWLQueryCmd(searchDS, noMatchForNoValue);
             queryCmd.execute();
             while (queryCmd.next()) {
                 if (result.size() >= maxResults) {
