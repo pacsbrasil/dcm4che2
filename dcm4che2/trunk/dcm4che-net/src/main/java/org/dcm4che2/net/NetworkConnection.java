@@ -694,8 +694,12 @@ public class NetworkConnection {
      * Decrement the number of active associations.
      */
     protected void decListenerConnectionCount() {
-        if (associationCount.decrementAndGet() < 0)
-            associationCount.set(0);
+        for (;;) {
+            int current = associationCount.get();
+            if (current <= 0
+                    || associationCount.compareAndSet(current, current-1))
+                return;
+        }
     }
 
     /**
