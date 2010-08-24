@@ -129,7 +129,7 @@ public class IANScuService extends AbstractScuService implements
             Dataset mpps = (Dataset) notif.getUserData();
             if (!isIgnoreMPPS(mpps)) {
                 String mppsiuid = mpps.getString(Tags.SOPInstanceUID);
-                notifyIfRefInstancesAvailable(mppsiuid);
+                notifyIfRefInstancesAvailable(mppsiuid, null);
             }
         }
     };
@@ -348,7 +348,8 @@ public class IANScuService extends AbstractScuService implements
         Dataset pps = ian.getItem(Tags.RefPPSSeq);
         if (pps != null
                 && (notifyOtherServices || (sendOneIANforEachMPPS && notifiedAETs.length > 0))) {
-            notifyIfRefInstancesAvailable(pps.getString(Tags.RefSOPInstanceUID));
+            notifyIfRefInstancesAvailable(pps.getString(Tags.RefSOPInstanceUID),
+                    stored.getSeriesInstanceUID());
         }
     }
 
@@ -357,10 +358,12 @@ public class IANScuService extends AbstractScuService implements
                 MPPSManagerHome.class, MPPSManagerHome.JNDI_NAME);
     }
 
-    private void notifyIfRefInstancesAvailable(String mppsIuid) {
+    private void notifyIfRefInstancesAvailable(String mppsIuid,
+            String seriesStoredIuid) {
         try {
             MPPSManager mppsManager = getMPPSManagerHome().create();
-            Dataset ian = mppsManager.createIANwithPatSummaryAndStudyID(mppsIuid);
+            Dataset ian = mppsManager.createIANwithPatSummaryAndStudyID(
+                    mppsIuid, seriesStoredIuid);
             if (ian != null) {
                 if (sendOneIANforEachMPPS) {
                     schedule(ian.getString(Tags.PatientID),
