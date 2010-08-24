@@ -64,22 +64,22 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
 
     private static final int[] MATCHING_KEYS = new int[] {
         Tags.RequestedProcedureID,
-		Tags.AccessionNumber,
-		Tags.StudyInstanceUID,
-		Tags.PatientID,
-		Tags.IssuerOfPatientID,
-		Tags.PatientName,
-		Tags.SPSSeq
-		};
+                Tags.AccessionNumber,
+                Tags.StudyInstanceUID,
+                Tags.PatientID,
+                Tags.IssuerOfPatientID,
+                Tags.PatientName,
+                Tags.SPSSeq
+                };
     private static final int[] MATCHING_SPS_SQ_KEYS = new int[] {
         Tags.SPSStatus,
-		Tags.SPSID,
-		Tags.SPSStartDate, Tags.SPSStartTime,
-		Tags.Modality,
-		Tags.PerformingPhysicianName,
-		Tags.ScheduledStationAET,
-		Tags.ScheduledStationName,
-		};
+                Tags.SPSID,
+                Tags.SPSStartDate, Tags.SPSStartTime,
+                Tags.Modality,
+                Tags.PerformingPhysicianName,
+                Tags.ScheduledStationAET,
+                Tags.ScheduledStationName,
+                };
     
     public static int transactionIsolationLevel = 0;
     public static int blobAccessType = Types.LONGVARBINARY;
@@ -90,8 +90,8 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
      * @param ds
      * @throws SQLException
      */
-    public MWLQueryCmd(Dataset keys) throws SQLException {
-        super(keys, true, false, transactionIsolationLevel);
+    public MWLQueryCmd(Dataset keys, boolean noMatchForNoValue) throws SQLException {
+        super(keys, true, noMatchForNoValue, transactionIsolationLevel);
         AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
         defineColumnTypes(new int[] { blobAccessType, blobAccessType });
         // ensure keys contains (8,0005) for use as result filter
@@ -120,21 +120,21 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
                     SqlBuilder.TYPE1,
                     spsItem.getStrings(Tags.ScheduledStationAET));
             sqlBuilder.addWildCardMatch(null, "MWLItem.scheduledStationName",
-                    SqlBuilder.TYPE2,
+                    type2,
                     spsItem.getStrings(Tags.ScheduledStationName));
             sqlBuilder.addPNMatch(new String[] {
                     "MWLItem.performingPhysicianName",
                     "MWLItem.performingPhysicianIdeographicName",
                     "MWLItem.performingPhysicianPhoneticName"},
                     true, // TODO make ICASE configurable
-                    SqlBuilder.TYPE2,
+                    type2,
                     spsItem.getString(Tags.PerformingPhysicianName));
         }
         sqlBuilder.addWildCardMatch(null, "MWLItem.requestedProcedureId",
                 SqlBuilder.TYPE1,
                 keys.getStrings(Tags.RequestedProcedureID));
         sqlBuilder.addWildCardMatch(null, "MWLItem.accessionNumber",
-                SqlBuilder.TYPE2,
+                type2,
                 keys.getStrings(Tags.AccessionNumber));
         sqlBuilder.addListOfStringMatch(null, "MWLItem.studyIuid",
                 SqlBuilder.TYPE1,
@@ -143,13 +143,13 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
                 SqlBuilder.TYPE1,
                 patAttrFilter.getStrings(keys, Tags.PatientID));
         sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
-                SqlBuilder.TYPE2,
+                type2,
                 patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
-                SqlBuilder.TYPE2,
+                type2,
                 patAttrFilter.isICase(Tags.PatientName),
                 keys.getString(Tags.PatientName));
         
