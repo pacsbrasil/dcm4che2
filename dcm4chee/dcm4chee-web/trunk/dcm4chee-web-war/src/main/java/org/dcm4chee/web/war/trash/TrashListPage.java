@@ -56,6 +56,7 @@ import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
@@ -225,11 +226,15 @@ public class TrashListPage extends Panel {
             
             private static final long serialVersionUID = 1L;
 
+            @SuppressWarnings("unchecked")
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
 
                 form.clearInput();
                 viewport.clear();
+                ((DropDownChoice) ((WebMarkupContainer) form.get("searchFields")).get("sourceAET")).setModelObject("*");
+                pagesize.setObject((PAGESIZE_ENTRIES / 2) * PAGESIZE_STEP);
+                notSearched = true;
                 form.setOutputMarkupId(true);
                 target.addComponent(form);
             }

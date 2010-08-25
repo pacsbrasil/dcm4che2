@@ -55,6 +55,7 @@ import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
@@ -183,12 +184,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         listPanel.add(new MWLItemListView("mwlitems", viewport.getMWLItemModels(), this));
     }
     
-    @Override
-    protected void onBeforeRender() {
-        super.onBeforeRender();
-        queryMWLItems();
-    }
-    
     protected ViewPort initViewPort() {
         return ((WicketSession) getSession()).getMwViewPort();
     }
@@ -310,11 +305,18 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             
             private static final long serialVersionUID = 1L;
 
+            @SuppressWarnings("unchecked")
             @Override
             protected void onSubmit(final AjaxRequestTarget target, Form<?> form) {
 
                 form.clearInput();
                 viewport.clear();
+                ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("modality")).setModelObject("*");
+                ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("scheduledStationAET")).setModelObject("*");
+                ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("scheduledStationName")).setModelObject("*");
+                ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("SPSStatus")).setModelObject("*");
+                pagesize.setObject((PAGESIZE_ENTRIES / 2) * PAGESIZE_STEP);
+                notSearched = true;
                 BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
                 target.addComponent(navPanel);
                 target.addComponent(listPanel);

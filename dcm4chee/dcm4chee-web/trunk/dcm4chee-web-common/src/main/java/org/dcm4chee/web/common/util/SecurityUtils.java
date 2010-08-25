@@ -2,7 +2,6 @@ package org.dcm4chee.web.common.util;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
 import org.dcm4che2.base64.Base64Provider;
 
 public class SecurityUtils {

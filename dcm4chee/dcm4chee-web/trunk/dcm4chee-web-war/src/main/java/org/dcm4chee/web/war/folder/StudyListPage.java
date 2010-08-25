@@ -46,6 +46,7 @@ import java.util.List;
 
 import org.apache.wicket.Application;
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageMap;
 import org.apache.wicket.ResourceReference;
@@ -65,6 +66,7 @@ import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
@@ -355,11 +357,16 @@ public class StudyListPage extends Panel {
             
             private static final long serialVersionUID = 1L;
 
+            @SuppressWarnings("unchecked")
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
 
                 form.clearInput();
                 viewport.clear();
+                ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("modality")).setModelObject("*");
+                ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("sourceAET")).setModelObject("*");
+                pagesize.setObject((PAGESIZE_ENTRIES / 2) * PAGESIZE_STEP);
+                notSearched = true;
                 form.setOutputMarkupId(true);
                 target.addComponent(form);
             }
@@ -377,13 +384,67 @@ public class StudyListPage extends Panel {
             
             private static final long serialVersionUID = 1L;
             
-            @Override
-            public void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                viewport.setOffset(0);
-                queryStudies();
-                target.addComponent(form);
-            }
+            protected boolean ajaxRunning;
+            protected boolean ajaxDone;
+
+//            @Override
+//            public void onSubmit(AjaxRequestTarget target, Form<?> form) {
+//                viewport.setOffset(0);
+//                queryStudies();
+//                target.addComponent(form);
+//            }
             
+// ******************************************************
+          @Override
+          public void onSubmit(AjaxRequestTarget target, final Form<?> form) {
+                ajaxRunning = false;
+                ajaxDone = false;
+                
+//                this.setStatus(new StringResourceModel("folder.message.delete.running", StudyListPage.this, null));
+//                okBtn.setVisible(false);
+
+                ((Label) get("searchText")).setVisible(false);
+//                .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
+
+                this.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                    
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    protected void onTimer(final AjaxRequestTarget target) {
+
+                        if (!ajaxRunning) {
+                            if (!ajaxDone) {
+                                ajaxRunning = true;
+                                new Thread(new Runnable() {
+                                    public void run() {
+                                        try {
+                                            viewport.setOffset(0);
+                                            queryStudies();
+                                            target.addComponent(form);
+                                        } catch (Throwable t) {
+                                            log.error("moveToTrash failed: ", t);
+                                        } finally {
+                                            ajaxRunning = false;
+                                            ajaxDone = true;
+                                        }
+                                    }
+                                }).start();
+                            } else {
+//                                ((Label) get("searchText")).setVisible(true);
+                                this.stop();        
+                            }
+                        } else {
+                            ((Label) get("searchText")).setVisible(false);
+                        }
+                        target.addComponent(((Label) get("searchText")));
+//                        target.addComponent(hourglassImage);
+//                        target.addComponent(okBtn);
+                    }
+                });
+            }
+
+// ******************************************************
             @Override
             public void onError(AjaxRequestTarget target, Form<?> form) {
                 BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
@@ -394,6 +455,8 @@ public class StudyListPage extends Panel {
         );
         searchBtn.add(new Label("searchText", new ResourceModel("folder.searchFooter.searchBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
+            // TODO:
+            .setOutputMarkupId(true)
         );
         form.addComponent(searchBtn);
         form.setDefaultButton(searchBtn);
