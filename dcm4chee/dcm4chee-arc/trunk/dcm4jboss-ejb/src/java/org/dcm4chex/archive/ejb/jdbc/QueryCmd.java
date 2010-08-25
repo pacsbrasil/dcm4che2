@@ -451,11 +451,11 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 SqlBuilder.TYPE1, keys.getStrings(Tags.SeriesInstanceUID));
         sqlBuilder.addWildCardMatch(null, "Series.seriesNumber", type2,
                 filter.getStrings(keys, Tags.SeriesNumber));
-        String[] modality = filter.getStrings(keys, Tags.Modality);
-        if (modality == null || modality.length < 1)
-            modality = filter.getStrings(keys, Tags.ModalitiesInStudy, Tags.Modality);
+//        String[] modality = filter.getStrings(keys, Tags.Modality);
+//        if (modality == null || modality.length < 1)
+//            modality = filter.getStrings(keys, Tags.ModalitiesInStudy, Tags.Modality);
         sqlBuilder.addWildCardMatch(null, "Series.modality", SqlBuilder.TYPE1,
-                modality);
+                filter.getStrings(keys, Tags.Modality));
         sqlBuilder.addWildCardMatch(null, "Series.seriesNumber", type2,
                 filter.getStrings(keys, Tags.SeriesNumber));
         sqlBuilder.addWildCardMatch(null, "Series.bodyPartExamined", type2,
@@ -827,6 +827,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addPatientMatch();
             addStudyMatch();
             addStudyPermissionMatch(false);
+            addNestedSeriesMatch();
             addSeriesMatch();
         }
 
@@ -936,6 +937,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addPatientMatch();
             addStudyMatch();
             addStudyPermissionMatch(false);
+            addNestedSeriesMatch();
             addSeriesMatch();
             addInstanceMatch();
         }
