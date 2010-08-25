@@ -384,67 +384,13 @@ public class StudyListPage extends Panel {
             
             private static final long serialVersionUID = 1L;
             
-            protected boolean ajaxRunning;
-            protected boolean ajaxDone;
-
-//            @Override
-//            public void onSubmit(AjaxRequestTarget target, Form<?> form) {
-//                viewport.setOffset(0);
-//                queryStudies();
-//                target.addComponent(form);
-//            }
-            
-// ******************************************************
-          @Override
-          public void onSubmit(AjaxRequestTarget target, final Form<?> form) {
-                ajaxRunning = false;
-                ajaxDone = false;
-                
-//                this.setStatus(new StringResourceModel("folder.message.delete.running", StudyListPage.this, null));
-//                okBtn.setVisible(false);
-
-                ((Label) get("searchText")).setVisible(false);
-//                .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
-
-                this.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                    
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    protected void onTimer(final AjaxRequestTarget target) {
-
-                        if (!ajaxRunning) {
-                            if (!ajaxDone) {
-                                ajaxRunning = true;
-                                new Thread(new Runnable() {
-                                    public void run() {
-                                        try {
-                                            viewport.setOffset(0);
-                                            queryStudies();
-                                            target.addComponent(form);
-                                        } catch (Throwable t) {
-                                            log.error("moveToTrash failed: ", t);
-                                        } finally {
-                                            ajaxRunning = false;
-                                            ajaxDone = true;
-                                        }
-                                    }
-                                }).start();
-                            } else {
-//                                ((Label) get("searchText")).setVisible(true);
-                                this.stop();        
-                            }
-                        } else {
-                            ((Label) get("searchText")).setVisible(false);
-                        }
-                        target.addComponent(((Label) get("searchText")));
-//                        target.addComponent(hourglassImage);
-//                        target.addComponent(okBtn);
-                    }
-                });
+            @Override
+            public void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                viewport.setOffset(0);
+                queryStudies();
+                target.addComponent(form);
             }
-
-// ******************************************************
+            
             @Override
             public void onError(AjaxRequestTarget target, Form<?> form) {
                 BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
@@ -455,7 +401,6 @@ public class StudyListPage extends Panel {
         );
         searchBtn.add(new Label("searchText", new ResourceModel("folder.searchFooter.searchBtn.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
-            // TODO:
             .setOutputMarkupId(true)
         );
         form.addComponent(searchBtn);
