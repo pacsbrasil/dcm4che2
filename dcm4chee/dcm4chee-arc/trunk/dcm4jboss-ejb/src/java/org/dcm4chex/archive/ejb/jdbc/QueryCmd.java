@@ -451,7 +451,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 SqlBuilder.TYPE1, keys.getStrings(Tags.SeriesInstanceUID));
         sqlBuilder.addWildCardMatch(null, "Series.seriesNumber", type2,
                 filter.getStrings(keys, Tags.SeriesNumber));
-        sqlBuilder.addWildCardMatch(null, "Series.modality", SqlBuilder.TYPE1,
+        sqlBuilder.addWildCardMatch(null, "Series.modality", type2,
                 filter.getStrings(keys, Tags.Modality));
         sqlBuilder.addWildCardMatch(null, "Series.seriesNumber", type2,
                 filter.getStrings(keys, Tags.SeriesNumber));
