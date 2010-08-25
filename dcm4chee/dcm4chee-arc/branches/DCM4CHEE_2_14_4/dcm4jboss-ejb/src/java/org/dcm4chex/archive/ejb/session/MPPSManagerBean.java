@@ -69,7 +69,6 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
-import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
@@ -96,10 +95,10 @@ import org.dcm4chex.archive.exceptions.PatientMismatchException;
  * @ejb.ejb-ref ejb-name="MPPS" view-type="local" ref-name="ejb/MPPS"
  * @ejb.ejb-ref ejb-name="MWLItem" view-type="local" ref-name="ejb/MWLItem"
  * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series"
- * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance"
  * 
  */
 public abstract class MPPSManagerBean implements SessionBean {
+    public static final int SERIES_STORED = 0;
 
     private static Logger log = Logger.getLogger(MPPSManagerBean.class);
     private static final String NO_LONGER_BE_UPDATED_ERR_MSG = "Performed Procedure Step Object may no longer be updated";
@@ -113,7 +112,6 @@ public abstract class MPPSManagerBean implements SessionBean {
             Tags.PatientSex, };
     private PatientLocalHome patHome;
     private SeriesLocalHome seriesHome;
-    private InstanceLocalHome instHome;
     private MPPSLocalHome mppsHome;
     private MWLItemLocalHome mwlItemHome;
     private SessionContext sessionCtx;
@@ -127,8 +125,6 @@ public abstract class MPPSManagerBean implements SessionBean {
                     .lookup("java:comp/env/ejb/Patient");
             seriesHome = (SeriesLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/Series");
-            instHome = (InstanceLocalHome) jndiCtx
-                    .lookup("java:comp/env/ejb/Instance");
             mppsHome = (MPPSLocalHome) jndiCtx.lookup("java:comp/env/ejb/MPPS");
             mwlItemHome = (MWLItemLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/MWLItem");
@@ -149,7 +145,6 @@ public abstract class MPPSManagerBean implements SessionBean {
         mppsHome = null;
         patHome = null;
         seriesHome = null;
-        instHome = null;
     }
 
     /**
@@ -269,10 +264,11 @@ public abstract class MPPSManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset createIANwithPatSummaryAndStudyID(String iuid) {
+    public Dataset createIANwithPatSummaryAndStudyID(String mppsiuid,
+            String seriesStoredIuid) {
         final MPPSLocal mpps;
         try {
-            mpps = mppsHome.findBySopIuid(iuid);
+            mpps = mppsHome.findBySopIuid(mppsiuid);
         } catch (ObjectNotFoundException onf) {
             return null;
         } catch (FinderException e) {
@@ -305,12 +301,6 @@ public abstract class MPPSManagerBean implements SessionBean {
             DcmElement refImageSeq = perfSeries.get(Tags.RefImageSeq);
             DcmElement refNonImageSeq = perfSeries
                     .get(Tags.RefNonImageCompositeSOPInstanceSeq);
-            final Collection insts;
-            try {
-                insts = instHome.findBySeriesIuid(seriesIUID);
-            } catch (FinderException e) {
-                throw new EJBException(e);
-            }
             int countImage = refImageSeq != null ? refImageSeq.countItems() : 0;
             int countNonImage = refNonImageSeq != null ? refNonImageSeq
                     .countItems() : 0;
@@ -319,7 +309,26 @@ public abstract class MPPSManagerBean implements SessionBean {
                         ") neither has image nor nonimage references! Leave this series out. iuid:"+seriesIUID);
                 continue;
             }
+            final SeriesLocal series;
+            try {
+                series = seriesHome.findBySeriesIuid(seriesIUID);
+            } catch (ObjectNotFoundException e) {
+                log.debug("Sending IAN is postponed! Series[iuid="
+                        + seriesIUID + "] not yet received");
+                return null;
+            } catch (FinderException e) {
+                throw new EJBException(e);
+            }
+            if (series.getSeriesStatus() != SERIES_STORED
+                    && !seriesIUID.equals(seriesStoredIuid)) {
+                log.debug("Sending IAN is postponed! Series Stored notification for Series[iuid="
+                        + seriesIUID + "] not yet emitted");
+                return null;
+            }
+            final Collection<InstanceLocal> insts = series.getInstances();
             if (insts.size() < countImage + countNonImage) {
+                log.debug("Sending IAN is postponed! Series[iuid="
+                        + seriesIUID + "] not yet received completely");
                 return null;
             }
             Dataset refSeries = refSeriesSq.addNewItem();
@@ -327,10 +336,14 @@ public abstract class MPPSManagerBean implements SessionBean {
             DcmElement refSOPSeq = refSeries.putSQ(Tags.RefSOPSeq);
             if (refImageSeq != null
                     && !containsAll(insts, refImageSeq, refSOPSeq)) {
+                log.debug("Sending IAN is postponed! Series[iuid="
+                        + seriesIUID + "] not yet received completely");
                 return null;
             }
             if (refNonImageSeq != null
                     && !containsAll(insts, refNonImageSeq, refSOPSeq)) {
+                log.debug("Sending IAN is postponed! Series[iuid="
+                        + seriesIUID + "] not yet received completely");
                 return null;
             }
         }
@@ -340,7 +353,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         DcmElement refPPSSeq = ian.putSQ(Tags.RefPPSSeq);
         Dataset refPPS = refPPSSeq.addNewItem();
         refPPS.putUI(Tags.RefSOPClassUID, UIDs.ModalityPerformedProcedureStep);
-        refPPS.putUI(Tags.RefSOPInstanceUID, iuid);
+        refPPS.putUI(Tags.RefSOPInstanceUID, mppsiuid);
         refPPS.putSQ(Tags.PerformedWorkitemCodeSeq);
         ian.putUI(Tags.StudyInstanceUID, studyIUID);
         ian.putSH(Tags.StudyID, attrs.getString(Tags.StudyID));
