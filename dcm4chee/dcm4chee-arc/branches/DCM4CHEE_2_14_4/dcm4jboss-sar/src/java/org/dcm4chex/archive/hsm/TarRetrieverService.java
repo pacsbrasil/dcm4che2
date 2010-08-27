@@ -54,11 +54,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import org.apache.commons.compress.tar.TarEntry;
 import org.apache.commons.compress.tar.TarInputStream;
-import org.dcm4che.util.Executer;
 import org.dcm4che.util.MD5Utils;
-import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.util.CacheJournal;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
@@ -72,9 +73,6 @@ import org.jboss.system.ServiceMBeanSupport;
 public class TarRetrieverService extends ServiceMBeanSupport {
 
     private static final String NONE = "NONE";
-    private static final String DST_PARAM = "%p";
-    private static final String FS_PARAM = "%d";
-    private static final String FILE_PARAM = "%f";
 
     private static final Set<String> extracting =
             Collections.synchronizedSet(new HashSet<String>());
@@ -89,11 +87,7 @@ public class TarRetrieverService extends ServiceMBeanSupport {
 
     private long prefFreeDiskSpace;
 
-    private String[] tarFetchCmd = null; 
-    
-    private File tarIncomingDir;
-    
-    private File absTarIncomingDir;
+    private ObjectName hsmModuleServicename = null;
     
     private int bufferSize = 8192;
 
@@ -173,56 +167,12 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                         FileSystemUtils.freeSpace(dir.getPath()));
     }
 
-    public final String getTarFetchCommand() {
-        if (tarFetchCmd == null) {
-            return NONE;
-        }
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < tarFetchCmd.length; i++) {
-            sb.append(tarFetchCmd[i]);
-        }
-        return sb.toString();
-    }
-
-    public final void setTarFetchCommand(String cmd) {
-        if (NONE.equalsIgnoreCase(cmd)) {
-            this.tarFetchCmd = null;
-            return;
-        }
-        String[] a = StringUtils.split(cmd, '%');
-        try {
-            String[] b = new String[a.length + a.length - 1];
-            b[0] = a[0];
-            for (int i = 1; i < a.length; i++) {
-                String s = a[i];
-                b[2 * i - 1] = ("%" + s.charAt(0)).intern();
-                b[2 * i] = s.substring(1);
-            }
-            this.tarFetchCmd = b;
-        } catch (IndexOutOfBoundsException e) {
-            throw new IllegalArgumentException(cmd);
-        }
-    }
-
-    private String makeCommand(String fsParam, String fileParam,
-            String dstParam) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < tarFetchCmd.length; i++) {
-            sb.append(tarFetchCmd[i] == FS_PARAM ? fsParam
-                    : tarFetchCmd[i] == FILE_PARAM ? fileParam
-                    : tarFetchCmd[i] == DST_PARAM ? dstParam
-                    : tarFetchCmd[i]);
-        }
-        return sb.toString();
+    public final String getHSMModulServicename() {
+        return hsmModuleServicename == null ? NONE : hsmModuleServicename.toString();
     }
     
-    public final String getTarIncomingDir() {
-        return tarIncomingDir.getPath();
-    }
-
-    public final void setTarIncomingDir(String tarIncomingDir) {
-        this.tarIncomingDir = new File(tarIncomingDir);
-        this.absTarIncomingDir = FileUtils.resolve(this.tarIncomingDir);
+    public final void setHSMModulServicename(String name) throws MalformedObjectNameException {
+        this.hsmModuleServicename = NONE.equals(name) ? null : ObjectName.getInstance(name);
     }
         
     public File retrieveFileFromTAR(String fsID, String fileID)
@@ -280,33 +230,22 @@ public class TarRetrieverService extends ServiceMBeanSupport {
     private void fetchAndExtractTar(String fsID, String tarPath,
             String tarName, File cacheDir) throws IOException,
             VerifyTarException {
-        if (tarFetchCmd == null) {
-            File tarFile = FileUtils.toFile(fsID.substring(4), tarPath);
+        File tarFile = hsmModuleServicename == null ? 
+                FileUtils.toFile(fsID.substring(4), tarPath) :
+                fetchHSMFile(fsID, tarPath, tarName);
             extractTar(tarFile, cacheDir);
-        } else {
-            if (absTarIncomingDir.mkdirs()) {
-                log.info("M-WRITE " + absTarIncomingDir);
             }
-            File tarFile = new File(absTarIncomingDir, tarName);
-            String cmd = makeCommand(fsID, tarPath, tarFile.getPath());
-            try {
-                log.info("Fetch from HSM: " + cmd);
-                Executer ex = new Executer(cmd);
-                int exit = -1;
+    
+    private File fetchHSMFile(String fsID, String tarPath, String tarName) throws IOException {
                 try {
-                    exit = ex.waitFor();
-                } catch (InterruptedException e) {
-                }
-                if (exit != 0) {
-                    throw new IOException("Non-zero exit code(" + exit
-                            + ") of " + cmd);
-                }
-                log.info("M-WRITE " + tarFile);
-                extractTar(tarFile, cacheDir);
-            } finally {
-                log.info("M-DELETE " + tarFile);
-                tarFile.delete();
-            }
+            return (File) server.invoke(hsmModuleServicename, "fetchHSMFile", new Object[]{fsID, tarPath, tarName}, 
+                new String[]{String.class.getName(),String.class.getName(),String.class.getName()});
+        } catch (Exception x) {
+            log.error("Fetch of HSMFile failed! fsID:"+fsID+" tarPath:"+
+                    tarPath+" tarName:"+tarName, x);
+            IOException iox = new IOException("Fetch of HSMFile failed!");
+            iox.initCause(x);
+            throw iox;
         }
     }
 

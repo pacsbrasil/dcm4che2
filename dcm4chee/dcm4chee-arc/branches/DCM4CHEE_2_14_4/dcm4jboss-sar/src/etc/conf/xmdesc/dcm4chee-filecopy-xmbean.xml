@@ -49,8 +49,10 @@
    <attribute access="read-write"
       getMethod="getHSMModulServicename"
       setMethod="setHSMModulServicename">
-      <description>HSM Module to store files/tarballs to HSM systems. Use NONE if filesystem has no HSM support.
-      </description>
+      <description><![CDATA[HSM Module to store tarballs to HSM systems.<br/> 
+	      Use NONE to store files on local filesystem without additional HSM support.<br/>
+	      Only effective if destination is a tar filesystem!<br/>
+      ]]></description>
       <name>HSMModulServicename</name>
       <type>java.lang.String</type>
       <descriptors>
@@ -65,7 +67,11 @@
    </attribute>
    <attribute access="read-only"
       getMethod="isReady">
-      <description><![CDATA[Status if FileCopy Service is ready to process FileCopy orders.]]></description>
+      <description><![CDATA[Status if FileCopy Service is ready to process FileCopy orders.<br/>
+      		If the destination is a tar filesystem and a HSMModule is configured, this module must be also registered!<br/>
+      		If this status is false the processing of Filecopy orders will be delayed according NotReadyDelay to wait for 
+      		deployment/registration of the configured HSMModule.
+      ]]></description>
       <name>isReady</name>
       <type>boolean</type>
    </attribute>
