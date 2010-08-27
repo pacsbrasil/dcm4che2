@@ -511,6 +511,17 @@ about instances moved to trash. Must be activated for compliance with
       <name>emptyTrash</name>
       <return-type>void</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description>Purge study. (Files will be removed from FilesystemMgt service see 
+      </description>
+      <name>purgeStudy</name>
+      <parameter>
+        <description>Study Instance UID.</description>
+        <name>iuid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
+   </operation>
 <!-- move -->
    <operation impact="ACTION">
       <description>move study.
