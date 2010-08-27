@@ -41,9 +41,12 @@ package org.dcm4chex.archive.hsm;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
@@ -68,6 +71,8 @@ public class FileCopyOrder extends BaseJmsOrder {
     protected final String retrieveAETs;
 
     protected Dataset ian = null;
+    
+    private static Logger log = Logger.getLogger(FileCopyOrder.class);
 
     public FileCopyOrder(Dataset ian, String dstFsPath, String retrieveAETs) {
         this.ian = ian;
@@ -92,11 +97,23 @@ public class FileCopyOrder extends BaseJmsOrder {
         DcmElement refSOPSeq = refSeriesSeq.get(Tags.RefSOPSeq);
         FileInfo[][] aa = RetrieveCmd.create(refSOPSeq).getFileInfos();
         fileInfos = new ArrayList<FileInfo>(aa.length);
+        HashMap<String, FileInfo> fiCopy = new HashMap<String, FileInfo>();
+        HashMap<String, FileInfo> fi2Copy = new HashMap<String, FileInfo>();
         for (FileInfo[] a : aa) {
+            fiCopy.clear();
+            fi2Copy.clear();
             for (FileInfo fi : a) {
-                if (isLocalRetrieveAET(fi.fileRetrieveAET)) {
-                    fileInfos.add(fi);
-                    break;
+                log.info("basedir:"+fi.basedir+" =? dstFsPath:"+dstFsPath);
+                if ( fi.basedir.equals(dstFsPath)) {
+                    log.info("Instance "+fi.sopIUID+" md5:"+fi.md5+" has already a copy on dstFsPath:"+dstFsPath);
+                    fiCopy.put(fi.md5, fi);
+                } else if (isLocalRetrieveAET(fi.fileRetrieveAET)) {
+                    fi2Copy.put(fi.md5, fi);
+                }
+            }
+            for (Map.Entry<String, FileInfo> e : fi2Copy.entrySet()) {
+                if (!fiCopy.containsKey(e.getKey())) {
+                    fileInfos.add(e.getValue());
                 }
             }
         }
