@@ -93,6 +93,8 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
 
     protected JMSDelegate jmsDelegate = new JMSDelegate(this);
 
+    private long notReadyDelay;
+
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
     }
@@ -198,6 +200,14 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         }
     }
 
+    public String getNotReadyDelay() {
+        return RetryIntervalls.formatInterval(notReadyDelay);
+    }
+
+    public void setNotReadyDelay(String notReadyDelay) {
+        this.notReadyDelay = RetryIntervalls.parseInterval(notReadyDelay);
+    }
+
     public final String getQueueName() {
         return queueName;
     }
@@ -231,8 +241,8 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
             }
         }
         
-        schedule(createOrder(seriesStored.getIAN()), 
-        		ForwardingRules.toScheduledTime(destination));
+        schedule(createOrder(seriesStored.getIAN()), isReady() ?
+        		ForwardingRules.toScheduledTime(destination) : notReadyDelay);
     }
 
     protected void schedule(BaseJmsOrder order, long scheduledTime) {
@@ -249,6 +259,11 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         ObjectMessage om = (ObjectMessage) message;
         try {
             BaseJmsOrder order = (BaseJmsOrder) om.getObject();
+            if (!isReady()) {
+                log.warn("FileCopy service not ready! Rescheduled with delay of "+notReadyDelay+ "ms!");
+                schedule(order, System.currentTimeMillis() + notReadyDelay);
+                return;
+            }
             log.info("Start processing " + order);
             try {
                 process(order);
@@ -273,6 +288,8 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         }
     }
 
+    public abstract boolean isReady();
+    
     protected abstract BaseJmsOrder createOrder(Dataset ian);
 
     protected abstract void process(BaseJmsOrder order) throws Exception;
