@@ -245,22 +245,17 @@ public class ADTService extends AbstractHL7Service {
             checkPID(pat);
             if (contains(patientMergeMessageTypes, msgtype)) {
                 Dataset mrg = xslt(msg, mrgXslPath);
-                try {
-                    checkMRG(mrg);
+                if (handleEmptyMrgAsUpdate
+                        && !mrg.containsValue(Tags.PatientID)) {
+                    updatePatient(pat, patientMatching);
+                } else {
+                    checkMRG(mrg, pat);
                     mergePatient(pat, mrg, patientMatching);
-                }
-                catch (HL7Exception e) {
-                    if (handleEmptyMrgAsUpdate) {
-                        updatePatient(pat, patientMatching);
-                    }
-                    else {
-                        throw e;
-                    }
                 }
             }
             else if (changePatientIdentifierListMessageType.equals(msgtype)) {
                 Dataset mrg = xslt(msg, mrgXslPath);
-                checkMRG(mrg);
+                checkMRG(mrg, pat);
                 changePatientIdentifierList(pat, mrg, patientMatching);
             }
             else if (deletePatientMessageType.equals(msgtype)) {
@@ -342,7 +337,7 @@ public class ADTService extends AbstractHL7Service {
             Dataset pid = xslt(msg, pidXslPath);
             Dataset mrg = xslt(msg, mrgXslPath);
             checkPID(pid);
-            checkMRG(mrg);
+            checkMRG(mrg, pid);
             mergePatient(pid, mrg, patientMatching);
         }
         catch (HL7Exception e) {
@@ -388,10 +383,20 @@ public class ADTService extends AbstractHL7Service {
             throw new HL7Exception("AR", "Missing required PID-5: Patient Name");
     }
 
-    private void checkMRG(Dataset mrg) throws HL7Exception {
-        if (!mrg.containsValue(Tags.PatientID))
+    private void checkMRG(Dataset mrg, Dataset pat)
+            throws HL7Exception {
+        String mrgpid = mrg.getString(Tags.PatientID);
+        if (mrgpid == null)
             throw new HL7Exception("AR",
                     "Missing required MRG-1: Prior Patient ID - Internal");
+        if (mrgpid.equals(pat.getString(Tags.PatientID))) {
+            String mrgissuer = mrg.getString(Tags.IssuerOfPatientID);
+            String patissuer = pat.getString(Tags.IssuerOfPatientID);
+            if (mrgissuer == null || patissuer == null
+                    || mrgissuer.equals(patissuer))
+                throw new HL7Exception("AR",
+                        "MRG-1: Prior Patient ID - Internal is equal to PID-3: Patient ID (Internal ID)");
+        }
     }
 
     private boolean containsPatientName(Document msg) {
