@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<head>
+    <title>Wicket Examples - signin2</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+  <wicket:panel>
+    <span wicket:id="feedback"/>
+		<form wicket:id="signInForm">
+			<table>
+				<tr>
+					<td align="right">ユーザーアカウント:</td>
+					<td>
+						<input wicket:id="username" type="text" value="foo@goo.moo" size="30"/>
+					</td>
+				</tr>
+				<tr>
+					<td align="right">パスワード:</td>
+					<td>
+						<input wicket:id="password" type="password" value="password" size="30"/>
+					</td>
+				</tr>
+				<tr wicket:id="rememberMeRow">
+					<td></td>
+					<td> <input wicket:id="rememberMe" type="checkbox" /> パスワードを思い出す </td>
+				</tr>
+				<tr>
+					<td></td>
+					<td>
+						<input type="submit" name="submit" value="ログイン"/>
+						<input type="reset" value="リセット"/>
+					</td>
+				</tr>
+			</table>
+		</form>
+  </wicket:panel>
+</body>
+</html>

@@ -97,6 +97,7 @@ public class ModuleSelectorPanel extends AjaxTabbedPanel {
         List<String> languages = new ArrayList<String>();
         languages.add("en");
         languages.add("de");
+        languages.add("ja");
 
         final DropDownChoice<String> languageSelector = 
             new DropDownChoice<String>("language", new Model<String>(), languages, new ChoiceRenderer<String>() {
