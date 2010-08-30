@@ -28,7 +28,7 @@
 		<span class="info-desc" wicket:id="studyDescription.label" >Study description:</span>
 		<span class="info-value" wicket:id="studyDescription" >[STUDY DESCRPTION]</span>
 	</div>
-	<form style="clear: both" wicket:id="form">
+	<form wicket:id="form">
 		<table rules="groups" class="search-table" style="margin-top: 20px;">
 			<thead>
 				<tr>
@@ -167,7 +167,8 @@
 				<a wicket:id="next">
 					<img wicket:id="nextImg" />
 				</a>
-			</div>			  
+			</div>
+			<img class="hourglass" wicket:id="hourglass-image" />			  
 		</div>
 	</form>
 	<div wicket:id="listPanel" style="clear: both;">

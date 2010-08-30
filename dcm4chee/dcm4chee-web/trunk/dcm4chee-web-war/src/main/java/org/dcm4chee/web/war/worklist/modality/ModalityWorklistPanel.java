@@ -351,7 +351,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 ajaxRunning = ajaxDone = false;
                 
                 target.addComponent(
-                    form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                    listPanel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
                         
                         private static final long serialVersionUID = 1L;
   
@@ -376,7 +376,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                                     }).start();
                                 } else {
                                     this.stop();
-                                    target.addComponent(form);
                                     target.addComponent(navPanel);
                                     target.addComponent(listPanel);
                                 }
@@ -434,7 +433,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
                 target.addComponent(navPanel.get("hourglass-image"));
                 target.addComponent(
-                    form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                    listPanel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
                         
                         private static final long serialVersionUID = 1L;
   
@@ -575,11 +574,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         ModalityWorklist dao = lookupMwlDAO();
         viewport.getMWLItemModels().clear();
         viewport.setTotal(dao.countMWLItems(viewport.getFilter()));
-             
         List<MWLItemModel> current = viewport.getMWLItemModels();
-        for (MWLItem mwlItem : dao.findMWLItems(viewport.getFilter(), pagesize.getObject(), viewport.getOffset())) {
+        for (MWLItem mwlItem : dao.findMWLItems(viewport.getFilter(), pagesize.getObject(), viewport.getOffset())) 
             current.add(new MWLItemModel(mwlItem, new Model<Boolean>(false)));
-        }
         notSearched = false;
     }
 
