@@ -80,7 +80,6 @@ import org.dcm4chee.archive.entity.PrivatePatient;
 import org.dcm4chee.archive.entity.PrivateSeries;
 import org.dcm4chee.archive.entity.PrivateStudy;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.dashboard.ui.filesystem.FileSystemPanel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
@@ -110,7 +109,7 @@ import org.slf4j.LoggerFactory;
  */
 public class TrashListPage extends Panel {
 
-    private static Logger log = LoggerFactory.getLogger(FileSystemPanel.class);
+    private static Logger log = LoggerFactory.getLogger(TrashListPage.class);
 
     private static final ResourceReference CSS = new CompressedResourceReference(TrashListPage.class, "trash-style.css");
 
@@ -131,6 +130,10 @@ public class TrashListPage extends Panel {
     
     private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
     
+    protected boolean ajaxRunning = false;
+    protected boolean ajaxDone = false;
+    protected Image hourglassImage;
+
     public TrashListPage(final String id) {
         super(id);
 
@@ -180,6 +183,7 @@ public class TrashListPage extends Panel {
         addQueryFields(filter, form);
         addQueryOptions(form);
         addNavigation(form);
+        addHourglass(form);
         addActions(form);
         
         form.add(header);
@@ -253,16 +257,54 @@ public class TrashListPage extends Panel {
             private static final long serialVersionUID = 1L;
             
             @Override
-            public void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                viewport.setOffset(0);
-                queryStudies();
-                target.addComponent(form);
+            public void onSubmit(AjaxRequestTarget target, final Form<?> form) {
+                ajaxRunning = ajaxDone = false;
+                
+                target.addComponent(
+                    form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                        
+                        private static final long serialVersionUID = 1L;
+  
+                        @Override
+                        protected void onTimer(final AjaxRequestTarget target) {
+  
+                            if (!ajaxRunning) {
+                                if (!ajaxDone) {
+                                    ajaxRunning = true;
+                                    new Thread(new Runnable() {
+                                        public void run() {
+                                            try {
+                                                viewport.setOffset(0);
+                                                queryStudies();
+                                            } catch (Throwable t) {
+                                                log.error("search failed: ", t);
+                                            } finally {
+                                                ajaxRunning = false;
+                                                ajaxDone = true;
+                                            }
+                                        }
+                                    }).start();
+                                } else { 
+                                    this.stop();
+                                    target.addComponent(form);
+                                }
+                            }
+                        }
+                    })
+                );
             }
+            
             @Override
             public void onError(AjaxRequestTarget target, Form<?> form) {
                 BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
             }
+            
+            @Override
+            public boolean isEnabled() {
+                return !ajaxRunning;
+            }
         };
+        searchBtn.setOutputMarkupId(true);
         searchBtn.add(new Image("searchImg",ImageManager.IMAGE_COMMON_SEARCH)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
@@ -279,15 +321,55 @@ public class TrashListPage extends Panel {
         for (int i = 1; i <= PAGESIZE_ENTRIES; i++)
             pagesizes.add(i * PAGESIZE_STEP);
         pagesize.setObject((PAGESIZE_ENTRIES / 2) * PAGESIZE_STEP);
-        form.addDropDownChoice("pagesize", pagesize, pagesizes, new Model<Boolean>(true), true).setNullValid(false)
+        
+        form.addDropDownChoice("pagesize", pagesize, pagesizes, new Model<Boolean>() {
+                    
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Boolean getObject() {
+                return !ajaxRunning;
+            }
+        }, true).setNullValid(false)
         .add(new AjaxFormSubmitBehavior(form, "onchange") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             protected void onSubmit(AjaxRequestTarget target) {
-                queryStudies();
-                target.addComponent(form);
+                ajaxRunning = ajaxDone = false;
+
+                target.addComponent(
+                    form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                        
+                        private static final long serialVersionUID = 1L;
+  
+                        @Override
+                        protected void onTimer(final AjaxRequestTarget target) {
+  
+                            if (!ajaxRunning) {
+                                if (!ajaxDone) {
+                                    ajaxRunning = true;
+                                    new Thread(new Runnable() {
+                                        public void run() {
+                                            try {
+                                                queryStudies();
+                                            } catch (Throwable t) {
+                                                log.error("search failed: ", t);
+                                            } finally {
+                                                ajaxRunning = false;
+                                                ajaxDone = true;
+                                            }
+                                        }
+                                    }).start();
+                                } else {
+                                    this.stop();
+                                    target.addComponent(form);
+                                }
+                            }
+                        }
+                    })
+                );
             }
 
             @Override
@@ -360,6 +442,20 @@ public class TrashListPage extends Panel {
                         viewport.getTotal()};
             }
         }));
+    }
+
+    private void addHourglass(final BaseForm form) {
+        form.add((hourglassImage = new Image("hourglass-image", ImageManager.IMAGE_COMMON_AJAXLOAD) {
+            private static final long serialVersionUID = 1L;
+    
+            @Override
+            public boolean isVisible() {
+                return ajaxRunning;
+            }
+        })
+        .setOutputMarkupPlaceholderTag(true)
+        .setOutputMarkupId(true)
+        );
     }
 
     private void addActions(final BaseForm form) {
@@ -736,7 +832,6 @@ public class TrashListPage extends Panel {
                         target.addComponent(item);
                     }
                 }
-
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
             .add(tooltip)));

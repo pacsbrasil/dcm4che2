@@ -42,8 +42,9 @@ div.tabpanel div.tab-row a:hover { background: #aaa; }
 
 div.module-panel { width: 100%; background: none #DEEEFD; }
 
-div.viewport-and-actions { margin-top: 20px; margin-bottom: 5px; padding: 5; }
+div.viewport-and-actions { margin-top: 20px; margin-bottom: 15px; padding: 5; }
 div.viewport { float: left; margin-right: 40px; }
+img.hourglass { float: left; margin-left: 20%; }
 div.actions { text-align: right; }
 
 /*

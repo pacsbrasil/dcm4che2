@@ -67,7 +67,7 @@ public class InternalErrorPage extends BaseWicketPage {
     @Override
     protected void onBeforeRender() {
         super.onBeforeRender();
-
+        
         add(new Label("exception-message", new ResourceModel("application.internal_error.throwable").wrapOnAssignment(this).getObject() + (this.throwable == null ? "" : throwable.getLocalizedMessage())));
         add(new Label("exception-page", new ResourceModel("application.internal_error.page").wrapOnAssignment(this).getObject() + (this.page == null ? "" : Page.class.toString())));
         add( new Link<Object>("home") {

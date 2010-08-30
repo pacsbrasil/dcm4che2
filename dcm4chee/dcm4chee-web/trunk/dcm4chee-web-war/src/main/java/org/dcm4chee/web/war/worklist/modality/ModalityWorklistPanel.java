@@ -44,6 +44,7 @@ import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
@@ -68,6 +69,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.common.SPSStatus;
 import org.dcm4chee.archive.entity.MWLItem;
@@ -89,6 +91,8 @@ import org.dcm4chee.web.war.common.EditDicomObjectPanel;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
 import org.dcm4chee.web.war.worklist.modality.MWLItemListView.MwlActionProvider;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -101,6 +105,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     
     private static final ResourceReference CSS = new CompressedResourceReference(ModalityWorklistPanel.class, "modality-worklist-style.css");
 
+    private static Logger log = LoggerFactory.getLogger(ModalityWorklistPanel.class);
+    
     private ModalWindow modalWindow;
     
     private static int PAGESIZE_ENTRIES = 6;
@@ -121,6 +127,10 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
     private WebMarkupContainer listPanel;
     private WebMarkupContainer navPanel;
+
+    protected boolean ajaxRunning = false;
+    protected boolean ajaxDone = false;
+    protected Image hourglassImage;
 
     public ModalityWorklistPanel(final String id) {
         super(id);
@@ -175,6 +185,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         addQueryFields(filter, form);
         addQueryOptions(form);
         addNavigation(form);
+        addHourglass(form);
         
         form.setResourceIdPrefix("mw.");
 
@@ -336,18 +347,56 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             private static final long serialVersionUID = 1L;
             
             @Override
-            public void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                viewport.setOffset(0);
-                queryMWLItems();
-                target.addComponent(navPanel);
-                target.addComponent(listPanel);
+            public void onSubmit(AjaxRequestTarget target, final Form<?> form) {
+                ajaxRunning = ajaxDone = false;
+                
+                target.addComponent(
+                    form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                        
+                        private static final long serialVersionUID = 1L;
+  
+                        @Override
+                        protected void onTimer(final AjaxRequestTarget target) {
+  
+                            if (!ajaxRunning) {
+                                if (!ajaxDone) {
+                                    ajaxRunning = true;
+                                    new Thread(new Runnable() {
+                                        public void run() {
+                                            try {
+                                                viewport.setOffset(0);
+                                                queryMWLItems();
+                                            } catch (Throwable t) {
+                                                log.error("search failed: ", t);
+                                            } finally {
+                                                ajaxRunning = false;
+                                                ajaxDone = true;
+                                            }
+                                        }
+                                    }).start();
+                                } else {
+                                    this.stop();
+                                    target.addComponent(form);
+                                    target.addComponent(navPanel);
+                                    target.addComponent(listPanel);
+                                }
+                            }
+                        }
+                    })
+                );
             }
             
             @Override
             public void onError(AjaxRequestTarget target, Form<?> form) {
                 BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
             }
+            
+            @Override
+            public boolean isEnabled() {
+                return !ajaxRunning;
+            }
         };
+        searchBtn.setOutputMarkupId(true);
         searchBtn.add(new Image("searchImg",ImageManager.IMAGE_COMMON_SEARCH)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
@@ -364,16 +413,57 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         for (int i = 1; i <= PAGESIZE_ENTRIES; i++)
             pagesizes.add(i * PAGESIZE_STEP);
         pagesize.setObject((PAGESIZE_ENTRIES / 2) * PAGESIZE_STEP);
-        form.addDropDownChoice("pagesize", pagesize, pagesizes, new Model<Boolean>(true), true).setNullValid(false)
+        
+        form.addDropDownChoice("pagesize", pagesize, pagesizes, new Model<Boolean>() {
+                    
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Boolean getObject() {
+                return !ajaxRunning;
+            }
+        }, true).setNullValid(false)
         .add(new AjaxFormSubmitBehavior(form, "onchange") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             protected void onSubmit(AjaxRequestTarget target) {
-                queryMWLItems();
-                target.addComponent(navPanel);
-                target.addComponent(listPanel);
+                ajaxRunning = ajaxDone = false;
+
+                target.addComponent(navPanel.get("hourglass-image"));
+                target.addComponent(
+                    form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                        
+                        private static final long serialVersionUID = 1L;
+  
+                        @Override
+                        protected void onTimer(final AjaxRequestTarget target) {
+  
+                            if (!ajaxRunning) {
+                                if (!ajaxDone) {
+                                    ajaxRunning = true;
+                                    new Thread(new Runnable() {
+                                        public void run() {
+                                            try {
+                                                queryMWLItems();
+                                            } catch (Throwable t) {
+                                                log.error("search failed: ", t);
+                                            } finally {
+                                                ajaxRunning = false;
+                                                ajaxDone = true;
+                                            }
+                                        }
+                                    }).start();
+                                } else {
+                                    this.stop();
+                                    target.addComponent(navPanel);
+                                    target.addComponent(listPanel);
+                                }
+                            }
+                        }
+                    })
+                );
             }
 
             @Override
@@ -451,6 +541,20 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
         }));
         form.clearParent();
+    }
+
+    private void addHourglass(final BaseForm form) {
+        navPanel.add((hourglassImage = new Image("hourglass-image", ImageManager.IMAGE_COMMON_AJAXLOAD) {
+            private static final long serialVersionUID = 1L;
+    
+            @Override
+            public boolean isVisible() {
+                return ajaxRunning;
+            }
+        })
+        .setOutputMarkupPlaceholderTag(true)
+        .setOutputMarkupId(true)
+        );
     }
 
     private void initModalitiesAndStationAETs() {
