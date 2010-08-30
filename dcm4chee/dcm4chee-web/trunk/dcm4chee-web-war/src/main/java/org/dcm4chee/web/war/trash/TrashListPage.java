@@ -288,6 +288,7 @@ public class TrashListPage extends Panel {
                                     this.stop();
                                     target.addComponent(form);
                                 }
+                                target.addComponent(hourglassImage);
                             }
                         }
                     })
@@ -366,6 +367,7 @@ public class TrashListPage extends Panel {
                                     this.stop();
                                     target.addComponent(form);
                                 }
+                                target.addComponent(hourglassImage);
                             }
                         }
                     })

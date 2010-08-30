@@ -44,6 +44,7 @@ div.module-panel { width: 100%; background: none #E1E0DE; }
 
 div.viewport-and-actions { margin-top: 20px; margin-bottom: 5px; padding: 5; }
 div.viewport { float: left; margin-right: 40px; }
+img.hourglass { float: left; margin-left: 20%; }
 div.actions { text-align: right; }
 
 /*

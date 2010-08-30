@@ -380,6 +380,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                                     target.addComponent(navPanel);
                                     target.addComponent(listPanel);
                                 }
+                                target.addComponent(hourglassImage);
                             }
                         }
                     })
@@ -460,6 +461,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                                     target.addComponent(navPanel);
                                     target.addComponent(listPanel);
                                 }
+                                target.addComponent(hourglassImage);
                             }
                         }
                     })

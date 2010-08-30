@@ -422,6 +422,7 @@ public class StudyListPage extends Panel {
                                       this.stop();
                                       target.addComponent(form);
                                   }
+                                  target.addComponent(hourglassImage);
                               }
                           }
                       })
@@ -501,6 +502,7 @@ public class StudyListPage extends Panel {
                                     this.stop();
                                     target.addComponent(form);
                                 }
+                                target.addComponent(hourglassImage);
                             }
                         }
                     })
