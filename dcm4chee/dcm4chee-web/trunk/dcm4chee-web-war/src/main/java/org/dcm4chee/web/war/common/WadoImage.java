@@ -117,6 +117,7 @@ public class WadoImage extends WebComponent {
                 if (imgWidthModel != null) {
                     sb.append("&amp;columns=").append(imgWidthModel.getObject());
                 }
+                System.out.println("#### wadoimg src:"+sb);
                 tag.put("src", sb.toString());
         }
 

@@ -88,7 +88,7 @@ public class EchoDelegate extends BaseMBeanDelegate {
     }
 
     @Override
-    public String getInitParameterName() {
+    public String getServiceNameCfgAttribute() {
         return "echoServiceName";
     }
     

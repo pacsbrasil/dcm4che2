@@ -96,6 +96,7 @@ import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.CheckOneDayBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
@@ -128,8 +129,6 @@ public class StudyListPage extends Panel {
     
     private ModalWindow modalWindow;
     
-    private static int PAGESIZE_ENTRIES = 6;
-    private static int PAGESIZE_STEP = 5;
     private Model<Integer> pagesize = new Model<Integer>();
 
     private static final String MODULE_NAME = "folder";
@@ -146,8 +145,6 @@ public class StudyListPage extends Panel {
             return viewport.getFilter().isLatestStudiesFirst();
         }
     };
-    private static List<String> sourceAETs = new ArrayList<String>();
-    private static List<String> modalities = new ArrayList<String>();
     private boolean showSearch = true;
     private boolean notSearched = true;
     private BaseForm form;
@@ -180,9 +177,8 @@ public class StudyListPage extends Panel {
                 target.addComponent(getPage());
             }            
         });
-        
-        webviewerLinkProvider = new WebviewerLinkProvider(((WebApplication)Application.get()).getInitParameter("webviewerName"));
-        webviewerLinkProvider.setBaseUrl(((WebApplication)Application.get()).getInitParameter("webviewerBaseUrl"));
+        webviewerLinkProvider = new WebviewerLinkProvider(WebCfgDelegate.getInstance().getWebviewerName());
+        webviewerLinkProvider.setBaseUrl(WebCfgDelegate.getInstance().getWebviewerBaseUrl());
         
         final StudyListFilter filter = viewport.getFilter();
         add(form = new BaseForm("form", new CompoundPropertyModel<Object>(filter)));
@@ -221,7 +217,6 @@ public class StudyListPage extends Panel {
         })))
         .add(new ImageSizeBehaviour())));
 
-        initModalitiesAndSourceAETs();
         addQueryFields(filter, form);
         addQueryOptions(form);
         addNavigation(form);
@@ -281,8 +276,10 @@ public class StudyListPage extends Panel {
         form.addInternalLabel("modality");
         form.addInternalLabel("sourceAET");
         
-        form.addDropDownChoice("modality", null, modalities, enabledModel, false).setModelObject("*");
-        form.addDropDownChoice("sourceAET", null, viewport.getSourceAetChoices(sourceAETs), enabledModel, false).setModelObject("*");
+        form.addDropDownChoice("modality", null, WebCfgDelegate.getInstance().getModalityList(), 
+                enabledModel, false).setModelObject("*");
+        form.addDropDownChoice("sourceAET", null, viewport.getSourceAetChoices(
+                WebCfgDelegate.getInstance().getSourceAETList()), enabledModel, false).setModelObject("*");
 
         final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
 
@@ -371,7 +368,7 @@ public class StudyListPage extends Panel {
                 viewport.clear();
                 ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("modality")).setModelObject("*");
                 ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("sourceAET")).setModelObject("*");
-                pagesize.setObject((PAGESIZE_ENTRIES / 2) * PAGESIZE_STEP);
+                pagesize.setObject(WebCfgDelegate.getInstance().getDefaultFolderPagesize());
                 notSearched = true;
                 form.setOutputMarkupId(true);
                 target.addComponent(form);
@@ -452,13 +449,8 @@ public class StudyListPage extends Panel {
         form.setDefaultButton(searchBtn);
         form.clearParent();
         
-        List<Integer> pagesizes = new ArrayList<Integer>();
-        pagesizes.add(1);
-        for (int i = 1; i <= PAGESIZE_ENTRIES; i++)
-            pagesizes.add(i * PAGESIZE_STEP);
-        pagesize.setObject((PAGESIZE_ENTRIES / 2) * PAGESIZE_STEP);
-        
-        form.addDropDownChoice("pagesize", pagesize, pagesizes, new Model<Boolean>() {
+        pagesize.setObject(WebCfgDelegate.getInstance().getDefaultFolderPagesize());
+        form.addDropDownChoice("pagesize", pagesize, WebCfgDelegate.getInstance().getPagesizeList(), new Model<Boolean>() {
                     
             private static final long serialVersionUID = 1L;
 
@@ -473,6 +465,8 @@ public class StudyListPage extends Panel {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target) {
+                if (!WebCfgDelegate.getInstance().isQueryAfterPagesizeChange())
+                    return;
                 ajaxRunning = ajaxDone = false;
                 
                 target.addComponent(
@@ -758,8 +752,9 @@ public class StudyListPage extends Panel {
                 this.setResponsePage(page);
             }
         };
-        exportBtn.setPopupHeight(new Integer(new ResourceModel("folder.exportpage.window.height","500").wrapOnAssignment(this).getObject().toString()));
-        exportBtn.setPopupWidth(new Integer(new ResourceModel("folder.exportpage.window.width","650").wrapOnAssignment(this).getObject().toString()));
+        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("export");
+        exportBtn.setPopupWidth(winSize[0]);
+        exportBtn.setPopupHeight(winSize[1]);
 
         exportBtn.add(new Image("exportImg",ImageManager.IMAGE_FOLDER_EXPORT)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
@@ -847,18 +842,6 @@ public class StudyListPage extends Panel {
         };
         confirmUnlinkMpps.setInitialHeight(150);
         form.add(confirmUnlinkMpps);
-    }
-
-    private void initModalitiesAndSourceAETs() {
-        if (modalities.isEmpty() || sourceAETs.isEmpty()) {
-            StudyListLocal dao = (StudyListLocal)
-                    JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-            modalities.clear();
-            modalities.add("*");
-            modalities.addAll(dao.selectDistinctModalities());
-            sourceAETs.clear();
-            sourceAETs.addAll(dao.selectDistinctSourceAETs());
-        }
     }
 
     private void queryStudies() {
@@ -1111,8 +1094,8 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    imageSelection.setInitialWidth(new Integer(getString("folder.imageSelection.window.width")))
-                    .setInitialHeight(new Integer(getString("folder.imageSelection.window.height")));
+                    int[] winSize = WebCfgDelegate.getInstance().getWindowSize("imgSelect");
+                    imageSelection.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
                     imageSelection.show(target, studyModel);
                 }
                 
@@ -1241,9 +1224,9 @@ public class StudyListPage extends Panel {
                         }
                     });
                     
+                    int[] winSize = WebCfgDelegate.getInstance().getWindowSize("mpps2mwl");
                     ((Mpps2MwlLinkPage) linkPage
-                            .setInitialWidth(new Integer(getString("folder.mpps2mwl.window.width")))
-                            .setInitialHeight(new Integer(getString("folder.mpps2mwl.window.height")))
+                            .setInitialWidth(winSize[0]).setInitialHeight(winSize[1])
                     )
                     .show(target, ppsModel, form);
                 }
@@ -1375,8 +1358,8 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    imageSelection.setInitialWidth(new Integer(getString("folder.imageSelection.window.width")))
-                    .setInitialHeight(new Integer(getString("folder.imageSelection.window.height")));
+                    int[] winSize = WebCfgDelegate.getInstance().getWindowSize("imgSelect");
+                    imageSelection.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
                     imageSelection.show(target, seriesModel);
                 }
                 
@@ -1479,9 +1462,8 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-
-                    wadoWindow.setInitialWidth(new Integer(getString("folder.wadoImage.window.width")))
-                    .setInitialHeight(new Integer(getString("folder.wadoImage.window.height")));
+                    int[] winSize = WebCfgDelegate.getInstance().getWindowSize("wado");
+                    wadoWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
                     wadoWindow.setPageCreator(new ModalWindow.PageCreator() {
                           
                         private static final long serialVersionUID = 1L;
@@ -1590,11 +1572,8 @@ public class StudyListPage extends Panel {
     
     private Link<Object> getEditLink(final ModalWindow modalWindow, final AbstractEditableDicomModel model, TooltipBehaviour tooltip) {
        
-        ModalWindowLink editLink
-         = new ModalWindowLink("edit", modalWindow,
-                new Integer(new ResourceModel("folder.edit.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                new Integer(new ResourceModel("folder.edit.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-        ) {
+        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("dcmEdit");
+        ModalWindowLink editLink = new ModalWindowLink("edit", modalWindow, winSize[0], winSize[1]) {
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -1633,11 +1612,8 @@ public class StudyListPage extends Panel {
 
     private Link<Object> getAddStudyLink(final PatientModel model, TooltipBehaviour tooltip) {
         
-        final ModalWindowLink addStudyLink 
-            = new ModalWindowLink("add", modalWindow,
-                    new Integer(new ResourceModel("folder.add.study.window.width").wrapOnAssignment(this).getObject().toString()).intValue(),                
-                    new Integer(new ResourceModel("folder.add.study.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-       ) {
+        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("addStudy");
+        final ModalWindowLink addStudyLink = new ModalWindowLink("add", modalWindow, winSize[0], winSize[1]) {
            private static final long serialVersionUID = 1L;
 
            @Override
@@ -1680,11 +1656,8 @@ public class StudyListPage extends Panel {
 
     private Link<Object> getAddSeriesLink(final StudyModel model, TooltipBehaviour tooltip) {
         
-        ModalWindowLink addSeriesLink
-            = new ModalWindowLink("add", modalWindow,
-                    new Integer(new ResourceModel("folder.add.series.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                    new Integer(new ResourceModel("folder.add.series.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-           ) {
+        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("aeEdit");
+        ModalWindowLink addSeriesLink = new ModalWindowLink("add", modalWindow, winSize[0], winSize[1]) {
                private static final long serialVersionUID = 1L;
            
                @Override

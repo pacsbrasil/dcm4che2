@@ -54,6 +54,7 @@ import org.apache.wicket.authentication.AuthenticatedWebSession;
 import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.dcm4che2.util.StringUtils;
+import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +83,7 @@ public class GroupedChoices implements Serializable {
     private static Logger log = LoggerFactory.getLogger(GroupedChoices.class);
     
     private GroupedChoices(String configFilename) {
-        String webConfigPath = ((WebApplication)Application.get()).getInitParameter(WEB_CONFIG_PATH);
+        String webConfigPath = WebCfgDelegate.getInstance().getWebConfigPath();
         configFile = FileUtils.resolve(new File(webConfigPath, configFilename));
         init();
     }

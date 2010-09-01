@@ -78,16 +78,11 @@ public abstract class BaseMBeanDelegate {
             }
         }
         if (serviceObjectName == null) {
-            String s = ((WebApplication)Application.get()).getInitParameter(getInitParameterName());
-            if (s == null) {
-                s = getDefaultServiceObjectName();
-            }
             try {
-                serviceObjectName = new ObjectName(s);
+                serviceObjectName = WebCfgDelegate.getInstance().getObjectName(getServiceNameCfgAttribute(), getDefaultServiceObjectName());
                 log.info("MBeanDelegate initialized! serviceName:"+serviceObjectName);
             } catch (Exception e) {
-                log.error( "Failed to set ObjectName for MBeanService! serviceName("+
-                        getInitParameterName()+")="+s,e );
+                log.error( "Failed to set ObjectName for MBeanService! serviceNameCfgAttribute:"+getServiceNameCfgAttribute(),e );
             }
         }
     }
@@ -96,7 +91,7 @@ public abstract class BaseMBeanDelegate {
      * Return name of Servlet InitParameter to get objectname of MBean service.
      * @return
      */
-    public abstract String getInitParameterName();
+    public abstract String getServiceNameCfgAttribute();
     
     public String getDefaultServiceObjectName() {
         return null;

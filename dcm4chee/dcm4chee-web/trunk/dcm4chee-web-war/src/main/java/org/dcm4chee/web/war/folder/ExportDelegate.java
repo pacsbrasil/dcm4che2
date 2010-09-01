@@ -64,7 +64,7 @@ public class ExportDelegate extends BaseMBeanDelegate {
     }
 
     @Override
-    public String getInitParameterName() {
+    public String getServiceNameCfgAttribute() {
         return "moveScuServiceName";
     }
 

@@ -42,37 +42,33 @@ import java.io.IOException;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
-import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
+import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
 import org.dcm4chee.web.service.common.FileImportOrder;
-import org.jboss.mx.util.MBeanServerLocator;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since 17.05.2010
  */
-public class StoreBridgeDelegate {
+public class StoreBridgeDelegate extends BaseMBeanDelegate {
 
     private static StoreBridgeDelegate delegate;
-    protected ObjectName serviceObjectName;
-    private final MBeanServer server = MBeanServerLocator.locate();
-
-    private StoreBridgeDelegate(String serviceObjectName) throws MalformedObjectNameException, NullPointerException {
-        this.serviceObjectName = new ObjectName(serviceObjectName);
+    
+    private StoreBridgeDelegate() throws MalformedObjectNameException, NullPointerException {
+        super();
     }
 
-    public String getInitParameterName() {
-        return "storeBridgeServiceName";
-    }
-
-    public static StoreBridgeDelegate getInstance(String objectName) throws MalformedObjectNameException, NullPointerException {
+    public static StoreBridgeDelegate getInstance() throws MalformedObjectNameException, NullPointerException {
         if (delegate==null)
-            delegate = new StoreBridgeDelegate(objectName);
+            delegate = new StoreBridgeDelegate();
         return delegate;
+    }
+
+    public String getServiceNameCfgAttribute() {
+        return "storeBridgeServiceName";
     }
     
     public void importFile(FileImportOrder order) throws 

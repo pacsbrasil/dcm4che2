@@ -471,7 +471,7 @@ public class TrashListPage extends Panel {
             private StoreBridgeDelegate getDelegate() {
                 if (delegate == null) {
                     try {
-                        delegate = StoreBridgeDelegate.getInstance(((WicketApplication) getApplication()).getInitParameter("storeBridgeServiceName"));
+                        delegate = StoreBridgeDelegate.getInstance();
                     } catch (Exception e) {
                         log.error("Exception fetching delegate:"+e.getMessage(), e);
                     }

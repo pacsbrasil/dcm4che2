@@ -63,6 +63,7 @@ import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.war.WicketSession;
@@ -200,7 +201,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         @SuppressWarnings("unchecked")
         private void presetSearchfields() {
             PPSModel ppsModel = ppsModels.get(0);
-            String patPreset = this.getString("mpps2mwl.preset.patientname");
+            String patPreset = WebCfgDelegate.getInstance().getMpps2mwlPresetPatientname();
             if ("delete".equals(patPreset)) {
                 getViewPort().getFilter().setPatientName(null);
             } else if (patPreset != null) {
@@ -213,7 +214,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                 }
                 getViewPort().getFilter().setPatientName(name);
             }
-            String modPreset = this.getString("mpps2mwl.preset.modality");
+            String modPreset = WebCfgDelegate.getInstance().getMpps2mwlPresetModality();
             if ("delete".equals(modPreset)) {
                 getViewPort().getFilter().setModality(null);
             } else if ("mpps".equals(modPreset)){
@@ -222,7 +223,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                 if(modChoice.getChoices().contains(mod))
                     getViewPort().getFilter().setModality(mod);
             }
-            String startPreset = this.getString("mpps2mwl.preset.startdate");
+            String startPreset = WebCfgDelegate.getInstance().getMpps2mwlPresetStartDate();
             if ("delete".equals(startPreset)) {
                 getViewPort().getFilter().setStartDateMin(null);
                 getViewPort().getFilter().setStartDateMax(null);

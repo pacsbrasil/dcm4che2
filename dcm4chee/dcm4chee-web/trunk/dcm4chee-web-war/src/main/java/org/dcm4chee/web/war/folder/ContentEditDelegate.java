@@ -279,7 +279,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
     }
 
     @Override
-    public String getInitParameterName() {
+    public String getServiceNameCfgAttribute() {
         return "contentEditServiceName";
     }
 

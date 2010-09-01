@@ -72,6 +72,7 @@ import org.dcm4chee.dashboard.ui.report.CreateGroupPage;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
@@ -128,11 +129,9 @@ public class AEListPanel extends Panel {
         confirm.setInitialHeight(150);
         add(confirm);
 
+        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("aeEdit");
         ModalWindowLink newAET = 
-            new ModalWindowLink("newAET", modalWindow,
-                new Integer(new ResourceModel("aet.editAET.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                new Integer(new ResourceModel("aet.editAET.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-        ) {
+            new ModalWindowLink("newAET", modalWindow, winSize[0], winSize[1]) {
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -193,10 +192,8 @@ public class AEListPanel extends Panel {
                 item.add(new Label("department"));
 
                 ModalWindowLink editAET;
-                item.add((editAET = new ModalWindowLink("editAET", modalWindow,
-                        new Integer(new ResourceModel("aet.editAET.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                        new Integer(new ResourceModel("aet.editAET.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-                ) {
+                int[] winSize = WebCfgDelegate.getInstance().getWindowSize("aeEdit");
+                item.add((editAET = new ModalWindowLink("editAET", modalWindow, winSize[0], winSize[1]) {
                     private static final long serialVersionUID = 1L;
     
                     @Override

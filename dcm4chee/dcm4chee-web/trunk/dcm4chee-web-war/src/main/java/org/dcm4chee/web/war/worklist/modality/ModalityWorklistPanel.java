@@ -78,11 +78,11 @@ import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.CheckOneDayBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.SimpleDateTimeField;
 import org.dcm4chee.web.common.validators.UIDValidator;
-import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklist;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
@@ -109,13 +109,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     
     private ModalWindow modalWindow;
     
-    private static int PAGESIZE_ENTRIES = 6;
-    private static int PAGESIZE_STEP = 5;
     public Model<Integer> pagesize = new Model<Integer>();
 
     private static final String MODULE_NAME = "mw";
-    private static List<String> scheduledStationAETs = new ArrayList<String>();
-    private static List<String> modalities = new ArrayList<String>();
     private Model<Boolean> showSearchModel = new Model<Boolean>(true);
     private boolean notSearched = true;
     private ViewPort viewport;
@@ -181,7 +177,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         .add(new TooltipBehaviour("mw.", "searchToggleImg", showSearchModel)))
         .add(new ImageSizeBehaviour()));
 
-        initModalitiesAndStationAETs();
         addQueryFields(filter, form);
         addQueryOptions(form);
         addNavigation(form);
@@ -240,9 +235,11 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         form.addInternalLabel("scheduledStationName");
         form.addInternalLabel("SPSStatus");
 
-        form.addDropDownChoice("modality", null, modalities, enabledModel, false).setModelObject("*");
-        form.addDropDownChoice("scheduledStationAET", null, viewport.getStationAetChoices(scheduledStationAETs), enabledModel, false).setModelObject("*");
-        form.addDropDownChoice("scheduledStationName", null, getStationNameChoices(), enabledModel, false).setModelObject("*");
+        form.addDropDownChoice("modality", null, WebCfgDelegate.getInstance().getModalityList(), 
+                enabledModel, false).setModelObject("*");
+        form.addDropDownChoice("scheduledStationAET", null, viewport.getStationAetChoices(
+                WebCfgDelegate.getInstance().getStationAETList()), enabledModel, false).setModelObject("*");
+        form.addDropDownChoice("scheduledStationName", null, WebCfgDelegate.getInstance().getStationNameList(), enabledModel, false).setModelObject("*");
         form.addDropDownChoice("SPSStatus", null, getSpsStatusChoices(), enabledModel, false).setModelObject("*");
 
         final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
@@ -326,7 +323,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("scheduledStationAET")).setModelObject("*");
                 ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("scheduledStationName")).setModelObject("*");
                 ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("SPSStatus")).setModelObject("*");
-                pagesize.setObject((PAGESIZE_ENTRIES / 2) * PAGESIZE_STEP);
+                pagesize.setObject(WebCfgDelegate.getInstance().getDefaultMWLPagesize());
                 notSearched = true;
                 BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
                 target.addComponent(navPanel);
@@ -408,13 +405,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         
         navPanel = form.createAjaxParent("navPanel");
         
-        List<Integer> pagesizes = new ArrayList<Integer>();
-        pagesizes.add(1);
-        for (int i = 1; i <= PAGESIZE_ENTRIES; i++)
-            pagesizes.add(i * PAGESIZE_STEP);
-        pagesize.setObject((PAGESIZE_ENTRIES / 2) * PAGESIZE_STEP);
-        
-        form.addDropDownChoice("pagesize", pagesize, pagesizes, new Model<Boolean>() {
+        pagesize.setObject(WebCfgDelegate.getInstance().getDefaultMWLPagesize());
+        form.addDropDownChoice("pagesize", pagesize, WebCfgDelegate.getInstance().getPagesizeList(), new Model<Boolean>() {
                     
             private static final long serialVersionUID = 1L;
 
@@ -429,6 +421,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target) {
+                if (!WebCfgDelegate.getInstance().isQueryAfterPagesizeChange())
+                    return;
                 ajaxRunning = ajaxDone = false;
 
                 target.addComponent(navPanel.get("hourglass-image"));
@@ -558,18 +552,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         );
     }
 
-    private void initModalitiesAndStationAETs() {
-        if (modalities.isEmpty() || scheduledStationAETs.isEmpty()) {
-            StudyListLocal dao = (StudyListLocal)
-                    JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-            modalities.clear();
-            modalities.add("*");
-            modalities.addAll(dao.selectDistinctModalities());
-            scheduledStationAETs.clear();
-            scheduledStationAETs.addAll(dao.selectDistinctSourceAETs());
-        }
-    }
-
     protected void queryMWLItems() {
         ModalityWorklist dao = lookupMwlDAO();
         viewport.getMWLItemModels().clear();
@@ -588,31 +570,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
     public static String getModuleName() {
         return MODULE_NAME;
-    }
-
-    protected List<String> getModalityChoices() {
-        ModalityWorklist dao = lookupMwlDAO();
-        List<String> modalities = new ArrayList<String>();
-        modalities.add("*");
-        modalities.addAll(dao.selectDistinctModalities());
-        return modalities;
-    }
-
-    protected List<String> getStationAETChoices() {
-        if (scheduledStationAETs == null) {
-            ModalityWorklist dao = lookupMwlDAO();
-            scheduledStationAETs = new ArrayList<String>();
-            scheduledStationAETs.addAll(dao.selectDistinctStationAETs());
-        }
-        return scheduledStationAETs;
-    }
-
-    protected List<String> getStationNameChoices() {
-        ModalityWorklist dao = lookupMwlDAO();
-        List<String> scheduledStationNames = new ArrayList<String>();
-        scheduledStationNames.add("*");
-        scheduledStationNames.addAll(dao.selectDistinctStationNames());
-        return scheduledStationNames;
     }
 
     protected List<String> getSpsStatusChoices() {
@@ -650,6 +607,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         };
         item.add((details).add(new DicomObjectPanel("dicomobject", mwlItemModel.getDataset(), false)));
 
+        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("mwEdit");
         valueContainer.add(new AjaxFallbackLink<Object>("toggledetails") {
 
             private static final long serialVersionUID = 1L;
@@ -667,10 +625,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         }.add(new Image("detailImg", ImageManager.IMAGE_COMMON_DICOM_DETAILS)
         .add(new ImageSizeBehaviour())
         .add(new TooltipBehaviour("mw.", "detailImg"))))
-        .add(new ModalWindowLink("edit", modalWindow,
-                    new Integer(new ResourceModel("mw.edit.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                    new Integer(new ResourceModel("mw.edit.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-            ) {
+        .add(new ModalWindowLink("edit", modalWindow, winSize[0], winSize[1]) {
                 private static final long serialVersionUID = 1L;
     
                 @Override

@@ -40,17 +40,12 @@ package org.dcm4chee.web.war.folder;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.wicket.Application;
 import org.apache.wicket.RequestCycle;
-import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.protocol.http.WebRequestCycle;
-import org.dcm4che2.data.UID;
-import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
+import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.slf4j.Logger;
@@ -61,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Aug 18, 2009
  */
-public class WADODelegate extends BaseMBeanDelegate {
+public class WADODelegate  {
 
     public static final int NOT_RENDERABLE = -1;
     public static final int IMAGE = 1;
@@ -70,58 +65,6 @@ public class WADODelegate extends BaseMBeanDelegate {
     public static final int ENCAPSULATED = 4;
     
     private static WADODelegate delegate;
-    private List<String> imageCuids = Arrays.asList( 
-            UID.CTImageStorage, UID.ComputedRadiographyImageStorage, 
-            UID.DigitalIntraoralXRayImageStorageForPresentation, 
-            UID.DigitalIntraoralXRayImageStorageForProcessing, 
-            UID.DigitalMammographyXRayImageStorageForPresentation, 
-            UID.DigitalMammographyXRayImageStorageForProcessing, 
-            UID.DigitalXRayImageStorageForPresentation, 
-            UID.DigitalXRayImageStorageForProcessing, 
-            UID.EnhancedCTImageStorage, 
-            UID.EnhancedMRImageStorage, 
-            UID.EnhancedXAImageStorage, 
-            UID.EnhancedXRFImageStorage, 
-            UID.HardcopyColorImageStorageSOPClassRetired, 
-            UID.HardcopyGrayscaleImageStorageSOPClassRetired, 
-            UID.MRImageStorage, 
-            UID.MultiframeGrayscaleByteSecondaryCaptureImageStorage, 
-            UID.MultiframeGrayscaleWordSecondaryCaptureImageStorage, 
-            UID.MultiframeSingleBitSecondaryCaptureImageStorage, 
-            UID.MultiframeTrueColorSecondaryCaptureImageStorage, 
-            UID.NuclearMedicineImageStorage, 
-            UID.NuclearMedicineImageStorageRetired, 
-            UID.OphthalmicPhotography16BitImageStorage, 
-            UID.OphthalmicPhotography8BitImageStorage, 
-            UID.PositronEmissionTomographyImageStorage, 
-            UID.RTImageStorage, 
-            UID.SecondaryCaptureImageStorage, 
-            UID.UltrasoundImageStorage, 
-            UID.UltrasoundImageStorageRetired, 
-            UID.UltrasoundMultiframeImageStorage, 
-            UID.UltrasoundMultiframeImageStorageRetired, 
-            UID.VLEndoscopicImageStorage, 
-            UID.VLImageStorageTrialRetired, 
-            UID.VLMicroscopicImageStorage, 
-            UID.VLMultiframeImageStorageTrialRetired, 
-            UID.VLPhotographicImageStorage, 
-            UID.VLSlideCoordinatesMicroscopicImageStorage, 
-            UID.XRayAngiographicBiPlaneImageStorageRetired, 
-            UID.XRayAngiographicImageStorage, 
-            UID.XRayRadiofluoroscopicImageStorage );
-    private List<String> videoCuids = Arrays.asList(
-            UID.VideoEndoscopicImageStorage,
-            UID.VideoMicroscopicImageStorage,
-            UID.VideoPhotographicImageStorage );
-    private List<String> textCuids = Arrays.asList(
-            UID.EnhancedSRStorage,
-            UID.KeyObjectSelectionDocumentStorage,
-            UID.MammographyCADSRStorage,
-            UID.ProcedureLogStorage,
-            UID.XRayRadiationDoseSRStorage);
-    private List<String> encapsCuids = Arrays.asList(
-            UID.EncapsulatedCDAStorage,
-            UID.EncapsulatedPDFStorage);
 
     private static Logger log = LoggerFactory.getLogger(WADODelegate.class);
 
@@ -130,7 +73,7 @@ public class WADODelegate extends BaseMBeanDelegate {
     }
 
     public String getWadoBaseUrl() {
-        String wadoBaseURL = ((WebApplication)Application.get()).getInitParameter("wadoBaseURL");
+        String wadoBaseURL = WebCfgDelegate.getInstance().getWadoBaseURL();
         if (wadoBaseURL==null) {
             HttpServletRequest request = ((WebRequestCycle)RequestCycle.get()).getWebRequest()
             .getHttpServletRequest();
@@ -146,16 +89,18 @@ public class WADODelegate extends BaseMBeanDelegate {
         return wadoBaseURL;
     }
 
-    public int getRenderType(String sopClassUid) {
-        // TODO SOPClassUIDs configurable!
-        if (imageCuids.contains(sopClassUid))
-            return IMAGE;
-        if (textCuids.contains(sopClassUid))
-            return TEXT;
-        if (videoCuids.contains(sopClassUid))
-            return VIDEO;
-        if (encapsCuids.contains(sopClassUid))
-            return ENCAPSULATED;
+    public int getRenderType(String cuid) {
+        int type = WebCfgDelegate.getInstance().checkCUID(cuid);
+        switch (type) {
+            case 0:
+                return IMAGE;
+            case 1:
+                return TEXT;
+            case 2:
+                return VIDEO;
+            case 3:
+                return ENCAPSULATED;
+        }
         return NOT_RENDERABLE;
     }
     
@@ -165,14 +110,10 @@ public class WADODelegate extends BaseMBeanDelegate {
             seriesModel.getSeriesInstanceUID()+"&objectUID="+instModel.getSOPInstanceUID();
     }
     
-    @Override
-    public String getInitParameterName() {
-        return "wadoServiceName";
-    }
-
     public static WADODelegate getInstance() {
         if (delegate==null)
             delegate = new WADODelegate();
         return delegate;
     }
+
 }
