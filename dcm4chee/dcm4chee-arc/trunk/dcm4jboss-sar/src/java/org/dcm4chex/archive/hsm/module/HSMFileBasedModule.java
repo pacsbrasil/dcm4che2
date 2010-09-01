@@ -119,6 +119,8 @@ public class HSMFileBasedModule extends AbstractHSMModule {
     }
     
     public void setStatusExtensions(String s) {
+        extensionStatusMap.clear();
+        noStatusFileStatus = null;
         StringTokenizer st = new StringTokenizer(s, " \t\r\n;");
         int pos;
         String token;
