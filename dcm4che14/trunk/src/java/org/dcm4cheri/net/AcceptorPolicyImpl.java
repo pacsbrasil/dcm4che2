@@ -470,23 +470,28 @@ class AcceptorPolicyImpl implements AcceptorPolicy {
     }
     
     private PresContext negotiatePresCtx(PresContext offered) {
-        int result = PresContext.ABSTRACT_SYNTAX_NOT_SUPPORTED;
-        String tsuid = offered.getTransferSyntaxUID();
-        
         PresContext accept = getPresContext(offered.getAbstractSyntaxUID());
-        if (accept != null) {
-            result = PresContext.TRANSFER_SYNTAXES_NOT_SUPPORTED;
-            for (Iterator it = accept.getTransferSyntaxUIDs().iterator();
-                    it.hasNext();) {
-                tsuid = (String)it.next();
-                if (offered.getTransferSyntaxUIDs().indexOf(tsuid) != -1) {
-                    result = PresContext.ACCEPTANCE;
-                    break;
-                }
-            }
+        if (accept == null)
+            return mkACPresCtx(offered,
+                    PresContext.ABSTRACT_SYNTAX_NOT_SUPPORTED,
+                    offered.getTransferSyntaxUID());
+
+        for (Iterator it = accept.getTransferSyntaxUIDs().iterator();
+                it.hasNext();) {
+            String tsuid = (String) it.next();
+            if (offered.getTransferSyntaxUIDs().indexOf(tsuid) != -1)
+                return mkACPresCtx(offered, PresContext.ACCEPTANCE, tsuid);
         }
+
+        return mkACPresCtx(offered,
+                PresContext.TRANSFER_SYNTAXES_NOT_SUPPORTED,
+                offered.getTransferSyntaxUID());
+    }
+
+    private PresContextImpl mkACPresCtx(PresContext offered, int result,
+            String tsuid) {
         return new PresContextImpl(0x021, offered.pcid(), result, null,
-        new String[]{ tsuid } );
+                new String[]{ tsuid } );
     }
     
     private void negotiateRoleSelection(AAssociateRQ rq, AAssociateAC ac) {
