@@ -121,7 +121,7 @@ public class AEListPanel extends Panel {
             
             @Override
             public void onConfirmation(AjaxRequestTarget target, AE ae) {
-                removeAE(ae.getPk());
+                removeAE(ae);
                 AEListPanel.this.setOutputMarkupId(true);
                 target.addComponent(AEListPanel.this);
             }
@@ -263,9 +263,10 @@ public class AEListPanel extends Panel {
         list.setModelObject(updatedList);      
     }
     
-    private void removeAE(long pk) {
-        ((AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME)).removeAET(pk);
+    private void removeAE(AE ae) {
+        AEDelegate.getInstance().delete(ae);
         List<AE> updatedList = list.getModelObject();
+        long pk = ae.getPk();
         for (int i = 0; i < updatedList.size(); i++) {
             if (updatedList.get(i).getPk() == pk) {
                 updatedList.remove(i);

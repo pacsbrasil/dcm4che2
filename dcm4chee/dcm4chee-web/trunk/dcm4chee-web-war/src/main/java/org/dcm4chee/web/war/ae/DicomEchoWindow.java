@@ -442,7 +442,7 @@ public class DicomEchoWindow extends ModalWindow {
         @Override
         protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
             try {
-//                AEMgtDelegate.getInstance().update(copyNetCfg(aeEcho, aeOri));
+                AEDelegate.getInstance().updateOrCreate(copyNetCfg(aeEcho, aeOri));
                 saveFailed = false;
                 saveBtn.setEnabled(false);
                 close(target);
