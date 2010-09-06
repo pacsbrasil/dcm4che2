@@ -450,6 +450,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getAEServiceName"
+      setMethod="setAEServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>aeServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=AE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getEchoServiceName"
       setMethod="setEchoServiceName">
       <description>Used internally. Do NOT modify.

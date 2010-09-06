@@ -79,6 +79,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private String webviewerName;
     private String webviewerBaseUrl;
     
+    private ObjectName aeServiceName;
     private ObjectName echoServiceName;
     private ObjectName moveScuServiceName;
     private ObjectName contentEditServiceName;
@@ -430,10 +431,16 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         this.mpps2mwlPresetStartDate = mpps2mwlPresetStartDate;
     }
 
+    public ObjectName getAEServiceName() {
+        return aeServiceName;
+    }
+    public void setAEServiceName(ObjectName name) {
+        this.aeServiceName = name;
+    }
+
     public ObjectName getEchoServiceName() {
         return echoServiceName;
     }
-
     public void setEchoServiceName(ObjectName echoServiceName) {
         this.echoServiceName = echoServiceName;
     }
