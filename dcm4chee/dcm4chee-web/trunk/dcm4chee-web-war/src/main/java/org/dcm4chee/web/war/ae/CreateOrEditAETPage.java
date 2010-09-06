@@ -64,7 +64,6 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.validators.UrlValidator1;
-import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.fs.FileSystemHomeLocal;
 import org.dcm4chee.web.war.ae.model.CipherModel;
 import org.dcm4chee.web.war.util.CyphersuiteUtils;
@@ -136,7 +135,7 @@ public class CreateOrEditAETPage extends WebPage {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
-                    ((AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME)).updateOrCreateAET(ae);
+                    AEDelegate.getInstance().updateOrCreate(ae);
                     window.close(target);
                 } catch (Exception e) {
                     resultMessage.setObject(e.getLocalizedMessage());
