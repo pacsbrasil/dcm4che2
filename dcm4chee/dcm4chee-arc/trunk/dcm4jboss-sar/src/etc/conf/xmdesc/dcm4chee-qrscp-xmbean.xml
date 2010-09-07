@@ -120,7 +120,9 @@ names:
 <li>JPEGLSLossy</li>
 <li>JPEG2000Lossy</li>
 <li>MPEG2</li>
-</ul>]]>
+</ul>
+<p>Not effective for Move Destinations listed in 
+<b>SendWithDefaultTransferSyntaxToAETitles</b>.]]>
       </description>
       <name>DoNotDecompressTransferSyntaxes</name>
       <type>java.lang.String</type>
