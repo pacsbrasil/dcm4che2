@@ -51,12 +51,13 @@ div.actions { text-align: right; }
 	table.search-table
 */
 table.search-table { border: thin; border-width: 1px; border-style: solid; border-color: #000000; width:100%; white-space: nowrap; background-color: #FFFFFF; }
-table.search-table th { background-color: #446666; color: white; width: 20px; height: 20px; text-align: left; }
-table.search-table tr { vertical-align: bottom; }
+table.search-table th.search-table { background-color: #446666; color: white; width: 20px; height: 20px; text-align: left; }
+table.search-table tr.search-table { vertical-align: bottom; }
 table.search-table tr.search-table-footer { height: 30px; }
-table.search-table tr.search-table-extended { background-color: #A0D8C4; }
+table.search-table tr.search-table-extended { background-color: #A0D8C4; border-style: none; }
 table.search-table span.toggle-text { vertical-align: middle; }
 table.search-table div.search-header { text-decoration: underline; }
+table.search-table .yui-skin-sam .yui-calcontainer.withtitle { width: 14em; }
 
 /* Rounded edges */
 /*
