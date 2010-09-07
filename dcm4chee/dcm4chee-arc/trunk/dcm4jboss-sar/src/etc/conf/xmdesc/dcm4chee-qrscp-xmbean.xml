@@ -102,6 +102,30 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getDoNotDecompressTransferSyntaxes"
+      setMethod="setDoNotDecompressTransferSyntaxes">
+      <description><![CDATA[List of Transfer Syntaxes for (lossy) Image
+Compression of stored Image or Video DICOM Composite objects, which shall not
+be decompressed for retrieval: If no Presentation Context for the transfer of
+such objects with compressed Transfer Syntax is accepted (C-MOVE) or offered
+(C-GET) by the retrieve destination, the retrieval of such objects will fail.
+<p>Use either the Transfer Syntaxes UID value or following defined symbolic
+names:
+<ul>
+<li>JPEGBaseline</li>
+<li>JPEGExtended</li>
+<li>JPEGLSLossy</li>
+<li>JPEG2000Lossy</li>
+<li>MPEG2</li>
+</ul>]]>
+      </description>
+      <name>DoNotDecompressTransferSyntaxes</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="MPEG2"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getSendWithDefaultTransferSyntaxToAETs"
       setMethod="setSendWithDefaultTransferSyntaxToAETs">
       <description><![CDATA[Move Destination AE titles to which objects are

@@ -214,6 +214,7 @@ public class MoveTask implements Runnable {
             rq.setAsyncOpsWindow(asf.newAsyncOpsWindow(maxOpsInvoked, 1));
         }
         retrieveInfo.addPresContext(rq,
+                service.notDecompressTsuidSet(),
                 service.isSendWithDefaultTransferSyntax(moveDest),
                 service.isOfferNoPixelData(moveDest),
                 service.isOfferNoPixelDataDeflate(moveDest));
@@ -247,29 +248,50 @@ public class MoveTask implements Runnable {
     private void removeInstancesOfUnsupportedStorageSOPClasses(Association a) {
         Iterator<String> it = retrieveInfo.getCUIDs();
         String cuid;
-        Set<String> iuids;
+        Collection<String> iuids;
         while (it.hasNext()) {
             cuid = it.next();
             if (a.listAcceptedPresContext(cuid).isEmpty()) {
                 iuids = retrieveInfo.removeInstancesOfClass(cuid);
                 it.remove(); // Use Iterator itself to remove the current
                                 // item to avoid ConcurrentModificationException
-                final String prompt = "No Presentation Context for "
+                noPresentationContext(cuid, iuids, "No Presentation Context for "
                         + QueryRetrieveScpService.uidDict.toString(cuid)
                         + " accepted by " + moveDest
                         + "\n\tCannot send " + iuids.size()
-                        + " instances of this class";
-                if (!service.isIgnorableSOPClass(cuid, moveDest)) {
-                    failedIUIDs.addAll(iuids);
-                    log.warn(prompt);
-                } else {
-                    completed += iuids.size();
-                    log.info(prompt);
+                        + " instances of this class");
+            } else {
+                Set<String> tsuids = new HashSet<String>(
+                        service.notDecompressTsuidSet());
+                tsuids.retainAll(retrieveInfo.getTransferSyntaxesOfClass(cuid));
+                for (String tsuid : tsuids) {
+                    if (a.getAcceptedPresContext(cuid, tsuid) == null) {
+                        iuids = retrieveInfo.removeLocalFilesOfClassWithTransferSyntax(cuid, tsuid);
+                        if (!iuids.isEmpty()) {
+                            noPresentationContext(cuid, iuids, "No Presentation Context for "
+                                    + QueryRetrieveScpService.uidDict.toString(cuid)
+                                    + " with " + QueryRetrieveScpService.uidDict.toString(tsuid)
+                                    + " accepted by " + moveDest
+                                    + "\n\tCannot send " + iuids.size()
+                                    + " instances of this class");
+                        }
+                    }
                 }
-                remainingIUIDs.removeAll(iuids);
-                remaining = remainingIUIDs.size();
             }
         }
+    }
+
+    private void noPresentationContext(String cuid, Collection<String> iuids,
+            final String prompt) {
+        if (!service.isIgnorableSOPClass(cuid, moveDest)) {
+            failedIUIDs.addAll(iuids);
+            log.warn(prompt);
+        } else {
+            completed += iuids.size();
+            log.info(prompt);
+        }
+        remainingIUIDs.removeAll(iuids);
+        remaining = remainingIUIDs.size();
     }
 
     public void run() {

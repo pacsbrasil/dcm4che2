@@ -134,7 +134,7 @@ class GetTask implements Runnable {
         Association a = assoc.getAssociation();
         Iterator<String> it = retrieveInfo.getCUIDs();
         String cuid;
-        Set<String> iuids;
+        Collection<String> iuids;
         while (it.hasNext()) {
             cuid = it.next();
             if (a.listAcceptedPresContext(cuid).isEmpty()) {
@@ -146,16 +146,38 @@ class GetTask implements Runnable {
                         + " offered by " + callingAET
                         + "\n\tCannot send " + iuids.size()
                         + " instances of this class";
-                if (!service.isIgnorableSOPClass(cuid, callingAET)) {
-                    failedIUIDs.addAll(iuids);
-                    log.warn(prompt);
-                } else {
-                    completed += iuids.size();
-                    log.info(prompt);
+                noPresentationContext(cuid, iuids, prompt);
+            } else {
+                Set<String> tsuids = new HashSet<String>(
+                        service.notDecompressTsuidSet());
+                tsuids.retainAll(retrieveInfo.getTransferSyntaxesOfClass(cuid));
+                for (String tsuid : tsuids) {
+                    if (a.getAcceptedPresContext(cuid, tsuid) == null) {
+                        iuids = retrieveInfo.removeLocalFilesOfClassWithTransferSyntax(cuid, tsuid);
+                        if (!iuids.isEmpty()) {
+                            noPresentationContext(cuid, iuids, "No Presentation Context for "
+                                    + QueryRetrieveScpService.uidDict.toString(cuid)
+                                    + " with " + QueryRetrieveScpService.uidDict.toString(tsuid)
+                                    + " accepted by " + callingAET
+                                    + "\n\tCannot send " + iuids.size()
+                                    + " instances of this class");
+                        }
+                    }
                 }
-                remainingIUIDs.removeAll(iuids);
             }
         }
+    }
+
+    private void noPresentationContext(String cuid, Collection<String> iuids,
+            final String prompt) {
+        if (!service.isIgnorableSOPClass(cuid, callingAET)) {
+            failedIUIDs.addAll(iuids);
+            log.warn(prompt);
+        } else {
+            completed += iuids.size();
+            log.info(prompt);
+        }
+        remainingIUIDs.removeAll(iuids);
     }
 
     public void run() {

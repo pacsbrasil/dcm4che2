@@ -162,6 +162,7 @@ final class RetrieveInfo {
     }
     
     public void addPresContext(AAssociateRQ rq,
+            Set<String> doNotDecompressTsuids,
             boolean sendWithDefaultTransferSyntax,
             boolean offerNoPixelData,
             boolean offerNoPixelDataDeflate) {
@@ -180,10 +181,12 @@ final class RetrieveInfo {
                         UIDs.ImplicitVRLittleEndian)); 
                 continue;
             }
-            rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
-                    IVR_LE_TS));
-            rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
-                    EVR_LE_TS));
+            if (!doNotDecompressTsuids.containsAll(iuidsAndTsuids.tsuids)) {
+                rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
+                        IVR_LE_TS));
+                rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
+                        EVR_LE_TS));
+            }
             if (offerNoPixelDataDeflate) {
                 rq.addPresContext(asf.newPresContext(rq.nextPCID(), cuid, 
                         NO_PIXEL_DEFL_TS));
@@ -205,7 +208,12 @@ final class RetrieveInfo {
     public Iterator<String> getCUIDs() {
         return iuidsAndTsuidsByCuid.keySet().iterator();
     }
-    
+
+    public Set<String> getTransferSyntaxesOfClass(String cuid) {
+        IuidsAndTsuids iuidsAndTsuids = iuidsAndTsuidsByCuid.get(cuid);
+        return iuidsAndTsuids.tsuids;
+    }
+
     public Set<String> removeInstancesOfClass(String cuid) {
         IuidsAndTsuids iuidsAndTsuids = iuidsAndTsuidsByCuid.get(cuid);
         Iterator<String> it = iuidsAndTsuids.iuids.iterator();
@@ -217,6 +225,27 @@ final class RetrieveInfo {
             removeIuid(iuidsByExternalAET, iuid);
         }
         return iuidsAndTsuids.iuids;
+    }
+
+
+    public Collection<String> removeLocalFilesOfClassWithTransferSyntax(
+            String cuid, String tsuid) {
+        IuidsAndTsuids iuidsAndTsuids = iuidsAndTsuidsByCuid.get(cuid);
+        Collection<String> iuids = 
+            new ArrayList<String>(iuidsAndTsuids.iuids.size());
+        for (String iuid : iuidsAndTsuids.iuids) {
+            List<FileInfo> files = localFilesByIuid.get(iuid);
+            for (Iterator<FileInfo> it = files.iterator(); it.hasNext();) {
+                FileInfo fileInfo = (FileInfo) it.next();
+                if (fileInfo.tsUID.equals(tsuid))
+                    it.remove();
+            }
+            if (files.isEmpty()) {
+                localFilesByIuid.remove(iuid);
+                iuids.add(iuid);
+            }
+        }
+        return iuids;
     }
 
     private void removeIuid(Map<String, Set<String>> iuidsByAET, String iuid) {

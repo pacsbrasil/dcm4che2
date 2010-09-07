@@ -158,6 +158,10 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private Map ignorableSOPClasses = new LinkedHashMap();
 
+    private Map<String, String> notDecompressTsuidMap = new LinkedHashMap<String, String>();
+
+    private Set<String> notDecompressTsuidSet;
+
     private LinkedHashMap requestStgCmtFromAETs = new LinkedHashMap();
 
     private ObjectName stgCmtScuScpName;
@@ -733,6 +737,20 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setRecordStudyAccessTime(boolean updateAccessTime) {
         this.recordStudyAccessTime = updateAccessTime;
+    }
+
+    public final String getDoNotDecompressTransferSyntaxes() {
+        return toString(notDecompressTsuidMap);
+    }
+
+    public final void setDoNotDecompressTransferSyntaxes(String uids) {
+        this.notDecompressTsuidMap = parseUIDs(uids);
+        this.notDecompressTsuidSet = new HashSet<String>(
+                notDecompressTsuidMap.values());
+    }
+
+    Set<String> notDecompressTsuidSet() {
+        return notDecompressTsuidSet;
     }
 
     public final String getSendNoPixelDataToAETs() {
