@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+<!DOCTYPE mbean PUBLIC 
+   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
+   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
    <description>DICOM Query/Retrieve SCP. Provides the DICOM Query/Retrieve SCP.  Note that the value of the &lt;b&gt;MaxConcurrentCodec&lt;/b&gt; attribute in the Compression Service also effects the on-the-fly
@@ -19,6 +21,7 @@ QueryRetrieveScp service.</description>
    </constructor>
 
    <!-- Attributes -->
+   &defaultAttributes;
    <attribute access="read-write"
       getMethod="getCalledAETs"
       setMethod="setCalledAETs">
@@ -674,6 +677,17 @@ names:
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getRetrieveRspStatusForNoMatchingInstanceToRetrieve"
+      setMethod="setRetrieveRspStatusForNoMatchingInstanceToRetrieve">
+      <description>Retrieve response status when there is no matching instance to retrieve for one (or more) requested Patient/Study/Series/Image. Default is 0 = SUCCESS.
+      </description>
+      <name>RetrieveRspStatusForNoMatchingInstanceToRetrieve</name>
+      <type>int</type>
+      <descriptors>
+         <value value="0"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isForwardAsMoveOriginator"
       setMethod="setForwardAsMoveOriginator">
       <description>Use the calling AE title of the requesting 
@@ -1154,19 +1168,6 @@ names:
       <name>PixQueryServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getRetrieveRspStatusForNoMatchingInstanceToRetrieve"
-      setMethod="setRetrieveRspStatusForNoMatchingInstanceToRetrieve">
-      <description>Retrieve response status when there is no matching instance to retrieve for one (or more) requested Patient/Study/Series/Image. Default is 0 = SUCCESS.
-      </description>
-      <name>RetrieveRspStatusForNoMatchingInstanceToRetrieve</name>
-      <type>int</type>
-      <descriptors>
-         <value value="0"/>
-      </descriptors>
-   </attribute>
-
-   &defaultAttributes;
 
    <!-- Operations -->
    &defaultOperations;
