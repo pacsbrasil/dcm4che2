@@ -230,7 +230,8 @@ public class UPSQueryCmd extends BaseDSQueryCmd {
     private void addNestedCodeMatch(int tag1, int tag2, String[] parentRelation,
             String[] tables, String[] relations) {
         Dataset item = keys.getItem(tag1);
-        addNestedCodeMatch(item.getItem(tag2), parentRelation, tables, relations);
+        if (item != null)
+            addNestedCodeMatch(item.getItem(tag2), parentRelation, tables, relations);
     }
 
     private void addNestedCodeMatch(Dataset item, String[] parentRelation,
