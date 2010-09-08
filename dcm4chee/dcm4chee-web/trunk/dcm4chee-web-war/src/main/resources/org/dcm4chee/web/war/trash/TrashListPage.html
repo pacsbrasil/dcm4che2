@@ -15,7 +15,7 @@
 			<thead>
 				<tr>
 					<th class="lo"></th>
-					<th>
+					<th class="search-table">
 						<wicket:message key="trash.search.title" />
 					</th>
 					<th class="search-table" colspan="6"/>
@@ -27,7 +27,7 @@
 					<th class="ro"></th>
 				</tr>
 			</thead>
-			<tr wicket:id="searchLabels">
+			<tr wicket:id="searchLabels" class="search-table">
 				<td></td>
 				<td>
 					<div wicket:id="patientName.label" class="search-header">Patient Name</div>
@@ -44,7 +44,7 @@
 				<td colspan="3"></td>
 				<td></td>
 			</tr>
-			<tr wicket:id="searchFields">
+			<tr wicket:id="searchFields" class="search-table">
 				<td></td>
 				<td>
 					<input style="vertical-align: bottom" wicket:id="patientName" id="patientName" type="text" />
