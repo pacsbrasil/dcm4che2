@@ -100,6 +100,7 @@ import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
+import org.dcm4chee.web.common.markup.PatientNameField;
 import org.dcm4chee.web.common.markup.PopupLink;
 import org.dcm4chee.web.common.markup.SimpleDateTimeField;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
@@ -262,7 +263,8 @@ public class StudyListPage extends Panel {
         
         searchTableComponents.add(form.createAjaxParent("searchFields"));
         
-        form.addTextField("patientName", enabledModel, false);
+        form.addPatientNameField("patientName", new PropertyModel<String>(filter, "patientName"),
+                    WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModel, true);
         form.addTextField("patientID", enabledModel, true);
         form.addTextField("issuerOfPatientID", enabledModel, true);
         SimpleDateTimeField dtf = form.addDateTimeField("studyDateMin", new PropertyModel<Date>(filter, "studyDateMin"), 

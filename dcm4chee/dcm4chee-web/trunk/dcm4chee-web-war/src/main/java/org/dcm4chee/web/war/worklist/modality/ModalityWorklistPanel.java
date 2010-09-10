@@ -67,6 +67,7 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.util.time.Duration;
@@ -81,6 +82,7 @@ import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
+import org.dcm4chee.web.common.markup.PatientNameField;
 import org.dcm4chee.web.common.markup.SimpleDateTimeField;
 import org.dcm4chee.web.common.validators.UIDValidator;
 import org.dcm4chee.web.dao.util.QueryUtil;
@@ -123,6 +125,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
     private WebMarkupContainer listPanel;
     private WebMarkupContainer navPanel;
+    private PatientNameField pnField;
 
     protected boolean ajaxRunning = false;
     protected boolean ajaxDone = false;
@@ -219,7 +222,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         
         searchTableComponents.add(form.createAjaxParent("searchFields"));
         
-        form.addTextField("patientName", enabledModel, false);
+        pnField = form.addPatientNameField("patientName", new PropertyModel<String>(filter, "patientName"),
+                WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModel, false);
+        pnField.setOutputMarkupId(true);
         form.addTextField("patientID", enabledModel, true);
         form.addTextField("issuerOfPatientID", enabledModel, true);
         SimpleDateTimeField dtf = form.addDateTimeField("startDateMin", null, enabledModel, false, true);
@@ -326,8 +331,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 pagesize.setObject(WebCfgDelegate.getInstance().getDefaultMWLPagesize());
                 notSearched = true;
                 BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
-                target.addComponent(navPanel);
-                target.addComponent(listPanel);
+                
             }
         };
         resetBtn.setDefaultFormProcessing(false);
@@ -373,8 +377,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                                     }).start();
                                 } else {
                                     this.stop();
-                                    target.addComponent(navPanel);
-                                    target.addComponent(listPanel);
+                                    addAfterQueryComponents(target);
                                 }
                                 target.addComponent(hourglassImage);
                             }
@@ -451,8 +454,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                                     }).start();
                                 } else {
                                     this.stop();
-                                    target.addComponent(navPanel);
-                                    target.addComponent(listPanel);
+                                    addAfterQueryComponents(target);
                                 }
                                 target.addComponent(hourglassImage);
                             }
@@ -474,8 +476,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             public void onClick(AjaxRequestTarget target) {
                 viewport.setOffset(Math.max(0, viewport.getOffset() - pagesize.getObject()));
                 queryMWLItems();
-                target.addComponent(navPanel);
-                target.addComponent(listPanel);
+                addAfterQueryComponents(target);
             }
             
             @Override
@@ -496,8 +497,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             public void onClick(AjaxRequestTarget target) {
                 viewport.setOffset(viewport.getOffset() + pagesize.getObject());
                 queryMWLItems();
-                target.addComponent(navPanel);
-                target.addComponent(listPanel);
+                addAfterQueryComponents(target);
             }
 
             @Override
@@ -617,8 +617,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 mwlItemModel.setDetails(!mwlItemModel.isDetails());
                 form.setOutputMarkupId(true);
                 if (target != null) {
-                    target.addComponent(navPanel);
-                    target.addComponent(listPanel);
+                    addAfterQueryComponents(target);
                 }
             }
 
@@ -655,5 +654,11 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         }.add(new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT)
         .add(new ImageSizeBehaviour())
         .add(new TooltipBehaviour("mw.", "editImg"))));
+    }
+
+    private void addAfterQueryComponents(final AjaxRequestTarget target) {
+        target.addComponent(pnField);
+        target.addComponent(navPanel);
+        target.addComponent(listPanel);
     }
 }

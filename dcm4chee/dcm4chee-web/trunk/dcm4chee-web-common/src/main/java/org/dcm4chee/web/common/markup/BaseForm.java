@@ -167,6 +167,22 @@ public class BaseForm extends Form<Object> {
         return tf;
     }
 
+    public PatientNameField addPatientNameField(String id, IModel<String> model, boolean useFnGn, final IModel<Boolean> enabledModel, boolean addLabel) {
+        PatientNameField tf = new PatientNameField(id, model, useFnGn) {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean isEnabled() {
+                return enabledModel == null ? true : enabledModel.getObject();
+            }
+        };
+        if (addLabel) 
+            addInternalLabel(id);
+        addComponent(tf);
+        return tf;
+    }
+
     public SimpleDateTimeField addDateTimeField(String id, IModel<Date> model, final IModel<Boolean> enabledModel, final boolean max, boolean addLabel) {
         SimpleDateTimeField dtf = getSimpleDateTimeField(id, model, enabledModel, max);
         if (addLabel) 

@@ -113,6 +113,8 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private String mpps2mwlPresetModality;
     private String mpps2mwlPresetStartDate;
     
+    private boolean useFamilyAndGivenNameQueryFields;
+    
     private static final String NONE = "NONE";
     private static final String NEWLINE = System.getProperty("line.separator", "\n");
     
@@ -380,6 +382,14 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public void setQueryAfterPagesizeChange(boolean queryAfterPagesizeChange) {
         this.queryAfterPagesizeChange = queryAfterPagesizeChange;
+    }
+
+    public boolean isUseFamilyAndGivenNameQueryFields() {
+        return useFamilyAndGivenNameQueryFields;
+    }
+
+    public void setUseFamilyAndGivenNameQueryFields(boolean b) {
+        this.useFamilyAndGivenNameQueryFields = b;
     }
 
     private String listAsString(List<String> list) {

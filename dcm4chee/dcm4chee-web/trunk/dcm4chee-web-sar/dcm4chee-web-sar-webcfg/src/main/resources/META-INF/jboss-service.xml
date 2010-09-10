@@ -394,6 +394,20 @@
    </attribute>
 
    <attribute access="read-write"
+      getMethod="isUseFamilyAndGivenNameQueryFields"
+      setMethod="setUseFamilyAndGivenNameQueryFields">
+      <description><![CDATA[Enable query of Patient Name with separate family and given name fields.<br/>
+      		If disabled the query for patient name components is 
+      		'&lt;familyname&gt;^&lt;givenname&lt;^&lt;middlename&lt;^&lt;prefix&lt;^&lt;suffix&lt;^&lt;degree&lt;.
+      ]]></description>
+      <name>useFamilyAndGivenNameQueryFields</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
       getMethod="getMpps2mwlPresetPatientname"
       setMethod="setMpps2mwlPresetPatientname">
       <description><![CDATA[Preset Value of Patient name searchfiled in MPPS to MWL Link dialog.<br/>

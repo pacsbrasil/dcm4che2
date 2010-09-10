@@ -68,6 +68,7 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.util.time.Duration;
@@ -83,6 +84,7 @@ import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
@@ -113,8 +115,6 @@ public class TrashListPage extends Panel {
 
     private static final ResourceReference CSS = new CompressedResourceReference(TrashListPage.class, "trash-style.css");
 
-    private static int PAGESIZE_ENTRIES = 6;
-    private static int PAGESIZE_STEP = 5;
     private Model<Integer> pagesize = new Model<Integer>();
     
     private static final String MODULE_NAME = "trash";
@@ -211,7 +211,8 @@ public class TrashListPage extends Panel {
         
         searchTableComponents.add(form.createAjaxParent("searchFields"));
         
-        form.addTextField("patientName", enabledModel, false);
+        form.addPatientNameField("patientName", new PropertyModel<String>(filter, "patientName"),
+                WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModel, false);
         form.addTextField("patientID", enabledModel, true);
         form.addTextField("issuerOfPatientID", enabledModel, true);
         form.addTextField("accessionNumber", enabledModel, false);
@@ -237,7 +238,7 @@ public class TrashListPage extends Panel {
                 form.clearInput();
                 viewport.clear();
                 ((DropDownChoice) ((WebMarkupContainer) form.get("searchFields")).get("sourceAET")).setModelObject("*");
-                pagesize.setObject((PAGESIZE_ENTRIES / 2) * PAGESIZE_STEP);
+                pagesize.setObject(WebCfgDelegate.getInstance().getDefaultFolderPagesize());
                 notSearched = true;
                 form.setOutputMarkupId(true);
                 target.addComponent(form);
@@ -317,13 +318,8 @@ public class TrashListPage extends Panel {
         
         form.clearParent();
 
-        List<Integer> pagesizes = new ArrayList<Integer>();
-        pagesizes.add(1);
-        for (int i = 1; i <= PAGESIZE_ENTRIES; i++)
-            pagesizes.add(i * PAGESIZE_STEP);
-        pagesize.setObject((PAGESIZE_ENTRIES / 2) * PAGESIZE_STEP);
-        
-        form.addDropDownChoice("pagesize", pagesize, pagesizes, new Model<Boolean>() {
+        pagesize.setObject(WebCfgDelegate.getInstance().getDefaultFolderPagesize());
+        form.addDropDownChoice("pagesize", pagesize, WebCfgDelegate.getInstance().getPagesizeList(), new Model<Boolean>() {
                     
             private static final long serialVersionUID = 1L;
 
