@@ -656,6 +656,7 @@ Notifications for one Series.]]>
            MRImageStorage
            EnhancedMRImageStorage
            UltrasoundImageStorage
+           EnhancedUSVolumeStorage
            SecondaryCaptureImageStorage
            MultiframeSingleBitSecondaryCaptureImageStorage
            MultiframeGrayscaleByteSecondaryCaptureImageStorage
@@ -793,6 +794,9 @@ Notifications for one Series.]]>
            HemodynamicWaveformStorage
            CardiacElectrophysiologyWaveformStorage
            BasicVoiceAudioWaveformStorage
+           ArterialPulseWaveformStorage
+           RespiratoryWaveformStorage
+           GeneralAudioWaveform
            "/>
       </descriptors>
    </attribute>
