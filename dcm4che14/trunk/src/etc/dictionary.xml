@@ -239,6 +239,9 @@
   <element tag="(0008,212A)" name="Number of Views in Stage" vr="IS" vm="1" key="NumberOfViewsInStage" />
   <element tag="(0008,2130)" name="Event Elapsed Time(s)" vr="DS" vm="1-n" key="EventElapsedTime" />
   <element tag="(0008,2132)" name="Event Timer Name(s)" vr="LO" vm="1-n" key="EventTimerName" />
+  <element tag="(0008,2133)" name="Event Timer Sequence" vr="SQ" vm="1" key="EventTimerSeq" />
+  <element tag="(0008,2134)" name="Event Time Offset" vr="FD" vm="1" key="EventTimeOffset" />
+  <element tag="(0008,2135)" name="Event Code Sequence" vr="SQ" vm="1" key="EventCodeSeq" />
   <element tag="(0008,2142)" name="Start Trim" vr="IS" vm="1" key="StartTrim" />
   <element tag="(0008,2143)" name="Stop Trim" vr="IS" vm="1" key="StopTrim" />
   <element tag="(0008,2144)" name="Recommended Display Frame Rate" vr="IS" vm="1" key="RecommendedDisplayFrameRate" />
@@ -896,6 +899,19 @@
   <element tag="(0018,9474)" name="C-arm Positioner Tabletop Relationship" vr="CS" vm="1" key="CArmPositionerTabletopRelationship" />
   <element tag="(0018,9476)" name="X-Ray Geometry Sequence" vr="SQ" vm="1" key="XRayGeometrySeq" />
   <element tag="(0018,9477)" name="Irradiation Event Identification Sequence" vr="SQ" vm="1" key="IrradiationEventIdentificationSeq" />
+  <element tag="(0018,9801)" name="Depth(s) of Focus" vr="FD" vm="1-n" key="DepthOfFocus" />
+  <element tag="(0018,9803)" name="Excluded Intervals Sequence" vr="SQ" vm="1" key="ExcludedIntervalsSeq" />
+  <element tag="(0018,9804)" name="Exclusion Start Datetime" vr="DT" vm="1" key="ExclusionStartDatetime" />
+  <element tag="(0018,9805)" name="Exclusion Duration" vr="FD" vm="1" key="ExclusionDuration" />
+  <element tag="(0018,9806)" name="US Image Description Sequence" vr="SQ" vm="1" key="USImageDescriptionSeq" />
+  <element tag="(0018,9807)" name="Image Data Type Sequence" vr="SQ" vm="1" key="ImageDataTypeSeq" />
+  <element tag="(0018,9808)" name="Data Type" vr="CS" vm="1" key="DataType" />
+  <element tag="(0018,9809)" name="Transducer Scan Pattern Code Sequence" vr="SQ" vm="1" key="TransducerScanPatternCodeSeq" />
+  <element tag="(0018,980B)" name="Aliased Data Type" vr="CS" vm="1" key="AliasedDataType" />
+  <element tag="(0018,980C)" name="Position Measuring Device Used" vr="CS" vm="1" key="PositionMeasuringDeviceUsed" />
+  <element tag="(0018,980D)" name="Transducer Geometry Code Sequence" vr="SQ" vm="1" key="TransducerGeometryCodeSeq" />
+  <element tag="(0018,980E)" name="Transducer Beam Steering Code Sequence" vr="SQ" vm="1" key="TransducerBeamSteeringCodeSeq" />
+  <element tag="(0018,980F)" name="Transducer Application Code Sequence" vr="SQ" vm="1" key="TransducerApplicationCodeSeq" />
   <element tag="(0018,A001)" name="Contributing Equipment Sequence" vr="SQ" vm="1" key="ContributingEquipmentSeq" />
   <element tag="(0018,A002)" name="Contribution DateTime" vr="DT" vm="1" key="ContributionDateTime" />
   <element tag="(0018,A003)" name="Contribution Description" vr="ST" vm="1" key="ContributionDescription" />
@@ -977,6 +993,20 @@
   <element tag="(0020,9222)" name="Dimension Index Sequence" vr="SQ" vm="1" key="DimensionIndexSeq" />
   <element tag="(0020,9228)" name="Concatenation Frame Offset Number" vr="UL" vm="1" key="ConcatenationFrameOffsetNumber" />
   <element tag="(0020,9238)" name="Functional Group Private Creator" vr="LO" vm="1" key="FunctionalGroupPrivateCreator" />
+  <element tag="(0020,9301)" name="Image Position (Volume)" vr="FD" vm="3" key="ImagePositionVolume" />
+  <element tag="(0020,9302)" name="Image Orientation (Volume)" vr="FD" vm="6" key="ImageOrientationVolume" />
+  <element tag="(0020,9307)" name="Ultrasound Acquisition Geometry" vr="CS" vm="1" key="UltrasoundAcquisitionGeometry" />
+  <element tag="(0020,9308)" name="Apex Position" vr="FD" vm="3" key="ApexPosition" />
+  <element tag="(0020,9309)" name="Volume to Transducer Mapping Matrix" vr="FD" vm="16" key="VolumeToTransducerMappingMatrix" />
+  <element tag="(0020,930A)" name="Volume to Table Mapping Matrix" vr="FD" vm="16" key="VolumeToTableMappingMatrix" />
+  <element tag="(0020,930C)" name="Patient Frame of Reference Source" vr="CS" vm="1" key="PatientFrameOfReferenceSource" />
+  <element tag="(0020,930D)" name="Temporal Position Time Offset" vr="FD" vm="1" key="TemporalPositionTimeOffset" />
+  <element tag="(0020,930E)" name="Plane Position (Volume) Sequence" vr="SQ" vm="1" key="PlanePositionVolumeSeq" />
+  <element tag="(0020,930F)" name="Plane Orientation (Volume) Sequence" vr="SQ" vm="1" key="PlaneOrientationVolumeSeq" />
+  <element tag="(0020,9310)" name="Temporal Position Sequence" vr="SQ" vm="1" key="TemporalPositionSeq" />
+  <element tag="(0020,9311)" name="Dimension Organization Type" vr="CS" vm="1" key="DimensionOrganizationType" />
+  <element tag="(0020,9312)" name="Volume Frame of Reference UID" vr="UI" vm="1" key="VolumeFrameOfReferenceUID" />
+  <element tag="(0020,9313)" name="Table Frame of Reference UID" vr="UI" vm="1" key="TableFrameOfReferenceUID" />
   <element tag="(0020,9421)" name="Dimension Description Label" vr="LO" vm="1" key="DimensionDescriptionLabel" /> 
   <element tag="(0020,9450)" name="Patient Orientation in Frame Sequence" vr="SQ" vm="1" key="PatientOrientationInFrameSeq"  />
   <element tag="(0020,9453)" name="Frame Label" vr="LO" vm="1" key="FrameLabel" />
@@ -1062,16 +1092,32 @@
   <element tag="(0028,1101)" name="Red Palette Color Lookup Table Descriptor" vr="SS,US" vm="3" key="RedPaletteColorLUTDescriptor" />
   <element tag="(0028,1102)" name="Green Palette Color Lookup Table Descriptor" vr="SS,US" vm="3" key="GreenPaletteColorLUTDescriptor" />
   <element tag="(0028,1103)" name="Blue Palette Color Lookup Table Descriptor" vr="SS,US" vm="3" key="BluePaletteColorLUTDescriptor" />
+  <element tag="(0028,1104)" name="Alpha Palette Color Lookup Table Descriptor" vr="US" vm="3" key="AlphaPaletteColorLUTDescriptor" />
   <element tag="(0028,1199)" name="Palette Color Lookup Table UID" vr="UI" vm="1" key="PaletteColorLUTUID" />
   <element tag="(0028,1201)" name="Red Palette Color Lookup Table Data" vr="OW" vm="1" key="RedPaletteColorLUTData" />
   <element tag="(0028,1202)" name="Green Palette Color Lookup Table Data" vr="OW" vm="1" key="GreenPaletteColorLUTData" />
   <element tag="(0028,1203)" name="Blue Palette Color Lookup Table Data" vr="OW" vm="1" key="BluePaletteColorLUTData" />
+  <element tag="(0028,1204)" name="Alpha Palette Color Lookup Table Data" vr="OW" vm="1" key="AlphaPaletteColorLUTData" />
   <element tag="(0028,1221)" name="Segmented Red Palette Color Lookup Table Data" vr="OW" vm="1" key="SegmentedRedPaletteColorLUTData" />
   <element tag="(0028,1222)" name="Segmented Green Palette Color Lookup Table Data" vr="OW" vm="1" key="SegmentedGreenPaletteColorLUTData" />
   <element tag="(0028,1223)" name="Segmented Blue Palette Color Lookup Table Data" vr="OW" vm="1" key="SegmentedBluePaletteColorLUTData" />
   <element tag="(0028,1300)" name="Implant Present" vr="CS" vm="1" key="ImplantPresent" />
   <element tag="(0028,1350)" name="Partial View" vr="CS" vm="1" key="PartialView" />
   <element tag="(0028,1351)" name="Partial View Description" vr="ST" vm="1" key="PartialViewDescription" />
+  <element tag="(0028,1401)" name="Data Frame Assignment Sequence" vr="SQ" vm="1" key="DataFrameAssignmentSeq" />
+  <element tag="(0028,1402)" name="Data Path Assignment" vr="CS" vm="1" key="DataPathAssignment" />
+  <element tag="(0028,1403)" name="Bits Mapped to Color Lookup Table" vr="US" vm="1" key="BitsMappedToColorLUT" />
+  <element tag="(0028,1404)" name="Blending LUT 1 Sequence" vr="SQ" vm="1" key="BlendingLUT1Seq" />
+  <element tag="(0028,1405)" name="Blending LUT 1 Transfer Function" vr="CS" vm="1" key="BlendingLUT1TransferFunction" />
+  <element tag="(0028,1406)" name="Blending Weight Constant" vr="FD" vm="1" key="BlendingWeightConstant" />
+  <element tag="(0028,1407)" name="Blending Lookup Table Descriptor" vr="US" vm="3" key="BlendingLUTDescriptor" />
+  <element tag="(0028,1408)" name="Blending Lookup Table Data" vr="OW" vm="1" key="BlendingLUTData" />
+  <element tag="(0028,140B)" name="Enhanced Palette Color Lookup Table Sequence" vr="SQ" vm="1" key="EnhancedPaletteColorLUTSeq" />
+  <element tag="(0028,140C)" name="Blending LUT 2 Sequence" vr="SQ" vm="1" key="BlendingLUT2Seq" />
+  <element tag="(0028,140D)" name="Blending LUT 2 Transfer Function" vr="CS" vm="1" key="BlendingLUT2TransferFunction" />
+  <element tag="(0028,140E)" name="Data Path ID" vr="CS" vm="1" key="DataPathID" />
+  <element tag="(0028,140F)" name="RGB LUT Transfer Function" vr="CS" vm="1" key="RGBLUTTransferFunction" />
+  <element tag="(0028,1410)" name="Alpha LUT Transfer Function" vr="CS" vm="1" key="AlphaLUTTransferFunction" />
   <element tag="(0028,2000)" name="ICC Profile" vr="OB" vm="1" key="ICCProfile" />  
   <element tag="(0028,2110)" name="Lossy Image Compression" vr="CS" vm="1" key="LossyImageCompression" />
   <element tag="(0028,2112)" name="Lossy Image Compression Ratio" vr="DS" vm="1-n" key="LossyImageCompressionRatio" />
@@ -1243,6 +1289,7 @@
   <element tag="(0040,0254)" name="Performed Procedure Step Description" vr="LO" vm="1" key="PPSDescription" />
   <element tag="(0040,0255)" name="Performed Procedure Type Description" vr="LO" vm="1" key="PerformedProcedureTypeDescription" />
   <element tag="(0040,0260)" name="Performed Protocol Code Sequence" vr="SQ" vm="1" key="PerformedProtocolCodeSeq" />
+  <element tag="(0040,0261)" name="Performed Protocol Type" vr="CS" vm="1" key="PerformedProtocolType" />
   <element tag="(0040,0270)" name="Scheduled Step Attributes Sequence" vr="SQ" vm="1" key="ScheduledStepAttributesSeq" />
   <element tag="(0040,0275)" name="Request Attributes Sequence" vr="SQ" vm="1" key="RequestAttributesSeq" />
   <element tag="(0040,0280)" name="Comments on the Performed Procedure Steps" vr="ST" vm="1" key="PPSComments" />
@@ -2619,6 +2666,7 @@
   <uid value="1.2.840.10008.5.1.4.1.1.5" name="Nuclear Medicine Image Storage (Retired)" key="NuclearMedicineImageStorageRetired" retired="true" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.6" name="Ultrasound Image Storage (Retired)" key="UltrasoundImageStorageRetired" retired="true" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.6.1" name="Ultrasound Image Storage" key="UltrasoundImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.6.2" name="Enhanced US Volume Storage" key="EnhancedUSVolumeStorage" dirrecord="IMAGE" /> 
   <uid value="1.2.840.10008.5.1.4.1.1.7" name="Secondary Capture Image Storage" key="SecondaryCaptureImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.7.1" name="Multi-frame Single Bit Secondary Capture Image Storage" key="MultiframeSingleBitSecondaryCaptureImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.7.2" name="Multi-frame Grayscale Byte Secondary Capture Image Storage" key="MultiframeGrayscaleByteSecondaryCaptureImageStorage" dirrecord="IMAGE" />
@@ -2632,6 +2680,9 @@
   <uid value="1.2.840.10008.5.1.4.1.1.9.2.1" name="Hemodynamic Waveform Storage" key="HemodynamicWaveformStorage" dirrecord="WAVEFORM" />
   <uid value="1.2.840.10008.5.1.4.1.1.9.3.1" name="Cardiac Electrophysiology Waveform Storage" key="CardiacElectrophysiologyWaveformStorage" dirrecord="WAVEFORM" />
   <uid value="1.2.840.10008.5.1.4.1.1.9.4.1" name="Basic Voice Audio Waveform Storage" key="BasicVoiceAudioWaveformStorage" dirrecord="WAVEFORM" />
+  <uid value="1.2.840.10008.5.1.4.1.1.9.5.1" name="Arterial Pulse Waveform Storage" key="ArterialPulseWaveformStorage" dirrecord="WAVEFORM" />
+  <uid value="1.2.840.10008.5.1.4.1.1.9.6.1" name="Respiratory Waveform Storage" key="RespiratoryWaveformStorage" dirrecord="WAVEFORM" />
+  <uid value="1.2.840.10008.5.1.4.1.1.9.4.2" name="General Audio Waveform" key="GeneralAudioWaveform" dirrecord="WAVEFORM" />
   <uid value="1.2.840.10008.5.1.4.1.1.10" name="Standalone Modality LUT Storage" key="StandaloneModalityLUTStorage" dirrecord="MODALITY LUT" />
   <uid value="1.2.840.10008.5.1.4.1.1.11" name="Standalone VOI LUT Storage" key="StandaloneVOILUTStorage" dirrecord="VOILUT" />
   <uid value="1.2.840.10008.5.1.4.1.1.11.1" name="Grayscale Softcopy Presentation State Storage SOP Class" key="GrayscaleSoftcopyPresentationStateStorage" dirrecord="PRESENTATION" />
