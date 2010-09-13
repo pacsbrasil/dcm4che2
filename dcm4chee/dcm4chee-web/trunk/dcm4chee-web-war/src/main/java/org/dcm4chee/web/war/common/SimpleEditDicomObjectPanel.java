@@ -38,22 +38,34 @@
 
 package org.dcm4chee.web.war.common;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.CloseButtonCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
+import org.apache.wicket.markup.html.form.IChoiceRenderer;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4che2.data.BasicDicomObject;
@@ -62,6 +74,8 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.ElementDictionary;
 import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.util.TagUtils;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
@@ -79,6 +93,7 @@ public class SimpleEditDicomObjectPanel extends Panel {
     
     private static ElementDictionary dict = ElementDictionary.getDictionary();
     private final DicomObject dcmObj;
+    private Map<Integer,Map<String,Object>> presetChoices;
     private final BaseForm form;
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("dicom.");
     private Model<String> resultMessage;
@@ -154,12 +169,33 @@ public class SimpleEditDicomObjectPanel extends Panel {
         form.add(new Label("result-message", (resultMessage = new Model<String>(""))));
     }
 
+    public void setPresetChoices(Map<Integer, Map<String, Object>> presetChoices) {
+        this.presetChoices = presetChoices;
+    }
+    public boolean addPresetChoice(int tag, String descr, Object value) {
+        if (value == null)
+            return false;
+        Map<String,Object> m = null;
+        if (presetChoices == null) {
+            presetChoices = new HashMap<Integer,Map<String, Object>>();
+        } else {
+            m = presetChoices.get(tag);
+        }
+        if (m == null) {
+            m = new HashMap<String, Object>();
+            presetChoices.put(tag, m);
+        }
+        m.put(descr,value);
+        return true;
+    }
+
     private void addHdrLabels(WebMarkupContainer table) {
         table.add(new Label("nameHdr", new ResourceModel("dicom.nameHdr")).add(tooltipBehaviour));
         table.add(new Label("valueHdr", new ResourceModel("dicom.valueHdr")).add(tooltipBehaviour));
+        table.add(new Label("presetHdr", new ResourceModel("dicom.presetHdr")).add(tooltipBehaviour));
     }
 
-    protected DicomObject getDicomObject() {
+    public DicomObject getDicomObject() {
         return dcmObj;
     }
 
@@ -189,6 +225,7 @@ public class SimpleEditDicomObjectPanel extends Panel {
 
         private static final long serialVersionUID = 1L;
 
+        @SuppressWarnings("unchecked")
         public ElementFragment(String id, SpecificCharacterSet cs, final int[] tagPath) {
             super(id, "element", SimpleEditDicomObjectPanel.this);
             final int tag = tagPath[tagPath.length-1];
@@ -209,11 +246,86 @@ public class SimpleEditDicomObjectPanel extends Panel {
                     return s;
                 }
             }));
-            FormComponent<?> c = form.getDicomObjectField("value", dcmObj, tagPath);
+            final FormComponent c = form.getDicomObjectField("value", dcmObj, tagPath);
             add(c);
-            if (c instanceof FormComponentPanel<?>) {
-                setMarkupTagReferenceId("date_element");
+            if (c instanceof FormComponentPanel) {
+                setMarkupTagReferenceId("date_element"); 
             }
+            final IModel<List<String>> presetModel = new AbstractReadOnlyModel<List<String>>() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public List<String> getObject() {
+                    Map<String,Object> presets = presetChoices == null ? null : presetChoices.get(tag);
+                    final List<String> values = new ArrayList<String>();
+                    if (presets != null && presets.size()>0)
+                        values.addAll(presets.keySet());
+                    return values;
+                }
+                
+            };
+            final DropDownChoice<String> choice = new DropDownChoice<String>("presets", 
+                    new Model<String>(), presetModel, new IChoiceRenderer<String>() {
+                        private static final long serialVersionUID = 1L;
+
+                        public Object getDisplayValue(String object) {
+                            return object+" ("+presetChoices.get(tag).get(object)+")";
+                        }
+
+                        public String getIdValue(String object, int index) {
+                            return object;
+                        }
+                
+            }) {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public boolean isVisible() {
+                    return presetModel.getObject().size() > 0;
+                }
+                @Override
+                public void onBeforeRender() {
+                    Object value = c.getModelObject();
+                    for (Map.Entry<String, Object> e : presetChoices.get(tag).entrySet()) {
+                        if (e.getValue().equals(value) ) {
+                            setModelObject(e.getKey());
+                            super.onBeforeRender();
+                            return;
+                        }
+                    }
+                    setModelObject(presetChoices.get(tag).keySet().iterator().next());
+                    super.onBeforeRender();
+                }
+            };
+
+            OnChangeAjaxBehavior onChangeAjaxBehavior = new OnChangeAjaxBehavior() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                    c.setModelObject(presetChoices.get(tag).get(choice.getModelValue()));
+                    target.addComponent(c);
+                    target.addComponent(choice);
+                }
+            };
+            choice.add(onChangeAjaxBehavior);
+            add(choice);
+            AjaxLink presetLink = new AjaxLink("presetLink"){
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    c.setModelObject(presetChoices.get(tag).get(choice.getModelValue()));
+                    target.addComponent(c);
+                }
+                @Override
+                public boolean isVisible() {
+                    return presetModel.getObject().size() > 0;
+                }
+            };
+            presetLink.add(new Image("presetImg",ImageManager.IMAGE_COMMON_ADD)
+            .add(new ImageSizeBehaviour()));
+            add(presetLink);
         }
     }
 }

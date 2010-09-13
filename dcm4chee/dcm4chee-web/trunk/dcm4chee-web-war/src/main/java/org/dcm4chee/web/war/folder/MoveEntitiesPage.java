@@ -63,6 +63,7 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.util.time.Duration;
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
@@ -115,9 +116,9 @@ public class MoveEntitiesPage extends WebPage {
     private int missingState = MISSING_NOTHING;
     private InfoPanel infoPanel;
     private StudyModel studyModel;
-    private Panel newStudyPanel;
+    private SimpleEditDicomObjectPanel newStudyPanel;
     private SeriesModel seriesModel;
-    private Panel newSeriesPanel;
+    private SimpleEditDicomObjectPanel newSeriesPanel;
     
     private AbstractDicomModel destinationModel;
     private HashSet<AbstractDicomModel> modifiedModels = new HashSet<AbstractDicomModel>();
@@ -170,7 +171,7 @@ public class MoveEntitiesPage extends WebPage {
                         }
                     }
                     SeriesModel sm = selected.getSeries().iterator().next();
-                    needNewStudy(sm.getPPS().getStudy(), patModel);
+                    needNewStudy(combine(null, sm.getDataset(), sm.getPPS().getStudy().getDataset()), patModel);
                 } else if (selected.hasInstances()) {
                     for ( InstanceModel m : selected.getInstances()) {
                         if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE) {
@@ -178,8 +179,8 @@ public class MoveEntitiesPage extends WebPage {
                         }
                     }
                     InstanceModel im = selected.getInstances().iterator().next();
-                    needNewStudy(im.getSeries().getPPS().getStudy(), patModel);
-                    needNewSeries(im.getSeries(), this.studyModel);
+                    needNewStudy(combine(im.getDataset(), im.getSeries().getDataset(),im.getSeries().getPPS().getStudy().getDataset()), patModel);
+                    needNewSeries(im, this.studyModel);
                 } else {
                     return MSGID_ERR_SELECTION_MOVE_NO_SOURCE;
                 }
@@ -207,7 +208,7 @@ public class MoveEntitiesPage extends WebPage {
                             return MSGID_ERR_SELECTION_MOVE_NOT_ONLINE;
                         }
                     }
-                    needNewSeries(selected.getInstances().iterator().next().getSeries(), 
+                    needNewSeries(selected.getInstances().iterator().next(), 
                             selected.getStudies().iterator().next());
                 } else {
                     return MSGID_ERR_SELECTION_MOVE_NO_SOURCE;
@@ -236,11 +237,19 @@ public class MoveEntitiesPage extends WebPage {
         }
         return MSGID_ERR_SELECTION_MOVE_NO_SELECTION;
     }
-    
-    private void needNewStudy(StudyModel sourceStudy, final PatientModel pat) {
+    private DicomObject combine(DicomObject instAttrs, DicomObject seriesAttrs, DicomObject studyAttrs) {
+        DicomObject attrs = new BasicDicomObject();
+        if (instAttrs != null)
+            instAttrs.copyTo(attrs);
+        if (seriesAttrs != null)
+            seriesAttrs.copyTo(attrs);
+        if (studyAttrs != null)
+            studyAttrs.copyTo(attrs);
+        return attrs;
+    }
+    private void needNewStudy(DicomObject presetDS, final PatientModel pat) {
         missingState = missingState | MISSING_STUDY;
         studyModel = new StudyModel(null, pat);
-        presetStudy(sourceStudy);
         newStudyPanel = 
             new SimpleEditDicomObjectPanel(
                     "content", 
@@ -272,23 +281,40 @@ public class MoveEntitiesPage extends WebPage {
                     setResponsePage(MoveEntitiesPage.this);
                 }
             };
+            presetStudy(presetDS, newStudyPanel);
     }
 
-    private void presetStudy(StudyModel sourceStudy) {
-        DicomObject srcAttrs = sourceStudy.getDataset();
-        DicomObject attrs = studyModel.getDataset();
+    private void presetStudy(DicomObject srcAttrs, SimpleEditDicomObjectPanel editor) {
+        DicomObject attrs = editor.getDicomObject();
         attrs.putString(Tag.AccessionNumber, VR.SH, srcAttrs.getString(Tag.AccessionNumber));
         attrs.putString(Tag.StudyID, VR.SH, srcAttrs.getString(Tag.StudyID));
         attrs.putString(Tag.StudyDescription, VR.LO, srcAttrs.getString(Tag.StudyDescription));
-        attrs.putString(Tag.StudyDate, VR.DA, srcAttrs.getString(Tag.StudyDate));
-        attrs.putString(Tag.StudyTime, VR.TM, srcAttrs.getString(Tag.StudyTime));
+        editor.addPresetChoice(Tag.StudyDescription, "Study Description", srcAttrs.getString(Tag.StudyDescription));
+        editor.addPresetChoice(Tag.StudyDescription, "Series Description", srcAttrs.getString(Tag.SeriesDescription));
+        boolean dateNotPresetted = true;
+        if (editor.addPresetChoice(Tag.StudyTime, "Series Date", srcAttrs.getDate(Tag.SeriesDate, Tag.SeriesTime))) {
+            attrs.putDate(Tag.StudyDate, VR.DA, srcAttrs.getDate(Tag.SeriesDate));
+            attrs.putDate(Tag.StudyTime, VR.TM, srcAttrs.getDate(Tag.SeriesTime));
+            dateNotPresetted = false;
+        }
+        if (editor.addPresetChoice(Tag.StudyTime, "Instance Date", srcAttrs.getDate(Tag.InstanceCreationDate, Tag.InstanceCreationTime)) && dateNotPresetted) {
+            attrs.putDate(Tag.StudyDate, VR.DA, srcAttrs.getDate(Tag.InstanceCreationDate));
+            attrs.putDate(Tag.StudyTime, VR.TM, srcAttrs.getDate(Tag.InstanceCreationTime));
+            dateNotPresetted = false;
+        }
+        if (editor.addPresetChoice(Tag.StudyTime, "Study Date", srcAttrs.getDate(Tag.StudyDate, Tag.StudyTime)) && dateNotPresetted) {
+            attrs.putDate(Tag.StudyDate, VR.DA, srcAttrs.getDate(Tag.StudyDate));
+            attrs.putDate(Tag.StudyTime, VR.TM, srcAttrs.getDate(Tag.StudyTime));
+            dateNotPresetted = false;
+        }
+        editor.addPresetChoice(Tag.StudyTime, "Current Date", new Date());
+        log.info("####### presetStudy attrs:"+attrs);
     }
 
-    private void needNewSeries(SeriesModel sourceSeries, final StudyModel study) {
+    private void needNewSeries(InstanceModel srcInstance, final StudyModel study) {
         missingState = missingState | MISSING_SERIES;
         seriesModel = new SeriesModel(null, null);
         new PPSModel(null, seriesModel, study);
-        presetSeries(sourceSeries);
         newSeriesPanel = 
             new SimpleEditDicomObjectPanel(
                     "content", 
@@ -319,18 +345,40 @@ public class MoveEntitiesPage extends WebPage {
                     setResponsePage(MoveEntitiesPage.this);
                 }
             };
+            DicomObject srcAttrs = combine(srcInstance.getDataset(), srcInstance.getSeries().getDataset(), 
+                    srcInstance.getSeries().getPPS().getStudy().getDataset());
+            presetSeries(srcAttrs, study.getDataset(), srcInstance.getSeries().getSourceAET(),newSeriesPanel);
     }
 
-    private void presetSeries(SeriesModel sourceSeries) {
-        DicomObject srcAttrs = sourceSeries.getDataset();
-        DicomObject attrs = seriesModel.getDataset();
+    private void presetSeries(DicomObject srcAttrs, DicomObject destStudyAttrs, String sourceAET, SimpleEditDicomObjectPanel editor) {
+        DicomObject attrs = editor.getDicomObject();
         attrs.putString(Tag.SeriesDescription, VR.LO, srcAttrs.getString(Tag.SeriesDescription));
         attrs.putString(Tag.SeriesNumber, VR.IS, srcAttrs.getString(Tag.SeriesNumber));
         attrs.putString(Tag.Modality, VR.CS, srcAttrs.getString(Tag.Modality));
-        attrs.putString(Tag.SeriesDate, VR.DA, srcAttrs.getString(Tag.SeriesDate));
-        attrs.putString(Tag.SeriesTime, VR.TM, srcAttrs.getString(Tag.SeriesTime));
-        attrs.putString(attrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), VR.AE, 
-                sourceSeries.getSourceAET());
+        attrs.putString(attrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), VR.AE, sourceAET);
+
+        editor.addPresetChoice(Tag.SeriesDescription, "Source Series Description", srcAttrs.getString(Tag.SeriesDescription));
+        editor.addPresetChoice(Tag.SeriesDescription, "Source Study Description", srcAttrs.getString(Tag.StudyDescription));
+        editor.addPresetChoice(Tag.SeriesDescription, "Destination Study Description", destStudyAttrs.getString(Tag.StudyDescription));
+        boolean dateNotPresetted = true;
+        if (editor.addPresetChoice(Tag.SeriesTime, "Destination Study Date", destStudyAttrs.getDate(Tag.StudyDate, Tag.StudyTime)) && dateNotPresetted) {
+            attrs.putDate(Tag.SeriesDate, VR.DA, destStudyAttrs.getDate(Tag.StudyDate));
+            attrs.putDate(Tag.SeriesTime, VR.TM, destStudyAttrs.getDate(Tag.StudyTime));
+            dateNotPresetted = false;
+        }
+        if (editor.addPresetChoice(Tag.SeriesTime, "Source Series Date", srcAttrs.getDate(Tag.SeriesDate, Tag.SeriesTime)) && dateNotPresetted) {
+            attrs.putDate(Tag.StudyDate, VR.DA, srcAttrs.getDate(Tag.SeriesDate));
+            attrs.putDate(Tag.StudyTime, VR.TM, srcAttrs.getDate(Tag.SeriesTime));
+            dateNotPresetted = false;
+        }
+        if (editor.addPresetChoice(Tag.SeriesTime, "Source Instance Date", srcAttrs.getDate(Tag.InstanceCreationDate, Tag.InstanceCreationTime)) && dateNotPresetted) {
+            attrs.putDate(Tag.SeriesDate, VR.DA, srcAttrs.getDate(Tag.InstanceCreationDate));
+            attrs.putDate(Tag.SeriesTime, VR.TM, srcAttrs.getDate(Tag.InstanceCreationTime));
+            dateNotPresetted = false;
+        }
+        editor.addPresetChoice(Tag.SeriesTime, "Current Date", new Date());
+        log.info("####### presetSeries attrs:"+attrs);
+
     }
     
     private void doCancel() {
