@@ -84,6 +84,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private ObjectName moveScuServiceName;
     private ObjectName contentEditServiceName;
     private ObjectName storeBridgeServiceName;
+    private ObjectName mppsEmulatorServiceName;
     private ObjectName timerServiceName;
         
     private Map<String,int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
@@ -477,6 +478,14 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public void setStoreBridgeServiceName(ObjectName storeBridgeServiceName) {
         this.storeBridgeServiceName = storeBridgeServiceName;
+    }
+
+    public ObjectName getMppsEmulatorServiceName() {
+        return mppsEmulatorServiceName;
+    }
+
+    public void setMppsEmulatorServiceName(ObjectName mppsEmulatorServiceName) {
+        this.mppsEmulatorServiceName = mppsEmulatorServiceName;
     }
 
     public int checkCUID(String cuid) {

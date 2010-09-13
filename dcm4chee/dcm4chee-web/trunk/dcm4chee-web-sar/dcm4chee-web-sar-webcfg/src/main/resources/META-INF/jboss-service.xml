@@ -507,6 +507,17 @@
          <value value="dcm4chee.web:service=StoreBridge"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getMppsEmulatorServiceName"
+      setMethod="setMppsEmulatorServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>mppsEmulatorServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=MPPSEmulator"/>
+      </descriptors>
+   </attribute>
 
    &defaultAttributes;
    

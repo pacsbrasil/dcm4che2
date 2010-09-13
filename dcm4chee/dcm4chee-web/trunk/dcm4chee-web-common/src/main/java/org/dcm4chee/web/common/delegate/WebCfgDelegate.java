@@ -92,6 +92,7 @@ public class WebCfgDelegate {
     }
    
     public int[] getWindowSize(String name) {
+        if (server == null) return new int[]{800,600};
         try {
             return (int[]) server.invoke(serviceObjectName, "getWindowSize", 
                     new Object[]{name}, new String[]{String.class.getName()});
@@ -119,6 +120,7 @@ public class WebCfgDelegate {
     
     @SuppressWarnings("unchecked")
     public List<Integer> getPagesizeList() {
+        if (server == null) return Arrays.asList(10,25,50);
         try {
             return (List<Integer>) server.invoke(serviceObjectName, "getPagesizeList", 
                     new Object[]{}, new String[]{});
@@ -128,6 +130,7 @@ public class WebCfgDelegate {
         }
     }
     public Integer getDefaultFolderPagesize() {
+        if (server == null) return 10;
         try {
             return (Integer) server.getAttribute(serviceObjectName, "DefaultFolderPagesize"); 
         } catch (Exception x) {
@@ -136,6 +139,7 @@ public class WebCfgDelegate {
         }
     }
     public Integer getDefaultMWLPagesize() {
+        if (server == null) return 10;
         try {
             return (Integer) server.getAttribute(serviceObjectName, "DefaultMWLPagesize"); 
         } catch (Exception x) {
@@ -144,6 +148,7 @@ public class WebCfgDelegate {
         }
     }
     public boolean isQueryAfterPagesizeChange() {
+        if (server == null) return true;
         try {
             return (Boolean) server.getAttribute(serviceObjectName, "QueryAfterPagesizeChange"); 
         } catch (Exception x) {
@@ -151,7 +156,17 @@ public class WebCfgDelegate {
             return true;
         }
     }
-    
+
+    public boolean useFamilyAndGivenNameQueryFields() {
+        if (server == null) return false;
+        try {
+            return (Boolean) server.getAttribute(serviceObjectName, "useFamilyAndGivenNameQueryFields"); 
+        } catch (Exception x) {
+            log.warn("Cant get useFamilyAndGivenNameQueryFields attribute! return false as default!", x);
+            return false;
+        }
+    }
+
     public String getMpps2mwlPresetPatientname() {
         return getString("Mpps2mwlPresetPatientname");
     }
@@ -167,6 +182,7 @@ public class WebCfgDelegate {
     }
 
     public String getString(String attrName) {
+        if (server == null) return null;
         try {
             return (String) server.getAttribute(serviceObjectName, attrName);
         } catch (Exception x) {
@@ -176,6 +192,7 @@ public class WebCfgDelegate {
     }
 
     public int checkCUID(String cuid) {
+        if (server == null) return -1;
         try {
             return (Integer) server.invoke(serviceObjectName, "checkCUID", 
                     new Object[]{cuid}, new String[]{String.class.getName()});
@@ -186,6 +203,7 @@ public class WebCfgDelegate {
     }
 
     public ObjectName getObjectName(String attrName, String defaultName) throws MalformedObjectNameException, NullPointerException {
+        if (server == null) return defaultName == null ? null : new ObjectName(defaultName);
         try {
             return (ObjectName) server.getAttribute(serviceObjectName, attrName);
         } catch (Throwable t) {
@@ -196,6 +214,7 @@ public class WebCfgDelegate {
 
     @SuppressWarnings("unchecked")
     private List<String> getStringList(String name) {
+        if (server == null) return new ArrayList<String>();
         try {
             return (List<String>) server.invoke(serviceObjectName, name, 
                     new Object[]{}, new String[]{});

@@ -152,6 +152,7 @@ public class StudyListPage extends Panel {
     private MessageWindow msgWin = new MessageWindow("msgWin");
     private Mpps2MwlLinkPage linkPage = new Mpps2MwlLinkPage("linkPage");
     private ConfirmationWindow<PPSModel> confirmUnlinkMpps;
+    private ConfirmationWindow<PPSModel> confirmEmulateMpps;
     private ImageSelectionWindow imageSelection = new ImageSelectionWindow("imgSelection");
     private ModalWindow wadoWindow = new ModalWindow("wadoWindow");
     
@@ -844,6 +845,40 @@ public class StudyListPage extends Panel {
         };
         confirmUnlinkMpps.setInitialHeight(150);
         form.add(confirmUnlinkMpps);
+        confirmEmulateMpps = new ConfirmationWindow<PPSModel>("confirmEmulate") {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onOk(AjaxRequestTarget target) {
+                target.addComponent(form);
+            }
+
+            @Override
+            public void close(AjaxRequestTarget target) {
+                target.addComponent(form);
+                super.close(target);
+            }
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, final PPSModel ppsModel) {
+                log.info("Emulate MPPS for Study:"+ppsModel.getStudy().getStudyInstanceUID());
+                int success = -1;
+                try {
+                    success = MppsEmulateDelegate.getInstance().emulateMpps(ppsModel.getStudy().getPk());
+                } catch (Throwable t) {
+                    log.error("Emulate MPPS failed!", t);
+                }
+                setStatus(new StringResourceModel(success < 0 ? "folder.message.emulateFailed" : "folder.message.emulateDone", 
+                        StudyListPage.this, null, new Object[]{new Integer(success)}));
+                if (success > 0) {
+                    StudyModel st = ppsModel.getStudy();
+                    st.collapse();
+                    st.expand();
+                }
+            }
+        };
+        confirmEmulateMpps.setInitialHeight(150);
+        form.add(confirmEmulateMpps);
+
     }
 
     private void queryStudies() {
@@ -1257,8 +1292,25 @@ public class StudyListPage extends Panel {
                     return ppsModel.getDataset() != null && ppsModel.getAccessionNumber()!=null;
                 }
             }.add(new Image("unlinkImg",ImageManager.IMAGE_FOLDER_UNLINK)
-            .add(new ImageSizeBehaviour())));
+            .add(new ImageSizeBehaviour()).add(tooltip)));
             
+            item.add(new AjaxFallbackLink<Object>("emulateBtn") {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    confirmEmulateMpps.confirm(target, 
+                            new StringResourceModel("folder.message.confirmEmulate",this, null), ppsModel);
+                    
+                }
+
+                @Override
+                public boolean isVisible() {
+                    return ppsModel.getDataset() == null;
+                }
+            }.add(new Image("emulateImg",ImageManager.IMAGE_COMMON_ADD)
+            .add(new ImageSizeBehaviour()).add(tooltip)));
+             
             item.add(new AjaxCheckBox("selected"){
                 private static final long serialVersionUID = 1L;
 
