@@ -48,8 +48,9 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Remove;
 import javax.ejb.Stateful;
-import javax.faces.context.FacesContext;
 import javax.persistence.PersistenceContext;
+import javax.security.jacc.PolicyContext;
+import javax.security.jacc.PolicyContextException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4che2.audit.message.AuditEvent.OutcomeIndicator;
@@ -67,11 +68,12 @@ import org.jboss.annotation.ejb.cache.simple.CacheConfig;
 import org.jboss.seam.ScopeType;
 import org.jboss.seam.annotations.Destroy;
 import org.jboss.seam.annotations.Factory;
-import org.jboss.seam.annotations.In;
+import org.jboss.seam.annotations.Logger;
 import org.jboss.seam.annotations.Name;
 import org.jboss.seam.annotations.Scope;
 import org.jboss.seam.annotations.datamodel.DataModel;
 import org.jboss.seam.annotations.web.RequestParameter;
+import org.jboss.seam.log.Log;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -85,6 +87,9 @@ import org.jboss.seam.annotations.web.RequestParameter;
 public class AuditRecordListAction implements Serializable, AuditRecordList {
 
     private static final long serialVersionUID = 8681124252579882410L;
+
+    private static final String WEB_REQUEST_KEY = 
+            "javax.servlet.http.HttpServletRequest";
 
     private static final String DATE_FORMAT = "yyyy-MM-dd";
 
@@ -102,14 +107,14 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
 
     private static final int SECOND = 19;
     
+    @Logger
+    private transient Log log; 
+
     @EJB
     private transient AuditLogUsedLocal auditLogUsed;
 
     @PersistenceContext(unitName="dcm4chee-arr")
     private transient Session session;
-
-    @In
-    private transient FacesContext facesContext;
 
     @DataModel
     private List<AuditRecordEntry> records;
@@ -457,9 +462,13 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
     }
 
     private void sendAuditLogUsedMessage() {
-        auditLogUsed.log((HttpServletRequest)
-                facesContext.getExternalContext().getRequest(),
-                OutcomeIndicator.SUCCESS);
+        try {
+            auditLogUsed.log((HttpServletRequest)
+                    PolicyContext.getContext(WEB_REQUEST_KEY),
+                    OutcomeIndicator.SUCCESS);
+        } catch (PolicyContextException e) {
+            log.warn("Failed to create Audit Log Used message", e);
+        }
     }
     
     public void selectPage() {
