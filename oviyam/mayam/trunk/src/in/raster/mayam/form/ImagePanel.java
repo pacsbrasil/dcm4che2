@@ -748,17 +748,18 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     /**
      * This routine used to reset the image box with the original buffered image
      */
-    public void reset() {
+    public void reset() {       
         this.getCanvas().getLayeredCanvas().annotationPanel.resetAnnotation();
         windowLevel = (int) WC;
-        windowWidth = (int) WW;
+        windowWidth = (int) WW;        
         windowChanged(windowLevel, windowWidth);
-        this.setSize(originalWidth, originalHeight);
         firstTime = true;
+        scaleFactor = 1;     
+        scaleProcess();
+        this.getCanvas().getLayeredCanvas().annotationPanel.scaleProcess();
         invertFlag = false;
         flipHorizontalFlag = false;
-        flipVerticalFlag = false;
-        scaleFactor = 1;
+        flipVerticalFlag = false;        
         isRotate = false;
         rotateLeftAngle = 0;
         rotateRightAngle = 0;
@@ -769,7 +770,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         if (!firstTime) {
             repaint();
         }
-        selectFirstInstance();
+        selectFirstInstance();       
     }
 
     public void resizeHandler() {
@@ -802,7 +803,6 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                         Instance instance = series.getImageList().get(0);
                         setImage(instance.getPixelData());
                          this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getAnnotation());
-
                     }
                 }
             }

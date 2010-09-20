@@ -62,6 +62,7 @@ import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
+import javax.swing.border.LineBorder;
 
 /**
  *
@@ -867,7 +868,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         if (showAnnotation) {
             Graphics2D g = (Graphics2D) gs;
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            if (this.layeredCanvas.imgpanel.isScaleFlag()) {
+            if (this.layeredCanvas.imgpanel.isScaleFlag()) {                
                 g.scale(this.layeredCanvas.imgpanel.getScaleFactor(), this.layeredCanvas.imgpanel.getScaleFactor());
             }
             gs.setColor(Color.YELLOW);
@@ -962,7 +963,9 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                     gs.drawString("Std Dev:", seletedShape.getBounds().x, seletedShape.getBounds().y - 20);
                 }
             }
+            //this.setBorder(new LineBorder(Color.yellow));
         }
+
     }
 
     /**
@@ -1037,6 +1040,14 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         this.setBounds(xPosition, yPosition, this.getSize().width, this.getSize().height);
     }
 
+    public boolean isFirstTime() {
+        return firstTime;
+    }
+
+    public void setFirstTime(boolean firstTime) {
+        this.firstTime = firstTime;
+    }
+
     public void mouseMoved(MouseEvent e) {
         if (this.isAddEllipse() || this.isAddRect() || this.isAddLine()) {
 //            if (!startAnnotation) {
@@ -1060,7 +1071,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         }
     }
 
-    private void scaleProcess() {
+    public void scaleProcess() {
         double currentWidth = this.getSize().width;
         double currentHeight = this.getSize().height;
         double newWidth = this.layeredCanvas.imgpanel.getOriginalWidth() * this.layeredCanvas.imgpanel.getScaleFactor();
