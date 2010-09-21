@@ -1178,14 +1178,14 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         
         String availability = instanceAvailabilityOfExternalRetrievable;
         String studyIUID = order.getStudyIUID();
-        try {
-            Dataset findRsp = findScu.findStudy(aet, studyIUID);
-            if (findRsp == null) {
-                log.warn("Study:" + studyIUID + " not found at Retrieve AE: "
-                        + aet);
-                return false;
-            }
-            if (availability == null) {
+        if (availability == null) {
+            try {
+                Dataset findRsp = findScu.findStudy(aet, studyIUID);
+                if (findRsp == null) {
+                    log.warn("Study:" + studyIUID + " not found at Retrieve AE: "
+                            + aet);
+                    return false;
+                }
                 availability = findRsp.getString(Tags.InstanceAvailability);
                 if (availability == null) {
                     log.warn("Retrieve AE: " + aet
@@ -1193,13 +1193,12 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                             + studyIUID);
                     return false;
                 }
+            } catch (Exception e) {
+               log.warn("Query external Retrieve AE: " + aet + " for study: "
+                       + studyIUID +  "failed:", e);
+               return false;
             }
-        } catch (Exception e) {
-           log.warn("Query external Retrieve AE: " + aet + " for study: "
-                   + studyIUID +  "failed:", e);
-           return false;
         }
-
         int availabilityAsInt = Availability.toInt(availability);
         if (availabilityAsInt == Availability.UNAVAILABLE) {
             log.warn("Retrieve AE: " + aet
