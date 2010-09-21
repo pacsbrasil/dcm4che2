@@ -119,6 +119,8 @@ public class HSMFileBasedModule extends AbstractHSMModule {
     }
     
     public void setStatusExtensions(String s) {
+        extensionStatusMap.clear();
+        noStatusFileStatus = null;
         StringTokenizer st = new StringTokenizer(s, " \t\r\n;");
         int pos;
         String token;
@@ -171,6 +173,8 @@ public class HSMFileBasedModule extends AbstractHSMModule {
 
     @Override
     public File fetchHSMFile(String fsID, String path, String filename) throws HSMException {
+        if (fsID.startsWith("tar:"))
+            fsID=fsID.substring(4);
         return FileUtils.toFile(fsID, path);
     }
 
