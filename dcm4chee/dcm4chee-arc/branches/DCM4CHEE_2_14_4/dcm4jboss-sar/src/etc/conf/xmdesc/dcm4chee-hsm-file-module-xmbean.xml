@@ -185,7 +185,7 @@
        <name>filename</name>
        <type>java.lang.String</type>
      </parameter>
-      <return-type>int</return-type>
+      <return-type>java.io.File</return-type>
    </operation>
 
    <operation impact="ACTION">
