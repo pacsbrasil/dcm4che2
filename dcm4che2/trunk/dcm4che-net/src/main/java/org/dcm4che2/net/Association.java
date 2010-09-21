@@ -39,6 +39,7 @@
 
 package org.dcm4che2.net;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -853,6 +854,13 @@ public class Association implements Runnable {
         } catch (SocketTimeoutException e) {
             exception = e;
             log.warn("ARTIM timer expired in State: " + state);
+		} catch (EOFException e) {
+			exception = e;
+			if (state == State.STA2) {
+				log.debug("Client closed connection without sending data");
+			} else {
+				log.warn("i/o exception in State " + state, e);
+			}
         } catch (IOException e) {
             exception = e;
             log.warn("i/o exception in State " + state, e);
