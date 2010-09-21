@@ -54,7 +54,7 @@ import java.util.ArrayList;
  * @version 0.5
  *
  */
-public class SeriesThumbUpdator extends Thread {
+public class SeriesThumbUpdator{
 
     private String studyUID;
     private boolean canRun = true;
@@ -63,10 +63,9 @@ public class SeriesThumbUpdator extends Thread {
 
     public SeriesThumbUpdator(String studyUID) {
         this.studyUID = studyUID;
-        start();
+        run();
     }
 
-    @Override
     public void run() {
         showThumbnailDisplay();
     }

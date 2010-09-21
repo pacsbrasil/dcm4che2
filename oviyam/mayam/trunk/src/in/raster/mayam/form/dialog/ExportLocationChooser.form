@@ -65,6 +65,7 @@
   <SubComponents>
     <Component class="javax.swing.JFileChooser" name="jFileChooser1">
       <Properties>
+        <Property name="dialogType" type="int" value="1"/>
         <Property name="fileSelectionMode" type="int" value="1"/>
       </Properties>
       <Events>

@@ -60,6 +60,7 @@ import in.raster.mayam.model.AEModel;
 import in.raster.mayam.model.Study;
 import in.raster.mayam.model.table.StudyListModel;
 import in.raster.mayam.model.table.renderer.CellRenderer;
+import java.awt.Cursor;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -126,7 +127,7 @@ public class MainScreen extends javax.swing.JFrame {
      */
     private void initQR() {
         queryRetrieve = new QueryRetrive();
-        Display.alignScreen(queryRetrieve);
+        queryRetrieve.setLocationRelativeTo(this);
     }
 
     /**
@@ -134,7 +135,7 @@ public class MainScreen extends javax.swing.JFrame {
      */
     public void initNetworkQueue() {
         sndRcvFrm = new SendReceiveFrame();
-        Display.alignScreen(sndRcvFrm);
+        sndRcvFrm.setLocationRelativeTo(this);
         sndRcvFrm.setVisible(false);
     }
 
@@ -698,7 +699,7 @@ public class MainScreen extends javax.swing.JFrame {
     }//GEN-LAST:event_importButtonActionPerformed
     private void importHandler() {
         FileChooserDialog fcd = new FileChooserDialog(this, true);
-        Display.alignScreen(fcd);
+        fcd.setLocationRelativeTo(this);
         fcd.setVisible(true);
     }
     private void queryRetrieveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queryRetrieveButtonActionPerformed
@@ -713,7 +714,7 @@ public class MainScreen extends javax.swing.JFrame {
             int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
             String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
             ExportLocationChooser jpegChooser = new ExportLocationChooser(ApplicationContext.imgView, true);
-            Display.alignScreen(jpegChooser);
+            jpegChooser.setLocationRelativeTo(this);
             jpegChooser.setSeriesOrInstanceLevel(false);
             jpegChooser.setStudyUID(siuid);
             jpegChooser.setVisible(true);
@@ -721,8 +722,8 @@ public class MainScreen extends javax.swing.JFrame {
     }
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         if (studyListTable.getSelectedRow() != -1) {
-            ConfirmDelete confirmDelete = new ConfirmDelete(this, true);
-            Display.alignScreen(confirmDelete);
+            ConfirmDelete confirmDelete = new ConfirmDelete(this, true);        
+            confirmDelete.setLocationRelativeTo(this);
             confirmDelete.setVisible(true);
         }
         removeThumbnailComponents();
@@ -733,8 +734,8 @@ public class MainScreen extends javax.swing.JFrame {
         String forwardAET = "";
         String forwardHost = "";
         int forwardPort;
-        ServerListDialog configuredServer = new ServerListDialog(this, true);
-        Display.alignScreen(configuredServer);
+        ServerListDialog configuredServer = new ServerListDialog(this, true);    
+        configuredServer.setLocationRelativeTo(this);
         configuredServer.setVisible(true);
         if (configuredServer.getAe() != null) {
             AEModel ae = configuredServer.getAe();
@@ -773,7 +774,8 @@ public class MainScreen extends javax.swing.JFrame {
         System.exit(2);
     }//GEN-LAST:event_exitMenuItemActionPerformed
     private void queueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queueButtonActionPerformed
-        sndRcvFrm.setVisible(true);
+       sndRcvFrm.setLocationRelativeTo(this);
+       sndRcvFrm.setVisible(true);
     }//GEN-LAST:event_queueButtonActionPerformed
     private void preferenceMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferenceMenuItemActionPerformed
         showPreference();
@@ -783,7 +785,7 @@ public class MainScreen extends javax.swing.JFrame {
      */
     private void showPreference() {
         SettingsDialog sd = new SettingsDialog(this, true);
-        Display.alignScreen(sd);
+        sd.setLocationRelativeTo(this);
         sd.setVisible(true);
     }
 
@@ -820,8 +822,8 @@ public class MainScreen extends javax.swing.JFrame {
                 int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
                 String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
                 ArrayList<DicomTags> dcmTags = DicomTagsReader.getTags(new File(this.canvas.getFilePath()));
-                dicomTagsViewer.setDataModelOnTable(dcmTags);
-                Display.alignScreen(dicomTagsViewer);
+                dicomTagsViewer.setDataModelOnTable(dcmTags);               
+                dicomTagsViewer.setLocationRelativeTo(this);
                 dicomTagsViewer.setVisible(true);
             }
         } catch (Exception e) {
@@ -830,7 +832,7 @@ public class MainScreen extends javax.swing.JFrame {
     }//GEN-LAST:event_metaDataButtonActionPerformed
     private void aboutMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuActionPerformed
         About about = new About(null, true);
-        Display.alignScreen(about);
+        about.setLocationRelativeTo(this);
         about.setVisible(true);
     }//GEN-LAST:event_aboutMenuActionPerformed
     private void importMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importMenuItemActionPerformed
@@ -840,9 +842,11 @@ public class MainScreen extends javax.swing.JFrame {
         exportHandler();
     }//GEN-LAST:event_exportMenuItemActionPerformed
     private void QRMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_QRMenuItemActionPerformed
+        queryRetrieve.setLocationRelativeTo(this);
         queryRetrieve.setVisible(true);
     }//GEN-LAST:event_QRMenuItemActionPerformed
     private void queueMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queueMenuItemActionPerformed
+        sndRcvFrm.setLocationRelativeTo(this);
         sndRcvFrm.setVisible(true);
     }//GEN-LAST:event_queueMenuItemActionPerformed
 
@@ -855,7 +859,7 @@ public class MainScreen extends javax.swing.JFrame {
     private void deleteExamMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteExamMenuItemActionPerformed
         if (studyListTable.getSelectedRow() != -1) {
             ConfirmDelete confirmDelete = new ConfirmDelete(this, true);
-            Display.alignScreen(confirmDelete);
+            confirmDelete.setLocationRelativeTo(this);
             confirmDelete.setVisible(true);
         }
         removeThumbnailComponents();
@@ -946,6 +950,9 @@ public class MainScreen extends javax.swing.JFrame {
     SeriesThumbUpdator thumbUpdator;
 
     public void showThumbnails() {
+        try
+        {
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (studyListTable.getSelectedRow() != -1) {
             if (thumbUpdator != null) {
                 thumbUpdator.setCanRun(false);
@@ -955,6 +962,10 @@ public class MainScreen extends javax.swing.JFrame {
             String studyUID = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
             selectedStudy = studyUID;
             thumbUpdator = new SeriesThumbUpdator(studyUID);
+        }
+        }finally
+        {
+        this.setCursor(Cursor.getDefaultCursor());
         }
     }
 

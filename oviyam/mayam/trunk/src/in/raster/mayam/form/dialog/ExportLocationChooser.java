@@ -128,6 +128,7 @@ public class ExportLocationChooser extends javax.swing.JDialog {
             }
         });
 
+        jFileChooser1.setDialogType(1);
         jFileChooser1.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
         jFileChooser1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
