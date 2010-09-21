@@ -505,6 +505,11 @@ public class ORMService extends AbstractHL7Service {
             ds.putUI(Tags.StudyInstanceUID, val);
             sps.remove(Tags.StudyInstanceUID);
         }
+        if ((val = sps.getString(Tags.AccessionNumber)) != null) {
+            log.info("Detect Accession Number on SPS Level");
+            ds.putSH(Tags.AccessionNumber, val);
+            sps.remove(Tags.AccessionNumber);
+        }
         if ((val = sps.getString(Tags.RequestedProcedurePriority)) != null) {
             log.info("Detect Requested Procedure Priority on SPS Level");
             ds.putCS(Tags.RequestedProcedurePriority, val);
