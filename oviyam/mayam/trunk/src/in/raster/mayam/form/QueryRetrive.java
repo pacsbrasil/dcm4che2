@@ -71,6 +71,7 @@ import javax.swing.event.ListSelectionEvent;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.util.DcmURL;
 import in.raster.mayam.model.table.renderer.CellRenderer;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableModel;
@@ -619,7 +620,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
             QueryService qs = new QueryService();
             setPatientInfoToQueryParam();
             if (queryParam.getPatientId().equalsIgnoreCase("") && queryParam.getPatientName().equalsIgnoreCase("") && queryParam.getSearchDate().equalsIgnoreCase("") && modalityText.getText().equalsIgnoreCase("") && queryParam.getAccessionNo().equalsIgnoreCase("")) {
-                noFilterQuery = JOptionPane.showConfirmDialog(null, "No filters have been selected. It will take long time to query and display result...!");
+                noFilterQuery = JOptionPane.showConfirmDialog(this, "No filters have been selected. It will take long time to query and display result...!", "Confirm Dialog", JOptionPane.YES_NO_OPTION);
             }
             if (noFilterQuery == 0) {
                 qs.callFindWithQuery(queryParam.getPatientId(), queryParam.getPatientName(), "", queryParam.getSearchDate(), modalityText.getText(), queryParam.getAccessionNo(), url);
@@ -673,7 +674,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
                 if (dicomServerArray.get(i).getName().equalsIgnoreCase(serverName)) {
                     int index[] = studyListTable.getSelectedRows();
                     for (int j = 0; j < index.length; j++) {
-                    index[j] = studyListTable.convertRowIndexToModel(index[j]);
+                        index[j] = studyListTable.convertRowIndexToModel(index[j]);
                     }
                     for (int tempI = 0; tempI < index.length; tempI++) {
 

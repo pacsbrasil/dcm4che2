@@ -40,6 +40,7 @@ package in.raster.mayam.util.database;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.facade.ApplicationFacade;
+import in.raster.mayam.form.MainScreen;
 import in.raster.mayam.model.AEModel;
 import in.raster.mayam.model.Instance;
 import in.raster.mayam.model.PresetModel;
@@ -59,6 +60,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Vector;
+import javax.swing.SwingUtilities;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -346,12 +348,34 @@ public class DatabaseHandler {
 
                 st.setPatientName(rs1.getString("PatientName"));
                 st.setDob(rs1.getString("PatientBirthDate"));
+                st.setModalitiesInStudy(getModalitiesOfStudy(st.getStudyUID()));
                 studyList.addElement(st);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return studyList;
+    }
+
+    public String getModalitiesOfStudy(String siuid) {
+        String modalities = "";
+        ResultSet rs = null;
+        try {
+            String sql = "Select * from series where StudyInstanceUID='" + siuid + "'";
+            rs = conn.createStatement().executeQuery(sql);
+            while (rs.next()) {
+                if (!modalities.contains(rs.getString("Modality"))) {
+                    if (modalities.equalsIgnoreCase("")) {
+                        modalities += rs.getString("Modality");
+                    } else {
+                        modalities += "/" + rs.getString("Modality");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return modalities;
     }
 
     public Vector listAllSeriesOfStudy(String siuid) {
@@ -777,7 +801,6 @@ public class DatabaseHandler {
             } catch (SQLException ex) {
                 Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
-
         }
     }
 
@@ -818,8 +841,13 @@ public class DatabaseHandler {
             } catch (SQLException ex) {
                 Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
-
         }
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                MainScreen.refreshLocalDBStorage();
+            }
+        });
     }
 
     public void insertImageData(DicomObject dataset) {
