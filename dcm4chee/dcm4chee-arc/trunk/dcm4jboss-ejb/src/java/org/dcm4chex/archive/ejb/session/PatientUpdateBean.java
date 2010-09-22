@@ -123,11 +123,13 @@ public abstract class PatientUpdateBean implements SessionBean {
     }
 
     /**
+     * @throws RemoveException 
+     * @throws EJBException 
      * @ejb.interface-method
      */
     public void changePatientIdentifierList(Dataset correct, Dataset prior,
-            PatientMatching matching) throws CreateException, FinderException,
-                    PatientAlreadyExistsException {
+            PatientMatching matching, boolean keepPrior) throws CreateException, FinderException,
+                    PatientAlreadyExistsException, EJBException, RemoveException {
         LOG.info("Change PID for " + correct.getString(Tags.PatientName)
                 + " from " + prior.getString(Tags.PatientID)
                 + " to " + correct.getString(Tags.PatientID));
@@ -142,24 +144,26 @@ public abstract class PatientUpdateBean implements SessionBean {
         } catch (ObjectNotFoundException e) {}
         PatientLocal correctPat = patHome.create(correct);
         PatientLocal priorPat= updateOrCreate(prior, matching);
-        merge(correctPat, priorPat);
+        merge(correctPat, priorPat, keepPrior);
     }
 
     /**
+     * @throws RemoveException 
+     * @throws EJBException 
      * @ejb.interface-method
      */
     public void mergePatient(Dataset dominant, Dataset prior,
-            PatientMatching matching) throws CreateException, FinderException {
+            PatientMatching matching, boolean keepPrior) throws CreateException, FinderException, EJBException, RemoveException {
         LOG.info("Merge " + prior.getString(Tags.PatientName)
                 + " with PID " + prior.getString(Tags.PatientID)
                 + " to " + dominant.getString(Tags.PatientName)
                 + " with PID " + dominant.getString(Tags.PatientID));
         PatientLocal dominantPat = updateOrCreate(dominant, matching);
         PatientLocal priorPat= updateOrCreate(prior, matching);
-        merge(dominantPat, priorPat);
+        merge(dominantPat, priorPat, keepPrior);
     }
 
-    private void merge(PatientLocal dominantPat, PatientLocal priorPat) {
+    private void merge(PatientLocal dominantPat, PatientLocal priorPat, boolean keepPrior) throws EJBException, RemoveException {
         dominantPat.getStudies().addAll(priorPat.getStudies());
         dominantPat.getMpps().addAll(priorPat.getMpps());
         dominantPat.getMwlItems().addAll(priorPat.getMwlItems());
@@ -167,7 +171,11 @@ public abstract class PatientUpdateBean implements SessionBean {
         dominantPat.getGppps().addAll(priorPat.getGppps());
         dominantPat.getUPS().addAll(priorPat.getUPS());
         dominantPat.getMerged().addAll(priorPat.getMerged());
-        priorPat.setMergedWith(dominantPat);
+        if (keepPrior) {
+            priorPat.setMergedWith(dominantPat);
+        } else {
+            priorPat.remove();  
+        }
     }
     
     /**

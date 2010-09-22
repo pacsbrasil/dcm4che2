@@ -100,6 +100,7 @@ public class ADTService extends AbstractHL7Service {
     private boolean ignoreDeleteErrors;
 
     private boolean handleEmptyMrgAsUpdate;
+    private boolean keepPriorPatientAfterMerge = true;
 
     private ObjectName contentEditServiceName;
 
@@ -233,6 +234,14 @@ public class ADTService extends AbstractHL7Service {
         this.handleEmptyMrgAsUpdate = handleEmptyMrgAsUpdate;
     }
 
+    public boolean isKeepPriorPatientAfterMerge() {
+        return keepPriorPatientAfterMerge;
+    }
+
+    public void setKeepPriorPatientAfterMerge(boolean keepPriorPatientAfterMerge) {
+        this.keepPriorPatientAfterMerge = keepPriorPatientAfterMerge;
+    }
+
     public boolean process(MSH msh, Document msg, ContentHandler hl7out)
             throws HL7Exception {
         try {
@@ -352,7 +361,7 @@ public class ADTService extends AbstractHL7Service {
     }
 
     protected void mergePatient(Dataset dominant, Dataset prior, PatientMatching patientMatching) throws Exception {
-        getPatientUpdate().mergePatient(dominant, prior, patientMatching);
+        getPatientUpdate().mergePatient(dominant, prior, patientMatching, keepPriorPatientAfterMerge);
     }
 
     protected void updatePatient(Dataset attrs, PatientMatching patientMatching) throws Exception {
@@ -360,7 +369,7 @@ public class ADTService extends AbstractHL7Service {
     }
 
     protected void changePatientIdentifierList(Dataset correct, Dataset prior, PatientMatching patientMatching) throws Exception {
-        getPatientUpdate().changePatientIdentifierList(correct, prior, patientMatching);
+        getPatientUpdate().changePatientIdentifierList(correct, prior, patientMatching, keepPriorPatientAfterMerge);
     }
 
     protected boolean deletePatient(Dataset ds, PatientMatching patientMatching) throws Exception {

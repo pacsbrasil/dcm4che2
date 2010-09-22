@@ -49,6 +49,7 @@ import java.util.Map;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -169,9 +170,11 @@ public abstract class ContentEditBean implements SessionBean {
     }
 
     /**
+     * @throws RemoveException 
+     * @throws EJBException 
      * @ejb.interface-method
      */
-    public Map mergePatients(long patPk, long[] mergedPks) {
+    public Map mergePatients(long patPk, long[] mergedPks, boolean keepPrior) throws EJBException, RemoveException {
         Map map = new HashMap();
         try {
             PatientLocal dominant = patHome.findByPrimaryKey(new Long(patPk));
@@ -196,7 +199,11 @@ public abstract class ContentEditBean implements SessionBean {
                 dominant.getGppps().addAll(priorPat.getGppps());                
                 dominant.getGsps().addAll(priorPat.getGsps());
                 dominant.getUPS().addAll(priorPat.getUPS());
-                priorPat.setMergedWith(dominant);
+                if (keepPrior) {
+                    priorPat.setMergedWith(dominant);
+                } else {
+                    priorPat.remove();
+                }
             }
             ArrayList col = new ArrayList();
             Iterator iter = list.iterator();

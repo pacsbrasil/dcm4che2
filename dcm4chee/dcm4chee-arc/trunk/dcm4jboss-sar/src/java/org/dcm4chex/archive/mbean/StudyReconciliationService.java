@@ -101,6 +101,8 @@ public class StudyReconciliationService extends AbstractScuService {
     private int failureStatus = -1;
 
     private String calledAET = "TIANI_ARCHIVE";
+    
+    private boolean keepPriorPatientAfterMerge = true;
 
     private Integer listenerID;
 
@@ -255,6 +257,14 @@ public class StudyReconciliationService extends AbstractScuService {
         this.failureStatus = failureStatus;
     }
 
+    public boolean isKeepPriorPatientAfterMerge() {
+        return keepPriorPatientAfterMerge;
+    }
+
+    public void setKeepPriorPatientAfterMerge(boolean keepPriorPatientAfterMerge) {
+        this.keepPriorPatientAfterMerge = keepPriorPatientAfterMerge;
+    }
+    
     public String check() throws Exception {
         synchronized(this) {
             if (isRunning) {
@@ -314,7 +324,7 @@ public class StudyReconciliationService extends AbstractScuService {
                                     + patDS.getString(Tags.PatientID)
                                     + " with "
                                     + origPatDS.getString(Tags.PatientID));
-                            studyReconciliation.mergePatient(origPatDS, patDS);
+                            studyReconciliation.mergePatient(origPatDS, patDS, keepPriorPatientAfterMerge);
                             numPatMerge++;
                         }
                         studyReconciliation.updateStudyAndSeries(studyIuid,

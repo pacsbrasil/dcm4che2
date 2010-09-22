@@ -139,6 +139,20 @@ about instances moved to trash. Must be activated for compliance with
   </attribute>
 
    <attribute access="read-write"
+      getMethod="isKeepPriorPatientAfterMerge"
+      setMethod="setKeepPriorPatientAfterMerge">
+      <description><![CDATA[Keep prior patient after Patient Merge.<br/>
+      		This will allow to get correct patient information even the received DICOM objects contains a patient id of an merged patient.<br />
+      		If disabled, the prior patient will be deleted.
+      ]]></description>
+      <name>KeepPriorPatientAfterMerge</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
       getMethod="getAuditEnabled"
       setMethod="setAuditEnabled">
       <description>Enable or disable emission of audit messages on

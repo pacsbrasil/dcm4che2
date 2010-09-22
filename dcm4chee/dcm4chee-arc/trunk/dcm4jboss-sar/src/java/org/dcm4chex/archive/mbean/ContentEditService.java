@@ -47,7 +47,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 import javax.management.InstanceNotFoundException;
 import javax.management.Notification;
 import javax.management.ObjectName;
@@ -102,6 +104,9 @@ public class ContentEditService extends ServiceMBeanSupport {
     private String sendingFacility;
     private String receivingApplication;
     private String receivingFacility;
+    
+    private boolean keepPriorPatientAfterMerge = true;
+
 
     private ObjectName studyMgtScuServiceName;
     private ObjectName storeScpServiceName;
@@ -141,6 +146,14 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     public boolean isCreateIANonMoveToTrash() {
         return createIANonMoveToTrash;
+    }
+
+    public boolean isKeepPriorPatientAfterMerge() {
+        return keepPriorPatientAfterMerge;
+    }
+
+    public void setKeepPriorPatientAfterMerge(boolean keepPriorPatientAfterMerge) {
+        this.keepPriorPatientAfterMerge = keepPriorPatientAfterMerge;
     }
 
     public boolean isLogIUIDsForStudyUpdate() {
@@ -322,11 +335,11 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public Map mergePatients(Long patPk, long[] mergedPks)
-    throws RemoteException, HomeFactoryException, CreateException {
+    throws RemoteException, HomeFactoryException, CreateException, RemoveException, EJBException {
         if (log.isDebugEnabled())
             log.debug("merge Partient");
         Map map = lookupContentEdit().mergePatients(patPk.longValue(),
-                mergedPks);
+                mergedPks, keepPriorPatientAfterMerge);
         if (!map.containsKey("ERROR")) {
             sendHL7PatientMerge((Dataset) map.get("DOMINANT"), (Dataset[]) map
                     .get("MERGED"));
@@ -739,6 +752,16 @@ public class ContentEditService extends ServiceMBeanSupport {
         if (log.isDebugEnabled())
             log.debug("delete Study from trash. pk:" + studyPk);
         lookupPrivateManager().deletePrivateStudy(studyPk);
+    }
+    
+    public void purgeStudy(String suid) throws RemoteException,
+    HomeFactoryException, CreateException, FinderException {
+        if (log.isDebugEnabled())
+            log.debug("purge Study. Study IUID:" + suid);
+        Dataset ian = lookupPrivateManager().purgeStudy(suid);
+        sendStudyMgt(ian.getString(Tags.StudyInstanceUID), Command.N_DELETE_RQ,
+                0, ian);
+        logStudyDeleted(ian);
     }
 
     public void deleteSeries(long seriesPk) throws RemoteException,

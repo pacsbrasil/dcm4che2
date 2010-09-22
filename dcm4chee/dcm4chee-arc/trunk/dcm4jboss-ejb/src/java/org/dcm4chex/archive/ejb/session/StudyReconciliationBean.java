@@ -50,6 +50,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
+import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -180,9 +181,9 @@ public abstract class StudyReconciliationBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void mergePatient(Dataset dominant, Dataset prior)
-            throws FinderException, CreateException {
-    	patientUpdate.mergePatient(dominant, prior, PatientMatching.BY_ID);
+    public void mergePatient(Dataset dominant, Dataset prior, boolean keepPrior)
+            throws FinderException, CreateException, EJBException, RemoveException {
+    	patientUpdate.mergePatient(dominant, prior, PatientMatching.BY_ID, keepPrior);
     }
 
 	/**
