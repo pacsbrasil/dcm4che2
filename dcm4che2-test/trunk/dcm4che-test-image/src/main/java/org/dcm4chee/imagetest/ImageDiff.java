@@ -127,8 +127,8 @@ public class ImageDiff {
 				sumSqrDifference += delta*delta;
 				if( delta>maxDiff ) {
 					maxDiff = delta;
-					diffPos.append("Additional diff at ").append(x).append(",").append(y).append(" source ");
-					diffPos.append(delta).append(" final ").append(d2[x]).append("\n");
+					diffPos.append("Additional diff at ").append(x).append(",").append(y).append(" delta ");
+					diffPos.append(delta).append(" source ").append(Integer.toHexString(d1[x])).append(" final ").append(Integer.toHexString(d2[x])).append("\n");
 				}
 			}
 			if( i3!=null ) {
