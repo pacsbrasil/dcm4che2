@@ -111,8 +111,25 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         ppsPatModelForInfo = ppsModelForInfo.getStudy().getPatient();
         panel.presetSearchfields();
         comp = c;
+        target.appendJavascript("document.getElementById('" + panel.getSearchBtnMarkupId() +
+                "').click();");
         super.show(target);
     }
+    private void hideLinkedPpsInFolder(org.dcm4chee.web.war.folder.ViewPort viewport) {
+        StudyModel study;
+        for (PPSModel mpps : ppsModels) {
+            log.debug("hideLinkedPpsInFolder! pps:"+mpps);
+            study  = mpps.getStudy();
+            study.getPPSs().remove(mpps);
+            if (study.isCollapsed()) {
+                study.getPatient().getStudies().remove(study);
+                if (study.getPatient().isCollapsed()) {
+                    viewport.getPatients().remove(study.getPatient());
+                }
+            }
+        }
+    }
+
     private static List<PPSModel> toList(PPSModel ppsModel) {
         ArrayList<PPSModel> l = new ArrayList<PPSModel>(1);
         l.add(ppsModel);
@@ -128,6 +145,10 @@ public class Mpps2MwlLinkPage extends ModalWindow {
             addMppsInfoPanel();
         }
         
+        public String getSearchBtnMarkupId() {
+            return searchBtn.getMarkupId();
+        }
+
         protected ViewPort initViewPort() {
             return new ViewPort();
         }
@@ -148,23 +169,35 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                     log.info("Link MPPS to MWL!:"+mwlItemModel);
                     try {
                         MppsToMwlLinkResult result = ContentEditDelegate.getInstance().linkMppsToMwl(ppsModels, mwlItemModel);
+                        org.dcm4chee.web.war.folder.ViewPort viewport = ((WicketSession) getSession()).getFolderViewPort();
                         int nrOfStudies = result.getStudiesToMove().size();
+                        boolean hideLinkedPps = ((WicketSession) getSession()).getFolderViewPort().getFilter().isPpsWithoutMwl();
                         if (nrOfStudies == 0) {
-                            for (PPSModel mpps : ppsModels) {
-                                mpps.getStudy().refresh().expand();
+                            if (hideLinkedPps) {
+                                hideLinkedPpsInFolder(viewport);
+                            } else {
+                                for (PPSModel mpps : ppsModels) {
+                                    mpps.getStudy().refresh().expand();
+                                }
                             }
                         } else {
-                            org.dcm4chee.web.war.folder.ViewPort viewport = ((WicketSession) getSession()).getFolderViewPort();
-                            viewport.clear();
-                            viewport.setTotal(nrOfStudies);
-                            List<PatientModel> pats = viewport.getPatients();
-                            PatientModel patModel = new PatientModel(result.getMwl().getPatient(), new Model<Boolean>(false));
-                            pats.add(patModel);
-                            StudyModel sm;
-                            for (Study s : result.getStudiesToMove()) {
-                                sm = new StudyModel(s, patModel);
-                                sm.refresh().expand();
-                                patModel.getStudies().add(sm);
+                            hideLinkedPpsInFolder(viewport);
+                            if (!hideLinkedPps) {
+                                List<PatientModel> pats = viewport.getPatients();
+                                PatientModel patModel = new PatientModel(result.getMwl().getPatient(), new Model<Boolean>(false));
+                                int pos = pats.indexOf(patModel);
+                                if (pos == -1) {
+                                    pats.add(patModel);
+                                } else {
+                                    patModel = pats.get(pos);
+                                }
+                                StudyModel sm;
+                                List<StudyModel> studies = patModel.getStudies();
+                                for (Study s : result.getStudiesToMove()) {
+                                    sm = new StudyModel(s, patModel);
+                                    sm.refresh().expand();
+                                    studies.add(sm);
+                                }
                             }
                         }
                         target.addComponent(comp);
@@ -241,7 +274,6 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                 cal.set(Calendar.MILLISECOND, 999);
                 getViewPort().getFilter().setStartDateMax(cal.getTime());
             }
-            queryMWLItems();
         }
     }
 
