@@ -122,9 +122,11 @@ public class PatientNameField extends FormComponentPanel<String> {
         } else {
             String gn = gnField.getConvertedInput();
             converted = fn == null ? "" : fn;
-            if (gn != null && gn.length() != 0) { 
-                converted += "*^"+gn;
-                if (gn.indexOf('^') == -1)
+            if (gn != null && gn.length() != 0) {
+                if (!converted.endsWith("*"))
+                    converted += "*";
+                converted += "^"+gn;
+                if (gn.indexOf('^') == -1 && !converted.endsWith("*"))
                     converted += "*";
             }
         }
@@ -156,7 +158,10 @@ public class PatientNameField extends FormComponentPanel<String> {
             if (n == null)
                 return null;
             int pos = n.indexOf('^');
-            return toViewString(pos == -1 ? n : n.substring(0, pos));
+            if (pos == -1)
+                return n;
+            String fn = n.substring(0, pos);
+            return n.substring(++pos).indexOf('^') != -1 ? fn : toViewString(fn);
         }
         
         protected String toViewString(String s) {
@@ -180,7 +185,10 @@ public class PatientNameField extends FormComponentPanel<String> {
             if (n == null)
                 return null;
             int pos = n.indexOf('^');
-            return toViewString(pos == -1 ? null : n.substring(++pos));
+            if (pos == -1)
+                return null;
+            String gn = n.substring(++pos);
+            return gn.indexOf('^')!=-1 ? gn : toViewString(gn);
         }
 
     }
