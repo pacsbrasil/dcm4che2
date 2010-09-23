@@ -40,7 +40,6 @@ package in.raster.mayam.form;
 
 import in.raster.mayam.param.TextOverlayParam;
 import java.awt.Graphics;
-import java.awt.event.ComponentEvent;
 
 /**
  *
@@ -121,17 +120,17 @@ public class TextOverlay extends javax.swing.JPanel {
         zoomLabel = new javax.swing.JLabel();
 
         patientNameLabel.setBackground(new java.awt.Color(0, 0, 0));
-        patientNameLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        patientNameLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
         patientNameLabel.setForeground(new java.awt.Color(255, 255, 255));
         patientNameLabel.setText("Name");
 
         patientSexLabel.setBackground(new java.awt.Color(0, 0, 0));
-        patientSexLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        patientSexLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
         patientSexLabel.setForeground(new java.awt.Color(255, 255, 255));
         patientSexLabel.setText("Sex");
 
         patientIDLabel.setBackground(new java.awt.Color(0, 0, 0));
-        patientIDLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        patientIDLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
         patientIDLabel.setForeground(new java.awt.Color(255, 255, 255));
         patientIDLabel.setText("ID");
 
@@ -141,19 +140,19 @@ public class TextOverlay extends javax.swing.JPanel {
         huLabel.setText("hu");
 
         studyTimeLabel.setBackground(new java.awt.Color(0, 0, 0));
-        studyTimeLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        studyTimeLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
         studyTimeLabel.setForeground(new java.awt.Color(255, 255, 255));
         studyTimeLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         studyTimeLabel.setText("Study Time");
 
         studyDateLabel.setBackground(new java.awt.Color(0, 0, 0));
-        studyDateLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        studyDateLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
         studyDateLabel.setForeground(new java.awt.Color(255, 255, 255));
         studyDateLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         studyDateLabel.setText("Study Date");
 
         institutionLabel.setBackground(new java.awt.Color(0, 0, 0));
-        institutionLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        institutionLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
         institutionLabel.setForeground(new java.awt.Color(255, 255, 255));
         institutionLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         institutionLabel.setText("Institution");
@@ -161,30 +160,30 @@ public class TextOverlay extends javax.swing.JPanel {
         jLabel8.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 
         patientPositionLabel.setBackground(new java.awt.Color(0, 0, 0));
-        patientPositionLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        patientPositionLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
         patientPositionLabel.setForeground(new java.awt.Color(255, 255, 255));
         patientPositionLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         patientPositionLabel.setText("Patient Position");
 
         instanceNoLabel.setBackground(new java.awt.Color(0, 0, 0));
-        instanceNoLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        instanceNoLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
         instanceNoLabel.setForeground(new java.awt.Color(255, 255, 255));
         instanceNoLabel.setText("Im");
 
         windowingLabel.setBackground(new java.awt.Color(0, 0, 0));
-        windowingLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        windowingLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
         windowingLabel.setForeground(new java.awt.Color(255, 255, 255));
         windowingLabel.setText("Windowing");
 
         slicePositionLabel.setBackground(new java.awt.Color(0, 0, 0));
-        slicePositionLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        slicePositionLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
         slicePositionLabel.setForeground(new java.awt.Color(255, 255, 255));
         slicePositionLabel.setText("Slice Position");
 
         zoomLabel.setBackground(new java.awt.Color(0, 0, 0));
-        zoomLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        zoomLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
         zoomLabel.setForeground(new java.awt.Color(255, 255, 255));
-        zoomLabel.setHorizontalAlignment(4);
+        zoomLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         zoomLabel.setText("Zoom");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -251,13 +250,12 @@ public class TextOverlay extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(studyTimeLabel)
                     .add(patientSexLabel))
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 170, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 181, Short.MAX_VALUE)
                         .add(jLabel8)
                         .add(14, 14, 14))
                     .add(layout.createSequentialGroup()
-                        .add(166, 166, 166)
                         .add(huLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)

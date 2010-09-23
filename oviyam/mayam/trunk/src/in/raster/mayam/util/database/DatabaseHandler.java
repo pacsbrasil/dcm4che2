@@ -76,7 +76,7 @@ public class DatabaseHandler {
     //Named Constants for Database,driver,protocol
     private static final String driver = "org.apache.derby.jdbc.EmbeddedDriver";
     private static final String protocol = "jdbc:derby:";
-    private static final String databasename = "viewerdb";
+    private static final String databasename = "mayamdb";
     // Named Constants for Table name
     private static final String patientTable = "patient";
     private static final String studyTable = "study";
