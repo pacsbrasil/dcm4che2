@@ -582,6 +582,35 @@ public abstract class PrivateManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
+    public Dataset purgeStudy(String suid)  {
+        try {
+            StudyLocal study = studyHome.findByStudyIuid(suid);
+            Dataset ds = makeIAN(study, null);
+            SeriesLocal series;
+            FileLocal file;
+            for (Iterator iter = study.getSeries().iterator(); iter.hasNext();) {
+                series = (SeriesLocal) iter.next();
+                for (Iterator iter1 = series.getAllFiles().iterator(); iter1.hasNext();) {
+                    file = (FileLocal) iter1.next();
+                    privFileHome.create(file.getFilePath(), file.getFileTsuid(), file
+                            .getFileSize(), file.getFileMd5(), file.getFileStatus(),
+                            null, file.getFileSystem());
+                }
+            }
+            study.remove();
+            return ds;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        } catch (CreateException e) {
+            throw new EJBException(e);
+        } catch (RemoveException e) {
+            throw new EJBException(e);
+        }
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
     public Collection movePatientToTrash(long pat_pk)
             throws ObjectNotFoundException {
         try {
