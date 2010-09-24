@@ -65,6 +65,8 @@ public class DicomImageReaderTest extends TestCase {
 
 	/**
 	 * Tests the reading of a regular MR instance.
+	 * Also tests pixel padding - avoids putting the pixel padding into the
+	 * window level range.
 	 */
 	public void testReadMrAutoWindowing() throws Exception {
 		assertImage("/misc/mr", 0, null);
@@ -203,7 +205,7 @@ public class DicomImageReaderTest extends TestCase {
 			String fileName = baseName + ".dcm";
 			System.out.println("Testing image " + fileName);
 			BufferedImage img = readDicomImage(fileName, 0, null);
-			ImageDiff diff = new ImageDiff(getSmpte(), img, baseName,
+			ImageDiff diff = new ImageDiff(getSmpte(), img, "target/"+baseName,
 					allowedDiff);
 			if (diff.getMaxDiff() > allowedDiff) {
 				failed = true;
@@ -242,7 +244,7 @@ public class DicomImageReaderTest extends TestCase {
 			String fileName = baseName + ".dcm";
 			System.out.println("Testing image " + fileName);
 			BufferedImage img = readDicomImage(fileName, 0, null);
-			ImageDiff diff = new ImageDiff(getSmpte(), img, baseName,
+			ImageDiff diff = new ImageDiff(getSmpte(), img, "target/"+baseName,
 					allowedDiff);
 			if (diff.getMaxDiff() > allowedDiff) {
 				failed = true;
@@ -276,7 +278,7 @@ public class DicomImageReaderTest extends TestCase {
 			e.printStackTrace();
 			fail("No image to compare against, wrote image to current dir.");
 		}
-		ImageDiff diff = new ImageDiff(comp,dcm,baseName,0);
+		ImageDiff diff = new ImageDiff(comp,dcm,"target/"+baseName,0);
 		if( diff.getMaxDiff()!=0 ) {
 			fail("Maximum difference on "+baseName+" is supposed to be zero but is "+diff.getMaxDiff());
 		}
