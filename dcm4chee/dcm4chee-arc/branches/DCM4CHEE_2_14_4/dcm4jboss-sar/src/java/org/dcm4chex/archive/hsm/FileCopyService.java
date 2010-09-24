@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.hsm;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -46,16 +47,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
 
 import org.apache.commons.compress.tar.TarEntry;
 import org.apache.commons.compress.tar.TarOutputStream;
@@ -64,7 +58,9 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.util.BufferedOutputStream;
+import org.dcm4che.util.Executer;
 import org.dcm4che.util.MD5Utils;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.BaseJmsOrder;
 import org.dcm4chex.archive.config.ForwardingRules;
@@ -82,41 +78,50 @@ import org.dcm4chex.archive.util.FileUtils;
 public class FileCopyService extends AbstractFileCopyService {
 
     private static final String NONE = "NONE";    
+    private static final String SRC_PARAM = "%p";
+    private static final String FS_PARAM = "%d";
+    private static final String FILE_PARAM = "%f";
     private static final int MD5SUM_ENTRY_LEN = 52;
     
-    private ObjectName hsmModuleServicename = null;
-    private ArrayList<ObjectName> registeredModules = new ArrayList<ObjectName>();
-    private boolean isReady;
+    private String[] tarCopyCmd = null;
+    private boolean tarFileIDFromStdOut;
+    private File tarOutgoingDir;
+    private File absTarOutgoingDir;
     
-    public String getRegisteredHSMModules() {
-        StringBuilder sb = new StringBuilder();
-        for (ObjectName on : registeredModules) {
-            sb.append(on).append("\n");
+    public final String getTarCopyCommand() {
+        if (tarCopyCmd == null) {
+            return NONE;
         }
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < tarCopyCmd.length; i++) {
+            sb.append(tarCopyCmd[i]);
+        }
+        if (tarFileIDFromStdOut)
+            sb.append(":%f");
         return sb.toString();
     }
 
-    public final String getHSMModulServicename() {
-        return hsmModuleServicename == null ? NONE : hsmModuleServicename.toString();
+    public final void setTarCopyCommand(String cmd) {
+        if (NONE.equalsIgnoreCase(cmd)) {
+            this.tarCopyCmd = null;
+            return;
         }
+        if (tarFileIDFromStdOut = cmd.endsWith(":%f"))
+            cmd = cmd.substring(0, cmd.length()-3);
 
-    public final void setHSMModulServicename(String name) throws MalformedObjectNameException {
-        this.hsmModuleServicename = NONE.equals(name) ? null : ObjectName.getInstance(name);
-        isReady = !getDestination().startsWith("tar:") | hsmModuleServicename == null | registeredModules.contains(hsmModuleServicename);
-    }
-    
-    public boolean isReady() {
-        return isReady;
+        String[] a = StringUtils.split(cmd, '%');
+        try {
+            String[] b = new String[a.length + a.length - 1];
+            b[0] = a[0];
+            for (int i = 1; i < a.length; i++) {
+                String s = a[i];
+                b[2 * i - 1] = ("%" + s.charAt(0)).intern();
+                b[2 * i] = s.substring(1);
+            }
+            this.tarCopyCmd = b;
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException(cmd);
         }
-    
-    public void registerHSMModule(ObjectName module) throws Exception {
-        registeredModules.add(module);
-        isReady = isReady | hsmModuleServicename == null | module.equals(hsmModuleServicename);
-    }
-    public void unregisterHSMModule(ObjectName module) throws Exception {
-        registeredModules.remove(module);
-        if (getDestination().startsWith("tar:") && module.equals(hsmModuleServicename))
-            isReady = false;
     }
     
     public boolean copyFilesOfStudy(String studyIUID) throws SQLException {
@@ -167,6 +172,26 @@ public class FileCopyService extends AbstractFileCopyService {
 
     }
 
+    private String makeCommand(String srcParam, String fsID, String fileID) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < tarCopyCmd.length; i++) {
+            sb.append(tarCopyCmd[i] == SRC_PARAM ? srcParam
+                    : tarCopyCmd[i] == FS_PARAM ? fsID
+                    : tarCopyCmd[i] == FILE_PARAM ? fileID
+                    : tarCopyCmd[i]);
+        }
+        return sb.toString();
+    }
+    
+    public final String getTarOutgoingDir() {
+        return tarOutgoingDir.getPath();
+    }
+
+    public final void setTarOutgoingDir(String tarOutgoingDir) {
+        this.tarOutgoingDir = new File(tarOutgoingDir);
+        this.absTarOutgoingDir = FileUtils.resolve(this.tarOutgoingDir);
+    }
+    
     protected BaseJmsOrder createOrder(Dataset ian) {
         return new FileCopyOrder(ian, ForwardingRules.toAET(destination),
                 getRetrieveAETs());
@@ -244,7 +269,6 @@ public class FileCopyService extends AbstractFileCopyService {
                 bos.close();
             }
         } catch (IOException e) {
-            log.error("Copy file "+src+" failed", e);
             dst.delete();
             throw e;
         } finally {
@@ -259,19 +283,34 @@ public class FileCopyService extends AbstractFileCopyService {
         for (int i = 0; i < tarEntryNames.length; i++) {
             tarEntryNames[i] = mkTarEntryName(fileInfos.get(i));
         }
-        if (hsmModuleServicename == null) {
+        if (tarCopyCmd == null) {
             File tarFile = FileUtils.toFile(destPath.substring(4), tarPath);
+            log.info("M-WRITE " + tarFile);
+            tarFile.getParentFile().mkdirs();
             mkTar(fileInfos, tarFile, tarEntryNames);
         } else {
-            File tarFile = prepareHSMFile(destPath.substring(4), tarPath);
+            if (absTarOutgoingDir.mkdirs()) {
+                log.info("M-WRITE " + absTarOutgoingDir);
+            }
+            File tarFile = new File(absTarOutgoingDir,
+                    new File(tarPath).getName());
             try {
+                log.info("M-WRITE " + tarFile);
                 mkTar(fileInfos, tarFile, tarEntryNames);
-                tarPath = storeHSMFile(tarFile, destPath, tarPath);
-            } catch (Exception x) {
-                log.error("Make Tar file failed!",x);
+                String cmd = makeCommand(tarFile.getPath(), destPath, tarPath);
+                log.info("Copy to HSM: " + cmd);
+                ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+                Executer ex = new Executer(cmd, stdout , null);
+                int exit = ex.waitFor();
+                if (exit != 0) {
+                    throw new IOException("Non-zero exit code(" + exit 
+                            + ") of " + cmd);
+                }
+                if (tarFileIDFromStdOut)
+                    tarPath = stdout.toString().trim();
+            } finally {
+                log.info("M-DELETE " + tarFile);
                 tarFile.delete();
-                failedHSMFile(tarFile,destPath, tarPath);
-                throw x;
             }
         }
         Storage storage = getStorageHome().create();
@@ -283,34 +322,9 @@ public class FileCopyService extends AbstractFileCopyService {
         }
     }
     
-    private File prepareHSMFile(String destPath, String fileID)
-            throws InstanceNotFoundException, MBeanException,
-            ReflectionException {
-        return (File) server.invoke(hsmModuleServicename, "prepareHSMFile", new Object[]{destPath, fileID}, 
-                new String[]{String.class.getName(),String.class.getName()});
-    }
-
-    private String storeHSMFile(File file, String destPath, String fileID) throws InstanceNotFoundException, MBeanException,
-        ReflectionException {
-        return (String) server.invoke(hsmModuleServicename, "storeHSMFile", 
-                new Object[]{file, destPath, fileID}, 
-                new String[]{File.class.getName(),String.class.getName(),String.class.getName()});
-    }
-
-    private void failedHSMFile(File file, String destPath, String fileID) throws InstanceNotFoundException, MBeanException,
-        ReflectionException {
-            server.invoke(hsmModuleServicename, "failedHSMFile", 
-                    new Object[]{file, destPath, fileID}, 
-                    new String[]{File.class.getName(),String.class.getName(),String.class.getName()});
-}
-    
     private void mkTar(List<FileInfo> fileInfos, File tarFile,
             String[] tarEntryNames) throws Exception {
         try {
-            if (tarFile.getParentFile().mkdirs()) {
-                log.info("M-WRITE " + tarFile.getParent());
-            }    
-            log.info("M-WRITE " + tarFile);
             TarOutputStream tar = new TarOutputStream(
                     new FileOutputStream(tarFile));
             try {
