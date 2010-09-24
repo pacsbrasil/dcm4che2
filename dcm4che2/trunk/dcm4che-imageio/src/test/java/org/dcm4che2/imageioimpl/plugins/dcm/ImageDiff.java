@@ -91,6 +91,7 @@ public class ImageDiff {
 	 */
 	private void writeImage(BufferedImage i2, String fileBase) throws IOException {
 		File f = new File(fileBase+".png");
+		f.getParentFile().mkdirs();
 		if( maxDiff <= allowedDiff ) {
 			if( f.exists() ) f.delete();
 			return;

@@ -98,8 +98,8 @@ public class DicomImageWriterTest extends TestCase {
     public void testFindDicomImageWriter() {
         ImageWriter writer = ImageIO.getImageWritersByFormatName("DICOM")
                 .next();
-        assert writer != null;
-        assert writer instanceof DicomImageWriter;
+        assertNotNull(writer);
+        assertTrue(writer instanceof DicomImageWriter);
     }
     
 
@@ -117,8 +117,8 @@ public class DicomImageWriterTest extends TestCase {
         ImageInputStream iis = writeImage(newMeta, bi, name);
         DicomImageReader readerNew = createImageReader(iis);
         BufferedImage biNew = readRawBufferedImage(readerNew, 1);
-        ImageDiff diff = new ImageDiff(bi, biNew, name, 0);
-        assert diff.getMaxDiff() == 0;
+        ImageDiff diff = new ImageDiff(bi, biNew, "target/"+name, 0);
+        assertEquals("Max Pixel Difference must be 0", 0,diff.getMaxDiff());
     }
     
     public void testColorMultiFrameLEI() throws IOException {
@@ -153,7 +153,7 @@ public class DicomImageWriterTest extends TestCase {
         for( BufferedImage bufferedImage : bufferedImages  )
         {
         	BufferedImage biNew = readRawBufferedImage(readerNew, frameNumber++);
-            ImageDiff diff = new ImageDiff(bufferedImage, biNew, name, 0 );
+            ImageDiff diff = new ImageDiff(bufferedImage, biNew, "target/"+name, 0 );
             assertTrue("Color Frame "+frameNumber+" is different",diff.getMaxDiff() == 0);
         }
     }
@@ -230,13 +230,13 @@ public class DicomImageWriterTest extends TestCase {
             throws IOException {
         InputStream is = DicomImageWriterTest.class
                 .getResourceAsStream(resource);
-        assert is != null;
+        assertNotNull(is);
         return createImageReader(ImageIO.createImageInputStream(is));
     }
 
     /** Returns an image reader on the given filename */
     public static DicomImageReader createImageReader(ImageInputStream is) {
-        assert is != null;
+        assertNotNull(is);
         DicomImageReaderSpi spi = new DicomImageReaderSpi();
         DicomImageReader reader = (DicomImageReader) spi
                 .createReaderInstance(null);
