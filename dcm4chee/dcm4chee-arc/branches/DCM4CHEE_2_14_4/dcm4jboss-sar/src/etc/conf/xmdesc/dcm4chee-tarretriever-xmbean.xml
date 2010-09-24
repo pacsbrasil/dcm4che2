@@ -17,18 +17,6 @@
    </constructor>
 
    <!-- Attributes -->
-   <attribute access="read-write"
-      getMethod="getHSMModulServicename"
-      setMethod="setHSMModulServicename">
-      <description>HSM Module to store files/tarballs to HSM systems. Use NONE if filesystem has no HSM support.
-      </description>
-      <name>HSMModulServicename</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="NONE"/>
-      </descriptors>
-   </attribute>
-   
    <attribute access="read-write" 
       getMethod="getCacheRoot"
       setMethod="setCacheRoot">
@@ -125,6 +113,37 @@
     <descriptors>
      <value value="true" />
     </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+     getMethod="getTarFetchCommand" 
+     setMethod="setTarFetchCommand">
+      <description><![CDATA[External command to fetch tarballs from the source
+      file system, with
+         <br>%d will be replaced by the source file system name,
+         <br>%f will be replaced by the path of tarball on the source file system,
+         <br>%p will be replaced by the destination path.
+         <br>NONE = TAR file on local accessable file system.
+       ]]>
+      </description>
+      <name>TarFetchCommand</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+     getMethod="getTarIncomingDir" 
+     setMethod="setTarIncomingDir">
+      <description><![CDATA[Directory in which TARs shall be retrieved
+      by external <b>TarFetchCommand</b>. A relative path name is resolved
+      relative to <i>archive-install-directory</i>/server/default/.
+      Not effective if TarFetchCommand=<code>NONE<code>]]>
+      </description>
+      <name>TarIncomingDirectory</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="tar-incoming"/>
+      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getBufferSize"

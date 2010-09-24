@@ -9,16 +9,19 @@
 
 package org.dcm4chex.archive.hsm;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
-import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import org.dcm4che.util.Executer;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
@@ -39,6 +42,12 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
 
     private static final String NONE = "NONE";
 
+    private static final String INFO_PARAM = "%i";
+
+    private static final String FILE_PARAM = "%f";
+
+    private static final String DIR_PARAM = "%d";
+
     private String timerIDCheckSyncFileStatus;
     
     private boolean isRunning;
@@ -55,12 +64,22 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
 
     private int checkFileStatus;
 
+    private int commandFailedFileStatus;
+
+    private int nonZeroExitFileStatus;
+
+    private int matchFileStatus;
+
+    private int noMatchFileStatus;
+
     private String fileSystem = null;
+
+    private String[] command = { "mmls ", INFO_PARAM, "/", FILE_PARAM };
+
+    private Pattern pattern;
 
     private Integer listenerID;
 
-    private ObjectName hsmModuleServicename = null;
-    
     private final NotificationListener timerListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             Calendar cal = Calendar.getInstance();
@@ -110,6 +129,83 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         this.checkFileStatus = FileStatus.toInt(status);
     }
 
+    public final String getNonZeroExitFileStatus() {
+        return FileStatus.toString(nonZeroExitFileStatus);
+    }
+
+    public final void setNonZeroExitFileStatus(String status) {
+        this.nonZeroExitFileStatus = FileStatus.toInt(status);
+    }
+
+    public final String getMatchFileStatus() {
+        return FileStatus.toString(matchFileStatus);
+    }
+
+    public final void setMatchFileStatus(String status) {
+        this.matchFileStatus = FileStatus.toInt(status);
+    }
+
+    public final String getNoMatchFileStatus() {
+        return FileStatus.toString(noMatchFileStatus);
+    }
+
+    public final void setNoMatchFileStatus(String status) {
+        this.noMatchFileStatus = FileStatus.toInt(status);
+    }
+
+    public final String getCommandFailedFileStatus() {
+        return FileStatus.toString(commandFailedFileStatus);
+    }
+
+    public final void setCommandFailedFileStatus(String status) {
+        this.commandFailedFileStatus = FileStatus.toInt(status);
+    }
+
+    public final String getCommand() {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < command.length; i++) {
+            sb.append(command[i]);
+        }
+        return sb.toString();
+    }
+
+    private String makeCommand(String dirParam, String fileParam,
+            String infoParam) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < command.length; i++) {
+            sb
+                    .append(command[i] == DIR_PARAM ? dirParam
+                            : command[i] == FILE_PARAM ? fileParam
+                                    : command[i] == INFO_PARAM ? infoParam
+                                            : command[i]);
+        }
+        return sb.toString();
+    }
+
+    public final void setCommand(String command) {
+        String[] a = StringUtils.split(command, '%');
+        try {
+            String[] b = new String[a.length + a.length - 1];
+            b[0] = a[0];
+            for (int i = 1; i < a.length; i++) {
+                String s = a[i];
+                b[2 * i - 1] = ("%" + s.charAt(0)).intern();
+                b[2 * i] = s.substring(1);
+            }
+            this.command = b;
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException(command);
+        }
+    }
+
+    public final String getPattern() {
+        return pattern.pattern();
+    }
+
+    public final void setPattern(String pattern) {
+        this.pattern = Pattern.compile(pattern, Pattern.DOTALL);
+    }
+
     public final String getTaskInterval() {
         String s = RetryIntervalls.formatIntervalZeroAsNever(taskInterval);
         return (disabledEndHour == -1) ? s : s + "!" + disabledStartHour + "-"
@@ -154,14 +250,6 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         this.limitNumberOfFilesPerTask = limit;
     }
 
-    public final String getHSMModulServicename() {
-        return hsmModuleServicename == null ? NONE : hsmModuleServicename.toString();
-    }
-
-    public final void setHSMModulServicename(String name) throws MalformedObjectNameException {
-        this.hsmModuleServicename = NONE.equals(name) ? null : ObjectName.getInstance(name);
-    }
-    
     private boolean isDisabled(int hour) {
         if (disabledEndHour == -1)
             return false;
@@ -189,10 +277,6 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         if (fileSystem == null) {
             return 0;
         }
-        if (hsmModuleServicename == null) {
-            log.warn("HSM Module Servicename not configured! SyncFileStatusService disabled!");
-            return 0;
-        }
         synchronized(this) {
             if (isRunning) {
                 log.info("SyncFileStatus is already running!");
@@ -210,7 +294,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
                 return 0;
             }
             int count = 0;
-            HashMap<String, Integer> checkedTars = new HashMap<String, Integer>();
+            HashMap checkedTars = new HashMap();
             for (int i = 0; i < c.length; i++) {
                 if (check(fsmgt, c[i], checkedTars))
                     ++count;
@@ -222,7 +306,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     }
 
     private boolean check(FileSystemMgt2 fsmgt, FileDTO fileDTO,
-            HashMap<String, Integer> checkedTars) throws IOException {
+            HashMap checkedTars) {
         String dirpath = fileDTO.getDirectoryPath();
         String filePath = fileDTO.getFilePath();
         String tarPath = null;
@@ -233,14 +317,12 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
             if (status != null) {
                 return updateFileStatus(fsmgt, fileDTO, status.intValue());
             }
-            if (checkedTars.containsKey(tarPath))
-                return false;
         }
-        Integer status = queryHSM(dirpath, filePath, fileDTO.getUserInfo());
+        int status = queryHSM(dirpath, filePath, fileDTO);
         if (tarPath != null) {
-            checkedTars.put(tarPath, status);
+            checkedTars.put(tarPath, new Integer(status));
         }
-        return status == null ? false : updateFileStatus(fsmgt, fileDTO, status);
+        return updateFileStatus(fsmgt, fileDTO, status);
     }
 
     private boolean updateFileStatus(FileSystemMgt2 fsmgt, FileDTO fileDTO,
@@ -257,17 +339,24 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         return false;
     }
 
-    private Integer queryHSM(String dirpath, String filePath, String userInfo) throws IOException {
+    private int queryHSM(String dirpath, String filePath, FileDTO fileDTO) {
+        String cmd = makeCommand(dirpath, filePath, fileDTO.getUserInfo());
+        log.info("queryHSM: " + cmd);
         try {
-            return (Integer) server.invoke(hsmModuleServicename, 
-                    "queryStatus", new Object[]{dirpath, filePath, userInfo}, 
-                    new String[]{String.class.getName(),String.class.getName(),String.class.getName()});
-        } catch (Exception x) {
-            log.error("queryHSM failed! dirpath:"+dirpath+" filePath:"+
-                    filePath+" userInfo:"+userInfo, x);
-            IOException iox = new IOException("Query status of HSMFile failed!");
-            iox.initCause(x);
-            throw iox;
+            ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+            Executer ex = new Executer(cmd, stdout, null);
+            int exit = ex.waitFor();
+            if (exit != 0) {
+                log.info("Non-zero exit code(" + exit + ") of " + cmd);
+                return nonZeroExitFileStatus;
+            } else {
+                String result = stdout.toString();
+                return pattern.matcher(result).matches() ? matchFileStatus
+                        : noMatchFileStatus;
+            }
+        } catch (Exception e) {
+            log.error("Failed to execute " + cmd, e);
+            return commandFailedFileStatus;
         }
     }
 
@@ -284,4 +373,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         this.timerIDCheckSyncFileStatus = timerIDCheckSyncFileStatus;
     }
     
+    public boolean applyPattern(String s) {
+        return pattern.matcher(s).matches();
+    }
 }

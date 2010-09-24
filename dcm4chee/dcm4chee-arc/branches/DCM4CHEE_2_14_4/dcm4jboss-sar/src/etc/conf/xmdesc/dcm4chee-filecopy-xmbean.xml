@@ -46,34 +46,40 @@
          <value value="NONE"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getHSMModulServicename"
-      setMethod="setHSMModulServicename">
-      <description><![CDATA[HSM Module to store tarballs to HSM systems.<br/> 
-	      Use NONE to store files on local filesystem without additional HSM support.<br/>
-	      Only effective if destination is a tar filesystem!<br/>
-      ]]></description>
-      <name>HSMModulServicename</name>
+   <attribute access="read-write" 
+     getMethod="getTarCopyCommand" 
+     setMethod="setTarCopyCommand">
+      <description><![CDATA[External command to copy tarballs to the destination,
+      with
+         <br>%p will be replaced by the path of tarball to copy,
+         <br>%d will be replaced by the destination file system name,
+         <br>%f will be replaced by the destination TAR file path
+         <br>Alternatively a suffix of ':%f' specifies, that the TAR file path
+         on the destination file system shall be returned from the command 
+         in stdout.
+         <br>NONE = write tarball on local accessable file system.
+      Only effective, if the destination file system name is a tar URI.
+       ]]>
+      </description>
+      <name>TarCopyCommand</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE"/>
       </descriptors>
    </attribute>
-   <attribute access="read-only"
-      getMethod="getRegisteredHSMModules">
-      <description>Registered HSM modules.</description>
-      <name>RegisteredHSMModules</name>
+   <attribute access="read-write" 
+     getMethod="getTarOutgoingDir" 
+     setMethod="setTarOutgoingDir">
+      <description><![CDATA[Directory from which tarballs shall be copied
+      by external <b>TarCopyCommand</b>. A relative path name is resolved
+      relative to <i>archive-install-directory</i>/server/default/.
+      Not effective if TarCopyCommand=<code>NONE<code>]]>
+      </description>
+      <name>TarOutgoingDirectory</name>
       <type>java.lang.String</type>
-   </attribute>
-   <attribute access="read-only"
-      getMethod="isReady">
-      <description><![CDATA[Status if FileCopy Service is ready to process FileCopy orders.<br/>
-      		If the destination is a tar filesystem and a HSMModule is configured, this module must be also registered!<br/>
-      		If this status is false the processing of Filecopy orders will be delayed according NotReadyDelay to wait for 
-      		deployment/registration of the configured HSMModule.
-      ]]></description>
-      <name>isReady</name>
-      <type>boolean</type>
+      <descriptors>
+         <value value="tar-outgoing"/>
+      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getFileStatus"
@@ -114,19 +120,6 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="5x1m,12x5m,24x1h,7x1d" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getNotReadyDelay"
-      setMethod="setNotReadyDelay">
-      <description><![CDATA[Delay to reschedule FileCopy orders when the FileCopy Service is not ready.
-      <br>The delay can be specified in seconds (##s),
-      minutes (##m), hours (##h) or days (##d).]]>
-      </description>
-      <name>NotReadyDelay</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="1m" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -207,26 +200,6 @@
        <type>java.lang.String</type>
      </parameter>
       <return-type>boolean</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Register a HSM Module (start queue if the module is set in HSMModulServicename)</description>
-      <name>registerHSMModule</name>
-     <parameter>
-       <description>MBean Name of HSM module</description>
-       <name>moduleName</name>
-       <type>javax.management.ObjectName</type>
-     </parameter>
-      <return-type>void</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Unregister a HSM Module (stop queue if the module is set in HSMModulServicename)</description>
-      <name>unregisterHSMModule</name>
-     <parameter>
-       <description>MBean Name of HSM module</description>
-       <name>moduleName</name>
-       <type>javax.management.ObjectName</type>
-     </parameter>
-      <return-type>void</return-type>
    </operation>
    
 </mbean>

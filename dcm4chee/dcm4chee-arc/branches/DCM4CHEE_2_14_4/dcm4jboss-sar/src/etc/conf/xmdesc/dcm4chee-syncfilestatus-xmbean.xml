@@ -32,17 +32,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getHSMModulServicename"
-      setMethod="setHSMModulServicename">
-      <description>HSM Module to query status of files on HSM systems.
-      </description>
-      <name>HSMModulServicename</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="dcm4chee.archive:service=FileCopyHSMModule,type=Command"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getMinimumFileAge"
       setMethod="setMinimumFileAge">
       <description><![CDATA[Only files created longer ago than the specified intervall
@@ -64,6 +53,83 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="TO_ARCHIVE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCommandFailedFileStatus"
+      setMethod="setCommandFailedFileStatus">
+      <description>New file status, if the query command could not be executed.
+      Enumerated values: DEFAULT, TO_ARCHIVE, ARCHIVED, QUERY_HSM_FAILED
+      </description>
+      <name>CommandFailedFileStatus</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="TO_ARCHIVE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getNonZeroExitFileStatus"
+      setMethod="setNonZeroExitFileStatus">
+      <description>New file status, if query command returns non-zero exit code.
+      Enumerated values: DEFAULT, TO_ARCHIVE, ARCHIVED, QUERY_HSM_FAILED
+      </description>
+      <name>NonZeroExitFileStatus</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="QUERY_HSM_FAILED"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getNoMatchFileStatus"
+      setMethod="setNoMatchFileStatus">
+      <description>New file status, if the query result does NOT match specified pattern.
+      Enumerated values: DEFAULT, TO_ARCHIVE, ARCHIVED, QUERY_HSM_FAILED
+      </description>
+      <name>NoMatchFileStatus</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="TO_ARCHIVE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMatchFileStatus"
+      setMethod="setMatchFileStatus">
+      <description>New file status, if the query result does match specified pattern.
+      Enumerated values: DEFAULT, TO_ARCHIVE, ARCHIVED, QUERY_HSM_FAILED
+      </description>
+      <name>MatchFileStatus</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ARCHIVED"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getCommand"
+      setMethod="setCommand">
+      <description><![CDATA[Command to query status of specific file.
+         <br>%d will be replaced by file system name (directory path/mount point),
+         <br>%f will be replaced by the file path,
+         <br>%i will be replaced by user info associated with the file system.
+       ]]>
+      </description>
+      <name>Command</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="mmls %i/%f"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPattern"
+      setMethod="setPattern">
+      <description><![CDATA[Regular expression, applied to stdout of
+      command. Result determines if status is changed to MatchFileStatus
+      or NoMatchFileStatus.
+       ]]>
+      </description>
+      <name>Pattern</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value=".*\bArchived\b.*"/>
       </descriptors>
    </attribute>
    
@@ -138,6 +204,16 @@
       ]]></description>
       <name>check</name>
       <return-type>int</return-type>
+   </operation>
+
+   <operation impact="INFO">
+      <description>Apply pattern to given string</description>
+      <name>applyPattern</name>
+      <parameter>
+        <name>string</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>boolean</return-type>
    </operation>
 
 </mbean>
