@@ -323,25 +323,36 @@ public class VOIUtils {
         int h = raster.getHeight();
         int scanlineStride = ((ComponentSampleModel) raster.getSampleModel())
                 .getScanlineStride();
+        int paddingMin = img.getInt(Tag.PixelPaddingValue, Integer.MIN_VALUE);
+        int paddingMax = img.getInt(Tag.PixelPaddingRangeLimit,0) + paddingMin;
         DataBuffer data = raster.getDataBuffer();
+        int[] ret;
+        
         switch (data.getDataType()) {
         case DataBuffer.TYPE_BYTE:
-            return calcMinMax(signbit, mask, w, h, scanlineStride,
-                    ((DataBufferByte) data).getData());
+            ret = calcMinMax(signbit, mask, w, h, scanlineStride,
+                    ((DataBufferByte) data).getData(), paddingMin, paddingMax);
+            break;
+            
         case DataBuffer.TYPE_USHORT:
-            return calcMinMax(signbit, mask, w, h, scanlineStride,
-                    ((DataBufferUShort) data).getData());
+        	ret = calcMinMax(signbit, mask, w, h, scanlineStride,
+                    ((DataBufferUShort) data).getData(), paddingMin, paddingMax);
+        	break;
+        	
         case DataBuffer.TYPE_SHORT:
-            return calcMinMax(signbit, mask, w, h, scanlineStride,
-                    ((DataBufferShort) data).getData());
+        	ret = calcMinMax(signbit, mask, w, h, scanlineStride,
+                    ((DataBufferShort) data).getData(), paddingMin, paddingMax);
+        	break;
+        	
         default:
             throw new IllegalArgumentException("Illegal Type of DataBuffer: "
                     + raster);
         }
+        return ret;
     }
 
     static int[] calcMinMax(int signbit, int mask, int w, int h,
-            int scanlineStride, short[] data) {
+            int scanlineStride, short[] data, int paddingMin, int paddingMax) {
         int minVal = Integer.MAX_VALUE;
         int maxVal = Integer.MIN_VALUE;
         for (int x = 0; x < h; x++) {
@@ -350,6 +361,9 @@ public class VOIUtils {
                 if ((val & signbit) != 0) {
                     val |= ~mask;
                 }
+                if( val >= paddingMin && val <= paddingMax ) {
+            		continue;
+            	}
                 if (minVal > val) {
                     minVal = val;
                 }
@@ -362,7 +376,7 @@ public class VOIUtils {
     }
 
     static int[] calcMinMax(int signbit, int mask, int w, int h,
-            int scanlineStride, byte[] data) {
+            int scanlineStride, byte[] data, int paddingMin, int paddingMax) {
         int minVal = Integer.MAX_VALUE;
         int maxVal = Integer.MIN_VALUE;
         for (int x = 0; x < h; x++) {
@@ -371,6 +385,9 @@ public class VOIUtils {
                 if ((val & signbit) != 0) {
                     val |= ~mask;
                 }
+                if( val >= paddingMin && val <= paddingMax ) {
+            		continue;
+            	}
                 if (minVal > val) {
                     minVal = val;
                 }
