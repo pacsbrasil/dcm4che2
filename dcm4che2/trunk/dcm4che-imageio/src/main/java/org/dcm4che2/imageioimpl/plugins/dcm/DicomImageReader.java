@@ -249,7 +249,7 @@ public class DicomImageReader extends ImageReader {
      * blocks for enhanced multi-frame, but currently it merely returns null.
      */
     @Override
-    public IIOMetadata getImageMetadata(int imageIndex) {
+    public IIOMetadata getImageMetadata(int imageIndex) throws IOException {
         return null;
     }
 
@@ -382,7 +382,7 @@ public class DicomImageReader extends ImageReader {
                     OFFSETS_0_1_2, OFFSETS_0_0_0);
         }
 
-        if( (!compressed) && pmi.endsWith("422" ) ) {
+        if(  pmi.endsWith("422" ) ) {
             return new PartialComponentSampleModel(width, height, 2, 1);
         }
 

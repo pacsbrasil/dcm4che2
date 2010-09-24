@@ -70,7 +70,7 @@ public class PartialComponentSampleModel extends SampleModel {
 
     @Override
     public DataBuffer createDataBuffer() {
-        return new DataBufferByte(size);
+        return new DataBufferByte(width * height * 3);
     }
 
     @Override
