@@ -6,8 +6,8 @@
 </head>
 <body>  
   <wicket:panel>
-	<div class="msgWindow">
-		<div class="msgWindow movePage_content">
+	<div class="movePage">
+		<div class="movePage_content">
 			<span wicket:id="infoTitle" class="movePage_title">[MOVE ENTITIES TITLE]</span>
 			<span wicket:id="info" class="movePage_msg">[Move INFO]</span>
 			<img wicket:id="hourglass-image" />
@@ -21,6 +21,7 @@
 				<span wicket:id="moveFinishedText" />
 			</button>
 	       	<button type="submit" wicket:id="cancelBtn" >
+	       		<img wicket:id="cancelImg" alt="Cancel" />
 	       		<span wicket:id="cancelLabel">CancelBtn</span>
 	       	</button>            	
         </div>
