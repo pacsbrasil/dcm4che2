@@ -75,7 +75,6 @@ import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.PrivateTag;
@@ -104,7 +103,6 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class ContentEditService extends ServiceMBeanSupport {
 
-    private static final String NONE ="NONE";
     private static final String MWL2STORE_XSL = "mwl-cfindrsp2cstorerq.xsl";
 
     private static final int[] EXCLUDE_PPS_ATTRS = new int[]{
