@@ -99,18 +99,6 @@
    </attribute>
 
    <attribute access="read-write"
-      getMethod="getMoveDestinationAETs"
-      setMethod="setMoveDestinationAETs">
-      <description>AE title(s) of Move Destinations for entities that are moved.
-      </description>
-      <name>MoveDestinationAETs</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="NONE" />
-      </descriptors>
-   </attribute>
-
-   <attribute access="read-write"
       getMethod="getModifyingSystem"
       setMethod="setModifyingSystem">
       <description>Identification of the system which modifies attributes. Used in OriginalAttributesSequence.
