@@ -6,7 +6,7 @@
   <xsl:template match="record[@type='PATIENT']" mode="toc">
     <xsl:variable name="patdir"
       select="substring(record/record/record/attr[@tag='(0004,1500)'],7,9)"/>
-    <redirect:write select="concat($patdir,'TOC.HTM')">
+    <redirect:write file="{concat($patdir,'TOC.HTM')}">
       <html>
         <head>
           <title>Studies</title>

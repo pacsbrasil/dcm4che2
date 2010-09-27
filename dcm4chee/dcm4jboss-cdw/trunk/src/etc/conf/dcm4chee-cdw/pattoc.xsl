@@ -4,7 +4,7 @@
   extension-element-prefixes="redirect" version="1.0">
   <xsl:include href="stytoc.xsl"/>
   <xsl:template match="dicomdir" mode="toc">
-    <redirect:write select="'TOC.HTM'">
+    <redirect:write file="TOC.HTM">
       <html>
         <head>
           <title>Patients</title>

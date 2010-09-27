@@ -5,7 +5,7 @@
   <xsl:template match="record[@type='STUDY']" mode="toc">
     <xsl:variable name="stydir"
       select="substring(record/record/attr[@tag='(0004,1500)'],7,18)"/>
-    <redirect:write select="concat($stydir,'TOC.HTM')">
+    <redirect:write file="{concat($stydir,'TOC.HTM')}">
       <html>
         <head>
           <title>Series</title>

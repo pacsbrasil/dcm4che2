@@ -7,7 +7,7 @@
     <xsl:param name="pagetitle"/>
     <xsl:variable name="patdir"
       select="substring(record/record/record/attr[@tag='(0004,1500)'],7,9)"/>
-    <redirect:write select="concat($patdir,'INDEX.HTM')">
+    <redirect:write file="{concat($patdir,'INDEX.HTM')}">
       <html>
         <head>
           <title><xsl:value-of select="$pagetitle"/></title>

@@ -5,7 +5,7 @@
   <xsl:include href="patindex.xsl"/>
   <xsl:template match="dicomdir" mode="home">
     <xsl:param name="pagetitle"/>
-    <redirect:write select="'HOME.HTM'">
+    <redirect:write file="HOME.HTM">
       <html>
         <head>
           <title><xsl:value-of select="$pagetitle"/></title>
