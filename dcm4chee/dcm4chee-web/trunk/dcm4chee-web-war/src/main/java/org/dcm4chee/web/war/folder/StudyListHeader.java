@@ -1,5 +1,8 @@
 package org.dcm4chee.web.war.folder;
 
+import java.util.List;
+
+import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
@@ -14,6 +17,9 @@ import org.apache.wicket.model.Model;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.war.WicketSession;
+import org.dcm4chee.web.war.common.SelectAllLink;
+import org.dcm4chee.web.war.folder.model.PatientModel;
 
 public class StudyListHeader extends Panel {
 
@@ -81,7 +87,7 @@ public class StudyListHeader extends Panel {
         }
     }
 
-    public StudyListHeader(String id) {
+    public StudyListHeader(String id, Component toUpd) {
         super(id);
         setOutputMarkupId(true);
         
@@ -100,12 +106,28 @@ public class StudyListHeader extends Panel {
         .add(new TooltipBehaviour("folder.search.","autoExpand")));
 
         Cell patCell = new Cell("cell", 0);
-        
-        add(new Row("patient", 0).add(patCell));
-        add(new Row("study", 1).add(new Cell("cell", 1)));
-        add(new Row("pps", 2).add(new Cell("cell", 2)));
-        add(new Row("series", 3).add(new Cell("cell", 3)));
-        add(new Row("instance", 4).add(new Cell("cell", 4)));
+        List<PatientModel> patients = ((WicketSession) getSession()).getFolderViewPort().getPatients();
+        toUpd.setOutputMarkupId(true);
+        add(new Row("patient", PatientModel.PATIENT_LEVEL).add(patCell)
+                .add(new SelectAllLink("selectAll", patients,PatientModel.PATIENT_LEVEL, true, toUpd, true)
+                .add(new TooltipBehaviour("folder.studyview.", "selectAllPatients")))
+                .add(new SelectAllLink("deselectAll", patients,PatientModel.PATIENT_LEVEL, false, toUpd, true)
+                .add(new TooltipBehaviour("folder.studyview.", "deselectAllPatients")))
+                );
+        add(new Row("study", PatientModel.STUDY_LEVEL).add(new Cell("cell", 1))
+                .add(new SelectAllLink("selectAll", patients,PatientModel.STUDY_LEVEL, true, toUpd, true)
+                .add(new TooltipBehaviour("folder.studyview.", "selectAllStudies")))
+                .add(new SelectAllLink("deselectAll", patients,PatientModel.STUDY_LEVEL, false, toUpd, true)
+                .add(new TooltipBehaviour("folder.studyview.", "deselectAllStudies")))
+                );
+        add(new Row("pps", PatientModel.PPS_LEVEL).add(new Cell("cell", 2)));
+        add(new Row("series", PatientModel.SERIES_LEVEL).add(new Cell("cell", 3))
+                .add(new SelectAllLink("selectAll", patients,PatientModel.SERIES_LEVEL, true, toUpd, true)
+                .add(new TooltipBehaviour("folder.studyview.", "selectAllSeries")))
+                .add(new SelectAllLink("deselectAll", patients,PatientModel.SERIES_LEVEL, false, toUpd, true)
+                .add(new TooltipBehaviour("folder.studyview.", "deselectAllSeries")))
+                );
+        add(new Row("instance", PatientModel.INSTANCE_LEVEL).add(new Cell("cell", 4)));
         add(new Row("file", 5));
     }
 
