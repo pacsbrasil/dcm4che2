@@ -126,7 +126,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     private WebMarkupContainer listPanel;
     private WebMarkupContainer navPanel;
     private PatientNameField pnField;
-
+    protected Button searchBtn;
+    
     protected boolean ajaxRunning = false;
     protected boolean ajaxDone = false;
     protected Image hourglassImage;
@@ -343,7 +344,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         );
         form.addComponent(resetBtn);
         
-        Button searchBtn = new AjaxButton("searchBtn") {
+        searchBtn = new AjaxButton("searchBtn") {
             
             private static final long serialVersionUID = 1L;
             
@@ -553,6 +554,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     }
 
     protected void queryMWLItems() {
+        long  t1 = System.currentTimeMillis();
+        log.debug("#### start queryMWLItems");
         ModalityWorklist dao = lookupMwlDAO();
         viewport.getMWLItemModels().clear();
         viewport.setTotal(dao.countMWLItems(viewport.getFilter()));
@@ -560,6 +563,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         for (MWLItem mwlItem : dao.findMWLItems(viewport.getFilter(), pagesize.getObject(), viewport.getOffset())) 
             current.add(new MWLItemModel(mwlItem, new Model<Boolean>(false)));
         notSearched = false;
+        log.debug("#### queryMWLItems (found "+current.size()+" items) done in "+(System.currentTimeMillis()-t1)+" ms!");
     }
 
     private ModalityWorklist lookupMwlDAO() {
