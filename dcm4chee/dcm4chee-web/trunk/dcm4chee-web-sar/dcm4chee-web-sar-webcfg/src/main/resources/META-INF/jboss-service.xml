@@ -235,6 +235,7 @@
       	<dd>wado:      WADO image window</dd>
       	<dd>aeEdit:    Edit window in AE Managment</dd>
       	<dd>mpps2mwl:  MPPS to MWL link window</dd>
+      	<dd>move:      Move Entities Window</dd>
       ]]></description>
       <name>WindowSizeConfig</name>
       <type>java.lang.String</type>
@@ -245,6 +246,7 @@
          	aeEdit:960x600
          	mwEdit:1024x768
          	mpps2mwl:1024x600
+         	move:900x320
          	"/>
       </descriptors>
    </attribute>

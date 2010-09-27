@@ -733,6 +733,8 @@ public class StudyListPage extends Panel {
                           );
                         }
                     });
+                    int[] winSize = WebCfgDelegate.getInstance().getWindowSize("move");
+                    modalWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
                     modalWindow.show(target);
                 } else
                     msgWin.show(target, getString("folder.message.noSelection"));
