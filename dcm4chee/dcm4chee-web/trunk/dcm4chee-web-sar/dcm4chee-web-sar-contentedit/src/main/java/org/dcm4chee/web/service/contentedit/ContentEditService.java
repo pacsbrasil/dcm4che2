@@ -113,8 +113,6 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     private Code rejectNoteCode = new Code();
 
-    private String[] moveDestinationAETs;
-    
     private DicomEditLocal dicomEdit;
     private MppsToMwlLinkLocal mpps2mwl;
 
@@ -171,13 +169,6 @@ public class ContentEditService extends ServiceMBeanSupport {
         this.processRejNote = processRejNote;
     }
     
-    public String getMoveDestinationAETs() {
-        return moveDestinationAETs == null ? NONE : StringUtils.join(moveDestinationAETs, '\\');
-    }
-    public void setMoveDestinationAETs(String aets) {
-        this.moveDestinationAETs = NONE.equals(aets) ? null : StringUtils.split(aets, '\\');
-    }
-
     public boolean isAuditEnabled() {
         return auditEnabled;
     }
@@ -384,6 +375,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         DicomObject[] rejNotes = getRejectionNotes(entityTree);
         for (DicomObject kos : rejNotes) {
             logStudyDeleted(kos);
+            processRejectionNote(kos);
         }
         processIANs(entityTree, Availability.UNAVAILABLE);
         return rejNotes;
@@ -395,6 +387,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         DicomObject[] rejNotes = getRejectionNotes(entityTree);
         for (DicomObject kos : rejNotes) {
             logStudyDeleted(kos);
+            processRejectionNote(kos);
         }
         processIANs(entityTree, Availability.UNAVAILABLE);
         return rejNotes;
