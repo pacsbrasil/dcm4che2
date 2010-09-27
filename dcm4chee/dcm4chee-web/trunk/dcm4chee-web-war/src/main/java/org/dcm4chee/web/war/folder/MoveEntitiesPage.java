@@ -286,8 +286,8 @@ public class MoveEntitiesPage extends WebPage {
 
     private void presetStudy(DicomObject srcAttrs, SimpleEditDicomObjectPanel editor) {
         DicomObject attrs = editor.getDicomObject();
-        attrs.putString(Tag.AccessionNumber, VR.SH, srcAttrs.getString(Tag.AccessionNumber));
-        attrs.putString(Tag.StudyID, VR.SH, srcAttrs.getString(Tag.StudyID));
+        editor.addPresetChoice(Tag.AccessionNumber, "Accession Number", srcAttrs.getString(Tag.AccessionNumber));
+        editor.addPresetChoice(Tag.StudyID, "Study ID", srcAttrs.getString(Tag.StudyID));
         attrs.putString(Tag.StudyDescription, VR.LO, srcAttrs.getString(Tag.StudyDescription));
         editor.addPresetChoice(Tag.StudyDescription, "Study Description", srcAttrs.getString(Tag.StudyDescription));
         editor.addPresetChoice(Tag.StudyDescription, "Series Description", srcAttrs.getString(Tag.SeriesDescription));
@@ -308,7 +308,7 @@ public class MoveEntitiesPage extends WebPage {
             dateNotPresetted = false;
         }
         editor.addPresetChoice(Tag.StudyTime, "Current Date", new Date());
-        log.info("####### presetStudy attrs:"+attrs);
+        log.debug("####### presetStudy attrs:"+attrs);
     }
 
     private void needNewSeries(InstanceModel srcInstance, final StudyModel study) {
@@ -377,7 +377,10 @@ public class MoveEntitiesPage extends WebPage {
             dateNotPresetted = false;
         }
         editor.addPresetChoice(Tag.SeriesTime, "Current Date", new Date());
-        log.info("####### presetSeries attrs:"+attrs);
+        if (attrs.containsValue(Tag.RequestAttributesSequence))
+            log.debug("Remove RequestAttributesSequence!");
+        attrs.remove(Tag.RequestAttributesSequence);
+        log.debug("####### presetSeries attrs:"+attrs);
 
     }
     
@@ -475,6 +478,7 @@ public class MoveEntitiesPage extends WebPage {
                         destinationModel.expand();
                     } else {
                         if (studyModel != null) {
+                            studyModel.refresh();
                             studyModel.expand();
                             if (seriesModel != null) {//new study && new Series -> only one pps and one series
                                 studyModel.getPPSs().iterator().next().getSeries().iterator().next().expand();
@@ -574,6 +578,9 @@ public class MoveEntitiesPage extends WebPage {
                     window.close(target);
                 }
             };
+            cancelBtn.add(new Image("cancelImg",ImageManager.IMAGE_COMMON_CANCEL)
+            .add(new ImageSizeBehaviour("vertical-align: middle;")));
+            cancelBtn.add(new TooltipBehaviour("folder.", "cancelBtn"));
             add(cancelBtn.add(new Label("cancelLabel", new ResourceModel("cancelBtn"))).setOutputMarkupId(true));
         }
 
