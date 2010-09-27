@@ -9,6 +9,7 @@
 </head>
 <body>  
 <wicket:panel>
+	<div wicket:id="modal-window" />
 	<div class="mpps-info" wicket:id="mppsInfo">
 		<div class="info-title"><span wicket:id="mppsInfoTitle" >[INFO]</span></div>
 		<span class="info-desc" wicket:id="patientName.label" >Patient name:</span>
@@ -64,7 +65,7 @@
 			<tr wicket:id="searchFields">
 				<td></td>
 				<td>
-					<input style="vertical-align: bottom" wicket:id="patientName" id="patientName" type="text" />
+					<div wicket:id="patientName" id="patientName" />
 				</td>
 				<td>
 	                <div wicket:id="patientID.label">ID</div>
