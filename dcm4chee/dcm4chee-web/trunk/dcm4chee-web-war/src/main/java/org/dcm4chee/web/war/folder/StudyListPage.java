@@ -60,6 +60,7 @@ import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.ComponentTag;
@@ -136,7 +137,7 @@ public class StudyListPage extends Panel {
     private static final long serialVersionUID = 1L;
     private static Logger log = LoggerFactory.getLogger(StudyListPage.class);
     private ViewPort viewport = ((WicketSession) getSession()).getFolderViewPort();
-    private StudyListHeader header = new StudyListHeader("thead");
+    private StudyListHeader header;
     private SelectedEntities selected = new SelectedEntities();
 
     private IModel<Boolean> latestStudyFirst = new AbstractReadOnlyModel<Boolean>() {
@@ -225,6 +226,7 @@ public class StudyListPage extends Panel {
         addHourglass(form);
         addActions(form);
         
+        header = new StudyListHeader("thead", form);
         form.add(header);
         form.add(new PatientListView("patients", viewport.getPatients()));
         msgWin.setTitle(MessageWindow.TITLE_WARNING);
@@ -265,7 +267,7 @@ public class StudyListPage extends Panel {
         searchTableComponents.add(form.createAjaxParent("searchFields"));
         
         form.addPatientNameField("patientName", new PropertyModel<String>(filter, "patientName"),
-                    WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModel, true);
+                    WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModel, false);
         form.addTextField("patientID", enabledModel, true);
         form.addTextField("issuerOfPatientID", enabledModel, true);
         SimpleDateTimeField dtf = form.addDateTimeField("studyDateMin", new PropertyModel<Date>(filter, "studyDateMin"), 
@@ -1243,13 +1245,13 @@ public class StudyListPage extends Panel {
             );
             item.add(getEditLink(modalWindow, ppsModel,tooltip));
             
-            AjaxFallbackLink<?> linkBtn = new AjaxFallbackLink<Object>("linkBtn") {
+            IndicatingAjaxFallbackLink<?> linkBtn = new IndicatingAjaxFallbackLink<Object>("linkBtn") {
                 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-
+                    log.debug("#### linkBtn clicked!");
                     linkPage.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
                         
                         private static final long serialVersionUID = 1L;
@@ -1266,6 +1268,7 @@ public class StudyListPage extends Panel {
                             .setInitialWidth(winSize[0]).setInitialHeight(winSize[1])
                     )
                     .show(target, ppsModel, form);
+                    log.debug("#### linkBtn onClick finished!");
                 }
 
                 @Override
