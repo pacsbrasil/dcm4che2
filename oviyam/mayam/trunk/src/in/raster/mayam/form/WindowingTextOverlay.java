@@ -285,8 +285,9 @@ public class WindowingTextOverlay extends javax.swing.JPanel {
         this.repaint();        
     }
 
+
     @Override
-    public void paint(Graphics g) {
+    public void paint (Graphics g) {
         super.paint(g);
         if (textOverlay) {
             setTextOverlay();
@@ -296,6 +297,7 @@ public class WindowingTextOverlay extends javax.swing.JPanel {
         if (firstTime) {            
             this.setSize(layeredCanvas.getSize().width, layeredCanvas.getSize().height);
             firstTime = false;
+            setTextOverlayToNull();
             repaint();
         }
         showProbeFlag = false;
