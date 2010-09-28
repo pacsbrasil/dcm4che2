@@ -39,11 +39,14 @@
 package org.dcm4chee.dashboard.war.pages;
 
 import org.apache.wicket.PageParameters;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
-import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,9 +61,13 @@ public class DashboardMainPage extends WebPage {
     private static final long serialVersionUID = 1L;
     
     private static Logger log = LoggerFactory.getLogger(DashboardMainPage.class);
+    private static final ResourceReference CSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
 
     public DashboardMainPage(final PageParameters parameters) {
         try {
+            if (DashboardMainPage.CSS != null)
+                add(CSSPackageResource.getHeaderContribution(DashboardMainPage.CSS));
+
             add(new Link<Object>("logout-link") {
 
                 private static final long serialVersionUID = 1L;
@@ -72,9 +79,7 @@ public class DashboardMainPage extends WebPage {
                 }
             });
 
-            this.add(new DashboardPanel("tabs"));
-            
-            ((AjaxTabbedPanel) this.get("tabs")).setSelectedTab(((parameters != null) && parameters.containsKey("tab")) ? parameters.getInt("tab") : 0);
+            add(new DashboardPanel("modules"));
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);
