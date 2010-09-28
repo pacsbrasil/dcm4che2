@@ -72,19 +72,6 @@ import org.slf4j.LoggerFactory;
  */
 public class ContentEditDelegate extends BaseMBeanDelegate {
 
-    private static final String MSG_ERR_SELECTION_MOVE_SOURCE_LEVEL = "Selection for move entities wrong! Source must be one level beneath destination !";
-    private static final String MSGID_ERR_SELECTION_MOVE_SOURCE_LEVEL = "folder.err_moveSelectionSrcLevel";
-    private static final String MSG_ERR_SELECTION_MOVE_DESTINATION = "Selection for move entities wrong! Only one destination is allowed!";
-    private static final String MSGID_ERR_SELECTION_MOVE_DESTINATION = "folder.err_moveSelectionDest";
-    private static final String MSGID_ERR_SELECTION_MOVE_NO_SELECTION = "folder.err_moveNoSelection";
-    private static final String MSG_ERR_SELECTION_MOVE_NO_SELECTION = "Nothing selected for move entities!";
-    private static final String MSGID_ERR_SELECTION_MOVE_NO_SOURCE = "folder.err_moveNoSource";
-    private static final String MSG_ERR_SELECTION_MOVE_NO_SOURCE = "Selection for move entities wrong! No source entities selected!";
-    private static final String MSGID_ERR_SELECTION_MOVE_PPS = "folder.err_movePPS";
-    private static final String MSG_ERR_SELECTION_MOVE_PPS = "Selection for move entities wrong! PPS entities are not allowed!";
-    private static final String MSGID_ERR_SELECTION_MOVE_NOT_ONLINE = "folder.err_moveNotOnline";
-    private static final String MSG_ERR_SELECTION_MOVENOT_ONLINE = "Selection for move entities must have ONLINE availability!";
-
     private static ContentEditDelegate delegate;
 
     private static Logger log = LoggerFactory.getLogger(ContentEditDelegate.class);
@@ -141,19 +128,19 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
     public int moveEntities(SelectedEntities selected) throws SelectionException {
         try {
             if (selected.getPpss().size() > 0) {
-                throw new SelectionException(MSG_ERR_SELECTION_MOVE_PPS, MSGID_ERR_SELECTION_MOVE_PPS);
+                throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVE_PPS, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_PPS);
             } 
             checkAllOnline(selected);
             // study(series,inst) -> pat
             int pats = selected.getPatients().size();
             if (pats > 1) {
-                throw new SelectionException(MSG_ERR_SELECTION_MOVE_DESTINATION, MSGID_ERR_SELECTION_MOVE_DESTINATION);
+                throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVE_DESTINATION, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_DESTINATION);
             } 
             if( pats == 1) {
                 long patPk = selected.getPatients().iterator().next().getPk();
                 if (selected.getStudies().size() < 1) {
                     if ( selected.hasSeries() && selected.hasInstances()) {
-                        throw new SelectionException(MSG_ERR_SELECTION_MOVE_SOURCE_LEVEL, MSGID_ERR_SELECTION_MOVE_SOURCE_LEVEL);
+                        throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVE_SOURCE_LEVEL, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_SOURCE_LEVEL);
                     } else if (selected.hasSeries()) {
                         Study st = createNewStudy(selected.getSeries().iterator().next().getPPS().getStudy(), patPk);
                         return moveEntities("moveSeriesToStudy", st.getPk(), toPks(selected.getSeries()));
@@ -163,7 +150,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
                         Series series = createNewSeries(sModel, st.getPk());
                         return moveEntities("moveInstancesToSeries", series.getPk(), toPks(selected.getInstances()));
                     } else {
-                        throw new SelectionException(MSG_ERR_SELECTION_MOVE_NO_SOURCE, MSGID_ERR_SELECTION_MOVE_NO_SOURCE);
+                        throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVE_NO_SOURCE, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_NO_SOURCE);
                     }
                 } else {
                     return moveEntities("moveStudiesToPatient", patPk, toPks(selected.getStudies()));
@@ -172,7 +159,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
             // series(inst) -> study
             int nrOfStudies = selected.getStudies().size();
             if ( nrOfStudies > 1) {
-                throw new SelectionException(MSG_ERR_SELECTION_MOVE_DESTINATION, MSGID_ERR_SELECTION_MOVE_DESTINATION);
+                throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVE_DESTINATION, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_DESTINATION);
             } 
             if( nrOfStudies == 1) {
                 if (selected.getSeries().size() < 1) {
@@ -181,7 +168,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
                         Series series = createNewSeries(sModel, selected.getStudies().iterator().next().getPk());
                         return moveEntities("moveInstancesToSeries", series.getPk(), toPks(selected.getInstances()));
                     } else {
-                        throw new SelectionException(MSG_ERR_SELECTION_MOVE_NO_SOURCE, MSGID_ERR_SELECTION_MOVE_NO_SOURCE);
+                        throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVE_NO_SOURCE, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_NO_SOURCE);
                     }
                 }
                 return moveEntities("moveSeriesToStudy", toPks(selected.getStudies())[0], toPks(selected.getSeries()));
@@ -189,15 +176,15 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
             // instances -> series
             int nrOfSeries = selected.getSeries().size();
             if ( nrOfSeries > 1) {
-                throw new SelectionException(MSG_ERR_SELECTION_MOVE_DESTINATION, MSGID_ERR_SELECTION_MOVE_DESTINATION);
+                throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVE_DESTINATION, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_DESTINATION);
             } 
             if( nrOfSeries == 1) {
                 if (selected.getInstances().size() < 1) {
-                    throw new SelectionException(MSG_ERR_SELECTION_MOVE_NO_SOURCE, MSGID_ERR_SELECTION_MOVE_NO_SOURCE);
+                    throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVE_NO_SOURCE, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_NO_SOURCE);
                 }
                 return moveEntities("moveInstancesToSeries", toPks(selected.getSeries())[0], toPks(selected.getInstances()));
             }
-            throw new SelectionException(MSG_ERR_SELECTION_MOVE_NO_SELECTION, MSGID_ERR_SELECTION_MOVE_NO_SELECTION);
+            throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVE_NO_SELECTION, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_NO_SELECTION);
         } catch (SelectionException x) {
             throw x;
         } catch (Exception x) {
@@ -209,15 +196,15 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
     private void checkAllOnline(SelectedEntities selected) throws SelectionException {
         for ( StudyModel m : selected.getStudies()) {
             if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE)
-                throw new SelectionException(MSG_ERR_SELECTION_MOVENOT_ONLINE, MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
+                throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVENOT_ONLINE, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
         }
         for ( SeriesModel m : selected.getSeries()) {
             if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE)
-                throw new SelectionException(MSG_ERR_SELECTION_MOVENOT_ONLINE, MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
+                throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVENOT_ONLINE, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
         }
         for ( InstanceModel m : selected.getInstances()) {
             if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE)
-                throw new SelectionException(MSG_ERR_SELECTION_MOVENOT_ONLINE, MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
+                throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVENOT_ONLINE, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
         }
     }
 
