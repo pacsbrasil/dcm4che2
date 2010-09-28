@@ -60,7 +60,6 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.common.SPSStatus;
-import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.entity.AttrUtils;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
@@ -242,10 +241,13 @@ public abstract class PatientUpdateBean implements SessionBean {
         updateOrCreate(attrs, modified, matching);
     }
 
-    private PatientLocal updateOrCreate(Dataset ds, PatientMatching matching)
+    /**
+     * @ejb.interface-method view-type="local"
+     */
+    public PatientLocal updateOrCreate(Dataset ds, PatientMatching matching)
             throws CreateException, FinderException {
        return updateOrCreate(ds, null, matching);
-   }
+    }
 
    private PatientLocal updateOrCreate(Dataset ds, Dataset modified, PatientMatching matching)
             throws CreateException, FinderException {

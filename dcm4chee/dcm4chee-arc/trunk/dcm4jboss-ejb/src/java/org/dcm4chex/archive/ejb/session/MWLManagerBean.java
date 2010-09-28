@@ -59,6 +59,7 @@ import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PatientUpdateLocalHome;
 import org.dcm4chex.archive.exceptions.DuplicateMWLItemException;
 import org.dcm4chex.archive.exceptions.PatientMismatchException;
 
@@ -72,6 +73,7 @@ import org.dcm4chex.archive.exceptions.PatientMismatchException;
  *           jndi-name="ejb/MWLManager"
  * @ejb.transaction-type type="Container"
  * @ejb.transaction type="Required"
+ * @ejb.ejb-ref ejb-name="PatientUpdate" view-type="local" ref-name="ejb/PatientUpdate"
  * @ejb.ejb-ref ejb-name="Patient" view-type="local" ref-name="ejb/Patient"
  * @ejb.ejb-ref ejb-name="MWLItem" view-type="local" ref-name="ejb/MWLItem"
  */
@@ -99,6 +101,8 @@ public abstract class MWLManagerBean implements SessionBean {
 
     private static Logger log = Logger.getLogger(MWLManagerBean.class);
 
+    private PatientUpdateLocalHome patUpdateHome;
+
     private PatientLocalHome patHome;
 
     private MWLItemLocalHome mwlItemHome;
@@ -107,6 +111,8 @@ public abstract class MWLManagerBean implements SessionBean {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
+            patUpdateHome = (PatientUpdateLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/PatientUpdate");
             patHome = (PatientLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/Patient");
             mwlItemHome = (MWLItemLocalHome) jndiCtx
@@ -126,6 +132,7 @@ public abstract class MWLManagerBean implements SessionBean {
     public void unsetSessionContext() {
         mwlItemHome = null;
         patHome = null;
+        patUpdateHome = null;
     }
 
     /**
@@ -224,11 +231,8 @@ public abstract class MWLManagerBean implements SessionBean {
 
     private PatientLocal updateOrCreatePatient(Dataset ds,
             PatientMatching matching) throws FinderException, CreateException  {
-        try {
-            return patHome.selectPatient(ds, matching, false);
-        } catch (ObjectNotFoundException onfe) {
-            return patHome.create(ds.subSet(PATIENT_ATTRS_WITH_CHARSET));
-        }           
+        return patUpdateHome.create().updateOrCreate(
+                ds.subSet(PATIENT_ATTRS_WITH_CHARSET), matching);
     }
     
     /**
