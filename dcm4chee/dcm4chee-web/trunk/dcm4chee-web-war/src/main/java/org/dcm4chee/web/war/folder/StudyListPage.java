@@ -231,7 +231,7 @@ public class StudyListPage extends Panel {
         form.add(new PatientListView("patients", viewport.getPatients()));
         msgWin.setTitle(MessageWindow.TITLE_WARNING);
         add(msgWin);
-        add(linkPage);
+        form.add(linkPage);
         add(imageSelection);
         imageSelection.setWindowClosedCallback(new WindowClosedCallback(){
             private static final long serialVersionUID = 1L;
