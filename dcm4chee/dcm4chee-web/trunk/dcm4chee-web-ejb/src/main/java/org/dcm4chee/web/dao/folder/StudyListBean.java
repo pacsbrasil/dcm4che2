@@ -39,6 +39,8 @@
 package org.dcm4chee.web.dao.folder;
 
 import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -51,6 +53,7 @@ import javax.persistence.TemporalType;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.StorageStatus;
+import org.dcm4chee.archive.entity.BaseEntity;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
@@ -70,6 +73,65 @@ import org.jboss.annotation.ejb.LocalBinding;
 public class StudyListBean implements StudyListLocal {
     
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+    private static Comparator<Instance> instanceComparator = new Comparator<Instance>() {
+        public int compare(Instance o1, Instance o2) {
+            String in1 = o1.getInstanceNumber();
+            String in2 = o2.getInstanceNumber();
+            return compareIntegerStringAndPk(o1, o2, in1, in2);
+        }
+    };
+    private static Comparator<Series> seriesComparator = new Comparator<Series>() {
+        public int compare(Series o1, Series o2) {
+            String in1 = o1.getSeriesNumber();
+            String in2 = o2.getSeriesNumber();
+            return compareIntegerStringAndPk(o1, o2, in1, in2);
+        }
+
+    };
+    /**
+     * Compare String values numeric.
+     * Rules:
+     * 1) null values are greater (sort to end). (both null - > compare pk's)
+     * 2) both values numeric -> compare numeric (if equal compare pk's)
+     * 3) none numeric values are always greater than numeric values
+     * 4) both values not numeric -> compare textual (if equal compare pk's)
+     * @param o1 BaseEntity 1 to compare pk's
+     * @param o2 BaseEntity 2 to compare pk's
+     * @param is1 String value 1
+     * @param is2 String value 2
+     * @return <0 if o1 < o2, 0 if o1 = o2 and >0 if o1 > o2
+     */
+    private static int compareIntegerStringAndPk(BaseEntity o1, BaseEntity o2, String is1,
+            String is2) {
+        if (is1 != null) {
+            if (is2 != null) {
+                try {
+                    Integer i1 = new Integer(is1);
+                    try {
+                        int i = i1.compareTo(new Integer(is2));
+                        if (i != 0)  
+                            return i;
+                    } catch (NumberFormatException x) {
+                        return -1; 
+                    }
+                } catch (NumberFormatException x) {
+                    try {
+                        Integer.parseInt(is2);
+                        return 1;
+                    } catch (NumberFormatException x1) {
+                        int i = is1.compareTo(is2);
+                        if (i != 0)
+                            return i;
+                    }
+                }
+            } else {
+                return -1;
+            }
+        } else if ( is2 != null) {
+            return 1;
+        }
+        return new Long(o1.getPk()).compareTo(new Long(o2.getPk()));
+    }
 
     @PersistenceContext(unitName="dcm4chee-arc")
     private EntityManager em;
@@ -311,23 +373,30 @@ public class StudyListBean implements StudyListLocal {
 
     @SuppressWarnings("unchecked")
     public List<Series> findSeriesOfStudy(long pk) {
-        return em.createQuery("FROM Series s LEFT JOIN FETCH s.modalityPerformedProcedureStep WHERE s.study.pk=?1 ORDER BY s.pk")
+        return sortSeries(em.createQuery("FROM Series s LEFT JOIN FETCH s.modalityPerformedProcedureStep WHERE s.study.pk=?1 ORDER BY s.seriesNumber, s.pk")
                 .setParameter(1, pk)
-                .getResultList();
+                .getResultList());
     }
 
     @SuppressWarnings("unchecked")
     public List<Series> findSeriesOfMpps(String uid) {
-        return em.createQuery("FROM Series s WHERE s.performedProcedureStepInstanceUID=?1 ORDER BY s.pk")
+        return sortSeries(em.createQuery("FROM Series s WHERE s.performedProcedureStepInstanceUID=?1 ORDER BY s.pk")
                 .setParameter(1, uid)
-                .getResultList();
+                .getResultList());
+    }
+
+    private List<Series> sortSeries(List<Series> l) {
+        Collections.sort(l, seriesComparator);
+        return l;
     }
 
     @SuppressWarnings("unchecked")
     public List<Instance> findInstancesOfSeries(long pk) {
-        return em.createQuery("FROM Instance i LEFT JOIN FETCH i.media WHERE i.series.pk=?1 ORDER BY i.pk")
+        List<Instance> l = em.createQuery("FROM Instance i LEFT JOIN FETCH i.media WHERE i.series.pk=?1 ORDER BY i.pk")
                 .setParameter(1, pk)
                 .getResultList();
+        Collections.sort(l, instanceComparator);
+        return l;
    }
 
     @SuppressWarnings("unchecked")
