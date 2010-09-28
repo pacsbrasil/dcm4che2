@@ -348,7 +348,7 @@ public class CompressionService extends ServiceMBeanSupport {
                                 try {
                                     doCompress(fsMgt, files[k], info, buffer);
                                 } catch (CompressionFailedException e) {
-                                    log.error(e.getMessage(), e);
+								    // exception should be already logged appropriately.
                                 }
                             }
                             limit -= files.length;
