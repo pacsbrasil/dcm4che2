@@ -109,7 +109,7 @@ class MPPSSCP {
             throw new DicomServiceException(rq, Status.DuplicateSOPinstance);
         }      
         data.initFileMetaInformation(
-                UID.InstanceAvailabilityNotificationSOPClass, iuid,
+                UID.ModalityPerformedProcedureStepSOPClass, iuid,
                 UID.ExplicitVRLittleEndian);
         try {
             store(f, data);
