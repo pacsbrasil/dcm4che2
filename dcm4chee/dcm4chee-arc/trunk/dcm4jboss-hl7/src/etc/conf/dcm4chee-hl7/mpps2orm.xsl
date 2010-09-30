@@ -50,7 +50,7 @@
     
     <xsl:template match="item">
         <xsl:variable name="accno" select="normalize-space(attr[@tag='00080050'])"/>
-         <OBC>
+         <ORC>
             <field>SC</field>
             <!-- Use Accession Number as Order Placer Number -->
             <field><xsl:value-of select="$accno"/></field>
@@ -63,7 +63,7 @@
                     <xsl:with-param name="ppsstatus" select="normalize-space(../../attr[@tag='00400252'])"/>
                 </xsl:call-template>
             </field>
-        </OBC>
+        </ORC>
         <OBR>
             <field>1</field>
             <!-- Use Accession Number as Order Placer Number -->
