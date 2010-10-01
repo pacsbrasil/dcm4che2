@@ -341,11 +341,15 @@ public class DashboardService extends ServiceMBeanSupport {
     public int[] listQueueAttributes(String queueName) throws MalformedObjectNameException, NullPointerException {
         int[] queueAttributesList = new int[4];
         try {
-            queueAttributesList[0] = new Integer(server.getAttribute(new ObjectName(queueName), "MessageCount").toString()).intValue();
-            queueAttributesList[1] = new Integer(server.getAttribute(new ObjectName(queueName), "DeliveringCount").toString()).intValue();
-            queueAttributesList[2] = new Integer(server.getAttribute(new ObjectName(queueName), "ScheduledMessageCount").toString()).intValue();
-            queueAttributesList[3] = new Integer(server.getAttribute(new ObjectName(queueName), "ConsumerCount").toString()).intValue();
-        } catch (Exception ignore) {}
+            ObjectName queueON = new ObjectName(this.domainName + ":service=Queue,name="+queueName);
+            queueAttributesList[0] = new Integer(server.getAttribute(queueON, "MessageCount").toString()).intValue();
+            queueAttributesList[1] = new Integer(server.getAttribute(queueON, "DeliveringCount").toString()).intValue();
+            queueAttributesList[2] = new Integer(server.getAttribute(queueON, "ScheduledMessageCount").toString()).intValue();
+            queueAttributesList[3] = new Integer(server.getAttribute(queueON, "ConsumerCount").toString()).intValue();
+        } catch (Exception ignore) {
+            log.error("Cant get Queue attributes!", ignore);
+            return null;
+        }
         return queueAttributesList;        
     }
 

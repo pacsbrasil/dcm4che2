@@ -117,21 +117,15 @@ public class QueuePanel extends Panel {
 
                 DashboardDelegator dashboardDelegator = DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName")));
                 for (String queueName : dashboardDelegator.listQueueNames()) {
-                        int[] counts = dashboardDelegator.listQueueAttributes(
-                                            ((AuthenticatedWebApplication) getApplication())
-                                                .getInitParameter("ArchiveName") + 
-                                            ":service=Queue,name=" + 
-                                            queueName
-                                        );
-                    
+                        int[] counts = dashboardDelegator.listQueueAttributes(queueName);
                     
                         QueueModel queueModel = new QueueModel(queueName);
                         DefaultMutableTreeNode queueNode;
                         queueModel.setQueue(true);
-                        queueModel.setMessageCount(counts[0]);
-                        queueModel.setDeliveringCount(counts[1]);
-                        queueModel.setScheduledMessageCount(counts[2]);
-                        queueModel.setConsumerCount(counts[3]);
+                        queueModel.setMessageCount(counts == null ? -1 : counts[0]);
+                        queueModel.setDeliveringCount(counts == null ? -1 : counts[1]);
+                        queueModel.setScheduledMessageCount(counts == null ? -1 : counts[2]);
+                        queueModel.setConsumerCount(counts == null ? -1 : counts[3]);
                         rootNode.add(queueNode = new DefaultMutableTreeNode(queueModel));
 
                     try {
