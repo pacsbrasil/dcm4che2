@@ -221,7 +221,7 @@ public class DashboardService extends ServiceMBeanSupport {
                 while ((line = reader.readLine()) != null)
                     reportList.add((ReportModel) JSONObject.toBean(JSONObject.fromObject(line), ReportModel.class));
             }
-            return reportList.toArray(new ReportModel[0]);
+            return reportList.toArray(new ReportModel[reportList.size()]);
         } catch (Exception e) {
             log.debug("Exception: ", e);
             return null;
@@ -335,7 +335,7 @@ public class DashboardService extends ServiceMBeanSupport {
                 new ObjectName(this.domainName + ":service=Queue,*"), null)) {
             queueNameList.add(oi.getObjectName().getKeyProperty("name"));
         }
-        return queueNameList.toArray(new String[0]);
+        return queueNameList.toArray(new String[queueNameList.size()]);
     }
 
     public int[] listQueueAttributes(String queueName) throws MalformedObjectNameException, NullPointerException {
@@ -364,7 +364,7 @@ public class DashboardService extends ServiceMBeanSupport {
                     token = token.substring(0, token.length() - 1);
             if (token.length() > 0) tokens.add(token);
         }
-        return tokens.toArray(new String[0]);
+        return tokens.toArray(new String[tokens.size()]);
     }
     
     private String arrayToString(String[] array) {
