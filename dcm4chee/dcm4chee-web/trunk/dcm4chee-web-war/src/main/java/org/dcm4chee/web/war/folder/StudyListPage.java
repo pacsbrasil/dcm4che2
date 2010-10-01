@@ -131,7 +131,18 @@ public class StudyListPage extends Panel {
     
     private ModalWindow modalWindow;
     
-    private Model<Integer> pagesize = new Model<Integer>();
+    private IModel<Integer> pagesize = new IModel<Integer>(){
+        private int pagesize = WebCfgDelegate.getInstance().getDefaultFolderPagesize();
+        private static final long serialVersionUID = 1L;
+        public Integer getObject() {
+            return pagesize;
+        }
+        public void setObject(Integer object) {
+            if (object != null)
+                pagesize = object;
+        }
+        public void detach() {}
+    };
 
     private static final String MODULE_NAME = "folder";
     private static final long serialVersionUID = 1L;
@@ -231,7 +242,9 @@ public class StudyListPage extends Panel {
         form.add(new PatientListView("patients", viewport.getPatients()));
         msgWin.setTitle(MessageWindow.TITLE_WARNING);
         add(msgWin);
-        form.add(linkPage);
+        Form<Object> form1 = new Form<Object>("modalForm");
+        add(form1);
+        form1.add(linkPage);
         add(imageSelection);
         imageSelection.setWindowClosedCallback(new WindowClosedCallback(){
             private static final long serialVersionUID = 1L;
@@ -247,7 +260,6 @@ public class StudyListPage extends Panel {
     @SuppressWarnings("unchecked")
     private void addQueryFields(final StudyListFilter filter, final BaseForm form) {
         final IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
-
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -454,7 +466,6 @@ public class StudyListPage extends Panel {
         form.setDefaultButton(searchBtn);
         form.clearParent();
         
-        pagesize.setObject(WebCfgDelegate.getInstance().getDefaultFolderPagesize());
         form.addDropDownChoice("pagesize", pagesize, WebCfgDelegate.getInstance().getPagesizeList(), new Model<Boolean>() {
                     
             private static final long serialVersionUID = 1L;

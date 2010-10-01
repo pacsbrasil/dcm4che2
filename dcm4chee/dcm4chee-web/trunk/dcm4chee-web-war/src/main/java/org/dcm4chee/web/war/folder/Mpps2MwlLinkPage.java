@@ -51,6 +51,7 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.image.Image;
@@ -105,13 +106,16 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         setContent(panel);
     }
 
+    public Button getSearchButton() {
+        return panel.getSearchButton();
+    }
     public void show(AjaxRequestTarget target, PPSModel ppsModel, Component c) {
         ppsModels  = toList(ppsModel);
         ppsModelForInfo = ppsModels.get(0);
         ppsPatModelForInfo = ppsModelForInfo.getStudy().getPatient();
         panel.presetSearchfields();
         comp = c;
-        target.appendJavascript("document.getElementById('" + panel.getSearchBtnMarkupId() +
+        target.appendJavascript("document.getElementById('" + panel.getSearchButton().getMarkupId() +
                 "').click();");
         super.show(target);
     }
@@ -145,8 +149,8 @@ public class Mpps2MwlLinkPage extends ModalWindow {
             addMppsInfoPanel();
         }
         
-        public String getSearchBtnMarkupId() {
-            return searchBtn.getMarkupId();
+        public Button getSearchButton() {
+            return searchBtn;
         }
 
         protected ViewPort initViewPort() {

@@ -59,8 +59,13 @@ public class ViewPort implements Serializable {
 
     private int offset = 0;
     private int total = 0;
+
     private final StudyListFilter filter = new StudyListFilter(GroupedChoices.get(SOURCE_AETS_PROPERTIES_FILENAME).getAllGroups());
     private final List<PatientModel> patients = new ArrayList<PatientModel>();
+    
+    public ViewPort() {
+        clear();
+    }
 
     public int getOffset() {
         return offset;
@@ -91,7 +96,7 @@ public class ViewPort implements Serializable {
         filter.clear();
         patients.clear();
     }
-    
+  
     public List<String> getSourceAetChoices(List<String> availableChoices) {
         return GroupedChoices.get(SOURCE_AETS_PROPERTIES_FILENAME).getChoices(availableChoices);
     }

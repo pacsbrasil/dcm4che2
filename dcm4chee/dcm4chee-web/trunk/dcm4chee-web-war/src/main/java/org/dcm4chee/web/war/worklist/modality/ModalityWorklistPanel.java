@@ -322,7 +322,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             @SuppressWarnings("unchecked")
             @Override
             protected void onSubmit(final AjaxRequestTarget target, Form<?> form) {
-
                 form.clearInput();
                 viewport.clear();
                 ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("modality")).setModelObject("*");
@@ -343,48 +342,22 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
         form.addComponent(resetBtn);
-        
+        form.addComponent(new AjaxButton("defaultSubmit") {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                doSearch(target);
+            }
+            
+        });
         searchBtn = new AjaxButton("searchBtn") {
             
             private static final long serialVersionUID = 1L;
             
             @Override
             public void onSubmit(AjaxRequestTarget target, final Form<?> form) {
-                ajaxRunning = ajaxDone = false;
-                
-                target.addComponent(
-                    listPanel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                        
-                        private static final long serialVersionUID = 1L;
-  
-                        @Override
-                        protected void onTimer(final AjaxRequestTarget target) {
-  
-                            if (!ajaxRunning) {
-                                if (!ajaxDone) {
-                                    ajaxRunning = true;
-                                    new Thread(new Runnable() {
-                                        public void run() {
-                                            try {
-                                                viewport.setOffset(0);
-                                                queryMWLItems();
-                                            } catch (Throwable t) {
-                                                log.error("search failed: ", t);
-                                            } finally {
-                                                ajaxRunning = false;
-                                                ajaxDone = true;
-                                            }
-                                        }
-                                    }).start();
-                                } else {
-                                    this.stop();
-                                    addAfterQueryComponents(target);
-                                }
-                                target.addComponent(hourglassImage);
-                            }
-                        }
-                    })
-                );
+                doSearch(target);
             }
             
             @Override
@@ -405,7 +378,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
         );
         form.addComponent(searchBtn);
-        form.setDefaultButton(searchBtn);
         
         navPanel = form.createAjaxParent("navPanel");
         
@@ -664,5 +636,42 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         target.addComponent(pnField);
         target.addComponent(navPanel);
         target.addComponent(listPanel);
+    }
+
+    private void doSearch(AjaxRequestTarget target) {
+        ajaxRunning = ajaxDone = false;
+        target.addComponent(
+            listPanel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+                
+                private static final long serialVersionUID = 1L;
+  
+                @Override
+                protected void onTimer(final AjaxRequestTarget target) {
+  
+                    if (!ajaxRunning) {
+                        if (!ajaxDone) {
+                            ajaxRunning = true;
+                            new Thread(new Runnable() {
+                                public void run() {
+                                    try {
+                                        viewport.setOffset(0);
+                                        queryMWLItems();
+                                    } catch (Throwable t) {
+                                        log.error("search failed: ", t);
+                                    } finally {
+                                        ajaxRunning = false;
+                                        ajaxDone = true;
+                                    }
+                                }
+                            }).start();
+                        } else {
+                            this.stop();
+                            addAfterQueryComponents(target);
+                        }
+                        target.addComponent(hourglassImage);
+                    }
+                }
+            })
+        );
     }
 }
