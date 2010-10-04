@@ -674,6 +674,7 @@ Notifications for one Series.]]>
            OphthalmicPhotography8BitImageStorage
            OphthalmicPhotography16BitImageStorage
            PositronEmissionTomographyImageStorage
+           EnhancedPETImageStorage
            RTImageStorage
            HardcopyGrayscaleImageStorage
            HardcopyColorImageStorage
