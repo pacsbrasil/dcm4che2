@@ -258,12 +258,36 @@
     </descriptors>
   </attribute>
 
+   <attribute access="read-write"
+      getMethod="getConfigDir"
+      setMethod="setConfigDir">
+      <description><![CDATA[Directory where XSL stylesheet <code>fobsr.xsl</code> to render SR exists.<br/>
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>  
+      </description>
+      <name>CoerceConfigDirectory</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-rid"/>
+      </descriptors>
+   </attribute>
+
   <attribute access="read-write" getMethod="getQueryRetrieveScpName"
     setMethod="setQueryRetrieveScpName">
     <description>Used internally. Do NOT modify.</description>
     <name>QueryRetrieveScpName</name>
     <type>javax.management.ObjectName</type>
   </attribute>
+  
+  <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+  
 
   &defaultAttributes;
 
