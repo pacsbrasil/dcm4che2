@@ -8,5 +8,7 @@
     <depends>dcm4chee.archive:service=AuditLogger</depends>
     <depends optional-attribute-name="QueryRetrieveScpName"
       >dcm4chee.archive:service=QueryRetrieveScp</depends>
+    <depends optional-attribute-name="TemplatesServiceName"
+      >dcm4chee.archive:service=Templates</depends>
   </mbean>
 </server>
