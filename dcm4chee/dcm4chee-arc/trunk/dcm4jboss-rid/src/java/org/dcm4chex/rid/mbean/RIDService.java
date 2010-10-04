@@ -49,9 +49,11 @@ import java.util.TreeMap;
 
 import javax.activation.DataHandler;
 import javax.management.ObjectName;
+import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.dcm4che.dict.UIDs;
+import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.rid.common.RIDRequestObject;
 import org.dcm4chex.rid.common.RIDResponseObject;
 import org.jboss.system.ServiceMBeanSupport;
@@ -69,6 +71,7 @@ public class RIDService extends ServiceMBeanSupport  {
     private static final String NONE = "NONE";
     private RIDSupport support = new RIDSupport( this );
     private float waveformCorrection = 1f;
+    private TemplatesDelegate templates = new TemplatesDelegate(this);
 
     public RIDService() {
     }
@@ -85,6 +88,22 @@ public class RIDService extends ServiceMBeanSupport  {
     }
     public void setWadoURL( String wadoURL ) {
         support.setWadoURL( wadoURL );
+    }
+
+    public final String getConfigDir() {
+        return templates.getConfigDir();
+    }
+
+    public final void setConfigDir(String path) {
+        templates.setConfigDir(path);
+    }
+
+    public final ObjectName getTemplatesServiceName() {
+        return templates.getTemplatesServiceName();
+    }
+
+    public final void setTemplatesServiceName(ObjectName serviceName) {
+        templates.setTemplatesServiceName(serviceName);
     }
 
     public String getRIDSummaryXsl() {
@@ -415,5 +434,9 @@ public class RIDService extends ServiceMBeanSupport  {
 
     public DataHandler getDocumentDataHandler(String objectUID, String contentType) throws IOException {
         return support.getOrCreateDocument(objectUID,contentType).getDataHandler();
+    }
+    
+    public Templates getTemplate(String xslFilename) {
+        return templates.getTemplatesForAET(null, xslFilename);
     }
 }

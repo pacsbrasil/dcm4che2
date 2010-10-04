@@ -110,6 +110,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveStudyDatesCmd;
 import org.dcm4chex.archive.mbean.HttpUserInfo;
+import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.HomeFactoryException;
@@ -157,7 +158,7 @@ public class RIDSupport {
     private static Logger log = Logger.getLogger( RIDSupport.class.getName() );
     private static final DcmObjectFactory factory = DcmObjectFactory.getInstance();
 
-    private static final String FOBSR_XSL_URI = "resource:xsl/fobsr.xsl";
+    private static final String FOBSR_XSL_URI = "fobsr.xsl";
     private final FopFactory fopFactory = FopFactory.newInstance();
 
     private static MBeanServer server;
@@ -753,11 +754,12 @@ public class RIDSupport {
         try {
             if ( doc == null ) {
                 doc = getStorage().createDocument( docUID, contentType );
-                out = doc.getOutputStream();
                 File inFile = getDICOMFile( docUID );
                 if ( inFile == null ) {
+                    getStorage().removeDocument(docUID);
                     return new RIDStreamResponseObjectImpl( null, CONTENT_TYPE_HTML, HttpServletResponse.SC_NOT_FOUND, "Object with documentUID="+docUID+ "not found!");
                 }
+                out = doc.getOutputStream();
                 if ( ! useOrigFile   ) {
                     FileDataSource ds = null;
                     try {
@@ -855,7 +857,8 @@ public class RIDSupport {
         DataInputStream in = new DataInputStream(new BufferedInputStream(input));
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
         Fop fop = newFop(MimeConstants.MIME_PDF, out);
-        Templates template = tf.newTemplates(new StreamSource(FOBSR_XSL_URI));
+        Templates template = service.getTemplate(FOBSR_XSL_URI);
+
         TransformerHandler th = tf.newTransformerHandler(template);
         if ( srImageRows != null ) {
             Transformer t = th.getTransformer();
