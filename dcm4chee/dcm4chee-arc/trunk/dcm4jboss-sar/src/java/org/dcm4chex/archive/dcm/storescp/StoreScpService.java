@@ -775,11 +775,13 @@ public class StoreScpService extends AbstractScpService
             String accno = seriesStored.getAccessionNumber();
             Dataset pps = ian.getItem(Tags.RefPPSSeq);
             ParticipantObjectDescription desc = new ParticipantObjectDescription();
-            if (accno != null) {
+            if (accno != null && accno.length() != 0) {
                 desc.addAccession(accno);
             }
             if (pps != null) {
-                desc.addMPPS(pps.getString(Tags.RefSOPInstanceUID));
+                String uid = pps.getString(Tags.RefSOPInstanceUID);
+                if (uid != null && uid.length() != 0)
+                    desc.addMPPS(uid);
             }
             for (String cuid : sorter.getCUIDs(suid)) {
                 ParticipantObjectDescription.SOPClass sopClass = new ParticipantObjectDescription.SOPClass(
