@@ -66,6 +66,8 @@ import org.dcm4chex.archive.ejb.interfaces.CodeToDeviceMappingHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author franz.willer@tiani.com
@@ -73,6 +75,8 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since 17.02.2005
  */
 public class DeviceService extends ServiceMBeanSupport {
+	
+	private static Logger log = LoggerFactory.getLogger(DeviceService.class);
 
 	private static final String STANDARD_XSL_URL = "resource:dcm4chee-device-import.xsl";
 	
@@ -100,7 +104,7 @@ public class DeviceService extends ServiceMBeanSupport {
 	        		new SAXResult(ds.getSAXHandler2(null)));
 	        lookupMapper().createMapping( ds );
         } catch ( Exception x ) {
-        	x.printStackTrace();
+        	log.error("Exception importing Device mapping for URL {}",importURL, x);
         	return "Exception:"+x.getMessage();
         }
      	return "Device mapping from url '"+importURL+"' imported!";

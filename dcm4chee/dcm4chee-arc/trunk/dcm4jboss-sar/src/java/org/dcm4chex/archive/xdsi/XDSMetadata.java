@@ -152,7 +152,7 @@ public class XDSMetadata {
                 th.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
             }
         } catch ( Throwable t ) {
-            t.printStackTrace();
+            log.warn("Could not initialize SAX transformer", t);
         }
     }
     /**
