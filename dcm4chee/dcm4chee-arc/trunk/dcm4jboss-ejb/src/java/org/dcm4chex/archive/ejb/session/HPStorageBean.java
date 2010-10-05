@@ -64,7 +64,6 @@ import org.dcm4chex.archive.ejb.interfaces.HPLocalHome;
  * @ejb.ejb-ref ejb-name="HP" view-type="local" ref-name="ejb/HP"
  */
 public abstract class HPStorageBean implements SessionBean {
-
 	private HPLocalHome hpHome;
 
     public void setSessionContext(SessionContext ctx) {
@@ -73,10 +72,6 @@ public abstract class HPStorageBean implements SessionBean {
             jndiCtx = new InitialContext();
 			hpHome = (HPLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/HP");
-            try {
-            } catch ( Throwable t ) {
-            	t.printStackTrace();
-            }
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
