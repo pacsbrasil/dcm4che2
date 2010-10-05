@@ -215,23 +215,21 @@ public class DocumentSend extends StorageCommitmentService {
             assoc.cstore(store.getSOPClassUID(), store.getSOPInstanceUID(), priority,
                     dw, tsuid, rspHandler);
         } catch (NoPresentationContextException e) {
-            log.warn("WARNING: " + e.getMessage()
-                    + " - cannot send encapsulated document");
+            log.warn("Cannot send encapsulated document.", e);
             return null;
         } catch (IOException e) {
-            log.error("ERROR: Failed to send encapsulated document:"
-                    + e.getMessage(), e);
+            log.error("ERROR: Failed to send encapsulated document:", e);
             return null;
         } catch (InterruptedException e) {
             // should not happen
-            e.printStackTrace();
+            log.error("Interrupted while sending Dimse response.", e);
             return null;
         }
         try {
             assoc.waitForDimseRSP();
         } catch (InterruptedException e) {
             // should not happen
-            e.printStackTrace();
+            log.error("Interrupted while receiving Dimse response.", e);
         }
         return dw.getHash();
     }

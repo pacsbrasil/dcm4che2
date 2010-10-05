@@ -177,31 +177,27 @@ public class StgCmtSCU extends StorageCommitmentService {
         refSOP.putString(Tag.ReferencedSOPInstanceUID, VR.UI, iuid);
         refSOPSq.addDicomObject(refSOP);
         try {
-        	log.debug("+++ Send N-ACTION for StgCmt +++");
+            log.debug("+++ Send N-ACTION for StgCmt +++");
             DimseRSP rsp = assoc.naction(UID.StorageCommitmentPushModelSOPClass,
                 UID.StorageCommitmentPushModelSOPInstance, STG_CMT_ACTION_TYPE,
                 actionInfo, UID.ImplicitVRLittleEndian);
-        	log.debug("+++ receive N-ACTION +++ rsp:"+rsp);
+            log.debug("+++ receive N-ACTION +++ rsp:"+rsp);
             rsp.next();
             DicomObject cmd = rsp.getCommand();
             int status = cmd.getInt(Tag.Status);
             if (status == 0) {
                 return tuid;
             }
-            log.warn("WARNING: Storage Commitment request failed with status: "
+            log.warn("Storage Commitment request failed with status: "
                     + StringUtils.shortToHex(status) + "H");
             log.warn(cmd.toString());
         } catch (NoPresentationContextException e) {
-        	log.warn("WARNING: " + e.getMessage()
-                    + " - cannot request Storage Commitment");
+            log.warn("Cannot request Storage Commitment", e);
         } catch (IOException e) {
-            e.printStackTrace();
-            log.warn(
-                    "ERROR: Failed to send Storage Commitment request: "
-                    + e.getMessage());
+            log.warn("Failed to send Storage Commitment request:", e);
         } catch (InterruptedException e) {
             // should not happen
-            e.printStackTrace();
+            log.error("Interrupted while sending Storage Commitment request", e);
         }
         return null;
     }
