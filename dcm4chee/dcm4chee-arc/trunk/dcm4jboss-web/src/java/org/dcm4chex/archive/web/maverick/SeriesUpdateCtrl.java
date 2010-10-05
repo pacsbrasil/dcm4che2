@@ -50,6 +50,8 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.SeriesModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -58,6 +60,7 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  *
  */
 public class SeriesUpdateCtrl extends Dcm4cheeFormController {
+    private static Logger log = LoggerFactory.getLogger(SeriesUpdateCtrl.class);
 
     private int patPk;
 
@@ -170,7 +173,7 @@ public class SeriesUpdateCtrl extends Dcm4cheeFormController {
             form.getStudyByPk(patPk, studyPk).setSeries(allSeries);
         } catch (Exception e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("", e);
         }
     }
 
@@ -219,7 +222,7 @@ public class SeriesUpdateCtrl extends Dcm4cheeFormController {
             }
         } catch (Exception e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("", e);
         }
     }
 

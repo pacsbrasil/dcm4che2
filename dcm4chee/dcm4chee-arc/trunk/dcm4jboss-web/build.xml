@@ -86,6 +86,8 @@
         </fileset>
 	<!-- TODO dependence should be eliminated -->
 		<pathelement location="${dcm4chee-jdbc-hsql.jar}"/>
+        <pathelement location="${lib.dir}/slf4j-log4j12-1.4.3.jar" />
+        <pathelement location="${lib.dir}/slf4j-api-1.4.3.jar" />
 	</path>
 
 	<target name="clean">

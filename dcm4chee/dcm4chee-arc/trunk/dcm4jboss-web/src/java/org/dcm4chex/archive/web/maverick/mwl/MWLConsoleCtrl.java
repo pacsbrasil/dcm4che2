@@ -126,7 +126,6 @@ public class MWLConsoleCtrl extends Dcm4cheeFormController {
             }
             return SUCCESS;
         } catch (Exception e) {
-            e.printStackTrace();
             throw e;
         }
     }

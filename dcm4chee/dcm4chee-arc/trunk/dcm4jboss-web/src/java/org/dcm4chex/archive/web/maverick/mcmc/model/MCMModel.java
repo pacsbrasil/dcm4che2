@@ -200,7 +200,7 @@ public class MCMModel extends BasicFormPagingModel {
             col.clear();
         } catch ( Exception x ) {
             //TODO
-            x.printStackTrace();
+            log.error("", x);
             mediaList = new MediaList();
         }
     }
@@ -264,7 +264,7 @@ public class MCMModel extends BasicFormPagingModel {
                 this.lookupMediaComposer().setMediaStatus( mediaPk, status, statusInfo );
             } catch (Exception e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                log.error(e.toString());
             }
         }
 

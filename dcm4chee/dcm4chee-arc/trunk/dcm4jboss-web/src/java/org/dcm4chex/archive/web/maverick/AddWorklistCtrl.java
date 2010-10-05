@@ -45,6 +45,8 @@ import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -54,6 +56,7 @@ import javax.servlet.http.HttpServletRequest;
  *
  */
 public class AddWorklistCtrl extends Dcm4cheeFormController {
+    private static Logger log = LoggerFactory.getLogger(AddWorklistCtrl.class);
 
     /** Popup message */
     private String popupMsg = null;
@@ -133,7 +136,7 @@ public class AddWorklistCtrl extends Dcm4cheeFormController {
             try {
                 delegate.init( getCtx() );
             } catch( Exception x ) {
-                x.printStackTrace();
+                log.warn("Could not initialize new delegate {}", delegate, x);
             }
         }
     }

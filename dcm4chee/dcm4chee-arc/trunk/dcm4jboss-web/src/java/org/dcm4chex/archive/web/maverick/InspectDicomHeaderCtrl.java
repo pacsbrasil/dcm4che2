@@ -47,6 +47,8 @@ import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -55,6 +57,7 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  *
  */
 public class InspectDicomHeaderCtrl extends Dcm4cheeFormController {
+    private static Logger log = LoggerFactory.getLogger(InspectDicomHeaderCtrl.class);
 
     private long patPk = -1;
     private long studyPk = -1;
@@ -94,7 +97,7 @@ public class InspectDicomHeaderCtrl extends Dcm4cheeFormController {
                     form.formatMessage("folder.dicom_header", new String[]{sb.toString()}));
             return INSPECT;
         } catch ( Exception x ) {
-            x.printStackTrace();
+            log.error("Could not inspect header", x);
             form.setExternalPopupMsg("folder.err_inspect", new String[]{"pks:pat:"+patPk+", study:"+studyPk+
                     ", series:"+seriesPk+", instance:"+instancePk});
             return ERROR;

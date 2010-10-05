@@ -49,6 +49,8 @@ import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 import org.dcm4chex.archive.web.maverick.model.StudyModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -57,6 +59,7 @@ import org.dcm4chex.archive.web.maverick.model.StudyModel;
  *
  */
 public class StudyUpdateCtrl extends Dcm4cheeFormController {
+    private static Logger log = LoggerFactory.getLogger(StudyUpdateCtrl.class);
 
     private int patPk;
 
@@ -162,7 +165,7 @@ public class StudyUpdateCtrl extends Dcm4cheeFormController {
             pat.setStudies(studies);
         } catch (Exception e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("", e);
         }
     }
 
@@ -212,7 +215,7 @@ public class StudyUpdateCtrl extends Dcm4cheeFormController {
             }
         } catch (Exception e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.error("", e);
         }
     }
 

@@ -113,7 +113,6 @@ public class GPWLConsoleCtrl extends Dcm4cheeFormController {
             }
             return SUCCESS;
         } catch (Exception e) {
-            e.printStackTrace();
             throw e;
         }
     }
