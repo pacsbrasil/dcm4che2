@@ -43,6 +43,7 @@
 	<property name="etc.dir" value="src/etc"/>
 	<property name="service.xml.dir" value="${etc.dir}/deploy"/>
 	<property name="xmbean.xml.dir" value="${etc.dir}/conf/xmdesc"/>
+	<property name="conf.xsl.dir" value="${etc.dir}/conf/dcm4chee-wado"/>
 	
 	<!-- deploy properties. Overwrite deploy.root with your running application instance. -->
 	<property name="deploy.root" value="${jboss.home}/server/pacs"/>
@@ -50,6 +51,7 @@
 	<property name="jar.deploy.dir" value="${deploy.root}/lib"/>
 	<property name="service.deploy.dir" value="${deploy.root}/deploy"/>
 	<property name="xmbean.deploy.dir" value="${deploy.root}/conf/xmdesc"/>
+	<property name="xsl.deploy.dir" value="${deploy.root}/conf/dcm4chee-wado"/>
 
 	<path id="class.path">
 		<pathelement location="${dcm4che.jar}"/>
@@ -132,6 +134,9 @@
 		</copy>
 		<copy todir="${xmbean.deploy.dir}" >
 			<fileset dir="${xmbean.xml.dir}" includes="**/*.xml" />
+		</copy>
+		<copy todir="${xsl.deploy.dir}" >
+			<fileset dir="${conf.xsl.dir}" includes="**/*.xsl" />
 		</copy>
 	</target>
 	
