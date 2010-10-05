@@ -218,7 +218,7 @@ public class RIDServlet extends HttpServlet {
 
             }
         } catch ( Exception x ) {
-            x.printStackTrace();
+            delegate.getLogger().error("Exception when handling RID response, will send error response.", x);
             sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, x.getMessage() );
         }
         log.info("--- sendResponse finished!");

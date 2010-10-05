@@ -221,7 +221,7 @@ public class SVGCreator implements XMLResponseObject{
 			out.flush();
 			out.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Could not create XML.",e);
 		}
 	}
 
