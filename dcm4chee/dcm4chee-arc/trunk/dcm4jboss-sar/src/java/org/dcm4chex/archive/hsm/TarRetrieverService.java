@@ -40,6 +40,7 @@ package org.dcm4chex.archive.hsm;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -195,9 +196,8 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         if (f.exists()) {
             journal.record(cacheDir, true);
             return f;
-        }
-        boolean extracted = false;
-        while (!f.exists()) {
+        } else {
+            boolean extracted = false;
             if (extracting.add(tarName)) {
                 try {
                     fetchAndExtractTar(fsID, tarPath, tarName, cacheDir);
@@ -222,8 +222,12 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                         }
                 }
             }
+            journal.record(cacheDir, !extracted);
         }
-        journal.record(cacheDir, !extracted);
+        if (!f.exists()) {
+            log.error("Tar file "+tarPath+" doesn't contain file "+fpath+"!");
+            throw new FileNotFoundException(f.getPath());
+        }
         return f;
     }
 
