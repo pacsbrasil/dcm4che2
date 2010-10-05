@@ -119,6 +119,7 @@ import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.wado.common.WADORequestObject;
 import org.dcm4chex.wado.common.WADOResponseObject;
 import org.dcm4chex.wado.mbean.cache.WADOCache;
@@ -244,7 +245,7 @@ public class WADOSupport {
      * type.</DD>
      * <DD> the return code was OK and the error message <code>null</code>.</DD>
      * <DT>If the requested object is not local:</DT>
-     * <DD> If <code>WADOCacheImpl.isClientRedirect() is false</code> the
+     * <DD> If <code>WADOCacheImpl.isClient() is false</code> the
      * server tries to connect via WADO to the remote WADO server to get the
      * object.</DD>
      * <DD> if clientRedirect is enabled, the WADOResponse object return code is
@@ -955,9 +956,18 @@ public class WADOSupport {
         .newInstance();
         TransformerHandler th;
         if (xslt != null && !xslt.equalsIgnoreCase(NONE)) {
-            Templates stylesheet = (Templates) mapTemplates.get(xslt);
+            Templates stylesheet;
+            stylesheet = (Templates) mapTemplates.get(xslt);
             if (stylesheet == null) {
-                stylesheet = tf.newTemplates(new StreamSource(xslt));
+                String xsltUrl;
+                try {
+                    xsltUrl = xslt.indexOf(':') < 2 ? FileUtils.resolve(new File(xslt)).toURL().toString() :
+                        xslt.startsWith("file:") ? FileUtils.resolve(new File(xslt.substring(5))).toURL().toString() : xslt;
+                } catch (MalformedURLException x) {
+                    log.warn("Invalid XSL URL:"+xslt);
+                    xsltUrl = xslt;
+                }
+                stylesheet = tf.newTemplates(new StreamSource(xsltUrl));
                 mapTemplates.put(xslt, stylesheet);
             }
             th = tf.newTransformerHandler(stylesheet);

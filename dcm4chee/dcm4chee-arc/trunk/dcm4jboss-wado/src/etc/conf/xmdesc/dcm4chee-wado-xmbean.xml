@@ -236,45 +236,49 @@ date, 'HH' by the current hour and 'mm' by the current minute.<br/>
 
   <attribute access="read-write" getMethod="getHtmlXslURL"
     setMethod="setHtmlXslURL">
-    <description>URL to XSLT stylesheet to render DICOM SR to HTML
-      (Use NONE to disable this transformation) . </description>
+    <description><![CDATA[Filepath or URL to XSLT stylesheet to render DICOM SR to HTML<br/>
+      A relative path name (filepath or File URL) is resolved relative to <i>&lt;archive-install-directory&gt;</i>/server/default/
+      (Use NONE to disable this transformation). ]]></description>
     <name>HtmlXslURL</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="resource:xsl/sr_html.xsl" />
+      <value value="conf/dcm4chee-wado/sr_html.xsl" />
     </descriptors>
   </attribute>
 
   <attribute access="read-write" getMethod="getXHtmlXslURL"
     setMethod="setXHtmlXslURL">
-    <description>URL to XSLT stylesheet to render DICOM SR to XHTML
-      (Use NONE to disable this transformation) . </description>
+    <description><![CDATA[Filepath or URL to XSLT stylesheet to render DICOM SR to XHTML<br/>
+      A relative path name (filepath or File URL) is resolved relative to <i>&lt;archive-install-directory&gt;</i>/server/default/
+      (Use NONE to disable this transformation). ]]></description>
     <name>XHtmlXslURL</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="resource:xsl/sr_html.xsl" />
+      <value value="conf/dcm4chee-wado/sr_html.xsl" />
     </descriptors>
   </attribute>
 
   <attribute access="read-write" getMethod="getXmlXslURL"
     setMethod="setXmlXslURL">
-    <description>URL to XSLT stylesheet to render DICOM SR to XML
-      (Use NONE to disable this transformation) . </description>
+    <description><![CDATA[Filepath or URL to XSLT stylesheet to render DICOM SR to XML<br/>
+      A relative path name (filepath or File URL) is resolved relative to <i>&lt;archive-install-directory&gt;</i>/server/default/
+      (Use NONE to disable this transformation). ]]></description>
     <name>XmlXslURL</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="resource:xsl/sr_xml_style.xsl" />
+      <value value="conf/dcm4chee-wado/sr_xml_style.xsl" />
     </descriptors>
   </attribute>
 
   <attribute access="read-write" getMethod="getDicomXslURL"
     setMethod="setDicomXslURL">
-    <description>URL to XSLT stylesheet to render DICOM to HTML (Use
-      NONE to disable this transformation) . </description>
+    <description><![CDATA[Filepath or URL to XSLT stylesheet to render attributes of DICOM object as HTML<br/>
+      A relative path name (filepath or File URL) is resolved relative to <i>&lt;archive-install-directory&gt;</i>/server/default/
+      (Use NONE to disable this transformation). ]]></description>
     <name>DicomXslURL</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="resource:xsl/dicom_html.xsl" />
+      <value value="conf/dcm4chee-wado/dicom_html.xsl" />
     </descriptors>
   </attribute>
 
