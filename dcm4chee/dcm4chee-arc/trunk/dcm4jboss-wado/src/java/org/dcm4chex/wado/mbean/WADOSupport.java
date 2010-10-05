@@ -1116,7 +1116,6 @@ public class WADOSupport {
                     HttpServletResponse.SC_OK, null);
         } catch (Exception e) {
             log.error("Can't connect to remote WADO service:" + url, e);
-            e.printStackTrace();
             return new WADOStreamResponseObjectImpl(
                     null,
                     CONTENT_TYPE_JPEG,

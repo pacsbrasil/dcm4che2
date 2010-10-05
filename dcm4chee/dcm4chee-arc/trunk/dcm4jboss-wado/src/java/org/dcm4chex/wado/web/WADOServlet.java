@@ -196,7 +196,7 @@ public class WADOServlet extends HttpServlet {
 
             }
         } catch ( Exception x ) {
-            x.printStackTrace();
+            log.error("Exception handling WADO, will send error response", x);
             sendError(	response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, x.getMessage() );
         }
     }
