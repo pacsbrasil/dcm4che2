@@ -65,6 +65,8 @@ import org.dcm4che.image.PixelDataFactory;
 import org.dcm4che.image.PixelDataReader;
 import org.dcm4che.image.PixelDataWriter;
 import org.dcm4che.net.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
@@ -75,6 +77,7 @@ import org.dcm4che.net.DataSource;
  */
 class PrintSCUDataSource implements DataSource
 {
+    private static Logger log = LoggerFactory.getLogger(PrintSCUDataSource.class);
     /**
      * Simple overlay representation
      * @author jforaci
@@ -238,9 +241,8 @@ class PrintSCUDataSource implements DataSource
             }
             else
                 toDesc = fromDesc;
-            
-            System.out.println("readlen=" + parser.getReadLength() + " calclen="
-                + toDesc.calcPixelDataLength());
+
+                log.debug("readlen=" + parser.getReadLength() + "calclen=" + toDesc.calcPixelDataLength());
             
             //write image box
 			imageBox.writeDataset(out, encodeParam);
@@ -305,8 +307,7 @@ class PrintSCUDataSource implements DataSource
                             }
                         }
                         catch (IndexOutOfBoundsException e) {
-                            System.err.println("Bad overlay plane data (" + i
-                                + "), not enough data");
+                            log.error("Bad overlay plane data (" + i + "), not enough data");
                             //e.printStackTrace();
                         }
                     }

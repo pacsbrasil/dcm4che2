@@ -499,7 +499,7 @@ public class DcmImageWriter extends ImageWriter
                                && !dcmParam.isWriteAlwaysRGB());
         
         if (writeAsMono) {
-            System.out.println("writing as monochrome...");
+            log.info("writing as monochrome...");
             writeAsMonochrome(bi, dcmParam, ds);
         }
         else {
@@ -508,11 +508,11 @@ public class DcmImageWriter extends ImageWriter
                                   || !(bi.getColorModel() instanceof IndexColorModel));
             
             if (writeAsRGB) {
-                System.out.println("writing as rgb...");
+            	log.info("writing as rgb...");
                 writeAsRgb(bi, dcmParam, ds);
             }
             else {
-                System.out.println("writing as palette color...");
+            	log.info("writing as palette color...");
                 writeAsPaletteColor(bi, dcmParam, ds);
             }
         }

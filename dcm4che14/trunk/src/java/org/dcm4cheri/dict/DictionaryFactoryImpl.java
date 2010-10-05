@@ -42,6 +42,8 @@ import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.UIDDictionary;
 
 import java.io.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -50,6 +52,7 @@ import java.io.*;
  */
 public class DictionaryFactoryImpl
         extends org.dcm4che.dict.DictionaryFactory {
+    private static Logger log = LoggerFactory.getLogger(DictionaryFactoryImpl.class);
 
     private static final String DEF_TAG_DICT =
             "org/dcm4cheri/dict/TagDictionary.ser";    
@@ -100,7 +103,7 @@ public class DictionaryFactoryImpl
             new BufferedOutputStream(new FileOutputStream(serFile)));
         try {
             oos.writeObject(dict);
-            System.out.println("Create: " + serFile);
+            log.info("Create: {}", serFile);
         } finally {
             oos.close();
         }
@@ -144,7 +147,7 @@ public class DictionaryFactoryImpl
             new BufferedOutputStream(new FileOutputStream(serFile)));
         try {
             oos.writeObject(dict);
-            System.out.println("Create: " + serFile);
+            log.info("Create: {}", serFile);
         } finally {
             oos.close();
         }
