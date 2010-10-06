@@ -213,6 +213,21 @@
       <return-type>boolean</return-type>
    </operation>
    <operation impact="ACTION">
+      <description>Schedule Filecopy Order for given IAN Dataset</description>
+      <name>scheduleByIAN</name>
+     <parameter>
+       <description>IAN Dataset</description>
+       <name>ianDataset</name>
+       <type>org.dcm4che.data.Dataset</type>
+     </parameter>
+     <parameter>
+       <description>Schedule delivery time as long.</description>
+       <name>scheduleTime</name>
+       <type>long</type>
+     </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
       <description>Register a HSM Module (start queue if the module is set in HSMModulServicename)</description>
       <name>registerHSMModule</name>
      <parameter>

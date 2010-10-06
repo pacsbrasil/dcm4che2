@@ -244,14 +244,23 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         schedule(createOrder(seriesStored.getIAN()), isReady() ?
         		ForwardingRules.toScheduledTime(destination) : notReadyDelay);
     }
+    
+    public boolean scheduleByIAN(Dataset ian, long scheduleTime) {
+        if (destination == null) {
+            return false;
+        }
+        return schedule(createOrder(ian), scheduleTime);
+    }
 
-    protected void schedule(BaseJmsOrder order, long scheduledTime) {
+    protected boolean schedule(BaseJmsOrder order, long scheduledTime) {
         try {
             log.info("Scheduling " + order);
             jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
                     scheduledTime);
+            return true;
         } catch (Exception e) {
             log.error("Failed to schedule " + order, e);
+            return false;
         }
     }
 

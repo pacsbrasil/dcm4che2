@@ -103,7 +103,6 @@ public class FileCopyOrder extends BaseJmsOrder {
             fiCopy.clear();
             fi2Copy.clear();
             for (FileInfo fi : a) {
-                log.info("basedir:"+fi.basedir+" =? dstFsPath:"+dstFsPath);
                 if ( fi.basedir.equals(dstFsPath)) {
                     log.info("Instance "+fi.sopIUID+" md5:"+fi.md5+" has already a copy on dstFsPath:"+dstFsPath);
                     fiCopy.put(fi.md5, fi);
