@@ -118,7 +118,7 @@ NotificationListener {
                     checkSQL(newSql);
                     updateCmd();
                 } catch ( Throwable t) {
-                    log.error("Query String nor valid!", t);
+                    log.error("Query String not valid!", t);
                 }
         }
     }
