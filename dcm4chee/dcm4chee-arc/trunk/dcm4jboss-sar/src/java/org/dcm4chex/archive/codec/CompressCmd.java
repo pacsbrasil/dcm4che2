@@ -441,7 +441,7 @@ public abstract class CompressCmd extends CodecCmd {
             codecSemaphore.acquire();
             codecSemaphoreAquired = true;
             log.info("start compression of image: " + rows + "x" + columns
-                    + "x" + frames);
+                    + "x" + frames + " (concurrency:" + (++nrOfConcurrentCodec)+")");
             t1 = System.currentTimeMillis();
             ImageOutputStream ios = new MemoryCacheImageOutputStream(out);
             ios.setByteOrder(ByteOrder.LITTLE_ENDIAN);
@@ -492,12 +492,13 @@ public abstract class CompressCmd extends CodecCmd {
             if (codecSemaphoreAquired) {
                 log.debug("release codec semaphore");
                 codecSemaphore.release();
+                nrOfConcurrentCodec--;
             }
         }
         long t2 = System.currentTimeMillis();
         int pixelDataLength = frameLength * frames;
         log.info("finished compression " + ((float) pixelDataLength / end)
-                + " : 1 in " + (t2 - t1) + "ms.");
+                + " : 1 in " + (t2 - t1) + "ms." + " (remaining concurrency:"+nrOfConcurrentCodec+")");
         if (compressionRatio != null && compressionRatio.length > 0)
             compressionRatio[0] =
                 (float) pixelDataLength * bitsUsed() / bitsAllocated / end;

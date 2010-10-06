@@ -182,7 +182,7 @@ public class DecompressCmd extends CodecCmd {
             codecSemaphore.acquire();
             codecSemaphoreAquired = true;
             log.info("start decompression of image: " + rows + "x" + columns
-                    + "x" + frames);
+                    + "x" + frames + " (concurrency:" + (++nrOfConcurrentCodec)+")");
             t1 = System.currentTimeMillis();
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(tsuid);
@@ -215,10 +215,11 @@ public class DecompressCmd extends CodecCmd {
             if (codecSemaphoreAquired) {
                 log.debug("release codec semaphore");
                 codecSemaphore.release();
+                nrOfConcurrentCodec--;
             }
         }
         long t2 = System.currentTimeMillis();
-        log.info("finished decompression in " + (t2 - t1) + "ms.");
+        log.info("finished decompression in " + (t2 - t1) + "ms." + " (remaining concurrency:"+nrOfConcurrentCodec+")");
     }
 
     private void write(WritableRaster raster, OutputStream out,

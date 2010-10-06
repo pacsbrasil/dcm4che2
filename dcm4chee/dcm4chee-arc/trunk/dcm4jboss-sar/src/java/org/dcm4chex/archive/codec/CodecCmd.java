@@ -75,6 +75,7 @@ public abstract class CodecCmd {
     static final String JPEG_LS = "JPEG-LS";
 
     static int maxConcurrentCodec = 1;
+    static int nrOfConcurrentCodec = 0;
 
     static Semaphore codecSemaphore = new FIFOSemaphore(maxConcurrentCodec);
 
