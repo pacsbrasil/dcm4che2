@@ -65,8 +65,8 @@
       <pathelement location="${build.res.dir}" />
       <pathelement location="${test.conf.dir}" />
       <pathelement location="${lib.dir}/jai_imageio.jar" />
-	  <pathelement location="${lib.dir}/slf4j-log4j12-1.4.3.jar" />
-	  <pathelement location="${lib.dir}/slf4j-api-1.4.3.jar" />
+	  <pathelement location="${lib.dir}/slf4j-log4j12-1.6.1.jar" />
+	  <pathelement location="${lib.dir}/slf4j-api-1.6.1.jar" />
    </path>
            
    <target name="fetch"
@@ -227,7 +227,7 @@
       <jar jarfile="${build.lib.dir}/dcm4che.jar">
         	<manifest>
 				<attribute name="Class-Path"
-					value="log4j.jar slf4j-api-1.4.3.jar slf4j-log4j12-1.4.3.jar dcm4che-imageio-rle-2.0.21.jar jai_imageio.jar clibwrapper_jiio.jar"/>
+					value="log4j.jar slf4j-api-1.6.1.jar slf4j-log4j12-1.6.1.jar dcm4che-imageio-rle-2.0.21.jar jai_imageio.jar clibwrapper_jiio.jar"/>
 				<attribute name="Implementation-Title" value="dcm4che"/>
 				<attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
 				<attribute name="Implementation-Vendor" value="dcm4che.org (gunterze@gmail.com)"/>
