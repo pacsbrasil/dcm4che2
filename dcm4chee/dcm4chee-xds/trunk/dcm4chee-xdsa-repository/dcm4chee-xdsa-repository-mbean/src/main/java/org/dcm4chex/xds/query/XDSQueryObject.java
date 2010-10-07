@@ -142,7 +142,7 @@ public abstract class XDSQueryObject implements SoapBodyProvider {
                 th.getTransformer().setOutputProperty(OutputKeys.INDENT, "yes");
             }
         } catch ( Throwable t ) {
-            t.printStackTrace();
+            log.warn("Cannot initialize transform handler",t);
         }
     }
 
