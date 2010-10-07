@@ -58,6 +58,8 @@ import org.apache.commons.compress.tar.TarEntry;
 import org.apache.commons.compress.tar.TarInputStream;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -65,6 +67,7 @@ import org.dcm4chex.archive.ejb.jdbc.FileInfo;
  * @since Mar 1, 2006
  */
 public class VerifyTar {
+	private static Logger log = LoggerFactory.getLogger(VerifyTar.class);
 
     private static final int BUF_SIZE = 8192;
     private static final String USAGE = "Usage: java -jar verifytar.jar [-p<num>] <file or directory path>[..]\n\n"
@@ -200,14 +203,13 @@ public class VerifyTar {
                     pos++;
                 }
                 if (pos != -1) {
-                    System.out.print(tarname.substring(pos));
-                    System.out.print(' ');
+                    log.info(tarname.substring(pos) + ' ');
                 }
                 verify(file, buf);
-                System.out.println("ok");
+                log.info("ok");
             } catch (Exception e) {
                 errors = 1;
-                System.out.println(e.getMessage());
+                log.error("Failed to create substring", e.getMessage());
             }
         }
         return errors;
