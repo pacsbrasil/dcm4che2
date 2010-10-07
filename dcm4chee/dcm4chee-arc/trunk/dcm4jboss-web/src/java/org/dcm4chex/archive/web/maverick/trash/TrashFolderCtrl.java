@@ -130,7 +130,6 @@ public class TrashFolderCtrl extends FolderCtrl {
                     || rq.getParameter("undel.x") != null) { return undelete(rq); }
             return TRASH;
         } catch (Exception e) {
-            e.printStackTrace();
             throw e;
         }
     }

@@ -191,7 +191,6 @@ public class FolderSubmitCtrl extends FolderCtrl {
 
             return FOLDER;
         } catch (Exception e) {
-            e.printStackTrace();
             throw e;
         }
     }
