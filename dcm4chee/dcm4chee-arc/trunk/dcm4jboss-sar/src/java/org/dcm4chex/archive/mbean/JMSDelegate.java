@@ -129,8 +129,11 @@ public class JMSDelegate {
                          Serializable.class.getName()});
          } catch (MBeanException e) {
              throw e.getTargetException();
+         } catch ( RuntimeMBeanException e) {
+             throw e.getTargetException();
          } catch (Exception e) {
              service.getLog().fatal("Failed to invoke operation fail on " + jmsServiceName, e);
+             throw e.getCause() == null ? e : (Exception) e.getCause();
          }
     }
 
