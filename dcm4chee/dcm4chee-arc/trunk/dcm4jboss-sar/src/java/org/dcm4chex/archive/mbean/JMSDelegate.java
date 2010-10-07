@@ -43,6 +43,7 @@ import java.io.Serializable;
 import javax.jms.MessageListener;
 import javax.management.MBeanException;
 import javax.management.ObjectName;
+import javax.management.RuntimeMBeanException;
 
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -112,8 +113,11 @@ public class JMSDelegate {
                         long.class.getName() });
         } catch (MBeanException e) {
             throw e.getTargetException();
+        } catch ( RuntimeMBeanException e) {
+            throw e.getTargetException();
         } catch (Exception e) {
             service.getLog().fatal("Failed to invoke operation queue on " + jmsServiceName, e);
+            throw e.getCause() == null ? e : (Exception) e.getCause();
         }
     }
     
