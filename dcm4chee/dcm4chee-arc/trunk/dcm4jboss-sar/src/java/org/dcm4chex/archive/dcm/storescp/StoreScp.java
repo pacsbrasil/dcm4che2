@@ -60,8 +60,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
@@ -668,6 +666,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 seriesStored = null;
             }
             boolean newSeries = seriesStored == null;
+            boolean newStudy = false;
             if (newSeries) {
                 Dataset mwlFilter = service.getCoercionAttributesFor(callingAET,
                         STORE2MWL_XSL, ds, assoc);
@@ -681,6 +680,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     service.supplementInstitutionalData(ds, callingAET);
                     service.generatePatientID(ds, ds, calledAET);
                 }
+                newStudy = !store.studyExists(ds.getString(Tags.StudyInstanceUID));
             }
             perfMon.start(activeAssoc, rq,
                     PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
@@ -692,6 +692,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             if(newSeries) {
                seriesStored = initSeriesStored(ds, callingAET, retrieveAET);
                assoc.putProperty(SERIES_STORED, seriesStored);
+               if (newStudy) {
+                   service.sendNewStudyNotification(ds);
+               }
             }
             appendInstanceToSeriesStored(seriesStored, ds, retrieveAET, availability);
             ds.putAll(coercedElements, Dataset.MERGE_ITEMS);

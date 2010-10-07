@@ -110,6 +110,17 @@ public class StoreScpService extends AbstractScpService
             return EVENT_TYPE_OBJECT_STORED.equals(notif.getType());
         }
     };
+    public static final String EVENT_TYPE_NEW_STUDY = 
+        "org.dcm4chex.archive.dcm.storescp#newStudy";
+
+    public static final NotificationFilter NOTIF_FILTER_NEW_STUDY = 
+            new NotificationFilter() {
+        private static final long serialVersionUID = -7557458153348143439L;
+    
+        public boolean isNotificationEnabled(Notification notif) {
+            return EVENT_TYPE_NEW_STUDY.equals(notif.getType());
+        }
+    };
 
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
@@ -862,6 +873,14 @@ public class StoreScpService extends AbstractScpService
     private void sendObjectStoredNotification(Dataset ds) {
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(EVENT_TYPE_OBJECT_STORED,
+                this, eventID);
+        notif.setUserData(ds);
+        super.sendNotification(notif);
+    }
+    
+    protected void sendNewStudyNotification(Dataset ds) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(EVENT_TYPE_NEW_STUDY,
                 this, eventID);
         notif.setUserData(ds);
         super.sendNotification(notif);

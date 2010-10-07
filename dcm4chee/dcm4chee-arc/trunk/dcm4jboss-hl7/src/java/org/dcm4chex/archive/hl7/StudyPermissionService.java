@@ -59,8 +59,10 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.QueryMessage;
 import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
+import org.dcm4chex.archive.dcm.storescp.StoreScpService;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionManager;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionManagerHome;
@@ -104,6 +106,8 @@ public class StudyPermissionService extends ServiceMBeanSupport {
     private boolean updateOnSeriesStored;
 
     private boolean updateOnMppsCreate;
+
+    private boolean updateOnNewStudy;
 
     public final ObjectName getHL7ServerName() {
         return hl7ServerName;
@@ -183,6 +187,14 @@ public class StudyPermissionService extends ServiceMBeanSupport {
 
     public final void setUpdateOnSeriesStored(boolean updateOnSeriesStored) {
         this.updateOnSeriesStored = updateOnSeriesStored;
+    }
+
+    public boolean isUpdateOnNewStudy() {
+        return updateOnNewStudy;
+    }
+
+    public void setUpdateOnNewStudy(boolean updateOnNewStudy) {
+        this.updateOnNewStudy = updateOnNewStudy;
     }
 
     private StudyPermissionManager getStudyPermissionManager()
@@ -340,6 +352,8 @@ public class StudyPermissionService extends ServiceMBeanSupport {
                 seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
         server.addNotificationListener(mppsScpServiceName,
                 mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);
+        server.addNotificationListener(storeScpServiceName, 
+                newStudyListener, StoreScpService.NOTIF_FILTER_NEW_STUDY, null);
     }
 
     protected void stopService() throws Exception {
@@ -349,6 +363,8 @@ public class StudyPermissionService extends ServiceMBeanSupport {
                 seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
         server.removeNotificationListener(mppsScpServiceName,
                 mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);
+        server.removeNotificationListener(mppsScpServiceName,
+                newStudyListener, StoreScpService.NOTIF_FILTER_NEW_STUDY, null);
     }
 
     private final NotificationListener hl7ReceivedListener =
@@ -373,6 +389,13 @@ public class StudyPermissionService extends ServiceMBeanSupport {
         public void handleNotification(Notification notif, Object handback) {
             StudyPermissionService.this.onMppsCreate((Dataset) notif
                     .getUserData());
+        }
+    };
+    
+    private final NotificationListener newStudyListener =
+        new NotificationListener() {
+        public void handleNotification(Notification notif, Object handback) {
+            StudyPermissionService.this.onNewStudy((Dataset) notif.getUserData());
         }
     };
     
@@ -480,6 +503,21 @@ public class StudyPermissionService extends ServiceMBeanSupport {
         }
     }
 
+    private void onNewStudy(Dataset ds) {
+        log.debug("NewStudy notification received! ds:");log.debug(ds);
+        if (!updateOnNewStudy) {
+            return;
+        }
+        try {
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            String callingAET = ds.getString(PrivateTags.CallingAET);
+            ds.setPrivateCreatorID(null);
+            xslt(seriesStylesheet, ds, callingAET);        
+        } catch (Exception e) {
+            log.error("Failed to update permissions on NewStudy received", e);
+        }
+    }
+    
     private void xslt(String xslt, Dataset ds, String calling)
             throws Exception {
         SAXTransformerFactory tf = (SAXTransformerFactory)

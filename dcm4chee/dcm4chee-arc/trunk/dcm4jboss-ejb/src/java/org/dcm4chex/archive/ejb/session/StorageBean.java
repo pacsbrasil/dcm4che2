@@ -592,6 +592,19 @@ public abstract class StorageBean implements SessionBean {
             throw new EJBException(e);
         }
     }
+    /**
+     * @ejb.interface-method
+     */
+    public boolean studyExists(String iuid) {
+        try {
+            studyHome.findByStudyIuid(iuid);
+            return true;
+        } catch (ObjectNotFoundException onfe) {
+            return false;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+    }
 
     /**
      * @ejb.interface-method
