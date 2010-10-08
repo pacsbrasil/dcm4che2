@@ -522,8 +522,8 @@ public abstract class PatientBean implements EntityBean {
      */
     public PatientLocal ejbHomeSelectPatient(String pid, String issuer)
             throws FinderException {
-        return selectPatient(pid, issuer, null, null, null, null,
-                PatientMatching.BY_ID, false);
+        return selectPatient(pid, issuer, null, null, null, null, null, null,
+                null, PatientMatching.BY_ID, false);
     }
 
     /**
@@ -538,20 +538,24 @@ public abstract class PatientBean implements EntityBean {
         String familyName = pn != null ? pn.get(PersonName.FAMILY) : null;
         String givenName = pn != null ? pn.get(PersonName.GIVEN) : null;
         String middleName = pn != null ? pn.get(PersonName.MIDDLE) : null;
+        String namePrefix = pn != null ? pn.get(PersonName.PREFIX) : null;
+        String nameSuffix = pn != null ? pn.get(PersonName.SUFFIX) : null;
         String birthdate = normalizeDA(ds.getString(Tags.PatientBirthDate));
+        String sex = ds.getString(Tags.PatientSex);
         return selectPatient(pid, issuer, familyName, givenName, middleName,
-                birthdate, matching, followMerged);
+                namePrefix, nameSuffix, birthdate, sex, matching, followMerged);
     }
 
     private PatientLocal selectPatient(String pid, String issuer,
             String familyName, String givenName, String middleName,
-            String birthdate, PatientMatching matching, boolean followMerged)
+            String namePrefix, String nameSuffix, String birthdate,
+            String sex, PatientMatching matching, boolean followMerged)
             throws ObjectNotFoundException, FinderException,
             NonUniquePatientException, NonUniquePatientIDException,
             CircularMergedException, PatientMergedException {
         PatientLocalHome patHome = (PatientLocalHome) ctx.getEJBLocalHome();
         if (matching.noMatchesFor(pid, issuer, familyName, givenName,
-                middleName, birthdate)) {
+                middleName, birthdate, sex)) {
             throw new ObjectNotFoundException();
         }
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
@@ -561,6 +565,8 @@ public abstract class PatientBean implements EntityBean {
             familyName = AttributeFilter.toUpperCase(familyName);
             givenName = AttributeFilter.toUpperCase(givenName);
             middleName = AttributeFilter.toUpperCase(middleName);
+            namePrefix = AttributeFilter.toUpperCase(namePrefix);
+            nameSuffix = AttributeFilter.toUpperCase(nameSuffix);
         }
         Collection c;
         if (pid != null) {
@@ -574,19 +580,19 @@ public abstract class PatientBean implements EntityBean {
                     PatientLocal matchWithIssuer = (countWithIssuer > 0) ?
                                 (PatientLocal) c.iterator().next() : null;
                     matchDemographics(matching, familyName, givenName,
-                            middleName, birthdate, c);
+                            middleName, namePrefix, nameSuffix, birthdate, sex, c);
                     if (matchWithIssuer != null && c.isEmpty()) {
                         throw new NonUniquePatientIDException(
                                 "Existing " + matchWithIssuer.asString() +
                                 " with equal Patient ID but different demographis than Patient[id="
                                 + pid + ", issuer=" + issuer
                                 + ", name=" + familyName + '^' + givenName
-                                + "]");
+                                + '^' + namePrefix + '^' + nameSuffix + "]");
                     }
                 }
             } else {
                 matchDemographics(matching, familyName, givenName,
-                        middleName, birthdate, c);
+                        middleName, namePrefix, nameSuffix, birthdate, sex, c);
             }
         } else {
             c = patHome.findByPatientName(familyName.toUpperCase() + "^%");
@@ -594,7 +600,7 @@ public abstract class PatientBean implements EntityBean {
                 throw new ObjectNotFoundException();
             }
             matchDemographics(matching, familyName, givenName, middleName,
-                    birthdate, c);
+                    namePrefix, nameSuffix, birthdate, sex, c);
         }
         if (c.isEmpty()) {
             throw new ObjectNotFoundException();
@@ -602,8 +608,8 @@ public abstract class PatientBean implements EntityBean {
         if (c.size() > 1) {
             throw new NonUniquePatientException("Patient[id="
                     + pid + ", issuer=" + issuer
-                    + ", name=" + familyName + '^' + givenName
-                    + "] ambiguous");
+                    + ", name=" + familyName + '^' + givenName + '^'
+                    + namePrefix + '^' + nameSuffix + "] ambiguous");
         }
         PatientLocal pat = (PatientLocal) c.iterator().next();
         PatientLocal merged = pat.getMergedWith();
@@ -661,16 +667,19 @@ public abstract class PatientBean implements EntityBean {
     }
 
     private void matchDemographics(PatientMatching matching, String familyName,
-            String givenName, String middleName, String birthdate, Collection c)
+            String givenName, String middleName, String namePrefix, 
+            String nameSuffix, String birthdate, String sex, Collection c)
             throws ObjectNotFoundException {
-        if (matching.allMatchesFor(familyName, givenName, middleName, birthdate)) {
+        if (matching.allMatchesFor(familyName, givenName, middleName,
+                namePrefix, nameSuffix, birthdate, sex)) {
             return;
         }
-        if (matching.noMatchesFor(familyName, givenName, middleName, birthdate)) {
+        if (matching.noMatchesFor(familyName, givenName, middleName,
+                namePrefix, nameSuffix, birthdate, sex)) {
             throw new ObjectNotFoundException();
         }
         Pattern pnPattern = matching.compilePNPattern(
-                familyName, givenName, middleName);
+                familyName, givenName, middleName, namePrefix, nameSuffix);
         for (Iterator iter = c.iterator(); iter.hasNext();) {
             PatientLocal pat = (PatientLocal) iter.next();
             String pn2 = pat.getPatientName();
