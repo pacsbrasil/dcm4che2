@@ -128,9 +128,9 @@ public class PatientMatching implements Serializable{
         unknownMiddleNameAlwaysMatch =
                 unknownAlwaysMatch(s, middleName, MIDDLENAME);
         unknownNamePrefixAlwaysMatch =
-                unknownAlwaysMatch(s, middleName, NAMEPREFIX);
+                unknownAlwaysMatch(s, namePrefix, NAMEPREFIX);
         unknownNameSuffixAlwaysMatch =
-                unknownAlwaysMatch(s, middleName, NAMESUFFIX);
+                unknownAlwaysMatch(s, nameSuffix, NAMESUFFIX);
         unknownBirthDateAlwaysMatch =
                 unknownAlwaysMatch(s, birthdate, BIRTHDATE);
         unknownSexAlwaysMatch =
