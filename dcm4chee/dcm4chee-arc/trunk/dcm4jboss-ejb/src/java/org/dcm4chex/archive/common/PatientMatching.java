@@ -58,6 +58,8 @@ public class PatientMatching implements Serializable{
     private static final String NAMESUFFIX = "namesuffix";
     private static final String BIRTHDATE = "birthdate";
     private static final String SEX = "sex";
+    private static final String INITIAL = "(1)";
+    private static final int INITIAL_LEN = INITIAL.length();
 
     public static final PatientMatching BY_ID = 
         new PatientMatching(
@@ -65,14 +67,19 @@ public class PatientMatching implements Serializable{
                 false,  // unknownPatientIDAlwaysMatch
                 true,   // unknownIssuerAlwaysMatch
                 false,  // familyNameMustMatch
+                false,  // familyNameInitialMatch
                 true,  // unknownFamilyNameAlwaysMatch
                 false, // givenNameMustMatch
+                false, // givenNameInitialMatch
                 true,  // unknownGivenNameAlwaysMatch
                 false, // middleNameMustMatch,
+                false, // middleNameInitialMatch
                 true,  // unknownMiddleNameAlwaysMatch,
                 false, // namePrefixMustMatch,
+                false, // namePrefixInitialMatch
                 true,  // unknownnNamePrefixAlwaysMatch,
                 false, // nameSuffixMustMatch,
+                false, // nameSuffixInitialMatch
                 true,  // unknownnNameSuffixAlwaysMatch,
                 false, // birthDateMustMatch,
                 true,  // unknownBirthDateAlwaysMatch
@@ -84,14 +91,19 @@ public class PatientMatching implements Serializable{
     public final boolean unknownPatientIDAlwaysMatch;
     public final boolean unknownIssuerAlwaysMatch;
     public final boolean familyNameMustMatch;
+    public final boolean familyNameInitialMatch;
     public final boolean unknownFamilyNameAlwaysMatch;
     public final boolean givenNameMustMatch;
+    public final boolean givenNameInitialMatch;
     public final boolean unknownGivenNameAlwaysMatch;
     public final boolean middleNameMustMatch;
+    public final boolean middleNameInitialMatch;
     public final boolean unknownMiddleNameAlwaysMatch;
     public final boolean namePrefixMustMatch;
+    public final boolean namePrefixInitialMatch;
     public final boolean unknownNamePrefixAlwaysMatch;
     public final boolean nameSuffixMustMatch;
+    public final boolean nameSuffixInitialMatch;
     public final boolean unknownNameSuffixAlwaysMatch;
     public final boolean birthDateMustMatch;
     public final boolean unknownBirthDateAlwaysMatch;
@@ -109,7 +121,11 @@ public class PatientMatching implements Serializable{
         int birthdate = indexOf(s, BIRTHDATE);
         int sex = indexOf(s, SEX);
         int trust = s.indexOf("[");
-        if (pid == -1 || issuer == -1) {
+        if (pid == -1 || issuer == -1
+                || initialMatch(s, pid, PID)
+                || initialMatch(s, issuer, ISSUER)
+                || initialMatch(s, birthdate, BIRTHDATE)
+                || initialMatch(s, sex, SEX)) {
             throw new IllegalArgumentException(s);
         }
         familyNameMustMatch = familyName != -1;
@@ -119,22 +135,27 @@ public class PatientMatching implements Serializable{
         nameSuffixMustMatch = nameSuffix != -1;
         birthDateMustMatch = birthdate != -1;
         sexMustMatch = sex != -1;
-        unknownPatientIDAlwaysMatch = unknownAlwaysMatch(s, pid, PID);
-        unknownIssuerAlwaysMatch = unknownAlwaysMatch(s, issuer, ISSUER);
+        unknownPatientIDAlwaysMatch = unknownAlwaysMatch(s, pid, PID, false);
+        unknownIssuerAlwaysMatch = unknownAlwaysMatch(s, issuer, ISSUER, false);
+        familyNameInitialMatch = initialMatch(s, familyName, FAMILYNAME);
         unknownFamilyNameAlwaysMatch = 
-                unknownAlwaysMatch(s, familyName, FAMILYNAME);
+                unknownAlwaysMatch(s, familyName, FAMILYNAME, familyNameInitialMatch);
+        givenNameInitialMatch = initialMatch(s, givenName, GIVENNAME);
         unknownGivenNameAlwaysMatch =
-                unknownAlwaysMatch(s, givenName, GIVENNAME);
+                unknownAlwaysMatch(s, givenName, GIVENNAME, givenNameInitialMatch);
+        middleNameInitialMatch = initialMatch(s, middleName, MIDDLENAME);
         unknownMiddleNameAlwaysMatch =
-                unknownAlwaysMatch(s, middleName, MIDDLENAME);
+                unknownAlwaysMatch(s, middleName, MIDDLENAME, middleNameInitialMatch);
+        namePrefixInitialMatch = initialMatch(s, namePrefix, NAMEPREFIX);
         unknownNamePrefixAlwaysMatch =
-                unknownAlwaysMatch(s, namePrefix, NAMEPREFIX);
+                unknownAlwaysMatch(s, namePrefix, NAMEPREFIX, namePrefixInitialMatch);
+        nameSuffixInitialMatch = initialMatch(s, nameSuffix, NAMESUFFIX);
         unknownNameSuffixAlwaysMatch =
-                unknownAlwaysMatch(s, nameSuffix, NAMESUFFIX);
+                unknownAlwaysMatch(s, nameSuffix, NAMESUFFIX, nameSuffixInitialMatch);
         unknownBirthDateAlwaysMatch =
-                unknownAlwaysMatch(s, birthdate, BIRTHDATE);
+                unknownAlwaysMatch(s, birthdate, BIRTHDATE, false);
         unknownSexAlwaysMatch =
-                unknownAlwaysMatch(s, sex, SEX);
+                unknownAlwaysMatch(s, sex, SEX, false);
 
         if (trust != -1) {
             if (trust < issuer || s.indexOf("]") != s.length()-1
@@ -163,14 +184,19 @@ public class PatientMatching implements Serializable{
             boolean unknownPatientIDAlwaysMatch,
             boolean unknownIssuerAlwaysMatch,
             boolean familyNameMustMatch,
+            boolean familyNameInitialMatch,
             boolean unknownFamilyNameAlwaysMatch,
             boolean givenNameMustMatch,
+            boolean givenNameInitialMatch,
             boolean unknownGivenNameAlwaysMatch,
             boolean middleNameMustMatch,
+            boolean middleNameInitialMatch,
             boolean unknownMiddleNameAlwaysMatch,
             boolean namePrefixMustMatch,
+            boolean namePrefixInitialMatch,
             boolean unknownNamePrefixAlwaysMatch,
             boolean nameSuffixMustMatch,
+            boolean nameSuffixInitialMatch,
             boolean unknownNameSuffixAlwaysMatch,
             boolean birthDateMustMatch,
             boolean unknownBirthDateAlwaysMatch,
@@ -180,14 +206,19 @@ public class PatientMatching implements Serializable{
         this.unknownPatientIDAlwaysMatch = unknownPatientIDAlwaysMatch;
         this.unknownIssuerAlwaysMatch = unknownIssuerAlwaysMatch;
         this.familyNameMustMatch = familyNameMustMatch;
+        this.familyNameInitialMatch = familyNameInitialMatch;
         this.unknownFamilyNameAlwaysMatch = unknownFamilyNameAlwaysMatch;
         this.givenNameMustMatch = givenNameMustMatch;
+        this.givenNameInitialMatch = givenNameInitialMatch;
         this.unknownGivenNameAlwaysMatch = unknownGivenNameAlwaysMatch;
         this.middleNameMustMatch = middleNameMustMatch;
+        this.middleNameInitialMatch = middleNameInitialMatch;
         this.unknownMiddleNameAlwaysMatch = unknownMiddleNameAlwaysMatch;
         this.namePrefixMustMatch = namePrefixMustMatch;
+        this.namePrefixInitialMatch = namePrefixInitialMatch;
         this.unknownNamePrefixAlwaysMatch = unknownNamePrefixAlwaysMatch;
         this.nameSuffixMustMatch = nameSuffixMustMatch;
+        this.nameSuffixInitialMatch = nameSuffixInitialMatch;
         this.unknownNameSuffixAlwaysMatch = unknownNameSuffixAlwaysMatch;
         this.birthDateMustMatch = birthDateMustMatch;
         this.unknownBirthDateAlwaysMatch = unknownBirthDateAlwaysMatch;
@@ -201,11 +232,18 @@ public class PatientMatching implements Serializable{
                 && unknownNameSuffixAlwaysMatch;
     }
 
-    private boolean unknownAlwaysMatch(String s, int index, String substr) {
-        int after;
-        return index == -1 
-                || (after = index + substr.length()) < s.length()
-                && s.charAt(after) == '?';
+    private boolean initialMatch(String s, int index, String substr) {
+        return index != -1 && s.startsWith(INITIAL, index + substr.length());
+    }
+
+    private boolean unknownAlwaysMatch(String s, int index, String substr,
+            boolean initialMatch) {
+        if (index == -1)
+            return true;
+        int after = index + substr.length();
+        if (initialMatch)
+            after += INITIAL_LEN;
+        return after < s.length() && s.charAt(after) == '?';
     }
 
     private int indexOf(String str, String substr) {
@@ -215,7 +253,7 @@ public class PatientMatching implements Serializable{
             if (index > 0 
                     && " ,[".indexOf(str.charAt(index-1)) == -1
                     || (after = index + substr.length()) < str.length() 
-                    && " ,]?".indexOf(str.charAt(after)) == -1) {
+                    && " ,]?(".indexOf(str.charAt(after)) == -1) {
                 throw new IllegalArgumentException(str);
             }
         }
@@ -243,6 +281,9 @@ public class PatientMatching implements Serializable{
             if (familyNameMustMatch) {
                 count++;
                 sb.append(FAMILYNAME);
+                if (familyNameInitialMatch) {
+                    sb.append(INITIAL);
+                }
                 if (unknownFamilyNameAlwaysMatch) {
                     sb.append('?');
                 }
@@ -252,6 +293,9 @@ public class PatientMatching implements Serializable{
                     sb.append(',');
                 }
                 sb.append(GIVENNAME);
+                if (givenNameInitialMatch) {
+                    sb.append(INITIAL);
+                }
                 if (unknownGivenNameAlwaysMatch) {
                     sb.append('?');
                 }
@@ -261,16 +305,10 @@ public class PatientMatching implements Serializable{
                     sb.append(',');
                 }
                 sb.append(MIDDLENAME);
+                if (middleNameInitialMatch) {
+                    sb.append(INITIAL);
+                }
                 if (unknownMiddleNameAlwaysMatch) {
-                    sb.append('?');
-                }
-            }
-            if (nameSuffixMustMatch) {
-                if (count++ > 0) {
-                    sb.append(',');
-                }
-                sb.append(NAMESUFFIX);
-                if (unknownNameSuffixAlwaysMatch) {
                     sb.append('?');
                 }
             }
@@ -279,7 +317,22 @@ public class PatientMatching implements Serializable{
                     sb.append(',');
                 }
                 sb.append(NAMEPREFIX);
+                if (namePrefixInitialMatch) {
+                    sb.append(INITIAL);
+                }
                 if (unknownNamePrefixAlwaysMatch) {
+                    sb.append('?');
+                }
+            }
+            if (nameSuffixMustMatch) {
+                if (count++ > 0) {
+                    sb.append(',');
+                }
+                sb.append(NAMESUFFIX);
+                if (nameSuffixInitialMatch) {
+                    sb.append(INITIAL);
+                }
+                if (unknownNameSuffixAlwaysMatch) {
                     sb.append('?');
                 }
             }
@@ -327,19 +380,19 @@ public class PatientMatching implements Serializable{
         StringBuilder regex = new StringBuilder();
         if (appendFamilyName) {
             appendRegex(regex, familyName, familyNameMustMatch,
-                    unknownFamilyNameAlwaysMatch);
+                    familyNameInitialMatch, unknownFamilyNameAlwaysMatch);
             if (appendGivenName) {
                 appendRegex(regex, givenName, givenNameMustMatch,
-                        unknownGivenNameAlwaysMatch);
+                        givenNameInitialMatch, unknownGivenNameAlwaysMatch);
                 if (appendMiddleName) {
                     appendRegex(regex, middleName, middleNameMustMatch,
-                            unknownMiddleNameAlwaysMatch);
+                            middleNameInitialMatch, unknownMiddleNameAlwaysMatch);
                     if (appendNamePrefix) {
                         appendRegex(regex, namePrefix, namePrefixMustMatch,
-                                unknownNamePrefixAlwaysMatch);
+                                namePrefixInitialMatch, unknownNamePrefixAlwaysMatch);
                         if (appendNameSuffix) {
                             appendRegex(regex, nameSuffix, nameSuffixMustMatch,
-                                    unknownNameSuffixAlwaysMatch);
+                                    nameSuffixInitialMatch, unknownNameSuffixAlwaysMatch);
                         }
                     }
                 }
@@ -350,13 +403,24 @@ public class PatientMatching implements Serializable{
     }
 
     private static void appendRegex(StringBuilder regex, String value,
-            boolean mustMatch, boolean unknownAlwaysMatch) {
+            boolean mustMatch, boolean initialMatch,
+            boolean unknownAlwaysMatch) {
         if (!mustMatch || value == null) {
             regex.append("[^\\^]*");
-        } else {
+        } else if (!initialMatch) {
             regex.append(unknownAlwaysMatch ? "(\\Q" : "\\Q")
                  .append(value)
                  .append(unknownAlwaysMatch ? "\\E)?" : "\\E");
+        } else if (value.length() == 1) {
+            regex.append(unknownAlwaysMatch ? "(\\Q" : "\\Q")
+                 .append(value)
+                 .append(unknownAlwaysMatch ? "\\E[^\\^]*)?" : "\\E[^\\^]*");
+        } else {
+            regex.append("(\\Q")
+                 .append(value)
+                 .append("\\E|\\Q")
+                 .append(value.charAt(0))
+                 .append(unknownAlwaysMatch ? "\\E)?" : "\\E)");
         }
         regex.append("\\^");
     }
