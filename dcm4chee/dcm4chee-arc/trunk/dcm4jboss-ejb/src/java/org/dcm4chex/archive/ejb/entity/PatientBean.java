@@ -688,7 +688,7 @@ public abstract class PatientBean implements EntityBean {
             if (pnPattern != null 
                     && (pn2 == null 
                             ? !matching.isUnknownPersonNameAlwaysMatch()
-                            : !pnPattern.matcher(pn2).matches())
+                            : !pnPattern.matcher(matching.ignoreChars(pn2)).matches())
                     || matching.birthDateMustMatch 
                     && ((birthdate2 == null || birthdate == null)
                             ? !matching.unknownBirthDateAlwaysMatch

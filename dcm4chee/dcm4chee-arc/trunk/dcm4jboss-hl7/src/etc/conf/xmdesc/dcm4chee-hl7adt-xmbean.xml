@@ -152,9 +152,13 @@ handled by this service.]]>
 ADT messages are considered for selecting existing Patient records in the
 archive.
 <p>Format: pid,issuer[?][,<i>demograhic-match</i>]
-<br/><i>demograhic-match</i> ::= '['<i>demograhic-fields</i>']' | <i>demograhic-fields</i>
-<br/><i>demograhic-fields</i> ::= <i>demograhic-field</i>[?][, ...]
+<br/><i>demograhic-match</i> ::= '['[<i>ignore-chars</i>',']<i>demograhic-fields</i>']' | [<i>ignore-chars</i>',']<i>demograhic-fields</i>
+<br/><i>ignore-chars</i> ::= 'ignore('<i>char</i>[...] ')'
+<br/><i>demograhic-fields</i> ::= <i>demograhic-field</i>['?'][, ...]
 <br/><i>demograhic-field</i> ::= 'familyname'['(1)'] | 'givenname'['(1)'] | 'middlename'['(1)'] | 'nameprefix'['(1)'] | 'namesuffix'['(1)'] | birthdate | sex
+<p>
+Characters specified by 'ignore(...)' will be ignored for matching patient name
+components.
 <p>
 A '(1)' suffix of the attribute name specifies that a value with only one
 character will be interpreted as initial, and match with any value starting

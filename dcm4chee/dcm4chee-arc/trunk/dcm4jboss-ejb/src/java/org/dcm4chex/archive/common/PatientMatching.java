@@ -59,7 +59,7 @@ public class PatientMatching implements Serializable{
     private static final String BIRTHDATE = "birthdate";
     private static final String SEX = "sex";
     private static final String INITIAL = "(1)";
-    private static final int INITIAL_LEN = INITIAL.length();
+    private static final String IGNORE = "ignore";
 
     public static final PatientMatching BY_ID = 
         new PatientMatching(
@@ -84,7 +84,8 @@ public class PatientMatching implements Serializable{
                 false, // birthDateMustMatch,
                 true,  // unknownBirthDateAlwaysMatch
                 false, // sexMustMatch,
-                true   // unknownSexAlwaysMatch
+                true,  // unknownSexAlwaysMatch
+                null   // ignore
                 );
 
     public final boolean trustPatientIDWithIssuer;
@@ -109,6 +110,7 @@ public class PatientMatching implements Serializable{
     public final boolean unknownBirthDateAlwaysMatch;
     public final boolean sexMustMatch;
     public final boolean unknownSexAlwaysMatch;
+    public final char[] ignoreChars;
     
     public PatientMatching(String s) {
         int pid = indexOf(s, PID);
@@ -120,6 +122,7 @@ public class PatientMatching implements Serializable{
         int nameSuffix = indexOf(s, NAMESUFFIX);
         int birthdate = indexOf(s, BIRTHDATE);
         int sex = indexOf(s, SEX);
+        int ignore = indexOf(s, IGNORE);
         int trust = s.indexOf("[");
         if (pid == -1 || issuer == -1
                 || initialMatch(s, pid, PID)
@@ -156,7 +159,7 @@ public class PatientMatching implements Serializable{
                 unknownAlwaysMatch(s, birthdate, BIRTHDATE, false);
         unknownSexAlwaysMatch =
                 unknownAlwaysMatch(s, sex, SEX, false);
-
+        ignoreChars = ignoreChars(s, ignore);
         if (trust != -1) {
             if (trust < issuer || s.indexOf("]") != s.length()-1
                     || familyNameMustMatch && trust > familyName
@@ -201,7 +204,8 @@ public class PatientMatching implements Serializable{
             boolean birthDateMustMatch,
             boolean unknownBirthDateAlwaysMatch,
             boolean sexMustMatch,
-            boolean unknownSexAlwaysMatch) {
+            boolean unknownSexAlwaysMatch,
+            String ignore) {
         this.trustPatientIDWithIssuer = trustPatientIDWithIssuer;
         this.unknownPatientIDAlwaysMatch = unknownPatientIDAlwaysMatch;
         this.unknownIssuerAlwaysMatch = unknownIssuerAlwaysMatch;
@@ -224,6 +228,8 @@ public class PatientMatching implements Serializable{
         this.unknownBirthDateAlwaysMatch = unknownBirthDateAlwaysMatch;
         this.sexMustMatch = sexMustMatch;
         this.unknownSexAlwaysMatch = unknownSexAlwaysMatch;
+        this.ignoreChars = (ignore != null && ignore.length() != 0) 
+                ? ignore.toCharArray() : null;
     }
 
     public boolean isUnknownPersonNameAlwaysMatch() {
@@ -242,9 +248,22 @@ public class PatientMatching implements Serializable{
             return true;
         int after = index + substr.length();
         if (initialMatch)
-            after += INITIAL_LEN;
+            after += INITIAL.length();
         return after < s.length() && s.charAt(after) == '?';
     }
+
+    private char[] ignoreChars(String s, int index) {
+        if (index == -1)
+            return null;
+        int after = index + IGNORE.length();
+        int end = s.indexOf(')', after+2);
+        if (end == -1 || s.charAt(after) != '(')
+            throw new IllegalArgumentException(s);
+        char[] ignore = new char[end-after+1];
+        s.getChars(after+1, end, ignore, 0);
+        return ignore;
+    }
+
 
     private int indexOf(String str, String substr) {
         int index = str.indexOf(substr);
@@ -278,8 +297,14 @@ public class PatientMatching implements Serializable{
                 sb.append('[');
             }
             int count = 0;
-            if (familyNameMustMatch) {
+            if (ignoreChars != null) {
                 count++;
+                sb.append(IGNORE).append('(').append(ignoreChars).append(')');
+            }
+            if (familyNameMustMatch) {
+                if (count++ > 0) {
+                    sb.append(',');
+                }
                 sb.append(FAMILYNAME);
                 if (familyNameInitialMatch) {
                     sb.append(INITIAL);
@@ -379,19 +404,19 @@ public class PatientMatching implements Serializable{
                 || familyNameMustMatch && familyName != null;
         StringBuilder regex = new StringBuilder();
         if (appendFamilyName) {
-            appendRegex(regex, familyName, familyNameMustMatch,
+            appendRegex(regex, ignoreChars(familyName), familyNameMustMatch,
                     familyNameInitialMatch, unknownFamilyNameAlwaysMatch);
             if (appendGivenName) {
-                appendRegex(regex, givenName, givenNameMustMatch,
+                appendRegex(regex, ignoreChars(givenName), givenNameMustMatch,
                         givenNameInitialMatch, unknownGivenNameAlwaysMatch);
                 if (appendMiddleName) {
-                    appendRegex(regex, middleName, middleNameMustMatch,
+                    appendRegex(regex, ignoreChars(middleName), middleNameMustMatch,
                             middleNameInitialMatch, unknownMiddleNameAlwaysMatch);
                     if (appendNamePrefix) {
-                        appendRegex(regex, namePrefix, namePrefixMustMatch,
+                        appendRegex(regex, ignoreChars(namePrefix), namePrefixMustMatch,
                                 namePrefixInitialMatch, unknownNamePrefixAlwaysMatch);
                         if (appendNameSuffix) {
-                            appendRegex(regex, nameSuffix, nameSuffixMustMatch,
+                            appendRegex(regex, ignoreChars(nameSuffix), nameSuffixMustMatch,
                                     nameSuffixInitialMatch, unknownNameSuffixAlwaysMatch);
                         }
                     }
@@ -400,6 +425,29 @@ public class PatientMatching implements Serializable{
         }
         regex.append(".*");
         return Pattern.compile(regex.toString());
+    }
+
+    public String ignoreChars(String s) {
+        if (ignoreChars == null || s == null)
+            return s;
+
+        char[] a = s.toCharArray();
+        int rpos = 0;
+        int wpos = 0;
+        while (rpos < a.length) {
+            char c = a[rpos];
+            if (!ignore(c))
+                a[wpos++] = c;
+            rpos++;
+        }
+        return wpos < rpos ? new String(a, 0, wpos) : s;
+    }
+
+    private boolean ignore(char c1) {
+        for (char c2 : ignoreChars)
+            if (c1 == c2)
+                return true;
+        return false;
     }
 
     private static void appendRegex(StringBuilder regex, String value,
