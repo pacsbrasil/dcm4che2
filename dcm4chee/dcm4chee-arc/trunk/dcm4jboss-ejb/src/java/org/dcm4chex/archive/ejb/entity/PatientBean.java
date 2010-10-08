@@ -684,6 +684,7 @@ public abstract class PatientBean implements EntityBean {
             PatientLocal pat = (PatientLocal) iter.next();
             String pn2 = pat.getPatientName();
             String birthdate2 = pat.getPatientBirthDate();
+            String sex2 = pat.getPatientSex();
             if (pnPattern != null 
                     && (pn2 == null 
                             ? !matching.isUnknownPersonNameAlwaysMatch()
@@ -691,7 +692,11 @@ public abstract class PatientBean implements EntityBean {
                     || matching.birthDateMustMatch 
                     && ((birthdate2 == null || birthdate == null)
                             ? !matching.unknownBirthDateAlwaysMatch
-                            : !birthdate.equals(birthdate2))) {
+                            : !birthdate.equals(birthdate2))
+                    || matching.sexMustMatch 
+                    && ((sex2 == null || sex == null)
+                            ? !matching.unknownSexAlwaysMatch
+                            : !sex.equals(sex2))) {
                 iter.remove();
             }
         }
