@@ -10,6 +10,7 @@
       <property name="hibernate.jdbc.use_get_generated_keys"
         value="@use_get_generated_keys@" />
       <property name="hibernate.show_sql" value="@hibernate.show_sql@" />
+	  <property name="hibernate.jdbc.fetch_size" value="50"/>
     </properties>
   </persistence-unit>
 </persistence>
