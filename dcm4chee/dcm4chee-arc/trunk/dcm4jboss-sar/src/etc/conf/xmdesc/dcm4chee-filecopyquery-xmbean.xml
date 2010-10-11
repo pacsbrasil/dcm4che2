@@ -83,6 +83,17 @@
          <value value="2000"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" 
+      getMethod="getFetchSize"
+      setMethod="setFetchSize">
+      <description>JDBC Fetch size. (-1 means: use Limit)
+      </description>
+      <name>FetchSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="50"/>
+      </descriptors>
+   </attribute>
    
       <attribute access="read-only"
       getMethod="isRunning">

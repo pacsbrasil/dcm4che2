@@ -66,7 +66,7 @@ public class HPFindScp extends DcmServiceBase {
 
 	private final Logger log;
 
-
+	
 	public HPFindScp(HPScpService service) {
 		this.service = service;
 		this.log = service.getLog();
@@ -80,7 +80,7 @@ public class HPFindScp extends DcmServiceBase {
 			log.debug("Identifier:\n");
 			log.debug(rqData);
             queryCmd = new HPQueryCmd(rqData);
-            queryCmd.execute();
+            queryCmd.setFetchSize(service.getFetchSize()).execute();
         } catch (Exception e) {
             log.error("Query DB failed:", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);

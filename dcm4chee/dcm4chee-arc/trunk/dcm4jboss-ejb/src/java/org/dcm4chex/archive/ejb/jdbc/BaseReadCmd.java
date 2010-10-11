@@ -51,6 +51,7 @@ import java.sql.SQLException;
  */
 public abstract class BaseReadCmd extends BaseCmd {
     protected ResultSet rs = null;
+    private int fetchSize;
 
     protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel,
             int resultSetType)
@@ -67,6 +68,11 @@ public abstract class BaseReadCmd extends BaseCmd {
             String sql) throws SQLException {
         super(dsJndiName, transactionIsolationLevel, sql);
     }
+    
+    public BaseReadCmd setFetchSize(int size) {
+        fetchSize = size;
+        return this;
+    }
 
     public void execute(String sql) throws SQLException {
         if (rs != null) {
@@ -77,6 +83,8 @@ public abstract class BaseReadCmd extends BaseCmd {
         Exception lastException = null;
         for (int i = 0; i < updateDatabaseMaxRetries; i++) {
             try {
+                if (fetchSize > 0)
+                    stmt.setFetchSize(fetchSize);
                 rs = stmt.executeQuery(sql);
 
                 // Success
@@ -123,6 +131,8 @@ public abstract class BaseReadCmd extends BaseCmd {
         Exception lastException = null;
         for (int i = 0; i < updateDatabaseMaxRetries; i++) {
             try {
+                if (fetchSize > 0)
+                    stmt.setFetchSize(fetchSize);
                 rs = ((PreparedStatement) stmt).executeQuery();
 
                 // Success

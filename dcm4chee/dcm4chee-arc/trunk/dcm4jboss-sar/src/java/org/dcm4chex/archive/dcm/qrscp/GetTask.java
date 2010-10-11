@@ -216,7 +216,7 @@ class GetTask implements Runnable {
             try {
                 if (updateLocalUIDs) {
                     FileInfo[][] fileInfo = 
-                        RetrieveCmd.create(rqData).getFileInfos();
+                        RetrieveCmd.create(rqData).getFileInfos(service.getFetchSize());
                     retrieveInfo = new RetrieveInfo(service, fileInfo);
                     localUIDs = retrieveInfo.removeLocalIUIDs();
                 }

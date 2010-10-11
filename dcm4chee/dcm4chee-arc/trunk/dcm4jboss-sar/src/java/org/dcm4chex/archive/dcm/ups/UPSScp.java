@@ -530,7 +530,7 @@ class UPSScp extends DcmServiceBase {
                     rqData);
             UPSQueryCmd queryCmd = 
                     new UPSQueryCmd(rqData, service.isNoMatchForNoValue());
-            queryCmd.execute();
+            queryCmd.setFetchSize(service.getFetchSize()).execute();
             return new MultiCFindRsp(queryCmd);
         } catch (Exception e) {
             service.getLog().error("Query DB failed:", e);

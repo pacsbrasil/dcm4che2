@@ -143,6 +143,17 @@
       <name>TimerIDCheckStudyReconciliation</name>
       <type>java.lang.String</type>
    </attribute>
+   <attribute access="read-write" 
+      getMethod="getFetchSize"
+      setMethod="setFetchSize">
+      <description>JDBC Fetch size.
+      </description>
+      <name>FetchSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="50"/>
+      </descriptors>
+   </attribute>
 
    <attribute access="read-write"
       getMethod="getSchedulerServiceName"

@@ -179,7 +179,7 @@ public class MoveScp extends DcmServiceBase implements AssociationListener {
 
     // Extension point for derived classes
     protected FileInfo[][] getFileInfos(Dataset rqData) throws Exception {
-    	return RetrieveCmd.create(rqData).getFileInfos();
+    	return RetrieveCmd.create(rqData).getFileInfos(service.getFetchSize());
     }
     
     private void checkPermission(Association a, boolean thirdPartyMove, 

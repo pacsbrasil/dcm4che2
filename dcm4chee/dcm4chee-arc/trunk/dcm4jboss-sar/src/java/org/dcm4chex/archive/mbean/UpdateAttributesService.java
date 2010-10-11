@@ -79,6 +79,7 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
     private int maximalNumberOfSeriesToUpdateByOneTask;
     private ObjectName queryRetrieveScpServiceName;
     private ObjectName tarRetrieverName;
+    private int fetchSize;
 
     public final ObjectName getQueryRetrieveScpServiceName() {
         return queryRetrieveScpServiceName;
@@ -162,6 +163,14 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
         this.maximalNumberOfSeriesToUpdateByOneTask = max;
     }
 
+    public int getFetchSize() {
+        return fetchSize;
+    }
+
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
+    }
+
     public void reloadAttributeFilter() {
         AttributeFilter.reload();
     }
@@ -193,7 +202,7 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
         Dataset keys = DcmObjectFactory.getInstance().newDataset();
         keys.putUI(Tags.SeriesInstanceUID, seriesIuid);
         FileInfo[][] fileInfos = 
-            RetrieveCmd.createSeriesRetrieve(keys).getFileInfos();
+            RetrieveCmd.createSeriesRetrieve(keys).getFileInfos(fetchSize);
         int count = 0;
         Dataset series = null;
         for (int i = 0; i < fileInfos.length; i++) {

@@ -85,7 +85,9 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
 
     protected int soCloseDelay;
 
-    protected int maxPDULength = PDataTF.DEF_MAX_PDU_LENGTH;    
+    protected int maxPDULength = PDataTF.DEF_MAX_PDU_LENGTH; 
+    
+    private int fetchSize;
 
     protected TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
     
@@ -169,6 +171,14 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
         this.soCloseDelay = soCloseDelay;
     }
     
+    public int getFetchSize() {
+        return fetchSize;
+    }
+
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
+    }
+
     public ActiveAssociation openAssociation(String calledAET, String asuid)
             throws Exception {
         return openAssociation(calledAET, new String[]{ asuid });

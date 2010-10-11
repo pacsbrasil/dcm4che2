@@ -118,6 +118,8 @@ public class UPSScpService extends AbstractScpService
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
 
     private String queueName = "UPSScp";
+    
+    private int fetchSize;
 
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
@@ -263,6 +265,14 @@ public class UPSScpService extends AbstractScpService
     public final void setTransactionIsolationLevel(String level) {
         UPSQueryCmd.transactionIsolationLevel = 
             UPSQueryCmd.transactionIsolationLevelOf(level);
+    }
+
+    public int getFetchSize() {
+        return fetchSize;
+    }
+
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
     }
 
 

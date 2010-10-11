@@ -72,12 +72,15 @@ public class FileCopyOrder extends BaseJmsOrder {
 
     protected Dataset ian = null;
     
+    private int fetchSize;
+    
     private static Logger log = Logger.getLogger(FileCopyOrder.class);
 
-    public FileCopyOrder(Dataset ian, String dstFsPath, String retrieveAETs) {
+    public FileCopyOrder(Dataset ian, String dstFsPath, String retrieveAETs, int fetchSize) {
         this.ian = ian;
         this.dstFsPath = dstFsPath;
         this.retrieveAETs = retrieveAETs;
+        this.fetchSize = fetchSize;
     }
 
     public List<FileInfo> getFileInfos() throws Exception {
@@ -95,7 +98,7 @@ public class FileCopyOrder extends BaseJmsOrder {
     protected void convertFromIAN() throws Exception {
         Dataset refSeriesSeq = ian.getItem(Tags.RefSeriesSeq);
         DcmElement refSOPSeq = refSeriesSeq.get(Tags.RefSOPSeq);
-        FileInfo[][] aa = RetrieveCmd.create(refSOPSeq).getFileInfos();
+        FileInfo[][] aa = RetrieveCmd.create(refSOPSeq).getFileInfos(fetchSize);
         fileInfos = new ArrayList<FileInfo>(aa.length);
         HashMap<String, FileInfo> fiCopy = new HashMap<String, FileInfo>();
         HashMap<String, FileInfo> fi2Copy = new HashMap<String, FileInfo>();

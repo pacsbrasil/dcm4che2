@@ -67,7 +67,8 @@ public class ORUService extends ORU_MDMService
     private static final String NO_OBX = "NO_OBX";
     private HashSet obxIgnoreStati = new HashSet();
     private int obxStatusFieldNr = DEFAULT_STATUS_FIELD_NR;
-
+    private int fetchSize;
+    
     public void setObxIgnoreStati(String stati) {
         obxIgnoreStati.clear();
         if ( stati.equalsIgnoreCase("NONE")) return;
@@ -99,6 +100,14 @@ public class ORUService extends ORU_MDMService
         return sb.toString();
     }
     
+    public int getFetchSize() {
+        return fetchSize;
+    }
+
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
+    }
+
     public boolean process(MSH msh, Document msg, ContentHandler hl7out)
     throws HL7Exception {
         String status = getOBXStatus(msg);
@@ -174,7 +183,7 @@ public class ORUService extends ORU_MDMService
         QueryCmd query = null;
         try {
             query = QueryCmd.createStudyQuery(keys, false, true, false, null);
-            query.execute();
+            query.setFetchSize(fetchSize).execute();
             if (!query.next()) {
                 log.warn("No Study with given Accession Number: " 
                         + accno + " - store report in new Study");

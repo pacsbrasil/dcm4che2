@@ -135,6 +135,7 @@ public class MPPSQueryCmd extends BaseReadCmd {
         sqlBuilder.addOrderBy("MPPS.ppsStartDateTime", SqlBuilder.DESC);
         sqlBuilder.setOffset(offset);
         sqlBuilder.setLimit(limit);
+        setFetchSize(limit);
         List<Dataset> resp = null;
         try {
             resp = new ArrayList<Dataset>();

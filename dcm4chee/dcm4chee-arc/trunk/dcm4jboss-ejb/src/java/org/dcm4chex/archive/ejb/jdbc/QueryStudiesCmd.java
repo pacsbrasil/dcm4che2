@@ -261,6 +261,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
         sqlBuilder.setOffset(offset);
         sqlBuilder.setLimit(limit);
         try {
+            setFetchSize(limit);
             execute(sqlBuilder.getSql());
             ArrayList result = new ArrayList();
 

@@ -39,7 +39,6 @@
 
 package org.dcm4chex.archive.web.maverick;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -58,7 +57,6 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.jdbc.QueryStudyPermissionCmd;
-import org.dcm4chex.archive.web.conf.WebRolesConfig;
 import org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissions;
 import org.dcm4chex.archive.web.maverick.admin.perm.FolderPermissionsFactory;
 import org.infohazard.maverick.ctl.Throwaway2;
@@ -83,6 +81,8 @@ public class Dcm4cheeFormController extends Throwaway2
     public static final String INSPECT = "inspect";
 
     private static Logger log = Logger.getLogger(Dcm4cheeFormController.class.getName());
+    
+    private static Integer fetchSize;
 
     public static Subject getSubject() throws PolicyContextException {
         return (Subject) PolicyContext.getContext(SUBJECT_CONTEXT_KEY);
@@ -96,7 +96,7 @@ public class Dcm4cheeFormController extends Throwaway2
             studyIUIDs[i] = ((Dataset) iter.next())
                     .getString(Tags.StudyInstanceUID);
         }
-        return new QueryStudyPermissionCmd()
+        return new QueryStudyPermissionCmd(fetchSize.intValue())
                 .getGrantedActionsForStudies(studyIUIDs, subject);
     }
 
@@ -141,6 +141,13 @@ public class Dcm4cheeFormController extends Throwaway2
         getCtx().setTransformParam("dcm4chee_version", version != null ? version : "");
         getCtx().setTransformParam("request_uri", getCtx().getRequest().getRequestURI());
 
+        if (fetchSize == null) {
+            try {
+                fetchSize = new Integer(getCtx().getServletConfig().getInitParameter("fetch-size"));
+            } catch (Exception x) {
+                fetchSize = new Integer(0);
+            }
+        }
         applyPermissions(getCtrlName());
         return this.perform();
     }

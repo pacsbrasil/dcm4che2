@@ -137,6 +137,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
     private long receiveResultInSameAssocTimeout;
 
     private int concurrency = 1;
+    
+    private int fetchSize;
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
 
@@ -263,6 +265,14 @@ public class StgCmtScuScpService extends AbstractScpService implements
         this.receiveResultInSameAssocTimeout = timeout;
     }
 
+    public int getFetchSize() {
+        return fetchSize;
+    }
+
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
+    }
+
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.StorageCommitmentPushModel, stgCmtScuScp);
     }
@@ -377,7 +387,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
         Map fileInfos = null;
         if (storage != null) {
             try {
-                FileInfo[][] aa = RetrieveCmd.create(refSOPSeq).getFileInfos();
+                FileInfo[][] aa = RetrieveCmd.create(refSOPSeq).getFileInfos(fetchSize);
                 fileInfos = new HashMap();
                 for (int i = 0; i < aa.length; i++) {
                     fileInfos.put(aa[i][0].sopIUID, aa[i]);

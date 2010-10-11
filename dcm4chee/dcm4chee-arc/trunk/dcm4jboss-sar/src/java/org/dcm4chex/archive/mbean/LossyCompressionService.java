@@ -133,6 +133,8 @@ public class LossyCompressionService extends ServiceMBeanSupport {
     private String copyOnFSGroupID;
 
     private boolean isRunning;
+    
+    private int fetchSize;
 
     private final NotificationListener delayedCompressionListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -322,6 +324,14 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         return tmpDir.toString();
     }
 
+    public int getFetchSize() {
+        return fetchSize;
+    }
+
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
+    }
+
     public String compressFileJPEGLossy(String inFilePath, String outFilePath,
             float compressionQuality, String derivationDescription,
             float estimatedCompressionRatio, boolean newSOPInstanceUID,
@@ -377,7 +387,7 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         Dataset keys = DcmObjectFactory.getInstance().newDataset();
         keys.putUI(Tags.SeriesInstanceUID, seriesIUID.trim());
         FileInfo[][] fileInfoss = 
-                RetrieveCmd.createSeriesRetrieve(keys).getFileInfos();
+                RetrieveCmd.createSeriesRetrieve(keys).getFileInfos(fetchSize);
         for (int i = 0; i < fileInfoss.length; i++) {
             FileInfo[] fileInfos = fileInfoss[i];
             for (int j = 0; j < fileInfos.length; j++) {

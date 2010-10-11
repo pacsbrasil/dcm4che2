@@ -233,6 +233,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private int bufferSize = 8192;
 
     private int retrieveRspStatusForNoMatchingInstanceToRetrieve = 0x0000;
+    
+    private int fetchSize;
 
     private static final String CSTORE_OUT_XSL = "out-cstorerq.xsl";
     
@@ -984,6 +986,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return localStorageAET;
     }
 
+    public int getFetchSize() {
+        return fetchSize;
+    }
+
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
+    }
+
     public final ObjectName getPerfMonServiceName() {
 		return dicomFindScp.getPerfMonServiceName();
 	}
@@ -1460,7 +1470,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     public Map<String, Object> locateInstancesOfSeries(String seriesIUID,
             String studyIUID) throws Exception {
         HashSet<String> dirPaths = new HashSet<String>();
-        QueryFilesOfSeriesCmd2 query = new QueryFilesOfSeriesCmd2(seriesIUID);
+        QueryFilesOfSeriesCmd2 query = new QueryFilesOfSeriesCmd2(seriesIUID, fetchSize);
         Map<String, List<FileDTO>> fileDTOsByIUID = query.getFileDTOsByIUID();
         Map<String, Object> fileOrAETByIUID = new HashMap<String, Object>();
         for (Map.Entry<String, List<FileDTO>> entry :
@@ -1484,7 +1494,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
         if (fileOrAETByIUID.size() < query.getNumberOfSeriesRelatedInstances()) {
             Collection<String[]> iuidAndAETs = 
-                    new QueryExternalRetrieveAETsOfSeriesCmd(seriesIUID)
+                    new QueryExternalRetrieveAETsOfSeriesCmd(seriesIUID, fetchSize)
                             .getRetrieveAETs();
             for (String[] iuidAndAET : iuidAndAETs) {
                 if (!fileOrAETByIUID.containsKey(iuidAndAET[0])) {
@@ -1557,7 +1567,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         dsQ.putUI(Tags.SOPInstanceUID, iuid);
         dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         RetrieveCmd retrieveCmd = RetrieveCmd.create(dsQ);
-        FileInfo infoList[][] = retrieveCmd.getFileInfos();
+        FileInfo infoList[][] = retrieveCmd.getFileInfos(fetchSize);
         if (infoList.length == 0)
             return null;
         FileInfo[] fileInfos = infoList[0];

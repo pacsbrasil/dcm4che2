@@ -58,10 +58,11 @@ public final class QueryFilesOfSeriesCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
 
-    public QueryFilesOfSeriesCmd(String iuid) throws SQLException {
+    public QueryFilesOfSeriesCmd(String iuid, int fetchSize) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel, QueryFilesBySeriesUIDCmd);
         ((PreparedStatement) stmt).setString(1, iuid);
+        setFetchSize(fetchSize);
         execute();
     }
 

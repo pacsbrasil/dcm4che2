@@ -249,10 +249,12 @@ public class RetrieveCmd extends BaseReadCmd {
         this.sqlCmd = sql;
     }
 
-    public FileInfo[][] getFileInfos() throws SQLException {
+    public FileInfo[][] getFileInfos(int fetchSize) throws SQLException {
         Map result = map();
         try {
             PreparedStatement pstmt = ((PreparedStatement) stmt);
+            if (fetchSize > 0)
+                pstmt.setFetchSize(fetchSize);
             int start = 0;
             String[] fixParams = sqlCmd.getFixParams();
             for (int i = 0; i < fixParams.length; i++) {

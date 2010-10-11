@@ -55,11 +55,12 @@ public class QueryExternalRetrieveAETsOfSeriesCmd extends BaseReadCmd {
 
     public static int transactionIsolationLevel = 0;
 
-    public QueryExternalRetrieveAETsOfSeriesCmd(String seriuid)
+    public QueryExternalRetrieveAETsOfSeriesCmd(String seriuid, int fetchSize)
             throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel, SQL);
         ((PreparedStatement) stmt).setString(1, seriuid);
+        setFetchSize(fetchSize);
         execute();
     }
 

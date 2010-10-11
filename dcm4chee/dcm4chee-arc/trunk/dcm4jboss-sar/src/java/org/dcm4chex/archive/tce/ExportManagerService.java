@@ -503,7 +503,7 @@ public class ExportManagerService extends AbstractScuService
         Dataset keys = DcmObjectFactory.getInstance().newDataset();
         keys.putUI(Tags.SOPInstanceUID, sel.getString(Tags.SOPInstanceUID));
         RetrieveCmd cmd = RetrieveCmd.createInstanceRetrieve(keys);
-        FileInfo fileInfo = cmd.getFileInfos()[0][0];
+        FileInfo fileInfo = cmd.getFileInfos(0)[0][0];
         File file = FileUtils.toFile(fileInfo.basedir, fileInfo.fileID);
         log.info("M-READ file:" + file);
         FileInputStream fis = new FileInputStream(file);
@@ -1095,7 +1095,7 @@ public class ExportManagerService extends AbstractScuService
                 .size()]));
         RetrieveCmd cmd = RetrieveCmd.createInstanceRetrieve(keys);
         String patID = sel.getString(Tags.PatientID);
-        FileInfo[][] a = cmd.getFileInfos();
+        FileInfo[][] a = cmd.getFileInfos(getFetchSize());
         FileInfo[] b = new FileInfo[a.length];
         for (int i = 0; i < a.length; i++) {
             FileInfo info = b[i] = selectBestFile(a[i]);

@@ -67,7 +67,7 @@ public class HPMoveScp extends DcmServiceBase {
 	private final HPScpService service;
 
 	private final Logger log;
-
+	
 	public HPMoveScp(HPScpService service) {
 		this.service = service;
 		this.log = service.getLog();
@@ -99,7 +99,7 @@ public class HPMoveScp extends DcmServiceBase {
 	private List queryHPList(Dataset rqData)
 			throws DcmServiceException {
 		try {
-			return new HPRetrieveCmd(rqData).getDatasets();
+			return new HPRetrieveCmd(rqData).getDatasets(service.getFetchSize());
 		} catch (SQLException e) {
 			service.getLog().error("Query DB failed:", e);
 			throw new DcmServiceException(Status.ProcessingFailure, e);

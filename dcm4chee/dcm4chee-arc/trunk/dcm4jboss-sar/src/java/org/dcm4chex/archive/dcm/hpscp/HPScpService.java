@@ -82,6 +82,8 @@ public class HPScpService extends AbstractScpService {
     private int dimseTimeout = 0;
 
     private int soCloseDelay = 500;
+    
+    private int fetchSize;
 
     public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
@@ -182,6 +184,15 @@ public class HPScpService extends AbstractScpService {
         HPRetrieveCmd.transactionIsolationLevel =
             HPRetrieveCmd.transactionIsolationLevelOf(level);
     }
+    
+    public int getFetchSize() {
+        return fetchSize;
+    }
+
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
+    }
+
     
     public AEDTO queryAEData(String aet, InetAddress addr)
             throws DcmServiceException {

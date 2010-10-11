@@ -75,6 +75,7 @@ NotificationListener {
     private long pollInterval = 0L;
     private long delay = 0L;
     private int limit = 2000;
+    private int fetchSize;
     
     private Integer schedulerID;
     private String timerIDFilecopyPolling;
@@ -143,7 +144,7 @@ NotificationListener {
             throw new IllegalArgumentException(lastCheckResult);
         }
         try {
-            QueryFilecopyCmd cmd = QueryFilecopyCmd.getInstance(sql, this.limit > 0 ? 1 : 0);
+            QueryFilecopyCmd cmd = QueryFilecopyCmd.getInstance(sql, this.limit > 0 ? 1 : 0, 1);
             cmd.setUpdateDatabaseMaxRetries(1);
             List<Long> chk = cmd.getSeriesPKs(sql.indexOf('?') != -1 ? System.currentTimeMillis() : null);
             if (log.isDebugEnabled()) 
@@ -163,7 +164,7 @@ NotificationListener {
             if ( sqlCmd != null ) {
                 sqlCmd.close();
             }
-            sqlCmd = QueryFilecopyCmd.getInstance(sql, limit);
+            sqlCmd = QueryFilecopyCmd.getInstance(sql, limit, fetchSize);
         }
     }
 
@@ -184,6 +185,14 @@ NotificationListener {
             this.limit = limit;
             updateCmd();
         }
+    }
+
+    public int getFetchSize() {
+        return fetchSize;
+    }
+
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
     }
 
     public String getTimerIDFilecopyByQuery() {
@@ -276,7 +285,7 @@ NotificationListener {
             if (sqlCmd != null) { 
                 sqlCmd.close();
             }
-            sqlCmd = QueryFilecopyCmd.getInstance(sql, limit);
+            sqlCmd = QueryFilecopyCmd.getInstance(sql, limit, fetchSize);
         } catch ( Throwable t) {
             log.error("Check of SQL statement failed!",t);
         }

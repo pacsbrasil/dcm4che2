@@ -85,7 +85,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
     private static final String RESULT_XSL = "cfindrsp.xsl";
     private static final String QUERY_XML = "-cfindrq.xml";
     private static final String RESULT_XML = "-cfindrsp.xml";
-
+    
     protected static final String FORCE_PIX_QUERY_FLAG = "ForcePIXQueryFlag";
 
     private static final MultiDimseRsp NO_MATCH_RSP = new MultiDimseRsp() {
@@ -315,7 +315,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             Subject subject) throws SQLException, DcmServiceException {
         QueryCmd queryCmd = QueryCmd.create(rqData, filterResult,
                 service.isNoMatchForNoValue(), hideWithoutIssuerOfPID, subject);
-        queryCmd.execute();
+        queryCmd.setFetchSize(service.getFetchSize()).execute();
         if (!otherPIDinRQ) // remove OPIDSeq added by pixQuery
             rqData.remove(Tags.OtherPatientIDSeq);
         return new MultiCFindRsp(queryCmd);

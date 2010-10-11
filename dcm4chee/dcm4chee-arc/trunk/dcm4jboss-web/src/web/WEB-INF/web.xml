@@ -319,6 +319,15 @@
             <param-value>http://wadoserver:8080/</param-value>
         </init-param>
         -->
+		<!-- 
+			JDBC Fetch Size for QueryStudyPermission.
+			QueryStudies (folder), MWLQuery (MWL console) and QueryPrivateStudies (Trash) use limit as fetch-size.
+			default: 0
+		-->
+		<init-param>
+			<param-name>fetch-size</param-name>
+			<param-value>50</param-value>
+		</init-param>
         
 		<load-on-startup>2</load-on-startup>
 	</servlet>

@@ -60,7 +60,6 @@ import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
 import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
-import org.dcm4chex.archive.ejb.jdbc.GPWLQueryCmd;
 import org.dcm4chex.archive.ejb.jdbc.MWLQueryCmd;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 
@@ -90,7 +89,7 @@ public class MWLScuService extends AbstractScuService {
 	private boolean forceMatchingKeyCheck;
 
     private boolean noMatchForNoValue;
-
+    
     /**
      * Returns the AET that holds the work list (Modality Work List SCP).
      * 
@@ -223,7 +222,7 @@ public class MWLScuService extends AbstractScuService {
         MWLQueryCmd queryCmd = null;
         try {
             queryCmd = new MWLQueryCmd(searchDS, noMatchForNoValue);
-            queryCmd.execute();
+            queryCmd.setFetchSize(getFetchSize()).execute();
             while (queryCmd.next()) {
                 if (result.size() >= maxResults) {
                     log.info("Found more than " + maxResults 

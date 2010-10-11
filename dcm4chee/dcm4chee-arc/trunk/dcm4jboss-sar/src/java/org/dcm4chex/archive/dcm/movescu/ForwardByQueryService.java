@@ -74,6 +74,7 @@ NotificationListener {
     private long pollInterval = 0L;
     private long delay = 0L;
     private int limit = 2000;
+    private int fetchSize;
     
     private String calledAET;
     private int forwardPriority = 0;
@@ -152,7 +153,7 @@ NotificationListener {
             throw new IllegalArgumentException(lastCheckResult);
         }
         try {
-            QueryForwardCmd cmd = QueryForwardCmd.getInstance(sql, this.limit > 0 ? 1 : 0);
+            QueryForwardCmd cmd = QueryForwardCmd.getInstance(sql, this.limit > 0 ? 1 : 0, 1);
             cmd.setUpdateDatabaseMaxRetries(1);
             Map<String, List<String>> chk = cmd.getSeriesIUIDs(sql.indexOf('?') != -1 ? System.currentTimeMillis() : null);
             log.debug("CheckSQL: QueryForwardCmd.getSeriesIUIDs done with result:"+chk);
@@ -182,7 +183,7 @@ NotificationListener {
             if ( sqlCmd != null ) {
                 sqlCmd.close();
             }
-            sqlCmd = QueryForwardCmd.getInstance(sql, limit);
+            sqlCmd = QueryForwardCmd.getInstance(sql, limit, fetchSize);
         }
     }
 
@@ -211,6 +212,14 @@ NotificationListener {
             this.limit = limit;
             updateCmd();
         }
+    }
+
+    public int getFetchSize() {
+        return fetchSize;
+    }
+
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
     }
 
     public String getTimerIDForwardByQuery() {
@@ -302,7 +311,7 @@ NotificationListener {
             if (sqlCmd != null) { 
                 sqlCmd.close();
             }
-            sqlCmd = QueryForwardCmd.getInstance(sql, limit);
+            sqlCmd = QueryForwardCmd.getInstance(sql, limit, fetchSize);
         } catch ( Throwable t) {
             log.error("Check of SQL statement failed!",t);
         }

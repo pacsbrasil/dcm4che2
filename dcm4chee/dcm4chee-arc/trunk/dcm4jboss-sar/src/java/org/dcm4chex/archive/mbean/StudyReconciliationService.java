@@ -114,6 +114,8 @@ public class StudyReconciliationService extends AbstractScuService {
     private final static int PCID_FIND = 1;
 
     private int priority = Command.MEDIUM;
+    
+    private int fetchSize;
 
     private String timerIDCheckStudyReconciliation = "CheckStudyReconciliation";
 
@@ -265,6 +267,14 @@ public class StudyReconciliationService extends AbstractScuService {
         this.keepPriorPatientAfterMerge = keepPriorPatientAfterMerge;
     }
     
+    public int getFetchSize() {
+        return fetchSize;
+    }
+
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
+    }
+
     public String check() throws Exception {
         synchronized(this) {
             if (isRunning) {
@@ -462,7 +472,7 @@ public class StudyReconciliationService extends AbstractScuService {
         QueryCmd queryCmd = QueryCmd.create(qrSeriesDS, false, false, false, null);
         Map map = new HashMap();
         try {
-            queryCmd.execute();
+            queryCmd.setFetchSize(fetchSize).execute();
             Dataset ds = null;
             String seriesIUID = null;
             while (queryCmd.next()) {

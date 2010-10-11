@@ -342,7 +342,7 @@ public class MoveTask implements Runnable {
             if (!canceled) {
                 try {
                     if (updateLocalUIDs) {
-                        FileInfo[][] fileInfo = RetrieveCmd.create(moveRqData).getFileInfos();
+                        FileInfo[][] fileInfo = RetrieveCmd.create(moveRqData).getFileInfos(service.getFetchSize());
                         retrieveInfo = new RetrieveInfo(service, fileInfo);
                         localUIDs = retrieveInfo.removeLocalIUIDs();
                     }

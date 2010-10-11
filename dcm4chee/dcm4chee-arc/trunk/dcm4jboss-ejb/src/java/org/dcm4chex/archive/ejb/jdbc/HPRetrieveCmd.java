@@ -74,14 +74,15 @@ public class HPRetrieveCmd extends BaseReadCmd {
 				keys.getStrings(Tags.SOPInstanceUID));
 	}
 	
-	public List getDatasets() throws SQLException {
+	public List getDatasets(int fetchSize) throws SQLException {
 		ArrayList result = new ArrayList();
 		try {
-	        execute(sqlBuilder.getSql());
-			while (next()) {
-				result.add(DatasetUtils.fromByteArray(
-				        rs.getBytes(1)));			
-			}
+		    if (fetchSize > 0)
+		        setFetchSize(fetchSize);
+		    execute(sqlBuilder.getSql());
+		    while (next()) {
+			result.add(DatasetUtils.fromByteArray(rs.getBytes(1)));			
+		    }
 		} finally {
 			close();
 		}

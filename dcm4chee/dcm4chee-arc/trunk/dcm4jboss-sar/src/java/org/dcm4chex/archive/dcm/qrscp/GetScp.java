@@ -103,7 +103,7 @@ public class GetScp extends DcmServiceBase {
             qrLevel.checkRetrieveRQ(rqData);
             FileInfo[][] fileInfos = null;
             try {
-                fileInfos = RetrieveCmd.create(rqData).getFileInfos();
+                fileInfos = RetrieveCmd.create(rqData).getFileInfos(service.getFetchSize());
                 checkPermission(a, fileInfos);
                     new Thread(new GetTask(
                             service, assoc, pcid, rqCmd, rqData, fileInfos))

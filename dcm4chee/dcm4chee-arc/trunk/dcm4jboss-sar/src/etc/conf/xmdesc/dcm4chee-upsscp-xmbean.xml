@@ -341,6 +341,17 @@ times, 10 minutes  apart for each retry. ]]>
          <value value="1" />
       </descriptors>
    </attribute>
+   <attribute access="read-write" 
+      getMethod="getFetchSize"
+      setMethod="setFetchSize">
+      <description>JDBC Fetch size.
+      </description>
+      <name>FetchSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="50"/>
+      </descriptors>
+   </attribute>
    
    <attribute access="read-write"
       getMethod="getQueueName"

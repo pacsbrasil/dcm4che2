@@ -132,6 +132,17 @@ specified matching keys (= non DICOM conform matching behavior). Effective if
          <value value="DEFAULT"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" 
+      getMethod="getFetchSize"
+      setMethod="setFetchSize">
+      <description>JDBC Fetch size.
+      </description>
+      <name>FetchSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="50"/>
+      </descriptors>
+   </attribute>
    
    <operation impact="ACTION">
       <description>Get a list of modality worklist entries.

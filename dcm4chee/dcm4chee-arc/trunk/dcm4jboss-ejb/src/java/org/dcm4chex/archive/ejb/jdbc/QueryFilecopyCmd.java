@@ -58,9 +58,10 @@ public final class QueryFilecopyCmd extends BaseReadCmd {
     private static final int SELECT_LEN = 7;
     public static int transactionIsolationLevel = 0;
     
-    private QueryFilecopyCmd(String sql) throws SQLException {
+    private QueryFilecopyCmd(String sql, int fetchSize) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel, sql);
+        setFetchSize(fetchSize);
         try {
             close();
         } catch (Throwable t) {
@@ -68,9 +69,9 @@ public final class QueryFilecopyCmd extends BaseReadCmd {
         }
     }
     
-    public static QueryFilecopyCmd getInstance( String sql, int limit) throws SQLException {
+    public static QueryFilecopyCmd getInstance( String sql, int limit, int fetchSize) throws SQLException {
         sql = prepareSql(sql, limit);
-        return new QueryFilecopyCmd(sql);
+        return new QueryFilecopyCmd(sql, fetchSize < 0 ? limit : fetchSize);
     }
     
     public static String prepareSql(String sql, int limit) {
