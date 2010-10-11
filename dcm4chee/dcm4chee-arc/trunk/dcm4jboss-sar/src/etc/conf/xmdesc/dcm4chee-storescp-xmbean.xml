@@ -968,6 +968,22 @@ Notifications for one Series.]]>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getOnlyWellKnownInstancesCallingAETs"
+      setMethod="setOnlyWellKnownInstancesCallingAETs">
+      <description><![CDATA[List of the AE titles for the Storage SCUs from which
+      storage requests with unknown SOP Instance UID are ignored.<br/>
+      This can be used to avoid getting wrong instances from systems (e.g. central archive) 
+      that are not aware of changes of this archive.<br/>
+      Separate multiple values by \(backslash).
+      NONE = no calling AE titles.  
+      ]]></description>
+      <name>OnlyWellKnownInstancesCallingAETs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getMaxPDULength"
       setMethod="setMaxPDULength">
       <description>Maximum protocol data unit (PDU) package length for receiving PDUs.

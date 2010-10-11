@@ -592,6 +592,7 @@ public abstract class StorageBean implements SessionBean {
             throw new EJBException(e);
         }
     }
+
     /**
      * @ejb.interface-method
      */
@@ -606,6 +607,20 @@ public abstract class StorageBean implements SessionBean {
         }
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public boolean instanceExists(String iuid) {
+        try {
+            instHome.findBySopIuid(iuid);
+            return true;
+        } catch (ObjectNotFoundException onfe) {
+            return false;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+    }
+    
     /**
      * @ejb.interface-method
      */

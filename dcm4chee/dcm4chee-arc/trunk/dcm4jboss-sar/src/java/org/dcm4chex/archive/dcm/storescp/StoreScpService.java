@@ -506,6 +506,14 @@ public class StoreScpService extends AbstractScpService
         scp.setAcceptMismatchIUIDCallingAETs(aets);
     }
 
+    public final String getOnlyWellKnownInstancesCallingAETs() {
+        return scp.getOnlyWellKnownInstancesCallingAETs();
+    }
+
+    public final void setOnlyWellKnownInstancesCallingAETs(String aets) {
+        scp.setOnlyWellKnownInstancesCallingAETs(aets);
+    }
+
     public boolean isStoreDuplicateIfDiffHost() {
         return scp.isStoreDuplicateIfDiffHost();
     }

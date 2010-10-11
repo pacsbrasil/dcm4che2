@@ -184,6 +184,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private String[] acceptMismatchIUIDCallingAETs = {};
 
+    private String[] onlyWellKnownInstancesCallingAETs = {};
+
     private boolean checkIncorrectWorklistEntry = true;
 
     private String[] referencedDirectoryPath;
@@ -254,6 +256,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     public final void setAcceptMismatchIUIDCallingAETs(String aets) {
         acceptMismatchIUIDCallingAETs = StringUtils.split(aets, '\\');
+    }
+
+    public final String getOnlyWellKnownInstancesCallingAETs() {
+        return StringUtils.toString(onlyWellKnownInstancesCallingAETs, '\\');
+    }
+
+    public final void setOnlyWellKnownInstancesCallingAETs(String aets) {
+        onlyWellKnownInstancesCallingAETs = StringUtils.split(aets, '\\');
     }
 
     public final boolean isStudyDateInFilePath() {
@@ -489,6 +499,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             String calledAET = assoc.getCalledAET();
             String iuid = checkSOPInstanceUID(rqCmd, ds, callingAET);
             checkAppendPermission(assoc, ds);
+            if (!checkOnlyWellKnownInstances(assoc, iuid, callingAET)) {
+                log.info("StoreSCP only accepts well known instances from AE "+callingAET+
+                        " ! Ignored Instance:"+iuid);
+                return;
+            }
             List duplicates = new QueryFilesCmd(iuid).getFileDTOs();
             if (!(duplicates.isEmpty() || storeDuplicateIfDiffMD5 || storeDuplicateIfDiffHost
                     && !containsLocal(duplicates))) {
@@ -805,7 +820,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             return;
         }
         String suid = ds.getString(Tags.StudyInstanceUID);
-        if (getStorage(a).numberOfStudyRelatedInstances(suid) == -1) {
+        if (!getStorage(a).studyExists(suid)) {
             return;
         }
 
@@ -821,6 +836,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
+    private boolean checkOnlyWellKnownInstances(Association assoc, String iuid, String callingAET) throws Exception {
+        if (contains(onlyWellKnownInstancesCallingAETs, callingAET)) {
+            return getStorage(assoc).instanceExists(iuid);
+        }
+        return true;
+    }
+
+    
     private Dataset merge(Dataset ds, Dataset merge) {
         if (ds == null) {
             return merge;
