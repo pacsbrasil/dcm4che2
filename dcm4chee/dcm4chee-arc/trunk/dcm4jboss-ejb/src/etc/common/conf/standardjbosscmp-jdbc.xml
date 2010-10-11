@@ -33,6 +33,8 @@
       <list-cache-max>1000</list-cache-max>
       <clean-read-ahead-on-load>false</clean-read-ahead-on-load>
 
+      <fetch-size>50</fetch-size>
+      
       <unknown-pk>
          <key-generator-factory>UUIDKeyGeneratorFactory</key-generator-factory>
          <unknown-pk-class>java.lang.String</unknown-pk-class>
