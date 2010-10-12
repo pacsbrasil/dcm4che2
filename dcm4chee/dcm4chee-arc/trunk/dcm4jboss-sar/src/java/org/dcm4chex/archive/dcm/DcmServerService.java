@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.dcm;
 
+import java.io.IOException;
+
 import javax.management.Notification;
 import javax.management.ObjectName;
 
@@ -73,6 +75,7 @@ public class DcmServerService extends ServiceMBeanSupport {
     private DcmHandler handler = sf.newDcmHandler(policy, services);
 
     private Server dcmsrv = sf.newServer(handler);
+    private boolean dcmsrvStarted = false;
     
     private DcmProtocol protocol = DcmProtocol.DICOM;
 
@@ -246,10 +249,22 @@ public class DcmServerService extends ServiceMBeanSupport {
         dcmsrv.addHandshakeCompletedListener(tlsConfig.handshakeCompletedListener());
         dcmsrv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol
                 .getCipherSuites()));
-        dcmsrv.start();
     }
 
     protected void stopService() throws Exception {
         dcmsrv.stop();
+    }
+    
+    public void startDicomServer() throws IOException {
+        if (dcmsrvStarted) {
+            log.warn("Dicom Server already started!");
+        } else {
+            dcmsrv.start();
+            dcmsrvStarted = true;
+        }
+    }
+    
+    public boolean isDicomServerStarted() {
+        return dcmsrvStarted;
     }
 }

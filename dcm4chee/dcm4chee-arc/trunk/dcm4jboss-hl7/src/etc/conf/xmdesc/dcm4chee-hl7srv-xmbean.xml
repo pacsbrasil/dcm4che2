@@ -78,6 +78,12 @@
          <value value="mllp" />
       </descriptors>
    </attribute>
+   <attribute access="read-only"
+      	getMethod="isHL7ServerStarted">
+      <description>HL7 Server started.</description>
+      <name>HL7ServerStarted</name>
+      <type>boolean</type>
+   </attribute>
    <attribute access="read-write"
       getMethod="getSoTimeout"
       setMethod="setSoTimeout">
@@ -320,6 +326,11 @@
 
    <!-- Operations -->
    &defaultOperations;
+   <operation impact="INFO">
+      <description>Start HL7 server</description>
+      <name>startHL7Server</name>
+      <return-type>void</return-type>
+   </operation>
    <operation impact="ACTION">
       <description>Register HL7 Service</description>
       <name>registerService</name>

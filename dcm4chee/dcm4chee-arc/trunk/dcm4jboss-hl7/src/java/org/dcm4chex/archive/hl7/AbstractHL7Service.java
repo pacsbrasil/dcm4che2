@@ -69,6 +69,8 @@ public abstract class AbstractHL7Service extends ServiceMBeanSupport implements
 
     private String messageTypes;
 
+    private boolean startHL7Server;
+
     public final ObjectName getTemplatesServiceName() {
         return templates.getTemplatesServiceName();
     }
@@ -83,6 +85,14 @@ public abstract class AbstractHL7Service extends ServiceMBeanSupport implements
 
     public final void setHL7ServerName(ObjectName hl7ServerName) {
         this.hl7ServerName = hl7ServerName;
+    }
+
+    public boolean isStartHL7Server() {
+        return startHL7Server;
+    }
+
+    public void setStartHL7Server(boolean startHL7Server) {
+        this.startHL7Server = startHL7Server;
     }
 
     public final String getMessageTypes() {
@@ -122,6 +132,11 @@ public abstract class AbstractHL7Service extends ServiceMBeanSupport implements
 
     protected void startService() throws Exception {
         registerService(this);
+        if (startHL7Server) {
+            log.debug("start HL7 Server by "+this.getServiceName());
+            server.invoke(hl7ServerName, "startHL7Server", null, null);
+        }
+
     }
 
     protected void stopService() throws Exception {

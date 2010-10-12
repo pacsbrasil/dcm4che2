@@ -101,6 +101,17 @@
       <name>HL7ServerName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isStartHL7Server"
+      setMethod="setStartHL7Server">
+      <description><![CDATA[Start HL7 Server after this service has started.]]>
+      </description>
+      <name>StartHL7Server</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" 
       getMethod="getTemplatesServiceName"
       setMethod="setTemplatesServiceName">

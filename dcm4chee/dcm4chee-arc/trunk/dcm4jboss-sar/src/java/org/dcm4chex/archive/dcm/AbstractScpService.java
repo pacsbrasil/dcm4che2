@@ -123,6 +123,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected UserIdentityNegotiator userIdentityNegotiator;
 
     protected String[] calledAETs;
+    
+    private boolean startDicomServer;
 
     /**
      * List of allowed calling AETs. <p /> <code>null</code> means ANY<br /> An
@@ -313,6 +315,14 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             this.generatePatientID = pl != -1 ? split(pattern, pl, pr) : split(
                     pattern, sl, sr);
         }
+    }
+
+    public boolean isStartDicomServer() {
+        return startDicomServer;
+    }
+
+    public void setStartDicomServer(boolean startDicomServer) {
+        this.startDicomServer = startDicomServer;
     }
 
     private static String[] split(String pattern, int l1, int r1) {
@@ -688,6 +698,10 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         server.addNotificationListener(aeServiceName, aetChangeListener,
                 aetChangeFilter, null);
         enableService();
+        if (startDicomServer) {
+            log.debug("start Dicom Server by "+this.getServiceName());
+            server.invoke(dcmServerName, "startDicomServer", null, null);
+        }
     }
 
     protected void stopService() throws Exception {
