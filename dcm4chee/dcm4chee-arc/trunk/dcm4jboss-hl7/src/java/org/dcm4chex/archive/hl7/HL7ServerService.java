@@ -58,6 +58,7 @@ import java.util.Hashtable;
 
 import javax.management.Notification;
 import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -77,6 +78,7 @@ import org.dom4j.io.DocumentSource;
 import org.dom4j.io.SAXContentHandler;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
+import org.jboss.system.server.ServerImplMBean;
 import org.regenstrief.xhl7.HL7XMLReader;
 import org.regenstrief.xhl7.HL7XMLWriter;
 import org.regenstrief.xhl7.MLLPDriver;
@@ -93,7 +95,7 @@ import org.xml.sax.XMLReader;
  * 
  */
 public class HL7ServerService extends ServiceMBeanSupport implements
-        Server.Handler {
+        Server.Handler, NotificationListener {
 
     public static final String EVENT_TYPE = "org.dcm4chex.archive.hl7";
 
@@ -118,7 +120,6 @@ public class HL7ServerService extends ServiceMBeanSupport implements
     private File errLogDir;
    
     private Server hl7srv = ServerFactory.getInstance().newServer(this);
-    private boolean hl7srvStarted = false;
 
     private MLLP_Protocol protocol = MLLP_Protocol.MLLP;
 
@@ -339,23 +340,20 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         hl7srv.addHandshakeCompletedListener(tlsConfig.handshakeCompletedListener());
         hl7srv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol
                 .getCipherSuites()));
+        server.addNotificationListener(ServerImplMBean.OBJECT_NAME, this, null, null);
     }
 
     protected void stopService() throws Exception {
         hl7srv.stop();
+        server.removeNotificationListener(ServerImplMBean.OBJECT_NAME, this);
     }
 
-    public void startHL7Server() throws IOException {
-        if (hl7srvStarted) {
-            log.warn("Dicom Server already started!");
-        } else {
+    public void handleNotification(Notification arg0, Object arg1) {
+        try {
             hl7srv.start();
-            hl7srvStarted = true;
+        } catch (IOException x) {
+            log.error("Start of HL7 Server failed!", x);
         }
-    }
-    
-    public boolean isHL7ServerStarted() {
-        return hl7srvStarted;
     }
     
     public void ack(Document document, ContentHandler hl7out, HL7Exception hl7ex) {

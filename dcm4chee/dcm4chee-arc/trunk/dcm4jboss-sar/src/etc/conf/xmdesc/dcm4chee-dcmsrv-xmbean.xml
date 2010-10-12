@@ -60,12 +60,6 @@
          <value value="dicom" />
       </descriptors>
    </attribute>
-   <attribute access="read-only"
-      	getMethod="isDicomServerStarted">
-      <description>Dicom Server started.</description>
-      <name>DicomServerStarted</name>
-      <type>boolean</type>
-   </attribute>
    <attribute access="read-write"
       getMethod="getDimseTimeout"
       setMethod="setDimseTimeout">
@@ -214,11 +208,6 @@
       <description>Get DICOM Handler</description>
       <name>dcmHandler</name>
       <return-type>org.dcm4che.server.DcmHandler</return-type>
-   </operation>
-   <operation impact="INFO">
-      <description>Start DICOM server</description>
-      <name>startDicomServer</name>
-      <return-type>void</return-type>
    </operation>
    <operation impact="INFO">
       <description>Send CallingAET changed notification</description>

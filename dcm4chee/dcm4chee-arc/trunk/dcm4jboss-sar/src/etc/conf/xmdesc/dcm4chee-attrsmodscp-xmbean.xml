@@ -110,17 +110,6 @@ applies. 0 => return Success Status in that case. See also attribute
       <name>DcmServerName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isStartDicomServer"
-      setMethod="setStartDicomServer">
-      <description><![CDATA[Start Dicom Server after this service has started.]]>
-      </description>
-      <name>StartDicomServer</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->

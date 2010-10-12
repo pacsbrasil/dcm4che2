@@ -9,16 +9,5 @@
       >dcm4chee.archive:service=AE</depends>
     <depends optional-attribute-name="DcmServerName"
       >dcm4chee.archive:service=DcmServer</depends>
-    <!-- depends on all SCP services to ensure that all SCP are started when Dicom Server is started by this service! -->
-    <depends>dcm4chee.archive:service=StoreScp</depends>
-    <depends>dcm4chee.archive:service=GPWLScp</depends>
-    <depends>dcm4chee.archive:service=HPScp</depends>
-    <depends>dcm4chee.archive:service=IANScp</depends>
-    <depends>dcm4chee.archive:service=MPPSScp</depends>
-    <depends>dcm4chee.archive:service=StgCmtScuScp</depends>
-    <depends>dcm4chee.archive:service=StudyMgtScp</depends>
-    <depends>dcm4chee.archive:service=UPSScp</depends>
-    <depends>dcm4chee.archive:service=QueryRetrieveScp</depends>
-    <depends>dcm4chee.archive:service=MWLFindScp</depends>
   </mbean>
 </server>

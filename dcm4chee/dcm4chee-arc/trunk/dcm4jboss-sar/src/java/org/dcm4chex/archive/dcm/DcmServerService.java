@@ -42,6 +42,7 @@ package org.dcm4chex.archive.dcm;
 import java.io.IOException;
 
 import javax.management.Notification;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.dcm4che.net.AcceptorPolicy;
@@ -56,13 +57,14 @@ import org.dcm4chex.archive.mbean.DicomSecurityDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.notif.CallingAetChanged;
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.system.server.ServerImplMBean;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
  * @version $Revision$
  * @since 02.08.2003
  */
-public class DcmServerService extends ServiceMBeanSupport {
+public class DcmServerService extends ServiceMBeanSupport implements NotificationListener {
 
     private ServerFactory sf = ServerFactory.getInstance();
 
@@ -75,7 +77,6 @@ public class DcmServerService extends ServiceMBeanSupport {
     private DcmHandler handler = sf.newDcmHandler(policy, services);
 
     private Server dcmsrv = sf.newServer(handler);
-    private boolean dcmsrvStarted = false;
     
     private DcmProtocol protocol = DcmProtocol.DICOM;
 
@@ -249,22 +250,20 @@ public class DcmServerService extends ServiceMBeanSupport {
         dcmsrv.addHandshakeCompletedListener(tlsConfig.handshakeCompletedListener());
         dcmsrv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol
                 .getCipherSuites()));
+        server.addNotificationListener(ServerImplMBean.OBJECT_NAME, this, null, null);
+    }
+    
+    public void handleNotification(Notification arg0, Object arg1) {
+        try {
+            dcmsrv.start();
+        } catch (IOException x) {
+            log.error("Start DICOM Server failed!", x);
+        }
     }
 
     protected void stopService() throws Exception {
         dcmsrv.stop();
+        server.removeNotificationListener(ServerImplMBean.OBJECT_NAME, this);
     }
     
-    public void startDicomServer() throws IOException {
-        if (dcmsrvStarted) {
-            log.warn("Dicom Server already started!");
-        } else {
-            dcmsrv.start();
-            dcmsrvStarted = true;
-        }
-    }
-    
-    public boolean isDicomServerStarted() {
-        return dcmsrvStarted;
-    }
 }

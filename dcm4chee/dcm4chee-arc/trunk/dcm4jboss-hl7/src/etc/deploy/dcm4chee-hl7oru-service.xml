@@ -11,12 +11,5 @@
       >dcm4chee.archive:service=ExportManager</depends>
     <depends optional-attribute-name="TemplatesServiceName"
       >dcm4chee.archive:service=Templates</depends>
-      <!-- depends on all HL7 services to ensure that all HL7 services are started when HL7 Server is started by this service! -->
-    <depends>dcm4chee.archive:service=HL7Service,type=ORM</depends>
-    <depends>dcm4chee.archive:service=HL7Service,type=ADT</depends>
-    <depends>dcm4chee.archive:service=HL7Service,type=MDM</depends>
-    <depends>dcm4chee.archive:service=HL7Cmd</depends>
-    <depends>dcm4chee.archive:service=Prefetch</depends>
-    <depends>dcm4chee.archive:service=StudyPermission</depends>
   </mbean>
 </server>
