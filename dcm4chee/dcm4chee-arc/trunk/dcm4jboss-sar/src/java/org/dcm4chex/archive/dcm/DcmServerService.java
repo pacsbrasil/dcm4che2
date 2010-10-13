@@ -253,11 +253,13 @@ public class DcmServerService extends ServiceMBeanSupport implements Notificatio
         server.addNotificationListener(ServerImplMBean.OBJECT_NAME, this, null, null);
     }
     
-    public void handleNotification(Notification arg0, Object arg1) {
-        try {
-            dcmsrv.start();
-        } catch (IOException x) {
-            log.error("Start DICOM Server failed!", x);
+    public void handleNotification(Notification msg, Object arg1) {
+        if (msg.getType().equals(org.jboss.system.server.Server.START_NOTIFICATION_TYPE)) {
+            try {
+                dcmsrv.start();
+            } catch (IOException x) {
+                log.error("Start DICOM Server failed!", x);
+            }
         }
     }
 

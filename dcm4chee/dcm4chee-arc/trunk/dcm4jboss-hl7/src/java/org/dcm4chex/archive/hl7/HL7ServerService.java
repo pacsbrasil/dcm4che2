@@ -348,11 +348,13 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         server.removeNotificationListener(ServerImplMBean.OBJECT_NAME, this);
     }
 
-    public void handleNotification(Notification arg0, Object arg1) {
-        try {
-            hl7srv.start();
-        } catch (IOException x) {
-            log.error("Start of HL7 Server failed!", x);
+    public void handleNotification(Notification msg, Object arg1) {
+        if (msg.getType().equals(org.jboss.system.server.Server.START_NOTIFICATION_TYPE)) {
+            try {
+                hl7srv.start();
+            } catch (IOException x) {
+                log.error("Start of HL7 Server failed!", x);
+            }
         }
     }
     
