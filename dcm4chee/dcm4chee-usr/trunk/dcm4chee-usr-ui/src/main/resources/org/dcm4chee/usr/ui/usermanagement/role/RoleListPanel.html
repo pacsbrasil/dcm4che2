@@ -23,19 +23,37 @@
 						[Rolename]
 					</wicket:message>
 				</th>
+				<th>
+					<wicket:message key="rolelist.table.type.title">
+						[Type]
+					</wicket:message>
+				</th>
 				<th></th>
+				<th></th>
+				<th wicket:id="principal-headers" style="padding: 10px;"></th>
 		    </tr>
 		  </thead>
 		  <tbody>
 		    <tr wicket:id="role-rows">
 				<td wicket:id="rolename">
 		      		[Rolename]
-		      	</td>		  
+		      	</td>
+				<td wicket:id="type">
+		      		[Type]
+		      	</td>
+				<td>
+			        <a wicket:id="edit-role-link" href="#">
+			        	<img wicket:id="rolelist.edit.image" />
+			        </a>
+				</td>
 				<td>
 					<a wicket:id="remove-role-link" href="#">
-						<img wicket:id="img-delete" />
+						<img wicket:id="rolelist.delete.image" />
 					</a>
 		      	</td>
+	 	  	  	<td wicket:id="principal-dividers" style="text-align: center;">
+					<input wicket:id="principal-checkbox" type="checkbox" />
+	 	  	  	</td>
 		    </tr>
 		  </tbody>
 		</table>

@@ -38,24 +38,24 @@
 
 package org.dcm4chee.usr.ui.usermanagement.role;
 
-import java.util.List;
-
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
-import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
-import org.dcm4chee.usr.dao.Role;
+import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.usr.dao.UserAccess;
+import org.dcm4chee.usr.entity.Role;
+import org.dcm4chee.usr.ui.usermanagement.markup.ColorPicker;
 import org.dcm4chee.usr.ui.validator.RoleValidator;
 import org.dcm4chee.usr.util.JNDIUtils;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.slf4j.Logger;
@@ -66,58 +66,88 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since 21.07.2010
  */
-public class AddRolePage extends WebPage {
+public class CreateOrEditRolePage extends SecureWebPage {
     
     private static final long serialVersionUID = 1L;
 
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     
-    private static Logger log = LoggerFactory.getLogger(AddRolePage.class);
+    private static Logger log = LoggerFactory.getLogger(CreateOrEditRolePage.class);
 
     protected ModalWindow window;
    
-    public AddRolePage(final ModalWindow window, ListModel<Role> allRolenames) {
+    public CreateOrEditRolePage(final ModalWindow window, ListModel<Role> allRolenames, Role role) {
         super();
         
-        if (AddRolePage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(AddRolePage.BaseCSS));
+        if (CreateOrEditRolePage.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(CreateOrEditRolePage.BaseCSS));
 
         this.window = window;
-        add(new AddRoleForm("add-role-form", allRolenames));        
+        add(new CreateOrEditRoleForm("add-role-form", allRolenames, role));
+        
+        add(new WebMarkupContainer("create-role-title").setVisible(role == null));
+        add(new WebMarkupContainer("edit-role-title").setVisible(role != null));
     }
 
-    private final class AddRoleForm extends BaseForm {
+    private final class CreateOrEditRoleForm extends BaseForm {
         
         private static final long serialVersionUID = 1L;
 
         String serviceObjectName;
         
-        private Model<String> newRolename = new Model<String>();
-        private TextField<String> rolenameTextField= new TextField<String>("rolelist.add-role-form.rolename.input", newRolename);
-
-        public AddRoleForm(String id, final ListModel<Role> allRolenames) {
+        private Model<String> rolename = new Model<String>();
+        private Model<String> type = new Model<String>();
+        private Model<String> description= new Model<String>();
+        private Model<String> colorPickerModel = new Model<String>();
+        
+        private TextField<String> rolenameTextField= new TextField<String>("rolelist.add-role-form.rolename.input", rolename);
+        private TextField<String> typeTextField= new TextField<String>("rolelist.add-role-form.type.input", type);
+        private TextField<String> descriptionTextField= new TextField<String>("rolelist.add-role-form.description.input", description);
+        
+        public CreateOrEditRoleForm(String id, final ListModel<Role> allRolenames, final Role role) {
             super(id);
 
-            serviceObjectName = ((AuthenticatedWebApplication) getApplication()).getInitParameter("UserAccessServiceName");
-
+            serviceObjectName = ((BaseWicketApplication) getApplication()).getInitParameter("UserAccessServiceName");
+            
             add(rolenameTextField
                     .setRequired(true)
-                    .add(new RoleValidator(allRolenames))
+                    .add(new RoleValidator(allRolenames, (role == null ? null : role.getRolename())))
             );
+            add(typeTextField);
+            add(descriptionTextField);
+            final ColorPicker colorPicker;
+            add(colorPicker = new ColorPicker("color-picker", colorPickerModel));
+
+            if (role != null) {
+                rolenameTextField.setModelObject(role.getRolename());
+                typeTextField.setModelObject(role.getType());
+                descriptionTextField.setModelObject(role.getDescription());
+                colorPicker.setColorValue(role.getColor());
+            }
             
-            add(new AjaxFallbackButton("add-role-submit", AddRoleForm.this) {
+            add(new AjaxFallbackButton("add-role-submit", CreateOrEditRoleForm.this) {
                 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
-                        Role role = new Role(newRolename.getObject());
-                        JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceObjectName)
-                            .addRole(role);
-                        List<Role> currentRolenames = allRolenames.getObject();
-                        currentRolenames.add(role);
-                        allRolenames.setObject(currentRolenames);
+                        UserAccess userAccess = JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceObjectName);
+                        if (role == null) {
+                            Role newRole = new Role(rolename.getObject());
+                            newRole.setType(type.getObject());
+                            newRole.setDescription(description.getObject());
+                            newRole.setColor(colorPicker.getColorValue());
+                            userAccess.addRole(newRole);
+                            
+                        } else {
+                            role.setRolename(rolename.getObject());
+                            role.setType(type.getObject());
+                            role.setDescription(description.getObject());
+                            role.setColor(colorPicker.getColorValue());
+                            userAccess.updateRole(role);
+                        }
+                        allRolenames.setObject(userAccess.getAllRolenames());
                         window.close(target);
                     } catch (final Exception e) {
                         log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());

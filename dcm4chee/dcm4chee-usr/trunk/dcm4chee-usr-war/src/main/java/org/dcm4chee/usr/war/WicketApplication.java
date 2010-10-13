@@ -45,6 +45,7 @@ import java.util.Enumeration;
 import javax.security.auth.Subject;
 
 import org.apache.wicket.Page;
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.authentication.AuthenticatedWebSession;
 import org.apache.wicket.authorization.strategies.role.Roles;
@@ -55,10 +56,11 @@ import org.dcm4chee.usr.war.common.PageExpiredErrorPage;
 import org.dcm4chee.usr.war.pages.LoginPage;
 import org.dcm4chee.usr.war.pages.UserManagementMainPage;
 import org.dcm4chee.usr.war.session.JaasWicketSession;
+import org.dcm4chee.web.common.secure.SecureSession;
 
 public class WicketApplication extends AuthenticatedWebApplication {
 
-    private String securityDomainName;
+    private String webApplicationPolicy;
     private String rolesGroupName;
     private String userRoleName;
     private String adminRoleName;
@@ -72,7 +74,7 @@ public class WicketApplication extends AuthenticatedWebApplication {
     }
 
     public String getSecurityDomainName() {
-        return securityDomainName;
+        return webApplicationPolicy;
     }
 
     public String getRolesGroupName() {
@@ -121,7 +123,7 @@ public class WicketApplication extends AuthenticatedWebApplication {
 
         mountBookmarkablePage("/login", LoginPage.class);
         
-        this.securityDomainName = getInitParameter("securityDomainName");
+        this.webApplicationPolicy = getInitParameter("webApplicationPolicy");
         this.rolesGroupName = getInitParameter("rolesGroupName");
         this.userRoleName = getInitParameter("userRoleName");
         this.adminRoleName = getInitParameter("adminRoleName");
@@ -157,6 +159,7 @@ public class WicketApplication extends AuthenticatedWebApplication {
 
     @Override
     protected Class<? extends WebPage> getSignInPageClass() {
+        ((SecureSession) RequestCycle.get().getSession()).invalidate();
         return LoginPage.class;
     }
 

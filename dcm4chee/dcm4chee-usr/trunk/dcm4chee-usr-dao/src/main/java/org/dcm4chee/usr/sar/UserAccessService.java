@@ -38,8 +38,8 @@
 
 package org.dcm4chee.usr.sar;
 
-import org.dcm4chee.usr.dao.Role;
 import org.dcm4chee.usr.dao.UserAccess;
+import org.dcm4chee.usr.entity.Role;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.jboss.system.ServiceMBeanSupport;
 

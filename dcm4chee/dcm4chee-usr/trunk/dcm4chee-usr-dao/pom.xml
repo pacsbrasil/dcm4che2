@@ -13,6 +13,19 @@
   </parent>
   <name>Ejb 3.0 components for dcm4chee</name>
   <dependencies>
+		<dependency>
+			<groupId>dcm4che.dcm4chee</groupId>
+			<artifactId>dcm4chee-arc-entities</artifactId>
+			<version>3.0.0-SNAPSHOT</version>
+      		<classifier>${db}</classifier>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>dcm4che</groupId>
+					<artifactId>dcm4che-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
       <dependency>
       <groupId>jboss</groupId>
       <artifactId>jboss-system</artifactId>

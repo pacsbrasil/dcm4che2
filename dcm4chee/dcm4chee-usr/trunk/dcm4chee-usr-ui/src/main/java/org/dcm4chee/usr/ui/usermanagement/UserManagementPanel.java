@@ -38,56 +38,27 @@
 
 package org.dcm4chee.usr.ui.usermanagement;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.wicket.authorization.strategies.role.Roles;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
-import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
-import org.apache.wicket.extensions.markup.html.tabs.AbstractTab;
-import org.apache.wicket.extensions.markup.html.tabs.ITab;
-import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel;
 import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
+import org.dcm4chee.web.common.secure.SecureAjaxTabbedPanel;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since 07.04.2010
  */
-@AuthorizeInstantiation({Roles.ADMIN, "WebAdmin"})
-public class UserManagementPanel extends AjaxTabbedPanel {
+public class UserManagementPanel extends SecureAjaxTabbedPanel {
     
     private static final long serialVersionUID = 1L;
 
-    public UserManagementPanel(String id, List<ITab> tabs) {
-        super(id, tabs);
-    }
-
     public UserManagementPanel(String id) {
-
-        this(id, new ArrayList<ITab>(Arrays.asList(
-            new AbstractTab(new ResourceModel("usermanagement.tabs.tab1.name")) {
-            
-                private static final long serialVersionUID = 1L;
-            
-                public Panel getPanel(String panelId) {
-
-                    return new UserListPanel(panelId);
-                }
-            }, 
-            new AbstractTab(new ResourceModel("usermanagement.tabs.tab2.name")) {
-                
-                private static final long serialVersionUID = 1L;
-            
-                public Panel getPanel(String panelId) {
-                    return new RoleListPanel(panelId);
-                }
-            })));
+        super(id);
+        
+        addModule(UserListPanel.class, new ResourceModel("usermanagement.tabs.tab1.name"));
+        addModule(RoleListPanel.class, new ResourceModel("usermanagement.tabs.tab2.name"));
     }
-    
+
     public static String getModuleName() {
         return "usermanagement";
     }

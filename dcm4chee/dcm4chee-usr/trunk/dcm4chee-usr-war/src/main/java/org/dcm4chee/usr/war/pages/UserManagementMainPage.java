@@ -39,16 +39,15 @@
 package org.dcm4chee.usr.war.pages;
 
 import org.apache.wicket.PageParameters;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.pages.InternalErrorPage;
 import org.dcm4chee.usr.dao.UserAccess;
-import org.dcm4chee.usr.war.session.JaasWicketSession;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordLink;
 import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
 import org.dcm4chee.usr.util.JNDIUtils;
+import org.dcm4chee.usr.war.session.JaasWicketSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +56,6 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since 18.11.2009
  */
-@AuthorizeInstantiation({"ADMIN"})
 public class UserManagementMainPage extends WebPage {
     
     private static final long serialVersionUID = 1L;

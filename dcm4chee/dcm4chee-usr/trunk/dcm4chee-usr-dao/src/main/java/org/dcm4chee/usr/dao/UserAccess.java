@@ -42,6 +42,7 @@ import java.util.List;
 
 import javax.ejb.Local;
 
+import org.dcm4chee.usr.entity.Role;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
 
@@ -54,11 +55,12 @@ import org.dcm4chee.usr.entity.UserRoleAssignment;
 public interface UserAccess {
     String JNDI_NAME = "dcm4chee-usr-dao/UserAccess/local";
 
+    public void init(String serviceObjectName);
+    
     public String getUserRoleName();
     public String getAdminRoleName();
     
-    public List<User> findAll();
-
+    public List<User> getAllUsers();
     public User getUser(String userId);
     public void createUser(User user);
     public void updateUser(String userId, String password);
@@ -69,10 +71,9 @@ public interface UserAccess {
     public void assignRole(UserRoleAssignment ura);
     public void unassignRole(UserRoleAssignment ura);
 
-    //  accesses the role file, not the relation table in the database
-    public void init(String serviceObjectName);
-    public List<Role> getAllRolenames();   
+    public List<Role> getAllRolenames();
     public void addRole(Role role);
+    public void updateRole(Role role);
     public void removeRole(Role role);
     public Boolean roleExists(String rolename);
 }

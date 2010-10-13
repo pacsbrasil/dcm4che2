@@ -39,16 +39,18 @@
 package org.dcm4chee.usr.ui.usermanagement.role;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Properties;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.authentication.AuthenticatedWebApplication;
-import org.apache.wicket.authorization.strategies.role.Roles;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
+import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -56,28 +58,30 @@ import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
-import org.dcm4chee.usr.dao.Role;
 import org.dcm4chee.usr.dao.UserAccess;
+import org.dcm4chee.usr.entity.Role;
 import org.dcm4chee.usr.ui.usermanagement.UserManagementPanel;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
-import org.dcm4chee.web.common.base.JaasWicketSession;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
+import org.dcm4chee.web.common.secure.SecureSession;
+import org.dcm4chee.web.common.secure.SecurityBehavior;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since 01.07.2010
  */
-@AuthorizeInstantiation({Roles.ADMIN, "WebAdmin"})
 public class RoleListPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
@@ -85,7 +89,7 @@ public class RoleListPanel extends Panel {
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(UserManagementPanel.class, "usr-style.css");
     
-    String serviceObjectName;
+    UserAccess userAccess;
     
     private ListModel<Role> allRolenames;
 
@@ -101,11 +105,11 @@ public class RoleListPanel extends Panel {
         if (RoleListPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(RoleListPanel.CSS));
 
-        serviceObjectName = ((AuthenticatedWebApplication) getApplication()).getInitParameter("UserAccessServiceName");
-            
+//        serviceObjectName = ((BaseWicketApplication) getApplication()).getInitParameter("UserAccessServiceName");
+        userAccess = JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, ((BaseWicketApplication) getApplication()).getInitParameter("UserAccessServiceName"));
+        
         setOutputMarkupId(true);
 
-        ((JaasWicketSession) getSession()).getUsername();
         this.allRolenames = new ListModel<Role>(getAllRolenames());
 
         add(this.confirmationWindow = new ConfirmationWindow<Role>("confirmation-window") {
@@ -114,69 +118,194 @@ public class RoleListPanel extends Panel {
 
             @Override
             public void onConfirmation(AjaxRequestTarget target, Role role) {
-                JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceObjectName).removeRole(role);
+                userAccess.removeRole(role);
                 target.addComponent(RoleListPanel.this);
                 allRolenames.setObject(getAllRolenames());
             }
         });
 
-        add(modalWindow = new ModalWindow("modal-window")
-            .setPageCreator(new ModalWindow.PageCreator() {
-                
-                private static final long serialVersionUID = 1L;
-                  
-                @Override
-                public Page createPage() {
-                    return new AddRolePage(modalWindow, allRolenames);
-                }
-            })
-        );
-    
+        add(modalWindow = new ModalWindow("modal-window"));
+        
         add(new ModalWindowLink("toggle-role-form-link", modalWindow, 
                 new Integer(new ResourceModel("rolelist.add-role.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
                 new Integer(new ResourceModel("rolelist.add-role.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-        )
-        .add(new Image("toggle-role-form-image", ImageManager.IMAGE_USER_ROLE_ADD)
-        .add(new ImageSizeBehaviour("vertical-align: middle;")))
-        .add(new Label("rolelist.add-role-form.title", new ResourceModel("rolelist.add-role-form.title")))
-        .add(new TooltipBehaviour("rolelist."))
-        );
+        ) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                modalWindow
+                .setPageCreator(new ModalWindow.PageCreator() {
+                    
+                    private static final long serialVersionUID = 1L;
+                      
+                    @Override
+                    public Page createPage() {
+                        return new CreateOrEditRolePage(modalWindow, allRolenames, null);
+                    }
+                });
+                super.onClick(target);
+            }
+        }
+      .add(new Image("toggle-role-form-image", ImageManager.IMAGE_USER_ROLE_ADD)
+      .add(new ImageSizeBehaviour("vertical-align: middle;")))
+      .add(new Label("rolelist.add-role-form.title", new ResourceModel("rolelist.add-role-form.title")))
+      .add(new TooltipBehaviour("rolelist."))
+      .add(new SecurityBehavior(getModuleName() + ":newRoleLink"))
+      );
     }
 
     @Override
     protected void onBeforeRender() {
         super.onBeforeRender();
         
+        RepeatingView principalHeaders = new RepeatingView("principal-headers");
+        HashMap<String, String> principalsAndComments = ((SecureSession) getSession()).getSwarmPrincipals();
+        Iterator<String> principals = principalsAndComments.keySet().iterator();
+        
+        while(principals.hasNext()) {
+            String principal = principals.next();
+            String comment;
+            principalHeaders.add(new Label(principalHeaders.newChildId(), principal)
+                .add(new AttributeModifier("title", true, 
+                        (comment = principalsAndComments.get(principal)) != null ? 
+                                new ResourceModel(comment) : 
+                                    new Model<String>(principal))));
+        }
+        addOrReplace(principalHeaders);
+
         RepeatingView roleRows = new RepeatingView("role-rows");
         addOrReplace(roleRows);
         
         for (int i = 0; i < this.allRolenames.getObject().size(); i++) {
             final Role role = this.allRolenames.getObject().get(i);
             
-            
             WebMarkupContainer rowParent;
-            roleRows.add((rowParent = new WebMarkupContainer(roleRows.newChildId())).add(new Label("rolename", role.getRolename())));
+            roleRows.add((rowParent = new WebMarkupContainer(roleRows.newChildId()))
+                    .add(new Label("rolename", role.getRolename())
+                    .add(new AttributeModifier("title", true, new Model<String>(role.getDescription()))))
+            );
+            rowParent.add(new Label("type", role.getType()));
+            rowParent.add(new AttributeModifier("style", true, new Model<String>("background-color: " + role.getColor())));
+
+            rowParent.add((new ModalWindowLink("edit-role-link", modalWindow,
+                    new Integer(new ResourceModel("rolelist.add-role.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
+                    new Integer(new ResourceModel("rolelist.add-role.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
+            ) {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    modalWindow
+                    .setPageCreator(new ModalWindow.PageCreator() {
+                        
+                        private static final long serialVersionUID = 1L;
+                          
+                        @Override
+                        public Page createPage() {
+                            return new CreateOrEditRolePage(modalWindow, allRolenames, role);
+                        }
+                    });
+                    super.onClick(target);
+                }
+            })
+            .add(new Image("rolelist.edit.image", ImageManager.IMAGE_COMMON_DICOM_EDIT)
+            .add(new TooltipBehaviour("rolelist.", "edit-role-link", new Model<String>(role.getRolename())))
+            .add(new ImageSizeBehaviour("vertical-align: middle;")))
+            .add(new SecurityBehavior(getModuleName() + ":editRoleLink"))
+            );
+
             rowParent.add((new AjaxFallbackLink<Object>("remove-role-link") {
 
-                                private static final long serialVersionUID = 1L;
+                private static final long serialVersionUID = 1L;
 
-                                @Override
-                                public void onClick(AjaxRequestTarget target) {
-                                    confirmationWindow.confirm(target, new Model<String>(new ResourceModel("rolelist.remove-role-link.confirmation").wrapOnAssignment(this.getParent()).getObject()), role);
-                                }
-                            }
-                    .add(new Image("img-delete", ImageManager.IMAGE_COMMON_REMOVE)
-                    .add(new TooltipBehaviour("rolelist.", "remove-role-link", new Model<String>(role.getRolename()))))
-                    .add(new ImageSizeBehaviour()))
-                    .setVisible(!JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceObjectName).getUserRoleName().equals(role.getRolename())
-                            && !JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceObjectName).getAdminRoleName().equals(role.getRolename()))
-                .add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i)))));
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    confirmationWindow.confirm(target, new Model<String>(new ResourceModel("rolelist.remove-role-link.confirmation").wrapOnAssignment(this.getParent()).getObject()), role);
+                }
+            }
+            .add(new Image("rolelist.delete.image", ImageManager.IMAGE_COMMON_REMOVE)
+            .add(new TooltipBehaviour("rolelist.", "remove-role-link", new Model<String>(role.getRolename()))))
+            .add(new ImageSizeBehaviour()))
+            .setVisible(!userAccess.getUserRoleName().equals(role.getRolename())
+                    && !userAccess.getAdminRoleName().equals(role.getRolename()))
+            .add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))))
+            .add(new SecurityBehavior(getModuleName() + ":removeRoleLink")));
+
+            RepeatingView principalDividers = new RepeatingView("principal-dividers");
+            rowParent.add(principalDividers);
+            principals = principalsAndComments.keySet().iterator();
+            
+            while(principals.hasNext()) {
+                String principal = principals.next(); 
+                AjaxCheckBox roleCheckbox = new AjaxCheckBox("principal-checkbox", new HasPrincipalModel(role, principal)) {
+
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    protected void onUpdate(AjaxRequestTarget target) {
+                        target.addComponent(this);
+                    }
+                      
+                    @Override
+                    protected void onComponentTag(ComponentTag tag) {
+                        super.onComponentTag(tag);
+                        tag.put("title", new ResourceModel(((HasPrincipalModel) this.getModel()).getObject().booleanValue() ? "rolelist.has-principal-checkbox.remove.tooltip" : "rolelist.has-principal-checkbox.add.tooltip").wrapOnAssignment(this).getObject());
+                    }
+                };
+                principalDividers.add(
+                        new WebMarkupContainer(roleRows.newChildId())
+                        .add(roleCheckbox)              
+                );
+                roleCheckbox.add(new SecurityBehavior(getModuleName() + ":changePrincipalAssignmentCheckbox"));
+            }
+        }
+    }
+
+    private final class HasPrincipalModel implements IModel<Boolean> {
+        
+        private static final long serialVersionUID = 1L;
+        
+        private Role role;
+        private String principalname;
+        
+        public HasPrincipalModel(Role role, String principal) {
+            this.role = role;
+            this.principalname = principal;
+            Properties swarmPrincipals = role.getSwarmPrincipals();
+            if (!swarmPrincipals.containsKey(role.getRolename())) {
+                swarmPrincipals.put(role.getRolename(), "");
+                role.setSwarmPrincipals(swarmPrincipals);
+            }
+        }
+        
+        @Override
+        public Boolean getObject() {
+            return role.getSwarmPrincipals().getProperty(role.getRolename()).contains(principalname);
+        }
+        
+        @Override
+        public void setObject(Boolean hasPrincipal) {
+            Properties swarmPrincipals = role.getSwarmPrincipals();
+            if (hasPrincipal) 
+                swarmPrincipals.put(role.getRolename(), role.getSwarmPrincipals().getProperty(role.getRolename()).concat("," + principalname));
+            else 
+                swarmPrincipals.put(role.getRolename(), role.getSwarmPrincipals().getProperty(role.getRolename()).replace(("," + principalname), ""));
+            role.setSwarmPrincipals(swarmPrincipals);
+        }
+        
+        @Override
+        public void detach() {
         }
     }
 
     private ArrayList<Role> getAllRolenames() {
         ArrayList<Role> allRolenames = new ArrayList<Role>(2);
-        allRolenames.addAll(JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceObjectName).getAllRolenames());
+        allRolenames.addAll(userAccess.getAllRolenames());
         return allRolenames;
-    }    
+    }
+    
+    public static String getModuleName() {
+        return "rolelist";
+    }
 }

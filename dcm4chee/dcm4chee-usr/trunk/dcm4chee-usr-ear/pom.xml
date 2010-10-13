@@ -15,6 +15,13 @@
   <name>Assemble ear for dcm4chee application</name>
   <dependencies>
     <dependency>
+	  <groupId>dcm4che.dcm4chee</groupId>
+	  <artifactId>dcm4chee-arc-entities</artifactId>
+	  <type>ejb</type>
+	  <classifier>${db}</classifier>
+	  <version>3.0.0-SNAPSHOT</version>
+	</dependency>
+    <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-usr-entity</artifactId>
       <type>ejb</type>

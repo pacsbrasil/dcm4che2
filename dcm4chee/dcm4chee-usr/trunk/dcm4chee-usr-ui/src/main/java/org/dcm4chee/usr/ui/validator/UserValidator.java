@@ -65,7 +65,7 @@ public class UserValidator extends AbstractValidator<String> {
     @Override
     protected void onValidate(IValidatable<String> validatable) {
         try {
-            for (User user : this.allUsers.getObject())
+            for (User user : this.allUsers.getObject()) 
                 if (user.getUserID().equals(validatable.getValue())) error(validatable);
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "onValidate: " + e.getMessage());

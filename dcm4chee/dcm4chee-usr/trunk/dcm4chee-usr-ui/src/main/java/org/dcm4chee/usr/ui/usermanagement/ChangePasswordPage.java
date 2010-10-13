@@ -41,8 +41,6 @@ package org.dcm4chee.usr.ui.usermanagement;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
-import org.apache.wicket.authorization.strategies.role.Roles;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -66,7 +64,6 @@ import org.dcm4chee.web.common.util.SecurityUtils;
  * @version $Revision$ $Date$
  * @since 28.09.2009
  */
-@AuthorizeInstantiation({Roles.USER, Roles.ADMIN, "WebUser", "WebAdmin"})
 public class ChangePasswordPage extends WebPage {
     
     private static final long serialVersionUID = 1L;
