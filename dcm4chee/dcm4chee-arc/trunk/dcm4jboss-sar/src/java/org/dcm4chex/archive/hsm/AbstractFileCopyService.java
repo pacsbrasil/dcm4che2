@@ -95,6 +95,8 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
 
     private long notReadyDelay;
 
+    private int fetchSize;
+
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
     }
@@ -302,6 +304,14 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
     protected abstract BaseJmsOrder createOrder(Dataset ian);
 
     protected abstract void process(BaseJmsOrder order) throws Exception;
+
+    public int getFetchSize() {
+        return fetchSize;
+    }
+
+    public void setFetchSize(int fetchSize) {
+        this.fetchSize = fetchSize;
+    }
 
     protected static StorageHome getStorageHome() throws HomeFactoryException {
         return (StorageHome) EJBHomeFactory.getFactory().lookup(

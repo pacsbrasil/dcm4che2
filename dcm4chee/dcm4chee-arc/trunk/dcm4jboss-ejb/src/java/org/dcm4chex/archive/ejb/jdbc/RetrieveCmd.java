@@ -249,6 +249,10 @@ public class RetrieveCmd extends BaseReadCmd {
         this.sqlCmd = sql;
     }
 
+    public FileInfo[][] getFileInfos() throws SQLException {
+        return getFileInfos(0);
+    }
+    
     public FileInfo[][] getFileInfos(int fetchSize) throws SQLException {
         Map result = map();
         try {

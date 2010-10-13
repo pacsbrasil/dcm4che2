@@ -72,7 +72,7 @@ public class FileCopyOrder extends BaseJmsOrder {
 
     protected Dataset ian = null;
     
-    private int fetchSize;
+    protected int fetchSize;
     
     private static Logger log = Logger.getLogger(FileCopyOrder.class);
 

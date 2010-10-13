@@ -87,8 +87,6 @@ public class FileCopyService extends AbstractFileCopyService {
     private ObjectName hsmModuleServicename = null;
     private ArrayList<ObjectName> registeredModules = new ArrayList<ObjectName>();
     private boolean isReady;
-    private int fetchSize;
-    
     public String getRegisteredHSMModules() {
         StringBuilder sb = new StringBuilder();
         for (ObjectName on : registeredModules) {
@@ -120,14 +118,6 @@ public class FileCopyService extends AbstractFileCopyService {
             isReady = false;
     }
 
-    public int getFetchSize() {
-        return fetchSize;
-    }
-
-    public void setFetchSize(int fetchSize) {
-        this.fetchSize = fetchSize;
-    }
-
     public boolean copyFilesOfStudy(String studyIUID) throws SQLException {
         log.info("Start copy files of study "+studyIUID);
         Dataset queryDs = DcmObjectFactory.getInstance().newDataset();
@@ -135,7 +125,7 @@ public class FileCopyService extends AbstractFileCopyService {
         queryDs.putUI(Tags.StudyInstanceUID, studyIUID);
         queryDs.putUI(Tags.SeriesInstanceUID);
         QueryCmd cmd = QueryCmd.create(queryDs, true, false, false, null);
-        cmd.setFetchSize(fetchSize).execute();
+        cmd.setFetchSize(getFetchSize()).execute();
         while ( cmd.next() ) {
             if ( ! copyFilesOfSeries(cmd.getDataset().getString(Tags.SeriesInstanceUID) ) ) {
                 return false;
@@ -178,7 +168,7 @@ public class FileCopyService extends AbstractFileCopyService {
 
     protected BaseJmsOrder createOrder(Dataset ian) {
         FileCopyOrder fileCopyOrder = new FileCopyOrder(ian, ForwardingRules.toAET(destination),
-                getRetrieveAETs(), fetchSize);
+                getRetrieveAETs(), getFetchSize());
         fileCopyOrder.processOrderProperties();
         
         return fileCopyOrder;
