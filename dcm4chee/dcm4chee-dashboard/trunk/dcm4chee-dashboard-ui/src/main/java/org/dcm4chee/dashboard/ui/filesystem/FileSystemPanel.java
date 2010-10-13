@@ -55,7 +55,6 @@ import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
-import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
 import org.apache.wicket.extensions.markup.html.tree.table.IColumn;
 import org.apache.wicket.extensions.markup.html.tree.table.IRenderable;
@@ -75,6 +74,7 @@ import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
 import org.dcm4chee.dashboard.ui.common.JFreeChartImage;
 import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis3D;
@@ -116,25 +116,25 @@ public class FileSystemPanel extends Panel {
 
         try {
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new FileSystemModel());
-            for (String groupname : DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).listAllFileSystemGroups()) {
+            for (String groupname : DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).listAllFileSystemGroups()) {
                 FileSystemModel group = new FileSystemModel();
                 
                 int index = groupname.indexOf("group=");
                 if (index < 0) continue;
                 group.setDirectoryPath(groupname.substring(index + 6));
-                group.setDescription(groupname + ",AET=" + DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).getDefaultRetrieveAETitle(groupname));
+                group.setDescription(groupname + ",AET=" + DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).getDefaultRetrieveAETitle(groupname));
                 group.setGroup(true);
                 DefaultMutableTreeNode groupNode;
                 rootNode.add(groupNode = new DefaultMutableTreeNode(group));
 
                 File[] fileSystems = null;
                 try {
-                    fileSystems = DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).listFileSystemsOfGroup(groupname);
+                    fileSystems = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).listFileSystemsOfGroup(groupname);
                 } catch (MBeanException mbe) {
                 }
                 
                 if (!((fileSystems == null) || (fileSystems.length == 0))) {
-                    long minBytesFree = DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).getMinimumFreeDiskSpaceOfGroup(groupname);
+                    long minBytesFree = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).getMinimumFreeDiskSpaceOfGroup(groupname);
                     
                     for (File file : fileSystems) {
                         FileSystemModel fsm = new FileSystemModel();
@@ -146,7 +146,7 @@ public class FileSystemPanel extends Panel {
                         fsm.setMinimumFreeDiskSpace(fsm.getOverallDiskSpaceLong() == 0 ? 0 : minBytesFree / FileSystemModel.MEGA);
                         fsm.setUsableDiskSpace(Math.max((file.getUsableSpace() - minBytesFree) / FileSystemModel.MEGA, 0));
                         fsm.setRemainingTime(Math.max((file.getUsableSpace() - minBytesFree) / 
-                                DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).getExpectedDataVolumePerDay(groupname), 0));
+                                DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).getExpectedDataVolumePerDay(groupname), 0));
                         
                         group.setOverallDiskSpace(group.getOverallDiskSpaceLong() + fsm.getOverallDiskSpaceLong());
                         group.setUsedDiskSpace(group.getUsedDiskSpaceLong() + fsm.getUsedDiskSpaceLong());
@@ -159,7 +159,7 @@ public class FileSystemPanel extends Panel {
                 }
             }
 
-            String[] otherFileSystems = DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).listOtherFileSystems();
+            String[] otherFileSystems = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).listOtherFileSystems();
             if (otherFileSystems != null && otherFileSystems.length > 0) {
 
                 FileSystemModel group = new FileSystemModel();

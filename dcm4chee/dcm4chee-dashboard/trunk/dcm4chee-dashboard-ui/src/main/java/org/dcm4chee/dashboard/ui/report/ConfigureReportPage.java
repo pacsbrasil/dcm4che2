@@ -56,7 +56,6 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.yui.calendar.DatePicker;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
@@ -65,6 +64,7 @@ import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.report.display.DynamicDisplayPage;
@@ -79,7 +79,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since 28.09.2009
  */
-public class ConfigureReportPage extends WebPage {
+public class ConfigureReportPage extends SecureWebPage {
     
     private static final long serialVersionUID = 1L;
     

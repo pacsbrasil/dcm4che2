@@ -38,68 +38,29 @@
 
 package org.dcm4chee.dashboard.ui;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
-import org.apache.wicket.extensions.markup.html.tabs.AbstractTab;
-import org.apache.wicket.extensions.markup.html.tabs.ITab;
-import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.ui.filesystem.FileSystemPanel;
 import org.dcm4chee.dashboard.ui.messaging.QueuePanel;
 import org.dcm4chee.dashboard.ui.report.ReportPanel;
 import org.dcm4chee.dashboard.ui.systeminfo.SystemInfoPanel;
+import org.dcm4chee.web.common.secure.SecureAjaxTabbedPanel;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since 07.04.2010
  */
-public class DashboardPanel extends AjaxTabbedPanel {
+public class DashboardPanel extends SecureAjaxTabbedPanel {
     
     private static final long serialVersionUID = 1L;
 
-    public DashboardPanel(String id, List<ITab> tabs) {
-        super(id, tabs);
-    }
-
     public DashboardPanel(String id) {
-    
-        this(id, new ArrayList<ITab>(Arrays.asList(
-            new AbstractTab(new ResourceModel("dashboard.tabs.tab1.name")) {
-            
-                private static final long serialVersionUID = 1L;
-            
-                public Panel getPanel(String panelId) {
-                    return new FileSystemPanel(panelId);
-                }
-            },  
-            new AbstractTab(new ResourceModel("dashboard.tabs.tab2.name")) {
-                
-                private static final long serialVersionUID = 1L;
-            
-                public Panel getPanel(String panelId) {
-                    return new ReportPanel(panelId);
-                }
-            },
-            new AbstractTab(new ResourceModel("dashboard.tabs.tab3.name")) {
-                
-                private static final long serialVersionUID = 1L;
-            
-                public Panel getPanel(String panelId) {
-                    return new SystemInfoPanel(panelId);
-                }
-            }, 
-            new AbstractTab(new ResourceModel("dashboard.tabs.tab4.name")) {
-                
-                private static final long serialVersionUID = 1L;
-            
-                public Panel getPanel(String panelId) {
-                    return new QueuePanel(panelId);
-                }
-            })));
+        super(id);
+        
+        addModule(FileSystemPanel.class, new ResourceModel("dashboard.tabs.tab1.name"));
+        addModule(ReportPanel.class, new ResourceModel("dashboard.tabs.tab2.name"));
+        addModule(SystemInfoPanel.class, new ResourceModel("dashboard.tabs.tab3.name"));
+        addModule(QueuePanel.class, new ResourceModel("dashboard.tabs.tab4.name"));
     }
     
     public static String getModuleName() {

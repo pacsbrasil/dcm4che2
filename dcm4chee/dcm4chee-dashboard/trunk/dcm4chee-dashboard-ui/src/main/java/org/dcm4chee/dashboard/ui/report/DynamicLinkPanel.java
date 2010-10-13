@@ -43,10 +43,6 @@ import org.apache.wicket.Page;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.authentication.AuthenticatedWebApplication;
-import org.apache.wicket.authorization.Action;
-import org.apache.wicket.authorization.strategies.role.Roles;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeAction;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.IHeaderContributor;
@@ -61,6 +57,8 @@ import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
+import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,6 +132,7 @@ public class DynamicLinkPanel extends Panel {
                         )
                     )
             );
+            this.link.add(new SecurityBehavior(ReportPanel.getModuleName() + ":" + className));
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
             log.debug("Exception: ", e);
@@ -221,7 +220,6 @@ public class DynamicLinkPanel extends Panel {
         }
     }
 
-    @AuthorizeAction(action = Action.RENDER, roles = { Roles.ADMIN, "WebAdmin" })
     private class CreateOrEditReportLink extends AjaxDisplayLink {
         
         private static final long serialVersionUID = 1L;
@@ -252,7 +250,6 @@ public class DynamicLinkPanel extends Panel {
         }
     }    
 
-    @AuthorizeAction(action = Action.RENDER, roles = { Roles.ADMIN, "WebAdmin" })
     private class RemoveLink extends DisplayLink {
         
         private static final long serialVersionUID = 1L;
@@ -264,7 +261,7 @@ public class DynamicLinkPanel extends Panel {
         @Override
         public void onClick() {
             try {
-                DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).deleteReport(this.report, this.report.getGroupUuid() == null);
+                DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).deleteReport(this.report, this.report.getGroupUuid() == null);
             } catch (Exception e) {
                 log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
                 log.debug("Exception: ", e);

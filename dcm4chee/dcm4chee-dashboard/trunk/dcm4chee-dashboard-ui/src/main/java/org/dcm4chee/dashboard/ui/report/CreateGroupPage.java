@@ -41,17 +41,17 @@ package org.dcm4chee.dashboard.ui.report;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
-import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.security.components.SecureWebPage;
 import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.slf4j.Logger;
@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since 28.09.2009
  */
-public class CreateGroupPage extends WebPage {
+public class CreateGroupPage extends SecureWebPage {
     
     private static final long serialVersionUID = 1L;
 
@@ -101,7 +101,7 @@ public class CreateGroupPage extends WebPage {
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
-                        DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).createReport(new ReportModel(null, newGroupname.getObject(), null, null, null, false, null, null), true);
+                        DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).createReport(new ReportModel(null, newGroupname.getObject(), null, null, null, false, null, null), true);
                         window.close(target);
                     } catch (final Exception e) {
                         log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());

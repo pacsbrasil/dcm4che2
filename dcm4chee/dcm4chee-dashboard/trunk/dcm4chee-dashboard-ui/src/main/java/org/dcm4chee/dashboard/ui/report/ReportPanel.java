@@ -48,7 +48,6 @@ import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
-import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.tree.table.AbstractColumn;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
@@ -71,8 +70,10 @@ import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
+import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,6 +118,7 @@ public class ReportPanel extends Panel {
         .add(new ImageSizeBehaviour("vertical-align: middle;")))
         .add(new Label("dashboard.report.add-group-form.title", new ResourceModel("dashboard.report.add-group-form.title")))
         .add(new TooltipBehaviour("dashboard.report."))
+        .add(new SecurityBehavior(getModuleName() + ":newGroupLink"))
         );
     }
     
@@ -127,12 +129,12 @@ public class ReportPanel extends Panel {
         try {
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new ReportModel());
             
-            for (ReportModel group : DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).listAllReports(true)) {
+            for (ReportModel group : DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).listAllReports(true)) {
                 DefaultMutableTreeNode groupNode = new DefaultMutableTreeNode();
                 groupNode.setUserObject(group);
                 rootNode.add(groupNode);
     
-                for (ReportModel report : DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).listAllReports(false)) {
+                for (ReportModel report : DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).listAllReports(false)) {
                     if (report.getGroupUuid() != null && report.getGroupUuid().equals(group.getUuid())) {
                         DefaultMutableTreeNode reportNode = new DefaultMutableTreeNode();
                         reportNode.setUserObject(report);
@@ -238,5 +240,9 @@ public class ReportPanel extends Panel {
         public Component newCell(MarkupContainer parent, String id, final TreeNode node, int level) {
             return new DynamicLinkPanel(id, this.className, (ReportModel) ((DefaultMutableTreeNode) node).getUserObject(), this.modalWindow);
         }
+    }
+    
+    public static String getModuleName() {
+        return "report";
     }
 }

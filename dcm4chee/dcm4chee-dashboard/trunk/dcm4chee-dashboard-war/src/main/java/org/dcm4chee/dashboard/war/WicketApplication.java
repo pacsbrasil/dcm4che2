@@ -64,7 +64,7 @@ import org.dcm4chee.dashboard.war.session.JaasWicketSession;
  */
 public class WicketApplication extends AuthenticatedWebApplication {
 
-    private String securityDomainName;
+    private String webApplicationPolicy;
     private String rolesGroupName;
     private String userRoleName;
     private String adminRoleName;
@@ -74,7 +74,7 @@ public class WicketApplication extends AuthenticatedWebApplication {
     private String hashAlgorithm;
     
     public String getSecurityDomainName() {
-        return securityDomainName;
+        return webApplicationPolicy;
     }
 
     public String getRolesGroupName() {
@@ -125,7 +125,7 @@ public class WicketApplication extends AuthenticatedWebApplication {
         getApplicationSettings().setInternalErrorPage(InternalErrorPage.class);
         getApplicationSettings().setPageExpiredErrorPage(PageExpiredErrorPage.class);
 
-        this.securityDomainName = getInitParameter("securityDomainName");
+        this.webApplicationPolicy = getInitParameter("webApplicationPolicy");
         this.rolesGroupName = getInitParameter("rolesGroupName");
         this.userRoleName = getInitParameter("userRoleName");
         this.adminRoleName = getInitParameter("adminRoleName");        

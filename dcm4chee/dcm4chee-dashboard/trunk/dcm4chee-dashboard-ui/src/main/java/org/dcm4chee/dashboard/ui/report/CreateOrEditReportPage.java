@@ -58,11 +58,9 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
-import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
@@ -75,12 +73,14 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
+import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 import org.dcm4chee.dashboard.ui.validator.ReportTitleValidator;
 import org.dcm4chee.dashboard.ui.validator.SQLSelectStatementValidator;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.slf4j.Logger;
@@ -91,7 +91,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since 28.09.2009
  */
-public class CreateOrEditReportPage extends WebPage {
+public class CreateOrEditReportPage extends SecureWebPage {
     
     private static final long serialVersionUID = 1L;
     
@@ -161,7 +161,7 @@ public class CreateOrEditReportPage extends WebPage {
             .add(new AttributeModifier("size", true, new ResourceModel("dashboard.report.createoredit.form.title.columns")))
             );
             
-            add(new DropDownChoice<String>("report-datasource-dropdown-choice", new PropertyModel<String>(thisReport, "dataSource"), Arrays.asList(DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).getDataSources())).setNullValid(true));
+            add(new DropDownChoice<String>("report-datasource-dropdown-choice", new PropertyModel<String>(thisReport, "dataSource"), Arrays.asList(DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).getDataSources())).setNullValid(true));
 
             this.add(new TextArea<String>("dashboard.report.createoredit.form.statement.input", new PropertyModel<String>(thisReport, "statement"))
             .setRequired(true)
@@ -250,9 +250,9 @@ public class CreateOrEditReportPage extends WebPage {
                     try {
                         thisReport.setStatement(thisReport.getStatement().replaceAll("(, )|(,)", ", "));
                         if (thisReport == null || thisReport.getUuid() == null)
-                            DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).createReport(thisReport, false);
+                            DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).createReport(thisReport, false);
                         else 
-                            DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).updateReport(thisReport);
+                            DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).updateReport(thisReport);
                         window.close(target);
                     } catch (Exception e) {
                         log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());

@@ -55,7 +55,6 @@ import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
-import org.apache.wicket.authentication.AuthenticatedWebApplication;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
 import org.apache.wicket.extensions.markup.html.tree.table.IColumn;
 import org.apache.wicket.extensions.markup.html.tree.table.PropertyRenderableColumn;
@@ -78,6 +77,7 @@ import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
 import org.dcm4chee.dashboard.ui.util.CSSUtils;
 import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,7 +155,7 @@ public class SystemInfoPanel extends Panel {
             
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new SystemPropertyModel());
 
-            Map<String, List<SystemPropertyModel>> propertyMap = DashboardDelegator.getInstance((((AuthenticatedWebApplication) getApplication()).getInitParameter("DashboardServiceName"))).getSystemProperties();
+            Map<String, List<SystemPropertyModel>> propertyMap = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).getSystemProperties();
             for (String key : propertyMap.keySet()) {
                 
                 SystemPropertyModel group = new SystemPropertyModel();
