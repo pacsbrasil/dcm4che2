@@ -145,7 +145,7 @@ public class StudyListBean implements StudyListLocal {
         if ((username != null) && (root == null || !username.equals(root))) useSecurity = true;
     }
     
-    public void appendDicomSecurityFilter(StringBuilder ql) {
+    private void appendDicomSecurityFilter(StringBuilder ql) {
         ql.append(" AND s.studyInstanceUID IN (SELECT sp.studyInstanceUID FROM StudyPermission sp WHERE sp.action = 'Q' AND sp.role IN (:roles))");
     }
 

@@ -83,19 +83,19 @@ import org.dcm4chee.archive.entity.PrivateStudy;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
-import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.trash.TrashListFilter;
 import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.service.common.FileImportOrder;
-import org.dcm4chee.web.war.WicketApplication;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
 import org.dcm4chee.web.war.trash.model.PrivInstanceModel;
@@ -124,7 +124,6 @@ public class TrashListPage extends Panel {
     private TrashListHeader header = new TrashListHeader("thead");
     private PrivSelectedEntities selected = new PrivSelectedEntities();
     
-    private List<String> sourceAETs = new ArrayList<String>();
     private boolean showSearch = true;
     private boolean notSearched = true;
     private MessageWindow msgWin = new MessageWindow("msgWin");
@@ -135,12 +134,17 @@ public class TrashListPage extends Panel {
     protected boolean ajaxDone = false;
     protected Image hourglassImage;
 
+    TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
+    
     public TrashListPage(final String id) {
         super(id);
 
         if (TrashListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(TrashListPage.CSS));
        
+        SecureSession secureSession = ((SecureSession) getSession());
+        dao.setDicomSecurityParameters(secureSession.getUsername(), ((BaseWicketApplication) getApplication()).getInitParameter("root"), secureSession.getDicomRoles());
+
         final TrashListFilter filter = viewport.getFilter();
         final BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
         form.setResourceIdPrefix("trash.");
@@ -180,7 +184,6 @@ public class TrashListPage extends Panel {
         })))
         .add(new ImageSizeBehaviour())));
 
-        initModalitiesAndSourceAETs();
         addQueryFields(filter, form);
         addQueryOptions(form);
         addNavigation(form);
@@ -216,8 +219,9 @@ public class TrashListPage extends Panel {
                 WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModel, false);
         form.addTextField("patientID", enabledModel, true);
         form.addTextField("issuerOfPatientID", enabledModel, true);
-        form.addTextField("accessionNumber", enabledModel, false);
-        form.addDropDownChoice("sourceAET", null, viewport.getSourceAetChoices(sourceAETs), enabledModel, false).setModelObject("*");
+        form.addTextField("accessionNumber", enabledModel, false);       
+        form.addDropDownChoice("sourceAET", null, viewport.getSourceAetChoices(
+                WebCfgDelegate.getInstance().getSourceAETList()), enabledModel, false).setModelObject("*");
 
         searchTableComponents.add(form.createAjaxParent("searchFooter"));
     }
@@ -511,7 +515,6 @@ public class TrashListPage extends Panel {
                                         try {
                                             FileImportOrder fio = new FileImportOrder();
                                             List<PrivateFile> files = getFilesToRestore();
-                                            TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
                                           
                                             for (PrivateFile privateFile : files) {
                                                 DicomObject dio = dao.getDicomAttributes(privateFile.getPk());
@@ -698,16 +701,7 @@ public class TrashListPage extends Panel {
         deleteBtn.add(new SecurityBehavior(getModuleName() + ":deleteButton"));
     }
 
-    private void initModalitiesAndSourceAETs() {
-        StudyListLocal dao = (StudyListLocal)
-                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        sourceAETs.clear();
-        sourceAETs.addAll(dao.selectDistinctSourceAETs());
-    }
-
     private void queryStudies() {
-        TrashListLocal dao = (TrashListLocal)
-                JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
         viewport.setTotal(dao.countStudies(viewport.getFilter()));
         updatePatients(dao.findStudies(viewport.getFilter(), pagesize.getObject(), viewport.getOffset()));
         notSearched = false;
@@ -1120,8 +1114,6 @@ public class TrashListPage extends Panel {
     
     private boolean removeTrashItems(PrivSelectedEntities selected) {
         try {
-            TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
-            
             List<Long> pks = new ArrayList<Long>();
             for (PrivInstanceModel instanceModel : selected.getInstances())
                 pks.add(instanceModel.getPk());
@@ -1150,7 +1142,7 @@ public class TrashListPage extends Panel {
     
     private boolean removeTrashAll() {
         try {
-            ((TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME)).removeTrashAll();
+            dao.removeTrashAll();
         } catch (Exception x) {
             log.error("Delete failed! Reason:"+x.getMessage(),x);
             return false;
@@ -1161,8 +1153,6 @@ public class TrashListPage extends Panel {
     private List<PrivateFile> getFilesToRestore() {
 
         List<PrivateFile> files = new ArrayList<PrivateFile>();
-        TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
-        
         if (selected.hasPatients()) {
             for (PrivPatientModel pp : selected.getPatients())
                 files.addAll(dao.getFilesForEntity(pp.getPk(), PrivatePatient.class));
@@ -1183,8 +1173,6 @@ public class TrashListPage extends Panel {
     }
 
     private void removeRestoredEntries() {
-
-        TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
 
         if (selected.hasInstances()) {
             List<Long> pks = new ArrayList<Long>();

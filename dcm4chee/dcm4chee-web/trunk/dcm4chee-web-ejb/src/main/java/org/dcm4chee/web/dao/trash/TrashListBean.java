@@ -40,7 +40,7 @@ package org.dcm4chee.web.dao.trash;
 
 import java.util.List;
 
-import javax.ejb.Stateless;
+import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -62,19 +62,35 @@ import org.jboss.annotation.ejb.LocalBinding;
  * @version $Revision$ $Date$
  * @since June 07, 2010
  */
-@Stateless
+@Stateful
 @LocalBinding (jndiBinding=TrashListLocal.JNDI_NAME)
 public class TrashListBean implements TrashListLocal {
 
     @PersistenceContext(unitName="dcm4chee-arc")
     private EntityManager em;
 
+    private boolean useSecurity = false;
+    private List<String> roles;
+
+    public void setDicomSecurityParameters(String username, String root, List<String> roles) {
+        this.roles = roles;
+        if ((username != null) && (root == null || !username.equals(root))) useSecurity = true;
+    }
+    
+    private void appendDicomSecurityFilter(StringBuilder ql) {
+        ql.append(" AND s.studyInstanceUID IN (SELECT sp.studyInstanceUID FROM StudyPermission sp WHERE sp.action = 'Q' AND sp.role IN (:roles))");
+    }
+
     public int countStudies(TrashListFilter filter) {
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT COUNT(*)");
         appendFromClause(ql, filter);
         appendWhereClause(ql, filter);
+        if (useSecurity)
+            appendDicomSecurityFilter(ql);
         Query query = em.createQuery(ql.toString());
+        if (useSecurity)
+            query.setParameter("roles", roles);
         setQueryParameters(query, filter);
         return ((Number) query.getSingleResult()).intValue();
     }
@@ -85,8 +101,12 @@ public class TrashListBean implements TrashListLocal {
         ql.append("SELECT p, s");
         appendFromClause(ql, filter);
         appendWhereClause(ql, filter);
+        if (useSecurity)
+            appendDicomSecurityFilter(ql);
         ql.append(" ORDER BY p.patientName");
         Query query = em.createQuery(ql.toString());
+        if (useSecurity)
+            query.setParameter("roles", roles);
         setQueryParameters(query, filter);
         return query.setMaxResults(max).setFirstResult(index).getResultList();
     }
@@ -184,9 +204,16 @@ public class TrashListBean implements TrashListLocal {
 
     @SuppressWarnings("unchecked")
     public List<PrivateStudy> findStudiesOfPatient(long pk) {
-        return em.createQuery("FROM PrivateStudy s WHERE s.patient.pk=?1")
-                .setParameter(1, pk)
-                .getResultList();
+        StringBuilder ql = new StringBuilder(64);
+        ql.append("FROM PrivateStudy s WHERE s.patient.pk=?1");
+        if (useSecurity)
+            appendDicomSecurityFilter(ql);
+        Query query = em.createQuery(ql.toString());
+        query.setParameter(1, pk);
+        if (useSecurity)
+            query.setParameter("roles", roles);        
+        return query.getResultList();
+
     }
 
     @SuppressWarnings("unchecked")

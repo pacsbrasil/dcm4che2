@@ -44,10 +44,13 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.wicket.RequestCycle;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.PrivatePatient;
 import org.dcm4chee.archive.entity.PrivateStudy;
 import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
@@ -61,6 +64,8 @@ public class PrivPatientModel extends AbstractDicomModel implements Serializable
     private static final long serialVersionUID = 1L;
     
     private List<PrivStudyModel> studies = new ArrayList<PrivStudyModel>();
+
+    TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
 
     public PrivPatientModel(PrivatePatient patient) {
         setPk(patient.getPk());
@@ -127,8 +132,8 @@ public class PrivPatientModel extends AbstractDicomModel implements Serializable
     @Override
     public void expand() {
         this.studies.clear();
-        TrashListLocal dao = (TrashListLocal)
-                JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
+        SecureSession secureSession = ((SecureSession) RequestCycle.get().getSession());
+        dao.setDicomSecurityParameters(secureSession.getUsername(), ((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root"), secureSession.getDicomRoles());
         for (PrivateStudy study : dao.findStudiesOfPatient(getPk())) {
             this.studies.add(new PrivStudyModel(study, this));
         }
