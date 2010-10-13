@@ -87,7 +87,6 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
-import org.dcm4chex.archive.ejb.jdbc.QueryFilesOfSeriesCmd;
 import org.dcm4chex.archive.exceptions.ConcurrentStudyStorageException;
 import org.dcm4chex.archive.exceptions.NoSuchSeriesException;
 import org.dcm4chex.archive.exceptions.NoSuchStudyException;
@@ -1089,14 +1088,6 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         FileDTO[] dtos = toFileDTOs(instHome.findBySopIuid(iuid).getFiles());
         Arrays.sort(dtos, DESC_FILE_PK);
                 return dtos;
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public Map getBestFileLocationsOfSeries(String iuid) throws SQLException {
-        QueryFilesOfSeriesCmd queryCmd = new QueryFilesOfSeriesCmd(iuid);
-        return queryCmd.getBestFileDTOs();
     }
 
     /**
