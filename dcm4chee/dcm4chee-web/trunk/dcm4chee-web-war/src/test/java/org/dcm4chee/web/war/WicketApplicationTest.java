@@ -28,8 +28,9 @@ import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyOnFileSystem;
 import org.dcm4chee.archive.entity.VerifyingObserver;
-import org.dcm4chee.usr.entity.UserRoleAssignment;
 import org.dcm4chee.usr.entity.User;
+import org.dcm4chee.usr.entity.UserRoleAssignment;
+import org.dcm4chee.web.common.base.WebLoginContext;
 import org.dcm4chee.web.common.base.LoginPage;
 import org.dcm4chee.web.dao.folder.StudyListBean;
 import org.junit.Test;
@@ -123,8 +124,9 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
             checkLogin(user, user, MainPage.class);
             Session session = Session.get();
             assertNotNull("Wicket Session is null", session);
-            assertEquals("Wrong Class of Wicket Session!", WicketSession.class, session.getClass());
-            r = ((WicketSession) session).getRoles();
+            assertEquals("Wrong Class of Wicket Session!", AuthenticatedWebSession.class, session.getClass());
+//            r = ((WicketSession) session).getRoles();
+            r = ((WebLoginContext) WicketApplication.get().getServletContext()).getRoles();
             assertEquals("Wrong number of roles!",roles.length, r.size());
             for ( String role : roles) {
                 assertTrue("Missing role:"+role, r.hasRole(role));

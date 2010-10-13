@@ -244,9 +244,8 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
             series.clear();
             StudyListLocal dao = (StudyListLocal)
                     JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-            for (Series ser : dao.findSeriesOfMpps(uid)) {
+            for (Series ser : dao.findSeriesOfMpps(uid)) 
                 series.add(new SeriesModel(ser, this));
-            }
         }
     }
 

@@ -67,7 +67,7 @@ import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
-import org.dcm4chee.web.war.WicketSession;
+import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
@@ -173,9 +173,9 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                     log.info("Link MPPS to MWL!:"+mwlItemModel);
                     try {
                         MppsToMwlLinkResult result = ContentEditDelegate.getInstance().linkMppsToMwl(ppsModels, mwlItemModel);
-                        org.dcm4chee.web.war.folder.ViewPort viewport = ((WicketSession) getSession()).getFolderViewPort();
+                        org.dcm4chee.web.war.folder.ViewPort viewport = ((AuthenticatedWebSession) getSession()).getFolderViewPort();
                         int nrOfStudies = result.getStudiesToMove().size();
-                        boolean hideLinkedPps = ((WicketSession) getSession()).getFolderViewPort().getFilter().isPpsWithoutMwl();
+                        boolean hideLinkedPps = ((AuthenticatedWebSession) getSession()).getFolderViewPort().getFilter().isPpsWithoutMwl();
                         if (nrOfStudies == 0) {
                             if (hideLinkedPps) {
                                 hideLinkedPpsInFolder(viewport);

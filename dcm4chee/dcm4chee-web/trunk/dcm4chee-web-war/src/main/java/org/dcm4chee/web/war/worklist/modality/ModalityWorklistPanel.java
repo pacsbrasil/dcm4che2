@@ -84,11 +84,12 @@ import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.PatientNameField;
 import org.dcm4chee.web.common.markup.SimpleDateTimeField;
+import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.validators.UIDValidator;
 import org.dcm4chee.web.dao.util.QueryUtil;
-import org.dcm4chee.web.dao.worklist.modality.ModalityWorklist;
+import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
-import org.dcm4chee.web.war.WicketSession;
+import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.common.EditDicomObjectPanel;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
 import org.dcm4chee.web.war.worklist.modality.MWLItemListView.MwlActionProvider;
@@ -121,7 +122,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     
     private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
     
-    private transient ModalityWorklist dao;
+    private transient ModalityWorklistLocal dao;
 
     private WebMarkupContainer listPanel;
     private WebMarkupContainer navPanel;
@@ -195,7 +196,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     }
     
     protected ViewPort initViewPort() {
-        return ((WicketSession) getSession()).getMwViewPort();
+        return ((AuthenticatedWebSession) getSession()).getMwViewPort();
     }
     
     protected ViewPort getViewPort() {
@@ -528,7 +529,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     protected void queryMWLItems() {
         long  t1 = System.currentTimeMillis();
         log.debug("#### start queryMWLItems");
-        ModalityWorklist dao = lookupMwlDAO();
+        ModalityWorklistLocal dao = lookupMwlDAO();
         viewport.getMWLItemModels().clear();
         viewport.setTotal(dao.countMWLItems(viewport.getFilter()));
         List<MWLItemModel> current = viewport.getMWLItemModels();
@@ -538,9 +539,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         log.debug("#### queryMWLItems (found "+current.size()+" items) done in "+(System.currentTimeMillis()-t1)+" ms!");
     }
 
-    private ModalityWorklist lookupMwlDAO() {
+    private ModalityWorklistLocal lookupMwlDAO() {
         if (dao == null)
-            dao = (ModalityWorklist) JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
+            dao = (ModalityWorklistLocal) JNDIUtils.lookup(ModalityWorklistLocal.JNDI_NAME);
         return dao;
     }
 
@@ -627,9 +628,12 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 modalWindow.show(target);
                 super.onClick(target);
             }
-        }.add(new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT)
-        .add(new ImageSizeBehaviour())
-        .add(new TooltipBehaviour("mw.", "editImg"))));
+        }
+            .add(new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT)
+            .add(new ImageSizeBehaviour())
+            .add(new TooltipBehaviour("mw.", "editImg")))
+            .add(new SecurityBehavior(getModuleName() + ":editMwlItem"))
+        );
     }
 
     private void addAfterQueryComponents(final AjaxRequestTarget target) {

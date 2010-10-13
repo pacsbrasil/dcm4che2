@@ -89,6 +89,7 @@ import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
+import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.trash.TrashListFilter;
 import org.dcm4chee.web.dao.trash.TrashListLocal;
@@ -581,6 +582,7 @@ public class TrashListPage extends Panel {
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
         form.add(restoreBtn);
+        restoreBtn.add(new SecurityBehavior(getModuleName() + ":restoreButton"));
 
         final ConfirmationWindow<PrivSelectedEntities> confirmDelete = new ConfirmationWindow<PrivSelectedEntities>("confirmDelete") {
  
@@ -668,6 +670,7 @@ public class TrashListPage extends Panel {
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
         form.add(deleteAllBtn);
+        deleteAllBtn.add(new SecurityBehavior(getModuleName() + ":deleteAllButton"));
 
         AjaxButton deleteBtn = new AjaxButton("deleteBtn") {
 
@@ -692,6 +695,7 @@ public class TrashListPage extends Panel {
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
         form.add(deleteBtn);
+        deleteBtn.add(new SecurityBehavior(getModuleName() + ":deleteButton"));
     }
 
     private void initModalitiesAndSourceAETs() {

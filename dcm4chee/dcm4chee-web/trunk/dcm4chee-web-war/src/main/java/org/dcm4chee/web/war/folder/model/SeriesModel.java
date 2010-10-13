@@ -203,9 +203,8 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
         instances.clear();
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        for (Instance inst : dao.findInstancesOfSeries(getPk())) {
+        for (Instance inst : dao.findInstancesOfSeries(getPk())) 
             this.instances.add(new InstanceModel(inst, this));
-        }
     }
 
     @Override
@@ -222,7 +221,7 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        Series s;
+        Series s = null;
         if ( getPk() == -1) {
             s = dao.addSeries(getPPS().getStudy().getPk(), dicomObject);
             setPk(s.getPk());
@@ -242,7 +241,7 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
     @Override
     public AbstractEditableDicomModel refresh() {
         StudyListLocal dao = (StudyListLocal)
-        JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+            JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         updateModel(dao.getSeries(getPk()));
         return this;
     }

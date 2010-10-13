@@ -40,44 +40,69 @@ package org.dcm4chee.web.common.base;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.apache.wicket.Application;
 import org.apache.wicket.Component;
+import org.apache.wicket.authentication.panel.SignInPanel;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.resource.loader.ClassStringResourceLoader;
+import org.apache.wicket.resource.loader.PackageStringResourceLoader;
+import org.apache.wicket.security.WaspSession;
+import org.apache.wicket.security.authentication.LoginException;
 import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 
 /**
- * 
  * @author Franz Willer <franz.willer@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since July 20, 2009
  */
 public class LoginPage extends BaseWicketPage {
+
     public LoginPage() {
         super();
-        this.getModuleSelectorPanel().setShowLogoutLink(false);
+
+        selectorPanel.setShowLogoutLink(false);
+       
         String nodeInfo;
         try {
-            nodeInfo = System.getProperty("dcm4che.archive.nodename", InetAddress.getLocalHost().getHostName() );
+            nodeInfo = System.getProperty("dcm4che.archive.nodename", InetAddress.getLocalHost().getHostName());
         } catch (UnknownHostException e) {
             nodeInfo = "DCM4CHEE";
-        }
+        }       
         add(new Label("loginLabel", new StringResourceModel("loginLabel", LoginPage.this, 
                 null, new Object[]{nodeInfo})));
-        add(new CustomSignInPanel("signInPanel") {
+
+        add(new SignInPanel("signInPanel") {
 
             private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean signIn(String username, String password) {
+                try {
+                  ((WaspSession) getSession()).login(new WebLoginContext(username, password));                 
+                } catch (LoginException e) {
+                    return false;
+                }                
+                return true;
+            }
 
             protected void onSignInFailed() {
                 Component user = LoginPage.this.get("signInPanel:signInForm:username");
                 user.add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour());
             }
-        });  
+        });
         this.get("signInPanel:signInForm").add(new FocusOnLoadBehaviour());
     }
     
-    @Override
     protected String getBrowserTitle() {
-        return super.getBrowserTitle()+":"+
-            this.getString("application.login", null, "Login");
-    }    
+
+            Class<?> clazz = Application.get().getHomePage();
+            String s = new ClassStringResourceLoader(clazz).loadStringResource(null, "application.browser_title");
+            if (s == null) 
+                s = new PackageStringResourceLoader().loadStringResource(clazz, "application.browser_title", 
+                        getSession().getLocale(), null);
+            return (s == null ? "DCM4CHEE" : s) + ": " + 
+                this.getString("application.login", null, "Login");
+    }
 }

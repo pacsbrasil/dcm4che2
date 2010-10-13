@@ -177,9 +177,8 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
         ppss.clear();
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        for (Series series : dao.findSeriesOfStudy(getPk())) {
+        for (Series series : dao.findSeriesOfStudy(getPk())) 
             add(series);
-        }
     }
 
     @Override
@@ -212,7 +211,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     public void update(DicomObject dicomObject) {
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        Study s;
+        Study s = null;
         if (getPk() == -1) {
             s = dao.addStudy(getPatient().getPk(), dicomObject);
             setPk(s.getPk());
@@ -225,7 +224,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     @Override
     public AbstractEditableDicomModel refresh() {
         StudyListLocal dao = (StudyListLocal)
-        JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+            JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         updateModel(dao.getStudy(getPk()));
         return this;
     }    

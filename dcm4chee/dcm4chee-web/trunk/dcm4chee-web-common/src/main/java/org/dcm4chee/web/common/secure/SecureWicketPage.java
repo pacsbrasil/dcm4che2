@@ -36,44 +36,46 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.common.base;
+package org.dcm4chee.web.common.secure;
 
 import org.apache.wicket.Application;
 import org.apache.wicket.IPageMap;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.resource.loader.ClassStringResourceLoader;
 import org.apache.wicket.resource.loader.PackageStringResourceLoader;
+import org.apache.wicket.security.components.SecureWebPage;
+import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.base.ModuleSelectorPanel;
 
 /**
- * @author Franz Willer <franz.willer@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since July 7, 2009
+ * @since 01.09.2010
  */
-public class BaseWicketPage extends WebPage {
+public class SecureWicketPage extends SecureWebPage {
 
     private static final ResourceReference CSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     
-    protected ModuleSelectorPanel selectorPanel;
+    private ModuleSelectorPanel selectorPanel;
     
-    public BaseWicketPage() {
+    public SecureWicketPage() {
         super();
         initLayout();
     }
 
-    public BaseWicketPage(IPageMap pageMap) {
-        super(pageMap);       
+    public SecureWicketPage(IPageMap pageMap) {
+        super(pageMap);
         initLayout();
     }
     
     private void initLayout() {
 
-        if ( BaseWicketPage.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(BaseWicketPage.CSS));
+        if ( SecureWicketPage.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(SecureWicketPage.CSS));
 
         add( new Label("app_browser_title", new AbstractReadOnlyModel<Object>() {
 

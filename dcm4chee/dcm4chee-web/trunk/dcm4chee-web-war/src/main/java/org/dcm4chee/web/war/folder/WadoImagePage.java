@@ -43,9 +43,9 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebComponent;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 
@@ -54,7 +54,7 @@ import org.dcm4chee.web.war.folder.model.InstanceModel;
  * @version $Revision$ $Date$
  * @since 08.08.2010
  */
-public class WadoImagePage extends WebPage {
+public class WadoImagePage extends SecureWebPage {
     
     private static final long serialVersionUID = 1L;
 

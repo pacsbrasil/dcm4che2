@@ -36,32 +36,32 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war;
+package org.dcm4chee.web.dao.worklist.modality;
 
-import org.apache.wicket.Request;
-import org.dcm4chee.web.common.base.JaasWicketSession;
+import java.util.List;
+
+import javax.ejb.Local;
+
+import org.dcm4che2.data.DicomObject;
+import org.dcm4chee.archive.entity.MWLItem;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since Jan 13, 2009
+ * @since 20.04.2010
  */
-public class WicketSession extends JaasWicketSession {
+@Local
+public interface ModalityWorklistLocal {
 
-    private static final long serialVersionUID = 1L;
-    
-    private org.dcm4chee.web.war.folder.ViewPort folderViewport = new org.dcm4chee.web.war.folder.ViewPort();
-    private org.dcm4chee.web.war.worklist.modality.ViewPort mwViewport = new org.dcm4chee.web.war.worklist.modality.ViewPort();
-    
-    public WicketSession(Request request) {
-        super(request);
-    }
+    String JNDI_NAME = "dcm4chee-web-ear/ModalityWorklistBean/local";
 
-    public org.dcm4chee.web.war.folder.ViewPort getFolderViewPort() {
-        return folderViewport;
-    }
-
-    public org.dcm4chee.web.war.worklist.modality.ViewPort getMwViewPort() {
-        return mwViewport;
-    }
+    public List<MWLItem> findAll();
+    public int countMWLItems(ModalityWorklistFilter filter);
+    public List<MWLItem> findMWLItems(ModalityWorklistFilter filter, int pAGESIZE, int offset);
+    MWLItem getMWLItem(long pk);
+    public MWLItem updateMWLItem(long pk, DicomObject attrs);
+        
+    public List<String> selectDistinctModalities();
+    public List<String> selectDistinctStationAETs();
+    public List<String> selectDistinctStationNames();
 }

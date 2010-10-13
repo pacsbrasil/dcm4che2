@@ -36,69 +36,22 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.dao.folder;
+package org.dcm4chee.web.common.secure;
 
-import java.util.List;
+import java.io.Serializable;
 
-import javax.ejb.Local;
-
-import org.dcm4che2.data.DicomObject;
-import org.dcm4chee.archive.entity.File;
-import org.dcm4chee.archive.entity.Instance;
-import org.dcm4chee.archive.entity.MPPS;
-import org.dcm4chee.archive.entity.Patient;
-import org.dcm4chee.archive.entity.Series;
-import org.dcm4chee.archive.entity.Study;
+import org.apache.wicket.MetaDataKey;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since Dec 17, 2008
+ * @since 23.09.2010
  */
-@Local
-public interface StudyListLocal {
+public class ComponentHiveKey extends MetaDataKey<Serializable> {
 
-    String JNDI_NAME = "dcm4chee-web-ear/StudyListBean/local";
-
-    void setDicomSecurityParameters(String username, String root, List<String> roles);
+    private static final long serialVersionUID = 1L;
     
-    int countStudies(StudyListFilter filter);
-
-    List<Object[]> findStudies(StudyListFilter filter, int offset, int limit);
-
-    List<Study> findStudiesOfPatient(long pk, boolean latestStudyFirst);
-
-    List<Series> findSeriesOfStudy(long pk);
-
-    List<Series> findSeriesOfMpps(String uid);
-
-    List<Instance> findInstancesOfSeries(long pk);
-
-    List<File> findFilesOfInstance(long pk);
-
-    List<String> selectDistinctSourceAETs();
-
-    List<String> selectDistinctModalities();
-
-    Patient getPatient(long pk);
-
-    Patient updatePatient(long pk, DicomObject dataset);
-
-    Study getStudy(long pk);
-
-    Study updateStudy(long pk, DicomObject dataset);
-    Study addStudy(long patPk, DicomObject dataset);
-
-    Series getSeries(long pk);
-
-    Series updateSeries(long pk, DicomObject dataset);
-    Series addSeries(long studyPk, DicomObject dataset);
-
-    Instance getInstance(long pk);
-
-    Instance updateInstance(long pk, DicomObject dataset);
-
-    MPPS getMPPS(long pk);
-
-    MPPS updateMPPS(long pk, DicomObject dataset);
+    public ComponentHiveKey(Class<?> type) {
+        super();
+    }
 }

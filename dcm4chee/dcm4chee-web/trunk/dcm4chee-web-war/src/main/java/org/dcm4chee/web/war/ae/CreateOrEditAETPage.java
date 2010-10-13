@@ -47,7 +47,6 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
@@ -57,6 +56,7 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.security.components.SecureWebPage;
 import org.apache.wicket.validation.validator.RangeValidator;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -74,7 +74,7 @@ import org.dcm4chee.web.war.util.CyphersuiteUtils;
  * @since June 4, 2009
  */
 
-public class CreateOrEditAETPage extends WebPage {
+public class CreateOrEditAETPage extends SecureWebPage {
     
     private static final long serialVersionUID = 1L;
 
@@ -82,18 +82,18 @@ public class CreateOrEditAETPage extends WebPage {
     
     private Model<String> resultMessage;
     
-    public CreateOrEditAETPage(final ModalWindow window, final AE ae) {
+    public CreateOrEditAETPage(final ModalWindow window, final AE ae, final AEListPanel panel) {
         super();
         
         if (CreateOrEditAETPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(CreateOrEditAETPage.BaseCSS));
 
-        add(new WebMarkupContainer("create-aet-title").setVisible(ae.getPk() == -1));
-        add(new WebMarkupContainer("edit-aet-title").setVisible(ae.getPk() != -1));
+        add(new WebMarkupContainer("create-ae-title").setVisible(ae.getPk() == -1));
+        add(new WebMarkupContainer("edit-ae-title").setVisible(ae.getPk() != -1));
 
         setOutputMarkupId(true);
         BaseForm form = new BaseForm("form");
-        form.setResourceIdPrefix("aet.");
+        form.setResourceIdPrefix("ae.");
         add(form);
         CompoundPropertyModel<AE> model = new CompoundPropertyModel<AE>(ae);
         form.setDefaultModel(model);
@@ -101,11 +101,11 @@ public class CreateOrEditAETPage extends WebPage {
             .setRequired(true).add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour());
         form.addLabeledTextField("hostName").setRequired(true); 
         form.addLabeledNumberTextField("port").add(new RangeValidator<Integer>(1,65535));
-        form.add(new Label("ciphers1.label", new StringResourceModel("aet.ciphers", CreateOrEditAETPage.this, null, new Object[]{1} ) ) );
+        form.add(new Label("ciphers1.label", new StringResourceModel("ae.ciphers", CreateOrEditAETPage.this, null, new Object[]{1} ) ) );
         form.add(new DropDownChoice<String>("ciphersuite1", new CipherModel(ae, 0), CyphersuiteUtils.AVAILABLE_CIPHERSUITES));
-        form.add(new Label("ciphers2.label", new StringResourceModel("aet.ciphers", CreateOrEditAETPage.this, null, new Object[]{2} ) ) );
+        form.add(new Label("ciphers2.label", new StringResourceModel("ae.ciphers", CreateOrEditAETPage.this, null, new Object[]{2} ) ) );
         form.add(new DropDownChoice<String>("ciphersuite2", new CipherModel(ae, 1), CyphersuiteUtils.AVAILABLE_CIPHERSUITES));
-        form.add(new Label("ciphers3.label", new StringResourceModel("aet.ciphers", CreateOrEditAETPage.this, null, new Object[]{3} ) ) );
+        form.add(new Label("ciphers3.label", new StringResourceModel("ae.ciphers", CreateOrEditAETPage.this, null, new Object[]{3} ) ) );
         form.add(new DropDownChoice<String>("ciphersuite3", new CipherModel(ae, 2), CyphersuiteUtils.AVAILABLE_CIPHERSUITES));
         form.addLabeledTextField("description"); 
         form.addLabeledTextField("issuerOfPatientID"); 
@@ -114,12 +114,12 @@ public class CreateOrEditAETPage extends WebPage {
                 ).setNullValid(true);
         form.addLabeledTextField("wadoURL").add(new UrlValidator1()); //Wicket UrlValidator doesn't accept http://hostname:8080/web!
         form.addLabeledTextField("userID"); 
-        form.add(new Label("password.label", new ResourceModel("aet.password") ) );
+        form.add(new Label("password.label", new ResourceModel("ae.password") ) );
         form.add(new PasswordTextField("password").setRequired(false)); 
         form.addLabeledTextField("stationName"); 
         form.addLabeledTextField("institution"); 
         form.addLabeledTextField("department"); 
-        form.add(new Label("installed.label", new ResourceModel("aet.installed") ) );
+        form.add(new Label("installed.label", new ResourceModel("ae.installed") ) );
         form.add(new AjaxCheckBox("installed"){
 
             private static final long serialVersionUID = 1L;
@@ -136,6 +136,7 @@ public class CreateOrEditAETPage extends WebPage {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
                     AEDelegate.getInstance().updateOrCreate(ae);
+                    panel.updateAETList();
                     window.close(target);
                 } catch (Exception e) {
                     resultMessage.setObject(e.getLocalizedMessage());
@@ -158,7 +159,7 @@ public class CreateOrEditAETPage extends WebPage {
             }}.setDefaultFormProcessing(false));
 
         final DicomEchoWindow mw = new DicomEchoWindow("echoPanel", true);
-        mw.setWindowClosedCallback(new WindowClosedCallback(){
+        mw.setWindowClosedCallback(new WindowClosedCallback() {
 
             private static final long serialVersionUID = 1L;
 
@@ -167,7 +168,7 @@ public class CreateOrEditAETPage extends WebPage {
             }
         });
         add(mw);
-        form.add(new AjaxButton("echo", new ResourceModel("aet.echoButton")) {
+        form.add(new AjaxButton("echo", new ResourceModel("ae.echoButton")) {
 
             private static final long serialVersionUID = 1L;
             

@@ -42,22 +42,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.CloseButtonCallback;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.image.Image;
-import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
-import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.list.OddEvenListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -68,16 +64,14 @@ import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.dashboard.ui.report.CreateGroupPage;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
+import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
-import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
-import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -91,7 +85,7 @@ public class AEListPanel extends Panel {
     private static final ResourceReference CSS = new CompressedResourceReference(AEListPanel.class, "ae-style.css");
 
     private ModalWindow modalWindow;
-    private DicomEchoWindow mw;
+    private DicomEchoWindow dicomEchoWindow;
     private ConfirmationWindow<AE> confirm; 
     
     PropertyListView<AE> list;
@@ -105,15 +99,16 @@ public class AEListPanel extends Panel {
         add(modalWindow = new ModalWindow("modal-window"));
         
         setOutputMarkupId(true);
-        mw = new DicomEchoWindow("echoPanel", true);
-        mw.setWindowClosedCallback(new WindowClosedCallback() {
+        dicomEchoWindow = new DicomEchoWindow("echoPanel", true);
+        dicomEchoWindow.setWindowClosedCallback(new WindowClosedCallback() {
 
             private static final long serialVersionUID = 1L;
 
             public void onClose(AjaxRequestTarget target) {
                 target.addComponent(AEListPanel.this);
             }});
-        add(mw);
+        add(dicomEchoWindow);
+        dicomEchoWindow.add(new SecurityBehavior(getModuleName() + ":dicomEchoWindow"));
         
         confirm = new ConfirmationWindow<AE>("confirm") {
 
@@ -143,7 +138,7 @@ public class AEListPanel extends Panel {
                       
                     @Override
                     public Page createPage() {
-                        return new CreateOrEditAETPage(modalWindow, new AE());
+                        return new CreateOrEditAETPage(modalWindow, new AE(), AEListPanel.this);
                     }
                 });
                 super.onClick(target);
@@ -152,21 +147,21 @@ public class AEListPanel extends Panel {
         newAET.add(new Image("newAETImg",ImageManager.IMAGE_COMMON_ADD)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        newAET.add(new TooltipBehaviour("aet."));
-        newAET.add(new Label("newAETText", new ResourceModel("aet.newAET.text"))
+        newAET.add(new TooltipBehaviour("ae."));
+        newAET.add(new Label("newAETText", new ResourceModel("ae.newAET.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
         add(newAET);
-        MetaDataRoleAuthorizationStrategy.authorize(newAET, RENDER, "WebAdmin");
+        newAET.add(new SecurityBehavior(getModuleName() + ":newAETLink"));
 
-        add( new Label("titleHdr.label", new ResourceModel("aet.titleHdr.label")));
-        add( new Label("hostHdr.label", new ResourceModel("aet.hostHdr.label")));
-        add( new Label("portHdr.label", new ResourceModel("aet.portHdr.label")));
-        add( new Label("descriptionHdr.label", new ResourceModel("aet.descriptionHdr.label")));        
-        add( new Label("cipherHdr.label", new ResourceModel("aet.cipherHdr.label")));
-        add( new Label("stationHdr.label", new ResourceModel("aet.stationHdr.label")));
-        add( new Label("institutionHdr.label", new ResourceModel("aet.institutionHdr.label")));
-        add( new Label("departmentHdr.label", new ResourceModel("aet.departmentHdr.label")));
+        add( new Label("titleHdr.label", new ResourceModel("ae.titleHdr.label")));
+        add( new Label("hostHdr.label", new ResourceModel("ae.hostHdr.label")));
+        add( new Label("portHdr.label", new ResourceModel("ae.portHdr.label")));
+        add( new Label("descriptionHdr.label", new ResourceModel("ae.descriptionHdr.label")));        
+        add( new Label("cipherHdr.label", new ResourceModel("ae.cipherHdr.label")));
+        add( new Label("stationHdr.label", new ResourceModel("ae.stationHdr.label")));
+        add( new Label("institutionHdr.label", new ResourceModel("ae.institutionHdr.label")));
+        add( new Label("departmentHdr.label", new ResourceModel("ae.departmentHdr.label")));
         
         add((list = new PropertyListView<AE>("list") {
 
@@ -205,15 +200,16 @@ public class AEListPanel extends Panel {
                               
                             @Override
                             public Page createPage() {
-                                return new CreateOrEditAETPage(modalWindow, item.getModelObject());
+                                return new CreateOrEditAETPage(modalWindow, item.getModelObject(), AEListPanel.this);
                             }
                         });
                         super.onClick(target);
                     }
                 })
-                .add(new Image("aet.editAET.image", ImageManager.IMAGE_AE_EDIT)
-                .add(new ImageSizeBehaviour("vertical-align: middle;")))
-                .add(new TooltipBehaviour("aet."))
+                    .add(new Image("ae.editAET.image", ImageManager.IMAGE_AE_EDIT)
+                    .add(new ImageSizeBehaviour("vertical-align: middle;")))
+                    .add(new TooltipBehaviour("ae."))
+                    .add(new SecurityBehavior(getModuleName() + ":editAETLink"))
                 );
                 MetaDataRoleAuthorizationStrategy.authorize(editAET, RENDER, "WebAdmin");
                     
@@ -223,14 +219,14 @@ public class AEListPanel extends Panel {
     
                     @Override
                     public void onClick(AjaxRequestTarget target) {
-                        confirm.confirm(target, new StringResourceModel("aet.confirmDelete", AEListPanel.this, null, new Object[]{item.getModelObject()}), item.getModelObject());
+                        confirm.confirm(target, new StringResourceModel("ae.confirmDelete", AEListPanel.this, null, new Object[]{item.getModelObject()}), item.getModelObject());
                     }
                 };
-                removeAET.add(new Image("aet.removeAET.image", ImageManager.IMAGE_COMMON_REMOVE)
+                removeAET.add(new Image("ae.removeAET.image", ImageManager.IMAGE_COMMON_REMOVE)
                 .add(new ImageSizeBehaviour()));
-                removeAET.add(new TooltipBehaviour("aet."));
+                removeAET.add(new TooltipBehaviour("ae."));
                 item.add(removeAET);
-                MetaDataRoleAuthorizationStrategy.authorize(removeAET, RENDER, "WebAdmin");
+                removeAET.add(new SecurityBehavior(getModuleName() + ":removeAETLink"));
                 
                 item.add(new AjaxLink<Object>("echo") {
 
@@ -238,11 +234,13 @@ public class AEListPanel extends Panel {
 
                     @Override
                     public void onClick(AjaxRequestTarget target) {
-                        mw.show(target, item.getModelObject());
+                        dicomEchoWindow.show(target, item.getModelObject());
                     }
-                }.add(new Image("aet.echoAET.image", ImageManager.IMAGE_AE_ECHO)
-                .add(new ImageSizeBehaviour()))
-                .add(new TooltipBehaviour("aet."))
+                }
+                    .add(new Image("ae.echoAET.image", ImageManager.IMAGE_AE_ECHO)
+                    .add(new ImageSizeBehaviour()))
+                    .add(new TooltipBehaviour("ae."))
+                    .add(new SecurityBehavior(getModuleName() + ":dicomEchoLink"))
                 );
             }
         }));
@@ -255,7 +253,7 @@ public class AEListPanel extends Panel {
         updateAETList();
     }
     
-    private void updateAETList() {
+    protected void updateAETList() {
         list.setModel(new ListModel<AE>());
         AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
         List<AE> updatedList = new ArrayList<AE>();
@@ -277,6 +275,6 @@ public class AEListPanel extends Panel {
     }
 
     public static String getModuleName() {
-        return "aet";
+        return "ae";
     }
 }

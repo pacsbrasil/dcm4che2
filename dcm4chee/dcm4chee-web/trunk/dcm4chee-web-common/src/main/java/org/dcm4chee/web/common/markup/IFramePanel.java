@@ -40,15 +40,16 @@ package org.dcm4chee.web.common.markup;
 
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.security.components.markup.html.panel.SecurePanel;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since May 15, 2010
  */
-public class IFramePanel extends Panel {
+public class IFramePanel extends SecurePanel {
 
     private static final long serialVersionUID = 1L;
 

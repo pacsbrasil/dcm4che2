@@ -41,15 +41,12 @@ package org.dcm4chee.web.war;
 import java.util.Properties;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.authorization.strategies.role.RoleAuthorizationStrategy;
-import org.apache.wicket.authorization.strategies.role.Roles;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.usr.ui.usermanagement.UserManagementPanel;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
-import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.base.ModuleSelectorPanel;
+import org.dcm4chee.web.common.secure.SecureWicketPage;
 import org.dcm4chee.web.war.ae.AEListPanel;
 import org.dcm4chee.web.war.folder.StudyListPage;
 import org.dcm4chee.web.war.trash.TrashListPage;
@@ -57,28 +54,25 @@ import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since July 7, 2009
  */
-@AuthorizeInstantiation({Roles.USER, "WebUser"})
-public class MainPage extends BaseWicketPage {
+public class MainPage extends SecureWicketPage {
     
     public MainPage() {
         super();
         addModules(getModuleSelectorPanel());
     }
-    
+
     private void addModules(ModuleSelectorPanel selectorPanel) {
         selectorPanel.addModule(StudyListPage.class);
         selectorPanel.addModule(TrashListPage.class);
-        selectorPanel.addModule(AEListPanel.class);
-
-        if (new RoleAuthorizationStrategy((WicketApplication) this.getApplication()).isInstantiationAuthorized(UserManagementPanel.class))           
-            selectorPanel.addInstance(new UserManagementPanel("panel"));
-
+        selectorPanel.addModule(AEListPanel.class);       
+        selectorPanel.addInstance(new UserManagementPanel("panel"));
         selectorPanel.addModule(DashboardPanel.class);
         selectorPanel.addModule(ModalityWorklistPanel.class);
-        
+
         try {
             Properties properties = new Properties();
             properties.load(((BaseWicketApplication) getApplication()).getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));

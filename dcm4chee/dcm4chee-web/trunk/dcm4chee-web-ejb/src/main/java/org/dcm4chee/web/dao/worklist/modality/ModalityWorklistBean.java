@@ -61,8 +61,8 @@ import org.jboss.annotation.ejb.LocalBinding;
  * @since 20.04.2010
  */
 @Stateless
-@LocalBinding (jndiBinding=ModalityWorklist.JNDI_NAME)
-public class ModalityWorklistBean implements ModalityWorklist {
+@LocalBinding (jndiBinding=ModalityWorklistLocal.JNDI_NAME)
+public class ModalityWorklistBean implements ModalityWorklistLocal {
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 

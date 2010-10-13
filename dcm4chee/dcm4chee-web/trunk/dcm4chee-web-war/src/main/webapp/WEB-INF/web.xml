@@ -24,6 +24,10 @@
 			<param-value>org.dcm4chee.web.war.WicketApplication</param-value>
  		</init-param>
 		<init-param>
+			<param-name>root</param-name>
+			<param-value>admin</param-value>
+ 		</init-param>
+		<init-param>
 			<param-name>configuration</param-name>
 			<param-value>deployment</param-value>
  		</init-param>
@@ -39,32 +43,10 @@
 	      <param-name>UserAccessServiceName</param-name>
 	      <param-value>dcm4chee.usr:service=UserAccessService</param-value>
 	    </init-param>
- 		<!-- Name of security domain. Default is dcm4chee 
-	    <init-param>
-	      <param-name>securityDomainName</param-name>
-	      <param-value>dcm4chee</param-value>
-	    </init-param> -->
-	    <!-- Group name for Roles. Default is Roles 
-	    <init-param>
-	      <param-name>rolesGroupName</param-name>
-	      <param-value>Roles1</param-value>
-	    </init-param> -->
-	    <!-- ClassName of LoginPage that is used for sign in. Default is org.dcm4chee.web.wicket.LoginPage
-	    <init-param>
-	      <param-name>signinPageClass</param-name>
-	      <param-value>your.Login.Page</param-value>
-	    </init-param> -->
-		<!-- ClassName of Page to show Access denied. Default is signinPageClass
-	    <init-param>
-	      <param-name>accessDeniedPage</param-name>
-	      <param-value>org.dcm4chee.web.wicket.AccessDeniedPage</param-value>
-	    </init-param> -->
-		<!-- ClassName of Page to show page expired page. Default is signinPageClass 
-	    <init-param>
-	      <param-name>pageExpiredPage</param-name>
-	      <param-value>org.dcm4chee.web.wicket.PageExpiredErrorPage</param-value>
-	    </init-param> -->
-		<!-- Name of Page to show internal errors. No Default. -->
+			<init-param>
+			<param-name>DicomSecurityService</param-name>
+			<param-value>dcm4chee.archive:service=DicomSecurity</param-value>
+ 		</init-param>
 	    <init-param>
 	      <param-name>internalErrorPageClass</param-name>
 	      <param-value>org.dcm4chee.web.common.base.InternalErrorPage</param-value>

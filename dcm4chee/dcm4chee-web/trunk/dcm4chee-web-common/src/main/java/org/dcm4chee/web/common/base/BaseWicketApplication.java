@@ -1,41 +1,90 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+ * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+ *
+ * The Initial Developer of the Original Code is
+ * Agfa-Gevaert AG.
+ * Portions created by the Initial Developer are Copyright (C) 2008
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ * See listed authors below.
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
 package org.dcm4chee.web.common.base;
 
+import java.net.MalformedURLException;
+
 import org.apache.wicket.Page;
-import org.apache.wicket.authentication.AuthenticatedWebApplication;
-import org.apache.wicket.authentication.AuthenticatedWebSession;
-import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.Request;
+import org.apache.wicket.Response;
+import org.apache.wicket.WicketRuntimeException;
+import org.apache.wicket.security.components.SecureWebPage;
+import org.apache.wicket.security.hive.HiveMind;
+import org.apache.wicket.security.hive.config.PolicyFileHiveFactory;
+import org.apache.wicket.security.hive.config.SwarmPolicyFileHiveFactory;
+import org.apache.wicket.security.strategies.WaspAuthorizationStrategy;
+import org.apache.wicket.security.swarm.SwarmWebApplication;
+import org.apache.wicket.security.swarm.strategies.SwarmStrategyFactory;
 import org.apache.wicket.settings.IExceptionSettings;
+import org.dcm4chee.web.common.secure.ExtendedSwarmStrategy;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Application object for your web application. If you want to run this
- * application without deploying, run the Start class.
- * 
- * @see wicket.myproject.Start#main(String[])
+ * @author Robert David <robert.david@agfa.com>
+ * @version $Revision$ $Date$
+ * @since 31.08.2010
  */
-public class BaseWicketApplication extends AuthenticatedWebApplication {
+public class BaseWicketApplication extends SwarmWebApplication {
 
     private Class<? extends Page> homePage;
-    private Class<? extends WebPage> signinPage;
+    private Class<? extends Page> signinPage;
     private Class<? extends Page> accessDeniedPage;
     private Class<? extends Page> pageExpiredPage;
     private Class<? extends Page> internalErrorPage;
-
-    private final static Logger log = LoggerFactory.getLogger(BaseWicketApplication.class);
     
+    private final static Logger log = LoggerFactory.getLogger(BaseWicketApplication.class);
+
     public BaseWicketApplication() {
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void init() {
         super.init();
+
+        signinPage = (Class<? extends Page>) getPageClass(getInitParameter("signinPageClass"), LoginPage.class);
         homePage = getPageClass(getInitParameter("homePageClass"), null);
-        signinPage = (Class<? extends WebPage>) getPageClass(getInitParameter("signinPageClass"), LoginPage.class);
-        accessDeniedPage = (Class<? extends Page>) getPageClass(getInitParameter("accessDeniedPage"), signinPage);
-        pageExpiredPage = (Class<? extends Page>) getPageClass(getInitParameter("pageExpiredPage"), signinPage);
-        internalErrorPage = getPageClass(getInitParameter("internalErrorPageClass"), null);
+        accessDeniedPage = (Class<? extends Page>) getPageClass(getInitParameter("accessDeniedPageClass"), AccessDeniedPage.class);
+        pageExpiredPage = (Class<? extends Page>) getPageClass(getInitParameter("pageExpiredPageClass"), signinPage);
+        internalErrorPage = getPageClass(getInitParameter("internalErrorPageClass"), InternalErrorPage.class);
+        
         getApplicationSettings().setAccessDeniedPage(accessDeniedPage);
         getApplicationSettings().setPageExpiredErrorPage(pageExpiredPage);
         if ( internalErrorPage != null ) {
@@ -45,9 +94,9 @@ public class BaseWicketApplication extends AuthenticatedWebApplication {
         }
         mountBookmarkablePage("/login", signinPage);
         if (pageExpiredPage != signinPage)
-            mountBookmarkablePage("/expired", pageExpiredPage);
+            mountBookmarkablePage("/pageExpired", pageExpiredPage);
         if (accessDeniedPage != signinPage)
-            mountBookmarkablePage("/denied", accessDeniedPage);
+            mountBookmarkablePage("/accessDenied", accessDeniedPage);
     }
 
     @SuppressWarnings("unchecked")
@@ -60,7 +109,7 @@ public class BaseWicketApplication extends AuthenticatedWebApplication {
                 log.error("Could not get Class "+className+"! use default:"+def, t);
             }
         }
-        return (Class<? extends Page>) (clazz == null ? def : clazz);
+        return (Class<? extends SecureWebPage>) (clazz == null ? def : clazz);
     }
 
     @Override
@@ -74,12 +123,38 @@ public class BaseWicketApplication extends AuthenticatedWebApplication {
     }
 
     @Override
-    protected Class<? extends WebPage> getSignInPageClass() {
-        return signinPage;
+    protected Object getHiveKey() {
+        return getServletContext().getContextPath();
     }
 
     @Override
-    protected Class<? extends AuthenticatedWebSession> getWebSessionClass() {
-        return JaasWicketSession.class;
+    protected void setUpHive() {
+        PolicyFileHiveFactory factory = new SwarmPolicyFileHiveFactory(getActionFactory());
+        try {
+            factory.addPolicyFile(getServletContext().getResource("/WEB-INF/dcm4chee.hive"));
+        } catch (MalformedURLException e) {
+            throw new WicketRuntimeException(e);
+        }
+        HiveMind.registerHive(getHiveKey(), factory);
+    }
+
+    @Override
+    protected void setupStrategyFactory() {
+        setStrategyFactory(new SwarmStrategyFactory(getHiveKey()) {
+
+            @Override
+            public WaspAuthorizationStrategy newStrategy() {
+                return new ExtendedSwarmStrategy(getHiveKey());
+            }
+        });
+    }
+    
+    public Class<? extends Page> getLoginPage() {
+        return LoginPage.class;
+    }
+    
+    @Override
+    public SecureSession newSession(Request request, Response response) {
+        return new SecureSession(this, request);
     }
 }

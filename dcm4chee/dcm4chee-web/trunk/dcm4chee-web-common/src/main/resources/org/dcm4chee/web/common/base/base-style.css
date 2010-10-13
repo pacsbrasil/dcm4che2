@@ -59,14 +59,6 @@ table.search-table span.toggle-text { vertical-align: middle; }
 table.search-table div.search-header { text-decoration: underline; }
 table.search-table .yui-skin-sam .yui-calcontainer.withtitle { width: 14em; }
 
-/* Rounded edges */
-/*
-table.search-table th.lo { background: url("images/lo.gif") #446666 top left; border-width: 0px; border-style: none; }
-table.search-table th.ro { background: url("images/ro.gif") #446666 top right; border-width: 0px; border-style: none; }
-table.search-table td.lu { background: url("images/lu.gif") bottom left; border-width: 0px; border-style: none; }
-table.search-table td.ru { background: url("images/ru.gif") bottom right; border-width: 0px; border-style: none; }
-*/
-
 /*
 	table.content-table
 */

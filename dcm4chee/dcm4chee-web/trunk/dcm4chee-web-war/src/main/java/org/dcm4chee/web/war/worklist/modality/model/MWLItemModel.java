@@ -47,7 +47,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.dao.worklist.modality.ModalityWorklist;
+import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 
@@ -175,15 +175,15 @@ public class MWLItemModel extends AbstractEditableDicomModel implements Serializ
 
     @Override
     public void update(DicomObject dicomObject) {
-        ModalityWorklist dao = (ModalityWorklist)
-                JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
+        ModalityWorklistLocal dao = (ModalityWorklistLocal)
+                JNDIUtils.lookup(ModalityWorklistLocal.JNDI_NAME);
         dataset = dao.updateMWLItem(getPk(), dicomObject).getAttributes();
     }
 
     @Override
     public AbstractEditableDicomModel refresh() {
-        ModalityWorklist dao = (ModalityWorklist)
-        JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
+        ModalityWorklistLocal dao = (ModalityWorklistLocal)
+        JNDIUtils.lookup(ModalityWorklistLocal.JNDI_NAME);
         dataset = dao.getMWLItem(getPk()).getAttributes();     
         return this;
     }

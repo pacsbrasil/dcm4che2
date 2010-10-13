@@ -70,7 +70,7 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
     public void testEditAERequiredFields() {
         wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
                 new RoleAuthorizationStrategy(new UserRolesAuthorizer("WebAdmin")));
-        wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE()));
+        wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE(), null));
         wicketTester.getComponentFromLastRenderedPage("form").getSession().setLocale(new Locale("en"));
         FormTester formTester = wicketTester.newFormTester("form");
         formTester.setValue("title", "");
@@ -87,7 +87,7 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
     public void testEditAEValidators() {
         wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
                 new RoleAuthorizationStrategy(new UserRolesAuthorizer("WebAdmin")));
-        wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE()));
+        wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE(), null));
         wicketTester.getComponentFromLastRenderedPage("form").getSession().setLocale(new Locale("en"));
         FormTester formTester = wicketTester.newFormTester("form");
         formTester.setValue("title", "AE_TEST_TO_LONGLONG");

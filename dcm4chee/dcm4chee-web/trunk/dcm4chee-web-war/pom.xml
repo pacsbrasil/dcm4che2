@@ -14,6 +14,15 @@
 	<name>WAR for dcm4chee-web</name>
 	<description></description>
 	<dependencies>
+
+	    <dependency>
+	      <groupId>dcm4che.dcm4chee</groupId>
+	      <artifactId>dcm4chee-usr-entity</artifactId>
+	      <version>0.0.1</version>
+		  <classifier>${db}</classifier>
+	      <scope>provided</scope>
+	    </dependency>
+
 		<dependency>
 			<groupId>dcm4che.dcm4chee</groupId>
 			<artifactId>dcm4chee-web-sar-common</artifactId>
@@ -30,6 +39,7 @@
 			<artifactId>dcm4chee-dashboard-ui</artifactId>
 			<version>0.0.1</version>
 		</dependency>
+<!-- 
 		<dependency>
 			<groupId>dcm4che.dcm4chee</groupId>
 			<artifactId>dcm4chee-usr-entity</artifactId>
@@ -37,6 +47,7 @@
 			<classifier>${db}</classifier>
 			<scope>test</scope>
 		</dependency>
+ -->		
 		<dependency>
 			<groupId>dcm4che.dcm4chee</groupId>
 			<artifactId>dcm4chee-usr-dao</artifactId>

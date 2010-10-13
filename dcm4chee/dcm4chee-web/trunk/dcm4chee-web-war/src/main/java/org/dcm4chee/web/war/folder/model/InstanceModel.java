@@ -169,9 +169,8 @@ public class InstanceModel extends AbstractEditableDicomModel implements Seriali
         files.clear();
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        for (File file : dao.findFilesOfInstance(getPk())) {
+        for (File file : dao.findFilesOfInstance(getPk())) 
             this.files.add(new FileModel(file));
-        }
     }
 
     @Override
@@ -194,7 +193,7 @@ public class InstanceModel extends AbstractEditableDicomModel implements Seriali
     @Override
     public AbstractEditableDicomModel refresh() {
         StudyListLocal dao = (StudyListLocal)
-        JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+            JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         dataset = dao.getInstance(getPk()).getAttributes(true);
         return this;
     }

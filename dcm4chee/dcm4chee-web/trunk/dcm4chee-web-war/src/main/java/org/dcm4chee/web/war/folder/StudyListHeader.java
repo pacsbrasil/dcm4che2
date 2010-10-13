@@ -17,7 +17,7 @@ import org.apache.wicket.model.Model;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
-import org.dcm4chee.web.war.WicketSession;
+import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.common.SelectAllLink;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 
@@ -106,7 +106,7 @@ public class StudyListHeader extends Panel {
         .add(new TooltipBehaviour("folder.search.","autoExpand")));
 
         Cell patCell = new Cell("cell", 0);
-        List<PatientModel> patients = ((WicketSession) getSession()).getFolderViewPort().getPatients();
+        List<PatientModel> patients = ((AuthenticatedWebSession) getSession()).getFolderViewPort().getPatients();
         toUpd.setOutputMarkupId(true);
         add(new Row("patient", PatientModel.PATIENT_LEVEL).add(patCell)
                 .add(new SelectAllLink("selectAll", patients,PatientModel.PATIENT_LEVEL, true, toUpd, true)

@@ -36,32 +36,34 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.dao.worklist.modality;
+package org.dcm4chee.web.war;
 
-import java.util.List;
-
-import javax.ejb.Local;
-
-import org.dcm4che2.data.DicomObject;
-import org.dcm4chee.archive.entity.MWLItem;
+import org.apache.wicket.Request;
+import org.apache.wicket.security.WaspApplication;
+import org.dcm4chee.web.common.secure.SecureSession;
 
 /**
+ * @author Gunter Zeilinger <gunterze@gmail.com>
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since 20.04.2010
+ * @since Jan 13, 2009
  */
-@Local
-public interface ModalityWorklist {
+public class AuthenticatedWebSession extends SecureSession {
 
-    String JNDI_NAME = "dcm4chee-web-ear/ModalityWorklistBean/local";
+    private static final long serialVersionUID = 1L;
+    
+    private org.dcm4chee.web.war.folder.ViewPort folderViewport = new org.dcm4chee.web.war.folder.ViewPort();
+    private org.dcm4chee.web.war.worklist.modality.ViewPort mwViewport = new org.dcm4chee.web.war.worklist.modality.ViewPort();
+    
+    public AuthenticatedWebSession(WaspApplication application, Request request) {
+        super(application, request);
+    }
 
-    public List<MWLItem> findAll();
-    public int countMWLItems(ModalityWorklistFilter filter);
-    public List<MWLItem> findMWLItems(ModalityWorklistFilter filter, int pAGESIZE, int offset);
-    MWLItem getMWLItem(long pk);
-    public MWLItem updateMWLItem(long pk, DicomObject attrs);
-        
-    public List<String> selectDistinctModalities();
-    public List<String> selectDistinctStationAETs();
-    public List<String> selectDistinctStationNames();
+    public org.dcm4chee.web.war.folder.ViewPort getFolderViewPort() {
+        return folderViewport;
+    }
+
+    public org.dcm4chee.web.war.worklist.modality.ViewPort getMwViewPort() {
+        return mwViewport;
+    }
 }

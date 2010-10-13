@@ -44,12 +44,15 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.model.IModel;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
@@ -65,6 +68,8 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     
     private List<StudyModel> studies = new ArrayList<StudyModel>();
     private IModel<Boolean> latestStudyFirst;
+
+    StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
 
     public PatientModel(Patient patient, IModel<Boolean> latestStudyFirst) {
         setPk(patient.getPk());
@@ -137,11 +142,10 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     @Override
     public void expand() {
         studies.clear();
-        StudyListLocal dao = (StudyListLocal)
-                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst.getObject())) {
+        SecureSession secureSession = ((SecureSession) RequestCycle.get().getSession());
+        dao.setDicomSecurityParameters(secureSession.getUsername(), ((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root"), secureSession.getDicomRoles());
+        for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst.getObject())) 
             this.studies.add(new StudyModel(study, this));
-        }
     }
 
     @Override
@@ -156,15 +160,11 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
 
     @Override
     public void update(DicomObject dicomObject) {
-        StudyListLocal dao = (StudyListLocal)
-                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         dataset = dao.updatePatient(getPk(), dicomObject).getAttributes();
     }
     
     @Override
     public AbstractEditableDicomModel refresh() {
-        StudyListLocal dao = (StudyListLocal)
-        JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         dataset = dao.getPatient(getPk()).getAttributes();
         return this;
     }

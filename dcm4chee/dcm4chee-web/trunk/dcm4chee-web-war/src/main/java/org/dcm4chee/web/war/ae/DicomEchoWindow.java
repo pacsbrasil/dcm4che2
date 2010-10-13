@@ -65,6 +65,7 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.security.components.SecureWebPage;
 import org.apache.wicket.util.time.Duration;
 import org.apache.wicket.validation.validator.RangeValidator;
 import org.apache.wicket.validation.validator.StringValidator;
@@ -103,7 +104,7 @@ public class DicomEchoWindow extends ModalWindow {
     public DicomEchoWindow(String id, boolean echoOnShow) {
         super(id);
         this.echoOnShow = echoOnShow;
-        setTitle(new ResourceModel("aet.echoPanelTitle"));
+        setTitle(new ResourceModel("ae.echoPanelTitle"));
         setPageCreator(new ModalWindow.PageCreator() {
                             
             private static final long serialVersionUID = 1L;
@@ -176,7 +177,7 @@ public class DicomEchoWindow extends ModalWindow {
         return false;
     }
     
-    public class DicomEchoPage extends WebPage {
+    public class DicomEchoPage extends SecureWebPage {
     
     private static final long serialVersionUID = 1L;
     private BaseForm form;
@@ -244,7 +245,7 @@ public class DicomEchoWindow extends ModalWindow {
                 tag.getAttributes().put("class", saveFailed ? "ae_save_failed" : 
                          ((!echoPerformed || echoRunning) ? "ae_echo_pending" : 
                          (result.indexOf("success") != -1 ? "ae_echo_succeed" : 
-                             (result.contains(getString("aet.ping_success")) ? "ae_ping_succeed" :  
+                             (result.contains(getString("ae.ping_success")) ? "ae_ping_succeed" :  
                              "ae_echo_failed"))));
                 super.onComponentTag(tag);
             }
@@ -260,15 +261,15 @@ public class DicomEchoWindow extends ModalWindow {
 
 
         form = new BaseForm("form");
-        form.setResourceIdPrefix("aet.");
+        form.setResourceIdPrefix("ae.");
         
         add(form);
         CompoundPropertyModel<AE> model = new CompoundPropertyModel<AE>(aeEcho);
         setDefaultModel(model);
-        form.add(timerComponent = new Label("aetLabel", new ResourceModel("aet.echoAETitle")).setOutputMarkupId(true));
-        form.add(new Label("ciphersLabel", new ResourceModel("aet.echoCiphers")));
-        form.add(new Label("nrOfTestsLabel", new ResourceModel("aet.echoNrOfTests")));
-        form.add(new Label("echoResultLabel", new ResourceModel("aet.echoResult")));
+        form.add(timerComponent = new Label("aetLabel", new ResourceModel("ae.echoAETitle")).setOutputMarkupId(true));
+        form.add(new Label("ciphersLabel", new ResourceModel("ae.echoCiphers")));
+        form.add(new Label("nrOfTestsLabel", new ResourceModel("ae.echoNrOfTests")));
+        form.add(new Label("echoResultLabel", new ResourceModel("ae.echoResult")));
         form.add(new TextField<String>("title").add(new AETitleValidator()).setRequired(true).setOutputMarkupId(true)); 
         form.add(new TextField<String>("hostName").add(StringValidator.minimumLength(1)).setRequired(true).setOutputMarkupId(true)); 
         form.add(new TextField<Integer>("port").add(new RangeValidator<Integer>(1,65535)).setOutputMarkupId(true));
@@ -314,7 +315,7 @@ public class DicomEchoWindow extends ModalWindow {
         super.onBeforeRender();
         
         if (echoOnShow && !echoPerformed) {
-            result = getString("aet.echoResult.default");
+            result = getString("ae.echoResult.default");
             getDelegate();
             timerComponent.add(timer = getTimer());
         }
@@ -347,10 +348,10 @@ public class DicomEchoWindow extends ModalWindow {
 
     public void doPing(final AE ae) {
         echoRunning = true;
-        result = getString("aet.echoResult.ping", new Model<AE>(ae));
+        result = getString("ae.echoResult.ping", new Model<AE>(ae));
         getDelegate();
-        final String success = getString("aet.ping_success");
-        final String failed = getString("aet.ping_failed");
+        final String success = getString("ae.ping_success");
+        final String failed = getString("ae.ping_failed");
         new Thread(new Runnable(){
             public void run() {
                 try {
@@ -378,13 +379,13 @@ public class DicomEchoWindow extends ModalWindow {
         private static final long serialVersionUID = 1L;
         
         private EchoButton(String id) {
-            super(id, new ResourceModel("aet.echoButton"));
+            super(id, new ResourceModel("ae.echoButton"));
             setOutputMarkupId(true);
         }
         @Override
         protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
             newTimer();
-            result = getString("aet.echoResult.default");
+            result = getString("ae.echoResult.default");
             doEcho(aeEcho);
             boolean chgd = !isSameNetCfg( aeOri, aeEcho);
             if ( chgd != saveBtn.isEnabled()) {
@@ -410,7 +411,7 @@ public class DicomEchoWindow extends ModalWindow {
         private static final long serialVersionUID = 1L;
         
         private PingButton(String id) {
-            super(id, new ResourceModel("aet.pingButton"));
+            super(id, new ResourceModel("ae.pingButton"));
             setOutputMarkupId(true);
         }
         @Override
@@ -447,7 +448,7 @@ public class DicomEchoWindow extends ModalWindow {
                 saveBtn.setEnabled(false);
                 close(target);
             } catch (Exception x) {
-                result = (String) getString("aet.titleAlreadyExist");
+                result = (String) getString("ae.titleAlreadyExist");
                 saveFailed = true;
                 target.addComponent(resultLabel);
                 target.addComponent(saveBtn);

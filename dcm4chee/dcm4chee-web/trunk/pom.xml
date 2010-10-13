@@ -31,13 +31,13 @@
       <url>http://repository.jboss.com/maven2</url>
     </repository>
     <repository>
-      <id>Codehaus Snapshots</id>
-      <url>http://snapshots.repository.codehaus.org/</url>
+      <id>Maven Central</id>
+      <url>http://repo1.maven.org/maven2</url>
       <snapshots>
-        <enabled>true</enabled>
+        <enabled>false</enabled>
       </snapshots>
       <releases>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
       </releases>
     </repository>
     <repository>
@@ -51,13 +51,13 @@
   </repositories>
   <pluginRepositories>
     <pluginRepository>
-      <id>Codehaus Snapshots</id>
-      <url>http://snapshots.repository.codehaus.org/</url>
+      <id>Maven Central</id>
+      <url>http://repo1.maven.org/maven2</url>
       <snapshots>
-        <enabled>true</enabled>
+        <enabled>false</enabled>
       </snapshots>
       <releases>
-        <enabled>false</enabled>
+        <enabled>true</enabled>
       </releases>
     </pluginRepository>
   </pluginRepositories>

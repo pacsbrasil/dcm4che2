@@ -52,7 +52,6 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -63,6 +62,7 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.security.components.SecureWebPage;
 import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -87,10 +87,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since Jan 11, 2010
  */
-public class ExportPage extends WebPage {
+public class ExportPage extends SecureWebPage {
     
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(ExportPage.class, "export-style.css");
@@ -345,7 +346,7 @@ public class ExportPage extends WebPage {
     
     private List<Study> getStudiesOfPatient(PatientModel pat) {
         StudyListLocal dao = (StudyListLocal)
-        JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+            JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         return dao.findStudiesOfPatient(pat.getPk(), true);
     }
 

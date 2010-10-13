@@ -9,7 +9,7 @@
 	<div wicket:id="modal-window" />
     <div wicket:id="msgWin" >MessageWindow</div>
     <div wicket:id="imgSelection" >ImageSelection</div>
-    <div wicket:id="wadoWindow" >WadoWindow</div>
+    <div wicket:id="wadoImageWindow" >WadoWindow</div>
     <form wicket:id="modalForm">
        <div wicket:id="linkPage" >LinkPage</div>
     </form>
@@ -293,6 +293,9 @@
 		        <a wicket:id="edit" href="#"><img wicket:id="editImg" alt="E" /></a>
 		      </td>
 		      <td>
+		        <a wicket:id="studyPermissions" href="#"><img wicket:id="studyPermissionsImg" alt="P" /></a>
+		      </td>
+		      <td>
 		        <a wicket:id="add" href="#"><img wicket:id="addImg" alt="+" /></a>
 		      </td>
 		      <td>
@@ -305,7 +308,7 @@
 			  </td>
 		    </tr>
 		    <tr wicket:id="details" class="patient" style="border-top-style: none;">
-		      <td colspan="18">
+		      <td colspan="19">
 		        <div wicket:id="dicomobject"></div>
 		      </td>
 		    </tr>
@@ -330,6 +333,9 @@
 		        <a wicket:id="edit" href="#"><img wicket:id="editImg" alt="E" /></a>
 		      </td>
 		      <td>
+		        <a wicket:id="studyPermissions" href="#"><img wicket:id="studyPermissionsImg" alt="P" /></a>
+		      </td>
+		      <td>
 		        <a wicket:id="add" href="#"><img wicket:id="addImg" alt="+" /></a>
 		      </td>
 		      <td>
@@ -345,7 +351,7 @@
 		      </td>
 		    </tr>
 		    <tr wicket:id="details" class="study" style="border-top-style: none;">
-		      <td colspan="17">
+		      <td colspan="18">
 		        <div wicket:id="dicomobject"></div>
 		      </td>
 		    </tr>
@@ -372,6 +378,8 @@
 		        <a wicket:id="edit" href="#"><img wicket:id="editImg" alt="E" /></a>
 		      </td>
 		      <td>
+		      <td>
+		      </td>
 		        <a wicket:id="linkBtn" href="#"><img wicket:id="linkImg" alt="L" /></a>
 		        <a wicket:id="emulateBtn" href="#"><img wicket:id="emulateImg" alt="E" /></a>
 		      </td>
@@ -385,7 +393,7 @@
 		      </td>
 		    </tr>
 		    <tr wicket:id="details" class="pps" style="border-top-style: none;">
-		      <td colspan="16">
+		      <td colspan="17">
 		        <div wicket:id="dicomobject"></div>
 		      </td>
 		    </tr>
@@ -408,6 +416,8 @@
 		        <a wicket:id="edit" href="#"><img wicket:id="editImg" alt="E" /></a>
 		      </td>
 		      <td>
+		      </td>
+		      <td>
 		      	<a wicket:id="webview" href="#"><img wicket:id="webviewImg" alt="V" /></a>
 		      </td>
 		      <td>
@@ -422,7 +432,7 @@
 		      </td>
 		    </tr>
 		    <tr wicket:id="details" class="series" style="border-top-style: none;">
-		      <td colspan="15">
+		      <td colspan="16">
 		        <div wicket:id="dicomobject"></div>
 		      </td>
 		    </tr>
@@ -447,6 +457,8 @@
 		      <td>
 		      </td>
 		      <td>
+		      </td>
+		      <td>
 				<a wicket:id="wado" href="#">
 					<img wicket:id="wadoImg" alt="V" />
 				</a>
@@ -454,7 +466,7 @@
 		      <td><input wicket:id="selected" type="checkbox" /></td>
 		    </tr>
 		    <tr wicket:id="details" class="instance" style="border-top-style: none;">
-		      <td colspan="14">
+		      <td colspan="15">
 		        <div wicket:id="dicomobject"></div>
 		      </td>
 		    </tr>
@@ -479,10 +491,12 @@
 		      </td>
 		      <td>
 		      </td>
+		      <td>
+		      </td>
  		      <td><input wicket:id="selected" type="checkbox" /></td>
 		    </tr>
 		    <tr wicket:id="details" class="file" style="border-top-style: none;">
-		      <td colspan="14">
+		      <td colspan="15">
 		        <div wicket:id="file"></div>
 		      </td>
 		    </tr>

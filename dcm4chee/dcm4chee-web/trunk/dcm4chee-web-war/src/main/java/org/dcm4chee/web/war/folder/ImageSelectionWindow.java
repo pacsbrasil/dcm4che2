@@ -80,6 +80,7 @@ import org.slf4j.LoggerFactory;
  * @since 05.07.2010
  */
 public class ImageSelectionWindow extends ModalWindow {
+    
     private static final long serialVersionUID = 1L;
     private List<SeriesModel> seriesList = new ArrayList<SeriesModel>();
     private Model<Integer> maxSeries = new Model<Integer>(5);
@@ -307,6 +308,5 @@ public class ImageSelectionWindow extends ModalWindow {
 
     public boolean isSelectionChanged() {
         return selectionChanged;
-    }    
-    
+    }        
 }

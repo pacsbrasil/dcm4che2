@@ -44,7 +44,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import javax.ejb.Stateless;
+import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -65,10 +65,11 @@ import org.jboss.annotation.ejb.LocalBinding;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since Dec 17, 2008
  */
-@Stateless
+@Stateful
 @LocalBinding (jndiBinding=StudyListLocal.JNDI_NAME)
 public class StudyListBean implements StudyListLocal {
     
@@ -136,12 +137,28 @@ public class StudyListBean implements StudyListLocal {
     @PersistenceContext(unitName="dcm4chee-arc")
     private EntityManager em;
 
+    private boolean useSecurity = false;
+    private List<String> roles;
+
+    public void setDicomSecurityParameters(String username, String root, List<String> roles) {
+        this.roles = roles;
+        if ((username != null) && (root == null || !username.equals(root))) useSecurity = true;
+    }
+    
+    public void appendDicomSecurityFilter(StringBuilder ql) {
+        ql.append(" AND s.studyInstanceUID IN (SELECT sp.studyInstanceUID FROM StudyPermission sp WHERE sp.action = 'Q' AND sp.role IN (:roles))");
+    }
+
     public int countStudies(StudyListFilter filter) {
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT COUNT(*)");
         appendFromClause(ql, filter);
         appendWhereClause(ql, filter);
+        if (useSecurity)
+            appendDicomSecurityFilter(ql);
         Query query = em.createQuery(ql.toString());
+        if (useSecurity)
+            query.setParameter("roles", roles);
         setQueryParameters(query, filter);
         return ((Number) query.getSingleResult()).intValue();
     }
@@ -152,11 +169,15 @@ public class StudyListBean implements StudyListLocal {
         ql.append("SELECT p, s");
         appendFromClause(ql, filter);
         appendWhereClause(ql, filter);
+        if (useSecurity)
+            appendDicomSecurityFilter(ql);
         ql.append(" ORDER BY p.patientName, s.studyDateTime");
         if (filter.isLatestStudiesFirst()) {
             ql.append(" DESC");
         }
         Query query = em.createQuery(ql.toString());
+        if (useSecurity)
+            query.setParameter("roles", roles);
         setQueryParameters(query, filter);
         return query.setMaxResults(max).setFirstResult(index).getResultList();
     }
@@ -364,11 +385,18 @@ public class StudyListBean implements StudyListLocal {
 
     @SuppressWarnings("unchecked")
     public List<Study> findStudiesOfPatient(long pk, boolean latestStudyFirst) {
-        return em.createQuery(latestStudyFirst
-                    ? "FROM Study s WHERE s.patient.pk=?1 ORDER BY s.studyDateTime DESC"
-                    : "FROM Study s WHERE s.patient.pk=?1 ORDER BY s.studyDateTime")
-                .setParameter(1, pk)
-                .getResultList();
+        StringBuilder ql = new StringBuilder(64);
+        ql.append("FROM Study s WHERE s.patient.pk=?1");
+        if (useSecurity)
+            appendDicomSecurityFilter(ql);
+        ql.append(latestStudyFirst
+              ? " ORDER BY s.studyDateTime DESC"
+              : " ORDER BY s.studyDateTime");
+        Query query = em.createQuery(ql.toString());
+        query.setParameter(1, pk);
+        if (useSecurity)
+            query.setParameter("roles", roles);        
+        return query.getResultList();
     }
 
     @SuppressWarnings("unchecked")

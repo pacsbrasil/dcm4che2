@@ -36,57 +36,71 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.common.markup;
+package org.dcm4chee.web.common.secure;
 
-import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
-import org.dcm4chee.web.common.secure.SecureWicketPage;
+import java.security.Principal;
+import java.security.acl.Group;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.security.auth.Subject;
+
+import org.apache.wicket.Request;
+import org.apache.wicket.security.WaspApplication;
+import org.apache.wicket.security.WaspSession;
 
 /**
- * @author Franz Willer <franz.willer@gmail.com>
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since 28.09.2009
+ * @since 01.09.2010
  */
-public class IFramePage extends SecureWicketPage {
+public class SecureSession extends WaspSession {
+
+    private static final long serialVersionUID = 1L;
     
-    private IModel<String> urlModel;
-    private IModel<String> titleModel;
+    private String username;
+    private HashMap<String, String> swarmPrincipals;
+
+    private List<String> dicomRoles;
     
-    public IFramePage() {
-        super();
-        initPage();
+    public SecureSession(WaspApplication application, Request request) {
+        super(application, request);
     }
     
-    public IFramePage(final IModel<String> url) {
-        super();
-        urlModel = url;
-        initPage();
+    public String getUsername() {
+        return username;
     }
-    public IFramePage(final IModel<String> url, IModel<String> titleModel) {
-        super();
-        urlModel = url;
-        this.titleModel = titleModel;
-        initPage();
-    }
-    
-    private void initPage() {
-        if (urlModel == null)
-            urlModel = new Model<String>(urlFor(this.getApplication().getHomePage(), null).toString());
-        getModuleSelectorPanel().addInstance(new IFramePanel("panel", urlModel), titleModel);
-        this.getModuleSelectorPanel().setShowLogoutLink(false);
-    }
-    
-    @Override
-    protected String getBrowserTitle() {
-        String bt = super.getBrowserTitle();
-        String sub = titleModel == null ? null : titleModel.getObject();
-        if (sub == null) {
-            return bt;
-        } else {
-            return bt+sub;
+
+    public void setDicomSubject(Subject dicomSubject) {
+        Iterator<Principal> i = dicomSubject.getPrincipals().iterator();
+        this.username = (i.hasNext() ? i.next().getName() : null);
+        Principal rolesPrincipal = (i.hasNext() ? i.next() : null);
+        
+        if (rolesPrincipal instanceof Group) {
+            List<String> dicomRoles = new ArrayList<String>();
+            Enumeration<? extends Principal> e = ((Group) rolesPrincipal).members();
+            while (e.hasMoreElements()) 
+                dicomRoles.add(e.nextElement().getName());
+            this.setDicomRoles(dicomRoles);
         }
     }
 
+    public void setSwarmPrincipals(HashMap<String, String> principals) {
+        this.swarmPrincipals = principals;
+    }
     
+    public HashMap<String, String> getSwarmPrincipals() {
+        return swarmPrincipals;
+    }
+
+    public List<String> getDicomRoles() {
+        return dicomRoles;
+    }
+    
+    public void setDicomRoles(List<String> dicomRoles) {
+        this.dicomRoles = dicomRoles;
+    }
 }

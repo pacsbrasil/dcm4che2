@@ -17,9 +17,9 @@ public class FileSystemPage extends Panel {
 
     private List<FileSystem> list;
 
-    @SuppressWarnings("serial")
     public FileSystemPage(final String id) {
         super(id);
+        
         try {
             FileSystemHomeLocal dao = (FileSystemHomeLocal)
                     JNDIUtils.lookup(FileSystemHomeLocal.JNDI_NAME);
@@ -29,6 +29,9 @@ public class FileSystemPage extends Panel {
         }
         
         add(new PropertyListView<Object>("list", list) {
+
+            private static final long serialVersionUID = 1L;
+
             protected void populateItem(ListItem<Object> item) {
                 FileSystem fs = (FileSystem) item.getModelObject();
                 item.add(new Label("pk"));

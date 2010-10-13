@@ -3,22 +3,22 @@
 	<name>dcm4chee-web-ear</name>
 	<comment></comment>
 	<projects>
-		<project>dcm4chee-web-sar-rejnotescu</project>
-		<project>dcm4chee-web-sar-tlscfg</project>
-		<project>dcm4chee-web-sar-common</project>
-		<project>dcm4chee-web-sar-ianscu</project>
-		<project>dcm4chee-web-sar-movescu</project>
-		<project>dcm4chee-dashboard-sar</project>
-		<project>dcm4chee-web-sar-echo</project>
-		<project>dcm4chee-web-sar-hl7send</project>
-		<project>dcm4chee-web-sar-bridge-store</project>
-		<project>dcm4chee-web-sar-contentedit</project>
 		<project>dcm4chee-web-ejb</project>
 		<project>dcm4chee-web-vo</project>
 		<project>dcm4chee-usr-entity</project>
-		<project>dcm4chee-arc-entities-${db}</project>
 		<project>dcm4chee-usr-dao</project>
 		<project>dcm4chee-web-war</project>
+		<project>dcm4chee-arc-entities-${db}</project>
+		<project>dcm4chee-dashboard-sar</project>
+		<project>dcm4chee-web-sar-contentedit</project>
+		<project>dcm4chee-web-sar-bridge-store</project>
+		<project>dcm4chee-web-sar-common</project>
+		<project>dcm4chee-web-sar-echo</project>
+		<project>dcm4chee-web-sar-hl7send</project>
+		<project>dcm4chee-web-sar-ianscu</project>
+		<project>dcm4chee-web-sar-movescu</project>
+		<project>dcm4chee-web-sar-rejnotescu</project>
+		<project>dcm4chee-web-sar-tlscfg</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -45,12 +45,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.apache.wicket.Application;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageMap;
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
@@ -87,6 +93,7 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.protocol.http.WebApplication;
+import org.apache.wicket.security.components.markup.html.panel.SecurePanel;
 import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -95,6 +102,8 @@ import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.usr.ui.usermanagement.role.CreateOrEditRolePage;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.behaviours.CheckOneDayBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.delegate.WebCfgDelegate;
@@ -106,12 +115,14 @@ import org.dcm4chee.web.common.markup.PopupLink;
 import org.dcm4chee.web.common.markup.SimpleDateTimeField;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
+import org.dcm4chee.web.common.secure.SecureSession;
+import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.validators.UIDValidator;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.dao.folder.StudyListFilter;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
-import org.dcm4chee.web.war.WicketSession;
+import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.common.EditDicomObjectPanel;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
@@ -147,7 +158,7 @@ public class StudyListPage extends Panel {
     private static final String MODULE_NAME = "folder";
     private static final long serialVersionUID = 1L;
     private static Logger log = LoggerFactory.getLogger(StudyListPage.class);
-    private ViewPort viewport = ((WicketSession) getSession()).getFolderViewPort();
+    private ViewPort viewport = ((AuthenticatedWebSession) Session.get()).getFolderViewPort();
     private StudyListHeader header;
     private SelectedEntities selected = new SelectedEntities();
 
@@ -162,11 +173,11 @@ public class StudyListPage extends Panel {
     private boolean notSearched = true;
     private BaseForm form;
     private MessageWindow msgWin = new MessageWindow("msgWin");
-    private Mpps2MwlLinkPage linkPage = new Mpps2MwlLinkPage("linkPage");
+    private Mpps2MwlLinkPage mpps2MwlLinkWindow = new Mpps2MwlLinkPage("linkPage");
     private ConfirmationWindow<PPSModel> confirmUnlinkMpps;
     private ConfirmationWindow<PPSModel> confirmEmulateMpps;
-    private ImageSelectionWindow imageSelection = new ImageSelectionWindow("imgSelection");
-    private ModalWindow wadoWindow = new ModalWindow("wadoWindow");
+    private ImageSelectionWindow imageSelectionWindow = new ImageSelectionWindow("imgSelection");
+    private ModalWindow wadoImageWindow = new ModalWindow("wadoImageWindow");
     
     private WebviewerLinkProvider webviewerLinkProvider;
     
@@ -175,13 +186,18 @@ public class StudyListPage extends Panel {
     protected boolean ajaxRunning = false;
     protected boolean ajaxDone = false;
     protected Image hourglassImage;
-
+    
+    StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+    
     public StudyListPage(final String id) {
         super(id);
-        
+
         if (StudyListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
         
+        SecureSession secureSession = ((SecureSession) getSession());
+        dao.setDicomSecurityParameters(secureSession.getUsername(), ((BaseWicketApplication) getApplication()).getInitParameter("root"), secureSession.getDicomRoles());
+
         add(modalWindow = new ModalWindow("modal-window"));
         modalWindow.setWindowClosedCallback(new WindowClosedCallback() {
             private static final long serialVersionUID = 1L;
@@ -244,17 +260,19 @@ public class StudyListPage extends Panel {
         add(msgWin);
         Form<Object> form1 = new Form<Object>("modalForm");
         add(form1);
-        form1.add(linkPage);
-        add(imageSelection);
-        imageSelection.setWindowClosedCallback(new WindowClosedCallback(){
+        form1.add(mpps2MwlLinkWindow);
+        add(imageSelectionWindow);
+        imageSelectionWindow.setWindowClosedCallback(new WindowClosedCallback(){
             private static final long serialVersionUID = 1L;
 
             public void onClose(AjaxRequestTarget target) {
-                if (imageSelection.isSelectionChanged())
+                if (imageSelectionWindow.isSelectionChanged())
                     target.addComponent(form);
             }            
         });
-        add(wadoWindow);
+        imageSelectionWindow.add(new SecurityBehavior(getModuleName() + ":imageSelectionWindow"));
+        add(wadoImageWindow);
+        wadoImageWindow.add(new SecurityBehavior(getModuleName() + ":wadoImageWindow"));
     }
 
     @SuppressWarnings("unchecked")
@@ -419,7 +437,7 @@ public class StudyListPage extends Panel {
                               if (!ajaxRunning) {
                                   if (!ajaxDone) {
                                       ajaxRunning = true;
-                                      new Thread(new Runnable() {
+                                    new Thread(new Runnable() {
                                           public void run() {
                                               try {
                                                   viewport.setOffset(0);
@@ -719,6 +737,7 @@ public class StudyListPage extends Panel {
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
         form.add(deleteBtn);
+        deleteBtn.add(new SecurityBehavior(getModuleName() + ":deleteButton"));
         
         AjaxFallbackButton moveBtn = new AjaxFallbackButton("moveBtn", form) {
             
@@ -758,6 +777,7 @@ public class StudyListPage extends Panel {
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
         form.add(moveBtn);
+        moveBtn.add(new SecurityBehavior(getModuleName() + ":moveButton"));
         
         PopupLink exportBtn = new PopupLink("exportBtn", "exportPage") {
 
@@ -781,6 +801,7 @@ public class StudyListPage extends Panel {
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
         form.add(exportBtn);
+        exportBtn.add(new SecurityBehavior(getModuleName() + ":exportButton"));
 
         confirmUnlinkMpps = new ConfirmationWindow<PPSModel>("confirmUnlink") {
  
@@ -893,12 +914,9 @@ public class StudyListPage extends Panel {
         };
         confirmEmulateMpps.setInitialHeight(150);
         form.add(confirmEmulateMpps);
-
     }
 
     private void queryStudies() {
-        StudyListLocal dao = (StudyListLocal)
-                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         viewport.setTotal(dao.countStudies(viewport.getFilter()));
         updatePatients(dao.findStudies(viewport.getFilter(), pagesize.getObject(), viewport.getOffset()));
         notSearched = false;
@@ -1046,8 +1064,13 @@ public class StudyListPage extends Panel {
             .add(new ImageSizeBehaviour())
             .add(tooltip)));
             item.add(getEditLink(modalWindow, patModel, tooltip)
+                    .add(new SecurityBehavior(getModuleName() + ":editPatientLink"))
                     .add(tooltip));
+            item.add(getStudyPermissionLink(modalWindow, patModel, tooltip)
+                    .add(new SecurityBehavior(getModuleName() + ":studyPermissionsPatientLink"))
+                    .add(tooltip));          
             item.add(getAddStudyLink(patModel, tooltip)
+                    .add(new SecurityBehavior(getModuleName() + ":addStudyLink"))
                     .add(tooltip));
             item.add(new ExternalLink("webview", webviewerLinkProvider.getUrlForPatient(patModel.getId(), patModel.getIssuer())) {
                 private static final long serialVersionUID = 1L;
@@ -1059,7 +1082,9 @@ public class StudyListPage extends Panel {
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
             .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
-                    .add(tooltip)));
+                    .add(tooltip))
+                    .add(new SecurityBehavior(getModuleName() + ":webviewerPatientLink"))
+            );
             item.add(new AjaxCheckBox("selected") {
 
                 private static final long serialVersionUID = 1L;
@@ -1136,23 +1161,34 @@ public class StudyListPage extends Panel {
                         target.addComponent(patientListItem);
                     }
                 }
-            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour())
-            .add(tooltip)));
-            item.add(getEditLink(modalWindow, studyModel, tooltip));
-            item.add(getAddSeriesLink(studyModel, tooltip));
+            }
+                .add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
+                .add(new ImageSizeBehaviour())
+                .add(tooltip))
+            );
+            item.add(getEditLink(modalWindow, studyModel, tooltip)
+                    .add(new SecurityBehavior(getModuleName() + ":editStudyLink"))
+            );
+            item.add(getStudyPermissionLink(modalWindow, studyModel, tooltip)
+                    .add(new SecurityBehavior(getModuleName() + ":studyPermissionsStudyLink"))
+                    .add(tooltip));          
+            item.add(getAddSeriesLink(studyModel, tooltip)
+                    .add(new SecurityBehavior(getModuleName() + ":addSeriesLink"))
+            );
             item.add(new AjaxLink<Object>("imgSelect") {
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     int[] winSize = WebCfgDelegate.getInstance().getWindowSize("imgSelect");
-                    imageSelection.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
-                    imageSelection.show(target, studyModel);
+                    imageSelectionWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
+                    imageSelectionWindow.show(target, studyModel);
                 }
-                
-            }.add(new Image("selectImg",ImageManager.IMAGE_COMMON_SEARCH)
-            .add(new ImageSizeBehaviour())) );
+            }
+                .add(new Image("selectImg",ImageManager.IMAGE_COMMON_SEARCH)
+                .add(new ImageSizeBehaviour()))
+                .add(new SecurityBehavior(getModuleName() + ":imageSelectionStudyLink"))
+            );
             item.add( new AjaxCheckBox("selected") {
 
                 private static final long serialVersionUID = 1L;
@@ -1179,8 +1215,10 @@ public class StudyListPage extends Panel {
             }
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
-            .add(tooltip)));
+                .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
+                .add(tooltip))
+                .add(new SecurityBehavior(getModuleName() + ":webviewerStudyLink"))
+            );
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", studyModel, false));
             item.add(new PPSListView("ppss",
@@ -1256,28 +1294,30 @@ public class StudyListPage extends Panel {
             .add(new ImageSizeBehaviour())
                 .add(tooltip))
             );
-            item.add(getEditLink(modalWindow, ppsModel,tooltip));
+            item.add(getEditLink(modalWindow, ppsModel,tooltip)
+                    .add(new SecurityBehavior(getModuleName() + ":editPPSLink"))
+            );
             
             IndicatingAjaxFallbackLink<?> linkBtn = new IndicatingAjaxFallbackLink<Object>("linkBtn") {
                 
                 private static final long serialVersionUID = 1L;
-
+                
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     log.debug("#### linkBtn clicked!");
-                    linkPage.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
+                    mpps2MwlLinkWindow.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
                         
                         private static final long serialVersionUID = 1L;
 
                         @Override
                         public void onClose(AjaxRequestTarget target) {
-                            linkPage.setOutputMarkupId(true);
-                            target.addComponent(linkPage);
+                            mpps2MwlLinkWindow.setOutputMarkupId(true);
+                            target.addComponent(mpps2MwlLinkWindow);
                         }
                     });
                     
                     int[] winSize = WebCfgDelegate.getInstance().getWindowSize("mpps2mwl");
-                    ((Mpps2MwlLinkPage) linkPage
+                    ((Mpps2MwlLinkPage) mpps2MwlLinkWindow
                             .setInitialWidth(winSize[0]).setInitialHeight(winSize[1])
                     )
                     .show(target, ppsModel, form);
@@ -1293,6 +1333,7 @@ public class StudyListPage extends Panel {
             .add(new ImageSizeBehaviour())
             .add(tooltip));
             item.add(linkBtn);
+            linkBtn.add(new SecurityBehavior(getModuleName() + ":linkPPSLink"));
 
             item.add(new AjaxFallbackLink<Object>("unlinkBtn") {
 
@@ -1307,8 +1348,11 @@ public class StudyListPage extends Panel {
                 public boolean isVisible() {
                     return ppsModel.getDataset() != null && ppsModel.getAccessionNumber()!=null;
                 }
-            }.add(new Image("unlinkImg",ImageManager.IMAGE_FOLDER_UNLINK)
-            .add(new ImageSizeBehaviour()).add(tooltip)));
+            }
+		.add(new Image("unlinkImg",ImageManager.IMAGE_FOLDER_UNLINK)
+            	.add(new ImageSizeBehaviour()).add(tooltip))
+            	.add(new SecurityBehavior(getModuleName() + ":unlinkPPSLink"))
+            );
             
             item.add(new AjaxFallbackLink<Object>("emulateBtn") {
                 private static final long serialVersionUID = 1L;
@@ -1412,7 +1456,9 @@ public class StudyListPage extends Panel {
             .add(new ImageSizeBehaviour())
                 .add(tooltip))
             );
-            item.add(getEditLink(modalWindow, seriesModel, tooltip));
+            item.add(getEditLink(modalWindow, seriesModel, tooltip)
+                    .add(new SecurityBehavior(getModuleName() + ":editSeriesLink"))
+            );
             item.add(new AjaxCheckBox("selected") {
 
                 private static final long serialVersionUID = 1L;
@@ -1429,12 +1475,15 @@ public class StudyListPage extends Panel {
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     int[] winSize = WebCfgDelegate.getInstance().getWindowSize("imgSelect");
-                    imageSelection.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
-                    imageSelection.show(target, seriesModel);
+                    imageSelectionWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
+                    imageSelectionWindow.show(target, seriesModel);
                 }
                 
-            }.add(new Image("selectImg",ImageManager.IMAGE_COMMON_SEARCH)
-            .add(new ImageSizeBehaviour())) );
+            }
+                .add(new Image("selectImg",ImageManager.IMAGE_COMMON_SEARCH)
+                .add(new ImageSizeBehaviour()))
+                .add(new SecurityBehavior(getModuleName() + ":imageSelectionSeriesLink"))
+            );
             final WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -1451,10 +1500,12 @@ public class StudyListPage extends Panel {
                     return webviewerLinkProvider.supportSeriesLevel();
                 }
             }
-            .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
+                .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
-                    .add(tooltip)));
+                    .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
+                            .add(tooltip))
+                .add(new SecurityBehavior(getModuleName() + ":webviewerSeriesLink"))
+            );
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", seriesModel, false));
             item.add(new InstanceListView("instances",
@@ -1514,7 +1565,9 @@ public class StudyListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
             .add(tooltip)));
-            item.add(getEditLink(modalWindow, instModel, tooltip));
+            item.add(getEditLink(modalWindow, instModel, tooltip)
+                    .add(new SecurityBehavior(getModuleName() + ":editInstanceLink"))
+            );
             item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForInstance(instModel.getSOPInstanceUID())) {
                 private static final long serialVersionUID = 1L;
                 @Override
@@ -1522,10 +1575,13 @@ public class StudyListPage extends Panel {
                     return webviewerLinkProvider.supportInstanceLevel();
                 }
             }
-            .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
-                    PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
-            .add(tooltip)));
+                .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
+                        PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
+                .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
+                        .add(tooltip)
+                )
+                .add(new SecurityBehavior(getModuleName() + ":webviewerInstanceLink"))
+            );
 
             item.add(new AjaxLink<Object>("wado") {
                 private static final long serialVersionUID = 1L;
@@ -1533,22 +1589,24 @@ public class StudyListPage extends Panel {
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     int[] winSize = WebCfgDelegate.getInstance().getWindowSize("wado");
-                    wadoWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
-                    wadoWindow.setPageCreator(new ModalWindow.PageCreator() {
+                    wadoImageWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
+                    wadoImageWindow.setPageCreator(new ModalWindow.PageCreator() {
                           
                         private static final long serialVersionUID = 1L;
                           
                         @Override
                         public Page createPage() {
-                            return new WadoImagePage(wadoWindow, instModel);                        
+                            return new WadoImagePage(wadoImageWindow, instModel);                        
                         }
                     });
-                    wadoWindow.show(target);
+                    wadoImageWindow.show(target);
                 }
             }
-            .add(new Image("wadoImg",ImageManager.IMAGE_FOLDER_WADO)
-            .add(new ImageSizeBehaviour())
-            .add(tooltip)));
+                .add(new Image("wadoImg",ImageManager.IMAGE_FOLDER_WADO)
+                .add(new ImageSizeBehaviour())
+                .add(tooltip))
+                .add(new SecurityBehavior(getModuleName() + ":wadoImageInstanceLink"))
+            );
 
             item.add(new AjaxCheckBox("selected"){
 
@@ -1674,9 +1732,42 @@ public class StudyListPage extends Panel {
         Image image = new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT);
         image.add(new ImageSizeBehaviour("vertical-align: middle;"));
         if (tooltip != null) image.add(tooltip);
-        editLink.add(image);
+        editLink.add(image);        
+        return editLink;
+    }
+
+    private Link<Object> getStudyPermissionLink(final ModalWindow modalWindow, final AbstractEditableDicomModel model, TooltipBehaviour tooltip) {
         
-        MetaDataRoleAuthorizationStrategy.authorize(editLink, RENDER, "WebAdmin");
+        ModalWindowLink editLink
+         = new ModalWindowLink("studyPermissions", modalWindow,
+                new Integer(new ResourceModel("folder.studyPermissions.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
+                new Integer(new ResourceModel("folder.studyPermissions.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
+        ) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+
+                modalWindow
+                .setPageCreator(new ModalWindow.PageCreator() {
+                    
+                    private static final long serialVersionUID = 1L;
+                      
+                    @Override
+                    public Page createPage() {
+                        return new StudyPermissionsPage(
+                                modalWindow, 
+                                model
+                        );
+                    }
+                });
+                super.onClick(target);
+            }            
+        };
+        Image image = new Image("studyPermissionsImg",ImageManager.IMAGE_FOLDER_STUDY_PERMISSIONS);
+        image.add(new ImageSizeBehaviour("vertical-align: middle;"));
+        if (tooltip != null) image.add(tooltip);
+        editLink.add(image);
         return editLink;
     }
 
@@ -1803,5 +1894,5 @@ public class StudyListPage extends Panel {
                     target.addComponent(header);
             }
         }
-    }
+    }    
 }
