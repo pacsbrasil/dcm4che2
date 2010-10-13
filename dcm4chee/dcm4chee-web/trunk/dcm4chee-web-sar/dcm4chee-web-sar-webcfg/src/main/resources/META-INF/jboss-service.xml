@@ -236,6 +236,7 @@
       	<dd>aeEdit:    Edit window in AE Managment</dd>
       	<dd>mpps2mwl:  MPPS to MWL link window</dd>
       	<dd>move:      Move Entities Window</dd>
+      	<dd>studyPerm: Study Permision window in Folder</dd>
       ]]></description>
       <name>WindowSizeConfig</name>
       <type>java.lang.String</type>

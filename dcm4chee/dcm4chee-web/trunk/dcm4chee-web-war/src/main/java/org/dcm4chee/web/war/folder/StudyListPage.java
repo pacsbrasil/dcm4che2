@@ -1738,11 +1738,9 @@ public class StudyListPage extends Panel {
 
     private Link<Object> getStudyPermissionLink(final ModalWindow modalWindow, final AbstractEditableDicomModel model, TooltipBehaviour tooltip) {
         
+        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("studyPerm");
         ModalWindowLink editLink
-         = new ModalWindowLink("studyPermissions", modalWindow,
-                new Integer(new ResourceModel("folder.studyPermissions.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                new Integer(new ResourceModel("folder.studyPermissions.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-        ) {
+         = new ModalWindowLink("studyPermissions", modalWindow, winSize[0], winSize[1]) {
             private static final long serialVersionUID = 1L;
 
             @Override
