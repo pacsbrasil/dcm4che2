@@ -130,5 +130,4 @@ public class StudyPermission extends BaseEntity implements Serializable {
                 + ", action=" + action + 
                 ", role=" + role + "]";
     }
-
 }

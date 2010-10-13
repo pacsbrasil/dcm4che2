@@ -29,7 +29,7 @@
       </id>
     </attributes>
   </mapped-superclass>
-  
+
   <entity class="AE" access="FIELD" metadata-complete="false">
     <table name="ae" />
     <sequence-generator name="seq" sequence-name="ae_pk_seq" />
