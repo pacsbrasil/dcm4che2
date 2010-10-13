@@ -60,7 +60,7 @@ import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.webview.link.spi.WebviewerLinkProviderSPI;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
-import org.dcm4chee.web.dao.worklist.modality.ModalityWorklist;
+import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -577,7 +577,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
     public void updateStationAETs() {
         log.info("Update StationAET List");
-        ModalityWorklist dao = (ModalityWorklist) JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
+        ModalityWorklistLocal dao = (ModalityWorklistLocal) JNDIUtils.lookup(ModalityWorklistLocal.JNDI_NAME);
         String aets = listAsString(dao.selectDistinctStationAETs());
         Attribute attribute = new Attribute("StationAETs", aets);
         try {
@@ -589,7 +589,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
     public void updateStationNames() {
         log.info("Update Station Name List");
-        ModalityWorklist dao = (ModalityWorklist) JNDIUtils.lookup(ModalityWorklist.JNDI_NAME);
+        ModalityWorklistLocal dao = (ModalityWorklistLocal) JNDIUtils.lookup(ModalityWorklistLocal.JNDI_NAME);
         String names = listAsString(dao.selectDistinctStationNames());
         Attribute attribute = new Attribute("StationNames", names);
         try {
