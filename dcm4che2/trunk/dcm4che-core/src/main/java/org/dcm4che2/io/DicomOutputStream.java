@@ -48,6 +48,7 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
 import org.dcm4che2.data.DicomElement;
@@ -131,7 +132,8 @@ public class DicomOutputStream extends FilterOutputStream {
 
     public final void setTransferSyntax(TransferSyntax ts) {
         if (ts.deflated() && !(out instanceof DeflaterOutputStream))
-            out = new DeflaterOutputStream(out);
+            out = new DeflaterOutputStream(out,
+                    new Deflater(Deflater.DEFAULT_COMPRESSION, true));
         this.ts = ts;
     }
 

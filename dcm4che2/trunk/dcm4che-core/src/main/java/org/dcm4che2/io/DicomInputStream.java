@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
 import javax.imageio.stream.ImageInputStream;
@@ -482,7 +483,7 @@ public class DicomInputStream extends FilterInputStream implements
             throw new IllegalStateException(
                     "Cannot switch back from Deflated TS");
         if (ts.deflated())
-            in = new InflaterInputStream(in);
+            in = new InflaterInputStream(in, new Inflater(true));
         this.ts = ts;
     }
 
