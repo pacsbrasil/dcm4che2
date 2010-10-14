@@ -34,8 +34,8 @@
         </dependency>
         <dependency>
             <groupId>org.dcm4che.test</groupId>
-            <artifactId>dcm4che2-test-image</artifactId>
-            <version>1.1</version>
+            <artifactId>dcm4che-test-image</artifactId>
+            <version>2.6</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

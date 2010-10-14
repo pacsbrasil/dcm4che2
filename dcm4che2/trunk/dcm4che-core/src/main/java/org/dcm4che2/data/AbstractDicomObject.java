@@ -1152,10 +1152,10 @@ abstract class AbstractDicomObject implements DicomObject {
         }
         DicomElement sq = putSequence(tag);
         if (!e.isEmpty()) {
-            byte[] b = e.getBytes();
-            DicomInputStream in = new DicomInputStream(
-                    new ByteArrayInputStream(b), UID.ImplicitVRLittleEndian);
             try {
+                byte[] b = e.getBytes();
+                DicomInputStream in = new DicomInputStream(
+                        new ByteArrayInputStream(b), UID.ImplicitVRLittleEndian);
                 in.readItems(sq, b.length);
             } catch (IOException e1) {
                 throw new RuntimeException("Failed to parse value of " + e

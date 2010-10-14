@@ -135,7 +135,7 @@ public class DicomInputStream extends FilterInputStream implements
         pos = iis.getStreamPosition();
     }
 
-    public DicomInputStream(InputStream in, String tsuid) {
+    public DicomInputStream(InputStream in, String tsuid) throws IOException {
         this(in, TransferSyntax.valueOf(tsuid));
     }
 
@@ -144,7 +144,8 @@ public class DicomInputStream extends FilterInputStream implements
         this.ts = guessTransferSyntax();
     }
 
-    public DicomInputStream(InputStream in, TransferSyntax ts) {
+    public DicomInputStream(InputStream in, TransferSyntax ts)
+            throws IOException {
         super(in);
         if (ts == null)
             throw new NullPointerException("ts");
@@ -478,12 +479,22 @@ public class DicomInputStream extends FilterInputStream implements
         }
     }
 
-    private void switchTransferSyntax(TransferSyntax ts) {
+    private void switchTransferSyntax(TransferSyntax ts) throws IOException {
         if (this.ts != null && this.ts.deflated())
             throw new IllegalStateException(
                     "Cannot switch back from Deflated TS");
-        if (ts.deflated())
-            in = new InflaterInputStream(in, new Inflater(true));
+        if (ts.deflated()) {
+            boolean zlib = true;
+            if (markSupported()) {
+                mark(2);
+                readFully(header, 0, 2);
+                zlib = (((header[0] & 0xff) << 8) | (header[1] & 0xff)) 
+                        != 0x789c;
+                reset();
+            }
+            in = zlib ? new InflaterInputStream(in)
+                      : new InflaterInputStream(in, new Inflater(true));
+        }
         this.ts = ts;
     }
 
