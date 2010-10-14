@@ -127,8 +127,14 @@ public class StudyListUpdator extends Thread {
         for (Series series : seriesList) {
             if(ApplicationContext.imageViewExist()){
             if (i == 0) {
+                if(ApplicationContext.databaseRef.getMultiframeStatus())
+                     seriesListUpdator.addSeriesToStudyList(siuid, series.getSeriesInstanceUID(), series.isMultiframe(),series.getInstanceUID(), false);
+                else
                 seriesListUpdator.addSeriesToStudyList(siuid, series.getSeriesInstanceUID(), false);
             } else {
+                 if(ApplicationContext.databaseRef.getMultiframeStatus())
+                     seriesListUpdator.addSeriesToStudyList(siuid, series.getSeriesInstanceUID(), series.isMultiframe(),series.getInstanceUID(), true);
+                 else
                 seriesListUpdator.addSeriesToStudyList(siuid, series.getSeriesInstanceUID(), true);
             }
             i++;

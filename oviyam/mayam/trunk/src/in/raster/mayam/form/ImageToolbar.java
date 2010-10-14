@@ -812,7 +812,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
         }
 }//GEN-LAST:event_deleteMeasurementActionPerformed
-    // ApplicationContext.annotationPanel.doResizeMeasurement();
+   
     private void moveMeasurementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveMeasurementActionPerformed
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.imgPanel.tool = "";
@@ -1076,12 +1076,20 @@ public class ImageToolbar extends javax.swing.JPanel {
                 File file = (File) tempRef.get(i);
                 LayeredCanvas canvas = new LayeredCanvas(file.getAbsolutePath());
                 ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).add(canvas, i);
-
                 for (int x = 0; x < instanceArray.size(); x++) {
-//                if (file.getAbsolutePath().equalsIgnoreCase(new DestinationFinder().getFileDestination(new File(instanceArray.get(x).getFilepath())))) {
                   if (file.getAbsolutePath().equalsIgnoreCase(new DestinationFinder().getFileDestination(instanceArray.get(x).getFilepath()))) {
-                    ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(i)).annotationPanel.setAnnotation(instanceArray.get(x).getAnnotation());
-                    break;
+                       LayeredCanvas tempCanvas1=((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(i));
+                    
+                      if(ApplicationContext.databaseRef.getMultiframeStatus()&&tempCanvas1.imgpanel.isMulitiFrame())
+                      {
+                          if(instanceArray!=null&&instanceArray.get(x)!=null&&instanceArray.get(x).getAnnotations()!=null&&instanceArray.get(x).getAnnotations().get(0)!=null)
+                          tempCanvas1.annotationPanel.setAnnotation(instanceArray.get(x).getAnnotations().get(0));
+                      }
+                          else{
+                          if(instanceArray!=null&&instanceArray.get(x)!=null&&instanceArray.get(x).getAnnotation()!=null)
+                          tempCanvas1.annotationPanel.setAnnotation(instanceArray.get(x).getAnnotation());
+                          }
+                      break;
                   }
                 }
 

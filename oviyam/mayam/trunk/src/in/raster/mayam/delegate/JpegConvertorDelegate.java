@@ -73,6 +73,7 @@ public class JpegConvertorDelegate {
 
     public JpegConvertorDelegate() {
     }
+
     /**
      * This routine used to convert the dicom study to jpeg file based on the studyUID specified as parameter.
      * @param studyIUID
@@ -91,10 +92,18 @@ public class JpegConvertorDelegate {
             Iterator<Instance> imgitr = series.getImageList().iterator();
             while (imgitr.hasNext()) {
                 Instance img = imgitr.next();
-                studyExportAsJpeg(img.getFilepath(), patientNameFile.getAbsolutePath());
+                //   studyExportAsJpeg(img.getFilepath(), patientNameFile.getAbsolutePath());
+                if (img.isMultiframe()) {
+                    if (img.getCurrentFrameNum() == 0) {
+                        studyExportAsJpeg(img, patientNameFile.getAbsolutePath());
+                    }
+                } else {
+                    studyExportAsJpeg(img, patientNameFile.getAbsolutePath());
+                }
             }
         }
     }
+
     /**
      * This routine used to convert the dicom series as jpeg file based on the seriesUID specified as parameter
      * @param studyIUID
@@ -111,8 +120,101 @@ public class JpegConvertorDelegate {
                 Iterator<Instance> imgitr = series.getImageList().iterator();
                 while (imgitr.hasNext()) {
                     Instance img = imgitr.next();
-                    seriesExportAsJpeg(img.getFilepath(), outputPath, cm);
+                    // seriesExportAsJpeg(img, outputPath, cm);
+                    if (img.isMultiframe()) {
+                        if (img.getCurrentFrameNum() == 0) {
+                            seriesExportAsJpeg(img, outputPath, cm);
+
+                        }
+                    } else {
+                        seriesExportAsJpeg(img, outputPath, cm);
+                    }
                 }
+            }
+        }
+    }
+
+    public void seriesLevelConvertor(String studyIUID, String seriesUID, boolean multiframe, String instanceUID, String outputPath, ColorModel cm) {
+        ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList(studyIUID);
+        Iterator<Series> seriesItr = seriesList.iterator();
+        while (seriesItr.hasNext()) {
+            Series series = seriesItr.next();
+            if (multiframe) {
+                if (series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID) && series.getInstanceUID().equalsIgnoreCase(instanceUID)) {        //if multiframe image then instance uid also to be checked.
+                    Iterator<Instance> imgitr = series.getImageList().iterator();
+                    while (imgitr.hasNext()) {
+                        Instance img = imgitr.next();
+                        seriesExportAsJpeg(img.getFilepath(), outputPath, series.isMultiframe(), cm);
+                    }
+                }
+            } else {
+                if (!series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {        //if multiframe image then instance uid also to be checked.
+                    Iterator<Instance> imgitr = series.getImageList().iterator();
+                    while (imgitr.hasNext()) {
+                        Instance img = imgitr.next();
+                        seriesExportAsJpeg(img.getFilepath(), outputPath, series.isMultiframe(), cm);
+                    }
+                }
+            }
+        }
+    }
+
+    private void seriesExportAsJpeg(String inputFilePath, String outputPath, boolean multiframe, ColorModel cm) {
+        OutputStream output = null;
+        try {
+            File inputDicomFile = new File(inputFilePath);
+            int dotPos = inputDicomFile.getName().lastIndexOf(".");
+            String outputFileName = inputDicomFile.getName();
+            try {
+                String extension = inputDicomFile.getName().substring(dotPos);
+                if (extension.equalsIgnoreCase(".dcm")) {
+                    outputFileName = inputDicomFile.getName().replace(extension, "");
+                }
+            } catch (StringIndexOutOfBoundsException e) {
+                e.printStackTrace();
+            }
+            seriesExportAsJpegProcess(multiframe, inputDicomFile, outputPath, outputFileName, cm, output);
+        } catch (IOException ex) {
+            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                if (output != null) {
+                    output.close();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    private void seriesExportAsJpegProcess(boolean multiframe, File inputDicomFile, String outputPath, String outputFileName, ColorModel cm, OutputStream output) throws IOException {
+        File outputJpegFile = null;
+        ImageInputStream iis = ImageIO.createImageInputStream(inputDicomFile);
+        BufferedImage jpegImage = null;
+        Iterator<ImageReader> iterator = ImageIO.getImageReadersByFormatName("DICOM");
+        ImageReader reader = (ImageReader) iterator.next();
+        reader.setInput(iis, false);
+        int nFrames = 1;
+        if (multiframe) {
+            nFrames = reader.getNumImages(true);
+        }
+        for (int i = 0; i < nFrames; i++) {
+            outputJpegFile = new File(outputPath, outputFileName + i + ".jpg");
+            jpegImage = reader.read(i);
+            BufferedImage temp = jpegImage;
+            if (cm != null) {
+                temp = new BufferedImage(cm, jpegImage.getRaster(), false, null);
+            }
+            if (System.getProperty("os.name").startsWith("Mac")) {
+                output = new BufferedOutputStream(new FileOutputStream(outputJpegFile));
+                JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(output);
+                encoder.encode(temp);
+                // output.close();
+            } else {
+                //For linux and windows
+                exportSeries(outputJpegFile, temp);
             }
         }
     }
@@ -131,10 +233,10 @@ public class JpegConvertorDelegate {
      * @param inputFilePath
      * @param outputPath
      */
-    private void studyExportAsJpeg(String inputFilePath, String outputPath) {
+    private void studyExportAsJpeg(Instance instance, String outputPath) {
         OutputStream output = null;
         try {
-            File inputDicomFile = new File(inputFilePath);
+            File inputDicomFile = new File(instance.getFilepath());
             int dotPos = inputDicomFile.getName().lastIndexOf(".");
             String outputFileName = inputDicomFile.getName();
             try {
@@ -145,22 +247,7 @@ public class JpegConvertorDelegate {
             } catch (StringIndexOutOfBoundsException e) {
                 e.printStackTrace();
             }
-            File outputJpegFile = new File(outputPath, outputFileName + ".jpg");
-            ImageInputStream iis = ImageIO.createImageInputStream(inputDicomFile);
-            BufferedImage jpegImage = null;
-            Iterator<ImageReader> iterator = ImageIO.getImageReadersByFormatName("DICOM");
-            ImageReader reader = (ImageReader) iterator.next();
-            reader.setInput(iis, false);
-            jpegImage = reader.read(0);
-            if (System.getProperty("os.name").startsWith("Mac")) {
-                output = new BufferedOutputStream(new FileOutputStream(outputJpegFile));
-                JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(output);
-                encoder.encode(jpegImage);
-                //  output.close();
-            } else {
-                //For linux and windows
-                exportStudy(outputJpegFile, jpegImage);
-            }
+            studyExportAsJpegProcess(instance, outputPath, outputFileName, output, inputDicomFile);
         } catch (Exception ex) {
             Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
@@ -170,6 +257,33 @@ public class JpegConvertorDelegate {
                 }
             } catch (Exception ex) {
                 Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    private void studyExportAsJpegProcess(Instance instance, String outputPath, String outputFileName, OutputStream output, File inputDicomFile) throws IOException {
+        File outputJpegFile = new File(outputPath, outputFileName + ".jpg");
+        ImageInputStream iis = ImageIO.createImageInputStream(inputDicomFile);
+        BufferedImage jpegImage = null;
+        Iterator<ImageReader> iterator = ImageIO.getImageReadersByFormatName("DICOM");
+        ImageReader reader = (ImageReader) iterator.next();
+        reader.setInput(iis, false);
+        int nFrames = 1;
+        if (instance.isMultiframe()) {
+            nFrames = reader.getNumImages(true);
+        }
+        for (int i = 0; i < nFrames; i++) {
+            outputJpegFile = new File(outputPath, outputFileName + i + ".jpg");
+            jpegImage = reader.read(i);
+            BufferedImage temp = jpegImage;
+            if (System.getProperty("os.name").startsWith("Mac")) {
+                output = new BufferedOutputStream(new FileOutputStream(outputJpegFile));
+                JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(output);
+                encoder.encode(jpegImage);
+                //  output.close();
+            } else {
+                //For linux and windows
+                exportStudy(outputJpegFile, jpegImage);
             }
         }
     }
@@ -195,13 +309,15 @@ public class JpegConvertorDelegate {
             if (ios != null) {
                 try {
                     ios.close();
-                } catch (Exception e) {e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                     // ignore
                 }
                 if (writer != null) {
                     try {
                         writer.dispose();
-                    } catch (Exception e) {e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
                         // ignore
                     }
                 }
@@ -216,10 +332,10 @@ public class JpegConvertorDelegate {
      * @param outputPath
      * @param cm
      */
-    private void seriesExportAsJpeg(String inputFilePath, String outputPath, ColorModel cm) {
+    private void seriesExportAsJpeg(Instance instance, String outputPath, ColorModel cm) {
         OutputStream output = null;
         try {
-            File inputDicomFile = new File(inputFilePath);
+            File inputDicomFile = new File(instance.getFilepath());
             int dotPos = inputDicomFile.getName().lastIndexOf(".");
             String outputFileName = inputDicomFile.getName();
             try {
@@ -227,25 +343,10 @@ public class JpegConvertorDelegate {
                 if (extension.equalsIgnoreCase(".dcm")) {
                     outputFileName = inputDicomFile.getName().replace(extension, "");
                 }
-            } catch (StringIndexOutOfBoundsException e) {e.printStackTrace();
+            } catch (StringIndexOutOfBoundsException e) {
+                e.printStackTrace();
             }
-            File outputJpegFile = new File(outputPath, outputFileName + ".jpg");
-            ImageInputStream iis = ImageIO.createImageInputStream(inputDicomFile);
-            BufferedImage jpegImage = null;
-            Iterator<ImageReader> iterator = ImageIO.getImageReadersByFormatName("DICOM");
-            ImageReader reader = (ImageReader) iterator.next();
-            reader.setInput(iis, false);
-            jpegImage = reader.read(0);
-            BufferedImage temp = new BufferedImage(cm, jpegImage.getRaster(), false, null);
-            if (System.getProperty("os.name").startsWith("Mac")) {
-                output = new BufferedOutputStream(new FileOutputStream(outputJpegFile));
-                JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(output);
-                encoder.encode(temp);
-                // output.close();
-            } else {
-                //For linux and windows
-                exportSeries(outputJpegFile, temp);
-            }
+            seriesExportAsJpegProcess(instance, outputPath, cm, inputDicomFile, output, outputFileName);
         } catch (IOException ex) {
             Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception ex) {
@@ -257,6 +358,39 @@ public class JpegConvertorDelegate {
                 }
             } catch (IOException ex) {
                 Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    private void seriesExportAsJpegProcess(Instance instance, String outputPath, ColorModel cm, File inputDicomFile, OutputStream output, String outputFileName) throws IOException {
+        File outputJpegFile = null;
+        ImageInputStream iis = ImageIO.createImageInputStream(inputDicomFile);
+        BufferedImage jpegImage = null;
+        Iterator<ImageReader> iterator = ImageIO.getImageReadersByFormatName("DICOM");
+        ImageReader reader = (ImageReader) iterator.next();
+        reader.setInput(iis, false);
+        jpegImage = reader.read(instance.getCurrentFrameNum());
+
+        int nFrames = 1;
+        if (instance.isMultiframe()) {
+            nFrames = reader.getNumImages(true);
+
+        }
+        for (int i = 0; i < nFrames; i++) {
+            outputJpegFile = new File(outputPath, outputFileName + i + ".jpg");
+            jpegImage = reader.read(i);
+            BufferedImage temp = jpegImage;
+            if (cm != null) {
+                temp = new BufferedImage(cm, jpegImage.getRaster(), false, null);
+            }
+            if (System.getProperty("os.name").startsWith("Mac")) {
+                output = new BufferedOutputStream(new FileOutputStream(outputJpegFile));
+                JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(output);
+                encoder.encode(temp);
+                // output.close();
+            } else {
+                //For linux and windows
+                exportSeries(outputJpegFile, temp);
             }
         }
     }
@@ -282,13 +416,15 @@ public class JpegConvertorDelegate {
             if (ios != null) {
                 try {
                     ios.close();
-                } catch (Exception e) {e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                     // ignore
                 }
                 if (writer != null) {
                     try {
                         writer.dispose();
-                    } catch (Exception e) {e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
                         // ignore
                     }
                 }
@@ -325,7 +461,8 @@ public class JpegConvertorDelegate {
                 if (output != null) {
                     output.close();
                 }
-            } catch (IOException ex) {ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
                 //Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -353,13 +490,15 @@ public class JpegConvertorDelegate {
             if (ios != null) {
                 try {
                     ios.close();
-                } catch (Exception e) {e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                     // ignore
                 }
                 if (writer != null) {
                     try {
                         writer.dispose();
-                    } catch (Exception e) {e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
                         // ignore
                     }
                 }

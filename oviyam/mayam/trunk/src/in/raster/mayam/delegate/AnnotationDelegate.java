@@ -40,6 +40,7 @@ package in.raster.mayam.delegate;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.LayeredCanvas;
+import in.raster.mayam.form.LayoutManagerPanel;
 import in.raster.mayam.form.MainScreen;
 import in.raster.mayam.model.Instance;
 import in.raster.mayam.model.Series;
@@ -66,6 +67,11 @@ public class AnnotationDelegate {
     public AnnotationDelegate() {
     }
 
+    /**
+     * This method used to save the annotation information to the file.
+     *
+     * @param i
+     */
     public void saveAnnotation(int i) {
         Study studyTobeDelete = null;
         LayeredCanvas tempCanvas = null;
@@ -75,29 +81,96 @@ public class AnnotationDelegate {
                 tempCanvas = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getComponent(i)).getComponent(x));
                 File instanceFile = new File(tempCanvas.imgpanel.getDicomFileUrl());
                 String studyDir = instanceFile.getParent();
-                for (Study study : MainScreen.studyList) {                   
+                for (Study study : MainScreen.studyList) {
                     if (study.getStudyInstanceUID().equalsIgnoreCase(tempCanvas.imgpanel.getStudyUID())) {
                         studyTobeDelete = study;
                         studyAnnotation.setStudyUID(study.getStudyInstanceUID());
-                        for (Series series : study.getSeriesList()) {
-                            SeriesAnnotation seriesAnnotation = new SeriesAnnotation();
-                            seriesAnnotation.setSeriesUID(series.getSeriesInstanceUID());
-                            for (Instance instance : series.getImageList()) {
-                                InstanceAnnotation instanceAnnotation = new InstanceAnnotation(instance.getAnnotation());
-                                instanceAnnotation.setInstanceUID(instance.getSop_iuid());
-                                seriesAnnotation.getInstanceArray().put(instance.getSop_iuid(), instanceAnnotation);
-                            }
-                            studyAnnotation.getSeriesAnnotation().put(series.getSeriesInstanceUID(), seriesAnnotation);
+                        if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+                            sepMultiframeModelSave(study, studyAnnotation);
+                        } else {
+                            defaultModelSave(study, studyAnnotation);
                         }
                     }
                 }
                 writeToFile(studyDir, studyAnnotation);
-                RemoveStudy.removeStudyFromStudylist(studyTobeDelete);
+                //RemoveStudy.removeStudyFromStudylist(studyTobeDelete);
+                removeStudyFromStudylist(studyTobeDelete);
                 break;
             }
-        }       
+        }
     }
 
+    /**
+     * This Method used to update instanceAnnotation object based on the details of the instance
+     * (multiframe instance are condisered as seperate series)
+     * If Multiframe instance are considered as a seperate series so that it will concat the
+     * annotation of this series  with the original series.
+     * @param study
+     * @param studyAnnotation
+     */
+    public void sepMultiframeModelSave(Study study, StudyAnnotation studyAnnotation) {
+        for (Series series : study.getSeriesList()) {
+            SeriesAnnotation seriesAnnotation = (SeriesAnnotation) studyAnnotation.getSeriesAnnotation().get(series.getSeriesInstanceUID());
+            if (seriesAnnotation == null) {
+                seriesAnnotation = new SeriesAnnotation();
+                seriesAnnotation.setSeriesUID(series.getSeriesInstanceUID());
+            }
+            for (Instance instance : series.getImageList()) {
+                InstanceAnnotation instanceAnnotation = null;
+                if (!series.isMultiframe()) {
+                    instanceAnnotation = new InstanceAnnotation(instance.getAnnotation());
+                } else {
+                    instanceAnnotation = new InstanceAnnotation(instance.getAnnotations());
+                }
+                instanceAnnotation.setInstanceUID(instance.getSop_iuid());
+                instanceAnnotation.setMultiframe(series.isMultiframe());
+                seriesAnnotation.getInstanceArray().put(instance.getSop_iuid(), instanceAnnotation);
+            }
+            studyAnnotation.getSeriesAnnotation().put(series.getSeriesInstanceUID(), seriesAnnotation);
+        }
+    }
+
+    /**
+     * This Method used to update instanceAnnotation object based on the details of the instance
+     * (multiframe instance are not condisered as seperate series)
+     * Single series level SeriesAnnotation object has been used store all the instance such as
+     * single frame and multiframe instances.
+     * multiframe instance will have annotations hashmap to hold all the frame level annotation states.
+     *
+     * @param study
+     * @param studyAnnotation
+     */
+    public void defaultModelSave(Study study, StudyAnnotation studyAnnotation) {
+        for (Series series : study.getSeriesList()) {
+            SeriesAnnotation seriesAnnotation = new SeriesAnnotation();
+            seriesAnnotation.setSeriesUID(series.getSeriesInstanceUID());
+            for (Instance instance : series.getImageList()) {
+                InstanceAnnotation tempAnnotation = null;
+                if (seriesAnnotation != null && seriesAnnotation.getInstanceArray() != null) {
+                    tempAnnotation = (InstanceAnnotation) seriesAnnotation.getInstanceArray().get(instance.getSop_iuid());
+                }
+                if (instance.isMultiframe()) {
+                    if (tempAnnotation != null) {
+                        tempAnnotation.getAnnotations().put(instance.getCurrentFrameNum(), instance.getAnnotation());
+                    } else {
+                        InstanceAnnotation instanceAnnotation = new InstanceAnnotation();  //When adding first image it has been considered as single frame instance so annotation will have the value.
+                        instanceAnnotation.getAnnotations().put(instance.getCurrentFrameNum(), instance.getAnnotation());
+                        seriesAnnotation.getInstanceArray().put(instance.getSop_iuid(), instanceAnnotation);
+                    }
+                } else {
+                    InstanceAnnotation instanceAnnotation = new InstanceAnnotation(instance.getAnnotation());
+                    seriesAnnotation.getInstanceArray().put(instance.getSop_iuid(), instanceAnnotation);
+                }
+            }
+            studyAnnotation.getSeriesAnnotation().put(series.getSeriesInstanceUID(), seriesAnnotation);
+        }
+    }
+
+    /**
+     *
+     * @param studyDir
+     * @param studyAnnotation
+     */
     private void writeToFile(String studyDir, StudyAnnotation studyAnnotation) {
         ObjectOutputStream oos = null;
         try {
@@ -130,6 +203,35 @@ public class AnnotationDelegate {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public synchronized void removeStudyFromStudylist(Study study) {
+        if (MainScreen.selectedStudy.equalsIgnoreCase(study.getStudyInstanceUID())) {
+            if (!LayoutManagerPanel.updateSeries) {
+                for (Study tempStudy : MainScreen.studyList) {
+                    synchronized (MainScreen.studyList) {
+                        if (tempStudy.getStudyInstanceUID().equalsIgnoreCase(study.getStudyInstanceUID())) {
+                            synchronized (tempStudy.getSeriesList()) {
+                                Series notTobeDeleted = null;
+                                for (Series series : tempStudy.getSeriesList()) {
+                                    if (series.getSeriesInstanceUID().equalsIgnoreCase(MainScreen.selectedSeries)) {
+                                        notTobeDeleted = series;
+                                        break;
+                                    }
+                                }
+                                tempStudy.getSeriesList().clear();
+                                tempStudy.addSeries(notTobeDeleted);
+                                notTobeDeleted = null;
+                            }
+                        }
+                    }
+                }
+            } else {
+                MainScreen.studyList.remove(study);
+            }
+        } else {
+            MainScreen.studyList.remove(study);
         }
     }
 }

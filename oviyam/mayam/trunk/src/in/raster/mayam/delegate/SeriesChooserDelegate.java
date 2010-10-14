@@ -38,6 +38,7 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.delegate;
 
+import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.LayeredCanvas;
 import in.raster.mayam.form.MainScreen;
 import in.raster.mayam.model.Instance;
@@ -55,6 +56,8 @@ public class SeriesChooserDelegate extends Thread {
 
     private String studyUID;
     private String seriesUID;
+    private boolean multiframe;
+    private String instanceUID;
     private LayeredCanvas canvas;
 
     public SeriesChooserDelegate() {
@@ -67,10 +70,30 @@ public class SeriesChooserDelegate extends Thread {
         this.start();
     }
 
+    public SeriesChooserDelegate(String studyUID, String seriesUID, boolean multiframe, String instanceUID, LayeredCanvas canvas) {
+        this.studyUID = studyUID;
+        this.seriesUID = seriesUID;
+        this.multiframe = multiframe;
+        this.instanceUID = instanceUID;
+        this.canvas = canvas;
+        this.start();
+    }
+
     /**
      * This routine used to change the series in the tile.
      */
     private void changeSeries() {
+        if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+            changeSeries_SepMulti();
+        } else {
+            changeSeries_Normal();
+            
+        }
+        canvas.revalidate();
+        canvas.repaint();
+    }
+
+    public void changeSeries_Normal() {
         for (Study study : MainScreen.studyList) {
             if (study.getStudyInstanceUID().equalsIgnoreCase(studyUID)) {
                 for (Series series : study.getSeriesList()) {
@@ -90,11 +113,58 @@ public class SeriesChooserDelegate extends Thread {
                 }
             }
         }
-        canvas.revalidate();
-        canvas.repaint();
+    }
+
+    /**
+     * This routine used to change the series in the tile.
+     */
+    private void changeSeries_SepMulti() {
+        for (Study study : MainScreen.studyList) {
+            if (study.getStudyInstanceUID().equalsIgnoreCase(studyUID)) {
+                for (Series series : study.getSeriesList()) {
+                    if (!this.multiframe) {
+                        multiframeProcess(series);
+                    } else {
+                        stillImageProcess(series);
+                    }
+                }//for loop series closed.
+            }
+        }
     }
 
     public void run() {
         changeSeries();
+    }
+
+    private void multiframeProcess(Series series) {
+        if (!series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
+            for (Instance instance : series.getImageList()) {
+                File file = new File(System.getProperty("user.dir") + File.separator + instance.getFilepath());
+                if (file.exists()) {
+                    canvas.createSubComponents(System.getProperty("user.dir") + File.separator + instance.getFilepath());
+                    canvas.annotationPanel.setAnnotation(instance.getAnnotation());
+                } else {
+                    canvas.createSubComponents(instance.getFilepath());
+                    canvas.annotationPanel.setAnnotation(instance.getAnnotation());
+                }
+                break;
+            }
+        }
+    }
+
+    private void stillImageProcess(Series series) {
+        if (series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID) && series.getInstanceUID().equalsIgnoreCase(instanceUID)) {
+            for (Instance instance : series.getImageList()) {
+                File file = new File(System.getProperty("user.dir") + File.separator + instance.getFilepath());
+                if (file.exists()) {
+                    canvas.createSubComponents(System.getProperty("user.dir") + File.separator + instance.getFilepath());
+                    canvas.annotationPanel.setAnnotation(instance.getAnnotations().get(0));
+                } else {
+                    canvas.createSubComponents(instance.getFilepath());
+                    canvas.annotationPanel.setAnnotation(instance.getAnnotations().get(0));
+                }
+                break;
+            }
+        }
     }
 }

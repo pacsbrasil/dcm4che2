@@ -240,14 +240,14 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     public ImagePanel(String dicomFileUrl, Canvas canvas) {
         this.dicomFileUrl = dicomFileUrl;
         this.canvas = canvas;
-        readDicomFile(new File(dicomFileUrl));
-        retriveTextOverlayParam();
+        readDicomFile(new File(dicomFileUrl));       
         retriveTagInfo();
         initComponents();
         addlisteners();
         retrieveInstanceInformation();
         retrieveScoutParam();
         setTotalInstacne();
+        retriveTextOverlayParam();
         designContext();
     }
 
@@ -257,13 +257,13 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
      */
     public ImagePanel(String dicomFileUrl) {
         readDicomFile(new File(dicomFileUrl));
-        retriveTextOverlayParam();
         retriveTagInfo();
         initComponents();
         addlisteners();
         retrieveInstanceInformation();
         retrieveScoutParam();
         setTotalInstacne();
+        retriveTextOverlayParam();
 
     }
 
@@ -283,7 +283,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         textOverlayParam.setInstitutionName(dataset.getString(Tags.InstitutionName));
         textOverlayParam.setWindowLevel(dataset.getString(Tags.WindowCenter) != null ? dataset.getString(Tags.WindowCenter) : "");
         textOverlayParam.setWindowWidth(dataset.getString(Tags.WindowWidth) != null ? dataset.getString(Tags.WindowWidth) : "");
-        textOverlayParam.setCurrentInstance(Integer.toString(currentInstanceNo));
+        textOverlayParam.setCurrentInstance(currentInstanceNo);
         textOverlayParam.setTotalInstance(Integer.toString(totalInstance));
 
     }
@@ -301,8 +301,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         rescaleSlope = dataset.getString(Tags.RescaleSlope);
         rescaleIntercept = dataset.getString(Tags.RescaleIntercept);
         aspectRatio = dataset.getStrings(Tags.PixelAspectRatio);
-        try {
-            currentInstanceNo = Integer.parseInt(dataset.getString(Tags.InstanceNumber));
+        try {           
+            currentInstanceNo = Integer.parseInt(dataset.getString(Tags.InstanceNumber));           
         } catch (NumberFormatException e) {
             System.out.println("Instance Number format error ");
             currentInstanceNo = 1;
@@ -366,8 +366,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                         Tags.PixelSpacing, 1));
 
             } catch (NullPointerException e) {
-                initialPixelSpacingX=0;
-                initialPixelSpacingY=0;
+                initialPixelSpacingX = 0;
+                initialPixelSpacingY = 0;
             }
             int nWindow = cmParam.getNumberOfWindows();
             if (nWindow > 0) {
@@ -418,6 +418,14 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
      */
     public String getDicomFileUrl() {
         return dicomFileUrl;
+    }
+
+    public int getnFrames() {
+        return nFrames;
+    }
+
+    public void setnFrames(int nFrames) {
+        this.nFrames = nFrames;
     }
 
     /**
@@ -509,8 +517,10 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             currentbufferedimage = reader.read(currentFrame);
             convertToRGBImage();
             repaint();
-            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
             this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(this.totalInstance));
+            Instance instance = instanceArray.get(0);
+            this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getMultiframeAnnotation(currentInstanceNo));
         } catch (Exception ex) {
             ex.printStackTrace();
             Logger.getLogger(ImagePanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -519,7 +529,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
 
     public void showPreviousFrame() {
         if (currentFrame == 0) {
-            currentFrame = nFrames - 1;
+            currentFrame = nFrames;
         }
         currentFrame--;
         currentInstanceNo = currentFrame;
@@ -528,8 +538,10 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             currentbufferedimage = reader.read(currentFrame);
             convertToRGBImage();
             repaint();
-            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
             this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(this.totalInstance));
+            Instance instance = instanceArray.get(0);
+            this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getMultiframeAnnotation(currentInstanceNo));
         } catch (IOException ex) {
             ex.printStackTrace();
             Logger.getLogger(ImagePanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -748,18 +760,18 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     /**
      * This routine used to reset the image box with the original buffered image
      */
-    public void reset() {       
+    public void reset() {
         this.getCanvas().getLayeredCanvas().annotationPanel.resetAnnotation();
         windowLevel = (int) WC;
-        windowWidth = (int) WW;        
+        windowWidth = (int) WW;
         windowChanged(windowLevel, windowWidth);
         firstTime = true;
-        scaleFactor = 1;     
+        scaleFactor = 1;
         scaleProcess();
         this.getCanvas().getLayeredCanvas().annotationPanel.scaleProcess();
         invertFlag = false;
         flipHorizontalFlag = false;
-        flipVerticalFlag = false;        
+        flipVerticalFlag = false;
         isRotate = false;
         rotateLeftAngle = 0;
         rotateRightAngle = 0;
@@ -770,7 +782,10 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         if (!firstTime) {
             repaint();
         }
-        selectFirstInstance();       
+        selectFirstInstance();
+
+        this.tool = "windowing";
+        this.getCanvas().getLayeredCanvas().annotationPanel.resetAnnotaionTools();
     }
 
     public void resizeHandler() {
@@ -802,12 +817,12 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                     if (series.getSeriesInstanceUID().equalsIgnoreCase(this.seriesUID)) {
                         Instance instance = series.getImageList().get(0);
                         setImage(instance.getPixelData());
-                         this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getAnnotation());
+                        this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getAnnotation());
                     }
                 }
             }
         }
-         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
     }
 
     /**
@@ -1409,13 +1424,16 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         this.canvas.requestFocus();
     }//GEN-LAST:event_formMouseClicked
     private void setTotalInstacne() {
-        currentInstanceNo--;
-        if (!isMulitiFrame()) {
-            totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
-            textOverlayParam.setCurrentInstance(Integer.toString(currentInstanceNo));
-            textOverlayParam.setTotalInstance(Integer.toString(totalInstance));
+        if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+            if (!isMulitiFrame()) {
+                totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
+                currentInstanceNo = 0;
+            } else {
+                totalInstance = nFrames;
+                currentInstanceNo = 0;
+            }
         } else {
-            totalInstance = nFrames;
+            totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
             currentInstanceNo = 0;
         }
     }
@@ -1423,13 +1441,15 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     public void mouseWheelMoved(MouseWheelEvent e) {
         this.requestFocus();
         this.canvas.setSelection();
-        if (!isMulitiFrame()) {
-            this.storeAnnotation();
-        }
+        this.storeAnnotation();
         int notches = e.getWheelRotation();
         if (notches < 0) {
-            if (isMulitiFrame()) {
-                showPreviousFrame();
+            if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
+                if (instanceArray == null) {
+                    previousFrame();
+                } else {
+                    showPreviousFrame();
+                }
             } else {
                 if (instanceArray == null) {
                     previousInstance();
@@ -1438,13 +1458,97 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 }
             }
         } else {
-            if (isMulitiFrame()) {
-                showNextFrame();
+            if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
+                if (instanceArray == null) {
+                    nextFrame();
+                } else {
+                    showNextFrame();
+                }
             } else {
                 if (instanceArray == null) {
                     nextInstance();
                 } else {
                     selectNextInstance();
+                }
+            }
+        }
+    }
+
+    private void setInstanceArray() {
+        for (Study study : MainScreen.studyList) {
+            if (study.getStudyInstanceUID().equalsIgnoreCase(this.studyUID)) {
+                for (Series series : study.getSeriesList()) {
+                    if (mulitiFrame) {
+                        if (series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID) && series.getInstanceUID().equalsIgnoreCase(instanceUID)) {
+                            instanceArray = (ArrayList<Instance>) series.getImageList();
+                        } else {
+                            if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
+                                for (Instance instance : series.getImageList()) {
+                                    if (instance.getSop_iuid().equalsIgnoreCase(this.instanceUID)) {
+                                        ArrayList<Instance> temp = new ArrayList<Instance>();
+                                        temp.add(instance);
+                                        instanceArray = temp;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void previousFrame() {
+        for (Study study : MainScreen.studyList) {
+            if (study.getStudyInstanceUID().equalsIgnoreCase(this.studyUID)) {
+                for (Series series : study.getSeriesList()) {
+                    if (mulitiFrame) {
+                        if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+                            if (series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID) && series.getInstanceUID().equalsIgnoreCase(instanceUID)) {
+                                instanceArray = (ArrayList<Instance>) series.getImageList();
+                                showPreviousFrame();
+                            }
+                        } else {
+                            if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
+                                for (Instance instance : series.getImageList()) {
+                                    if (instance.getSop_iuid().equalsIgnoreCase(this.instanceUID)) {
+                                        ArrayList<Instance> temp = new ArrayList<Instance>();
+                                        temp.add(instance);
+                                        instanceArray = temp;
+                                    }
+                                }
+                            }
+                            showPreviousFrame();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void nextFrame() {
+        for (Study study : MainScreen.studyList) {
+            if (study.getStudyInstanceUID().equalsIgnoreCase(studyUID)) {
+                for (Series series : study.getSeriesList()) {
+                    if (mulitiFrame) {
+                        if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+                            if (series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID) && series.getInstanceUID().equalsIgnoreCase(instanceUID)) {
+                                instanceArray = (ArrayList<Instance>) series.getImageList();
+                                showNextFrame();
+                            }
+                        } else {
+                            if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
+                                for (Instance instance : series.getImageList()) {
+                                    if (instance.getSop_iuid().equalsIgnoreCase(this.instanceUID)) {
+                                        ArrayList<Instance> temp = new ArrayList<Instance>();
+                                        temp.add(instance);
+                                        instanceArray = temp;
+                                    }
+                                }
+                            }
+                            showNextFrame();
+                        }
+                    }
                 }
             }
         }
@@ -1459,9 +1563,24 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 Iterator<Series> seriesItr = seriesList.iterator();
                 while (seriesItr.hasNext()) {
                     Series series = seriesItr.next();
-                    if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
-                        Instance instance = series.getImageList().get(currentInstanceNo);
-                        instance.setAnnotation(this.getCanvas().getLayeredCanvas().annotationPanel.getAnnotation());
+                    if (!ApplicationContext.databaseRef.getMultiframeStatus()) {
+                        if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
+                            Instance instance = series.getImageList().get(currentInstanceNo);
+                            instance.setAnnotation(this.getCanvas().getLayeredCanvas().annotationPanel.getAnnotation());
+                        }
+                    } else {
+                        if (!isMulitiFrame()) {
+                            if (!series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
+                                Instance instance = series.getImageList().get(currentInstanceNo);
+                                instance.setAnnotation(this.getCanvas().getLayeredCanvas().annotationPanel.getAnnotation());
+                            }
+                        }//for multiframe instance setAnnotations should be there it can be of hash map with index values.
+                        else {
+                            if (series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID) && series.getInstanceUID().equalsIgnoreCase(instanceUID)) {
+                                Instance instance = series.getImageList().get(0);//becuase multiframe series contains single instance.
+                                instance.addMultiframeAnnotation(currentInstanceNo, this.getCanvas().getLayeredCanvas().annotationPanel.getAnnotation());
+                            }
+                        }
                     }
                 }
             }
@@ -1532,18 +1651,34 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         if (mouseLocDiffY < -12) {
             mouseLocX1 = mouseLocX2;
             mouseLocY1 = mouseLocY2;
-            if (instanceArray == null) {
-                previousInstance();
+            if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
+                if (instanceArray == null) {
+                    previousFrame();
+                } else {
+                    showPreviousFrame();
+                }
             } else {
-                selectPreviousInstance();
+                if (instanceArray == null) {
+                    previousInstance();
+                } else {
+                    selectPreviousInstance();
+                }
             }
         } else if (mouseLocDiffY > 12) {
             mouseLocX1 = mouseLocX2;
             mouseLocY1 = mouseLocY2;
-            if (instanceArray == null) {
-                nextInstance();
+            if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
+                if (instanceArray == null) {
+                    nextFrame();
+                } else {
+                    showNextFrame();
+                }
             } else {
-                selectNextInstance();
+                if (instanceArray == null) {
+                    nextInstance();
+                } else {
+                    selectNextInstance();
+                }
             }
         }
     }
@@ -1554,6 +1689,13 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
         currentInstanceNo--;
         Instance instance = instanceArray.get(currentInstanceNo);
+        if (instance.isMultiframe()) {
+            this.getCanvas().getLayeredCanvas().textOverlay.multiframeStatusDisplay(true);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setFramePosition((instance.getCurrentFrameNum() + 1) + "/" + instance.getTotalNumFrames());
+        } else {
+            this.getCanvas().getLayeredCanvas().textOverlay.multiframeStatusDisplay(false);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setFramePosition("");
+        }
         setImage(instance.getPixelData());
         setInstanceInfo(instance);
         if (displayScout) {
@@ -1564,15 +1706,26 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             }
         }
         this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getAnnotation());
-        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
+        if (!ApplicationContext.databaseRef.getMultiframeStatus()) {
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(instance.getSeriesLevelIndex());
+        } else {
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
+        }
     }
 
-    private void selectNextInstance() {
+    public void selectNextInstance() {
         currentInstanceNo++;
         if (currentInstanceNo == totalInstance) {
             currentInstanceNo = 0;
         }
         Instance instance = instanceArray.get(currentInstanceNo);
+        if (instance.isMultiframe()) {
+            this.getCanvas().getLayeredCanvas().textOverlay.multiframeStatusDisplay(true);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setFramePosition((instance.getCurrentFrameNum() + 1) + "/" + instance.getTotalNumFrames());
+        } else {
+            this.getCanvas().getLayeredCanvas().textOverlay.multiframeStatusDisplay(false);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setFramePosition("");
+        }
         setImage(instance.getPixelData());
         setInstanceInfo(instance);
         if (displayScout) {
@@ -1583,7 +1736,12 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             }
         }
         this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getAnnotation());
-        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
+        //this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
+        if (!ApplicationContext.databaseRef.getMultiframeStatus()) {
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(instance.getSeriesLevelIndex());
+        } else {
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
+        }
     }
 
     private void setInstanceInfo(Instance img) {
@@ -1602,29 +1760,44 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
     }
 
-    private void previousInstance() {
+    public void previousInstance() {
         for (Study study : MainScreen.studyList) {
             if (study.getStudyInstanceUID().equalsIgnoreCase(this.studyUID)) {
                 for (Series series : study.getSeriesList()) {
-                    if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
-                        totalInstance = series.getImageList().size();
-                        instanceArray = (ArrayList<Instance>) series.getImageList();
-                        selectPreviousInstance();
+                    if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+                        if (!series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
+                            totalInstance = series.getImageList().size();
+                            instanceArray = (ArrayList<Instance>) series.getImageList();
+                            selectPreviousInstance();
+                        }
+                    } else {
+                        if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
+                            totalInstance = series.getImageList().size();
+                            instanceArray = (ArrayList<Instance>) series.getImageList();
+                            selectPreviousInstance();
+                        }
                     }
                 }
             }
         }
     }
 
-    private void nextInstance() {
+    public void nextInstance() {
         for (Study study : MainScreen.studyList) {
             if (study.getStudyInstanceUID().equalsIgnoreCase(studyUID)) {
                 for (Series series : study.getSeriesList()) {
-                    if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
-                        // currentInstanceNo++;
-                        totalInstance = series.getImageList().size();
-                        instanceArray = (ArrayList<Instance>) series.getImageList();
-                        selectNextInstance();
+                    if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+                        if (!series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
+                            totalInstance = series.getImageList().size();
+                            instanceArray = (ArrayList<Instance>) series.getImageList();
+                            selectNextInstance();
+                        }
+                    } else {
+                        if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
+                            totalInstance = series.getImageList().size();
+                            instanceArray = (ArrayList<Instance>) series.getImageList();
+                            selectNextInstance();
+                        }
                     }
                 }
             }
@@ -1717,7 +1890,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             try {
                 hu = Integer.toString(pixelValue * Integer.parseInt(rescaleSlope) + Integer.parseInt(rescaleIntercept));
             } catch (Exception e) {
-                hu =Integer.toString(pixelValue * 1 - 1024);
+                hu = Integer.toString(pixelValue * 1 - 1024);
             }
         } catch (Exception e) {
             System.out.println("Array index out of bound exception");
@@ -1728,8 +1901,6 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     public void mouseMoved(MouseEvent e) {
         mouseLocX2 = e.getX();
         mouseLocY2 = e.getY();
-        // if (mousePressed) {
-        // }
         if (probeFlag) {
             String probeParameter[] = new String[3];
             probeParameter[0] = Integer.toString((int) Math.round(mouseLocX2 / this.scaleFactor));
@@ -1779,7 +1950,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         return referencedSOPInstanceUID;
     }
 
-    private void designContext() {
+    private void designContext() {     
         ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList(this.studyUID);
         JMenu menu;
         if ((this.studyDesc == null) || (this.studyDesc.equalsIgnoreCase(""))) {
@@ -1787,20 +1958,36 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         } else {
             menu = new JMenu(this.studyDesc);
         }
+        JMenu menu1 = new JMenu("Multiframe(s)");
         for (final Series series : seriesList) {
-            JMenuItem menuitem;
-            if (!series.getSeriesDesc().equalsIgnoreCase("null")) {
+            JMenuItem menuitem = null;
+            if (series.isMultiframe()) {
+                if (Integer.parseInt(series.getImageList().get(0).getInstance_no()) < 10) {
+                    menuitem = new JMenuItem(series.getImageList().get(0).getInstance_no() + "   - Frames  " + series.getImageList().get(0).getTotalNumFrames());
+                } else {
+                    menuitem = new JMenuItem(series.getImageList().get(0).getInstance_no() + " - Frames  " + series.getImageList().get(0).getTotalNumFrames());
+                }
+                menu1.add(menuitem);
+            } else if (!series.getSeriesDesc().equalsIgnoreCase("null")) {
                 menuitem = new JMenuItem(series.getSeriesDesc());
             } else if (!series.getBodyPartExamined().equalsIgnoreCase("null")) {
                 menuitem = new JMenuItem(series.getBodyPartExamined());
             } else {
                 menuitem = new JMenuItem(series.getSeriesInstanceUID());
             }
-            menu.add(menuitem);
+            if (!series.isMultiframe()) {
+                menu.add(menuitem);
+            } else {
+                menu.add(menu1);
+            }
             menuitem.addActionListener(new java.awt.event.ActionListener() {
 
                 public void actionPerformed(ActionEvent arg0) {
-                    changeSeries(arg0, series.getStudyInstanceUID(), series.getSeriesInstanceUID());
+                    if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+                        changeSeries(arg0, series.getStudyInstanceUID(), series.getSeriesInstanceUID(), series.isMultiframe(), series.getInstanceUID());
+                    } else {
+                        changeSeries(arg0, series.getStudyInstanceUID(), series.getSeriesInstanceUID());
+                    }
                 }
             });
         }
@@ -1808,8 +1995,20 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         this.setComponentPopupMenu(jPopupMenu1);
     }
 
+    public boolean isInstanceArray() {
+        if (this.instanceArray != null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private void changeSeries(ActionEvent e, String studyUID, String seriesUID) {
         SeriesChooserDelegate seriesChooser = new SeriesChooserDelegate(studyUID, seriesUID, this.getCanvas().getLayeredCanvas());
+    }
+
+    private void changeSeries(ActionEvent e, String studyUID, String seriesUID, boolean multiframe, String instanceUID) {
+        SeriesChooserDelegate seriesChooser = new SeriesChooserDelegate(studyUID, seriesUID, multiframe, instanceUID, this.getCanvas().getLayeredCanvas());
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPopupMenu jPopupMenu1;

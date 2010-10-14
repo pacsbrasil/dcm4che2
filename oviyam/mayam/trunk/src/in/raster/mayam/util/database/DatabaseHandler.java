@@ -161,6 +161,7 @@ public class DatabaseHandler {
                 insertDefaultLayoutDetail();
                 insertDefaultPresets();
                 insertDefaultThemes();
+                insertDefaultPropertiesDetail();
             }
             conn.setAutoCommit(false);
         } catch (SQLException e) {
@@ -196,7 +197,7 @@ public class DatabaseHandler {
         insertModalities();
         insertDefaultListenerDetail();
         insertDefaultLayoutDetail();
-        insertDefaultPresets();
+        insertDefaultPresets();       
     }
 
     /**
@@ -253,6 +254,55 @@ public class DatabaseHandler {
         }
     }
 
+    public void updatePropertiesDetail(String value)
+    {
+        try
+        {
+            ResultSet rs = conn.createStatement().executeQuery("select pk,value from properties where property='multiframeassepseries'");
+            rs.next();
+            String status = rs.getString("value");
+            int n = conn.createStatement().executeUpdate("update properties set value='" + value + "' where property='multiframeassepseries'");
+            conn.commit();
+        }
+        catch(SQLException ex)
+        {
+           Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    public void insertDefaultPropertiesDetail()
+    {
+        try
+        {          
+           conn.createStatement().execute("insert into properties(property,value) values('multiframeassepseries','true')");
+           conn.commit();
+        }
+        catch(SQLException ex)
+        {
+           Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    public boolean getMultiframeStatus()
+    {
+        boolean status=true;
+        try
+        {
+            ResultSet rs = conn.createStatement().executeQuery("select pk,value from properties where property='multiframeassepseries'");
+            rs.next();
+            String value = rs.getString("value");
+            if(value.equalsIgnoreCase("true"))
+                status=true;
+            else
+                status=false;
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        return status;
+    }
+
     public String[] getListenerDetails() {
         ResultSet rs = null;
         String detail[] = new String[3];
@@ -298,7 +348,7 @@ public class DatabaseHandler {
             statement.executeUpdate(sql);
 
             //creating is instance table if it is not exist already
-            sql = "create table " + instanceTable + " (SopUID varchar(255) NOT NULL CONSTRAINT SopUID_pk PRIMARY KEY ," + "InstanceNo integer," + "SendStatus varchar(50)," + "ForwardDateTime varchar(30)," + "ReceivedDateTime varchar(30)," + "ReceiveStatus varchar(50)," + "FileStoreUrl varchar(750)," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255), foreign key (StudyInstanceUID) references Study(StudyInstanceUID)," + "SeriesInstanceUID varchar(255), foreign key (SeriesInstanceUID) references Series(SeriesInstanceUID))";
+            sql = "create table " + instanceTable + " (SopUID varchar(255) NOT NULL CONSTRAINT SopUID_pk PRIMARY KEY ," + "InstanceNo integer,"+ "multiframe varchar(50)," + "totalframe varchar(50)," + "SendStatus varchar(50)," + "ForwardDateTime varchar(30)," + "ReceivedDateTime varchar(30)," + "ReceiveStatus varchar(50)," + "FileStoreUrl varchar(750)," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255), foreign key (StudyInstanceUID) references Study(StudyInstanceUID)," + "SeriesInstanceUID varchar(255), foreign key (SeriesInstanceUID) references Series(SeriesInstanceUID))";
             statement.executeUpdate(sql);
 
             sql = "create table ae(pk integer primary key GENERATED ALWAYS AS IDENTITY,logicalname varchar(255),hostname varchar(255),aetitle varchar(255),port integer)";
@@ -317,6 +367,9 @@ public class DatabaseHandler {
             statement.executeUpdate(sql);
 
             sql = "create table theme(pk integer primary key GENERATED ALWAYS AS IDENTITY,name varchar(255),status varchar(255))";
+            statement.executeUpdate(sql);
+
+            sql="create table properties (pk integer primary key GENERATED ALWAYS AS IDENTITY,property varchar(255),value varchar(255))";
             statement.executeUpdate(sql);
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -856,7 +909,13 @@ public class DatabaseHandler {
             try {
                 Calendar today = Calendar.getInstance();
                 String struturedDestination = "archive" + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + dataset.getString(Tag.StudyInstanceUID) + File.separator + dataset.getString(Tag.SOPInstanceUID);
-                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber) + ",'" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "','" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
+                String multiframe="false";
+                int totalFrame=0;
+                if(dataset.getString(Tags.NumberOfFrames)!=null && Integer.parseInt(dataset.getString(Tags.NumberOfFrames))>1){
+                multiframe="true";                 
+                totalFrame=Integer.parseInt(dataset.getString(Tags.NumberOfFrames));
+                }
+                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber)+ ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "','" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
                 conn.commit();
                 int receivedCount = this.getReceiveCount(dataset.getString(Tag.StudyInstanceUID));
                 receivedCount = receivedCount + 1;
@@ -873,7 +932,13 @@ public class DatabaseHandler {
             try {
                 Calendar today = Calendar.getInstance();
                 String struturedDestination = dicomFile.getAbsolutePath();
-                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber) + ",'" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "','" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
+                String multiframe="false";
+                int totalFrame=0;
+                if(dataset.getString(Tags.NumberOfFrames)!=null && Integer.parseInt(dataset.getString(Tags.NumberOfFrames))>1){
+                multiframe="true";
+                totalFrame=Integer.parseInt(dataset.getString(Tags.NumberOfFrames));                
+                }
+                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber) + ",'" + multiframe + "','"+ totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "','" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
                 conn.commit();
                 int receivedCount = this.getReceiveCount(dataset.getString(Tag.StudyInstanceUID));
                 receivedCount = receivedCount + 1;
@@ -977,6 +1042,14 @@ public class DatabaseHandler {
     }
 
     public ArrayList getUrlBasedOnStudyIUID(String siuid) {
+        ArrayList fileArray = new ArrayList();
+        if(ApplicationContext.databaseRef.getMultiframeStatus())
+            fileArray=getUrlBasedOnStudyIUID_SepMulti(siuid);
+        else
+            fileArray=getUrlBasedOnStudyIUID_Normal(siuid);
+        return fileArray;
+    }
+     public ArrayList getUrlBasedOnStudyIUID_Normal(String siuid) {
 
         ArrayList fileArray = new ArrayList();
         try {
@@ -986,20 +1059,43 @@ public class DatabaseHandler {
             rs = conn.createStatement().executeQuery(sql);
             while (rs.next()) {
                 ResultSet rs1 = null;
-                String sql1 = "select FileStoreUrl from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "' AND " + "InstanceNo=1";
+                String sql1 = "select FileStoreUrl from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" + " order by InstanceNo asc";
                 rs1 = conn.createStatement().executeQuery(sql1);
                 File imageUrl = null;
                 if (rs1.next()) {
                     imageUrl = new File(rs1.getString("FileStoreUrl"));
-                } else {
-                    ResultSet rs2 = null;
-                    String sql2 = "select FileStoreUrl from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'";
-                    rs2 = conn.createStatement().executeQuery(sql2);
-                    if (rs2.next()) {
-                        imageUrl = new File(rs2.getString("FileStoreUrl"));
-                    }
                 }
                 fileArray.add(imageUrl);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return fileArray;
+    }
+      public ArrayList getUrlBasedOnStudyIUID_SepMulti(String siuid) {
+
+        ArrayList fileArray = new ArrayList();
+        try {
+            int i = 0;
+            String sql = "select SeriesInstanceUID from series where StudyInstanceUID='" + siuid + "'";
+            ResultSet rs = null;
+            rs = conn.createStatement().executeQuery(sql);
+            while (rs.next()) {
+                ResultSet rs1=null;
+                ResultSet rs2=null;
+                String sql1="select FileStoreUrl from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" +"AND "+"multiframe='false'"+ " order by InstanceNo asc";
+                String sql2="select FileStoreUrl from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" +"AND "+"multiframe='true'";
+                rs1 = conn.createStatement().executeQuery(sql1);
+                if (rs1.next()) {
+                  File   imageUrl = new File(rs1.getString("FileStoreUrl"));
+                  fileArray.add(imageUrl);
+                }
+                rs2 = conn.createStatement().executeQuery(sql2);
+                while(rs2.next())
+                {
+                  File   imageUrl = new File(rs2.getString("FileStoreUrl"));
+                  fileArray.add(imageUrl);
+                }                
             }
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -1024,7 +1120,58 @@ public class DatabaseHandler {
         return fileArray;
     }
 
-    public ArrayList<Series> getSeriesList(String siuid) {
+     public ArrayList<Series> getSeriesList(String siuid) {
+        ArrayList<Series> arr = new ArrayList();
+        if(ApplicationContext.databaseRef.getMultiframeStatus())
+            arr=getSeriesList_SepMulti(siuid);
+        else
+            arr=getSeriesList_Normal(siuid);
+        return arr;
+    }
+    public ArrayList<Series> getSeriesList_Normal(String siuid) {        
+        ArrayList<Series> arr = new ArrayList();
+        try {
+            String sql = "select SeriesInstanceUID,SeriesNo,SeriesDescription,BodyPartExamined from series where StudyInstanceUID='" + siuid + "'";
+            ResultSet rs = null;
+            rs = conn.createStatement().executeQuery(sql);
+            while (rs.next()) {
+                int seriesLevelIndex=0;                
+                Series series = new Series();
+                series.setStudyInstanceUID(siuid);
+                series.setSeriesInstanceUID(rs.getString("SeriesInstanceUID"));
+                series.setSeriesNumber(rs.getString("SeriesNo"));
+                series.setSeriesDesc(rs.getString("SeriesDescription"));
+                series.setBodyPartExamined(rs.getString("BodyPartExamined"));
+                ResultSet rs1 = null;
+                String sql1 = "select FileStoreUrl,SopUID,InstanceNo,multiframe,totalframe from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'"+ " order by InstanceNo asc";
+                rs1 = conn.createStatement().executeQuery(sql1);
+                while (rs1.next()) {
+                    int totalFrames=Integer.parseInt(rs1.getString("totalFrame"));
+                    int tempi=0;
+                    seriesLevelIndex++;                  
+                   do
+                    {
+                            Instance img = new Instance();
+                    img.setFilepath(rs1.getString("FileStoreUrl"));
+                    img.setSop_iuid(rs1.getString("SopUID"));
+                    img.setInstance_no(rs1.getString("InstanceNo"));
+                    img.setMultiframe(new Boolean(rs1.getString("multiframe")));
+                    img.setCurrentFrameNum(tempi);
+                    img.setTotalNumFrames(totalFrames);
+                    img.setSeriesLevelIndex(seriesLevelIndex);
+                    series.getImageList().add(img);
+                    tempi++;
+                    }
+                    while(tempi<totalFrames);
+                }
+                arr.add(series);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return arr;
+    }
+    public ArrayList<Series> getSeriesList_SepMulti(String siuid) {       
         ArrayList<Series> arr = new ArrayList();
         try {
             String sql = "select SeriesInstanceUID,SeriesNo,SeriesDescription,BodyPartExamined from series where StudyInstanceUID='" + siuid + "'";
@@ -1038,20 +1185,61 @@ public class DatabaseHandler {
                 series.setSeriesDesc(rs.getString("SeriesDescription"));
                 series.setBodyPartExamined(rs.getString("BodyPartExamined"));
                 ResultSet rs1 = null;
-                String sql1 = "select FileStoreUrl,SopUID,InstanceNo from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'";
+                String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'"+ " order by InstanceNo asc";
                 rs1 = conn.createStatement().executeQuery(sql1);
                 while (rs1.next()) {
                     Instance img = new Instance();
                     img.setFilepath(rs1.getString("FileStoreUrl"));
                     img.setSop_iuid(rs1.getString("SopUID"));
                     img.setInstance_no(rs1.getString("InstanceNo"));
+                    if(rs1.getString("multiframe").equalsIgnoreCase("true"))
+                    {                                       
+                    img.setMultiframe(true);                   
+                    series.setMultiframe(true);
+                    }
+                    else
+                    {
+                    img.setMultiframe(false);
+                    series.setMultiframe(false);
                     series.getImageList().add(img);
+                    }
                 }
                 arr.add(series);
+                arr.addAll(getMultiframeSeriesList(siuid,series.getSeriesInstanceUID()));
             }
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return arr;
+    }
+     public ArrayList<Series> getMultiframeSeriesList(String studyUID, String seriesUID) {
+        ArrayList<Series> arr = new ArrayList();
+        try {
+            ResultSet rs1 = null;
+            String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe from image where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + seriesUID + "'" + " AND multiframe='true'";
+            rs1 = conn.createStatement().executeQuery(sql1);
+            while (rs1.next()) {
+                Series series = new Series();
+                series.setStudyInstanceUID(studyUID);
+                series.setSeriesInstanceUID(seriesUID);
+                series.setSeriesDesc("Multiframe: "+rs1.getString("InstanceNo"));
+                series.setMultiframe(true);
+                series.setInstanceUID(rs1.getString("SopUID"));
+                int totalFrames=Integer.parseInt(rs1.getString("totalFrame"));
+                Instance img = new Instance();
+                img.setFilepath(rs1.getString("FileStoreUrl"));
+                img.setTotalNumFrames(totalFrames);
+                img.setSop_iuid(rs1.getString("SopUID"));
+                img.setInstance_no(rs1.getString("InstanceNo"));
+                img.setMultiframe(true);
+                series.getImageList().add(img);
+
+                arr.add(series);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         return arr;
     }
 
@@ -1062,6 +1250,7 @@ public class DatabaseHandler {
             ResultSet rs = null;
             rs = conn.createStatement().executeQuery(sql);
             while (rs.next()) {
+                int seriesLevelIndex=0;               
                 series = new Series();
                 series.setStudyInstanceUID(studyUID);
                 series.setSeriesInstanceUID(rs.getString("SeriesInstanceUID"));
@@ -1069,16 +1258,81 @@ public class DatabaseHandler {
                 series.setSeriesDesc(rs.getString("SeriesDescription"));
                 series.setBodyPartExamined(rs.getString("BodyPartExamined"));
                 ResultSet rs1 = null;
-                String sql1 = "select FileStoreUrl,SopUID,InstanceNo from image where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" + " order by InstanceNo asc";
+                String sql1 = "select FileStoreUrl,SopUID,InstanceNo,multiframe,totalframe from image where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" + " order by InstanceNo asc";
                 rs1 = conn.createStatement().executeQuery(sql1);
                 while (rs1.next()) {
+                    int totalFrames=Integer.parseInt(rs1.getString("totalFrame"));
+                    int tempi=0;                   
+                    seriesLevelIndex++;                    
+                   do
+                    {
                     Instance img = new Instance();
                     img.setFilepath(rs1.getString("FileStoreUrl"));
                     img.setSop_iuid(rs1.getString("SopUID"));
                     img.setInstance_no(rs1.getString("InstanceNo"));
+                    img.setMultiframe(new Boolean(rs1.getString("multiframe")));
+                    img.setCurrentFrameNum(tempi);
+                    img.setTotalNumFrames(totalFrames);                     
+                    img.setSeriesLevelIndex(seriesLevelIndex);
+                    series.getImageList().add(img);
+                    tempi++;
+                    }
+                    while(tempi<totalFrames);
+
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return series;
+    }
+       public Series getSeries(String studyUID,String seriesUID,boolean multiframe,String instanceUID)
+    {
+        Series series = null;
+        try {
+            String sql = "select SeriesInstanceUID,SeriesNo,SeriesDescription,BodyPartExamined from series where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + seriesUID + "'";
+            ResultSet rs = null;
+            rs = conn.createStatement().executeQuery(sql);
+            while (rs.next()) {
+                series = new Series();
+                series.setStudyInstanceUID(studyUID);
+                series.setSeriesInstanceUID(rs.getString("SeriesInstanceUID"));
+                series.setSeriesDesc(rs.getString("SeriesDescription"));
+                series.setMultiframe(multiframe);
+                ResultSet rs1 = null;
+                String sopUID="";
+                if(!multiframe)
+                    sopUID="SopUID,";
+
+                String sql1 = "select FileStoreUrl,totalframe,"+sopUID+"InstanceNo from image where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'";
+                if(multiframe)
+                {
+                sql1+=" AND SopUID='"+instanceUID+"'"+" AND multiframe='"+multiframe+"'"+ " order by InstanceNo asc" ;
+                series.setInstanceUID(instanceUID);
+                }
+                else
+                {
+                    sql1+=" AND multiframe='"+multiframe+"'"+ " order by InstanceNo asc" ;
+                }
+
+               // sql1+=" order by InstanceNo asc";
+
+                rs1 = conn.createStatement().executeQuery(sql1);
+                while (rs1.next()) {
+                    int totalFrames=Integer.parseInt(rs1.getString("totalFrame"));                   
+                    Instance img = new Instance();
+                    img.setFilepath(rs1.getString("FileStoreUrl"));
+                    if(!multiframe)
+                    img.setSop_iuid(rs1.getString("SopUID"));
+                    else
+                        img.setSop_iuid(instanceUID);
+                    img.setMultiframe(multiframe);
+                    img.setTotalNumFrames(totalFrames);
+                    img.setInstance_no(rs1.getString("InstanceNo"));
                     series.getImageList().add(img);
 
                 }
+
             }
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -1132,7 +1386,12 @@ public class DatabaseHandler {
     public int getSeriesLevelInstance(String studyuid, String seriesuid) {
         int size = 0;
         try {
-            String sql1 = "select count(*) from image where StudyInstanceUID='" + studyuid + "' AND " + "SeriesInstanceUID='" + seriesuid + "'";
+            String sql1 = "";
+            if(ApplicationContext.databaseRef.getMultiframeStatus())
+                sql1 = "select count(*) from image where StudyInstanceUID='" + studyuid + "' AND " + "SeriesInstanceUID='" + seriesuid + "'"+" AND multiframe='false'";
+            else
+            sql1="select count(*) from image where StudyInstanceUID='" + studyuid + "' AND " + "SeriesInstanceUID='" + seriesuid + "'";
+
             ResultSet rs = conn.createStatement().executeQuery(sql1);
             rs.next();
             size = rs.getInt(1);

@@ -274,8 +274,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
 
         }
         Iterator<AnnotationObj> ite1 = rectObj.iterator();
-        while (ite1.hasNext()) {
-            System.out.println("while loop rect");
+        while (ite1.hasNext()) {           
             AnnotationObj t = ite1.next();
             Shape test2 = new Rectangle2D.Float(t.getX1(), t.getY1(), t.getX2() - t.getX1(), t.getY2() - t.getY1());
 
@@ -868,7 +867,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         if (showAnnotation) {
             Graphics2D g = (Graphics2D) gs;
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            if (this.layeredCanvas.imgpanel.isScaleFlag()) {                
+            if (this.layeredCanvas.imgpanel.isScaleFlag()) {
                 g.scale(this.layeredCanvas.imgpanel.getScaleFactor(), this.layeredCanvas.imgpanel.getScaleFactor());
             }
             gs.setColor(Color.YELLOW);
@@ -1137,7 +1136,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         double diff1 = diff / 100;
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(3);
-        return  nf.format(diff1);
+        return nf.format(diff1);
 
     }
 
@@ -1263,6 +1262,12 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                 startAnnotation = false;
             }
         }
+    }
+
+    public void resetAnnotaionTools() {
+        this.addEllipse = false;
+        this.addLine = false;
+        this.addRect = false;
     }
 
     public void mouseReleased(MouseEvent e) {

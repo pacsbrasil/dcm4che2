@@ -38,6 +38,8 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.delegate;
 
+import in.raster.mayam.context.ApplicationContext;
+import in.raster.mayam.form.LayoutManagerPanel;
 import in.raster.mayam.form.MainScreen;
 import in.raster.mayam.model.Series;
 import in.raster.mayam.model.Study;
@@ -55,6 +57,7 @@ public class RemoveStudy {
 
     public synchronized static void removeStudyFromStudylist(Study study) {
         if (MainScreen.selectedStudy.equalsIgnoreCase(study.getStudyInstanceUID())) {
+            if(!LayoutManagerPanel.updateSeries){
             for (Study tempStudy : MainScreen.studyList) {
                 synchronized (MainScreen.studyList) {
                     if (tempStudy.getStudyInstanceUID().equalsIgnoreCase(study.getStudyInstanceUID())) {
@@ -72,6 +75,13 @@ public class RemoveStudy {
                         }
                     }
                 }
+            }
+            }
+            else
+            {
+                MainScreen.studyList.remove(study);               
+                ApplicationContext.mainScreen.showThumbnails();              
+                LayoutManagerPanel.updateSeries=false;
             }
         } else {
             MainScreen.studyList.remove(study);

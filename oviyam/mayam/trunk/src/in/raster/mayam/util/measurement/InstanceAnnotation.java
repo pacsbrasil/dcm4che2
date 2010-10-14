@@ -39,6 +39,7 @@
 package in.raster.mayam.util.measurement;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  *
@@ -50,9 +51,18 @@ public class InstanceAnnotation implements Serializable {
 
     private String instanceUID = "";
     private Annotation annotation;
+    private boolean multiframe = false;
+    private HashMap<Integer, Annotation> annotations;
 
     public InstanceAnnotation(Annotation annotation) {
         this.annotation = annotation;
+    }
+
+    public InstanceAnnotation(HashMap<Integer, Annotation> annotations) {
+        this.annotations = annotations;
+    }
+
+    public InstanceAnnotation() {
     }
 
     public Annotation getAnnotation() {
@@ -69,5 +79,24 @@ public class InstanceAnnotation implements Serializable {
 
     public void setInstanceUID(String instanceUID) {
         this.instanceUID = instanceUID;
+    }
+
+    public HashMap<Integer, Annotation> getAnnotations() {
+        if (annotations == null) {
+            annotations = new HashMap<Integer, Annotation>();
+        }
+        return annotations;
+    }
+
+    public void setAnnotations(HashMap<Integer, Annotation> annotations) {
+        this.annotations = annotations;
+    }
+
+    public boolean isMultiframe() {
+        return multiframe;
+    }
+
+    public void setMultiframe(boolean multiframe) {
+        this.multiframe = multiframe;
     }
 }

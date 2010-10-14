@@ -39,25 +39,11 @@
 package in.raster.mayam.form.tab.component;
 
 import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.delegate.RemoveStudy;
-import in.raster.mayam.form.LayeredCanvas;
-import in.raster.mayam.form.MainScreen;
-import in.raster.mayam.model.Instance;
-import in.raster.mayam.model.Series;
-import in.raster.mayam.model.Study;
-import in.raster.mayam.util.measurement.InstanceAnnotation;
-import in.raster.mayam.util.measurement.SeriesAnnotation;
-import in.raster.mayam.util.measurement.StudyAnnotation;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import in.raster.mayam.delegate.AnnotationDelegate;
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
 
 /**
  *
@@ -123,8 +109,11 @@ public class ButtonTabComp extends JPanel {
                 if (i >= 1) {
                     x++;
                 }
-                storeAnnotationHook(x);
-                saveAnnotation(x);
+                //storeAnnotationHook(x);
+                // saveAnnotation(x);
+                AnnotationDelegate annotationDelegate = new AnnotationDelegate();
+                annotationDelegate.storeAnnotationHook(x);
+                annotationDelegate.saveAnnotation(x);
                 pane.remove(i);
                 if (i == 0 && pane.getComponentCount() == 1) {
                     ApplicationContext.imgView.annotationAlreadyStored = true;
@@ -132,7 +121,7 @@ public class ButtonTabComp extends JPanel {
                 }
             }
         }
-
+/*
         private void saveAnnotation(int i) {           
                 Study studyTobeDelete = null;
                 LayeredCanvas tempCanvas = null;
@@ -198,7 +187,7 @@ public class ButtonTabComp extends JPanel {
                     e.printStackTrace();
                 }
             }
-        }
+        }*/
         //we don't want to update UI for this button
         public void updateUI() {
         }

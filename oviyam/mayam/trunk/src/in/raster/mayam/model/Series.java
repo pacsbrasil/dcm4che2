@@ -59,6 +59,8 @@ public class Series implements Serializable {
     private String seriesDesc;
     private String bodyPartExamined;
     private int seriesRelatedInstance;
+    private boolean multiframe;
+    private String instanceUID;
 
     public Series() {
         SeriesInstanceUID = "";
@@ -66,6 +68,8 @@ public class Series implements Serializable {
         Modality = "";
         SeriesNumber = "";
         seriesDesc="";
+        multiframe=false;
+        instanceUID="";
         imageList = new ArrayList<Instance>();
     }
 
@@ -171,5 +175,19 @@ public class Series implements Serializable {
     public void setBodyPartExamined(String bodyPartExamined) {
         this.bodyPartExamined = bodyPartExamined;
     }
+    public String getInstanceUID() {
+        return instanceUID;
+    }
 
+    public void setInstanceUID(String instanceUID) {
+        this.instanceUID = instanceUID;
+    }
+
+    public boolean isMultiframe() {
+        return multiframe;
+    }
+
+    public void setMultiframe(boolean multiframe) {
+        this.multiframe = multiframe;
+    }
 }

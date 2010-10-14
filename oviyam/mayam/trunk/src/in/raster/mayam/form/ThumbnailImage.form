@@ -37,7 +37,7 @@
               <Component id="seriesDescriptionLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="totalImagesLabel" min="-2" pref="11" max="-2" attributes="0"/>
-              <EmptySpace pref="94" max="32767" attributes="0"/>
+              <EmptySpace pref="88" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

@@ -49,16 +49,17 @@ import java.util.HashMap;
  */
 public class SeriesAnnotation implements Serializable {
 
-    private String seriesUID = "";   
+    private String seriesUID = "";
     private HashMap instanceArray;
+    private boolean multiframe = false;
+    private String instanceUID = "";
 
-    public SeriesAnnotation() {      
+    public SeriesAnnotation() {
     }
 
     public HashMap getInstanceArray() {
-    if(instanceArray==null)
-        {
-            instanceArray=new HashMap();
+        if (instanceArray == null) {
+            instanceArray = new HashMap();
         }
         return instanceArray;
     }
@@ -74,5 +75,21 @@ public class SeriesAnnotation implements Serializable {
 
     public void setSeriesUID(String seriesUID) {
         this.seriesUID = seriesUID;
+    }
+
+    public String getInstanceUID() {
+        return instanceUID;
+    }
+
+    public void setInstanceUID(String instanceUID) {
+        this.instanceUID = instanceUID;
+    }
+
+    public boolean isMultiframe() {
+        return multiframe;
+    }
+
+    public void setMultiframe(boolean multiframe) {
+        this.multiframe = multiframe;
     }
 }

@@ -94,6 +94,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
     private boolean instanceListAdded = false;
     private int nFrames = 0;
     private boolean mulitiFrame = false;
+    private String instanceUID="";
 
     public SeriesPanel() {
         initComponents();
@@ -140,10 +141,14 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
 
         studyUID = dataset.getString(Tags.StudyInstanceUID);
         seriesUID = dataset.getString(Tags.SeriesInstanceUID);
+        if(ApplicationContext.databaseRef.getMultiframeStatus())
+            setTotalInstacne();
+        else
         totalInstace = ApplicationContext.databaseRef.getSeriesLevelInstance(studyUID, seriesUID);
         seriesDesc = dataset.getString(Tags.SeriesDescription);
         modality = dataset.getString(Tags.Modality);
         institutionName = dataset.getString(Tags.InstitutionName);
+        instanceUID=dataset.getString(Tags.SOPInstanceUID);
 
     }
 
@@ -153,6 +158,9 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
     public void updateInstanceList() {
         SeriesListUpdator series = new SeriesListUpdator(studyUID, seriesUID, false);
         series.setDicomReader();
+        if(ApplicationContext.databaseRef.getMultiframeStatus())
+            series.addSeriesToStudyList(studyUID, seriesUID,isMulitiFrame(),instanceUID, false);
+        else
         series.addSeriesToStudyList(studyUID, seriesUID, false);
     }
 

@@ -71,19 +71,19 @@ public class DestinationFinder {
         return fileDest;
     }
 
-    public String getFileDestination(String filePath)
-    {
-         String fileDest = filePath;
+    public String getFileDestination(String filePath) {
+        String fileDest = filePath;
         try {
-                String archiveDir = "archive";
-                if (filePath.startsWith(archiveDir)) {
-                    fileDest = System.getProperty("user.dir")+File.separator+filePath;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            String archiveDir = "archive";
+            if (filePath.startsWith(archiveDir)) {
+                fileDest = System.getProperty("user.dir") + File.separator + filePath;
             }
-         return fileDest;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return fileDest;
     }
+
     /**
      *
      * @param file -

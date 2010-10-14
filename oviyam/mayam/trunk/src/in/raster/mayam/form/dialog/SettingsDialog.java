@@ -254,6 +254,7 @@ public class SettingsDialog extends javax.swing.JDialog {
         ApplicationContext.databaseRef.insertLayoutDetail(Integer.parseInt(s[1]), Integer.parseInt(s[2]), s[0]);
         m.stopReceiver();
         m.startReceiver();
+        layoutManagerPanel1.updateSeriesDisplayModification();
         doClose(RET_OK);
     }//GEN-LAST:event_okButtonActionPerformed
 

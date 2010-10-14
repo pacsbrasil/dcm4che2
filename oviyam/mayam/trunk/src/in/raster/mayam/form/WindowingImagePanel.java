@@ -208,7 +208,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         studyTime = dataset.getString(Tags.StudyTime);
         studyUID = dataset.getString(Tags.StudyInstanceUID);
         seriesUID = dataset.getString(Tags.SeriesInstanceUID);
-        MainScreen.selectedSeries=seriesUID;
+        MainScreen.selectedSeries = seriesUID;
         bodyPartExamined = dataset.getString(Tags.BodyPartExamined);
         slicePosition = dataset.getString(Tags.SliceLocation);
         patientPosition = dataset.getString(Tags.PatientPosition);
@@ -216,13 +216,14 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         instanceUID = dataset.getString(Tags.SOPInstanceUID);
         aspectRatio = dataset.getStrings(Tags.PixelAspectRatio);
         try {
+
             currentInstanceNo = Integer.parseInt(dataset.getString(Tags.InstanceNumber));
         } catch (NumberFormatException e) {
             System.out.println("Instance Number format error currentInstanceNo: " + currentInstanceNo);
-            currentInstanceNo = 1; // if Number error correct and put a correct number (1)
+            currentInstanceNo = 0; // if Number error correct and put a correct number (1)
         } catch (NullPointerException e) {
             System.out.println("Instance number Null pointer error");
-            currentInstanceNo = 1; // if Number error correct and put a correct number (1)
+            currentInstanceNo = 0; // if Number error correct and put a correct number (1)
         }
     }
 
@@ -370,11 +371,19 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         return seriesUID;
     }
 
+    public int getnFrames() {
+        return nFrames;
+    }
+
+    public void setnFrames(int nFrames) {
+        this.nFrames = nFrames;
+    }
+
     /**
      * This routine used to select the first instance of series
      */
     public void selectFirstInstance() {
-        for(Study study:MainScreen.studyList){
+        for (Study study : MainScreen.studyList) {
             if (study.getStudyInstanceUID().equalsIgnoreCase(ApplicationContext.imgPanel.getStudyUID())) {
                 ArrayList<Series> seriesList = (ArrayList<Series>) study.getSeriesList();
                 for (int i = 0; i < seriesList.size(); i++) {
@@ -696,46 +705,6 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
     }
     private void formMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
     }//GEN-LAST:event_formMouseClicked
-    /*
-
-    In future multiframe instance will listed as new series so the following lines of code will be useful.
-
-    private void setTotalInstance() {
-    currentInstanceNo--;
-    if(!isMulitiFrame())
-    totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
-    else
-    {
-    totalInstance=nFrames;
-    currentInstanceNo=0;
-    }
-    }
-
-    public void mouseWheelMoved(MouseWheelEvent e) {
-    int notches = e.getWheelRotation();
-    if (notches < 0) {
-    if (isMulitiFrame()) {
-    showPreviousFrame();
-    } else {
-    if (instanceArray == null) {
-    previousInstance();
-    } else {
-    selectPreviousInstance();
-    }
-    }
-    } else {
-    if (isMulitiFrame()) {
-    showNextFrame();
-    } else {
-    if (instanceArray == null) {
-    nextInstance();
-    } else {
-    selectNextInstance();
-    }
-    }
-    }
-    }*/
-
     public double getScaleFactor() {
         return scaleFactor;
     }
@@ -745,26 +714,42 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
     }
 
     private void setTotalInstance() {
-        currentInstanceNo--;
-        totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
+        if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+            if (!isMulitiFrame()) {
+                totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
+                currentInstanceNo = 0;
+            } else {
+                totalInstance = nFrames;
+                currentInstanceNo = 0;
+            }
+        } else {
+            totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
+            currentInstanceNo = 0;
+        }
     }
 
     public void mouseWheelMoved(MouseWheelEvent e) {
         int notches = e.getWheelRotation();
         if (notches < 0) {
-
-            if (instanceArray == null) {
-                previousInstance();
+            if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
+                showPreviousFrame();
             } else {
-                selectPreviousInstance();
+                if (instanceArray == null) {
+                    previousInstance();
+                } else {
+                    selectPreviousInstance();
+                }
             }
-
         } else {
 
-            if (instanceArray == null) {
-                nextInstance();
+            if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
+                showNextFrame();
             } else {
-                selectNextInstance();
+                if (instanceArray == null) {
+                    nextInstance();
+                } else {
+                    selectNextInstance();
+                }
             }
         }
     }
@@ -784,7 +769,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             currentbufferedimage = reader.read(currentFrame);
             convertToRGBImage();
             repaint();
-            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
             this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(this.totalInstance));
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -794,7 +779,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
 
     public void showPreviousFrame() {
         if (currentFrame == 0) {
-            currentFrame = nFrames - 1;
+            currentFrame = nFrames;
         }
         currentFrame--;
         currentInstanceNo = currentFrame;
@@ -803,7 +788,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             currentbufferedimage = reader.read(currentFrame);
             convertToRGBImage();
             repaint();
-            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
             this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(this.totalInstance));
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -818,9 +803,19 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         currentInstanceNo--;
         Instance instance = instanceArray.get(currentInstanceNo);
         dicomFileUrl = instance.getFilepath();
-        // setImage(instance.getPixelData());
+        if (instance.isMultiframe()) {
+            this.getCanvas().getLayeredCanvas().textOverlay.multiframeStatusDisplay(true);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setFramePosition((instance.getCurrentFrameNum() + 1) + "/" + instance.getTotalNumFrames());
+        } else {
+            this.getCanvas().getLayeredCanvas().textOverlay.multiframeStatusDisplay(false);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setFramePosition("");
+        }
         setImage(instance);
-        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
+        if (!ApplicationContext.databaseRef.getMultiframeStatus()) {
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(instance.getSeriesLevelIndex());
+        } else {
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
+        }
     }
 
     private void selectNextInstance() {
@@ -830,19 +825,48 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         }
         Instance instance = instanceArray.get(currentInstanceNo);
         dicomFileUrl = instance.getFilepath();
-        //setImage(instance.getPixelData());
+        if (instance.isMultiframe()) {
+            this.getCanvas().getLayeredCanvas().textOverlay.multiframeStatusDisplay(true);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setFramePosition((instance.getCurrentFrameNum() + 1) + "/" + instance.getTotalNumFrames());
+        } else {
+            this.getCanvas().getLayeredCanvas().textOverlay.multiframeStatusDisplay(false);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setFramePosition("");
+        }
         setImage(instance);
-        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(Integer.toString(this.currentInstanceNo));
+        if (!ApplicationContext.databaseRef.getMultiframeStatus()) {
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(instance.getSeriesLevelIndex());
+        } else {
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
+        }
+    }
+
+    public void showMultiframeInfo() {
+        Instance instance = instanceArray.get(currentInstanceNo);
+        if (instance.isMultiframe()) {
+            this.getCanvas().getLayeredCanvas().textOverlay.multiframeStatusDisplay(true);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setFramePosition((instance.getCurrentFrameNum() + 1) + "/" + instance.getTotalNumFrames());
+        } else {
+            this.getCanvas().getLayeredCanvas().textOverlay.multiframeStatusDisplay(false);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setFramePosition("");
+        }
     }
 
     private void previousInstance() {
         for (Study study : MainScreen.studyList) {
             if (study.getStudyInstanceUID().equalsIgnoreCase(this.studyUID)) {
                 for (Series series : study.getSeriesList()) {
-                    if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
-                        totalInstance = series.getImageList().size();
-                        instanceArray = (ArrayList<Instance>) series.getImageList();
-                        selectPreviousInstance();
+                    if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+                        if (!series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
+                            totalInstance = series.getImageList().size();
+                            instanceArray = (ArrayList<Instance>) series.getImageList();
+                            selectPreviousInstance();
+                        }
+                    } else {
+                        if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
+                            totalInstance = series.getImageList().size();
+                            instanceArray = (ArrayList<Instance>) series.getImageList();
+                            selectPreviousInstance();
+                        }
                     }
                 }
             }
@@ -853,10 +877,18 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         for (Study study : MainScreen.studyList) {
             if (study.getStudyInstanceUID().equalsIgnoreCase(studyUID)) {
                 for (Series series : study.getSeriesList()) {
-                    if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
-                        totalInstance = series.getImageList().size();
-                        instanceArray = (ArrayList<Instance>) series.getImageList();
-                        selectNextInstance();
+                    if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+                        if (!series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
+                            totalInstance = series.getImageList().size();
+                            instanceArray = (ArrayList<Instance>) series.getImageList();
+                            selectNextInstance();
+                        }
+                    } else {
+                        if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {                          
+                            totalInstance = series.getImageList().size();
+                            instanceArray = (ArrayList<Instance>) series.getImageList();
+                            selectNextInstance();
+                        }
                     }
                 }
             }

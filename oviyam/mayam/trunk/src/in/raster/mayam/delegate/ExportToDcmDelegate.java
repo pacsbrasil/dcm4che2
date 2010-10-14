@@ -53,7 +53,6 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 /**
  *
  * @author  BabuHussain
@@ -70,7 +69,7 @@ public class ExportToDcmDelegate {
         File patientNameFile = new File(ouputFilePath, patientName);
         if (!patientNameFile.exists()) {
             patientNameFile.mkdirs();
-        }        
+        }
         ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList(studyIUID);
         Iterator<Series> seriesItr = seriesList.iterator();
         while (seriesItr.hasNext()) {
@@ -78,7 +77,13 @@ public class ExportToDcmDelegate {
             Iterator<Instance> imgitr = series.getImageList().iterator();
             while (imgitr.hasNext()) {
                 Instance img = imgitr.next();
-                doExport(img.getFilepath(), patientNameFile.getAbsolutePath());
+                if (img.isMultiframe()) {
+                    if (img.getCurrentFrameNum() == 0) {
+                        doExport(img.getFilepath(), patientNameFile.getAbsolutePath());
+                    }
+                } else {
+                    doExport(img.getFilepath(), patientNameFile.getAbsolutePath());
+                }
             }
         }
     }
@@ -92,7 +97,40 @@ public class ExportToDcmDelegate {
                 Iterator<Instance> imgitr = series.getImageList().iterator();
                 while (imgitr.hasNext()) {
                     Instance img = imgitr.next();
-                    doExport(img.getFilepath(), outputFilePath);
+                    if (img.isMultiframe()) {
+                        if (img.getCurrentFrameNum() == 0) {
+                            doExport(img.getFilepath(), outputFilePath);
+                        }
+                    } else {
+                        doExport(img.getFilepath(), outputFilePath);
+                    }
+                }
+            }
+        }
+    }
+
+    public void seriesExportAsDicom(String studyIUID, String seriesIUID, boolean multiframe, String instanceUID, String outputFilePath) {
+        ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList(studyIUID);
+        Iterator<Series> seriesItr = seriesList.iterator();
+        while (seriesItr.hasNext()) {
+            Series series = seriesItr.next();
+            if (multiframe) { //if it is multiframe
+                if (series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesIUID) && series.getInstanceUID().equalsIgnoreCase(instanceUID)) {
+                    //Series uid is same as instance uid if it is a multiframe file.
+                    Iterator<Instance> imgitr = series.getImageList().iterator();
+                    while (imgitr.hasNext()) {
+                        //one instance is here.
+                        Instance img = imgitr.next();
+                        doExport(img.getFilepath(), outputFilePath);
+                    }
+                }
+            } else {//single frame image
+                if (!series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesIUID)) {
+                    Iterator<Instance> imgitr = series.getImageList().iterator();
+                    while (imgitr.hasNext()) {
+                        Instance img = imgitr.next();
+                        doExport(img.getFilepath(), outputFilePath);
+                    }
                 }
             }
         }
@@ -104,23 +142,20 @@ public class ExportToDcmDelegate {
 
     private void doExport(String inputFilePath, String outputFilePath) {
         InputStream in = null;
-        OutputStream out=null;
+        OutputStream out = null;
         try {
-            DestinationFinder destFinder=new DestinationFinder();
-            File inputFile=new File(destFinder.getFileDestination(new File(inputFilePath)));
+            DestinationFinder destFinder = new DestinationFinder();
+            File inputFile = new File(destFinder.getFileDestination(new File(inputFilePath)));
             in = new FileInputStream(inputFile);
-            out = new FileOutputStream(new File(outputFilePath,inputFile.getName()));
+            out = new FileOutputStream(new File(outputFilePath, inputFile.getName()));
             byte[] buf = new byte[4096];
             int len;
             while ((len = in.read(buf)) > 0) {
                 out.write(buf, 0, len);
-            }         
-        }
-        catch(FileNotFoundException ex)
-        {
+            }
+        } catch (FileNotFoundException ex) {
             Logger.getLogger(ExportToDcmDelegate.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(ExportToDcmDelegate.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {

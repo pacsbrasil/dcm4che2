@@ -38,6 +38,7 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
+import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.param.TextOverlayParam;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -74,6 +75,7 @@ public class WindowingLayeredCanvas extends JLayeredPane implements ComponentLis
         createImageCanvas(filePath);
         createTextOverlay();
         setTextOverlayParam();
+        findMultiframeStatus();
         createLayers();
         this.addComponentListener(this);
     }
@@ -140,8 +142,8 @@ public class WindowingLayeredCanvas extends JLayeredPane implements ComponentLis
             textOverlayParam.setWindowWidth(Integer.toString(imgpanel.getWindowWidth()));
         }
 
-        if (imgpanel.getCurrentInstanceNo() != -1) {
-            textOverlayParam.setCurrentInstance(Integer.toString(imgpanel.getCurrentInstanceNo()));
+        if (imgpanel.getCurrentInstanceNo() != -1) {            
+            textOverlayParam.setCurrentInstance(imgpanel.getCurrentInstanceNo());
         }
 
         if (imgpanel.getTotalInstance() != -1) {
@@ -150,7 +152,18 @@ public class WindowingLayeredCanvas extends JLayeredPane implements ComponentLis
 
         textOverlay.setTextOverlayParam(textOverlayParam);
     }
+    public void findMultiframeStatus()
+    {
+        if (imgpanel.isMulitiFrame()) {
+          textOverlay.multiframeStatusDisplay(true);
+           if(!ApplicationContext.databaseRef.getMultiframeStatus())
+          textOverlay.getTextOverlayParam().setFramePosition("1/"+imgpanel.getnFrames());
+        }
+        else
+            textOverlay.multiframeStatusDisplay(false);
+       
 
+    }
     public void centerImagePanel() {
         int xPosition = (this.getSize().width - imgpanel.getSize().width) / 2;
         int yPosition = (this.getSize().height - imgpanel.getSize().height) / 2;
@@ -190,4 +203,9 @@ public class WindowingLayeredCanvas extends JLayeredPane implements ComponentLis
 
     public void componentHidden(ComponentEvent e) {
     }
+
+    public WindowingImagePanel getImgpanel() {
+        return imgpanel;
+    }
+
 }

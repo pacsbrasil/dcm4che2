@@ -88,6 +88,9 @@ public class ThumbnailImage extends javax.swing.JPanel implements MouseListener,
     private Instance img=null;
     private boolean instanceListAdded=false;
 
+    private int nFrames = 0;
+    private boolean mulitiFrame = false;
+
     public ThumbnailImage()
     {       
     }
@@ -128,6 +131,12 @@ public class ThumbnailImage extends javax.swing.JPanel implements MouseListener,
         SeriesListUpdator series=new SeriesListUpdator();
         String studyUID=dataset.getString(Tags.StudyInstanceUID);
         String seriesUID=dataset.getString(Tags.SeriesInstanceUID);
+        String instanceUID=dataset.getString(Tags.SOPInstanceUID);
+        if(ApplicationContext.databaseRef.getMultiframeStatus())
+        {
+            series.addSeriesToStudyList(studyUID,seriesUID,mulitiFrame,instanceUID,false);
+        }
+        else
         series.addSeriesToStudyList(studyUID,seriesUID,false);
     }
 
@@ -140,6 +149,10 @@ public class ThumbnailImage extends javax.swing.JPanel implements MouseListener,
             dataset = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
             try {                
                 currentbufferedimage = reader.read(0);
+                nFrames = reader.getNumImages(true);
+                if (nFrames - 1 > 0) {
+                    mulitiFrame = true;
+                }
                 imageIcon = new ImageIcon();
                 imageIcon.setImage(currentbufferedimage);
                 loadedImage = imageIcon.getImage();

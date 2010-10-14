@@ -41,6 +41,7 @@ package in.raster.mayam.model;
 import in.raster.mayam.util.measurement.Annotation;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  *
@@ -64,12 +65,19 @@ public class Instance implements Serializable {
     private int column;
     private String frameOfReferenceUID;
     private String referenceSOPInstanceUID;
-   
+    private boolean multiframe=false;
+    private int currentFrameNum;
+    private int totalNumFrames;
+    private int seriesLevelIndex;
+
+    private HashMap<Integer,Annotation> annotations=null;
+
 
     public Instance() {
         sop_iuid = "";
         instance_no = "";
         filepath = "";
+        currentFrameNum=0;
     }
 
     /**
@@ -192,5 +200,77 @@ public class Instance implements Serializable {
 
     public void setRow(int row) {
         this.row = row;
-    }    
+    }
+    public boolean isMultiframe() {
+        return multiframe;
+    }
+
+    public void setMultiframe(boolean multiframe) {
+        this.multiframe = multiframe;
+    }
+
+    public HashMap<Integer, Annotation> getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(HashMap<Integer, Annotation> annotations) {
+        this.annotations = annotations;
+    }
+    /**
+     * This method used to add the annotation objects of the selected frame
+     * with the index value to the instance.
+     * @param index
+     * @param annotation
+     */
+    public void addMultiframeAnnotation(Integer index,Annotation annotation)
+    {
+        if(annotations==null)
+        annotations=new HashMap<Integer, Annotation>();
+
+        if(annotations.containsKey(index))
+        annotations.remove(index);
+        annotations.put(index, annotation);
+    }
+    /**
+     * This method used to get the annotation objects of the specified frame
+     * of the instance.
+     * @param index
+     * @return
+     */
+    public Annotation getMultiframeAnnotation(Integer index)
+    {
+        Annotation annotation=null;
+        if(annotations!=null)
+        {
+            if(annotations.containsKey(index))
+            annotation=annotations.get(index);
+        }
+
+        return annotation;
+    }
+
+    public int getCurrentFrameNum() {
+        return currentFrameNum;
+    }
+
+    public void setCurrentFrameNum(int currentFrameNum) {
+        this.currentFrameNum = currentFrameNum;
+    }
+
+    public int getTotalNumFrames() {
+        return totalNumFrames;
+    }
+
+    public void setTotalNumFrames(int totalNumFrames) {
+        this.totalNumFrames = totalNumFrames;
+    }
+
+    public int getSeriesLevelIndex() {
+        return seriesLevelIndex;
+    }
+
+    public void setSeriesLevelIndex(int seriesLevelIndex)
+    {
+        this.seriesLevelIndex=seriesLevelIndex;
+    }
 }
