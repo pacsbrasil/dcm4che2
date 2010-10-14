@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
 import javax.imageio.stream.ImageInputStream;
@@ -197,17 +198,39 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         this.vrMap = vrMap;
     }    
 
-    public final void setDcmDecodeParam(DcmDecodeParam param) {
+    public final void setDcmDecodeParam(DcmDecodeParam param)
+            throws IOException {
         if (log.isDebugEnabled())
             log.debug(param.toString());
         if (param.deflated != decodeParam.deflated) {
             if (!param.deflated)
                 throw new UnsupportedOperationException(
                         "Cannot remove Inflater");
-            else
-                in = new DataInputStream(new InflaterInputStream(
-                        in instanceof InputStream ? (InputStream)in
-                            : new InputStreamAdapter((ImageInputStream)in)));
+            else {
+                InputStream is;
+                boolean zlib = false;
+                if (in instanceof ImageInputStream) {
+                    ImageInputStream iis = (ImageInputStream) in;
+                    iis.mark();
+                    iis.read(b12, 0, 2);
+                    zlib = (((b12[0] & 0xff) << 16) 
+                            | (b12[0] & 0xff)) == 0x789c;
+                    iis.reset();
+                    is = new InputStreamAdapter(iis);
+                } else {
+                    is = (InputStream) in;
+                    if (is.markSupported()) {
+                        is.mark(2);
+                        is.read(b12, 0, 2);
+                        zlib = (((b12[0] & 0xff) << 16) 
+                                | (b12[0] & 0xff)) == 0x789c;
+                        is.reset();
+                    }
+                }
+                in = zlib ? new DataInputStream(new InflaterInputStream(is))
+                          : new DataInputStream(new InflaterInputStream(is,
+                                  new Inflater(true)));
+            }
         }
         bb12.order(param.byteOrder);
         decodeParam = param;

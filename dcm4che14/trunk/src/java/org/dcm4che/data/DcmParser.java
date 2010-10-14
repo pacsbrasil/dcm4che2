@@ -76,7 +76,7 @@ public interface DcmParser {
 
     void setVRMap(VRMap vrMap);
 
-    void setDcmDecodeParam(DcmDecodeParam decodeParam);
+    void setDcmDecodeParam(DcmDecodeParam decodeParam) throws IOException;
 
     DcmDecodeParam getDcmDecodeParam();
 

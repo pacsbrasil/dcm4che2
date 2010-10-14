@@ -58,6 +58,7 @@ import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
 import javax.imageio.ImageTypeSpecifier;
@@ -335,7 +336,9 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
        }
        DeflaterOutputStream deflater = null;
        writeDataset(new DcmStreamHandlerImpl(param.deflated
-           ? deflater = new DeflaterOutputStream(out) : out), param);
+           ? deflater = new DeflaterOutputStream(out, 
+                   new Deflater(Deflater.DEFAULT_COMPRESSION, true)) : out),
+                   param);
        if (deflater != null)
            deflater.finish();
    }
