@@ -61,11 +61,13 @@ public abstract class FilterOp
 
     protected final int numParams;
     protected final String codeString;
+    protected final boolean matchNoValue;
 
-    protected FilterOp(String codeString, int numParams)
+    protected FilterOp(String codeString,  boolean matchNoValue, int numParams)
     {
         this.codeString = codeString;
         this.numParams = numParams;
+        this.matchNoValue = matchNoValue;
     }
 
     public static FilterOp valueOf(String codeString)
@@ -83,6 +85,10 @@ public abstract class FilterOp
             throw new IllegalArgumentException("codeString: " + codeString);
         }
    }
+
+    public final boolean matchNoValue() {
+        return matchNoValue;
+    }
 
     public final int getNumParams()
     {
@@ -202,7 +208,7 @@ public abstract class FilterOp
 
         public MemberOf()
         {
-            super("MEMBER_OF", 0);
+            super("MEMBER_OF", false, 0);
         }
 
         @Override
@@ -287,7 +293,7 @@ public abstract class FilterOp
 
         public NotMemberOf()
         {
-            super("NOT_MEMBER_OF", 0);
+            super("NOT_MEMBER_OF", true,  0);
         }
 
         @Override
@@ -393,7 +399,7 @@ public abstract class FilterOp
 
         public RangeIncl()
         {
-            super("RANGE_INCL", 2);
+            super("RANGE_INCL", false, 2);
         }
 
         @Override
@@ -454,7 +460,7 @@ public abstract class FilterOp
 
         public RangeExcl()
         {
-            super("RANGE_EXCL", 2);
+            super("RANGE_EXCL", true, 2);
         }
 
         @Override
@@ -536,7 +542,7 @@ public abstract class FilterOp
 
         public GreaterOrEqual()
         {
-            super("GREATER_OR_EQUAL", 1);
+            super("GREATER_OR_EQUAL", false, 1);
         }
 
         @Override
@@ -597,7 +603,7 @@ public abstract class FilterOp
 
         public LessOrEqual()
         {
-            super("LESS_OR_EQUAL", 1);
+            super("LESS_OR_EQUAL", false, 1);
         }
 
         @Override
@@ -658,7 +664,7 @@ public abstract class FilterOp
 
         public GreaterThan()
         {
-            super("GREATER_THAN", 1);
+            super("GREATER_THAN", false, 1);
         }
 
         @Override
@@ -719,7 +725,7 @@ public abstract class FilterOp
 
         public LessThan()
         {
-            super("LESS_THAN", 1);
+            super("LESS_THAN", false, 1);
         }
 
         @Override

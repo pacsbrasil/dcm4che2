@@ -582,7 +582,7 @@ public class HPSelectorFactory {
                     "Missing (0072,0406) Filter-by Operator");
         try {
             FilterOp filter = FilterOp.valueOf(filterOp);
-            return createAttributeValueSelector(item, true, filter);
+            return createAttributeValueSelector(item, filter.matchNoValue(), filter);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
                     "Illegal (0072,0406) Filter-by Operator: " + filterOp);
