@@ -8,8 +8,8 @@ rem $Id: dcmsnd.bat 13029 2010-04-01 13:57:34Z gunterze $
 if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
-set MAIN_CLASS=org.dcm4che2.tool.dcmsnd.DcmSnd
-set MAIN_JAR=dcm4che-tool-dcmsnd-2.0.25-SNAPSHOT.jar
+set MAIN_CLASS=org.dcm4che2.tool.dcmups.DcmUPS
+set MAIN_JAR=dcm4che-tool-dcmups-2.0.25-SNAPSHOT.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
