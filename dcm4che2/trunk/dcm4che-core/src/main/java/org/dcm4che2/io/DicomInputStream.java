@@ -484,12 +484,12 @@ public class DicomInputStream extends FilterInputStream implements
             throw new IllegalStateException(
                     "Cannot switch back from Deflated TS");
         if (ts.deflated()) {
-            boolean zlib = true;
+            boolean zlib = false;
             if (markSupported()) {
                 mark(2);
                 readFully(header, 0, 2);
                 zlib = (((header[0] & 0xff) << 8) | (header[1] & 0xff)) 
-                        != 0x789c;
+                        == 0x789c;
                 reset();
             }
             in = zlib ? new InflaterInputStream(in)
