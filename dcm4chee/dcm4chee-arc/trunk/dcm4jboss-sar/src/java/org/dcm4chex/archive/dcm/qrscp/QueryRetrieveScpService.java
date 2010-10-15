@@ -1566,8 +1566,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
         Dataset dsQ = DcmObjectFactory.getInstance().newDataset();
         dsQ.putUI(Tags.SOPInstanceUID, iuid);
         dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
-        RetrieveCmd retrieveCmd = RetrieveCmd.create(dsQ);
-        FileInfo infoList[][] = retrieveCmd.getFileInfos(fetchSize);
+        RetrieveCmd cmd = RetrieveCmd.create(dsQ);
+        cmd.setFetchSize(fetchSize);
+        FileInfo infoList[][] = cmd.getFileInfos();
         if (infoList.length == 0)
             return null;
         FileInfo[] fileInfos = infoList[0];

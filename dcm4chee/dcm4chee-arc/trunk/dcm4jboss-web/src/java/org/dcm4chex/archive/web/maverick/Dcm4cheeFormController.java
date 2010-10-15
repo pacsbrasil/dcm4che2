@@ -96,8 +96,9 @@ public class Dcm4cheeFormController extends Throwaway2
             studyIUIDs[i] = ((Dataset) iter.next())
                     .getString(Tags.StudyInstanceUID);
         }
-        return new QueryStudyPermissionCmd(fetchSize.intValue())
-                .getGrantedActionsForStudies(studyIUIDs, subject);
+        QueryStudyPermissionCmd cmd = new QueryStudyPermissionCmd();
+        cmd.setFetchSize(fetchSize.intValue());
+        return cmd.getGrantedActionsForStudies(studyIUIDs, subject);
     }
 
     /**

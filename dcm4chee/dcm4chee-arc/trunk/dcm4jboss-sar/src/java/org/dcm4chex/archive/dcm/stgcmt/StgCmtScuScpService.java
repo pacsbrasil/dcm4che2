@@ -387,7 +387,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
         Map fileInfos = null;
         if (storage != null) {
             try {
-                FileInfo[][] aa = RetrieveCmd.create(refSOPSeq).getFileInfos(fetchSize);
+                FileInfo[][] aa = ((RetrieveCmd)RetrieveCmd.create(refSOPSeq).setFetchSize(fetchSize)).getFileInfos();
                 fileInfos = new HashMap();
                 for (int i = 0; i < aa.length; i++) {
                     fileInfos.put(aa[i][0].sopIUID, aa[i]);

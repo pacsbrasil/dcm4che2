@@ -201,8 +201,9 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
             UpdateAttributes updateAttributes) throws Exception {
         Dataset keys = DcmObjectFactory.getInstance().newDataset();
         keys.putUI(Tags.SeriesInstanceUID, seriesIuid);
-        FileInfo[][] fileInfos = 
-            RetrieveCmd.createSeriesRetrieve(keys).getFileInfos(fetchSize);
+        RetrieveCmd cmd = RetrieveCmd.createSeriesRetrieve(keys);
+        cmd.setFetchSize(fetchSize);
+        FileInfo[][] fileInfos = cmd.getFileInfos();
         int count = 0;
         Dataset series = null;
         for (int i = 0; i < fileInfos.length; i++) {

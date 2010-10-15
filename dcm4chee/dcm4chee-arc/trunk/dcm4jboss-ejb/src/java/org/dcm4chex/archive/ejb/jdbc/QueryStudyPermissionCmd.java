@@ -64,12 +64,11 @@ public class QueryStudyPermissionCmd extends BaseReadCmd {
 
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
-    public QueryStudyPermissionCmd(int fetchSize) throws SQLException {
+    public QueryStudyPermissionCmd() throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel);
     	sqlBuilder.setFrom( new String[] {"StudyPermission"} );
         sqlBuilder.setSelect( new String[] { "StudyPermission.studyIuid","StudyPermission.action" });
-        setFetchSize(fetchSize);
     }
     
 	

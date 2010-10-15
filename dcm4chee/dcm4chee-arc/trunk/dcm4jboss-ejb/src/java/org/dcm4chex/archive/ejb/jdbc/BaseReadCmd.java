@@ -51,7 +51,7 @@ import java.sql.SQLException;
  */
 public abstract class BaseReadCmd extends BaseCmd {
     protected ResultSet rs = null;
-    private int fetchSize;
+    protected int fetchSize;
 
     protected BaseReadCmd(String dsJndiName, int transactionIsolationLevel,
             int resultSetType)

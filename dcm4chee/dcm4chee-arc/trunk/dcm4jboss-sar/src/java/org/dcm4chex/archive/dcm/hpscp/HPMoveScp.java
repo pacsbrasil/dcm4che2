@@ -99,7 +99,9 @@ public class HPMoveScp extends DcmServiceBase {
 	private List queryHPList(Dataset rqData)
 			throws DcmServiceException {
 		try {
-			return new HPRetrieveCmd(rqData).getDatasets(service.getFetchSize());
+		        HPRetrieveCmd cmd  = new HPRetrieveCmd(rqData);
+		        cmd.setFetchSize(service.getFetchSize());
+			return cmd.getDatasets();
 		} catch (SQLException e) {
 			service.getLog().error("Query DB failed:", e);
 			throw new DcmServiceException(Status.ProcessingFailure, e);

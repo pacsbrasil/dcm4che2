@@ -98,7 +98,9 @@ public class FileCopyOrder extends BaseJmsOrder {
     protected void convertFromIAN() throws Exception {
         Dataset refSeriesSeq = ian.getItem(Tags.RefSeriesSeq);
         DcmElement refSOPSeq = refSeriesSeq.get(Tags.RefSOPSeq);
-        FileInfo[][] aa = RetrieveCmd.create(refSOPSeq).getFileInfos(fetchSize);
+        RetrieveCmd cmd = RetrieveCmd.create(refSOPSeq);
+        cmd.setFetchSize(fetchSize);
+        FileInfo[][] aa = cmd.getFileInfos();
         fileInfos = new ArrayList<FileInfo>(aa.length);
         HashMap<String, FileInfo> fiCopy = new HashMap<String, FileInfo>();
         HashMap<String, FileInfo> fi2Copy = new HashMap<String, FileInfo>();

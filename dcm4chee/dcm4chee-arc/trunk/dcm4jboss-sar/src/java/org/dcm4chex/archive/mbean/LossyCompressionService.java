@@ -386,8 +386,9 @@ public class LossyCompressionService extends ServiceMBeanSupport {
         String suid = uidGenerator.createUID();
         Dataset keys = DcmObjectFactory.getInstance().newDataset();
         keys.putUI(Tags.SeriesInstanceUID, seriesIUID.trim());
-        FileInfo[][] fileInfoss = 
-                RetrieveCmd.createSeriesRetrieve(keys).getFileInfos(fetchSize);
+        RetrieveCmd cmd = RetrieveCmd.createSeriesRetrieve(keys);
+        cmd.setFetchSize(fetchSize);
+        FileInfo[][] fileInfoss = cmd.getFileInfos();
         for (int i = 0; i < fileInfoss.length; i++) {
             FileInfo[] fileInfos = fileInfoss[i];
             for (int j = 0; j < fileInfos.length; j++) {
