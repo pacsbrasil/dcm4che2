@@ -71,6 +71,8 @@ public class DicomInputStream extends FilterInputStream implements
 
     private static Logger log = LoggerFactory.getLogger(DicomInputStream.class);
 
+    private static final int ZLIB_HEADER = 0x789c;
+
     private static final byte[] EMPTY_BYTES = {};
 
     private DicomInputHandler handler = this;
@@ -484,19 +486,26 @@ public class DicomInputStream extends FilterInputStream implements
             throw new IllegalStateException(
                     "Cannot switch back from Deflated TS");
         if (ts.deflated()) {
-            boolean zlib = false;
-            if (markSupported()) {
-                mark(2);
-                readFully(header, 0, 2);
-                zlib = (((header[0] & 0xff) << 8) | (header[1] & 0xff)) 
-                        == 0x789c;
-                reset();
-            }
-            in = zlib ? new InflaterInputStream(in)
-                      : new InflaterInputStream(in, new Inflater(true));
+            if (hasZLIBHeader()) {
+                log.warn("Deflated DICOM Stream with ZLIB Header");
+                super.in = new InflaterInputStream(super.in);
+            } else
+                super.in = new InflaterInputStream(super.in,
+                        new Inflater(true));
         }
         this.ts = ts;
     }
+
+    private boolean hasZLIBHeader() throws IOException {
+        if (!markSupported())
+            return false;
+        byte[] buf = header;
+        mark(2);
+        read(buf, 0, 2);
+        reset();
+        return ((((buf[0] & 0xff) << 8) | (buf[1] & 0xff)) == ZLIB_HEADER);
+    }
+
 
     public boolean readValue(DicomInputStream dis) throws IOException {
         if (dis != this)
