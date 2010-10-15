@@ -79,6 +79,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     private static final int ITEM_DELIMITATION_ITEM_TAG = 0xFFFEE00D;
     private static final int SEQ_DELIMITATION_ITEM_TAG = 0xFFFEE0DD;
     private static final int MIN_MAX_VALLEN = 0x10000; // 64K
+    private static final int ZLIB_HEADER = 0x789c;
     
     private final byte[] b0 = new byte[0];
     private final byte[] b12 = new byte[12];
@@ -207,35 +208,41 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                 throw new UnsupportedOperationException(
                         "Cannot remove Inflater");
             else {
-                InputStream is;
-                boolean zlib = false;
-                if (in instanceof ImageInputStream) {
-                    ImageInputStream iis = (ImageInputStream) in;
-                    iis.mark();
-                    iis.read(b12, 0, 2);
-                    zlib = (((b12[0] & 0xff) << 16) 
-                            | (b12[0] & 0xff)) == 0x789c;
-                    iis.reset();
-                    is = new InputStreamAdapter(iis);
+                InputStream is = (in instanceof ImageInputStream)
+                        ? new InputStreamAdapter((ImageInputStream) in)
+                        : (InputStream) in;;
+                if (hasZLIBHeader()) {
+                    log.warn("Deflated DICOM Stream with ZLIB Header");
+                    in = new DataInputStream(new InflaterInputStream(is));
                 } else {
-                    is = (InputStream) in;
-                    if (is.markSupported()) {
-                        is.mark(2);
-                        is.read(b12, 0, 2);
-                        zlib = (((b12[0] & 0xff) << 16) 
-                                | (b12[0] & 0xff)) == 0x789c;
-                        is.reset();
-                    }
-                }
-                in = zlib ? new DataInputStream(new InflaterInputStream(is))
-                          : new DataInputStream(new InflaterInputStream(is,
+                    in = new DataInputStream(new InflaterInputStream(is,
                                   new Inflater(true)));
+                }
             }
         }
         bb12.order(param.byteOrder);
         decodeParam = param;
     }
     
+    private boolean hasZLIBHeader() throws IOException {
+        byte[] buf = b12;
+        if (in instanceof ImageInputStream) {
+            ImageInputStream iis = (ImageInputStream) in;
+            iis.mark();
+            iis.read(buf, 0, 2);
+            iis.reset();
+        } else {
+            InputStream is = (InputStream) in;
+            if (!is.markSupported())
+                return false;
+            is.mark(2);
+            is.read(buf, 0, 2);
+            is.reset();
+        }
+        return (((buf[0] & 0xff) << 16) 
+                | (buf[0] & 0xff)) == ZLIB_HEADER;
+    }
+
     public final DcmDecodeParam getDcmDecodeParam() {
         return decodeParam;
     }
