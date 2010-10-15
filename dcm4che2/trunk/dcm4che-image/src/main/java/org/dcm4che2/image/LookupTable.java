@@ -1082,7 +1082,7 @@ public abstract class LookupTable {
         DicomObject voiLut = (voiObj!=null && vlutFct==null) ? VOIUtils.getLUT(voiObj, Tag.VOILUTSequence) : null;
 
         if( voiLut==null && width==0 && voiObj!=null) {
-         vlutFct = voiObj.getString(Tag.VOILUTFunction);
+         vlutFct = getVlutFct(voiObj);
          center = voiObj.getFloat(Tag.WindowCenter,0f);
          width = voiObj.getFloat(Tag.WindowWidth,0f);
         }
@@ -1120,4 +1120,17 @@ public abstract class LookupTable {
                 voiLut, pLut, false, pval2out);
     }
 
+    // Working around a known bug in which the VOI LUT Function is encoded in hex
+    private static String getVlutFct(DicomObject voiObj) {        
+        String vlutFct;
+        vlutFct = voiObj.getString(Tag.VOILUTFunction);
+        if (vlutFct != null && vlutFct.trim().length() > 0){
+            if (vlutFct != SIGMOID && vlutFct != LINEAR){
+                // Assume vlutFct came back as hex
+                vlutFct = new String(voiObj.getBytes(Tag.VOILUTFunction));
+                vlutFct = vlutFct.trim();                    
+            }
+        }
+        return vlutFct;
+    }
 }
