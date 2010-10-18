@@ -69,7 +69,7 @@
 		<dependency>
             <groupId>dcm4che</groupId>
             <artifactId>dcm4che14</artifactId>
-            <version>1.4.18</version>
+            <version>1.4.28</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
