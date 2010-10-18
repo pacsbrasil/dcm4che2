@@ -1125,7 +1125,7 @@ public abstract class LookupTable {
         String vlutFct;
         vlutFct = voiObj.getString(Tag.VOILUTFunction);
         if (vlutFct != null && vlutFct.trim().length() > 0){
-            if (vlutFct != SIGMOID && vlutFct != LINEAR){
+            if (!(vlutFct.equals(SIGMOID) || vlutFct.equals(LINEAR))){
                 // Assume vlutFct came back as hex
                 vlutFct = new String(voiObj.getBytes(Tag.VOILUTFunction));
                 vlutFct = vlutFct.trim();                    
