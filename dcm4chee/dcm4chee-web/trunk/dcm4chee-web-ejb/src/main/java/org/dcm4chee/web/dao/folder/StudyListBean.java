@@ -60,6 +60,7 @@ import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.jboss.annotation.ejb.LocalBinding;
 
@@ -399,6 +400,13 @@ public class StudyListBean implements StudyListLocal {
         return query.getResultList();
     }
 
+    public List<String> findStudyPermissionActions(String studyInstanceUID, List<String> roles) {
+        return em.createQuery("SELECT DISTINCT sp.action FROM StudyPermission sp WHERE sp.studyInstanceUID = :studyInstanceUID AND role IN (:roles)")
+                .setParameter("studyInstanceUID", studyInstanceUID)
+                .setParameter("roles", roles)
+                .getResultList();
+    }
+    
     @SuppressWarnings("unchecked")
     public List<Series> findSeriesOfStudy(long pk) {
         return sortSeries(em.createQuery("FROM Series s LEFT JOIN FETCH s.modalityPerformedProcedureStep WHERE s.study.pk=?1 ORDER BY s.seriesNumber, s.pk")

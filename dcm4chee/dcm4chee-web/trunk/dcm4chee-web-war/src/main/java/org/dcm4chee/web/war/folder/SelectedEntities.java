@@ -44,6 +44,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.dcm4chee.archive.entity.StudyPermission;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 import org.dcm4chee.web.war.folder.model.FileModel;
@@ -68,34 +70,85 @@ public class SelectedEntities implements Serializable {
     private Set<SeriesModel> seriess = new HashSet<SeriesModel>();
     private Set<InstanceModel> instances = new HashSet<InstanceModel>();
     private Set<FileModel> files = new HashSet<FileModel>();
-    
-    public void update(List<PatientModel> allPatients) {
-        update(allPatients, false);
+
+    public boolean update(List<PatientModel> allPatients) {
+        return update(allPatients, false);
     }
-    public void update(List<PatientModel> allPatients, boolean all) {
+    
+//    public void update(List<PatientModel> allPatients, boolean all) {
+//        clear();
+//        for ( PatientModel p : allPatients ) {
+//            if ( p.isSelected() ) {
+//                patients.add(p);
+//            }
+//            if (all || !p.isSelected()) {
+//                for (StudyModel study : p.getStudies()) {
+//                    if (study.isSelected()) {
+//                        studies.add(study);
+//                    }
+//                    if (all || !study.isSelected()) {
+//                        for ( PPSModel pps : study.getPPSs()) {
+//                            if (pps.isSelected()) {
+//                               ppss.add(pps);
+//                            }
+//                            if (all || !pps.isSelected()) {
+//                                for ( SeriesModel series : pps.getSeries()) {
+//                                    if ( series.isSelected() ) {
+//                                        seriess.add(series);
+//                                    }
+//                                    if (all || !series.isSelected()) {
+//                                        for (InstanceModel inst : series.getInstances()) {
+//                                            if (inst.isSelected()) {
+//                                                instances.add(inst);
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+    public boolean update(List<PatientModel> allPatients, boolean all) {
+        boolean ignoredNotAllowedEntities = false;
         clear();
-        for ( PatientModel p : allPatients ) {
-            if ( p.isSelected() ) {
-                patients.add(p);
-            }
-            if (all || !p.isSelected()) {
-                for (StudyModel study : p.getStudies()) {
-                    if (study.isSelected()) {
+        for ( PatientModel patient : allPatients ) {
+            if (patient.isSelected()) {
+                int allowedStudyCount = 0;
+                for (StudyModel study : patient.getStudies()) {
+                    if (study.getStudyPermissionActions().contains(StudyPermission.DELETE_ACTION)) {
+//                        study.setSelected(true);
+                        studies.add(study);
+                        allowedStudyCount++;
+                    }
+                }
+                if (allowedStudyCount == patient.getStudies().size())
+                    patients.add(patient);
+                else
+                    ignoredNotAllowedEntities = true;
+//                    patient.setSelected(false);
+            } else {
+            if (all || !patient.isSelected()) {
+                for (StudyModel study : patient.getStudies()) {
+                    if (study.isSelected() && study.getStudyPermissionActions().contains(StudyPermission.DELETE_ACTION)) {
                         studies.add(study);
                     }
                     if (all || !study.isSelected()) {
                         for ( PPSModel pps : study.getPPSs()) {
-                            if (pps.isSelected()) {
+                            if (pps.isSelected() && pps.getStudy().getStudyPermissionActions().contains(StudyPermission.DELETE_ACTION)) {
                                ppss.add(pps);
                             }
                             if (all || !pps.isSelected()) {
                                 for ( SeriesModel series : pps.getSeries()) {
-                                    if ( series.isSelected() ) {
+                                    if (series.isSelected() && series.getPPS().getStudy().getStudyPermissionActions().contains(StudyPermission.DELETE_ACTION)) {
                                         seriess.add(series);
                                     }
                                     if (all || !series.isSelected()) {
                                         for (InstanceModel inst : series.getInstances()) {
-                                            if (inst.isSelected()) {
+                                            if (inst.isSelected() && inst.getSeries().getPPS().getStudy().getStudyPermissionActions().contains(StudyPermission.DELETE_ACTION)) {
                                                 instances.add(inst);
                                             }
                                         }
@@ -106,9 +159,11 @@ public class SelectedEntities implements Serializable {
                     }
                 }
             }
+            }
         }
+        return ignoredNotAllowedEntities;
     }
-    
+
     public boolean hasDicomSelection() {
         return patients.size() > 0 || studies.size() > 0 || ppss.size() > 0 || seriess.size() > 0 || instances.size() > 0;
     }
@@ -217,6 +272,9 @@ public class SelectedEntities implements Serializable {
         }
     }
     
+    public void refreshView(boolean b, SecureSession secureSession) {
+    }
+
     public void refreshView(boolean deselect) {
         for (InstanceModel m : instances) {
             refreshChilds(m.getSeries());
@@ -251,6 +309,7 @@ public class SelectedEntities implements Serializable {
         m.expand();
         m.refresh();
     }
+    
     public String toString() {
         StringBuilder sb = new StringBuilder();
         if (patients.size()>0) sb.append(" Patients:").append(patients.size());

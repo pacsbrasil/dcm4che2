@@ -36,6 +36,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:editPPSLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:linkPPSLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:unlinkPPSLink", "render, enable";
+	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:emulatePPSLink", "render, enable";
 // Permissions for edit series
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:editSeriesLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:imageSelectionSeriesLink", "render, enable";

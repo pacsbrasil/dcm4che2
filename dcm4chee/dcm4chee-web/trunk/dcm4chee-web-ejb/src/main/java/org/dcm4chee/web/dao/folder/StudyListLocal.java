@@ -49,6 +49,7 @@ import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.archive.entity.StudyPermission;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -68,6 +69,8 @@ public interface StudyListLocal {
 
     List<Study> findStudiesOfPatient(long pk, boolean latestStudyFirst);
 
+    List<String> findStudyPermissionActions(String studyInstanceUID, List<String> roles);
+    
     List<Series> findSeriesOfStudy(long pk);
 
     List<Series> findSeriesOfMpps(String uid);

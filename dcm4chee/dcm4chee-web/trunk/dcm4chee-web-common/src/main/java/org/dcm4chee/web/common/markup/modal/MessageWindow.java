@@ -38,6 +38,7 @@
 
 package org.dcm4chee.web.common.markup.modal;
 
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.markup.html.basic.Label;
@@ -63,6 +64,7 @@ public class MessageWindow extends AutoOpenModalWindow {
     public static final String TITLE_ERROR="msgwindow.title.error";
     
     private IModel<String> msgModel;
+    private IModel<String> colorModel;
 
     public MessageWindow(String id) {
         super(id);
@@ -116,6 +118,12 @@ public class MessageWindow extends AutoOpenModalWindow {
         this.msgModel = new Model<String>(msg);
         show(target);
     }
+
+    public void show(AjaxRequestTarget target, String msg, String color){
+        this.colorModel = new Model<String>(color);
+        show(target, msg);
+    }
+    
     public void show(AjaxRequestTarget target, IModel<String> msg){
         this.msgModel = msg;
         show(target);
@@ -126,7 +134,8 @@ public class MessageWindow extends AutoOpenModalWindow {
 
         public MessageWindowPanel(String id) {
             super(id);
-            add(new Label("msg", new AbstractReadOnlyModel<String>(){
+            Label message;
+            add(message = new Label("msg", new AbstractReadOnlyModel<String>(){
 
                 private static final long serialVersionUID = 1L;
 
@@ -135,6 +144,8 @@ public class MessageWindow extends AutoOpenModalWindow {
                     return msgModel == null ? null : msgModel.getObject();
                 }
             }));
+            if (colorModel != null)
+                message.add(new AttributeModifier("style", true, colorModel));
             add(new AjaxFallbackLink<Object>("close"){
 
                 private static final long serialVersionUID = 1L;

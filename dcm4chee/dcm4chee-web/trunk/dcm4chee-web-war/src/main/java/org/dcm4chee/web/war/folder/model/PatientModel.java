@@ -70,8 +70,28 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     private IModel<Boolean> latestStudyFirst;
 
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+    SecureSession secureSession;
+    
+    // session parameters
+//    SecureSession session;
 
     public PatientModel(Patient patient, IModel<Boolean> latestStudyFirst) {
+        this(patient, latestStudyFirst, null);
+System.out.println("WARNING: DEPRECATED CONSTRUCTOR USED");
+    }
+    
+    public PatientModel(Patient patient, IModel<Boolean> latestStudyFirst, SecureSession secureSession) {
+        
+        this.secureSession = secureSession;
+System.out.println("SETTING SESSION TO: " + secureSession);
+//        username = ((SecureSession) RequestCycle.get().getSession()).getUsername();
+//        root = ((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root");
+//        roles = ((SecureSession) RequestCycle.get().getSession()).getDicomRoles();
+
+
+if (RequestCycle.get() != null) this.secureSession = ((SecureSession) RequestCycle.get().getSession());
+System.out.println("S 1: " + this.secureSession);
+
         setPk(patient.getPk());
         this.dataset = patient.getAttributes();
         this.latestStudyFirst = latestStudyFirst;
@@ -142,10 +162,10 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     @Override
     public void expand() {
         studies.clear();
-        SecureSession secureSession = ((SecureSession) RequestCycle.get().getSession());
-        dao.setDicomSecurityParameters(secureSession.getUsername(), ((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root"), secureSession.getDicomRoles());
+        dao.setDicomSecurityParameters(secureSession.getUsername(), secureSession.getRoot(), secureSession.getDicomRoles());
+//        dao.setDicomSecurityParameters(username, root, roles);
         for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst.getObject())) 
-            this.studies.add(new StudyModel(study, this));
+            this.studies.add(new StudyModel(study, this, secureSession.getDicomRoles()));
     }
 
     @Override

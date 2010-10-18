@@ -62,8 +62,8 @@ public class SecureSession extends WaspSession {
     private static final long serialVersionUID = 1L;
     
     private String username;
+    private String root;
     private HashMap<String, String> swarmPrincipals;
-
     private List<String> dicomRoles;
     
     public SecureSession(WaspApplication application, Request request) {
@@ -102,5 +102,13 @@ public class SecureSession extends WaspSession {
     
     public void setDicomRoles(List<String> dicomRoles) {
         this.dicomRoles = dicomRoles;
+    }
+
+    public String getRoot() {
+        return root;
+    }
+    
+    public void setRoot(String root) {
+        this.root = root;
     }
 }

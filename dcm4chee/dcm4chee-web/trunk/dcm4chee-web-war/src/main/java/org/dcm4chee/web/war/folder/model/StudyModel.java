@@ -72,8 +72,15 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     private String modalities;
     private int numberOfStudyRelatedSeries;
     private int numberOfStudyRelatedInstances;
+    private List<String> studyPermissionActions;
     
     public StudyModel(Study study, PatientModel patModel) {
+        this(study, patModel, null);
+        // TODO: 
+        System.out.println("TODO: switch to constructor with study permission actions parameter");
+    }
+    
+    public StudyModel(Study study, PatientModel patModel, List<String> studyPermissionActions) {
         if (study == null) {
             setPk(-1);
             dataset = new BasicDicomObject();
@@ -83,6 +90,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
             updateModel(study);
         }
         setPatient(patModel);
+        this.studyPermissionActions = studyPermissionActions;
     }
 
     private void setPatient(PatientModel patModel) {
@@ -95,6 +103,10 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
 
     public String getStudyInstanceUID() {
         return dataset.getString(Tag.StudyInstanceUID, "");
+    }
+
+    public List<String> getStudyPermissionActions() {
+        return studyPermissionActions;
     }
 
     public Date getDatetime() {
@@ -236,6 +248,4 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
         numberOfStudyRelatedSeries = s.getNumberOfStudyRelatedSeries();
         numberOfStudyRelatedInstances = s.getNumberOfStudyRelatedInstances();
     }
-    
-    
 }

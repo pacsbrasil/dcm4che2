@@ -89,7 +89,7 @@
 		<dependency>
 		   <groupId>org.apache.wicket.wicket-security</groupId>
 		   <artifactId>swarm</artifactId>
-		   <version>1.4-SNAPSHOT</version>
+		   <version>1.4</version>
 		   <scope>compile</scope>
 			<exclusions>
 				<exclusion>
