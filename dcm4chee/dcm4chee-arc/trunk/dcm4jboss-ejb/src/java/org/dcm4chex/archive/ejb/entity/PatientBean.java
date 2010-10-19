@@ -555,8 +555,8 @@ public abstract class PatientBean implements EntityBean {
             CircularMergedException, PatientMergedException {
         PatientLocalHome patHome = (PatientLocalHome) ctx.getEJBLocalHome();
         if (matching.noMatchesFor(pid, issuer, familyName, givenName,
-                middleName, birthdate, sex)) {
-            throw new ObjectNotFoundException();
+                middleName, namePrefix, nameSuffix, birthdate, sex)) {
+            throw new ObjectNotFoundException("Patient not found! No match in selectPatient for patientMatching:"+matching);
         }
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         pid = filter.toUpperCase(pid, Tags.PatientID);
@@ -676,7 +676,7 @@ public abstract class PatientBean implements EntityBean {
         }
         if (matching.noMatchesFor(familyName, givenName, middleName,
                 namePrefix, nameSuffix, birthdate, sex)) {
-            throw new ObjectNotFoundException();
+            throw new ObjectNotFoundException("Patient not found! No matches in matchDemographics for PatientMatching:"+matching);
         }
         Pattern pnPattern = matching.compilePNPattern(
                 familyName, givenName, middleName, namePrefix, nameSuffix);
