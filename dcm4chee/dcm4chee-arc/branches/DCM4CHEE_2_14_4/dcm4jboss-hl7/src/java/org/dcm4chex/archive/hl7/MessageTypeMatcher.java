@@ -146,7 +146,7 @@ class MessageTypeMatcher {
                 return false;
             }
             Element fd = fds.get(field[i]-1);
-            if (!value.equals(maskNull(fd.getText())) ) {
+            if (!value[i].equals(maskNull(fd.getText())) ) {
                 return false;
             }
         }
