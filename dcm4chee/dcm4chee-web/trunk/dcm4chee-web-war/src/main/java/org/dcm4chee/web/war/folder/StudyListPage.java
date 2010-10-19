@@ -656,6 +656,7 @@ public class StudyListPage extends Panel {
                 
                 this.setStatus(new StringResourceModel("folder.message.delete.running", StudyListPage.this, null));
                 okBtn.setVisible(false);
+                remarkLabel.setVisible(false);
                 
                 msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
                     
@@ -673,12 +674,10 @@ public class StudyListPage extends Panel {
                                         try {
                                             if (getDelegate().moveToTrash(selected)) {
                                                 setStatus(new StringResourceModel("folder.message.deleteDone", StudyListPage.this,null));
-//System.out.println("StudyListPage: delete thread: 1: session is: " + secureSession);
                                                 if (selected.hasPatients()) {
                                                     viewport.getPatients().clear();
                                                     queryStudies();
                                                 } else
-System.out.println("StudyListPage: delete thread: 2: session is: " + secureSession);
                                                     selected.refreshView(true);
                                             } else
                                                 setStatus(new StringResourceModel("folder.message.deleteFailed", StudyListPage.this,null));
@@ -725,15 +724,16 @@ System.out.println("StudyListPage: delete thread: 2: session is: " + secureSessi
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 boolean hasIgnored = selected.update(viewport.getPatients());
                 selected.deselectChildsOfSelectedEntities();
+                if (hasIgnored) 
+                    confirmDelete.setRemark(new StringResourceModel("folder.message.notAllowed",this, null));
+                else 
+                    confirmDelete.setRemark(null);
                 if (selected.hasPPS()) {
                     confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.message.confirmPpsDelete",this, null,new Object[]{selected}), selected);
                 } else if (selected.hasDicomSelection()) {
                     confirmDelete.confirm(target, new StringResourceModel("folder.message.confirmDelete",this, null,new Object[]{selected}), selected);
                 } else 
-                    if (hasIgnored)
-                        msgWin.show(target, getString("folder.message.notAllowed"), "red");
-                    else
-                        msgWin.show(target, getString("folder.message.noSelection"));
+                    msgWin.show(target, getString("folder.message.noSelection"));
             }
         };
         deleteBtn.add(new Image("deleteImg", ImageManager.IMAGE_FOLDER_DELETE)
@@ -931,17 +931,8 @@ System.out.println("StudyListPage: delete thread: 2: session is: " + secureSessi
     private void updatePatients(List<Object[]> patientAndStudies) {
         retainSelectedPatients();
         for (Object[] patientAndStudy : patientAndStudies) {
-            PatientModel patientModel = addPatient((Patient) patientAndStudy[0]);
-            if (patientAndStudy[1] != null) {
-                
-                 List<String> l = dao.findStudyPermissionActions(((Study) patientAndStudy[1]).getStudyInstanceUID(), secureSession.getDicomRoles());
-                for (String action : dao.findStudyPermissionActions(((Study) patientAndStudy[1]).getStudyInstanceUID(), secureSession.getDicomRoles())) {
-System.out.println(((Study) patientAndStudy[1]).getStudyInstanceUID() + ": " + action);
-                }
-                System.out.println("********************************************");                
-//                List<StudyPermission> sp = dao.
-                addStudy((Study) patientAndStudy[1], patientModel, l);
-            }
+            if (patientAndStudy[1] != null)               
+                addStudy((Study) patientAndStudy[1], addPatient((Patient) patientAndStudy[0]), dao.findStudyPermissionActions(((Study) patientAndStudy[1]).getStudyInstanceUID(), secureSession.getDicomRoles()));
         }
         header.setExpandAllLevel(1);
     }
@@ -1156,7 +1147,7 @@ System.out.println(((Study) patientAndStudy[1]).getStudyInstanceUID() + ": " + a
             TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.study.");
             
             item.add(new DateTimeLabel("datetime").add(tooltip));
-            item.add(new Label("id").add(tooltip));
+            item.add(new Label("id").add(tooltip));            
             item.add(new Label("accessionNumber").add(tooltip));
             item.add(new Label("modalities").add(tooltip));
             item.add(new Label("description").add(tooltip));
@@ -1180,20 +1171,21 @@ System.out.println(((Study) patientAndStudy[1]).getStudyInstanceUID() + ": " + a
                 .add(tooltip))
             );
             
-System.out.println(item);
-System.out.println(getEditLink(modalWindow, studyModel, tooltip));
             item.add(getEditLink(modalWindow, studyModel, tooltip)
                     .setVisible(studyModel.getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":editStudyLink"))
             );
+            
             item.add(getStudyPermissionLink(modalWindow, studyModel, tooltip)
                     .setVisible(studyModel.getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":studyPermissionsStudyLink"))
-                    .add(tooltip));          
+                    .add(tooltip));
+            
             item.add(getAddSeriesLink(studyModel, tooltip)
                     .setVisible(studyModel.getStudyPermissionActions().contains(StudyPermission.APPEND_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":addSeriesLink"))
             );
+            
             item.add(new AjaxLink<Object>("imgSelect") {
                 private static final long serialVersionUID = 1L;
 
@@ -1414,6 +1406,7 @@ System.out.println(getEditLink(modalWindow, studyModel, tooltip));
                 }}.setOutputMarkupId(true)
                 .add(tooltip)
             );
+            
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -1764,13 +1757,13 @@ System.out.println(getEditLink(modalWindow, studyModel, tooltip));
             
             @Override
             public boolean isVisible() {
-                return model.getDataset() != null;
+                return checkEditPermission(model);
             }
         };
         Image image = new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT);
         image.add(new ImageSizeBehaviour("vertical-align: middle;"));
         if (tooltip != null) image.add(tooltip);
-        editLink.add(image);        
+        editLink.add(image);
         return editLink;
     }
 
@@ -1798,7 +1791,12 @@ System.out.println(getEditLink(modalWindow, studyModel, tooltip));
                     }
                 });
                 super.onClick(target);
-            }            
+            }
+            
+            @Override
+            public boolean isVisible() {
+                return checkEditPermission(model);
+            }
         };
         Image image = new Image("studyPermissionsImg",ImageManager.IMAGE_FOLDER_STUDY_PERMISSIONS);
         image.add(new ImageSizeBehaviour("vertical-align: middle;"));
@@ -1807,6 +1805,21 @@ System.out.println(getEditLink(modalWindow, studyModel, tooltip));
         return editLink;
     }
 
+    private boolean checkEditPermission(AbstractDicomModel model) {
+        int hasEditPermission = 0;
+        if (model instanceof PatientModel) {
+            for (StudyModel study : ((PatientModel) model).getStudies())
+                if (study.getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
+                    hasEditPermission++;
+            return (hasEditPermission == ((PatientModel) model).getStudies().size())
+                && model.getDataset() != null;
+        } else if (model instanceof StudyModel) {
+            return model.getDataset() != null 
+                && ((StudyModel) model).getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION);
+        }
+        return model.getDataset() != null;
+    }
+    
     private Link<Object> getAddStudyLink(final PatientModel model, TooltipBehaviour tooltip) {
         
         int[] winSize = WebCfgDelegate.getInstance().getWindowSize("addStudy");
@@ -1886,9 +1899,9 @@ System.out.println(getEditLink(modalWindow, studyModel, tooltip));
           
           @Override
           public boolean isVisible() {
-              return model.getDataset() != null;
+              return model.getDataset() != null && model.getStudyPermissionActions().contains(StudyPermission.APPEND_ACTION);
           }
-       };
+        };
         Image image = new Image("addImg",ImageManager.IMAGE_COMMON_ADD);
         image.add(new ImageSizeBehaviour());
         if (tooltip != null) image.add(tooltip);

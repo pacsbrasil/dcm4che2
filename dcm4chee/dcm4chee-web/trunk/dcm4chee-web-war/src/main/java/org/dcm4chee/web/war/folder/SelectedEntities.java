@@ -117,6 +117,7 @@ public class SelectedEntities implements Serializable {
         clear();
         for ( PatientModel patient : allPatients ) {
             if (patient.isSelected()) {
+System.out.println("HAVE SELECTED PATIENT");
                 int allowedStudyCount = 0;
                 for (StudyModel study : patient.getStudies()) {
                     if (study.getStudyPermissionActions().contains(StudyPermission.DELETE_ACTION)) {

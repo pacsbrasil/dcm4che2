@@ -92,10 +92,12 @@ table.dicomobject { background: #FFFFFF; width: 100%; }
 
 .invalid { background: #EEBBAA; }
 
-.msgWindow { background-color: #A0D8C4; width: 100% ; height: 100%; text-align: center;}
-.msgWindow_content {height: 63%; width: 90%;position: absolute; left: 5%; top: 40px;}
-.msgWindow-msg { width:90%; position: absolute; left: 5%; top: 45%;}
-.msgWindow-button { width: 50%; position: absolute; left: 25%; top: 80%; }
+.msgWindow { background-color: #A0D8C4; width: 100% ; height: 100%; text-align: center; }
+.msgWindow-content { position: absolute; left: 5%; top: 20px; height: 63%; width: 90%; text-align: center; }
+.msgWindow-msg { position: absolute; left: 5%; top: 25%; width: 90%; }
+.msgWindow-hourglass { position: absolute; left: 5%; top: 60%; margin-left: 40%; }
+.msgWindow-remark { position: absolute; left: 5%; top: 60%; width: 90%; color: #FF0000; }
+.msgWindow-button { position: absolute; left: 25%; top: 80%; width: 50%; }
 
 /*
 	div.edit-content

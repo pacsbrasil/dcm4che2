@@ -63,7 +63,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
 
     private T userObject;
     private String focusElementId;
-    private IModel<?> msg, confirm, decline, cancel;
+    private IModel<?> msg, remark, confirm, decline, cancel;
     
     protected boolean hasStatus;
     private boolean showCancel = false;
@@ -71,6 +71,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     protected boolean ajaxRunning = false;
     protected boolean ajaxDone = false;
     protected Label msgLabel;
+    protected Label remarkLabel;
     protected Image hourglassImage;
     protected AjaxFallbackLink<Object> okBtn;
 
@@ -150,13 +151,17 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     protected boolean needAutoOpen() {
         return msg != null;
     }
+    
+    public void setRemark(IModel<?> remark) {
+        this.remark = remark;
+    }
 
     public class MessageWindowPanel extends Panel {
         private static final long serialVersionUID = 1L;
 
         public MessageWindowPanel(String id) {
             super(id);
-            
+
             add((hourglassImage = new Image("hourglass-image", ImageManager.IMAGE_COMMON_AJAXLOAD) {
 
                 private static final long serialVersionUID = 1L;
@@ -180,6 +185,16 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                 }
             })).setOutputMarkupId(true));
             
+            add((remarkLabel = new Label("remark", new AbstractReadOnlyModel<Object>() {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public Object getObject() {
+                    return remark == null ? null : remark.getObject();
+                }
+            })).setOutputMarkupId(true));
+
             AjaxFallbackLink<Object> confirmBtn = new AjaxFallbackLink<Object>("confirm"){
 
                 private static final long serialVersionUID = 1L;

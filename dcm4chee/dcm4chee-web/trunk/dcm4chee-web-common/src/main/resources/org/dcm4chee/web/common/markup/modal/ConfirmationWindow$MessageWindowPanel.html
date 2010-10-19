@@ -10,11 +10,14 @@
 	<body>
 	  <wicket:panel>
 		<div class="msgWindow">
-			<div class="msgWindow_content">
-				<img wicket:id="hourglass-image" />
+			<div class="msgWindow-content">
+				<img wicket:id="hourglass-image" class="msgWindow-hourglass" />
 			</div>
-			<div class="msgWindow_content">
-				<span wicket:id="msg" class="msgWindow-msg">[feedback]</span>
+			<div class="msgWindow-content">
+				<span wicket:id="remark" class="msgWindow-remark">[remark]</span>
+			</div>
+			<div class="msgWindow-content">
+				<span wicket:id="msg" class="msgWindow-msg">[message]</span>
 			</div>
 	        <div class="msgWindow-button">
             	<button type="submit" wicket:id="confirm" ><span wicket:id="confirmLabel">ConfirmBtn</span></button>            	
