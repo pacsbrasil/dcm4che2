@@ -39,6 +39,7 @@
 package org.dcm4che2.tool.dcm2xml;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -259,11 +260,13 @@ public class Dcm2Xml {
     public void convert(File ifile, File ofile) throws IOException,
             TransformerConfigurationException {
         DicomInputStream dis = new DicomInputStream(ifile);
+        FileOutputStream fos = null;
         try {
             TransformerHandler th = getTransformerHandler();
             th.getTransformer().setOutputProperty(OutputKeys.INDENT, 
                     indent ? "yes" : "no");
-            th.setResult(ofile != null ? new StreamResult(ofile)
+            th.setResult(ofile != null 
+                    ? new StreamResult(fos = new FileOutputStream(ofile))
                     : new StreamResult(System.out));
             final SAXWriter writer = new SAXWriter(th, comments ? th : null);
             writer.setBaseDir(baseDir);
@@ -271,6 +274,8 @@ public class Dcm2Xml {
             dis.setHandler(writer);
             dis.readDicomObject(new BasicDicomObject(), -1);
         } finally {
+            if (fos != null)
+                fos.close();
             dis.close();
         }
     }
