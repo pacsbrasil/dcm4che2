@@ -130,20 +130,29 @@ public abstract class PatientUpdateBean implements SessionBean {
             PatientMatching matching, boolean keepPrior) throws CreateException, FinderException,
                     PatientAlreadyExistsException, EJBException, RemoveException {
         LOG.info("Change PID for " + correct.getString(Tags.PatientName)
-                + " from " + prior.getString(Tags.PatientID)
-                + " to " + correct.getString(Tags.PatientID));
+                + " from " + toPidAndIssuer(prior)
+                + " to " + toPidAndIssuer(correct));
         try {
             patHome.selectPatient(correct, matching, false);
             String prompt = "Patient with PID "
-                + correct.getString(Tags.PatientID) + "^^^"
-                + correct.getString(Tags.IssuerOfPatientID, "")
-                + " already exists";
+                + toPidAndIssuer(correct) + " already exists";
             LOG.warn(prompt);
             throw new PatientAlreadyExistsException(prompt);
         } catch (ObjectNotFoundException e) {}
-        PatientLocal correctPat = patHome.create(correct);
-        PatientLocal priorPat= updateOrCreate(prior, matching);
-        merge(correctPat, priorPat, keepPrior);
+        try {
+            PatientLocal priorPat = patHome.selectPatient(prior, matching, true);
+            Dataset newAttrs = priorPat.getAttributes(true);
+            newAttrs.putLO(Tags.PatientID, correct.getString(Tags.PatientID));
+            newAttrs.putLO(Tags.IssuerOfPatientID, correct.getString(Tags.IssuerOfPatientID));
+            if (keepPrior) {
+                PatientLocal correctPat = patHome.create(newAttrs);
+                merge(correctPat, priorPat, keepPrior);
+            } else {
+                priorPat.setAttributes(newAttrs);
+            }
+        } catch (ObjectNotFoundException x) {
+            LOG.warn("Prior patient of ChangePatientIdentifierList request not found! Ignored!");
+        }
     }
 
     /**
@@ -154,15 +163,19 @@ public abstract class PatientUpdateBean implements SessionBean {
     public void mergePatient(Dataset dominant, Dataset prior,
             PatientMatching matching, boolean keepPrior) throws CreateException, FinderException, EJBException, RemoveException {
         LOG.info("Merge " + prior.getString(Tags.PatientName)
-                + " with PID " + prior.getString(Tags.PatientID)
+                + " with PID " + toPidAndIssuer(prior)
                 + " to " + dominant.getString(Tags.PatientName)
-                + " with PID " + dominant.getString(Tags.PatientID));
+                + " with PID " + toPidAndIssuer(dominant));
         PatientLocal dominantPat = updateOrCreate(dominant, matching);
         PatientLocal priorPat= updateOrCreate(prior, matching);
+        LOG.debug("Merge patient.pk "+priorPat.getPk()+" to patient.pk "+dominantPat.getPk());
         merge(dominantPat, priorPat, keepPrior);
     }
 
     private void merge(PatientLocal dominantPat, PatientLocal priorPat, boolean keepPrior) throws EJBException, RemoveException {
+        if (dominantPat.equals(priorPat)) {
+            throw new IllegalArgumentException("Prior and dominant patients are the same! Can't merge patient to itself!");
+        }
         dominantPat.getStudies().addAll(priorPat.getStudies());
         dominantPat.getMpps().addAll(priorPat.getMpps());
         dominantPat.getMwlItems().addAll(priorPat.getMwlItems());
@@ -237,7 +250,7 @@ public abstract class PatientUpdateBean implements SessionBean {
     public void updatePatient(Dataset attrs, Dataset modified, PatientMatching matching)
             throws CreateException, FinderException {
         LOG.info("Update " + attrs.getString(Tags.PatientName)
-                + " with PID " + attrs.getString(Tags.PatientID));
+                + " with PID " + toPidAndIssuer(attrs));
         updateOrCreate(attrs, modified, matching);
     }
 
@@ -304,7 +317,7 @@ public abstract class PatientUpdateBean implements SessionBean {
     public boolean deletePatient(Dataset ds, PatientMatching matching)
             throws RemoveException, FinderException {
         LOG.info("Delete " + ds.getString(Tags.PatientName)
-                + " with PID " + ds.getString(Tags.PatientID));
+                + " with PID " + toPidAndIssuer(ds));
         try {
             patHome.selectPatient(ds, matching, false).remove();
             return true;
@@ -319,7 +332,7 @@ public abstract class PatientUpdateBean implements SessionBean {
     public void patientArrived(Dataset ds, PatientMatching matching)
             throws FinderException {
         LOG.info("Change status of SPS for " + ds.getString(Tags.PatientName)
-                + " with PID " + ds.getString(Tags.PatientID) + " to ARRIVED");
+                + " with PID " + toPidAndIssuer(ds) + " to ARRIVED");
         try {
             PatientLocal pat = patHome.selectPatient(ds, matching, false);
             Collection c = pat.getMwlItems();
@@ -344,5 +357,9 @@ public abstract class PatientUpdateBean implements SessionBean {
         } catch (ObjectNotFoundException e) {
             patHome.create(ds);
         }
+    }
+    
+    private String toPidAndIssuer(Dataset ds) {
+        return ds.getString(Tags.PatientID)+"^^^"+ds.getString(Tags.IssuerOfPatientID, "");
     }
 }
