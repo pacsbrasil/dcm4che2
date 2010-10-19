@@ -248,6 +248,7 @@ public class SeriesListUpdator {
                         LayeredCanvas tempCanvas = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getComponent(x)).getComponent(y));
                         if (tempCanvas.imgpanel != null && tempCanvas.imgpanel.getStudyUID().equalsIgnoreCase(studyUID)) {
                             matchingTab = true;
+                            if(instance!=null&&instance.getSop_iuid()!=null)
                             if (tempCanvas.imgpanel.getSeriesUID().equalsIgnoreCase(seriesUID) && tempCanvas.imgpanel.getInstanceUID().equalsIgnoreCase(instance.getSop_iuid())) {
                                 SeriesAnnotation seriesAnnotation = (SeriesAnnotation) studyAnnotation.getSeriesAnnotation().get(seriesUID);
 

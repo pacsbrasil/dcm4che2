@@ -283,7 +283,7 @@ public class TextOverlay extends javax.swing.JPanel {
     private void setTextOverlay() {
         patientNameLabel.setText(" " + textOverlayParam.getPatientName() != null ? textOverlayParam.getPatientName() : "");
         patientIDLabel.setText("" + "ID: " + textOverlayParam.getPatientID());
-        if(!textOverlayParam.getSex().equalsIgnoreCase(""))
+        if(textOverlayParam.getSex()!=null&&!textOverlayParam.getSex().equalsIgnoreCase(""))
         patientSexLabel.setText("Sex: " +textOverlayParam.getSex());
         else
          patientSexLabel.setText("");

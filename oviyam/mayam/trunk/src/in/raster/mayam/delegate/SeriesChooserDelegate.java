@@ -128,7 +128,8 @@ public class SeriesChooserDelegate extends Thread {
                         stillImageProcess(series);
                     }
                 }//for loop series closed.
-            }
+            }    
+            canvas.getCanvas().setSelection();
         }
     }
 
@@ -158,9 +159,11 @@ public class SeriesChooserDelegate extends Thread {
                 File file = new File(System.getProperty("user.dir") + File.separator + instance.getFilepath());
                 if (file.exists()) {
                     canvas.createSubComponents(System.getProperty("user.dir") + File.separator + instance.getFilepath());
+                    if(instance.getAnnotations()!=null&&instance.getAnnotations().get(0)!=null)
                     canvas.annotationPanel.setAnnotation(instance.getAnnotations().get(0));
                 } else {
                     canvas.createSubComponents(instance.getFilepath());
+                    if(instance.getAnnotations()!=null&&instance.getAnnotations().get(0)!=null)
                     canvas.annotationPanel.setAnnotation(instance.getAnnotations().get(0));
                 }
                 break;
