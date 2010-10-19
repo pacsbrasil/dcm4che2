@@ -104,6 +104,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isUpdateOnNewStudy"
+      setMethod="setUpdateOnNewStudy">
+     <!-- Security -->
+      <description><![CDATA[Activates grant/revoke of study permissions on
+      NewStudy events according specified <i>SeriesStoredStylesheet</i>.]]>
+      </description>
+      <name>UpdateOnNewStudy</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getHL7ServerName"
       setMethod="setHL7ServerName">
       <description>Used internally - do NOT modify.
