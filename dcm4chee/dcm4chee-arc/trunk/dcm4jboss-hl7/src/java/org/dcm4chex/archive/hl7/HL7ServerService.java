@@ -365,7 +365,8 @@ public class HL7ServerService extends ServiceMBeanSupport implements
             if (hl7ex != null) {
                 t.setParameter("AcknowledgementCode", hl7ex
                         .getAcknowledgementCode());
-                t.setParameter("TextMessage", hl7ex.getMessage());
+                String msg = hl7ex.getMessage();
+                t.setParameter("TextMessage", msg == null ? "Exception:"+hl7ex.getCause() : msg );
             }
             t.transform(new DocumentSource(document), new SAXResult(hl7out));
         } catch (Exception e) {
