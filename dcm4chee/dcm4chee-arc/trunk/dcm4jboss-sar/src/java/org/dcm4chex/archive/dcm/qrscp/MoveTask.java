@@ -57,6 +57,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AAbort;
 import org.dcm4che.net.AAssociateAC;
 import org.dcm4che.net.AAssociateRQ;
@@ -265,7 +266,9 @@ public class MoveTask implements Runnable {
                         service.notDecompressTsuidSet());
                 tsuids.retainAll(retrieveInfo.getTransferSyntaxesOfClass(cuid));
                 for (String tsuid : tsuids) {
-                    if (a.getAcceptedPresContext(cuid, tsuid) == null) {
+                    if (a.getAcceptedPresContext(cuid, tsuid) == null
+                            && a.getAcceptedPresContext(cuid, UIDs.NoPixelData) == null
+                            && a.getAcceptedPresContext(cuid, UIDs.NoPixelDataDeflate) == null) {
                         iuids = retrieveInfo.removeLocalFilesOfClassWithTransferSyntax(cuid, tsuid);
                         if (!iuids.isEmpty()) {
                             noPresentationContext(cuid, iuids, "No Presentation Context for "

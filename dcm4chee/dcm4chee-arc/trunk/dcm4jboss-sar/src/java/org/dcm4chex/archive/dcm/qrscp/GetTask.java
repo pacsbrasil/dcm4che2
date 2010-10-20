@@ -50,6 +50,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
@@ -137,7 +138,9 @@ class GetTask implements Runnable {
         Collection<String> iuids;
         while (it.hasNext()) {
             cuid = it.next();
-            if (a.listAcceptedPresContext(cuid).isEmpty()) {
+            if (a.listAcceptedPresContext(cuid).isEmpty()
+                    && a.getAcceptedPresContext(cuid, UIDs.NoPixelData) == null
+                    && a.getAcceptedPresContext(cuid, UIDs.NoPixelDataDeflate) == null) {
                 iuids = retrieveInfo.removeInstancesOfClass(cuid);
                 it.remove(); // Use Iterator itself to remove the current
                                 // item to avoid ConcurrentModificationException
