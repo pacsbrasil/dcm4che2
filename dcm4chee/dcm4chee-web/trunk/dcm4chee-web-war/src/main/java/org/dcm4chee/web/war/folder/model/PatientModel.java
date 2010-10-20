@@ -83,15 +83,7 @@ System.out.println("WARNING: DEPRECATED CONSTRUCTOR USED");
     public PatientModel(Patient patient, IModel<Boolean> latestStudyFirst, SecureSession secureSession) {
         
         this.secureSession = secureSession;
-System.out.println("SETTING SESSION TO: " + secureSession);
-//        username = ((SecureSession) RequestCycle.get().getSession()).getUsername();
-//        root = ((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root");
-//        roles = ((SecureSession) RequestCycle.get().getSession()).getDicomRoles();
-
-
-if (RequestCycle.get() != null) this.secureSession = ((SecureSession) RequestCycle.get().getSession());
-System.out.println("S 1: " + this.secureSession);
-
+        if (RequestCycle.get() != null) this.secureSession = ((SecureSession) RequestCycle.get().getSession());
         setPk(patient.getPk());
         this.dataset = patient.getAttributes();
         this.latestStudyFirst = latestStudyFirst;

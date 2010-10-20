@@ -75,53 +75,14 @@ public class SelectedEntities implements Serializable {
         return update(allPatients, false);
     }
     
-//    public void update(List<PatientModel> allPatients, boolean all) {
-//        clear();
-//        for ( PatientModel p : allPatients ) {
-//            if ( p.isSelected() ) {
-//                patients.add(p);
-//            }
-//            if (all || !p.isSelected()) {
-//                for (StudyModel study : p.getStudies()) {
-//                    if (study.isSelected()) {
-//                        studies.add(study);
-//                    }
-//                    if (all || !study.isSelected()) {
-//                        for ( PPSModel pps : study.getPPSs()) {
-//                            if (pps.isSelected()) {
-//                               ppss.add(pps);
-//                            }
-//                            if (all || !pps.isSelected()) {
-//                                for ( SeriesModel series : pps.getSeries()) {
-//                                    if ( series.isSelected() ) {
-//                                        seriess.add(series);
-//                                    }
-//                                    if (all || !series.isSelected()) {
-//                                        for (InstanceModel inst : series.getInstances()) {
-//                                            if (inst.isSelected()) {
-//                                                instances.add(inst);
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-
     public boolean update(List<PatientModel> allPatients, boolean all) {
         boolean ignoredNotAllowedEntities = false;
         clear();
         for ( PatientModel patient : allPatients ) {
             if (patient.isSelected()) {
-System.out.println("HAVE SELECTED PATIENT");
                 int allowedStudyCount = 0;
                 for (StudyModel study : patient.getStudies()) {
                     if (study.getStudyPermissionActions().contains(StudyPermission.DELETE_ACTION)) {
-//                        study.setSelected(true);
                         studies.add(study);
                         allowedStudyCount++;
                     }
@@ -130,7 +91,6 @@ System.out.println("HAVE SELECTED PATIENT");
                     patients.add(patient);
                 else
                     ignoredNotAllowedEntities = true;
-//                    patient.setSelected(false);
             } else {
             if (all || !patient.isSelected()) {
                 for (StudyModel study : patient.getStudies()) {

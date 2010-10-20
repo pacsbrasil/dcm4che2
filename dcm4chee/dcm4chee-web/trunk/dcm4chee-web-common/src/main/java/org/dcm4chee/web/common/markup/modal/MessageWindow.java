@@ -64,7 +64,7 @@ public class MessageWindow extends AutoOpenModalWindow {
     public static final String TITLE_ERROR="msgwindow.title.error";
     
     private IModel<String> msgModel;
-    private IModel<String> colorModel;
+    private IModel<String> colorModel = new Model<String>("");
 
     public MessageWindow(String id) {
         super(id);
@@ -114,17 +114,16 @@ public class MessageWindow extends AutoOpenModalWindow {
         target.focusComponent(this.get("content:close"));
     }
 
-    public void show(AjaxRequestTarget target, String msg){
+    public void show(AjaxRequestTarget target, String msg) {
         this.msgModel = new Model<String>(msg);
         show(target);
     }
 
-    public void show(AjaxRequestTarget target, String msg, String color){
-        this.colorModel = new Model<String>(color);
-        show(target, msg);
+    public void setColor(String color) {
+        this.colorModel.setObject("color: " + color);
     }
     
-    public void show(AjaxRequestTarget target, IModel<String> msg){
+    public void show(AjaxRequestTarget target, IModel<String> msg) {
         this.msgModel = msg;
         show(target);
     }
@@ -134,8 +133,7 @@ public class MessageWindow extends AutoOpenModalWindow {
 
         public MessageWindowPanel(String id) {
             super(id);
-            Label message;
-            add(message = new Label("msg", new AbstractReadOnlyModel<String>(){
+            add(new Label("msg", new AbstractReadOnlyModel<String>(){
 
                 private static final long serialVersionUID = 1L;
 
@@ -143,9 +141,9 @@ public class MessageWindow extends AutoOpenModalWindow {
                 public String getObject() {
                     return msgModel == null ? null : msgModel.getObject();
                 }
-            }));
-            if (colorModel != null)
-                message.add(new AttributeModifier("style", true, colorModel));
+            })
+            .add(new AttributeModifier("style", true, colorModel)));
+
             add(new AjaxFallbackLink<Object>("close"){
 
                 private static final long serialVersionUID = 1L;
@@ -169,5 +167,5 @@ public class MessageWindow extends AutoOpenModalWindow {
             msgModel = null;
             super.onAfterRender();
         }
-    }   
+    }
 }

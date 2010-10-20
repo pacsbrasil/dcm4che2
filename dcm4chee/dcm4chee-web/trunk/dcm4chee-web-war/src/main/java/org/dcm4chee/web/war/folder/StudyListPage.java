@@ -257,7 +257,7 @@ public class StudyListPage extends Panel {
         header = new StudyListHeader("thead", form);
         form.add(header);
         form.add(new PatientListView("patients", viewport.getPatients()));
-        msgWin.setTitle(MessageWindow.TITLE_WARNING);
+        msgWin.setTitle("");
         add(msgWin);
         Form<Object> form1 = new Form<Object>("modalForm");
         add(form1);
@@ -725,15 +725,17 @@ public class StudyListPage extends Panel {
                 boolean hasIgnored = selected.update(viewport.getPatients());
                 selected.deselectChildsOfSelectedEntities();
                 if (hasIgnored) 
-                    confirmDelete.setRemark(new StringResourceModel("folder.message.notAllowed",this, null));
+                    confirmDelete.setRemark(new StringResourceModel("folder.message.deleteNotAllowed",this, null));
                 else 
                     confirmDelete.setRemark(null);
                 if (selected.hasPPS()) {
                     confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.message.confirmPpsDelete",this, null,new Object[]{selected}), selected);
                 } else if (selected.hasDicomSelection()) {
                     confirmDelete.confirm(target, new StringResourceModel("folder.message.confirmDelete",this, null,new Object[]{selected}), selected);
-                } else 
-                    msgWin.show(target, getString("folder.message.noSelection"));
+                } else { 
+                    msgWin.setInfoMessage(getString("folder.message.noSelection"));
+                    msgWin.show(target);
+                }
             }
         };
         deleteBtn.add(new Image("deleteImg", ImageManager.IMAGE_FOLDER_DELETE)
@@ -751,7 +753,13 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                selected.update(viewport.getPatients(), true);
+                boolean hasIgnored = selected.update(viewport.getPatients(), true);
+                if (hasIgnored) {
+                    msgWin.setColor("#FF0000");
+                    msgWin.setInfoMessage(getString("folder.message.moveNotAllowed"));
+                    msgWin.show(target);
+                    return;
+                }
                 //selected.deselectChildsOfSelectedEntities();
                 log.info("Selected Entities:"+selected);
                 if (selected.hasDicomSelection()) {
@@ -1170,22 +1178,18 @@ public class StudyListPage extends Panel {
                 .add(new ImageSizeBehaviour())
                 .add(tooltip))
             );
-            
             item.add(getEditLink(modalWindow, studyModel, tooltip)
                     .setVisible(studyModel.getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":editStudyLink"))
             );
-            
             item.add(getStudyPermissionLink(modalWindow, studyModel, tooltip)
                     .setVisible(studyModel.getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":studyPermissionsStudyLink"))
                     .add(tooltip));
-            
             item.add(getAddSeriesLink(studyModel, tooltip)
                     .setVisible(studyModel.getStudyPermissionActions().contains(StudyPermission.APPEND_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":addSeriesLink"))
             );
-            
             item.add(new AjaxLink<Object>("imgSelect") {
                 private static final long serialVersionUID = 1L;
 
@@ -1209,6 +1213,7 @@ public class StudyListPage extends Panel {
                 protected void onUpdate(AjaxRequestTarget target) {
                     target.addComponent(this);
                 }}.setOutputMarkupId(true).add(tooltip));
+            
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
