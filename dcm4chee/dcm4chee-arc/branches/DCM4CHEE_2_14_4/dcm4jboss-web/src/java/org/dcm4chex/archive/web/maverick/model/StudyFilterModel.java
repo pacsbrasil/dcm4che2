@@ -40,7 +40,10 @@
 package org.dcm4chex.archive.web.maverick.model;
 
 
+import java.util.Iterator;
+
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -178,4 +181,15 @@ public class StudyFilterModel extends AbstractModel {
         return -1;
     }
 
+    public boolean hasQueryParameters() {
+        DcmElement elem;
+        for (Iterator it = ds.iterator() ; it.hasNext() ; ) {
+            elem = (DcmElement) it.next();
+            if (elem.tag() != Tags.SpecificCharacterSet && (elem.tag() & 0x00010000) == 0 && 
+                    !elem.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

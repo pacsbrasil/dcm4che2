@@ -202,6 +202,10 @@ public class FolderSubmitCtrl extends FolderCtrl {
         String[] allowedAets = getAEFilterPermissions();
         try {
             filter = folderForm.getStudyFilter();
+            if (!filter.hasQueryParameters() && getCtx().getRequest().getParameter("filter.x")==null) {
+                log.info("Filter has no query parameter! Ignore auto query!");
+                return FOLDER;
+            }
             if ( ! folderForm.isFilterAET() ) { //only if not filter a single AET!
                 filter.setCallingAETs( allowedAets );
             }
