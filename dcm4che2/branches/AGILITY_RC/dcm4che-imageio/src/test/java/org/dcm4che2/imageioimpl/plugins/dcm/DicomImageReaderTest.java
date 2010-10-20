@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.imageioimpl.plugins.dcm;
 
+import static org.junit.Assert.fail;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -45,9 +47,8 @@ import java.io.InputStream;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 
-import junit.framework.TestCase;
-
 import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
+import org.junit.Test;
 
 /**
  * Tests for the image reader code. The tests are based on visual inspection.
@@ -58,7 +59,7 @@ import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
  * 
  * @author rick.riemer
  */
-public class DicomImageReaderTest extends TestCase {
+public class DicomImageReaderTest {
 
 	/* The default, 512x512 SMPTE image */
 	private static BufferedImage smpte;
@@ -68,6 +69,7 @@ public class DicomImageReaderTest extends TestCase {
 	 * Also tests pixel padding - avoids putting the pixel padding into the
 	 * window level range.
 	 */
+	@Test
 	public void testReadMrAutoWindowing() throws Exception {
 		assertImage("/misc/mr", 0, null);
 	}
@@ -76,6 +78,7 @@ public class DicomImageReaderTest extends TestCase {
 	 * Tests the reading of a regular CT instance, with windowing elements in
 	 * it's meta data.
 	 */
+	@Test
 	public void testReadCtNoAutoWindowing() throws Exception {
 		DicomImageReadParam param = new DicomImageReadParam();
 		param.setAutoWindowing(false);
@@ -91,6 +94,7 @@ public class DicomImageReaderTest extends TestCase {
 	 * value, the rendered output should be clearly distinct from
 	 * {@link #testReadCtNoAutoWindowing()}.</em>
 	 */
+	@Test
 	public void testReadCtApplyCustomWindow() throws Exception {
 		// TODO 2007-11-23 rick.riemer Re-enable test once we know what the
 		// expected output for this test should be.
@@ -120,6 +124,7 @@ public class DicomImageReaderTest extends TestCase {
 	 * Tests the reading of a CR instance, with MONOCHROME1 photometric
 	 * interpretation, with Window Center and Window With elements.
 	 */
+	@Test
 	public void testReadMonochrome1() throws Exception {
 		assertImage("/misc/cr-monochrome1", 0,null);
 	}
@@ -129,6 +134,7 @@ public class DicomImageReaderTest extends TestCase {
 	 * interpretation, <em>without</em> Window Center and Window With
 	 * elements.
 	 */
+	@Test
 	public void testReadMonochrome1NoWindow() throws Exception {
 		assertImage("/misc/cr-monochrome1-nowindow", 0, null);
 	}
@@ -144,6 +150,7 @@ public class DicomImageReaderTest extends TestCase {
 	 * {@link #testReadMonochrome1()}, the output (and thus the hash) is
 	 * expected to be the same.</em>
 	 */
+	@Test
 	public void testReadMonochrome1ApplyCustomWindow() throws Exception {
 		DicomImageReadParam param = new DicomImageReadParam();
 		param.setAutoWindowing(false);
@@ -187,6 +194,7 @@ public class DicomImageReaderTest extends TestCase {
 	 * <em>Note for visual inspection: all images should produce the same test
 	 * pattern</em>.
 	 */
+	@Test
 	public void testMLUT() throws Exception {
 		boolean failed = false;
 		DicomImageReadParam param = new DicomImageReadParam();
@@ -228,6 +236,7 @@ public class DicomImageReaderTest extends TestCase {
 	 * <em>Note for visual inspection: all images should produce the same test
 	 * pattern</em>.
 	 */
+	@Test
 	public void testVLUT() throws Exception {
 		boolean failed = false;
 		DicomImageReadParam param = new DicomImageReadParam();
@@ -283,5 +292,4 @@ public class DicomImageReaderTest extends TestCase {
 			fail("Maximum difference on "+baseName+" is supposed to be zero but is "+diff.getMaxDiff());
 		}
 	}
-
 }
