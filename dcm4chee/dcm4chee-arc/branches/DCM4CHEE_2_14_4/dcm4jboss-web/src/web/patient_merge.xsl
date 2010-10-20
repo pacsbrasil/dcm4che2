@@ -12,12 +12,15 @@
 		<table border="0" cellspacing="0" cellpadding="0" width="90%">
 			<xsl:if test="mergeReason">
 				<tr>
-					<td class="H1"><center><xsl:value-of select="mergeReason" /></center></td>
+					<td class="H1"><center style="font-size : 12px;"><xsl:value-of select="mergeReason" /></center></td>
+				</tr>
+				<tr>
+					<td class="H1"><center style="font-size : 12px; color: red;">Warning! This will move all objects to selected patient!</center></td>
 				</tr>
 			</xsl:if>
 			<tr>
 				<td>
-					<center>Select dominant Patient:</center>
+					<center style="font-size : 12px;">Select dominant Patient:</center>
 	<center>
 		<table border="0" width="500">
 			<tr>
