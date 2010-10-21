@@ -111,14 +111,16 @@ public class WebLoginContext extends UsernamePasswordContext {
                 
                 SecureSession secureSession = ((SecureSession) RequestCycle.get().getSession());
                 secureSession.setRoot(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root"));
-//                secureSession.setUsername(username);
-                secureSession.setDicomSubject(
+                boolean useStudyPermissions = "true".equals(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("useStudyPermissions"));
+                if (useStudyPermissions) {
+                    secureSession.setDicomSubject(
                         getDicomSecuritySubject(
                                 new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("DicomSecurityService")), 
                                 username, 
                                 password
                         )
-                );
+                    );
+                }
             } catch (Exception e) {
                 log.error("Error: " + e.getMessage());
                 throw new LoginException();

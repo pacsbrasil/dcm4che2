@@ -140,13 +140,15 @@ public class CreateOrEditAETPage extends SecureWebPage {
                     window.close(target);
                 } catch (Exception e) {
                     resultMessage.setObject(e.getLocalizedMessage());
-                    target.addComponent(CreateOrEditAETPage.this);
+                    if (target != null)
+                        target.addComponent(CreateOrEditAETPage.this);
                 }
             }
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-                target.addComponent(form);
+                if (target != null)
+                    target.addComponent(form);
             }
         });
         form.add(new AjaxFallbackButton("cancel", new ResourceModel("cancelBtn"), form) {

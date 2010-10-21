@@ -24,6 +24,10 @@
 			<param-value>org.dcm4chee.web.war.WicketApplication</param-value>
  		</init-param>
 		<init-param>
+			<param-name>useStudyPermissions</param-name>
+			<param-value>false</param-value>
+ 		</init-param>
+		<init-param>
 			<param-name>root</param-name>
 			<param-value>admin</param-value>
  		</init-param>

@@ -38,14 +38,14 @@
 
 package org.dcm4chee.web.war.ae;
 
-import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.security.components.SecureWebPage;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
  * @since Oct 23, 2009
  */
-public class AETestPage extends WebPage {
+public class AETestPage extends SecureWebPage {
     
     public AETestPage() {
         add(new AEListPanel("aelist"));

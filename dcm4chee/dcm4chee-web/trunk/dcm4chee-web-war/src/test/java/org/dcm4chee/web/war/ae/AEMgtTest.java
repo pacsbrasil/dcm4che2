@@ -9,15 +9,21 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 
+import org.apache.wicket.Page;
 import org.apache.wicket.authorization.strategies.role.IRoleCheckingStrategy;
 import org.apache.wicket.authorization.strategies.role.RoleAuthorizationStrategy;
 import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.protocol.http.WebApplication;
+import org.apache.wicket.security.actions.Actions;
+import org.apache.wicket.security.hive.HiveMind;
 import org.apache.wicket.util.tester.FormTester;
 import org.apache.wicket.util.tester.WicketTester;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.entity.FileSystem;
 import org.dcm4chee.web.dao.ae.AEHomeBean;
+import org.dcm4chee.web.war.MainPage;
+import org.dcm4chee.web.war.WASPTestUtil;
 import org.dcm4chee.web.war.WicketApplication;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -27,7 +33,8 @@ import com.bm.testsuite.BaseSessionBeanFixture;
 
 public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
 {
-    private WicketApplication testApplicaton;
+    
+    private AEMgtApplication testApplicaton;
     private WicketTester wicketTester;
     private ArrayList<AE> aeList = new ArrayList<AE>(5);
 
@@ -38,12 +45,13 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
     public AEMgtTest() throws Exception {
         super(AEHomeBean.class, usedBeans);
     }
+    
     @Override
     public void setUp() throws Exception
     {
         super.setUp();
-        testApplicaton = new WicketApplication();
-        wicketTester = new WicketTester(testApplicaton);
+        testApplicaton = new AEMgtApplication();
+        wicketTester = WASPTestUtil.getWicketTester(testApplicaton);
         aeList.add(getTestAE("AE_TEST", "localhost", 11112));
         //aeList.add(getTestAE("AE_FAILED", "localhost", 12222));
         //aeList.add(getTestAE("AE_TEST2", "localhost", 11113));
@@ -53,24 +61,29 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
     @Test
     public void testOpenAEMgt() {
         wicketTester.startPage(AETestPage.class);
+        doLogin("aemgr","aemgr");
         wicketTester.assertRenderedPage(AETestPage.class);
         wicketTester.assertComponent("aelist", AEListPanel.class);
     }
+
     @Test
     public void testOpenEditWindow() {
-        wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
-                new RoleAuthorizationStrategy(new UserRolesAuthorizer("WebAdmin")));
         wicketTester.startPage(AETestPage.class);
+        doLogin("aemgr","aemgr");
+        wicketTester.assertRenderedPage(AETestPage.class);
         wicketTester.getComponentFromLastRenderedPage("aelist").getSession().setLocale(new Locale("en"));
         wicketTester.clickLink("aelist:newAET");
         wicketTester.assertNoErrorMessage();
         assertTrue("ModalWindow.isShown:", ((ModalWindow)wicketTester.getComponentFromLastRenderedPage("aelist:modal-window")).isShown());
     }
+    
     @Test
     public void testEditAERequiredFields() {
-        wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
-                new RoleAuthorizationStrategy(new UserRolesAuthorizer("WebAdmin")));
+        wicketTester.startPage(AETestPage.class);
+        doLogin("aemgr","aemgr");
+        wicketTester.assertRenderedPage(AETestPage.class);
         wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE(), null));
+        wicketTester.assertRenderedPage(CreateOrEditAETPage.class);
         wicketTester.getComponentFromLastRenderedPage("form").getSession().setLocale(new Locale("en"));
         FormTester formTester = wicketTester.newFormTester("form");
         formTester.setValue("title", "");
@@ -85,8 +98,9 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
     
     @Test
     public void testEditAEValidators() {
-        wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
-                new RoleAuthorizationStrategy(new UserRolesAuthorizer("WebAdmin")));
+        wicketTester.startPage(AETestPage.class);
+        doLogin("aemgr","aemgr");
+        wicketTester.assertRenderedPage(AETestPage.class);
         wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE(), null));
         wicketTester.getComponentFromLastRenderedPage("form").getSession().setLocale(new Locale("en"));
         FormTester formTester = wicketTester.newFormTester("form");
@@ -104,47 +118,42 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
     
     @Test
     public void testNewAE() {
-//        wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
-//                new RoleAuthorizationStrategy(new UserRolesAuthorizer("WebAdmin")));
-//        for ( AE ae : aeList ) {
-//            wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE()));
-//            FormTester formTester = wicketTester.newFormTester("form");
-//            formTester.setValue("title", ae.getTitle());
-//            formTester.setValue("hostName", ae.getHostName());
-//            formTester.setValue("port", String.valueOf(ae.getPort()));
-//            getEntityManager().getTransaction().begin();
-//            formTester.submit("submit");
-//            getEntityManager().getTransaction().commit();
-//            wicketTester.assertNoErrorMessage();
-//        }
-//        wicketTester.startPage(AETestPage.class);
-//        wicketTester.assertListView("aelist:list", aeList);
+        wicketTester.startPage(AETestPage.class);
+        doLogin("aemgr","aemgr");
+        wicketTester.assertRenderedPage(AETestPage.class);
+        for ( AE ae : aeList ) {
+            wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE(), null));
+            FormTester formTester = wicketTester.newFormTester("form");
+            formTester.setValue("title", ae.getTitle());
+            formTester.setValue("hostName", ae.getHostName());
+            formTester.setValue("port", String.valueOf(ae.getPort()));
+            getEntityManager().getTransaction().begin();
+            formTester.submit("submit");
+            getEntityManager().getTransaction().commit();
+            wicketTester.assertNoErrorMessage();
+        }
+        wicketTester.startPage(AETestPage.class);
+        wicketTester.assertListView("aelist:list", aeList);
     }
-
+/*
     @Test
     public void testOpenEchoFromList() {
-//        initDummyMBean();
-//        wicketTester.startPage(AETestPage.class);
-//        wicketTester.assertListView("aelist:list", aeList);
-//        wicketTester.clickLink("aelist:list:0:echo");
-//        wicketTester.assertNoErrorMessage();
-//        wicketTester.assertComponent("aelist:echoPanel:content", DicomEchoWindow.DicomEchoPage.class);        
-//        assertTrue("DicomEchoWindow.isShown:", ((ModalWindow)wicketTester.getComponentFromLastRenderedPage("aelist:echoPanel")).isShown());
+        initDummyMBean();
+        wicketTester.startPage(AETestPage.class);
+        doLogin("aemgr","aemgr");
+        wicketTester.assertRenderedPage(AETestPage.class);
+        wicketTester.assertListView("aelist:list", aeList);
+        wicketTester.clickLink("aelist:list:0:echo");
+        wicketTester.assertNoErrorMessage();
+        wicketTester.assertComponent("aelist:echoPanel:content", DicomEchoWindow.DicomEchoPage.class);        
+        assertTrue("DicomEchoWindow.isShown:", ((ModalWindow)wicketTester.getComponentFromLastRenderedPage("aelist:echoPanel")).isShown());
     }
-
-    private AE getTestAE(String title, String host, int port) {
-        AE ae = new AE();
-        ae.setTitle(title);
-        ae.setHostName(host);
-        ae.setPort(port);
-        return ae;
-    }
-    
+/*
     @Test
     public void testUnauthorizedEdit() {
-        wicketTester.getApplication().getSecuritySettings().setAuthorizationStrategy(
-                new RoleAuthorizationStrategy(new UserRolesAuthorizer("dummy")));
         wicketTester.startPage(AETestPage.class);
+        doLogin("aemgr","aemgr");
+        wicketTester.assertRenderedPage(AETestPage.class);
         wicketTester.getComponentFromLastRenderedPage("aelist").getSession().setLocale(new Locale("en"));
         wicketTester.assertInvisible("aelist:newAET");
 //        wicketTester.assertInvisible("aelist:list:0:editAET");
@@ -154,22 +163,23 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
     private void initDummyMBean() {
         MBeanServer mbServer = MBeanServerFactory.createMBeanServer();
         try {
-            mbServer.createMBean("org.dcm4chee.web.wicket.ae.DummyEchoMBean", 
-                    new ObjectName("dcm4chee.archive:service=ECHOService"));
+            mbServer.createMBean("org.dcm4chee.web.war.ae.DummyEchoMBean", 
+                    new ObjectName("dcm4chee.web:service=EchoService"));
         } catch (Exception ignore) {log.error("Can't create DummyEchoMBean!",ignore);}        
     }
-    
-    private static final class UserRolesAuthorizer implements IRoleCheckingStrategy, Serializable {
-            private static final long serialVersionUID = 1L;
+/*_*/
+    private AE getTestAE(String title, String host, int port) {
+        AE ae = new AE();
+        ae.setTitle(title);
+        ae.setHostName(host);
+        ae.setPort(port);
+        return ae;
+    }
 
-            private final Roles roles;
-
-            public UserRolesAuthorizer(String roles) {
-                    this.roles = new Roles(roles);
-            }
-
-            public boolean hasAnyRole(Roles roles) {
-                    return this.roles.hasAnyRole(roles);
-            }
+    private void doLogin(String user, String passwd) {
+        FormTester formTester = wicketTester.newFormTester("signInPanel:signInForm");
+        formTester.setValue("username", user);
+        formTester.setValue("password", passwd);
+        formTester.submit();
     }
 }
