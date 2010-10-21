@@ -582,7 +582,9 @@ public class HPSelectorFactory {
                     "Missing (0072,0406) Filter-by Operator");
         try {
             FilterOp filter = FilterOp.valueOf(filterOp);
-            return createAttributeValueSelector(item, true, filter);
+            String usageFlag = item.getString(Tag.ImageSetSelectorUsageFlag);
+            return createAttributeValueSelector(item,
+                    usageFlag != null ? isMatch(usageFlag) : true, filter);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
                     "Illegal (0072,0406) Filter-by Operator: " + filterOp);
@@ -775,7 +777,31 @@ public class HPSelectorFactory {
         }
     }
 
-    private static HPSelector createAttributeValueSelector(String usageFlag,
+    /**
+     * Create Display Set Filter with <code>int</code> Selector Attribute
+     * Values and and specified Image Set Selector Usage Flag (0072,0024).
+     * A new {@link #getDicomObject DicomObject}, representing the according
+     * Image Set Selector Sequence (0072,0022) item is allocated and initialized.
+     * 
+     * @param usageFlag
+     *            {@link CodeString#MATCH} or {@link CodeString#NO_MATCH} or
+     *            <code>null</code>
+     * @param privateCreator
+     *            Selector Attribute Private Creator, if Selector Attribute is
+     *            contained by a Private Group, otherwise <code>null</code>.
+     * @param tag
+     *            Selector Attribute
+     * @param valueNumber
+     *            Selector Value Number
+     * @param vr
+     *            Selector Attribute VR: AT, IS, SL, SS, UL, or US
+     * @param values
+     *            Selector Values
+     * @param filterOp
+     *            Filter-by Operator
+     * @return new Display Set Filter
+     */
+    public static HPSelector createAttributeValueSelector(String usageFlag,
             String privateCreator, int tag, int valueNumber, VR vr,
             int[] values, FilterOp filterOp) {
         VR vr1 = vr != null ? vr : VRMap.getPrivateVRMap(privateCreator).vrOf(
