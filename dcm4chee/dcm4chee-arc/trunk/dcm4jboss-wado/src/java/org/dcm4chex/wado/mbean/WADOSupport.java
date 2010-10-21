@@ -1151,11 +1151,10 @@ public class WADOSupport {
     private BufferedImage getImage(File file, int frame, String rows,
             String columns, String region, String windowWidth,
             String windowCenter) throws IOException {
-        Iterator it = ImageIO.getImageReadersByFormatName("DICOM");
-        if (!it.hasNext()) {
+        ImageReader reader = getDicomImageReader();
+        if (reader == null) {
             return null; // TODO more useful stuff
         }
-        ImageReader reader = (ImageReader) it.next();
         ImageInputStream in = new FileImageInputStream(file);
         try {
             reader.setInput(in, false);
@@ -1214,6 +1213,17 @@ public class WADOSupport {
             // icons in a tight loop
             in.close();
         }
+    }
+
+    private ImageReader getDicomImageReader() {
+        Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("DICOM");
+        while (it.hasNext()) {
+            ImageReader reader = it.next();
+            if (reader.getClass().getName()
+                    .equals("org.dcm4cheri.imageio.plugins.DcmImageReader"))
+                return reader;
+        }
+        return null;
     }
 
     /**
