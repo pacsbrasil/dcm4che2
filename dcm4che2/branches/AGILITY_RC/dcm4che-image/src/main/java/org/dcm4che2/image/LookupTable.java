@@ -437,6 +437,7 @@ public abstract class LookupTable {
             int outBits, float slope, float intercept, float center,
             float width, boolean inverse, short[] pval2out,
             Integer pixelPaddingValue, Integer pixelPaddingRange) {
+        
         log.debug("Ramp LUT " + slope + "/" + intercept + " c/w=" + center
                 + "/" + width + " inverse " + inverse);
 
@@ -477,7 +478,20 @@ public abstract class LookupTable {
         }
         int off = Math.min(inMax, Math.max(in1, inMin));
         int iMax = Math.max(1, Math.max(inMin, Math.min(in2, inMax)) - off);
-        int size = inRange;
+        int size = iMax+1;
+
+        Integer[] minMaxPixelPadding = getMinMaxPixelPadding(pixelPaddingValue, pixelPaddingRange);
+        if (pixelPaddingValue != null){
+            off = Math.min(minMaxPixelPadding[0], off);
+            // adjust for Pixelpadding > largest pixel value
+            if (minMaxPixelPadding[1] > size)
+                size = Math.max(size, minMaxPixelPadding[1]-off);
+
+            // adjust for Pixelpadding < smallest pixel value
+            if (minMaxPixelPadding[0] < 0)
+                size += Math.abs(minMaxPixelPadding[0]);
+        }
+        
         int outBits1 = pval2out == null ? outBits : inBits(pval2out);
         int outRange = 1 << outBits1;
         int pval2outShift = 16 - outBits;
@@ -507,7 +521,7 @@ public abstract class LookupTable {
             }
         }
 
-        int iMaxVal = ((Number)data.getArrayItem(iMax)).intValue();
+        int iMaxVal = data.getArrayItem(iMax).intValue();
         if (iMax + off == in2) {
             if (pval2out == null) {
                 iMaxVal = out2;
@@ -519,10 +533,7 @@ public abstract class LookupTable {
             data.setArrayItem(i, iMaxVal);
         }
 
-        if (pixelPaddingValue != null) {
-            applyPixelPadding(data, out1, pixelPaddingValue, pixelPaddingRange,
-                    off);
-        }
+        applyPixelPadding(data, out1, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
 
         if (outBits <= 8) {
             return new ByteLookupTable(inBits, signed, off, outBits,
@@ -567,10 +578,8 @@ public abstract class LookupTable {
         }
 
         int padVal = (inverse ? 0 : outMax);
-        if (pixelPaddingValue != null) {
-            applyPixelPadding(data, padVal, pixelPaddingValue,
-                    pixelPaddingRange, off);
-        }
+        Integer[] minMaxPixelPadding = getMinMaxPixelPadding(pixelPaddingValue, pixelPaddingRange);
+        applyPixelPadding(data, padVal, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
 
         if (outBits <= 8) {
             return new ByteLookupTable(inBits, signed, off, outBits,
@@ -657,10 +666,8 @@ public abstract class LookupTable {
 
         if (data.length == len) {
             GenericNumericArray dataArray = new GenericNumericArray(data);
-            if (pixelPaddingValue != null) {
-                applyPixelPadding(dataArray, 0, pixelPaddingValue,
-                        pixelPaddingRange, off);
-            }
+            Integer[] minMaxPixelPadding = getMinMaxPixelPadding(pixelPaddingValue, pixelPaddingRange);
+            applyPixelPadding(dataArray, 0, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
             return new ByteLookupTable(inBits, signed, off, bits,
                     (byte[]) dataArray.getArray(), true);
         } else if (data.length == len << 1) {
@@ -674,10 +681,8 @@ public abstract class LookupTable {
             }
 
             GenericNumericArray dataArray = new GenericNumericArray(sdata);
-            if (pixelPaddingValue != null) {
-                applyPixelPadding(dataArray, 0, pixelPaddingValue,
-                        pixelPaddingRange, off);
-            }
+            Integer[] minMaxPixelPadding = getMinMaxPixelPadding(pixelPaddingValue, pixelPaddingRange);
+            applyPixelPadding(dataArray, 0, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
 
             ShortLookupTable ret = new ShortLookupTable(inBits, signed, off,
                     bits, (short[]) dataArray.getArray(), true);
@@ -755,10 +760,9 @@ public abstract class LookupTable {
             data[i] = vlut.lookupShort(Math.round(i * slope + intercept));
         }
         GenericNumericArray dataArray = new GenericNumericArray(data);
-        if (pixelPaddingValue != null) {
-            applyPixelPadding(dataArray, 0, pixelPaddingValue,
-                    pixelPaddingRange, off);
-        }
+        Integer[] minMaxPixelPadding = getMinMaxPixelPadding(pixelPaddingValue, pixelPaddingRange);
+        applyPixelPadding(dataArray, 0, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
+        
         return new ShortLookupTable(inBits, signed, off, vlut.outBits,
                 (short[]) dataArray.getArray());
     }
@@ -1368,25 +1372,42 @@ public abstract class LookupTable {
                 pval2out, pixelPaddingValue, pixelPaddingRange);
     }
 
-    private static void applyPixelPadding(GenericNumericArray data,
-            int padValue, Integer pixelPaddingValue, Integer pixelPaddingRange,
-            int offset) {
+    private static void applyPixelPadding(GenericNumericArray data, int padValue,
+            Integer minPad, Integer maxPad, int offset) {
+        
+        if (minPad == null)
+            return;
+        
+        if (minPad- offset < 0){
+            log.error("Error in calculation of offset wrt pixel padding data. pixel padding range from " +
+                    minPad + " to "+ maxPad + ", offset=" + offset);
+        }
+
+        for (int i = minPad-offset; i <= maxPad-offset; i++) {
+            data.setArrayItem(i, padValue);
+        }
+    }
+    
+    private static Integer[] getMinMaxPixelPadding(Integer pixelPaddingValue, Integer pixelPaddingRange){
+        Integer[] info = new Integer[2];
+        
+        if (pixelPaddingValue == null){
+            return info;
+        }
 
         Integer minPad = pixelPaddingValue;
         Integer maxPad = pixelPaddingValue;
         if (pixelPaddingRange != null) {
             if (pixelPaddingRange > pixelPaddingValue) {
-                maxPad = pixelPaddingRange - offset;
-                minPad -= offset;
+                maxPad = pixelPaddingRange;
             } else {
-                maxPad -= offset;
-                minPad = pixelPaddingRange - offset;
+                minPad = pixelPaddingRange;
             }
         }
 
-        for (int i = minPad; i <= maxPad; i++) {
-            data.setArrayItem(i, padValue);
-        }
+        info[0] = minPad;
+        info[1] = maxPad;
+        return info;
     }
 
     /**
