@@ -485,7 +485,7 @@ public abstract class LookupTable {
             off = Math.min(minMaxPixelPadding[0], off);
             // adjust for Pixelpadding > largest pixel value
             if (minMaxPixelPadding[1] > size)
-                size = Math.max(size, minMaxPixelPadding[1]-off);
+                size = Math.max(size, minMaxPixelPadding[1]-off + 1);
 
             // adjust for Pixelpadding < smallest pixel value
             if (minMaxPixelPadding[0] < 0)
