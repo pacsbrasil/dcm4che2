@@ -779,7 +779,7 @@ public class HPSelectorFactory {
 
     /**
      * Create Display Set Filter with <code>int</code> Selector Attribute
-     * Values and and specified Image Set Selector Usage Flag (0072,0024).
+     * Values and specified Image Set Selector Usage Flag (0072,0024).
      * A new {@link #getDicomObject DicomObject}, representing the according
      * Image Set Selector Sequence (0072,0022) item is allocated and initialized.
      * 
