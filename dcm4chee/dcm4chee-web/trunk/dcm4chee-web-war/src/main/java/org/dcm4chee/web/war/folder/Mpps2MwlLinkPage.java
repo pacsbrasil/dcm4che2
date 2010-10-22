@@ -61,11 +61,14 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
+import org.dcm4chee.web.common.secure.SecureSession;
+import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.folder.model.PPSModel;
@@ -97,6 +100,9 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     
     private static Logger log = LoggerFactory.getLogger(Mpps2MwlLinkPage.class);
     
+    StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+    SecureSession secureSession = ((SecureSession) getSession());
+
     public Mpps2MwlLinkPage(String id) {
         super(id);
         
@@ -188,7 +194,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                             hideLinkedPpsInFolder(viewport);
                             if (!hideLinkedPps) {
                                 List<PatientModel> pats = viewport.getPatients();
-                                PatientModel patModel = new PatientModel(result.getMwl().getPatient(), new Model<Boolean>(false));
+                                PatientModel patModel = new PatientModel(result.getMwl().getPatient(), new Model<Boolean>(false), ((SecureSession) getSession()));
                                 int pos = pats.indexOf(patModel);
                                 if (pos == -1) {
                                     pats.add(patModel);
@@ -198,7 +204,9 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                                 StudyModel sm;
                                 List<StudyModel> studies = patModel.getStudies();
                                 for (Study s : result.getStudiesToMove()) {
-                                    sm = new StudyModel(s, patModel);
+// TODO: check if studyPermissionActions work
+                                    sm = new StudyModel(s, patModel, 
+                                            dao.findStudyPermissionActions(s.getStudyInstanceUID(), secureSession.getDicomRoles()));
                                     sm.refresh().expand();
                                     studies.add(sm);
                                 }

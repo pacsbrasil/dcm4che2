@@ -74,12 +74,6 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     private int numberOfStudyRelatedInstances;
     private List<String> studyPermissionActions;
     
-    public StudyModel(Study study, PatientModel patModel) {
-        this(study, patModel, null);
-        // TODO: 
-        System.out.println("TODO: switch to constructor with study permission actions parameter");
-    }
-    
     public StudyModel(Study study, PatientModel patModel, List<String> studyPermissionActions) {
         if (study == null) {
             setPk(-1);
@@ -109,6 +103,10 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
         return studyPermissionActions;
     }
 
+    public void setStudyPermissionActions(List<String> studyPermissionActions) {
+        this.studyPermissionActions = studyPermissionActions;
+    }
+    
     public Date getDatetime() {
         return toDate(Tag.StudyDate, Tag.StudyTime);
     }

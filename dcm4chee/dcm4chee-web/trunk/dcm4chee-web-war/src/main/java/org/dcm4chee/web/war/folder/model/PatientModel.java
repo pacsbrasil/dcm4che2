@@ -71,17 +71,9 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
 
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
     SecureSession secureSession;
-    
-    // session parameters
-//    SecureSession session;
 
-    public PatientModel(Patient patient, IModel<Boolean> latestStudyFirst) {
-        this(patient, latestStudyFirst, null);
-System.out.println("WARNING: DEPRECATED CONSTRUCTOR USED");
-    }
-    
     public PatientModel(Patient patient, IModel<Boolean> latestStudyFirst, SecureSession secureSession) {
-        
+
         this.secureSession = secureSession;
         if (RequestCycle.get() != null) this.secureSession = ((SecureSession) RequestCycle.get().getSession());
         setPk(patient.getPk());
@@ -155,8 +147,8 @@ System.out.println("WARNING: DEPRECATED CONSTRUCTOR USED");
     public void expand() {
         studies.clear();
         dao.setDicomSecurityRoles(secureSession.getDicomRoles());
-        for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst.getObject())) 
-            this.studies.add(new StudyModel(study, this, secureSession.getDicomRoles()));
+        for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst.getObject()))            
+            this.studies.add(new StudyModel(study, this, dao.findStudyPermissionActions(study.getStudyInstanceUID(), secureSession.getDicomRoles())));
     }
 
     @Override

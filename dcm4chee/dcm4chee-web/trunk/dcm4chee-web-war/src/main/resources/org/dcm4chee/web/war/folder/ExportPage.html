@@ -9,10 +9,26 @@
   		<span wicket:id="label">LABEL</span>
   		<table>
 	  		<th wicket:id="selectedItems">LABEL</th>
-  			<tr><td wicket:id="selectedPats">Patients</td><td wicket:id="selectedPatsValue">0</td></tr>
-  			<tr><td wicket:id="selectedStudies">Patients</td><td wicket:id="selectedStudiesValue">0</td></tr>
-  			<tr><td wicket:id="selectedSeries">Patients</td><td wicket:id="selectedSeriesValue">0</td></tr>
-  			<tr><td wicket:id="selectedInstances">Patients</td><td wicket:id="selectedInstancesValue">0</td></tr>
+  			<tr>
+  				<td wicket:id="selectedPats">Patients</td>
+  				<td wicket:id="selectedPatsValue">0</td>
+  				<td wicket:id="deniedPatsValue" class="invalid">0</td>
+			</tr>
+  			<tr>
+  				<td wicket:id="selectedStudies">Patients</td>
+  				<td wicket:id="selectedStudiesValue">0</td>
+  				<td wicket:id="deniedStudiesValue" class="invalid">0</td>
+			</tr>
+  			<tr>
+  				<td wicket:id="selectedSeries">Patients</td>
+  				<td wicket:id="selectedSeriesValue">0</td>
+  				<td wicket:id="deniedSeriesValue" class="invalid">0</td>
+			</tr>
+  			<tr>
+  				<td wicket:id="selectedInstances">Patients</td>
+  				<td wicket:id="selectedInstancesValue">0</td>
+  				<td wicket:id="deniedInstancesValue" class="invalid">0</td>
+			</tr>
   		</table>
            <div wicket:id="destinationAETsLabel">Destination AET:</div>
           	<select wicket:id="destinationAETs">

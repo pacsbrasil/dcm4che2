@@ -69,13 +69,16 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.PrivateTag;
+import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.exceptions.SelectionException;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.dao.common.DicomEditLocal;
+import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
@@ -135,6 +138,9 @@ public class MoveEntitiesPage extends SecureWebPage {
     
     private ModalWindow window;
     
+    StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+    SecureSession secureSession = ((SecureSession) getSession());
+
     public MoveEntitiesPage(ModalWindow window, SelectedEntities selectedEntities, List<PatientModel> all) {
         super();
 
@@ -256,7 +262,8 @@ public class MoveEntitiesPage extends SecureWebPage {
     }
     private void needNewStudy(DicomObject presetDS, final PatientModel pat) {
         missingState = missingState | MISSING_STUDY;
-        studyModel = new StudyModel(null, pat);
+// TODO: studyPermissionActions
+        studyModel = new StudyModel(null, pat, null);
         newStudyPanel = 
             new SimpleEditDicomObjectPanel(
                     "content", 

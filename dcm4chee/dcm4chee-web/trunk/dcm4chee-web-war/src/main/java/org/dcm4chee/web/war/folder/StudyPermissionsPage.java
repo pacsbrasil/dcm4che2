@@ -105,7 +105,7 @@ public class StudyPermissionsPage extends SecureWebPage {
     private boolean forPatient = false;
     private long studyCountForPatient = -1;
    
-List<StudyPermission> currentStudyPermissions;
+    List<StudyPermission> currentStudyPermissions;
     
     public StudyPermissionsPage(final ModalWindow modalWindow, AbstractEditableDicomModel model) {
         super();
@@ -116,7 +116,8 @@ List<StudyPermission> currentStudyPermissions;
             add(CSSPackageResource.getHeaderContribution(StudyPermissionsPage.BaseCSS));
 
         if (model instanceof org.dcm4chee.web.war.folder.model.PatientModel) forPatient = true;
-        else if (!(model instanceof org.dcm4chee.web.war.folder.model.PatientModel)) 
+        else if (model instanceof org.dcm4chee.web.war.folder.model.StudyModel) {}
+        else
             log.error(this.getClass() + ": No valid model for StudyPermission assignment");
         
         add(new WebMarkupContainer("studyPermissions-patient").setVisible(forPatient));

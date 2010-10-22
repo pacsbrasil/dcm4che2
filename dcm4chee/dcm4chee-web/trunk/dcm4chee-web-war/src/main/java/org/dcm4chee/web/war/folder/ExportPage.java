@@ -72,9 +72,11 @@ import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
@@ -162,12 +164,16 @@ public class ExportPage extends SecureWebPage {
         form.addLabel("selectedItems");
         form.addLabel("selectedPats");
         form.add( new Label("selectedPatsValue", new PropertyModel<Integer>(exportInfo, "nrOfPatients")));
+        form.add( new Label("deniedPatsValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfPatients")));
         form.addLabel("selectedStudies");
         form.add( new Label("selectedStudiesValue", new PropertyModel<Integer>(exportInfo, "nrOfStudies")));
+        form.add( new Label("deniedStudiesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfStudies")));
         form.addLabel("selectedSeries");
         form.add( new Label("selectedSeriesValue", new PropertyModel<Integer>(exportInfo, "nrOfSeries")));
+        form.add( new Label("deniedSeriesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfSeries")));
         form.addLabel("selectedInstances");
         form.add( new Label("selectedInstancesValue", new PropertyModel<Integer>(exportInfo, "nrOfInstances")));
+        form.add( new Label("deniedInstancesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfInstances")));
         form.add(new DropDownChoice<AE>("destinationAETs", destinationModel, destinationAETs, new IChoiceRenderer<AE>(){
             private static final long serialVersionUID = 1L;
 
@@ -222,7 +228,6 @@ public class ExportPage extends SecureWebPage {
                 super.onComponentTag(tag);
             }
         }.setOutputMarkupId(true));
-        
         
         form.add( new Button("export", new ResourceModel("export.exportBtn.text")){
 
@@ -356,11 +361,21 @@ public class ExportPage extends SecureWebPage {
     }
 
     private class ExportInfo implements Serializable {
+        
         private static final long serialVersionUID = 1L;
+        
         List<MoveRequest> requests;
         int nrPat, nrStudy, nrSeries, nrInstances;
+        int NOTnrPat, NOTnrStudy, NOTnrSeries, NOTnrInstances;
         
+        StudyListLocal dao;
+//        SecureSession secureSession;
+
         private ExportInfo(List<PatientModel> patients) {
+            dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+// TODO: 
+//            secureSession = ((SecureSession) getSession());
+            
             this.requests = new ArrayList<MoveRequest>(patients.size());
             for (PatientModel pat : patients) {
                 if (pat.isSelected()) {
@@ -399,25 +414,76 @@ public class ExportPage extends SecureWebPage {
             return nrInstances;
         }
 
+        @SuppressWarnings("unused")
+        public int getDeniedNrOfPatients() {
+            return NOTnrPat;
+        }
+
+        @SuppressWarnings("unused")
+        public int getDeniedNrOfStudies() {
+            return NOTnrStudy;
+        }
+
+        @SuppressWarnings("unused")
+        public int getDeniedNrOfSeries() {
+            return NOTnrSeries;
+        }
+
+        @SuppressWarnings("unused")
+        public int getDeniedNrOfInstances() {
+            return NOTnrInstances;
+        }
+
         private void prepareStudiesOfPatientRequests(PatientModel pat) {
-            nrPat++;
+//            nrPat++;
+//            ArrayList<String> uids = new ArrayList<String>();
+//            List<Study> studies = getStudiesOfPatient(pat);
+//            for (Study study : studies) {
+//                uids.add(study.getStudyInstanceUID());
+//            }
+
             ArrayList<String> uids = new ArrayList<String>();
             List<Study> studies = getStudiesOfPatient(pat);
+            int selected = 0;
             for (Study study : studies) {
-                uids.add(study.getStudyInstanceUID());
+                if (dao.findStudyPermissionActions(study.getStudyInstanceUID(), ((SecureSession) getSession()).getDicomRoles()).contains(StudyPermission.EXPORT_ACTION)) {
+                    uids.add(study.getStudyInstanceUID());
+                    selected++;
+                } else 
+                    NOTnrStudy++;
+            }
+            if (selected == studies.size()) 
+                nrPat++;
+            else {
+                NOTnrPat++;
+                nrStudy += selected;
             }
             log.debug("Selected for export: Studies of Patient:{} StudyUIDs:{}", pat.getId(), uids);
             requests.add( new MoveRequest().setStudyMoveRequest(pat.getId(), toArray(uids)));
         }
 
         private void prepareStudyRequests(List<StudyModel> studies) {
+//            ArrayList<String> uids = new ArrayList<String>();
+//            for (StudyModel study : studies ) {
+//                if (study.isSelected()) {
+//                    nrStudy++;
+//                    uids.add(study.getStudyInstanceUID());
+//                } else {
+//                    prepareSeriesRequests(study.getStudyInstanceUID(), study.getPPSs());
+//                }
+//            }
             ArrayList<String> uids = new ArrayList<String>();
             for (StudyModel study : studies ) {
+                boolean denied = !dao.findStudyPermissionActions(study.getStudyInstanceUID(), ((SecureSession) getSession()).getDicomRoles()).contains(StudyPermission.EXPORT_ACTION);
                 if (study.isSelected()) {
-                    nrStudy++;
-                    uids.add(study.getStudyInstanceUID());
+                    if (denied) {
+                        NOTnrStudy++;
+                    } else {
+                        uids.add(study.getStudyInstanceUID());
+                        nrStudy++;
+                    }
                 } else {
-                    prepareSeriesRequests(study.getStudyInstanceUID(), study.getPPSs());
+                    prepareSeriesRequests(study.getStudyInstanceUID(), study.getPPSs(), denied);
                 }
             }
             if ( !uids.isEmpty()) {
@@ -426,22 +492,49 @@ public class ExportPage extends SecureWebPage {
             }
         }
         
-        private void prepareSeriesRequests(String studyIUID, List<PPSModel> ppss) {
+        private void prepareSeriesRequests(String studyIUID, List<PPSModel> ppss, boolean denied) {
+//            ArrayList<String> uids = new ArrayList<String>();
+//            for (PPSModel pps : ppss ) {
+//                if (pps.isSelected()) {
+//                    log.debug("Selected for export: Series of selected PPS! AccNr:{}",pps.getAccessionNumber());
+//                    for (SeriesModel series : pps.getSeries()) {
+//                        nrSeries++;
+//                        uids.add(series.getSeriesInstanceUID());
+//                    }
+//                } else {
+//                    for (SeriesModel series : pps.getSeries()) {
+//                        if (series.isSelected()) {
+//                            nrSeries++;
+//                            uids.add(series.getSeriesInstanceUID());
+//                        } else {
+//                            prepareInstanceRequest(studyIUID, series.getSeriesInstanceUID(), series.getInstances());
+//                        }
+//                    }
+//                } 
+//            }
             ArrayList<String> uids = new ArrayList<String>();
             for (PPSModel pps : ppss ) {
                 if (pps.isSelected()) {
                     log.debug("Selected for export: Series of selected PPS! AccNr:{}",pps.getAccessionNumber());
                     for (SeriesModel series : pps.getSeries()) {
-                        nrSeries++;
-                        uids.add(series.getSeriesInstanceUID());
+                        if (denied)
+                            NOTnrSeries++;
+                        else {
+                            uids.add(series.getSeriesInstanceUID());
+                            nrSeries++;
+                        }
                     }
                 } else {
                     for (SeriesModel series : pps.getSeries()) {
                         if (series.isSelected()) {
-                            nrSeries++;
-                            uids.add(series.getSeriesInstanceUID());
+                            if (denied)
+                                NOTnrSeries++;
+                            else {
+                                uids.add(series.getSeriesInstanceUID());
+                                nrSeries++;
+                            }
                         } else {
-                            prepareInstanceRequest(studyIUID, series.getSeriesInstanceUID(), series.getInstances());
+                            prepareInstanceRequest(studyIUID, series.getSeriesInstanceUID(), series.getInstances(), denied);
                         }
                     }
                 } 
@@ -453,12 +546,23 @@ public class ExportPage extends SecureWebPage {
         }
         
         private void prepareInstanceRequest(String studyIUID, String seriesIUID,
-                List<InstanceModel> instances) {
+                List<InstanceModel> instances, boolean denied) {
+//            ArrayList<String> uids = new ArrayList<String>();
+//            for (InstanceModel instance : instances) {
+//                if (instance.isSelected()) {
+//                    nrInstances++;
+//                    uids.add(instance.getSOPInstanceUID());
+//                }
+//            }
             ArrayList<String> uids = new ArrayList<String>();
             for (InstanceModel instance : instances) {
                 if (instance.isSelected()) {
-                    nrInstances++;
-                    uids.add(instance.getSOPInstanceUID());
+                    if (denied)
+                        NOTnrInstances++;
+                    else {
+                        uids.add(instance.getSOPInstanceUID());
+                        nrInstances++;
+                    }
                 }
             }
             if ( !uids.isEmpty()) {

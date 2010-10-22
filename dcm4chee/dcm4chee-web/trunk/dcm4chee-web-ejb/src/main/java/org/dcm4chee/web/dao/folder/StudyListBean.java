@@ -39,6 +39,7 @@
 package org.dcm4chee.web.dao.folder;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -73,7 +74,7 @@ import org.jboss.annotation.ejb.LocalBinding;
 @Stateful
 @LocalBinding (jndiBinding=StudyListLocal.JNDI_NAME)
 public class StudyListBean implements StudyListLocal {
-    
+
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
     private static Comparator<Instance> instanceComparator = new Comparator<Instance>() {
         public int compare(Instance o1, Instance o2) {
@@ -151,6 +152,7 @@ public class StudyListBean implements StudyListLocal {
     }
 
     public int countStudies(StudyListFilter filter) {
+        if ((useSecurity) && (roles.size() == 0)) return 0;
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT COUNT(*)");
         appendFromClause(ql, filter);
@@ -166,6 +168,7 @@ public class StudyListBean implements StudyListLocal {
 
     @SuppressWarnings("unchecked")
     public List<Object[]> findStudies(StudyListFilter filter, int max, int index) {
+        if ((useSecurity) && (roles.size() == 0)) return new ArrayList<Object[]>();
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT p, s");
         appendFromClause(ql, filter);

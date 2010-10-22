@@ -44,7 +44,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
@@ -71,45 +70,46 @@ public class SelectedEntities implements Serializable {
     private Set<InstanceModel> instances = new HashSet<InstanceModel>();
     private Set<FileModel> files = new HashSet<FileModel>();
 
-    public boolean update(List<PatientModel> allPatients) {
-        return update(allPatients, false);
+    public boolean update(boolean useStudyPermissions, List<PatientModel> allPatients, String action) {
+        return update(useStudyPermissions, allPatients, action, false);
     }
     
-    public boolean update(List<PatientModel> allPatients, boolean all) {
+    public boolean update(boolean useStudyPermissions, List<PatientModel> allPatients, String action, boolean all) {
         boolean ignoredNotAllowedEntities = false;
         clear();
         for ( PatientModel patient : allPatients ) {
             if (patient.isSelected()) {
                 int allowedStudyCount = 0;
                 for (StudyModel study : patient.getStudies()) {
-                    if (study.getStudyPermissionActions().contains(StudyPermission.DELETE_ACTION)) {
-                        studies.add(study);
+                    if (study.getStudyPermissionActions().contains(action) || !useStudyPermissions) {
+//                        studies.add(study);
                         allowedStudyCount++;
                     }
                 }
-                if (allowedStudyCount == patient.getStudies().size())
+                if (allowedStudyCount == patient.getStudies().size() || !useStudyPermissions)
                     patients.add(patient);
                 else
                     ignoredNotAllowedEntities = true;
             } else {
             if (all || !patient.isSelected()) {
                 for (StudyModel study : patient.getStudies()) {
-                    if (study.isSelected() && study.getStudyPermissionActions().contains(StudyPermission.DELETE_ACTION)) {
+                    if (study.isSelected() && (study.getStudyPermissionActions().contains(action) || !useStudyPermissions)) {
                         studies.add(study);
-                    }
+                    } else 
+                        ignoredNotAllowedEntities = true;
                     if (all || !study.isSelected()) {
                         for ( PPSModel pps : study.getPPSs()) {
-                            if (pps.isSelected() && pps.getStudy().getStudyPermissionActions().contains(StudyPermission.DELETE_ACTION)) {
+                            if (pps.isSelected() && (pps.getStudy().getStudyPermissionActions().contains(action) || !useStudyPermissions)) {
                                ppss.add(pps);
                             }
                             if (all || !pps.isSelected()) {
                                 for ( SeriesModel series : pps.getSeries()) {
-                                    if (series.isSelected() && series.getPPS().getStudy().getStudyPermissionActions().contains(StudyPermission.DELETE_ACTION)) {
+                                    if (series.isSelected() && (series.getPPS().getStudy().getStudyPermissionActions().contains(action) || !useStudyPermissions)) {
                                         seriess.add(series);
                                     }
                                     if (all || !series.isSelected()) {
                                         for (InstanceModel inst : series.getInstances()) {
-                                            if (inst.isSelected() && inst.getSeries().getPPS().getStudy().getStudyPermissionActions().contains(StudyPermission.DELETE_ACTION)) {
+                                            if (inst.isSelected() && (inst.getSeries().getPPS().getStudy().getStudyPermissionActions().contains(action) || !useStudyPermissions)) {
                                                 instances.add(inst);
                                             }
                                         }

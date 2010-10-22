@@ -204,7 +204,6 @@ public class StudyListPage extends Panel {
             private static final long serialVersionUID = 1L;
 
             public void onClose(AjaxRequestTarget target) {
-                getPage().setOutputMarkupId(true);
                 target.addComponent(getPage());
             }            
         });
@@ -722,9 +721,9 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                boolean hasIgnored = selected.update(viewport.getPatients());
+                boolean hasIgnored = selected.update(((SecureSession) getSession()).getUseStudyPermissions(), viewport.getPatients(), StudyPermission.DELETE_ACTION);
                 selected.deselectChildsOfSelectedEntities();
-                if (hasIgnored) 
+                if (hasIgnored && !!((SecureSession) getSession()).getUseStudyPermissions()) 
                     confirmDelete.setRemark(new StringResourceModel("folder.message.deleteNotAllowed",this, null));
                 else 
                     confirmDelete.setRemark(null);
@@ -733,7 +732,11 @@ public class StudyListPage extends Panel {
                 } else if (selected.hasDicomSelection()) {
                     confirmDelete.confirm(target, new StringResourceModel("folder.message.confirmDelete",this, null,new Object[]{selected}), selected);
                 } else { 
-                    msgWin.setInfoMessage(getString("folder.message.noSelection"));
+                    if (hasIgnored) {
+                        msgWin.setInfoMessage(getString("folder.message.deleteNotAllowed"));
+                        msgWin.setColor("#FF0000");
+                    } else
+                        msgWin.setInfoMessage(getString("folder.message.noSelection"));
                     msgWin.show(target);
                 }
             }
@@ -753,7 +756,7 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                boolean hasIgnored = selected.update(viewport.getPatients(), true);
+                boolean hasIgnored = selected.update(((SecureSession) getSession()).getUseStudyPermissions(), viewport.getPatients(), StudyPermission.UPDATE_ACTION, true);
                 if (hasIgnored) {
                     msgWin.setColor("#FF0000");
                     msgWin.setInfoMessage(getString("folder.message.moveNotAllowed"));
@@ -807,7 +810,6 @@ public class StudyListPage extends Panel {
         int[] winSize = WebCfgDelegate.getInstance().getWindowSize("export");
         exportBtn.setPopupWidth(winSize[0]);
         exportBtn.setPopupHeight(winSize[1]);
-
         exportBtn.add(new Image("exportImg",ImageManager.IMAGE_FOLDER_EXPORT)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
@@ -1114,7 +1116,6 @@ public class StudyListPage extends Panel {
                 public boolean isVisible() {
                     return patModel.isDetails();
                 }
-                
             };
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", patModel, false));
@@ -1137,7 +1138,7 @@ public class StudyListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
-            
+
             final StudyModel studyModel = (StudyModel) item.getModelObject();
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
@@ -1179,15 +1180,12 @@ public class StudyListPage extends Panel {
                 .add(tooltip))
             );
             item.add(getEditLink(modalWindow, studyModel, tooltip)
-                    .setVisible(studyModel.getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":editStudyLink"))
             );
             item.add(getStudyPermissionLink(modalWindow, studyModel, tooltip)
-                    .setVisible(studyModel.getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":studyPermissionsStudyLink"))
                     .add(tooltip));
             item.add(getAddSeriesLink(studyModel, tooltip)
-                    .setVisible(studyModel.getStudyPermissionActions().contains(StudyPermission.APPEND_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":addSeriesLink"))
             );
             item.add(new AjaxLink<Object>("imgSelect") {
@@ -1794,7 +1792,7 @@ public class StudyListPage extends Panel {
                                 model
                         );
                     }
-                });
+                });                
                 super.onClick(target);
             }
             
@@ -1811,6 +1809,7 @@ public class StudyListPage extends Panel {
     }
 
     private boolean checkEditPermission(AbstractDicomModel model) {
+        if (!((SecureSession) getSession()).getUseStudyPermissions()) return true;
         int hasEditPermission = 0;
         if (model instanceof PatientModel) {
             for (StudyModel study : ((PatientModel) model).getStudies())
@@ -1904,7 +1903,11 @@ public class StudyListPage extends Panel {
           
           @Override
           public boolean isVisible() {
-              return model.getDataset() != null && model.getStudyPermissionActions().contains(StudyPermission.APPEND_ACTION);
+              model.setStudyPermissionActions(
+                      dao.findStudyPermissionActions(model.getStudyInstanceUID(), secureSession.getDicomRoles()));
+              return (model.getDataset() != null 
+                      && model.getStudyPermissionActions().contains(StudyPermission.APPEND_ACTION))
+                      || !((SecureSession) getSession()).getUseStudyPermissions();
           }
         };
         Image image = new Image("addImg",ImageManager.IMAGE_COMMON_ADD);
