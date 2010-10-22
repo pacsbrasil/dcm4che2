@@ -373,6 +373,8 @@ public class Canvas extends javax.swing.JPanel {
         ApplicationContext.layeredCanvas = this.layeredCanvas;
         ApplicationContext.annotationPanel = this.layeredCanvas.annotationPanel;
         ApplicationContext.layeredCanvas.getCanvas().setSelectionColoring();
+        if(ApplicationContext.imageViewExist())
+            ApplicationContext.imgView.getImageToolbar().refreshToolsDisplay();
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables

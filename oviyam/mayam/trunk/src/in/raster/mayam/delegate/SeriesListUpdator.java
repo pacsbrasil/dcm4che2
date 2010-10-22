@@ -251,8 +251,9 @@ public class SeriesListUpdator {
                             if(instance!=null&&instance.getSop_iuid()!=null)
                             if (tempCanvas.imgpanel.getSeriesUID().equalsIgnoreCase(seriesUID) && tempCanvas.imgpanel.getInstanceUID().equalsIgnoreCase(instance.getSop_iuid())) {
                                 SeriesAnnotation seriesAnnotation = (SeriesAnnotation) studyAnnotation.getSeriesAnnotation().get(seriesUID);
-
-                                InstanceAnnotation instanceAnnotation = ((InstanceAnnotation) seriesAnnotation.getInstanceArray().get(tempCanvas.imgpanel.getInstanceUID()));
+                                InstanceAnnotation instanceAnnotation =null;
+                                if(seriesAnnotation.getInstanceArray()!=null)
+                                instanceAnnotation = ((InstanceAnnotation) seriesAnnotation.getInstanceArray().get(tempCanvas.imgpanel.getInstanceUID()));
                                 if (instance.isMultiframe()) {
                                     if (instanceAnnotation != null && instanceAnnotation.getAnnotations() != null) {
                                         tempCanvas.annotationPanel.setAnnotation(instanceAnnotation.getAnnotations().get(0));

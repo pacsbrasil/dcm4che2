@@ -199,8 +199,9 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
     /**
      * This routine used to set the selection coloring.
      */
-    public void setSelectionColoring() {
+    public void setSelectionColoring() {       
         this.setBorder(new LineBorder(Color.YELLOW));
+        ApplicationContext.imgView.getImageToolbar().disableAllTools();
     }
 
     /**
