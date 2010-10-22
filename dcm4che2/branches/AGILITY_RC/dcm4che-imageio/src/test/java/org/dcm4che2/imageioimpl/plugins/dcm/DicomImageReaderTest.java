@@ -217,8 +217,7 @@ public class DicomImageReaderTest {
 					allowedDiff);
 			if (diff.getMaxDiff() > allowedDiff) {
 				failed = true;
-				System.err
-						.println("File "
+				System.err.println("File "
 								+ baseName
 								+ ".dcm failed - see .txt file for differences - max diff "
 								+ diff.getMaxDiff());
@@ -265,7 +264,7 @@ public class DicomImageReaderTest {
 			}
 		}
 		if (failed) {
-			fail("one or more MLUT instances failed. see stderr for details.");
+			fail("one or more VLUT instances failed. see stderr for details.");
 		}
 	}
 

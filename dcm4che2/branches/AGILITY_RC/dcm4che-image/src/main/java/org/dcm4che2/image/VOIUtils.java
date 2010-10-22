@@ -130,8 +130,7 @@ public class VOIUtils {
         DicomElement framed = img.get(Tag.PerFrameFunctionalGroupsSequence);
         if (framed != null) {
             int size = framed.countItems();
-            log
-                    .debug("Looking in enhanced multi-frame Perframe object for VOI lut information, frames="
+            log.debug("Looking in enhanced multi-frame Perframe object for VOI lut information, frames="
                             + size);
             if (frame >= 1 && frame <= size) {
                 DicomObject frameObj = framed.getDicomObject(frame - 1);
@@ -285,8 +284,7 @@ public class VOIUtils {
                 minMax = new int[] { img.getInt(Tag.SmallestImagePixelValue),
                         img.getInt(Tag.LargestImagePixelValue) };
             } else if (raster == null) {
-                log
-                        .debug("Using min/max possible values to compute WL range, as we don't have data buffer to use.");
+                log.debug("Using min/max possible values to compute WL range, as we don't have data buffer to use.");
                 int stored = img.getInt(Tag.BitsStored);
                 boolean signed = img.getInt(Tag.PixelRepresentation) == 1;
                 if (stored == 16) {
@@ -323,8 +321,21 @@ public class VOIUtils {
         int h = raster.getHeight();
         int scanlineStride = ((ComponentSampleModel) raster.getSampleModel())
                 .getScanlineStride();
-        int paddingMin = img.getInt(Tag.PixelPaddingValue, Integer.MIN_VALUE);
-        int paddingMax = img.getInt(Tag.PixelPaddingRangeLimit,0) + paddingMin;
+
+        Integer pixelPaddingValue = img.contains(Tag.PixelPaddingValue) ? 
+                img.getInt(Tag.PixelPaddingValue) : null;
+        Integer pixelPaddingRangeLimit = img.contains(Tag.PixelPaddingRangeLimit) ? 
+                img.getInt(Tag.PixelPaddingRangeLimit) : null;
+                
+        int paddingMin = Integer.MIN_VALUE;
+        int paddingMax = Integer.MIN_VALUE;
+        
+        if (pixelPaddingValue != null){
+            Integer[] pixelPaddingMinMax = LookupTable.getMinMaxPixelPadding(pixelPaddingValue, pixelPaddingRangeLimit);    
+            paddingMin = pixelPaddingMinMax[0];
+            paddingMax = pixelPaddingMinMax[1];
+        }
+        
         DataBuffer data = raster.getDataBuffer();
         int[] ret;
         

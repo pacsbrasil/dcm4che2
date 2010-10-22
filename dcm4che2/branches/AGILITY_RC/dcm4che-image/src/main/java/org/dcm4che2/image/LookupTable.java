@@ -47,6 +47,7 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
+import java.util.Arrays;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -479,6 +480,7 @@ public abstract class LookupTable {
         int off = Math.min(inMax, Math.max(in1, inMin));
         int iMax = Math.max(1, Math.max(inMin, Math.min(in2, inMax)) - off);
         int size = iMax+1;
+        int wlOff = off;
 
         Integer[] minMaxPixelPadding = getMinMaxPixelPadding(pixelPaddingValue, pixelPaddingRange);
         if (pixelPaddingValue != null){
@@ -488,8 +490,8 @@ public abstract class LookupTable {
                 size = Math.max(size, minMaxPixelPadding[1]-off + 1);
 
             // adjust for Pixelpadding < smallest pixel value
-            if (minMaxPixelPadding[0] < 0)
-                size += Math.abs(minMaxPixelPadding[0]);
+            if (minMaxPixelPadding[0] < wlOff)
+                size += wlOff-minMaxPixelPadding[0];
         }
         
         int outBits1 = pval2out == null ? outBits : inBits(pval2out);
@@ -505,7 +507,7 @@ public abstract class LookupTable {
             out2 = outRange - 1;
         }
         float m = (float) (out2 - out1) / (in2 - in1);
-        float b = out1 + m * (off - in1) + .5f;
+        float b = out1 + m * (wlOff - in1) + .5f;
         GenericNumericArray data = null;
         if (outBits <= 8) {
             data = GenericNumericArray.getByteArray(size);
@@ -515,24 +517,24 @@ public abstract class LookupTable {
 
         for (int i = 0; i <= iMax; i++) {
             if (pval2out == null) {
-                data.setArrayItem(i, (m * i + b));
+                data.setArrayItem(i+wlOff-off, (m * i + b));
             } else {
-                data.setArrayItem(i,((pval2out[(int) (m * i + b)] & 0xffff) >>> pval2outShift));
+                data.setArrayItem(i+wlOff-off,((pval2out[(int) (m * i + b)] & 0xffff) >>> pval2outShift));
             }
         }
 
-        int iMaxVal = data.getArrayItem(iMax).intValue();
-        if (iMax + off == in2) {
+        int iMaxVal = data.getArrayItem(iMax+wlOff-off).intValue();
+        if (iMax + wlOff == in2) {
             if (pval2out == null) {
                 iMaxVal = out2;
             } else {
                 iMaxVal = (pval2out[out2] & 0xffff) >>> pval2outShift;
             }
         }        
-        for (int i = iMax; i < size; i++) {
+        for (int i = iMax+wlOff-off; i < size; i++) {
             data.setArrayItem(i, iMaxVal);
         }
-
+        
         applyPixelPadding(data, out1, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
 
         if (outBits <= 8) {
@@ -629,7 +631,7 @@ public abstract class LookupTable {
             String vlutFct, boolean inverse, short[] pval2out,
             Integer pixelPaddingValue, Integer pixelPaddingRange) {
         log.debug("Creating MLUT WL c/w=" + center + "/" + width);
-        LookupTable mlut = createLut(inBits, signed, mLut, null, null);
+        LookupTable mlut = createLut(inBits, signed, mLut, null, null, inverse);
         if (width == 0) {
             return mlut.scale(outBits, inverse, pval2out);
         }
@@ -640,7 +642,7 @@ public abstract class LookupTable {
     }
 
     private static LookupTable createLut(int inBits, boolean signed,
-            DicomObject ds, Integer pixelPaddingValue, Integer pixelPaddingRange) {
+            DicomObject ds, Integer pixelPaddingValue, Integer pixelPaddingRange, boolean inverse) {
         int[] desc = ds.getInts(Tag.LUTDescriptor);
         byte[] data = ds.getBytes(Tag.LUTData);
         if (desc == null) {
@@ -663,16 +665,26 @@ public abstract class LookupTable {
                 ++inBits;
             }
         }
-
+        
+        Integer[] minMaxPixelPadding = getMinMaxPixelPadding(pixelPaddingValue, pixelPaddingRange);
+        
         if (data.length == len) {
-            GenericNumericArray dataArray = new GenericNumericArray(data);
-            Integer[] minMaxPixelPadding = getMinMaxPixelPadding(pixelPaddingValue, pixelPaddingRange);
-            applyPixelPadding(dataArray, 0, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
-            return new ByteLookupTable(inBits, signed, off, bits,
-                    (byte[]) dataArray.getArray(), true);
+            if (pixelPaddingValue != null) {
+                int t = (minMaxPixelPadding[1] - off) -  len;
+                if ( t > 0) {
+                    // resize the data to accommodate pixel padding stuff. 
+                    data = Arrays.copyOf(data, len+t+1);
+                }
+                GenericNumericArray array = GenericNumericArray.create(data);
+                int padVal = inverse ? 255 : 0; 
+                applyPixelPadding(array, padVal, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
+            }
+
+            return new ByteLookupTable(inBits, signed, off, bits, data, true);
         } else if (data.length == len << 1) {
             short[] sdata = ds.bigEndian() ? ByteUtils.bytesBE2shorts(data)
                     : ByteUtils.bytesLE2shorts(data);
+
             // Get the actual number of bits in this lookup table.
             bits = 0;
             for (int maxVal = Math.max(sdata[0] & 0xFFFF,
@@ -680,17 +692,25 @@ public abstract class LookupTable {
                 bits++;
             }
 
-            GenericNumericArray dataArray = new GenericNumericArray(sdata);
-            Integer[] minMaxPixelPadding = getMinMaxPixelPadding(pixelPaddingValue, pixelPaddingRange);
-            applyPixelPadding(dataArray, 0, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
+            if (pixelPaddingValue != null) {
+                len = sdata.length;
+                int t = (minMaxPixelPadding[1] - off) -  len;
+                if ( t > 0) {
+                    // resize the data to accommodate pixel padding stuff. 
+                    sdata = Arrays.copyOf(sdata, len + t + 1);
+                }
+                GenericNumericArray array = GenericNumericArray.create(sdata);
+                int padVal = inverse ? ((1 << 16) -1) : 0;
+                applyPixelPadding(array, padVal, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
+            }
 
             ShortLookupTable ret = new ShortLookupTable(inBits, signed, off,
-                    bits, (short[]) dataArray.getArray(), true);
+                    bits, sdata, true);
             // Uncomment out the following to print out the resulting table.
-            // for(int i=0; i<sdata.length; i += (1+sdata.length/10)) {
-            // log.info("Sdata[i] = "+sdata[i]
-            // +" offset "+(i+off)+" lookup "+ret.lookup(i+off));
-            // }
+//             for(int i=0; i<sdata.length; i += (1+sdata.length/5)) {
+//             log.info("Sdata[i] = "+sdata[i]
+//             +" offset "+(i+off)+" lookup "+ret.lookup(i+off));
+//             }
             return ret;
         }
         throw new IllegalArgumentException("LUT Data length: " + data.length
@@ -734,23 +754,22 @@ public abstract class LookupTable {
             boolean inverse, short[] pval2out, Integer pixelPaddingValue,
             Integer pixelPaddingRange) {
         return createLut(inBits, signed, slope, intercept, voiLut,
-                pixelPaddingValue, pixelPaddingRange).scale(outBits, inverse,
+                pixelPaddingValue, pixelPaddingRange, inverse).scale(outBits, inverse,
                 pval2out);
     }
 
     private static LookupTable createLut(int inBits, boolean signed,
             float slope, float intercept, DicomObject voiLut,
-            Integer pixelPaddingValue, Integer pixelPaddingRange) {
-        log.debug("Creating slope/intercept LUT with V-LUT " + slope + "/"
-                + intercept);
+            Integer pixelPaddingValue, Integer pixelPaddingRange, boolean inverse) {
+        log.debug("Creating slope/intercept LUT with V-LUT " + slope + "/" + intercept);
         if (slope == 1) {
             LookupTable lut = createLut(inBits, signed, voiLut,
-                    pixelPaddingValue, pixelPaddingRange);
+                    pixelPaddingValue, pixelPaddingRange, inverse);
             lut.off -= intercept;
             return lut;
         }
-        LookupTable vlut = createLut(32, true, voiLut, pixelPaddingValue,
-                pixelPaddingRange);
+        
+        LookupTable vlut = createLut(32, true, voiLut, pixelPaddingValue, pixelPaddingRange, inverse);
         float in1 = (vlut.off - intercept) / slope;
         float in2 = in1 + vlut.length() / slope;
         int off = (int) Math.floor(Math.min(in1, in2));
@@ -759,7 +778,8 @@ public abstract class LookupTable {
         for (int i = 0; i < data.length; i++) {
             data[i] = vlut.lookupShort(Math.round(i * slope + intercept));
         }
-        GenericNumericArray dataArray = new GenericNumericArray(data);
+        
+        GenericNumericArray dataArray = GenericNumericArray.create(data);
         Integer[] minMaxPixelPadding = getMinMaxPixelPadding(pixelPaddingValue, pixelPaddingRange);
         applyPixelPadding(dataArray, 0, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
         
@@ -813,7 +833,7 @@ public abstract class LookupTable {
             Integer pixelPaddingRange) {
         log.debug("Creating LUT for slope/intercept=" + slope + "/" + intercept
                 + " center/width=" + center + "/" + width);
-        LookupTable plut = createLut(0, false, pLut, null, null);
+        LookupTable plut = createLut(0, false, pLut, null, null, inverse);
         LookupTable vlut = createLut(inBits, signed, plut.inBits, slope,
                 intercept, center, width, vlutFct, false, null,
                 pixelPaddingValue, pixelPaddingRange);
@@ -904,11 +924,10 @@ public abstract class LookupTable {
             int outBits, DicomObject mLut, DicomObject voiLut, boolean inverse,
             short[] pval2out, Integer pixelPaddingValue,
             Integer pixelPaddingRange) {
-        log
-                .debug("Creating a combined m/v LUT, assuming MLUT output is unsigned.");
-        LookupTable mlut = createLut(inBits, signed, mLut, null, null);
+        log.debug("Creating a combined m/v LUT, assuming MLUT output is unsigned.");
+        LookupTable mlut = createLut(inBits, signed, mLut, null, null, inverse);
         LookupTable vlut = createLut(mlut.outBits, false, voiLut,
-                pixelPaddingValue, pixelPaddingRange);
+                pixelPaddingValue, pixelPaddingRange, inverse);
         return mlut.combine(vlut, outBits, inverse, pval2out);
     }
 
@@ -951,8 +970,8 @@ public abstract class LookupTable {
             DicomObject pLut, boolean inverse, short[] pval2out,
             Integer pixelPaddingValue, Integer pixelPaddingRange) {
         LookupTable vlut = createLut(inBits, signed, slope, intercept, voiLut,
-                pixelPaddingValue, pixelPaddingRange);
-        LookupTable plut = createLut(0, false, pLut, null, null);
+                pixelPaddingValue, pixelPaddingRange, inverse);
+        LookupTable plut = createLut(0, false, pLut, null, null, inverse);
         return vlut.combine(plut, outBits, inverse, pval2out);
     }
 
@@ -998,8 +1017,8 @@ public abstract class LookupTable {
             String vlutFct, DicomObject pLut, boolean inverse,
             short[] pval2out, Integer pixelPaddingValue,
             Integer pixelPaddingRange) {
-        LookupTable mlut = createLut(inBits, signed, mLut, null, null);
-        LookupTable plut = createLut(0, false, pLut, null, null);
+        LookupTable mlut = createLut(inBits, signed, mLut, null, null, inverse);
+        LookupTable plut = createLut(0, false, pLut, null, null, inverse);
         if (width == 0) {
             return mlut.combine(plut, outBits, inverse, pval2out);
         }
@@ -1045,10 +1064,10 @@ public abstract class LookupTable {
             int outBits, DicomObject mLut, DicomObject voiLut,
             DicomObject pLut, boolean inverse, short[] pval2out,
             Integer pixelPaddingValue, Integer pixelPaddingRange) {
-        LookupTable mlut = createLut(inBits, signed, mLut, null, null);
+        LookupTable mlut = createLut(inBits, signed, mLut, null, null, inverse);
         LookupTable vlut = createLut(mlut.outBits, false, voiLut,
-                pixelPaddingValue, pixelPaddingRange);
-        LookupTable plut = createLut(0, false, pLut, null, null);
+                pixelPaddingValue, pixelPaddingRange, inverse);
+        LookupTable plut = createLut(0, false, pLut, null, null, inverse);
         return mlut.combine(vlut, plut, outBits, inverse, pval2out);
     }
 
@@ -1080,20 +1099,19 @@ public abstract class LookupTable {
     }
 
     /**
-     * @deprecated Please use
-     *             {@link #createLut(DicomObject, DicomObject, float, float, String, boolean, int, short[], Integer, Integer)}
+     * @deprecated Please use {@link #createLut(DicomObject, DicomObject, float, float, String, boolean, int, short[], Integer, Integer)}
      * <br/>
      * 
-     *             Create LUT for given DICOM image, modality LUT, and Window
-     *             Center/Width and output range. Apply no Window if Window
-     *             Width = 0.
-     *             <p>
-     *             If <code>pval2out</code> is not <code>null</code>, the output
-     *             will be weighted according this function, where the highest
-     *             input value (p-value) maps to array index length-1 and the
-     *             highest output value (2^outBits-1) is represented by 0xFFFF.
-     *             Length of <code>pval2out</code> must be equal to 2^inBits,
-     *             with inBits in the range [8, 16].
+     * Create LUT for given DICOM image, modality LUT, and Window
+     * Center/Width and output range. Apply no Window if Window
+     * Width = 0.
+     * <p>
+     * If <code>pval2out</code> is not <code>null</code>, the output
+     * will be weighted according this function, where the highest
+     * input value (p-value) maps to array index length-1 and the
+     * highest output value (2^outBits-1) is represented by 0xFFFF.
+     * Length of <code>pval2out</code> must be equal to 2^inBits,
+     * with inBits in the range [8, 16].
      * 
      * @param img
      *            DICOM image
@@ -1181,18 +1199,18 @@ public abstract class LookupTable {
 
     /**
      * @deprecated Please use
-     *             {@link #createLutFromVOISequence(DicomObject, DicomObject, DicomObject, boolean, int, short[], Integer, Integer)}
+     * {@link #createLutFromVOISequence(DicomObject, DicomObject, DicomObject, boolean, int, short[], Integer, Integer)}
      * <br/>
      * 
-     *             Create LUT for given DICOM image, non-linear VOI LUT and
-     *             output range.
-     *             <p>
-     *             If <code>pval2out</code> is not <code>null</code>, the output
-     *             will be weighted according this function, where the highest
-     *             input value (p-value) maps to array index length-1 and the
-     *             highest output value (2^outBits-1) is represented by 0xFFFF.
-     *             Length of <code>pval2out</code> must be equal to 2^inBits,
-     *             with inBits in the range [8, 16].
+     * Create LUT for given DICOM image, non-linear VOI LUT and
+     * output range.
+     * <p>
+     * If <code>pval2out</code> is not <code>null</code>, the output
+     * will be weighted according this function, where the highest
+     * input value (p-value) maps to array index length-1 and the
+     * highest output value (2^outBits-1) is represented by 0xFFFF.
+     * Length of <code>pval2out</code> must be equal to 2^inBits,
+     * with inBits in the range [8, 16].
      * 
      * @param img
      *            DICOM image
@@ -1320,11 +1338,10 @@ public abstract class LookupTable {
         float slope = mlutObj.getFloat(Tag.RescaleSlope, 1.f);
         float intercept = mlutObj.getFloat(Tag.RescaleIntercept, 0.f);
 
-        Integer pixelPaddingValue = img.contains(Tag.PixelPaddingValue) ? img
-                .getInt(Tag.PixelPaddingValue) : null;
-        Integer pixelPaddingRange = img.contains(Tag.PixelPaddingRangeLimit) ? img
-                .getInt(Tag.PixelPaddingRangeLimit)
-                : null;
+        Integer pixelPaddingValue = img.contains(Tag.PixelPaddingValue) ? 
+                img.getInt(Tag.PixelPaddingValue) : null;
+        Integer pixelPaddingRange = img.contains(Tag.PixelPaddingRangeLimit) ? 
+                img.getInt(Tag.PixelPaddingRangeLimit) : null;
 
         DicomObject mLut = VOIUtils.getLUT(mlutObj, Tag.ModalityLUTSequence);
         DicomObject voiLut = (voiObj != null && vlutFct == null) ? VOIUtils
@@ -1372,29 +1389,26 @@ public abstract class LookupTable {
                 pval2out, pixelPaddingValue, pixelPaddingRange);
     }
 
-    private static void applyPixelPadding(GenericNumericArray data, int padValue,
+    private static void applyPixelPadding(GenericNumericArray array, int padValue,
             Integer minPad, Integer maxPad, int offset) {
-        
         if (minPad == null)
             return;
         
-        if (minPad- offset < 0){
+        if (minPad - offset < 0){
             log.error("Error in calculation of offset wrt pixel padding data. pixel padding range from " +
                     minPad + " to "+ maxPad + ", offset=" + offset);
         }
-
-        for (int i = minPad-offset; i <= maxPad-offset; i++) {
-            data.setArrayItem(i, padValue);
-        }
+        
+        array.fillRange(minPad-offset, maxPad-offset+1, padValue);
     }
-    
-    private static Integer[] getMinMaxPixelPadding(Integer pixelPaddingValue, Integer pixelPaddingRange){
+
+    public static Integer[] getMinMaxPixelPadding(Integer pixelPaddingValue, Integer pixelPaddingRange){
         Integer[] info = new Integer[2];
         
         if (pixelPaddingValue == null){
             return info;
         }
-
+        
         Integer minPad = pixelPaddingValue;
         Integer maxPad = pixelPaddingValue;
         if (pixelPaddingRange != null) {
@@ -1404,12 +1418,12 @@ public abstract class LookupTable {
                 minPad = pixelPaddingRange;
             }
         }
-
+                
         info[0] = minPad;
         info[1] = maxPad;
         return info;
     }
-
+    
     /**
      * Get the VOI LUT function - encapsulated to allow working around a bug in
      * some DICOM generators which encode the string as a binary value.
