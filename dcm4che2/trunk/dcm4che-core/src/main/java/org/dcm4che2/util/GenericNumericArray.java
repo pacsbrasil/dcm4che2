@@ -38,156 +38,102 @@
 
 package org.dcm4che2.util;
 
-public class GenericNumericArray {
-    public enum TYPE {
-        BYTE, SHORT, INT, LONG, FLOAT, DOUBLE
-    };
+import java.util.Arrays;
 
-    private TYPE type;
-    private byte[] byteArr = null;
-    private short[] shortArr = null;
-    private int[] intArr = null;
-    private long[] longArr = null;
-    private float[] floatArr = null;
-    private double[] doubleArr = null;
+public abstract class GenericNumericArray {
+    
+    private static class ByteNumericArray extends GenericNumericArray {
+        private byte[] arr = null;
+        
+        public ByteNumericArray(byte[] arr) {
+            this.arr = arr;
+        }
 
-    public GenericNumericArray(TYPE type, int size) {
-        this.type = type;
+        @Override
+        public Object getArray() {
+            return arr;
+        }
 
-        switch (type) {
-        case BYTE:
-            byteArr = new byte[size];
-            break;
-        case SHORT:
-            shortArr = new short[size];
-            break;
-        case INT:
-            intArr = new int[size];
-            break;
-        case LONG:
-            longArr = new long[size];
-            break;
-        case FLOAT:
-            floatArr = new float[size];
-            break;
-        case DOUBLE:
-            doubleArr = new double[size];
-            break;
+        @Override
+        public Number getArrayItem(int index) {
+            return arr[index];
+        }
+
+        @Override
+        public void setArrayItem(int index, Number value) {
+            arr[index] = value.byteValue();
+        }
+        
+        @Override
+        public void fillRange(int fromIndex, int toIndex, Number val) {
+            Arrays.fill(arr, fromIndex, toIndex, val.byteValue());
+        }
+
+        @Override
+        public int length() {
+            return arr.length;
         }
     }
 
-    public GenericNumericArray(Object array) {
+    private static class ShortNumericArray extends GenericNumericArray {
+        public ShortNumericArray(short[] arr) {
+            this.arr = arr;
+        }
+
+        private short[] arr = null;
+
+        @Override
+        public Object getArray() {
+            return arr;
+        }
+
+        @Override
+        public Number getArrayItem(int index) {
+            return arr[index];
+        }
+
+        @Override
+        public void setArrayItem(int index, Number value) {
+            arr[index] = value.shortValue();
+        }
+        
+        @Override
+        public void fillRange(int fromIndex, int toIndex, Number val) {
+            Arrays.fill(arr, fromIndex, toIndex, val.shortValue());
+        }
+
+        @Override
+        public int length() {
+            return arr.length;
+        }
+    }
+
+    public static GenericNumericArray create(byte[] array) {
         if (array == null)
             throw new NullPointerException("Array is NULL");
+        return new ByteNumericArray(array);
+    }
 
-        if (array instanceof byte[]) {
-            type = TYPE.BYTE;
-            byteArr = (byte[]) array;
-        } else if (array instanceof short[]) {
-            type = TYPE.SHORT;
-            shortArr = (short[]) array;
-        } else if (array instanceof int[]) {
-            type = TYPE.INT;
-            intArr = (int[]) array;
-        } else if (array instanceof long[]) {
-            type = TYPE.LONG;
-            longArr = (long[]) array;
-        } else if (array instanceof float[]) {
-            type = TYPE.FLOAT;
-            floatArr = (float[]) array;
-        } else if (array instanceof double[]) {
-            type = TYPE.DOUBLE;
-            doubleArr = (double[]) array;
-        } else {
-            throw new IllegalArgumentException("Unknown array type: "+ array.getClass().getName());
-        }
+    public static GenericNumericArray create(short[] array) {
+        if (array == null)
+            throw new NullPointerException("Array is NULL");
+        return new ShortNumericArray(array);
     }
 
     public static GenericNumericArray getByteArray(int size) {
-        return new GenericNumericArray(TYPE.BYTE, size);
+        return create(new byte[size]);
     }
-
+    
     public static GenericNumericArray getShortArray(int size) {
-        return new GenericNumericArray(TYPE.SHORT, size);
+        return create(new short[size]);
     }
 
-    public static GenericNumericArray getIntArray(int size) {
-        return new GenericNumericArray(TYPE.INT, size);
-    }
+    public abstract Object getArray();
+    
+    public abstract Number getArrayItem(int index);
+    
+    public abstract void setArrayItem(int index, Number value);
+    public abstract void fillRange(int fromIndex, int toIndex, Number val);
 
-    public static GenericNumericArray getLongArray(int size) {
-        return new GenericNumericArray(TYPE.LONG, size);
-    }
-
-    public static GenericNumericArray getFloatArray(int size) {
-        return new GenericNumericArray(TYPE.FLOAT, size);
-    }
-
-    public static GenericNumericArray getDoubleArray(int size) {
-        return new GenericNumericArray(TYPE.DOUBLE, size);
-    }
-
-    public TYPE getType() {
-        return type;
-    }
-
-    public Object getArray() {
-        switch (type) {
-        case BYTE:
-            return byteArr;
-        case SHORT:
-            return shortArr;
-        case INT:
-            return intArr;
-        case LONG:
-            return longArr;
-        case FLOAT:
-            return floatArr;
-        case DOUBLE:
-            return doubleArr;
-        }
-        return null;
-    }
-
-    public Number getArrayItem(int index) {
-        switch (type) {
-        case BYTE:
-            return byteArr[index];
-        case SHORT:
-            return shortArr[index];
-        case INT:
-            return intArr[index];
-        case LONG:
-            return longArr[index];
-        case FLOAT:
-            return floatArr[index];
-        case DOUBLE:
-            return doubleArr[index];
-        }
-
-        return null;
-    }
-
-    public void setArrayItem(int index, Number data) {
-        switch (type) {
-        case BYTE:
-            byteArr[index] = data.byteValue();
-            break;
-        case SHORT:
-            shortArr[index] = data.shortValue();
-            break;
-        case INT:
-            intArr[index] = data.intValue();
-            break;
-        case LONG:
-            longArr[index] = data.longValue();
-            break;
-        case FLOAT:
-            floatArr[index] = data.floatValue();
-            break;
-        case DOUBLE:
-            doubleArr[index] = data.doubleValue();
-            break;
-        }
-    }
+    public abstract int length();
 }
