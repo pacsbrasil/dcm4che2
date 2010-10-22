@@ -133,7 +133,7 @@ public class PrivPatientModel extends AbstractDicomModel implements Serializable
     public void expand() {
         this.studies.clear();
         SecureSession secureSession = ((SecureSession) RequestCycle.get().getSession());
-        dao.setDicomSecurityParameters(secureSession.getUsername(), ((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root"), secureSession.getDicomRoles());
+        dao.setDicomSecurityRoles(secureSession.getDicomRoles());
         for (PrivateStudy study : dao.findStudiesOfPatient(getPk())) {
             this.studies.add(new PrivStudyModel(study, this));
         }

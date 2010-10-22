@@ -110,8 +110,9 @@ public class WebLoginContext extends UsernamePasswordContext {
                 context.login();
                 
                 SecureSession secureSession = ((SecureSession) RequestCycle.get().getSession());
-                secureSession.setRoot(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root"));
-                boolean useStudyPermissions = "true".equals(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("useStudyPermissions"));
+                String root = ((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root");
+                boolean useStudyPermissions = "true".equals(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("useStudyPermissions")) 
+                    && !username.equals(root);
                 if (useStudyPermissions) {
                     secureSession.setDicomSubject(
                         getDicomSecuritySubject(

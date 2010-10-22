@@ -141,9 +141,9 @@ public class StudyListBean implements StudyListLocal {
     private boolean useSecurity = false;
     private List<String> roles;
 
-    public void setDicomSecurityParameters(String username, String root, List<String> roles) {
+    public void setDicomSecurityRoles(List<String> roles) {
         this.roles = roles;
-        if ((username != null) && (root == null || !username.equals(root))) useSecurity = true;
+        useSecurity = roles != null;
     }
     
     private void appendDicomSecurityFilter(StringBuilder ql) {

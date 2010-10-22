@@ -197,7 +197,7 @@ public class StudyListPage extends Panel {
         if (StudyListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
         
-        dao.setDicomSecurityParameters(secureSession.getUsername(), ((BaseWicketApplication) getApplication()).getInitParameter("root"), secureSession.getDicomRoles());
+        dao.setDicomSecurityRoles(secureSession.getDicomRoles());
 
         add(modalWindow = new ModalWindow("modal-window"));
         modalWindow.setWindowClosedCallback(new WindowClosedCallback() {

@@ -62,7 +62,6 @@ public class SecureSession extends WaspSession {
     private static final long serialVersionUID = 1L;
     
     private String username;
-    private String root;
     private HashMap<String, String> swarmPrincipals;
     private List<String> dicomRoles;
     
@@ -78,14 +77,13 @@ public class SecureSession extends WaspSession {
         Iterator<Principal> i = dicomSubject.getPrincipals().iterator();
         this.username = (i.hasNext() ? i.next().getName() : null);
         Principal rolesPrincipal = (i.hasNext() ? i.next() : null);
-        
+        List<String> dicomRoles = new ArrayList<String>();
         if (rolesPrincipal instanceof Group) {
-            List<String> dicomRoles = new ArrayList<String>();
             Enumeration<? extends Principal> e = ((Group) rolesPrincipal).members();
             while (e.hasMoreElements()) 
                 dicomRoles.add(e.nextElement().getName());
-            this.setDicomRoles(dicomRoles);
         }
+        this.setDicomRoles(dicomRoles);
     }
 
     public void setSwarmPrincipals(HashMap<String, String> principals) {
@@ -102,13 +100,5 @@ public class SecureSession extends WaspSession {
     
     public void setDicomRoles(List<String> dicomRoles) {
         this.dicomRoles = dicomRoles;
-    }
-
-    public String getRoot() {
-        return root;
-    }
-    
-    public void setRoot(String root) {
-        this.root = root;
     }
 }

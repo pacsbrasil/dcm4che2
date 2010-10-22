@@ -154,8 +154,7 @@ System.out.println("WARNING: DEPRECATED CONSTRUCTOR USED");
     @Override
     public void expand() {
         studies.clear();
-        dao.setDicomSecurityParameters(secureSession.getUsername(), secureSession.getRoot(), secureSession.getDicomRoles());
-//        dao.setDicomSecurityParameters(username, root, roles);
+        dao.setDicomSecurityRoles(secureSession.getDicomRoles());
         for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst.getObject())) 
             this.studies.add(new StudyModel(study, this, secureSession.getDicomRoles()));
     }
