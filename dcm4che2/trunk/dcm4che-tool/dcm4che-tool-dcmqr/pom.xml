@@ -9,7 +9,8 @@
     <artifactId>dcm4che-tool-dcmqr</artifactId>
     <version>2.0.25-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>DICOM Query/Retrieve SCU</name>
+    <name>dcm4che-tool-dcmqr</name>
+    <description>DICOM Query/Retrieve SCU</description>
     <dependencies>
         <dependency>
             <groupId>dcm4che</groupId>

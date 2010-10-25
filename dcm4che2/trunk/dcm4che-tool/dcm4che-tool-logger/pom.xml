@@ -9,7 +9,8 @@
     <artifactId>dcm4che-tool-logger</artifactId>
     <version>2.0.25-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>Logger</name>
+    <name>dcm4che-tool-logger</name>
+    <description>Logger</description>
     <dependencies>
         <dependency>
             <groupId>log4j</groupId>
