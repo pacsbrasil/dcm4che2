@@ -49,7 +49,7 @@ import java.util.Collection;
  */
 public class QueryExternalRetrieveAETsOfSeriesCmd extends BaseReadCmd {
 
-    private static final String SQL = "SELECT i.sop_iuid, i.ext_retr_aet"
+    private static final String SQL = "SELECT i.sop_iuid, i.ext_retr_aet "
         + "FROM instance i, series s "
         + "WHERE i.series_fk = s.pk AND s.series_iuid=?";
 
