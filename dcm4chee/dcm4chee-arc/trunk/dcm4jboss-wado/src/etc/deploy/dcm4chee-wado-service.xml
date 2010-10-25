@@ -10,6 +10,8 @@
     <depends>dcm4chee.archive:service=AuditLogger</depends>
     <depends optional-attribute-name="QueryRetrieveScpName"
       >dcm4chee.archive:service=QueryRetrieveScp</depends>
+    <depends optional-attribute-name="MoveScuServiceName"
+      >dcm4chee.archive:service=MoveScu</depends>
     <depends optional-attribute-name="SchedulerServiceName"
       >dcm4chee.archive:service=Scheduler</depends>
     <attribute name="TimerID">CheckFreeDiskSpaceWado</attribute>

@@ -40,17 +40,14 @@ package org.dcm4chex.wado.mbean;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorConvertOp;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.IndexColorModel;
-import java.awt.image.SampleModel;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -66,6 +63,7 @@ import java.nio.ByteOrder;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -79,7 +77,11 @@ import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
+import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServer;
+import javax.management.Notification;
+import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
@@ -133,7 +135,7 @@ import org.jboss.mx.util.MBeanServerLocator;
  * @author Juergen Gmeiner <gmeinerj@users.sourceforge.net>
  * 
  */
-public class WADOSupport {
+public class WADOSupport implements NotificationListener {
 
     public static final String NONE = "NONE";
 
@@ -170,6 +172,18 @@ public class WADOSupport {
         "Error: use of simpleFrameList and calculatedFrameList parameter" +
         " are mutually exclusive.";
 
+    public static final String EVENT_TYPE_OBJECT_STORED = 
+        "org.dcm4chex.archive.dcm.storescp";
+
+    public static final NotificationFilter NOTIF_FILTER = 
+            new NotificationFilter() {
+        private static final long serialVersionUID = -7557458153348143439L;
+    
+        public boolean isNotificationEnabled(Notification notif) {
+            return EVENT_TYPE_OBJECT_STORED.equals(notif.getType());
+        }
+    };
+    
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WADOSupport.class);
 
     private static final AuditLoggerFactory alf = AuditLoggerFactory
@@ -178,6 +192,7 @@ public class WADOSupport {
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private ObjectName queryRetrieveScpName = null;
+    private ObjectName moveScuServiceName = null;
 
     private ObjectName auditLogName = null;
     private ObjectName storeScpServiceName = null;
@@ -219,6 +234,13 @@ public class WADOSupport {
     private boolean disableCache;
 
     private boolean renderOverlays = false;
+    
+    private static final Map<String, String> waitIUIDs = Collections.synchronizedMap(new HashMap<String, String>());
+    private static final Map<String, List<String>> moveSeriesIUIDs = Collections.synchronizedMap(new HashMap<String, List<String>>());
+    
+    private long fetchTimeout;
+    private String destAET;
+    private boolean useSeriesLevelFetch;
 
     public boolean isRenderOverlays() {
         return renderOverlays;
@@ -1020,9 +1042,122 @@ public class WADOSupport {
         if (dicomObject instanceof File)
             return (File) dicomObject; // We have the File!
         if (dicomObject instanceof AEDTO) {
+            AEDTO ae = (AEDTO) dicomObject;
+            if ("DICOM_QR_ONLY".equals(ae.getWadoURL())) {
+                return fetchFromExternalRetrieveAET(ae, studyUID, seriesUID, instanceUID);
+            }
             throw new NeedRedirectionException(null, (AEDTO) dicomObject);
         }
         return null;
+    }
+
+    public File fetchFromExternalRetrieveAET(AEDTO ae, String studyUID,
+            String seriesUID, String iuid) throws IOException, NeedRedirectionException {
+        try {
+            Dataset ds = getContentManager().getInstanceInfo(iuid, true);
+            studyUID = ds.getString(Tags.StudyInstanceUID);
+            seriesUID = ds.getString(Tags.SeriesInstanceUID);
+        } catch (Exception x) {
+            log.warn("Failed to get StudyIUID and SeriesIUID for instance:"+iuid, x);
+        }
+        log.info("Fetch series of instance("+iuid+") from external retrieve AET (stated as 'DICOM_QR_ONLY'):"+ae+
+                " studyIUID:"+studyUID+" seriesIUID:"+seriesUID);
+        if (waitIUIDs.isEmpty()) {
+            log.debug("Add ObjectStored Notification listener!");
+            try {
+                server.addNotificationListener(getStoreScpServiceName(),
+                        this, NOTIF_FILTER, null);
+            } catch (InstanceNotFoundException x) {
+                log.warn("Add ObjectStoredNotificationListener failed! Schedule move request anyway.");
+            }
+        }
+        waitIUIDs.put(iuid, iuid);
+        List<String> iuids = moveSeriesIUIDs.get(seriesUID);
+        if ( iuids == null ) {
+            iuids = new ArrayList<String>();
+            moveSeriesIUIDs.put(seriesUID, iuids);
+            scheduleMove(ae == null ? null : ae.getTitle(), studyUID, seriesUID);
+        }
+        iuids.add(iuid);
+        try {
+            if (log.isDebugEnabled()) log.debug("Wait for receive instance! iuid:"+iuid);
+            synchronized (iuid) {
+                iuid.wait(fetchTimeout);
+            }
+            if (log.isDebugEnabled()) log.debug("Finished waiting for receive instance! iuid:"+iuid);
+            if (waitIUIDs.remove(iuid) != null) {
+                log.warn("Waiting for receive instance timed out!");
+                throw new NeedRedirectionException("Requested object is not locally available and waiting for fetched object has timed out! Please try again!", null);
+            }
+            File f = getDICOMFile(studyUID, seriesUID, iuid);
+            if (log.isDebugEnabled()) log.debug("File of fetched object:"+f.getName());
+            return f;
+        } catch (InterruptedException x) {
+            log.warn("Wait for fetching instance ("+iuid+") interrupted!", x);
+            throw new NeedRedirectionException("Requested object is not locally available and waiting for fetched object was interrupted! Please try again!", null);
+        } finally {
+            if (waitIUIDs.isEmpty()) {
+                log.debug("Remove ObjectStored Notification listener!");
+                try {
+                    server.removeNotificationListener(getStoreScpServiceName(),
+                            this, NOTIF_FILTER, null);
+                } catch (Exception x) {
+                    log.warn("Remove ObjectStoredNotificationListener failed!");
+                }
+                moveSeriesIUIDs.clear();
+            } else {
+                iuids.remove(iuid);
+                if (iuids.isEmpty())
+                    moveSeriesIUIDs.remove(iuids);
+            }
+        }
+    }
+
+    private void scheduleMove(String retrAET, String studyUID, String seriesUID) throws NeedRedirectionException {
+        if (log.isDebugEnabled()) 
+            log.debug("Schedule C-MOVE request for series"+seriesUID+" useSeriesLevel:"+useSeriesLevelFetch);
+        String[] iuids = useSeriesLevelFetch ? null : getIUIDsToFetch(seriesUID, retrAET);
+        try {
+            server.invoke(getMoveScuServiceName(), "scheduleMove", 
+                    new Object[] { retrAET, destAET, 0, null, studyUID, seriesUID, iuids, 0 },
+                    new String[] { String.class.getName(), String.class.getName(), int.class.getName(), 
+                                    String.class.getName(), String.class.getName(), String.class.getName(), 
+                                    String[].class.getName(), long.class.getName() });
+        } catch (Exception x) {
+            log.warn("Scheduling C-MOVE failed!", x);
+            throw new NeedRedirectionException("Requested object is not locally available and can't be fetched from remote system!", null);
+        }
+        
+    }
+    private String[] getIUIDsToFetch(String seriesUID, String retrAET) {
+        ArrayList<String> iuids = new ArrayList<String>();
+        try {
+            Map<String, Object> map = (Map<String, Object>) server.invoke(queryRetrieveScpName, "locateInstancesOfSeries",
+                    new Object[] { seriesUID,  null},
+                    new String[] { String.class.getName(), String.class.getName() });
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                if ( (entry.getValue() instanceof String) && retrAET.equals(entry.getValue())) {
+                    iuids.add(entry.getKey());
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Can't get IUIDs for series to fetch object from external retrieve AET! Force SERIES level fetching");
+            return null;
+        }
+        if (log.isDebugEnabled())
+            log.debug("Found instances to fetch from AE "+retrAET+" iuids:"+iuids);
+        return iuids.isEmpty() ? null : iuids.toArray(new String[iuids.size()]);
+    }
+
+    public void objectReceived(Dataset ds) throws IOException, NeedRedirectionException {
+        String iuid = waitIUIDs.remove(ds.getString(Tags.SOPInstanceUID));
+        if (log.isDebugEnabled()) 
+            log.debug("Object received! iuid:" + ds.getString(Tags.SOPInstanceUID) + ", is waiting? :"+(iuid!=null));
+        if (iuid != null) {
+            synchronized (iuid) {
+                iuid.notifyAll();
+            }
+        }
     }
 
     /**
@@ -1568,6 +1703,14 @@ public class WADOSupport {
         this.storeScpServiceName = storeScpServiceName;
     }
 
+    public ObjectName getMoveScuServiceName() {
+        return moveScuServiceName;
+    }
+
+    public void setMoveScuServiceName(ObjectName moveScuServiceName) {
+        this.moveScuServiceName = moveScuServiceName;
+    }
+
     /**
      * @return Returns if audit log is enabled for the host of the given
      *         request.
@@ -1745,6 +1888,29 @@ public class WADOSupport {
         textSopCuids.put("XRayRadiationDoseSR", UIDs.XRayRadiationDoseSR);
     }
 
+    public long getFetchTimeout() {
+        return fetchTimeout;
+    }
+
+    public void setFetchTimeout(long fetchTimeout) {
+        this.fetchTimeout = fetchTimeout;
+    }
+
+    public String getFetchDestAET() {
+        return destAET;
+    }
+
+    public void setFetchDestAET(String destAET) {
+        this.destAET = destAET;
+    }
+
+    public boolean isUseSeriesLevelFetch() {
+        return useSeriesLevelFetch;
+    }
+    public void setUseSeriesLevelFetch(boolean useSeriesLevelFetch) {
+        this.useSeriesLevelFetch = useSeriesLevelFetch;
+    }
+
     public Map uidsString2map(String uids) {
         StringTokenizer st = new StringTokenizer(uids, "\r\n;");
         String uid, name;
@@ -1859,6 +2025,14 @@ public class WADOSupport {
          */
         public BufferedImage getImage() {
             return bi;
+        }
+    }
+
+    public void handleNotification(Notification notification, Object handback) {
+        try {
+            objectReceived((Dataset)notification.getUserData());
+        } catch (Throwable t) {
+            log.error("Can't handle Notification: notification! Ignored", t);
         }
     }
 }

@@ -39,6 +39,8 @@
 
 package org.dcm4chex.wado.mbean;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -376,9 +378,15 @@ public class WADOService extends AbstractCacheService {
     public ObjectName getQueryRetrieveScpName() {
         return support.getQueryRetrieveScpName();
     }
-
     public void setQueryRetrieveScpName(ObjectName name) {
         support.setQueryRetrieveScpName(name);
+    }
+
+    public ObjectName getMoveScuServiceName() {
+        return support.getMoveScuServiceName();
+    }
+    public void setMoveScuServiceName(ObjectName name) {
+        support.setMoveScuServiceName(name);
     }
 
     public String getDisabledAuditLogHosts() {
@@ -431,7 +439,27 @@ public class WADOService extends AbstractCacheService {
         support.setDisableCache(disableCache);
     }
 
-    
+    public long getFetchTimeout() {
+        return support.getFetchTimeout();
+    }
+    public void setFetchTimeout(long t) {
+        support.setFetchTimeout(t);
+    }
+
+    public String getFetchDestAET() {
+        return support.getFetchDestAET();
+    }
+    public void setFetchDestAET(String destAET) {
+        support.setFetchDestAET(destAET);
+    }
+
+    public boolean isUseSeriesLevelFetch() {
+        return support.isUseSeriesLevelFetch();
+    }
+    public void setUseSeriesLevelFetch(boolean useSeriesLevelFetch) {
+        support.setUseSeriesLevelFetch(useSeriesLevelFetch);
+    }
+
     /**
      * Get the requested DICOM object as File packed in a WADOResponseObject.
      * <p>
@@ -508,7 +536,6 @@ public class WADOService extends AbstractCacheService {
         log.info("SeriesStored! remove cached entries for seriesStored:"+seriesStored);
         cache.purgeStudy(studyIUID);
     }
-
 
     public boolean isRenderOverlays() {
         return support.isRenderOverlays();

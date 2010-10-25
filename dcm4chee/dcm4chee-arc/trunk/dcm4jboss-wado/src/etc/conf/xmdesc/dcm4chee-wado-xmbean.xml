@@ -368,6 +368,44 @@ date, 'HH' by the current hour and 'mm' by the current minute.<br/>
     </descriptors>
   </attribute>
 
+  <attribute access="read-write" getMethod="getFetchDestAET"
+    setMethod="setFetchDestAET">
+    <description>Destination AET for fetching objects if they are not locally available and the external retrieve AET has no WADO support.
+    (You have to define this in AE management by setting WADOUrl 'DICOM_QR_ONLY'!)
+    </description>
+    <name>FetchDestinationAET</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="DCM4CHEE" />
+    </descriptors>
+  </attribute>
+  <attribute access="read-write" getMethod="isUseSeriesLevelFetch"
+    setMethod="setUseSeriesLevelFetch">
+    <description><![CDATA[Use SERIES level fetch? <br/>
+       true : Use a SERIES level C-MOVE request. (May fetch instances that are already online!)<br/>
+       false: Use a C-MOVE on INSTANCE level with all instances of the series that are not online
+       and retrievable from the external retrieve AET. ]]>
+    </description>
+    <name>UseSeriesLevelFetch</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false" />
+    </descriptors>
+  </attribute>
+  <attribute access="read-write" getMethod="getFetchTimeout"
+    setMethod="setFetchTimeout">
+    <description>Fetch timeout in ms. A requested object will be fetched if it is not locally available and the external retrieve AET doesn't support WADO.
+    (You have to define this in AE management by setting WADOUrl to 'DICOM_QR_ONLY'!)
+    In this case the object will be fetched via a C-MOVE request and the WADO request waits until the object is received.
+    If the object get not received within this timeout, the WADO request will fail.  
+    </description>
+    <name>FetchTimeout</name>
+    <type>long</type>
+    <descriptors>
+      <value value="10000" />
+    </descriptors>
+  </attribute>
+
   <attribute access="read-write" getMethod="getTimerID"
     setMethod="setTimerID">
     <description>Used internally. Do NOT modify. </description>
@@ -379,6 +417,12 @@ date, 'HH' by the current hour and 'mm' by the current minute.<br/>
     setMethod="setQueryRetrieveScpName">
     <description>Used internally. Do NOT modify.</description>
     <name>QueryRetrieveScpName</name>
+    <type>javax.management.ObjectName</type>
+  </attribute>
+  <attribute access="read-write" getMethod="getMoveScuServiceName"
+    setMethod="setMoveScuServiceName">
+    <description>Used internally. Do NOT modify.</description>
+    <name>MoveScuServiceName</name>
     <type>javax.management.ObjectName</type>
   </attribute>
 
