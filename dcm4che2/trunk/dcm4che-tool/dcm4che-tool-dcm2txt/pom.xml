@@ -9,7 +9,8 @@
     <artifactId>dcm4che-tool-dcm2txt</artifactId>
     <version>2.0.25-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>DICOM Dump Utility</name>
+    <name>dcm4che-tool-dcm2txt</name>
+    <description>DICOM Dump Utility</description>
     <dependencies>
         <dependency>
             <groupId>dcm4che</groupId>

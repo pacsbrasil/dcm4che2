@@ -8,7 +8,7 @@
     </parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4che-filecache</artifactId>
-    <name>Journaling File Cache</name>
+    <name>dcm4che-filecache</name>
     <version>2.0.25-SNAPSHOT</version>
     <description>LRU file cache using journal files for logging last file access</description>
     <dependencies>

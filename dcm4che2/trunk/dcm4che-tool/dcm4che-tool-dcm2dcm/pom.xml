@@ -8,7 +8,8 @@
     <groupId>dcm4che.tool</groupId>
     <artifactId>dcm4che-tool-dcm2dcm</artifactId>
     <packaging>jar</packaging>
-    <name>DICOM to DICOM Converter</name>
+    <name>dcm4che-tool-dcm2dcm</name>
+    <description>DICOM to DICOM Converter</description>
     <dependencies>
         <dependency>
             <groupId>dcm4che</groupId>

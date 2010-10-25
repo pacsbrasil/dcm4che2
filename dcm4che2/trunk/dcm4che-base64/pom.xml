@@ -8,6 +8,6 @@
     </parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4che-base64</artifactId>
-    <name>Base64 Codec</name>
-    <description></description>
+    <name>dcm4che-base64</name>
+    <description>Base64 Codec</description>
 </project>

@@ -9,7 +9,8 @@
     <artifactId>dcm4che-tool-dcmecho</artifactId>
     <version>2.0.25-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>DICOM Verification SCU</name>
+    <name>dcm4che-tool-dcmecho</name>
+    <description>DICOM Verification SCU</description>
     <dependencies>
         <dependency>
             <groupId>dcm4che</groupId>
