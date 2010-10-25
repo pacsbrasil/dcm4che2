@@ -941,8 +941,9 @@ public class StudyListPage extends Panel {
     private void updatePatients(List<Object[]> patientAndStudies) {
         retainSelectedPatients();
         for (Object[] patientAndStudy : patientAndStudies) {
-            if (patientAndStudy[1] != null)               
-                addStudy((Study) patientAndStudy[1], addPatient((Patient) patientAndStudy[0]), dao.findStudyPermissionActions(((Study) patientAndStudy[1]).getStudyInstanceUID(), secureSession.getDicomRoles()));
+            PatientModel patientModel = addPatient((Patient) patientAndStudy[0]);
+            if (patientAndStudy[1] != null) 
+                addStudy((Study) patientAndStudy[1], patientModel, dao.findStudyPermissionActions(((Study) patientAndStudy[1]).getStudyInstanceUID(), secureSession.getDicomRoles()));
         }
         header.setExpandAllLevel(1);
     }
