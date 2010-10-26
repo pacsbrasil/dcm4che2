@@ -93,6 +93,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         cineTimer = new CineTimer();
         this.imgView = imgView;
         designPopup();
+        textOverlayContext();
         // presetButton.setVisible(false);
         jComboBox1.setVisible(false);
     }
@@ -108,6 +109,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         jPopupMenu1 = new javax.swing.JPopupMenu();
         jPopupMenu2 = new javax.swing.JPopupMenu();
         toolsButtonGroup = new javax.swing.ButtonGroup();
+        jPopupMenu3 = new javax.swing.JPopupMenu();
         jToolBar3 = new javax.swing.JToolBar();
         layoutButton = new javax.swing.JButton();
         windowing = new javax.swing.JButton();
@@ -550,9 +552,9 @@ public class ImageToolbar extends javax.swing.JPanel {
         textOverlay.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/textoverlay1.png"))); // NOI18N
         textOverlay.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/textoverlay1.png"))); // NOI18N
         textOverlay.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        textOverlay.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                textOverlayActionPerformed(evt);
+        textOverlay.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                textOverlayMousePressed(evt);
             }
         });
         jToolBar3.add(textOverlay);
@@ -768,15 +770,6 @@ public class ImageToolbar extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
         }
 }//GEN-LAST:event_resetActionPerformed
-
-    private void textOverlayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textOverlayActionPerformed
-        if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
-            ApplicationContext.layeredCanvas.textOverlay.toggleTextOverlay();
-
-        } else {
-            JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
-        }
-    }//GEN-LAST:event_textOverlayActionPerformed
 
     private void probeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_probeButtonActionPerformed
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
@@ -1099,6 +1092,8 @@ public class ImageToolbar extends javax.swing.JPanel {
 }//GEN-LAST:event_moveMeasurementActionPerformed
 
     private void layoutButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_layoutButtonMouseClicked
+        if(layoutButton.isEnabled())
+        {
         int x = evt.getX();
         int y = evt.getY();
         long z = evt.getWhen();
@@ -1106,6 +1101,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         int cc = evt.getClickCount();
         layoutButton.dispatchEvent(new java.awt.event.MouseEvent(this.layoutButton, MouseEvent.MOUSE_CLICKED, z, mo, x, y, cc, true));
         storeAnnotationHook();
+        }
 }//GEN-LAST:event_layoutButtonMouseClicked
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
@@ -1119,6 +1115,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     }//GEN-LAST:event_exportButtonActionPerformed
 
     private void presetButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_presetButtonMouseClicked
+       if(presetButton.isEnabled()){
         int x = evt.getX();
         int y = evt.getY();
         long z = evt.getWhen();
@@ -1126,6 +1123,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         int cc = evt.getClickCount();
         designPresetContext();
         presetButton.dispatchEvent(new java.awt.event.MouseEvent(this.presetButton, MouseEvent.MOUSE_CLICKED, z, mo, x, y, cc, true));
+       }
     }//GEN-LAST:event_presetButtonMouseClicked
 
     private void metaDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_metaDataButtonActionPerformed
@@ -1158,6 +1156,18 @@ public class ImageToolbar extends javax.swing.JPanel {
             LocalizerDelegate.hideScoutLine();
         }
     }//GEN-LAST:event_scoutButtonActionPerformed
+
+    private void textOverlayMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_textOverlayMousePressed
+          if(textOverlay.isEnabled())
+        {
+        int x = evt.getX();
+        int y = evt.getY();
+        long z = evt.getWhen();
+        int mo = evt.getModifiers();
+        int cc = evt.getClickCount();
+        textOverlay.dispatchEvent(new java.awt.event.MouseEvent(this.textOverlay, MouseEvent.MOUSE_CLICKED, z, mo, x, y, cc, true));
+          }
+    }//GEN-LAST:event_textOverlayMousePressed
     private void designPresetContext() {
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ArrayList presetList = ApplicationContext.databaseRef.getPresetValueForModality(ApplicationContext.imgPanel.getModality());
@@ -1204,6 +1214,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     private javax.swing.JComboBox jComboBox1;
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JPopupMenu jPopupMenu2;
+    private javax.swing.JPopupMenu jPopupMenu3;
     private javax.swing.JToolBar jToolBar3;
     private javax.swing.JButton layoutButton;
     private javax.swing.JButton leftRotate;
@@ -1448,5 +1459,40 @@ public class ImageToolbar extends javax.swing.JPanel {
 
     public void jb9ActionPerformed(ActionEvent e) {
         changeLayout(3, 3);
+    }
+
+    public void textOverlayContext() {
+
+        JMenuItem currentFrame = new JMenuItem("Selected");
+        JMenuItem allFrame = new JMenuItem("All");
+        jPopupMenu3.add(currentFrame);
+        jPopupMenu3.add(allFrame);
+        textOverlay.setComponentPopupMenu(jPopupMenu3);
+        allFrame.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                LayeredCanvas tempCanvas = null;
+                int childCount = ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponentCount();
+                for (int i = 0; i < childCount; i++) {
+                    if (((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(i) instanceof LayeredCanvas) {
+                        tempCanvas = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(i));
+                        if (tempCanvas.textOverlay != null) {
+                            tempCanvas.textOverlay.toggleTextOverlay();
+                        }
+                    }
+                }
+            }
+        });
+        currentFrame.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
+                    ApplicationContext.layeredCanvas.textOverlay.toggleTextOverlay();
+
+                } else {
+                    JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
+                }
+            }
+        });
     }
 }
