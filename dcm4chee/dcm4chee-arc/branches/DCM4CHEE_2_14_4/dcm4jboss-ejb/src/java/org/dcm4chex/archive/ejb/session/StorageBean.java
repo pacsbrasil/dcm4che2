@@ -603,6 +603,21 @@ public abstract class StorageBean implements SessionBean {
                 study.remove();
         }
     }
+	
+    /**
+     * @ejb.interface-method
+     */
+    public boolean studyExists(String iuid) {
+        try {
+            studyHome.findByStudyIuid(iuid);
+            return true;
+        } catch (ObjectNotFoundException onfe) {
+            return false;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+    }
+
 
     private SeriesLocal findBySeriesIuid(String uid)
             throws javax.ejb.FinderException {

@@ -60,6 +60,9 @@
 		<fileset dir="${jboss.server.home}/lib">
 			<include name="*.jar"/>
 		</fileset>
+		<fileset dir="${dcm4che14.home}/lib">
+			<include name="slf4j*.jar"/>
+		</fileset>
 	</path>
 
    	<!-- =================================================================== -->

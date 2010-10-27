@@ -281,7 +281,17 @@ public class AEService extends ServiceMBeanSupport {
             aeManager.updateAE(ae);
             sendNotification = true;
         } catch (UnknownAETException e) {}
-        for (int i = 0; i < otherServiceNames.length; i++) {
+        
+        updateOtherServices(prevAET, newAET);
+        
+        if (sendNotification) {
+            notifyAETchange(prevAET, newAET, "");
+        }
+    }
+
+	protected void updateOtherServices(String prevAET, String newAET) throws Exception {
+		
+		for (int i = 0; i < otherServiceNames.length; i++) {
             if (server.isRegistered(otherServiceNames[i])) {
                 updateAETitle(otherServiceNames[i], otherServiceAETAttrs[i],
                         prevAET, newAET);
@@ -293,10 +303,7 @@ public class AEService extends ServiceMBeanSupport {
                 }
             }
         }
-        if (sendNotification) {
-            notifyAETchange(prevAET, newAET, "");
-        }
-    }
+	}
 
     private boolean updateAETitle(ObjectName name, String attr,
             String prevAET, String newAET) throws Exception {
@@ -442,8 +449,11 @@ public class AEService extends ServiceMBeanSupport {
             aeManager.updateAE(newAE);
             logActorConfig("Modify AE " + oldAE + " -> " + newAE,
                     SecurityAlertMessage.NETWORK_CONFIGURATION);
-            if ( oldAET != null )
+            
+            if ( oldAET != null ) {
+            	updateOtherServices(oldAET, title);
                 notifyAETchange(oldAET, title,"");
+            }
         }
     }
 
