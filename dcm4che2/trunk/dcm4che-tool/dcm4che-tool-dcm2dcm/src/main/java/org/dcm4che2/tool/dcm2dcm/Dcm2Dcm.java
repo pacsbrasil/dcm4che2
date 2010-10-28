@@ -59,6 +59,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Implementation;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.data.UID;
@@ -416,6 +417,10 @@ public class Dcm2Dcm {
         int frames = ds.getInt(Tag.NumberOfFrames, 1);
         LookupTable lut = prepareBitStrip(writeMeta, reader);
         newDs.putString(Tag.TransferSyntaxUID, VR.UI, destinationSyntax.uid());
+        newDs.putString(Tag.ImplementationClassUID, VR.UI,
+                Implementation.classUID());
+        newDs.putString(Tag.ImplementationVersionName, VR.SH,
+                Implementation.versionName());
         if (overwriteObject != null) {
             overwriteObject.copyTo(newDs);
         }
