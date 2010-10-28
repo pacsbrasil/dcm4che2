@@ -27,7 +27,7 @@
     <module>dcm4che-tool-dcmrcv</module>
     <module>dcm4che-tool-dcmsnd</module>
     <module>dcm4che-tool-dcmups</module>
-    <module>dcm4che-tool-dcmwado</module>   
+    <module>dcm4che-tool-dcmwado</module>
     <module>dcm4che-tool-logger</module>
     <module>dcm4che-tool-jpg2dcm</module>
     <module>dcm4che-tool-pdf2dcm</module>
@@ -35,5 +35,6 @@
     <module>dcm4che-tool-txt2dcmsr</module>
     <module>dcm4che-tool-xml2dcm</module>
     <module>dcm4che-tool-chess3d</module>
+    <module>dcm4che-tool-fixjpegls</module>
   </modules>
 </project>
