@@ -55,7 +55,6 @@ import in.raster.mayam.form.dialog.ServerListDialog;
 import in.raster.mayam.form.dialog.SettingsDialog;
 import in.raster.mayam.util.DicomTags;
 import in.raster.mayam.util.DicomTagsReader;
-import in.raster.mayam.form.display.Display;
 import in.raster.mayam.model.AEModel;
 import in.raster.mayam.model.Study;
 import in.raster.mayam.model.table.StudyListModel;
@@ -100,6 +99,8 @@ public class MainScreen extends javax.swing.JFrame {
         initNetworkQueue();
         initSendingProgress();
         setTheme();
+        ImportDcmDirDelegate.findAndLoadDcmDirFiles();
+
     }
 
     private void setTheme() {
@@ -302,7 +303,7 @@ public class MainScreen extends javax.swing.JFrame {
         windowingPanelCanvas.setLayout(windowingPanelCanvasLayout);
         windowingPanelCanvasLayout.setHorizontalGroup(
             windowingPanelCanvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 755, Short.MAX_VALUE)
+            .add(0, 598, Short.MAX_VALUE)
         );
         windowingPanelCanvasLayout.setVerticalGroup(
             windowingPanelCanvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -327,11 +328,11 @@ public class MainScreen extends javax.swing.JFrame {
         studyAndSeriesDisplayPanelLayout.setHorizontalGroup(
             studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(studyAndSeriesDisplayPanelLayout.createSequentialGroup()
-                .add(studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE))
+                .add(studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 755, Short.MAX_VALUE))
+                .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 598, Short.MAX_VALUE))
         );
         studyAndSeriesDisplayPanelLayout.setVerticalGroup(
             studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -743,7 +744,7 @@ public class MainScreen extends javax.swing.JFrame {
     }
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         if (studyListTable.getSelectedRow() != -1) {
-            ConfirmDelete confirmDelete = new ConfirmDelete(this, true);        
+            ConfirmDelete confirmDelete = new ConfirmDelete(this, true);
             confirmDelete.setLocationRelativeTo(this);
             confirmDelete.setVisible(true);
         }
@@ -755,7 +756,7 @@ public class MainScreen extends javax.swing.JFrame {
         String forwardAET = "";
         String forwardHost = "";
         int forwardPort;
-        ServerListDialog configuredServer = new ServerListDialog(this, true);    
+        ServerListDialog configuredServer = new ServerListDialog(this, true);
         configuredServer.setLocationRelativeTo(this);
         configuredServer.setVisible(true);
         if (configuredServer.getAe() != null) {
@@ -795,8 +796,8 @@ public class MainScreen extends javax.swing.JFrame {
         System.exit(2);
     }//GEN-LAST:event_exitMenuItemActionPerformed
     private void queueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queueButtonActionPerformed
-       sndRcvFrm.setLocationRelativeTo(this);
-       sndRcvFrm.setVisible(true);
+        sndRcvFrm.setLocationRelativeTo(this);
+        sndRcvFrm.setVisible(true);
     }//GEN-LAST:event_queueButtonActionPerformed
     private void preferenceMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preferenceMenuItemActionPerformed
         showPreference();
@@ -843,7 +844,7 @@ public class MainScreen extends javax.swing.JFrame {
                 int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
                 String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
                 ArrayList<DicomTags> dcmTags = DicomTagsReader.getTags(new File(this.canvas.getFilePath()));
-                dicomTagsViewer.setDataModelOnTable(dcmTags);               
+                dicomTagsViewer.setDataModelOnTable(dcmTags);
                 dicomTagsViewer.setLocationRelativeTo(this);
                 dicomTagsViewer.setVisible(true);
             }
@@ -971,22 +972,20 @@ public class MainScreen extends javax.swing.JFrame {
     SeriesThumbUpdator thumbUpdator;
 
     public void showThumbnails() {
-        try
-        {
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        if (studyListTable.getSelectedRow() != -1) {
-            if (thumbUpdator != null) {
-                thumbUpdator.setCanRun(false);
-                removeThumbnailComponents();
+        try {
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            if (studyListTable.getSelectedRow() != -1) {
+                if (thumbUpdator != null) {
+                    thumbUpdator.setCanRun(false);
+                    removeThumbnailComponents();
+                }
+                int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
+                String studyUID = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
+                selectedStudy = studyUID;
+                thumbUpdator = new SeriesThumbUpdator(studyUID);
             }
-            int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
-            String studyUID = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
-            selectedStudy = studyUID;
-            thumbUpdator = new SeriesThumbUpdator(studyUID);
-        }
-        }finally
-        {
-        this.setCursor(Cursor.getDefaultCursor());
+        } finally {
+            this.setCursor(Cursor.getDefaultCursor());
         }
     }
 

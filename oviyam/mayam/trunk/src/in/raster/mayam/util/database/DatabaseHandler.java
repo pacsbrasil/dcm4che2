@@ -118,6 +118,9 @@ public class DatabaseHandler {
     /** It initializes the Java Derby Databse.It creates the database if it is not available. */
     public void openOrCreateDB() {
         try {
+            if (!ApplicationContext.canWrite(System.getProperty("user.dir"))) {
+                System.setProperty("derby.system.home", System.getProperty("java.io.tmpdir"));
+            }
             try {
                 Class.forName(driver).newInstance();
             } catch (InstantiationException e) {
@@ -137,21 +140,7 @@ public class DatabaseHandler {
                 System.err.println("ERROR: ClassNotFoundException:" + e.getMessage());
                 ApplicationFacade.exitApp("ERROR: ClassNotFoundException:" + e.getMessage() + ": Exiting the program");
             }
-            this.dbExists = checkDBexists(System.getProperty("user.dir"));
-            try {
-                if (!dbExists) {
-                    conn = DriverManager.getConnection(protocol + databasename + ";create=true",
-                            username, password);
-                } else {
-                    conn = DriverManager.getConnection(protocol + databasename + ";create=false", username, password);
-                }
-            } catch (SQLException e) {
-                if (dbExists && conn == null) {
-                    System.err.println("ERROR: Database connection cannot be created:" + e.getMessage());
-                    System.err.println("A instance of application is already running");
-                    ApplicationFacade.exitApp("An instance of Mayam is already running: Exiting the program");
-                }
-            }
+            openConnection();
             statement = conn.createStatement();
             if (!dbExists) {
                 createTables();
@@ -168,6 +157,35 @@ public class DatabaseHandler {
             e.printStackTrace(new PrintWriter(str));
         }
     }
+    private void openConnection()
+    {
+         this.dbExists = checkDBexists(System.getProperty("user.dir"));
+            try {
+                if (!dbExists) {
+                    if (ApplicationContext.canWrite(System.getProperty("user.dir"))) {                        
+                        conn = DriverManager.getConnection(protocol + databasename + ";create=true",
+                                username, password);
+                    } else {
+                        if (!checkDBexists(System.getProperty("java.io.tmpdir"))) {
+                            conn = DriverManager.getConnection(protocol + System.getProperty("java.io.tmpdir") + File.separator + databasename + ";create=true",
+                                    username, password);
+                        } else {
+                            dbExists = true;
+                            conn = DriverManager.getConnection(protocol + System.getProperty("java.io.tmpdir") + File.separator + databasename + ";create=false", username, password);
+                            deleteRows();
+                        }
+                    }
+                } else {
+                    conn = DriverManager.getConnection(protocol + databasename + ";create=false", username, password);
+                }
+            } catch (Exception e) {
+                if (dbExists && conn == null) {
+                    System.err.println("ERROR: Database connection cannot be created:" + e.getMessage());
+                    System.err.println("An instance of application is already running");
+                    ApplicationFacade.exitApp("An instance of Mayam is already running: Exiting the program");
+                }
+            }
+    }
 
     /**
      * It closes the local java derby database connection.
@@ -183,35 +201,8 @@ public class DatabaseHandler {
         }
 
     }
-    /* public void findDcmDirInMedia(String usrDirPath) {
-    try {
-    String os = System.getProperty("os.name").toLowerCase();
-    File[] drives = null;
-    // list Filesystem roots
-    if (os.startsWith("win")) {
-    drives = ShellFolder.listRoots();
-    } else if (os.startsWith("mac")) {
-    drives = new File("/Volumes").listFiles();
-    } else {
-    drives = new File("/media").listFiles();
-    }
-    // search for dicomdir in system roots
-    for (int i = 0; i < drives.length; i++) {
-    if (drives[i].getAbsolutePath().equalsIgnoreCase(usrDirPath)) {
-    dcmDirFile = dicomDirCD;
-    break;
-    }
-
-    }
-    }
-    catch (Exception ee) {
-    ee.printStackTrace();
-    }
-    }*/
 
     public void rebuild() {
-        // resetStudyDB();
-        // recreateTable();
         deleteRows();
         ApplicationContext.mainScreen.restartReceiver();
     }
@@ -1462,17 +1453,13 @@ public class DatabaseHandler {
      */
     public void deleteRows() {
         try {
+            if (statement == null) {
+                statement = conn.createStatement();
+            }
             statement.execute("delete from " + instanceTable);
             statement.execute("delete from " + seriesTable);
             statement.execute("delete from " + studyTable);
             statement.execute("delete from " + patientTable);
-            /*Following lines to be uncommented to delete ae,layout,preset,listener,modality table while resetDB
-            statement.execute("delete from ae");
-            statement.execute("delete from layout");
-            statement.execute("delete from preset");
-            statement.execute("delete from listener");
-            statement.execute("delete from modality");*/
-
             conn.commit();
         } catch (SQLException e) {
             StringWriter str = new StringWriter();

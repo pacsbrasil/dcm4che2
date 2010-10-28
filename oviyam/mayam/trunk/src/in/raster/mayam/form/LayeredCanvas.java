@@ -115,6 +115,7 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
         createAnnotationOverlay();
         createTextOverlay();
         setTextOverlayParam();
+        findMultiframeStatus();
         createLayers();
         this.imgpanel.revalidate();
         this.imgpanel.repaint();
@@ -158,17 +159,19 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
         this.focusGained = focusGained;
         repaint();
     }
-    public void findMultiframeStatus()
-    {
+
+    public void findMultiframeStatus() {
         if (imgpanel.isMulitiFrame()) {
-          textOverlay.multiframeStatusDisplay(true);
-          if(!ApplicationContext.databaseRef.getMultiframeStatus())
-          textOverlay.getTextOverlayParam().setFramePosition("1/"+imgpanel.getnFrames());
-        }
-        else
+            textOverlay.multiframeStatusDisplay(true);
+            if (!ApplicationContext.databaseRef.getMultiframeStatus()) {
+                textOverlay.getTextOverlayParam().setFramePosition("1/" + imgpanel.getnFrames());
+            }
+        } else {
             textOverlay.multiframeStatusDisplay(false);
+        }
 
     }
+
     private void setTextOverlayParam() {
         textOverlay.setTextOverlayParam(imgpanel.getTextOverlayParam());
     }
@@ -199,7 +202,7 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
     /**
      * This routine used to set the selection coloring.
      */
-    public void setSelectionColoring() {       
+    public void setSelectionColoring() {
         this.setBorder(new LineBorder(Color.YELLOW));
         ApplicationContext.imgView.getImageToolbar().disableAllTools();
     }
@@ -254,11 +257,10 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
                 menuitem.addActionListener(new java.awt.event.ActionListener() {
 
                     public void actionPerformed(ActionEvent arg0) {
-                        if(ApplicationContext.databaseRef.getMultiframeStatus()){
-                         SeriesChooserDelegate seriesChooser = new SeriesChooserDelegate(series.getStudyInstanceUID(), series.getSeriesInstanceUID(),series.isMultiframe(),series.getInstanceUID(), ref);
-                        }
-                        else  {
-                        SeriesChooserDelegate seriesChooser = new SeriesChooserDelegate(series.getStudyInstanceUID(), series.getSeriesInstanceUID(), ref);
+                        if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+                            SeriesChooserDelegate seriesChooser = new SeriesChooserDelegate(series.getStudyInstanceUID(), series.getSeriesInstanceUID(), series.isMultiframe(), series.getInstanceUID(), ref);
+                        } else {
+                            SeriesChooserDelegate seriesChooser = new SeriesChooserDelegate(series.getStudyInstanceUID(), series.getSeriesInstanceUID(), ref);
                         }
                     }
                 });
@@ -290,14 +292,14 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
 
     public void componentResized(ComponentEvent e) {
         try {
-            if(canvas!=null)
-            {
-            this.canvas.resizeHandler();
-            this.imgpanel.resizeHandler();
-            this.textOverlay.resizeHandler();
-            this.annotationPanel.resizeHandler();
+            if (canvas != null) {
+                this.canvas.resizeHandler();
+                this.imgpanel.resizeHandler();
+                this.textOverlay.resizeHandler();
+                this.annotationPanel.resizeHandler();
             }
-        } catch (Exception ex) {ex.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 

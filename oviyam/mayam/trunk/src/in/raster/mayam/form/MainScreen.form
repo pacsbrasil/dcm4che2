@@ -298,12 +298,12 @@
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jLabel2" pref="173" max="32767" attributes="1"/>
-                                  <Component id="thumbnailScroll" alignment="1" pref="173" max="32767" attributes="1"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="thumbnailScroll" pref="330" max="32767" attributes="1"/>
+                                  <Component id="jLabel2" alignment="1" pref="330" max="32767" attributes="1"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="windowingPanelCanvas" pref="755" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="windowingPanelCanvas" pref="598" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -333,7 +333,7 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <EmptySpace min="0" pref="755" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="598" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                         <DimensionLayout dim="1">

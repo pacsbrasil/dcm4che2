@@ -35,9 +35,9 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-
 package in.raster.mayam.util.core;
 
+import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegate.NetworkQueueUpdateDelegate;
 import in.raster.mayam.form.MainScreen;
 import java.io.BufferedOutputStream;
@@ -95,13 +95,9 @@ import org.slf4j.LoggerFactory;
 public class DcmRcv {
 
     private static final int NO_SUCH_OBJECT_INSTANCE = 0x0112;
-
     static Logger LOG = LoggerFactory.getLogger(DcmRcv.class);
-
     private static final int KB = 1024;
-
     private static final String USAGE = "dcmrcv [Options] [<aet>[@<ip>]:]<port>";
-
     private static final String DESCRIPTION = "DICOM Server listening on specified <port> for incoming association "
             + "requests. If no local IP address of the network interface is specified "
             + "connections on any/all local addresses are accepted. If <aet> is "
@@ -109,173 +105,129 @@ public class DcmRcv {
             + "accepted. If <aet> and a storage directory is specified by option "
             + "-dest <dir>, also Storage Commitment requests will be accepted and "
             + "processed.\n Options:";
-
     private static final String EXAMPLE = "\nExample: dcmrcv DCMRCV:11112 -dest /tmp \n"
             + "=> Starts server listening on port 11112, accepting association "
             + "requests with DCMRCV as called AE title. Received objects "
             + "are stored to /tmp.";
-
-    private static String[] TLS1 = { "TLSv1" };
-
-    private static String[] SSL3 = { "SSLv3" };
-
-    private static String[] NO_TLS1 = { "SSLv3", "SSLv2Hello" };
-
-    private static String[] NO_SSL2 = { "TLSv1", "SSLv3" };
-
-    private static String[] NO_SSL3 = { "TLSv1", "SSLv2Hello" };
-
-    private static char[] SECRET = { 's', 'e', 'c', 'r', 'e', 't' };
-
-    private static final String[] ONLY_DEF_TS = { UID.ImplicitVRLittleEndian };
-
-    private static final String[] NATIVE_TS = { UID.ExplicitVRLittleEndian,
-            UID.ExplicitVRBigEndian, UID.ImplicitVRLittleEndian };
-
-    private static final String[] NATIVE_LE_TS = { UID.ExplicitVRLittleEndian,
-            UID.ImplicitVRLittleEndian };
-
-    private static final String[] NON_RETIRED_TS = { UID.JPEGLSLossless,
-            UID.JPEGLossless, UID.JPEGLosslessNonHierarchical14,
-            UID.JPEG2000LosslessOnly, UID.DeflatedExplicitVRLittleEndian,
-            UID.RLELossless, UID.ExplicitVRLittleEndian,
-            UID.ExplicitVRBigEndian, UID.ImplicitVRLittleEndian,
-            UID.JPEGBaseline1, UID.JPEGExtended24, UID.JPEGLSLossyNearLossless,
-            UID.JPEG2000, UID.MPEG2, };
-
-    private static final String[] NON_RETIRED_LE_TS = { UID.JPEGLSLossless,
-            UID.JPEGLossless, UID.JPEGLosslessNonHierarchical14,
-            UID.JPEG2000LosslessOnly, UID.DeflatedExplicitVRLittleEndian,
-            UID.RLELossless, UID.ExplicitVRLittleEndian,
-            UID.ImplicitVRLittleEndian, UID.JPEGBaseline1, UID.JPEGExtended24,
-            UID.JPEGLSLossyNearLossless, UID.JPEG2000, UID.MPEG2, };
-
+    private static String[] TLS1 = {"TLSv1"};
+    private static String[] SSL3 = {"SSLv3"};
+    private static String[] NO_TLS1 = {"SSLv3", "SSLv2Hello"};
+    private static String[] NO_SSL2 = {"TLSv1", "SSLv3"};
+    private static String[] NO_SSL3 = {"TLSv1", "SSLv2Hello"};
+    private static char[] SECRET = {'s', 'e', 'c', 'r', 'e', 't'};
+    private static final String[] ONLY_DEF_TS = {UID.ImplicitVRLittleEndian};
+    private static final String[] NATIVE_TS = {UID.ExplicitVRLittleEndian,
+        UID.ExplicitVRBigEndian, UID.ImplicitVRLittleEndian};
+    private static final String[] NATIVE_LE_TS = {UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian};
+    private static final String[] NON_RETIRED_TS = {UID.JPEGLSLossless,
+        UID.JPEGLossless, UID.JPEGLosslessNonHierarchical14,
+        UID.JPEG2000LosslessOnly, UID.DeflatedExplicitVRLittleEndian,
+        UID.RLELossless, UID.ExplicitVRLittleEndian,
+        UID.ExplicitVRBigEndian, UID.ImplicitVRLittleEndian,
+        UID.JPEGBaseline1, UID.JPEGExtended24, UID.JPEGLSLossyNearLossless,
+        UID.JPEG2000, UID.MPEG2,};
+    private static final String[] NON_RETIRED_LE_TS = {UID.JPEGLSLossless,
+        UID.JPEGLossless, UID.JPEGLosslessNonHierarchical14,
+        UID.JPEG2000LosslessOnly, UID.DeflatedExplicitVRLittleEndian,
+        UID.RLELossless, UID.ExplicitVRLittleEndian,
+        UID.ImplicitVRLittleEndian, UID.JPEGBaseline1, UID.JPEGExtended24,
+        UID.JPEGLSLossyNearLossless, UID.JPEG2000, UID.MPEG2,};
     private static final String[] CUIDS = {
-            UID.BasicStudyContentNotificationSOPClassRetired,
-            UID.StoredPrintStorageSOPClassRetired,
-            UID.HardcopyGrayscaleImageStorageSOPClassRetired,
-            UID.HardcopyColorImageStorageSOPClassRetired,
-            UID.ComputedRadiographyImageStorage,
-            UID.DigitalXRayImageStorageForPresentation,
-            UID.DigitalXRayImageStorageForProcessing,
-            UID.DigitalMammographyXRayImageStorageForPresentation,
-            UID.DigitalMammographyXRayImageStorageForProcessing,
-            UID.DigitalIntraoralXRayImageStorageForPresentation,
-            UID.DigitalIntraoralXRayImageStorageForProcessing,
-            UID.StandaloneModalityLUTStorageRetired,
-            UID.EncapsulatedPDFStorage, UID.StandaloneVOILUTStorageRetired,
-            UID.GrayscaleSoftcopyPresentationStateStorageSOPClass,
-            UID.ColorSoftcopyPresentationStateStorageSOPClass,
-            UID.PseudoColorSoftcopyPresentationStateStorageSOPClass,
-            UID.BlendingSoftcopyPresentationStateStorageSOPClass,
-            UID.XRayAngiographicImageStorage, UID.EnhancedXAImageStorage,
-            UID.XRayRadiofluoroscopicImageStorage, UID.EnhancedXRFImageStorage,
-            UID.XRayAngiographicBiPlaneImageStorageRetired,
-            UID.PositronEmissionTomographyImageStorage,
-            UID.StandalonePETCurveStorageRetired, UID.CTImageStorage,
-            UID.EnhancedCTImageStorage, UID.NuclearMedicineImageStorage,
-            UID.UltrasoundMultiframeImageStorageRetired,
-            UID.UltrasoundMultiframeImageStorage, UID.MRImageStorage,
-            UID.EnhancedMRImageStorage, UID.MRSpectroscopyStorage,
-            UID.RTImageStorage, UID.RTDoseStorage, UID.RTStructureSetStorage,
-            UID.RTBeamsTreatmentRecordStorage, UID.RTPlanStorage,
-            UID.RTBrachyTreatmentRecordStorage,
-            UID.RTTreatmentSummaryRecordStorage,
-            UID.NuclearMedicineImageStorageRetired,
-            UID.UltrasoundImageStorageRetired, UID.UltrasoundImageStorage,
-            UID.RawDataStorage, UID.SpatialRegistrationStorage,
-            UID.SpatialFiducialsStorage, UID.RealWorldValueMappingStorage,
-            UID.SecondaryCaptureImageStorage,
-            UID.MultiframeSingleBitSecondaryCaptureImageStorage,
-            UID.MultiframeGrayscaleByteSecondaryCaptureImageStorage,
-            UID.MultiframeGrayscaleWordSecondaryCaptureImageStorage,
-            UID.MultiframeTrueColorSecondaryCaptureImageStorage,
-            UID.VLImageStorageTrialRetired, UID.VLEndoscopicImageStorage,
-            UID.VideoEndoscopicImageStorage, UID.VLMicroscopicImageStorage,
-            UID.VideoMicroscopicImageStorage,
-            UID.VLSlideCoordinatesMicroscopicImageStorage,
-            UID.VLPhotographicImageStorage, UID.VideoPhotographicImageStorage,
-            UID.OphthalmicPhotography8BitImageStorage,
-            UID.OphthalmicPhotography16BitImageStorage,
-            UID.StereometricRelationshipStorage,
-            UID.VLMultiframeImageStorageTrialRetired,
-            UID.StandaloneOverlayStorageRetired, UID.BasicTextSRStorage,
-            UID.EnhancedSRStorage, UID.ComprehensiveSRStorage,
-            UID.ProcedureLogStorage, UID.MammographyCADSRStorage,
-            UID.KeyObjectSelectionDocumentStorage,
-            UID.ChestCADSRStorage, UID.XRayRadiationDoseSRStorage,
-            UID.EncapsulatedPDFStorage, UID.EncapsulatedCDAStorage,
-            UID.StandaloneCurveStorageRetired,
-            UID._12leadECGWaveformStorage, UID.GeneralECGWaveformStorage,
-            UID.AmbulatoryECGWaveformStorage, UID.HemodynamicWaveformStorage,
-            UID.CardiacElectrophysiologyWaveformStorage,
-            UID.BasicVoiceAudioWaveformStorage, UID.HangingProtocolStorage,
-            UID.SiemensCSANonImageStorage,
-            UID.Dcm4cheAttributesModificationNotificationSOPClass };
-
+        UID.BasicStudyContentNotificationSOPClassRetired,
+        UID.StoredPrintStorageSOPClassRetired,
+        UID.HardcopyGrayscaleImageStorageSOPClassRetired,
+        UID.HardcopyColorImageStorageSOPClassRetired,
+        UID.ComputedRadiographyImageStorage,
+        UID.DigitalXRayImageStorageForPresentation,
+        UID.DigitalXRayImageStorageForProcessing,
+        UID.DigitalMammographyXRayImageStorageForPresentation,
+        UID.DigitalMammographyXRayImageStorageForProcessing,
+        UID.DigitalIntraoralXRayImageStorageForPresentation,
+        UID.DigitalIntraoralXRayImageStorageForProcessing,
+        UID.StandaloneModalityLUTStorageRetired,
+        UID.EncapsulatedPDFStorage, UID.StandaloneVOILUTStorageRetired,
+        UID.GrayscaleSoftcopyPresentationStateStorageSOPClass,
+        UID.ColorSoftcopyPresentationStateStorageSOPClass,
+        UID.PseudoColorSoftcopyPresentationStateStorageSOPClass,
+        UID.BlendingSoftcopyPresentationStateStorageSOPClass,
+        UID.XRayAngiographicImageStorage, UID.EnhancedXAImageStorage,
+        UID.XRayRadiofluoroscopicImageStorage, UID.EnhancedXRFImageStorage,
+        UID.XRayAngiographicBiPlaneImageStorageRetired,
+        UID.PositronEmissionTomographyImageStorage,
+        UID.StandalonePETCurveStorageRetired, UID.CTImageStorage,
+        UID.EnhancedCTImageStorage, UID.NuclearMedicineImageStorage,
+        UID.UltrasoundMultiframeImageStorageRetired,
+        UID.UltrasoundMultiframeImageStorage, UID.MRImageStorage,
+        UID.EnhancedMRImageStorage, UID.MRSpectroscopyStorage,
+        UID.RTImageStorage, UID.RTDoseStorage, UID.RTStructureSetStorage,
+        UID.RTBeamsTreatmentRecordStorage, UID.RTPlanStorage,
+        UID.RTBrachyTreatmentRecordStorage,
+        UID.RTTreatmentSummaryRecordStorage,
+        UID.NuclearMedicineImageStorageRetired,
+        UID.UltrasoundImageStorageRetired, UID.UltrasoundImageStorage,
+        UID.RawDataStorage, UID.SpatialRegistrationStorage,
+        UID.SpatialFiducialsStorage, UID.RealWorldValueMappingStorage,
+        UID.SecondaryCaptureImageStorage,
+        UID.MultiframeSingleBitSecondaryCaptureImageStorage,
+        UID.MultiframeGrayscaleByteSecondaryCaptureImageStorage,
+        UID.MultiframeGrayscaleWordSecondaryCaptureImageStorage,
+        UID.MultiframeTrueColorSecondaryCaptureImageStorage,
+        UID.VLImageStorageTrialRetired, UID.VLEndoscopicImageStorage,
+        UID.VideoEndoscopicImageStorage, UID.VLMicroscopicImageStorage,
+        UID.VideoMicroscopicImageStorage,
+        UID.VLSlideCoordinatesMicroscopicImageStorage,
+        UID.VLPhotographicImageStorage, UID.VideoPhotographicImageStorage,
+        UID.OphthalmicPhotography8BitImageStorage,
+        UID.OphthalmicPhotography16BitImageStorage,
+        UID.StereometricRelationshipStorage,
+        UID.VLMultiframeImageStorageTrialRetired,
+        UID.StandaloneOverlayStorageRetired, UID.BasicTextSRStorage,
+        UID.EnhancedSRStorage, UID.ComprehensiveSRStorage,
+        UID.ProcedureLogStorage, UID.MammographyCADSRStorage,
+        UID.KeyObjectSelectionDocumentStorage,
+        UID.ChestCADSRStorage, UID.XRayRadiationDoseSRStorage,
+        UID.EncapsulatedPDFStorage, UID.EncapsulatedCDAStorage,
+        UID.StandaloneCurveStorageRetired,
+        UID._12leadECGWaveformStorage, UID.GeneralECGWaveformStorage,
+        UID.AmbulatoryECGWaveformStorage, UID.HemodynamicWaveformStorage,
+        UID.CardiacElectrophysiologyWaveformStorage,
+        UID.BasicVoiceAudioWaveformStorage, UID.HangingProtocolStorage,
+        UID.SiemensCSANonImageStorage,
+        UID.Dcm4cheAttributesModificationNotificationSOPClass};
     private final Executor executor;
-
     private final Device device;
-
     private final NetworkApplicationEntity ae = new NetworkApplicationEntity();
-
     private final NetworkConnection nc = new NetworkConnection();
-
     private final StorageSCP storageSCP = new StorageSCP(this, CUIDS);
-
     private final StgCmtSCP stgcmtSCP =
             new StgCmtSCP(this);
-
     private String[] tsuids = NON_RETIRED_LE_TS;
-
     private FileCache cache = new FileCache();
-
     private File destination;
-
     private File devnull;
-
     private Properties calling2dir;
-
     private Properties called2dir;
-
     private String callingdefdir = "OTHER";
-
     private String calleddefdir = "OTHER";
-
     private int fileBufferSize = 1024;
-
     private int rspdelay = 0;
-
     private String keyStoreURL = "resource:tls/test_sys_2.p12";
-
     private char[] keyStorePassword = SECRET;
-
     private char[] keyPassword;
-
     private String trustStoreURL = "resource:tls/mesa_certs.jks";
-
     private char[] trustStorePassword = SECRET;
-
     private Timer stgcmtTimer;
-
     private boolean stgcmtReuseFrom = false;
-
     private boolean stgcmtReuseTo = false;
-
     private int stgcmtPort = 104;
-
     private long stgcmtDelay = 1000;
-
     private int stgcmtRetry = 0;
-
     private long stgcmtRetryPeriod = 60000;
-
     private String stgcmtRetrieveAET;
-
     private String stgcmtRetrieveAETs;
-
-    private final DimseRSPHandler nEventReportRspHandler = 
-        new DimseRSPHandler();
+    private final DimseRSPHandler nEventReportRspHandler =
+            new DimseRSPHandler();
 
     public DcmRcv() {
         this("DCMRCV");
@@ -465,7 +417,6 @@ public class DcmRcv {
         this.stgcmtRetrieveAET = aet;
     }
 
-
     public final String getStgCmtRetrieveAETs() {
         return stgcmtRetrieveAETs;
     }
@@ -507,7 +458,7 @@ public class DcmRcv {
         opts.addOptionGroup(tlsProtocol);
 
         opts.addOption("noclientauth", false,
-                "disable client authentification for TLS");        
+                "disable client authentification for TLS");
 
         OptionBuilder.withArgName("file|url");
         OptionBuilder.hasArg();
@@ -543,7 +494,7 @@ public class DcmRcv {
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
                 "store received objects into files in specified directory <dir>."
-                        + " Do not store received objects by default.");
+                + " Do not store received objects by default.");
         opts.addOption(OptionBuilder.create("dest"));
 
         OptionBuilder.withArgName("file|url");
@@ -585,7 +536,7 @@ public class DcmRcv {
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
                 "register stored objects in cache journal files in specified directory <dir>."
-                        + " Do not register stored objects by default.");
+                + " Do not register stored objects by default.");
         opts.addOption(OptionBuilder.create("journal"));
 
         OptionBuilder.withArgName("pattern");
@@ -607,65 +558,65 @@ public class DcmRcv {
         OptionBuilder.withArgName("aet");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "Retrieve AE Title included in Storage Commitment " +
-                "N-EVENT-REPORT in items of the Referenced SOP Sequence.");
+                "Retrieve AE Title included in Storage Commitment "
+                + "N-EVENT-REPORT in items of the Referenced SOP Sequence.");
         scRetrieveAET.addOption(OptionBuilder.create("scretraets"));
         OptionBuilder.withArgName("aet");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "Retrieve AE Title included in Storage Commitment " +
-                "N-EVENT-REPORT outside of the Referenced SOP Sequence.");
+                "Retrieve AE Title included in Storage Commitment "
+                + "N-EVENT-REPORT outside of the Referenced SOP Sequence.");
         scRetrieveAET.addOption(OptionBuilder.create("scretraet"));
         opts.addOptionGroup(scRetrieveAET);
 
         opts.addOption("screusefrom", false,
-                "attempt to issue the Storage Commitment N-EVENT-REPORT on " +
-                "the same Association on which the N-ACTION operation was " +
-                "performed; use different Association for N-EVENT-REPORT by " +
-                "default.");
+                "attempt to issue the Storage Commitment N-EVENT-REPORT on "
+                + "the same Association on which the N-ACTION operation was "
+                + "performed; use different Association for N-EVENT-REPORT by "
+                + "default.");
 
         opts.addOption("screuseto", false,
-                "attempt to issue the Storage Commitment N-EVENT-REPORT on " +
-                "previous initiated Association to the Storage Commitment SCU; " +
-                "initiate new Association for N-EVENT-REPORT by default.");
+                "attempt to issue the Storage Commitment N-EVENT-REPORT on "
+                + "previous initiated Association to the Storage Commitment SCU; "
+                + "initiate new Association for N-EVENT-REPORT by default.");
 
         OptionBuilder.withArgName("port");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "port of Storage Commitment SCU to connect to issue " +
-                "N-EVENT-REPORT on different Association; 104 by default.");
+                "port of Storage Commitment SCU to connect to issue "
+                + "N-EVENT-REPORT on different Association; 104 by default.");
         opts.addOption(OptionBuilder.create("scport"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
                 "delay in ms for N-EVENT-REPORT-RQ to Storage Commitment SCU, "
-                        + "1s by default");
+                + "1s by default");
         opts.addOption(OptionBuilder.create("scdelay"));
 
         OptionBuilder.withArgName("retry");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "number of retries to issue N-EVENT-REPORT-RQ to Storage " +
-                "Commitment SCU, 0 by default");
+                "number of retries to issue N-EVENT-REPORT-RQ to Storage "
+                + "Commitment SCU, 0 by default");
         opts.addOption(OptionBuilder.create("scretry"));
 
         OptionBuilder.withArgName("ms");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
-                "interval im ms between retries to issue N-EVENT-REPORT-RQ to" +
-                "Storage Commitment SCU, 60s by default");
+                "interval im ms between retries to issue N-EVENT-REPORT-RQ to"
+                + "Storage Commitment SCU, 60s by default");
         opts.addOption(OptionBuilder.create("scretryperiod"));
 
         OptionBuilder.withArgName("maxops");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
                 "maximum number of outstanding operations performed "
-                        + "asynchronously, unlimited by default.");
+                + "asynchronously, unlimited by default.");
         opts.addOption(OptionBuilder.create("async"));
 
         opts.addOption("pdv1", false, "send only one PDV in one P-Data-TF PDU, "
-                                + "pack command and data PDV in one P-DATA-TF PDU by default.");
+                + "pack command and data PDV in one P-DATA-TF PDU by default.");
         opts.addOption("tcpdelay", false,
                 "set TCP_NODELAY socket option to false, true by default");
 
@@ -780,7 +731,7 @@ public class DcmRcv {
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         CommandLine cl = parse(args);
-        DcmRcv dcmrcv = new DcmRcv(cl.hasOption("device") 
+        DcmRcv dcmrcv = new DcmRcv(cl.hasOption("device")
                 ? cl.getOptionValue("device") : "DCMRCV");
         final List<String> argList = cl.getArgList();
         String port = argList.get(0);
@@ -794,116 +745,141 @@ public class DcmRcv {
             }
         }
 
-        if (cl.hasOption("dest"))
+        if (cl.hasOption("dest")) {
             dcmrcv.setDestination(cl.getOptionValue("dest"));
-        if (cl.hasOption("calling2dir"))
+        }
+        if (cl.hasOption("calling2dir")) {
             dcmrcv.setCalling2Dir(
                     loadProperties(cl.getOptionValue("calling2dir")));
-        if (cl.hasOption("called2dir"))
+        }
+        if (cl.hasOption("called2dir")) {
             dcmrcv.setCalled2Dir(
                     loadProperties(cl.getOptionValue("called2dir")));
-        if (cl.hasOption("callingdefdir"))
+        }
+        if (cl.hasOption("callingdefdir")) {
             dcmrcv.setCallingDefDir(cl.getOptionValue("callingdefdir"));
-        if (cl.hasOption("calleddefdir"))
+        }
+        if (cl.hasOption("calleddefdir")) {
             dcmrcv.setCalledDefDir(cl.getOptionValue("calleddefdir"));
-        if (cl.hasOption("journal"))
+        }
+        if (cl.hasOption("journal")) {
             dcmrcv.setJournal(cl.getOptionValue("journal"));
-        if (cl.hasOption("journalfilepath"))
+        }
+        if (cl.hasOption("journalfilepath")) {
             dcmrcv.setJournalFilePathFormat(
                     cl.getOptionValue("journalfilepath"));
-        
-        if (cl.hasOption("defts"))
+        }
+
+        if (cl.hasOption("defts")) {
             dcmrcv.setTransferSyntax(ONLY_DEF_TS);
-        else if (cl.hasOption("native"))
+        } else if (cl.hasOption("native")) {
             dcmrcv.setTransferSyntax(cl.hasOption("bigendian") ? NATIVE_TS
                     : NATIVE_LE_TS);
-        else if (cl.hasOption("bigendian"))
+        } else if (cl.hasOption("bigendian")) {
             dcmrcv.setTransferSyntax(NON_RETIRED_TS);
-        if (cl.hasOption("scretraets"))
+        }
+        if (cl.hasOption("scretraets")) {
             dcmrcv.setStgCmtRetrieveAETs(cl.getOptionValue("scretraets"));
-        if (cl.hasOption("scretraet"))
+        }
+        if (cl.hasOption("scretraet")) {
             dcmrcv.setStgCmtRetrieveAET(cl.getOptionValue("scretraet"));
+        }
         dcmrcv.setStgCmtReuseFrom(cl.hasOption("screusefrom"));
         dcmrcv.setStgCmtReuseTo(cl.hasOption("screuseto"));
         if (cl.hasOption("scport")) {
             dcmrcv.setStgCmtPort(parseInt(cl.getOptionValue("scport"),
                     "illegal port number", 1, 0xffff));
         }
-        if (cl.hasOption("scdelay"))
+        if (cl.hasOption("scdelay")) {
             dcmrcv.setStgCmtDelay(parseInt(cl.getOptionValue("scdelay"),
                     "illegal argument of option -scdelay", 0,
                     Integer.MAX_VALUE));
-        if (cl.hasOption("scretry"))
+        }
+        if (cl.hasOption("scretry")) {
             dcmrcv.setStgCmtRetry(parseInt(cl.getOptionValue("scretry"),
                     "illegal argument of option -scretry", 0,
                     Integer.MAX_VALUE));
-        if (cl.hasOption("scretryperiod"))
+        }
+        if (cl.hasOption("scretryperiod")) {
             dcmrcv.setStgCmtRetryPeriod(parseInt(cl.getOptionValue("scretryperiod"),
                     "illegal argument of option -scretryperiod", 1000,
                     Integer.MAX_VALUE));
-        if (cl.hasOption("connectTO"))
+        }
+        if (cl.hasOption("connectTO")) {
             dcmrcv.setConnectTimeout(parseInt(cl.getOptionValue("connectTO"),
                     "illegal argument of option -connectTO", 1,
                     Integer.MAX_VALUE));
-        if (cl.hasOption("reaper"))
-            dcmrcv.setAssociationReaperPeriod(parseInt(cl
-                            .getOptionValue("reaper"),
-                            "illegal argument of option -reaper", 1,
-                            Integer.MAX_VALUE));
-        if (cl.hasOption("rspTO"))
+        }
+        if (cl.hasOption("reaper")) {
+            dcmrcv.setAssociationReaperPeriod(parseInt(cl.getOptionValue("reaper"),
+                    "illegal argument of option -reaper", 1,
+                    Integer.MAX_VALUE));
+        }
+        if (cl.hasOption("rspTO")) {
             dcmrcv.setDimseRspTimeout(parseInt(cl.getOptionValue("rspTO"),
                     "illegal argument of option -rspTO",
                     1, Integer.MAX_VALUE));
-        if (cl.hasOption("acceptTO"))
+        }
+        if (cl.hasOption("acceptTO")) {
             dcmrcv.setAcceptTimeout(parseInt(cl.getOptionValue("acceptTO"),
-                    "illegal argument of option -acceptTO", 
+                    "illegal argument of option -acceptTO",
                     1, Integer.MAX_VALUE));
-        if (cl.hasOption("idleTO"))
+        }
+        if (cl.hasOption("idleTO")) {
             dcmrcv.setIdleTimeout(parseInt(cl.getOptionValue("idleTO"),
-                            "illegal argument of option -idleTO", 1,
-                            Integer.MAX_VALUE));
-        if (cl.hasOption("requestTO"))
+                    "illegal argument of option -idleTO", 1,
+                    Integer.MAX_VALUE));
+        }
+        if (cl.hasOption("requestTO")) {
             dcmrcv.setRequestTimeout(parseInt(cl.getOptionValue("requestTO"),
                     "illegal argument of option -requestTO", 1,
                     Integer.MAX_VALUE));
-        if (cl.hasOption("releaseTO"))
+        }
+        if (cl.hasOption("releaseTO")) {
             dcmrcv.setReleaseTimeout(parseInt(cl.getOptionValue("releaseTO"),
                     "illegal argument of option -releaseTO", 1,
                     Integer.MAX_VALUE));
-        if (cl.hasOption("soclosedelay"))
-            dcmrcv.setSocketCloseDelay(parseInt(cl
-                    .getOptionValue("soclosedelay"),
+        }
+        if (cl.hasOption("soclosedelay")) {
+            dcmrcv.setSocketCloseDelay(parseInt(cl.getOptionValue("soclosedelay"),
                     "illegal argument of option -soclosedelay", 1, 10000));
-        if (cl.hasOption("rspdelay"))
+        }
+        if (cl.hasOption("rspdelay")) {
             dcmrcv.setDimseRspDelay(parseInt(cl.getOptionValue("rspdelay"),
                     "illegal argument of option -rspdelay", 0, 10000));
-        if (cl.hasOption("rcvpdulen"))
-            dcmrcv.setMaxPDULengthReceive(parseInt(cl
-                    .getOptionValue("rcvpdulen"),
+        }
+        if (cl.hasOption("rcvpdulen")) {
+            dcmrcv.setMaxPDULengthReceive(parseInt(cl.getOptionValue("rcvpdulen"),
                     "illegal argument of option -rcvpdulen", 1, 10000)
                     * KB);
-        if (cl.hasOption("sndpdulen"))
+        }
+        if (cl.hasOption("sndpdulen")) {
             dcmrcv.setMaxPDULengthSend(parseInt(cl.getOptionValue("sndpdulen"),
                     "illegal argument of option -sndpdulen", 1, 10000)
                     * KB);
-        if (cl.hasOption("sosndbuf"))
+        }
+        if (cl.hasOption("sosndbuf")) {
             dcmrcv.setSendBufferSize(parseInt(cl.getOptionValue("sosndbuf"),
                     "illegal argument of option -sosndbuf", 1, 10000)
                     * KB);
-        if (cl.hasOption("sorcvbuf"))
+        }
+        if (cl.hasOption("sorcvbuf")) {
             dcmrcv.setReceiveBufferSize(parseInt(cl.getOptionValue("sorcvbuf"),
                     "illegal argument of option -sorcvbuf", 1, 10000)
                     * KB);
-        if (cl.hasOption("bufsize"))
+        }
+        if (cl.hasOption("bufsize")) {
             dcmrcv.setFileBufferSize(parseInt(cl.getOptionValue("bufsize"),
                     "illegal argument of option -bufsize", 1, 10000)
                     * KB);
+        }
 
         dcmrcv.setPackPDV(!cl.hasOption("pdv1"));
         dcmrcv.setTcpNoDelay(!cl.hasOption("tcpdelay"));
-        if (cl.hasOption("async"))
+        if (cl.hasOption("async")) {
             dcmrcv.setMaxOpsPerformed(parseInt(cl.getOptionValue("async"),
                     "illegal argument of option -async", 0, 0xffff));
+        }
         dcmrcv.initTransferCapability();
         if (cl.hasOption("tls")) {
             String cipher = cl.getOptionValue("tls");
@@ -970,7 +946,7 @@ public class DcmRcv {
         TransferCapability[] tc;
         if (isStgcmtEnabled()) {
             tc = new TransferCapability[CUIDS.length + 2];
-            tc[tc.length -1 ] = new TransferCapability(
+            tc[tc.length - 1] = new TransferCapability(
                     UID.StorageCommitmentPushModelSOPClass, ONLY_DEF_TS,
                     TransferCapability.SCP);
         } else {
@@ -978,9 +954,10 @@ public class DcmRcv {
         }
         tc[0] = new TransferCapability(UID.VerificationSOPClass, ONLY_DEF_TS,
                 TransferCapability.SCP);
-        for (int i = 0; i < CUIDS.length; i++)
+        for (int i = 0; i < CUIDS.length; i++) {
             tc[i + 1] = new TransferCapability(CUIDS[i], tsuids,
                     TransferCapability.SCP);
+        }
         ae.setTransferCapability(tc);
     }
 
@@ -999,6 +976,9 @@ public class DcmRcv {
             cache.setCacheRootDir(null);
         } else {
             devnull = null;
+            if (!ApplicationContext.canWrite(System.getProperty("user.dir"))) {
+                destination=new File(System.getProperty("java.io.tmpdir"),filePath);
+            }
             cache.setCacheRootDir(destination);
         }
     }
@@ -1079,7 +1059,7 @@ public class DcmRcv {
 
     private static String toKeyStoreType(String fname) {
         return fname.endsWith(".p12") || fname.endsWith(".P12")
-                 ? "PKCS12" : "JKS";
+                ? "PKCS12" : "JKS";
     }
 
     public void start() throws IOException {
@@ -1088,13 +1068,15 @@ public class DcmRcv {
     }
 
     public void stop() {
-        if (device != null)
+        if (device != null) {
             device.stopListening();
+        }
 
-        if (nc != null)
+        if (nc != null) {
             System.out.println("Stop Server listening on port " + nc.getPort());
-        else
+        } else {
             System.out.println("Stop Server");
+        }
     }
 
     private static String[] split(String s, char delim, int defPos) {
@@ -1117,9 +1099,11 @@ public class DcmRcv {
     private static int parseInt(String s, String errPrompt, int min, int max) {
         try {
             int i = Integer.parseInt(s);
-            if (i >= min && i <= max)
+            if (i >= min && i <= max) {
                 return i;
-        } catch (NumberFormatException e) {e.printStackTrace();
+            }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
             // parameter is not a valid integer; fall through to exit
         }
         exit(errPrompt);
@@ -1140,29 +1124,29 @@ public class DcmRcv {
         String cuid = rq.getString(Tag.AffectedSOPClassUID);
         String iuid = rq.getString(Tag.AffectedSOPInstanceUID);
 
-         DicomObject data = dataStream.readDataset(); //You have one shot to get the data. You can't read twice with readDataset method.
-                String suid= data.getString(Tag.StudyInstanceUID);
+        DicomObject data = dataStream.readDataset(); //You have one shot to get the data. You can't read twice with readDataset method.
+        String suid = data.getString(Tag.StudyInstanceUID);
 
-                Calendar today = Calendar.getInstance();
-                File struturedDestination = new File(destination.getAbsolutePath() + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE)+ File.separator + suid);
-                String child[] = struturedDestination.list();
-                if (child == null) {
-                    struturedDestination.mkdirs();
-                }
+        Calendar today = Calendar.getInstance();
+        File struturedDestination = new File(destination.getAbsolutePath() + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + suid);
+        String child[] = struturedDestination.list();
+        if (child == null) {
+            struturedDestination.mkdirs();
+        }
 
 
-        File file = devnull != null ? struturedDestination : new File(struturedDestination, iuid );
-       // LOG.info("M-WRITE {}", file);
+        File file = devnull != null ? struturedDestination : new File(struturedDestination, iuid);
+        // LOG.info("M-WRITE {}", file);
         try {
             DicomOutputStream dos = new DicomOutputStream(
                     new BufferedOutputStream(
-                            new FileOutputStream(file),
-                            fileBufferSize));
+                    new FileOutputStream(file),
+                    fileBufferSize));
             try {
                 BasicDicomObject fmi = new BasicDicomObject();
                 fmi.initFileMetaInformation(cuid, iuid, tsuid);
                 dos.writeFileMetaInformation(fmi);
-               // dataStream.copyTo(dos);
+                // dataStream.copyTo(dos);
                 dos.writeDataset(data, tsuid);
             } finally {
                 CloseUtils.safeClose(dos);
@@ -1176,22 +1160,21 @@ public class DcmRcv {
             throw new DicomServiceException(rq, Status.ProcessingFailure,
                     e.getMessage());
         }
-        
+
         // Rename the file after it has been written. See DCM-279
         /*if (devnull == null && file != null) {
-            File rename = new File(file.getParent(), iuid);
-            LOG.info("M-RENAME {} to {}", file, rename);
-            file.renameTo(rename);
-            if (cache.getJournalRootDir() != null) {
-                cache.record(rename);
-            }
+        File rename = new File(file.getParent(), iuid);
+        LOG.info("M-RENAME {} to {}", file, rename);
+        file.renameTo(rename);
+        if (cache.getJournalRootDir() != null) {
+        cache.record(rename);
+        }
         }*/
-        NetworkQueueUpdateDelegate networkQueueUpdateDelegate=new NetworkQueueUpdateDelegate();
-                networkQueueUpdateDelegate.updateReceiveTable(file,as.getCallingAET());
-                if(!MainScreen.sndRcvFrm.isVisible())
-                {
-                    MainScreen.sndRcvFrm.setVisible(true);
-                }
+        NetworkQueueUpdateDelegate networkQueueUpdateDelegate = new NetworkQueueUpdateDelegate();
+        networkQueueUpdateDelegate.updateReceiveTable(file, as.getCallingAET());
+        if (!MainScreen.sndRcvFrm.isVisible()) {
+            MainScreen.sndRcvFrm.setVisible(true);
+        }
 
     }
 
@@ -1230,9 +1213,9 @@ public class DcmRcv {
         stgcmtAE.setNetworkConnection(stgcmtNC);
         stgcmtAE.setAETitle(as.getRemoteAET());
         stgcmtAE.setTransferCapability(new TransferCapability[]{
-                new TransferCapability(
-                        UID.StorageCommitmentPushModelSOPClass, ONLY_DEF_TS,
-                        TransferCapability.SCU)});
+                    new TransferCapability(
+                    UID.StorageCommitmentPushModelSOPClass, ONLY_DEF_TS,
+                    TransferCapability.SCU)});
         return stgcmtAE;
     }
 
@@ -1242,8 +1225,9 @@ public class DcmRcv {
                 rqdata.getString(Tag.TransactionUID));
         DicomElement rqsq = rqdata.get(Tag.ReferencedSOPSequence);
         DicomElement resultsq = result.putSequence(Tag.ReferencedSOPSequence);
-        if (stgcmtRetrieveAET != null)
+        if (stgcmtRetrieveAET != null) {
             result.putString(Tag.RetrieveAETitle, VR.AE, stgcmtRetrieveAET);
+        }
         DicomElement failedsq = null;
         File dir = getDir(as);
         for (int i = 0, n = rqsq.countItems(); i < n; i++) {
@@ -1251,17 +1235,19 @@ public class DcmRcv {
             String uid = rqItem.getString(Tag.ReferencedSOPInstanceUID);
             DicomObject resultItem = new BasicDicomObject();
             rqItem.copyTo(resultItem);
-            if (stgcmtRetrieveAETs != null)
+            if (stgcmtRetrieveAETs != null) {
                 resultItem.putString(Tag.RetrieveAETitle, VR.AE,
                         stgcmtRetrieveAETs);
+            }
             File f = new File(dir, uid);
             if (f.isFile()) {
                 resultsq.addDicomObject(resultItem);
             } else {
                 resultItem.putInt(Tag.FailureReason, VR.US,
                         NO_SUCH_OBJECT_INSTANCE);
-                if (failedsq == null)
+                if (failedsq == null) {
                     failedsq = result.putSequence(Tag.FailedSOPSequence);
+                }
                 failedsq.addDicomObject(resultItem);
             }
         }
@@ -1269,32 +1255,33 @@ public class DcmRcv {
     }
 
     private synchronized Timer stgcmtTimer() {
-        if (stgcmtTimer == null)
+        if (stgcmtTimer == null) {
             stgcmtTimer = new Timer("SendStgCmtResult", true);
+        }
         return stgcmtTimer;
     }
 
     void sendStgCmtResult(NetworkApplicationEntity stgcmtAE,
             DicomObject result) throws Exception {
-        synchronized(ae) {
-            ae.setReuseAssocationFromAETitle(stgcmtReuseFrom 
-                    ? new String[] { stgcmtAE.getAETitle() }
-                    : new String[] {});
-            ae.setReuseAssocationToAETitle(stgcmtReuseTo 
-                    ? new String[] { stgcmtAE.getAETitle() }
-                    : new String[] {});
-           Association as = ae.connect(stgcmtAE, executor);
-           as.nevent(UID.StorageCommitmentPushModelSOPClass,
+        synchronized (ae) {
+            ae.setReuseAssocationFromAETitle(stgcmtReuseFrom
+                    ? new String[]{stgcmtAE.getAETitle()}
+                    : new String[]{});
+            ae.setReuseAssocationToAETitle(stgcmtReuseTo
+                    ? new String[]{stgcmtAE.getAETitle()}
+                    : new String[]{});
+            Association as = ae.connect(stgcmtAE, executor);
+            as.nevent(UID.StorageCommitmentPushModelSOPClass,
                     UID.StorageCommitmentPushModelSOPInstance,
                     eventTypeIdOf(result), result, UID.ImplicitVRLittleEndian,
                     nEventReportRspHandler);
-           if (!stgcmtReuseFrom && !stgcmtReuseTo)
-               as.release(true);
+            if (!stgcmtReuseFrom && !stgcmtReuseTo) {
+                as.release(true);
+            }
         }
     }
 
     private static int eventTypeIdOf(DicomObject result) {
         return result.contains(Tag.FailedSOPInstanceUIDList) ? 2 : 1;
     }
-
 }
