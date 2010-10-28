@@ -289,6 +289,16 @@ public class DicomInputStream extends FilterInputStream implements
         return result;
     }
 
+    public final void skipFully(long len) throws IOException {
+        long remaining = len;
+        while (remaining > 0) {
+            long count = skip(remaining);
+            if (count <= 0)
+                throw new EOFException();
+            remaining -= count;
+        }
+    }
+
     public final void readFully(byte b[]) throws IOException {
         readFully(b, 0, b.length);
     }
