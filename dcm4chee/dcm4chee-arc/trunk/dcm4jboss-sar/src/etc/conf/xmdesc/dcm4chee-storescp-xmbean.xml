@@ -663,6 +663,7 @@ Notifications for one Series.]]>
            UltrasoundMultiframeImageStorage
            MRImageStorage
            EnhancedMRImageStorage
+           EnhancedMRColorImageStorage
            UltrasoundImageStorage
            EnhancedUSVolumeStorage
            SecondaryCaptureImageStorage
@@ -674,6 +675,8 @@ Notifications for one Series.]]>
            EnhancedXRayAngiographicImageStorage
            XRayRadiofluoroscopicImageStorage
            EnhancedXRayRadiofluoroscopicImageStorage
+           XRay3DAngiographicImageStorage
+           XRay3DCraniofacialImageStorage
            NuclearMedicineImageStorage
            VLEndoscopicImageStorage
            VLMicroscopicImageStorage
@@ -903,6 +906,7 @@ Notifications for one Series.]]>
            ColorSoftcopyPresentationStateStorage
            PseudoColorSoftcopyPresentationStateStorage
            BlendingSoftcopyPresentationStateStorage
+           XAXRFGrayscaleSoftcopyPresentationStateStorage
            RawDataStorage
            SpatialRegistrationStorage
            SpatialFiducialsStorage
