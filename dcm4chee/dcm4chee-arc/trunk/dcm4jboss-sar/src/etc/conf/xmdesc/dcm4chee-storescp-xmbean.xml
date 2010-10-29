@@ -857,6 +857,7 @@ Notifications for one Series.]]>
            MammographyCADSR
            KeyObjectSelectionDocument
            ChestCADSR
+           ColonCADSR
            XRayRadiationDoseSR
            "/>
       </descriptors>
