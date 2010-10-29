@@ -485,12 +485,9 @@ public class FixJpegLS {
                 counts[1]++;
                 System.out.println("FIXED   " + source + ": Bits Stored = "
                         + replacements.bitsStored + " -> " + target);
-            } catch (NoFixException e) {
+            } catch (Exception e) {
                 System.out.println("skipped " + source + ": " + e.getMessage());
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-                System.out.println("skipped " + source + ": " + e.getMessage());
-           }
+            }
         }
     }
 
