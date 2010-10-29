@@ -57,6 +57,7 @@ import org.apache.commons.cli.PosixParser;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
+import org.dcm4che2.data.UIDDictionary;
 import org.dcm4che2.io.DicomInputHandler;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.util.ByteUtils;
@@ -75,24 +76,6 @@ public class FixJpegLS {
             + "JPEG-LS encoder by inserting a LSE marker segment with "
             + "encoder parameter values T1, T2 and T3 actually used by "
             + "JAI-IMAGEIO JPEG-LS encoder.\n.\n"
-            + "Prompts one character for each scanned file to standard "
-            + "output:\n"
-            + "`3' - fixed JPEG-LS image with 13 bits per sample\n"
-            + "`4' - fixed JPEG-LS image with 14 bits per sample\n"
-            + "`5' - fixed JPEG-LS image with 15 bits per sample\n"
-            + "`6' - fixed JPEG-LS image with 16 bits per sample\n"
-            + "`*' - skipped JPEG-LS image with <= 12 bits per sample\n"
-            + "`+' - skipped JPEG-LS image with already includes LSE marker"
-            + " segment\n"
-            + "`u' - skipped JPEG-LS image with different Implementation Class"
-            + " UID than\n.     specified by option --check-impl-cuid\n"
-            + "`t' - skipped DICOM object with non JPEG-LS Transfer Syntax\n"
-            + "`m' - skipped DICOM object without File Meta Information\n"
-            + "`p' - skipped DICOM object without Pixel Data\n"
-            + "`n' - skipped DICOM image with non-fragmented Pixel Data\n"
-            + "`j' - skipped DICOM image with Pixel Data Fragment which does"
-            + " not start\n.     with JPEG-LS header\n"
-            + "`x' - skipped file which could not be parsed\n.\n"
             + "Options:";
     private static final String NO_CHECK_IMPL_CUID = "fix also DICOM files "
             + "with different Implementation Class UID than specified by "
@@ -106,9 +89,9 @@ public class FixJpegLS {
             + "inserted in fixed files; default: `1.2.40.0.13.1.1.1'";
     private static final String EXAMPLE = null;
 
-    private static final byte[] SOI_JPEG_LS = { (byte) 0xff, (byte) 0xd8,
-            (byte) 0xff, (byte) 0xf7, (byte) 0x00, (byte) 0x0b
-    };
+    private static final int SOI = 0xffd8;
+    private static final int SOF55 = 0xfff7;
+    private static final int LSE = 0xfff8;
     private static final int SOS = 0xffda;
     private static final byte[] LSE_13 = {
         (byte) 0xff, (byte) 0xf8, (byte) 0x00, (byte) 0x0D,
@@ -148,11 +131,18 @@ public class FixJpegLS {
     };
     private static final byte[] PADDING_BYTE = { 0 };
 
+    private static final UIDDictionary DICT = UIDDictionary.getDictionary();
+    
     private String implClassUID = "1.2.40.0.13.1.1";
     private String newImplClassUID = "1.2.40.0.13.1.1.1";
 
     @SuppressWarnings("serial")
-    private static final class NoFixException extends IOException { }
+    private static final class NoFixException extends IOException {
+
+        public NoFixException(String message) {
+            super(message);
+        }
+    }
 
     private static final class Replacement {
         final long pos;
@@ -171,24 +161,25 @@ public class FixJpegLS {
         boolean pixelData;
         boolean fmi = true;
         List<Replacement> replacements;
-        char prompt;
         int numItems;
+        int bitsStored;
 
         public boolean readValue(DicomInputStream in) throws IOException {
             int tag = in.tag();
             int len = in.valueLength();
             long pos = in.getStreamPosition();
             DicomObject attrs = in.getDicomObject();
+            String uid;
             if (fmi && tag >= 0x00080000) {
-                if (replacements == null) { // No Transfer Syntax UID
-                    prompt = 'm';
-                    throw new NoFixException();
-                }
-                if (FixJpegLS.this.implClassUID != null
-                        && !FixJpegLS.this.implClassUID.equals(
-                                attrs.getString(Tag.ImplementationClassUID))) {
-                    prompt = 'u';
-                    throw new NoFixException();
+                if (replacements == null)
+                    throw new NoFixException(
+                            "File Meta Information (0002,eeee) is missing");
+                if (FixJpegLS.this.implClassUID != null) {
+                    uid = attrs.getString(Tag.ImplementationClassUID);
+                    if (!FixJpegLS.this.implClassUID.equals(uid))
+                        throw new NoFixException(
+                                "Implementation Class UID (0002,0012) = "
+                                + uid);
                 }
                 fmi = false;
             }
@@ -199,18 +190,18 @@ public class FixJpegLS {
                 return in.readValue(in);
             case Tag.TransferSyntaxUID:
                 in.readValue(in);
-                if (!UID.JPEGLSLossless.equals(attrs
-                        .getString(Tag.TransferSyntaxUID))) {
-                    prompt = 't';
-                    throw new NoFixException();
-                }
+                uid = attrs.getString(Tag.TransferSyntaxUID);
+                if (!UID.JPEGLSLossless.equals(uid))
+                    throw new NoFixException(
+                            "Transfer Syntax UID (0002,0010) = " 
+                            + DICT.prompt(uid));
                 replacements = new ArrayList<Replacement>();
                 return true;
             case Tag.ImplementationClassUID:
-                if (replacements == null) {// No Transfer Syntax UID
-                    prompt = 'm';
-                    throw new NoFixException();
-                }
+                if (replacements == null)
+                    throw new NoFixException(
+                        "File Meta Information (0002,eeee) is missing");
+
                 in.readValue(in);
                 if (FixJpegLS.this.newImplClassUID != null)
                     addImplClassUIDReplacements(pos, len,
@@ -218,10 +209,10 @@ public class FixJpegLS {
                 return true;
             case Tag.PixelData:
                 if (in.level() == 0) {
-                    if (len != -1) {
-                        prompt = 'n';
-                        throw new NoFixException();
-                    }
+                    if (len != -1)
+                        throw new NoFixException(
+                                "Pixel Data is not encapsulated into Data Fragments");
+
                     pixelData = true;
                 }
                 return in.readValue(in);
@@ -232,8 +223,6 @@ public class FixJpegLS {
                     byte[] jpegheader = new byte[17];
                     in.readFully(jpegheader);
                     byte[] lse = selectLSE(jpegheader);
-                    prompt = Character.forDigit(
-                            jpegheader[SOI_JPEG_LS.length] - 10, 10);
                     in.skipFully(len - 18);
                     addItemReplacements(pos, len, lse, in.read() == 0);
                     numItems++;
@@ -306,18 +295,21 @@ public class FixJpegLS {
         }
 
         private byte[] selectLSE(byte[] jpegheader) throws NoFixException {
-            for (int i = 0; i < SOI_JPEG_LS.length; i++) {
-                if (jpegheader[i] != SOI_JPEG_LS[i]) {
-                    prompt = 'j';
-                    throw new NoFixException();
-                }
+            if (ByteUtils.bytesBE2ushort(jpegheader, 0) != SOI)
+                throw new NoFixException("SOI marker is missing");
+            if (ByteUtils.bytesBE2ushort(jpegheader, 2) != SOF55)
+                throw new NoFixException(
+                        "SOI marker is not followed by JPEG-LS SOF marker");
+            if (ByteUtils.bytesBE2ushort(jpegheader, 4) != 11)
+                throw new NoFixException(
+                        "unexpected length of JPEG-LS SOF marker segment");
+            int marker = ByteUtils.bytesBE2ushort(jpegheader, 15);
+            if (marker != SOS) {
+                throw new NoFixException(marker == LSE
+                    ? "contains already LSE marker segment"
+                    : "JPEG-LS SOF marker segment is not followed by SOS marker" );
             }
-            if (((jpegheader[jpegheader.length-2] & 0xff) << 8
-                    | (jpegheader[jpegheader.length-1] & 0xff)) != SOS) {
-                prompt = '+';
-                throw new NoFixException();
-            }
-            switch (jpegheader[SOI_JPEG_LS.length]) {
+            switch (bitsStored = jpegheader[6]) {
             case 13:
                 return LSE_13;
             case 14:
@@ -327,8 +319,7 @@ public class FixJpegLS {
             case 16:
                 return LSE_16;
             }
-            prompt = '*';
-            throw new NoFixException();
+            throw new NoFixException("Bits Stored = " + bitsStored);
         }
 
     }
@@ -488,19 +479,18 @@ public class FixJpegLS {
                 } finally {
                     try { din.close(); } catch (IOException ignore) {}
                 }
-                if (replacements.numItems > 0) {
-                    replacements.applyTo(source, target);
-                    counts[1]++;
-                    System.out.print(replacements.prompt);
-                } else {
-                    System.out.print('p');
-                }
+                if (replacements.numItems == 0)
+                    throw new NoFixException("no Pixel Data Fragments");
+                replacements.applyTo(source, target);
+                counts[1]++;
+                System.out.println("FIXED   " + source + ": Bits Stored = "
+                        + replacements.bitsStored + " -> " + target);
             } catch (NoFixException e) {
-                System.out.print(replacements.prompt);
+                System.out.println("skipped " + source + ": " + e.getMessage());
             } catch (IOException e) {
                 System.err.println(e.getMessage());
-                System.out.print('x');
-            }
+                System.out.println("skipped " + source + ": " + e.getMessage());
+           }
         }
     }
 
