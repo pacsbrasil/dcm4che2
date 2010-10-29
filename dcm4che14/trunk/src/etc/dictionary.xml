@@ -1207,6 +1207,12 @@
   <element tag="(0028,9446)" name="Image Processing Applied" vr="CS" vm="1-n" key="ImageProcessingApplied" />
   <element tag="(0028,9454)" name="Mask Selection Mode" vr="CS" vm="1" key="MaskSelectionMode" />
   <element tag="(0028,9474)" name="LUT Function" vr="CS" vm="1" key="LUTFunction" />
+  <element tag="(0028,9501)" name="Pixel Shift Sequence" vr="SQ" vm="1" key="PixelShiftSeq" />
+  <element tag="(0028,9502)" name="Region Pixel Shift Sequence" vr="SQ" vm="1" key="RegionPixelShiftSeq" />
+  <element tag="(0028,9503)" name="Vertices of the Region" vr="SS" vm="2-2n" key="VerticesOfTheRegion" />
+  <element tag="(0028,9505)" name="Multi-frame Presentation Sequence" vr="SQ" vm="1" key="MultiFramePresentationSeq" />
+  <element tag="(0028,9506)" name="Pixel Shift Frame Range" vr="US" vm="2-2n" key="PixelShiftFrameRange" />
+  <element tag="(0028,9507)" name="Name LUT Frame Rang" vr="US" vm="2-2n" key="NameLUTFrameRang" />
 
   <element tag="(0032,000A)" name="Study Status ID" vr="CS" vm="1" key="StudyStatusID" />
   <element tag="(0032,000C)" name="Study Priority ID" vr="CS" vm="1" key="StudyPriorityID" />
@@ -2706,6 +2712,7 @@
   <uid value="1.2.840.10008.5.1.4.1.1.4" name="MR Image Storage" key="MRImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.4.1" name="Enhanced MR Image Storage" key="EnhancedMRImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.4.2" name="MR Spectroscopy Storage" key="MRSpectroscopyStorage" dirrecord="SPECTROSCOPY" />
+  <uid value="1.2.840.10008.5.1.4.1.1.4.3" name="Enhanced MR Color Image Storage" key="EnhancedMRColorImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.5" name="Nuclear Medicine Image Storage (Retired)" key="NuclearMedicineImageStorageRetired" retired="true" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.6" name="Ultrasound Image Storage (Retired)" key="UltrasoundImageStorageRetired" retired="true" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.6.1" name="Ultrasound Image Storage" key="UltrasoundImageStorage" dirrecord="IMAGE" />
@@ -2732,6 +2739,7 @@
   <uid value="1.2.840.10008.5.1.4.1.1.11.2" name="Color Softcopy Presentation State Storage SOP Class" key="ColorSoftcopyPresentationStateStorage" dirrecord="PRESENTATION"/>
   <uid value="1.2.840.10008.5.1.4.1.1.11.3" name="Pseudo-Color Softcopy Presentation State Storage SOP Class" key="PseudoColorSoftcopyPresentationStateStorage" dirrecord="PRESENTATION" />
   <uid value="1.2.840.10008.5.1.4.1.1.11.4" name="Blending Softcopy Presentation State Storage SOP Class" key="BlendingSoftcopyPresentationStateStorage" dirrecord="PRESENTATION" />
+  <uid value="1.2.840.10008.5.1.4.1.1.11.5" name="XA/XRF Grayscale Softcopy Presentation State Storage SOP Class" key="XAXRFGrayscaleSoftcopyPresentationStateStorage" dirrecord="PRESENTATION" />
   <uid value="1.2.840.10008.5.1.4.1.1.12.1" name="X-Ray Angiographic Image Storage" key="XRayAngiographicImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.12.1.1" name="Enhanced X-Ray Angiographic Image Storage" key="EnhancedXRayAngiographicImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.12.2" name="X-Ray Radiofluoroscopic Image Storage" key="XRayRadiofluoroscopicImageStorage" dirrecord="IMAGE" />
