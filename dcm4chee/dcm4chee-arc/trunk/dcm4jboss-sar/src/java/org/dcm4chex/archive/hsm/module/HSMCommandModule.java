@@ -185,7 +185,7 @@ public class HSMCommandModule extends AbstractHSMModule {
             return fileID;
         } else {
             try {
-                String cmd = makeCopyCommand(file.getPath(), destPath, file.getName());
+                String cmd = makeCopyCommand(file.getPath(), destPath, fileID);
                 log.info("Copy to HSM: " + cmd);
                 ByteArrayOutputStream stdout = new ByteArrayOutputStream();
                 this.doCommand(cmd, stdout, "storeHSMFile");
