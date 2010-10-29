@@ -157,34 +157,34 @@ public class DatabaseHandler {
             e.printStackTrace(new PrintWriter(str));
         }
     }
-    private void openConnection()
-    {
-         this.dbExists = checkDBexists(System.getProperty("user.dir"));
-            try {
-                if (!dbExists) {
-                    if (ApplicationContext.canWrite(System.getProperty("user.dir"))) {                        
-                        conn = DriverManager.getConnection(protocol + databasename + ";create=true",
+
+    private void openConnection() {
+        this.dbExists = checkDBexists(System.getProperty("user.dir"));
+        try {
+            if (!dbExists) {
+                if (ApplicationContext.canWrite(System.getProperty("user.dir"))) {
+                    conn = DriverManager.getConnection(protocol + databasename + ";create=true",
+                            username, password);
+                } else {
+                    if (!checkDBexists(System.getProperty("java.io.tmpdir"))) {
+                        conn = DriverManager.getConnection(protocol + System.getProperty("java.io.tmpdir") + File.separator + databasename + ";create=true",
                                 username, password);
                     } else {
-                        if (!checkDBexists(System.getProperty("java.io.tmpdir"))) {
-                            conn = DriverManager.getConnection(protocol + System.getProperty("java.io.tmpdir") + File.separator + databasename + ";create=true",
-                                    username, password);
-                        } else {
-                            dbExists = true;
-                            conn = DriverManager.getConnection(protocol + System.getProperty("java.io.tmpdir") + File.separator + databasename + ";create=false", username, password);
-                            deleteRows();
-                        }
+                        dbExists = true;
+                        conn = DriverManager.getConnection(protocol + System.getProperty("java.io.tmpdir") + File.separator + databasename + ";create=false", username, password);
+                        deleteRows();
                     }
-                } else {
-                    conn = DriverManager.getConnection(protocol + databasename + ";create=false", username, password);
                 }
-            } catch (Exception e) {
-                if (dbExists && conn == null) {
-                    System.err.println("ERROR: Database connection cannot be created:" + e.getMessage());
-                    System.err.println("An instance of application is already running");
-                    ApplicationFacade.exitApp("An instance of Mayam is already running: Exiting the program");
-                }
+            } else {
+                conn = DriverManager.getConnection(protocol + databasename + ";create=false", username, password);
             }
+        } catch (Exception e) {
+            if (dbExists && conn == null) {
+                System.err.println("ERROR: Database connection cannot be created:" + e.getMessage());
+                System.err.println("An instance of application is already running");
+                ApplicationFacade.exitApp("An instance of Mayam is already running: Exiting the program");
+            }
+        }
     }
 
     /**
@@ -942,7 +942,6 @@ public class DatabaseHandler {
                 if (dataset.getString(Tags.NumberOfFrames) != null && Integer.parseInt(dataset.getString(Tags.NumberOfFrames)) > 1) {
                     multiframe = "true";
                     totalFrame = Integer.parseInt(dataset.getString(Tags.NumberOfFrames));
-                    System.out.println("database handler totalframe" + totalFrame);
                 }
                 conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber) + ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "','" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
                 conn.commit();
@@ -1194,21 +1193,16 @@ public class DatabaseHandler {
                 series.setSeriesDesc(rs.getString("SeriesDescription"));
                 series.setBodyPartExamined(rs.getString("BodyPartExamined"));
                 ResultSet rs1 = null;
-                String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" + " order by InstanceNo asc";
+                String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" + "AND multiframe='false'" + " order by InstanceNo asc";
                 rs1 = conn.createStatement().executeQuery(sql1);
                 while (rs1.next()) {
                     Instance img = new Instance();
                     img.setFilepath(rs1.getString("FileStoreUrl"));
                     img.setSop_iuid(rs1.getString("SopUID"));
                     img.setInstance_no(rs1.getString("InstanceNo"));
-                    if (rs1.getString("multiframe").equalsIgnoreCase("true")) {
-                        img.setMultiframe(true);
-                        series.setMultiframe(true);
-                    } else {
-                        img.setMultiframe(false);
-                        series.setMultiframe(false);
-                        series.getImageList().add(img);
-                    }
+                    img.setMultiframe(false);
+                    series.setMultiframe(false);
+                    series.getImageList().add(img);
                 }
                 arr.add(series);
                 arr.addAll(getMultiframeSeriesList(siuid, series.getSeriesInstanceUID()));
