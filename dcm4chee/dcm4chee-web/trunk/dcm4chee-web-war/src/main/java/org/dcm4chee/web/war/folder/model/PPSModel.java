@@ -40,8 +40,8 @@ package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.dcm4che2.data.DicomElement;
@@ -63,10 +63,11 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
 
     private static final long serialVersionUID = 1L;
     
+    private List<SeriesModel> seriess = Collections.synchronizedList(new ArrayList<SeriesModel>());
+    
     private SeriesModel series1;
     private int numberOfInstances;
     private int numberOfSeries;
-    private List<SeriesModel> series = new ArrayList<SeriesModel>();
     
     public PPSModel(MPPS mpps, SeriesModel series1, StudyModel studyModel) {
         if (mpps != null) {
@@ -76,7 +77,7 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
         setParent(studyModel);
         series1.setPPS(this);
         this.series1 = series1;
-        series.add(series1);
+        seriess.add(series1);
     }
     
     public void setStudy(StudyModel m) {
@@ -89,7 +90,7 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
 
 
     public List<SeriesModel> getSeries() {
-        return series;
+        return seriess;
     }
 
     public SeriesModel getSeries1() {
@@ -175,7 +176,7 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
                     numberOfSeries = sersq.countItems();
                 }
             } else {
-                numberOfSeries = series.size();
+                numberOfSeries = seriess.size();
             }
         }
         return numberOfSeries;
@@ -198,7 +199,7 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
                     }
                 }
             } else {
-                for (SeriesModel ser : series) {
+                for (SeriesModel ser : seriess) {
                     numberOfInstances += ser.getNumberOfInstances();
                 }
             }
@@ -214,26 +215,27 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
     
     public int getRowspan() {
         int rowspan = isDetails() ? 2 : 1;
-        for (SeriesModel ser : series) {
+        for (SeriesModel ser : seriess) {
             rowspan += ser.getRowspan();
         }
         return rowspan;
     }
 
     public void collapse() {
-        series.clear();
+        seriess.clear();
     }
 
     public boolean isCollapsed() {
-        return series.isEmpty();
+        return seriess.isEmpty();
     }
 
     public void retainSelectedSeries() {
-        for (Iterator<SeriesModel> it = series.iterator(); it.hasNext();) {
-            SeriesModel ser = it.next();
-            ser.retainSelectedInstances();
-            if (ser.isCollapsed() && !ser.isSelected()) {
-                it.remove();
+        for (int i = 0; i < seriess.size(); i++) {
+            SeriesModel series = seriess.get(i);
+            series.retainSelectedInstances();
+            if (series.isCollapsed() && !series.isSelected()) {
+                seriess.remove(i);
+                i--;
             }
         }
     }
@@ -241,11 +243,11 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
     public void expand() {
         String uid = getUid();
         if (uid != null) {
-            series.clear();
+            seriess.clear();
             StudyListLocal dao = (StudyListLocal)
                     JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
             for (Series ser : dao.findSeriesOfMpps(uid)) 
-                series.add(new SeriesModel(ser, this));
+                seriess.add(new SeriesModel(ser, this));
         }
     }
 
@@ -256,7 +258,7 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
    
     @Override
     public List<? extends AbstractDicomModel> getDicomModelsOfNextLevel() {
-        return series;
+        return seriess;
     }
     
     @Override
@@ -280,7 +282,7 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
                     currentSeries.add(seriesModel);
                 }
             }
-            series.retainAll(currentSeries);
+            seriess.retainAll(currentSeries);
         }
         numberOfSeries = 0;
         numberOfInstances = 0;

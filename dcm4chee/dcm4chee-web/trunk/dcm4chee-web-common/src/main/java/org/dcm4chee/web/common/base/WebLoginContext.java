@@ -112,9 +112,13 @@ public class WebLoginContext extends UsernamePasswordContext {
                 SecureSession secureSession = ((SecureSession) RequestCycle.get().getSession());
                 secureSession.setUsername(username);
                 boolean useStudyPermissions = Boolean.parseBoolean(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("useStudyPermissions"));
-                if (useStudyPermissions) 
-                    useStudyPermissions = !username.equals(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root"));
+//                if (useStudyPermissions) 
+//                    useStudyPermissions = !username.equals(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root")); 
+                secureSession.setRoot(username.equals(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root")));
+//                if (useStudyPermissions) 
+//                    useStudyPermissions = !secureSession.isRoot();
                 if (useStudyPermissions) {
+                    updateDicomRoles(new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("webCfgServiceName")));
                     secureSession.setDicomSubject(
                         getDicomSecuritySubject(
                                 new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("DicomSecurityService")), 
@@ -125,6 +129,7 @@ public class WebLoginContext extends UsernamePasswordContext {
                 }
                 secureSession.setUseStudyPermissions(useStudyPermissions);
             } catch (Exception e) {
+                e.printStackTrace();
                 log.error("Error: " + e.getMessage());
                 throw new LoginException();
             }
@@ -202,7 +207,18 @@ public class WebLoginContext extends UsernamePasswordContext {
                 serviceName, "isValid",
                 new Object[] { userId, passwd, subject },
                 new String[] { String.class.getName(), 
-                        String.class.getName(), javax.security.auth.Subject.class.getName()});
+                        String.class.getName(), javax.security.auth.Subject.class.getName()}
+        );
         return subject;
+    }
+    
+    private void updateDicomRoles(ObjectName serviceName) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+        List<?> servers = MBeanServerFactory.findMBeanServer(null);
+        MBeanServerConnection server = (MBeanServerConnection) servers.get(0);
+        server.invoke(
+                serviceName, "updateDicomRoles",
+                new Object[] {},
+                new String[] {}
+        );
     }
 }

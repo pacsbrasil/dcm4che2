@@ -49,7 +49,6 @@ import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
-import org.dcm4chee.archive.entity.StudyPermission;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -91,7 +90,8 @@ public interface StudyListLocal {
 
     Study updateStudy(long pk, DicomObject dataset);
     Study addStudy(long patPk, DicomObject dataset);
-
+    Study addStudy(long pk, DicomObject dicomObject, List<String> authorizedRoles);
+    
     Series getSeries(long pk);
 
     Series updateSeries(long pk, DicomObject dataset);

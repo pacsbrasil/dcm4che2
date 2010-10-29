@@ -38,30 +38,7 @@
 
 package org.dcm4chee.web.war.folder;
 
-import java.io.IOException;
-import java.util.Collection;
-
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
-import javax.management.ReflectionException;
-
-import org.dcm4che2.data.BasicDicomObject;
-import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.VR;
-import org.dcm4che2.util.UIDUtils;
-import org.dcm4chee.archive.common.Availability;
-import org.dcm4chee.archive.entity.Series;
-import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
-import org.dcm4chee.web.common.exceptions.SelectionException;
-import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
-import org.dcm4chee.web.war.common.model.AbstractDicomModel;
-import org.dcm4chee.web.war.folder.model.InstanceModel;
-import org.dcm4chee.web.war.folder.model.PPSModel;
-import org.dcm4chee.web.war.folder.model.SeriesModel;
-import org.dcm4chee.web.war.folder.model.StudyModel;
-import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

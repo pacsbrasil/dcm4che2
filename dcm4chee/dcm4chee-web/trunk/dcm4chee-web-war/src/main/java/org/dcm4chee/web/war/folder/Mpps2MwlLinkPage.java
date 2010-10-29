@@ -204,7 +204,6 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                                 StudyModel sm;
                                 List<StudyModel> studies = patModel.getStudies();
                                 for (Study s : result.getStudiesToMove()) {
-// TODO: check if studyPermissionActions work
                                     sm = new StudyModel(s, patModel, 
                                             dao.findStudyPermissionActions(s.getStudyInstanceUID(), secureSession.getDicomRoles()));
                                     sm.refresh().expand();

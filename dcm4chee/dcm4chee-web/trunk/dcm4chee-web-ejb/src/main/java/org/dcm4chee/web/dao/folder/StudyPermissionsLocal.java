@@ -61,4 +61,5 @@ public interface StudyPermissionsLocal {
     public void grantForPatient(long pk, String action, String role);
     public void revokeForPatient(long pk, String action, String role);
     public long countStudiesOfPatient(long pk);
+    public void updateDicomRoles();
 }

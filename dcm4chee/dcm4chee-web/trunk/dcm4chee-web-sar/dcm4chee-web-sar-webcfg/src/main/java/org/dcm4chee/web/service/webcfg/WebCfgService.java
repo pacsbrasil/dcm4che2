@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.annotation.PostConstruct;
 import javax.imageio.spi.ServiceRegistry;
 import javax.management.Attribute;
 import javax.management.Notification;
@@ -60,6 +61,7 @@ import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.webview.link.spi.WebviewerLinkProviderSPI;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
+import org.dcm4chee.web.dao.folder.StudyPermissionsLocal;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -655,6 +657,10 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             }
             
         }
+    }
+    
+    public void updateDicomRoles() {
+        ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).updateDicomRoles();
     }
 }
 

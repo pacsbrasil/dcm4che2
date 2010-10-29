@@ -45,6 +45,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.dcm4chee.archive.entity.StudyPermission;
+import org.dcm4chee.usr.entity.Role;
 import org.jboss.annotation.ejb.LocalBinding;
 
 /**
@@ -58,6 +59,8 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
 
     @PersistenceContext(unitName="dcm4chee-arc")
     private EntityManager em;
+    @PersistenceContext(unitName="dcm4chee-usr")
+    private EntityManager emUsr;
 
     @SuppressWarnings("unchecked")
     public List<StudyPermission> getStudyPermissions(String studyInstanceUID) {
@@ -113,5 +116,19 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
         em.createQuery("SELECT COUNT(s) FROM Patient p, IN(p.studies) s WHERE p.pk = :pk")
         .setParameter("pk", pk)
         .getSingleResult();
+    }
+    
+    // TODO: change this to the generic version using JPA2.0 implementation
+    @SuppressWarnings("unchecked")
+    public void updateDicomRoles() {
+        List<String> roleList = emUsr.createQuery("SELECT DISTINCT r.rolename FROM Role r").getResultList();
+        List<String> newRoles = 
+            (roleList.size() == 0) ? em.createQuery("SELECT DISTINCT sp.role FROM StudyPermission sp")
+                                        .getResultList()
+                                   : em.createQuery("SELECT DISTINCT sp.role FROM StudyPermission sp WHERE sp.role NOT IN (:roles)")
+                                        .setParameter("roles", roleList)
+                                        .getResultList();
+        for (String rolename : newRoles) 
+            emUsr.persist(new Role(rolename));
     }
 }

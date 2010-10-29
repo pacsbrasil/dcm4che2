@@ -47,7 +47,6 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.CloseButtonCallback;
@@ -79,6 +78,7 @@ import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -98,7 +98,7 @@ public class SimpleEditDicomObjectPanel extends Panel {
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("dicom.");
     private Model<String> resultMessage;
     
-    public SimpleEditDicomObjectPanel(String id, final ModalWindow window, DicomObject dcmObj, String title, final int[][] tagPaths, final boolean close) {
+    public SimpleEditDicomObjectPanel(String id, final ModalWindow window, AbstractDicomModel dcmModel, String title, final int[][] tagPaths, final boolean close) {
         super(id);
     
         if (SimpleEditDicomObjectPanel.BaseCSS != null)
@@ -115,7 +115,7 @@ public class SimpleEditDicomObjectPanel extends Panel {
         });
         
         this.dcmObj = new BasicDicomObject();
-        dcmObj.copyTo(this.dcmObj);
+        dcmObj.copyTo((DicomObject) dcmModel.getDataset());
         add(new Label("title", new Model<String>(title)));
         add(form = new BaseForm("form"));
         form.setOutputMarkupId(true);

@@ -72,7 +72,7 @@ import org.jboss.annotation.ejb.LocalBinding;
  * @since Dec 17, 2008
  */
 @Stateful
-@LocalBinding (jndiBinding=StudyListLocal.JNDI_NAME)
+@LocalBinding(jndiBinding=StudyListLocal.JNDI_NAME)
 public class StudyListBean implements StudyListLocal {
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
@@ -157,7 +157,7 @@ public class StudyListBean implements StudyListLocal {
         ql.append("SELECT COUNT(*)");
         appendFromClause(ql, filter);
         appendWhereClause(ql, filter);
-        if (useSecurity)
+        if (useSecurity) 
             appendDicomSecurityFilter(ql);
         Query query = em.createQuery(ql.toString());
         if (useSecurity)
@@ -403,6 +403,7 @@ public class StudyListBean implements StudyListLocal {
         return query.getResultList();
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> findStudyPermissionActions(String studyInstanceUID, List<String> roles) {
         return em.createQuery("SELECT DISTINCT sp.action FROM StudyPermission sp WHERE sp.studyInstanceUID = :studyInstanceUID AND role IN (:roles)")
                 .setParameter("studyInstanceUID", studyInstanceUID)
@@ -476,6 +477,7 @@ public class StudyListBean implements StudyListLocal {
         study.setAttributes(attrs);
         return study;
     }
+
     public Study addStudy(long patPk, DicomObject attrs) {
         Patient pat = em.find(Patient.class, patPk);
         Study study = new Study();
@@ -483,6 +485,29 @@ public class StudyListBean implements StudyListLocal {
         study.setPatient(pat);
         study.setAvailability(Availability.ONLINE);
         em.persist(study);
+        return study;
+    }
+
+    public Study addStudy(long patPk, DicomObject attrs, List<String> authorizedRoles) {
+        Study study  = addStudy(patPk, attrs);
+        if (authorizedRoles != null) {
+            String[] actions = new String[] {
+                StudyPermission.APPEND_ACTION, 
+                StudyPermission.DELETE_ACTION, 
+                StudyPermission.EXPORT_ACTION, 
+                StudyPermission.QUERY_ACTION, 
+                StudyPermission.READ_ACTION, 
+                StudyPermission.UPDATE_ACTION};
+            for (String role : authorizedRoles) {
+                for (String action : actions) {
+                    StudyPermission studyPermission = new StudyPermission();
+                    studyPermission.setAction(action);
+                    studyPermission.setRole(role);
+                    studyPermission.setStudyInstanceUID(study.getStudyInstanceUID());
+                    em.persist(studyPermission);
+                }
+            }
+        }
         return study;
     }
 

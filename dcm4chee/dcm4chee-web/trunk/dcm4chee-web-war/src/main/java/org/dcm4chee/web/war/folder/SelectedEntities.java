@@ -82,7 +82,6 @@ public class SelectedEntities implements Serializable {
                 int allowedStudyCount = 0;
                 for (StudyModel study : patient.getStudies()) {
                     if (study.getStudyPermissionActions().contains(action) || !useStudyPermissions) {
-//                        studies.add(study);
                         allowedStudyCount++;
                     }
                 }

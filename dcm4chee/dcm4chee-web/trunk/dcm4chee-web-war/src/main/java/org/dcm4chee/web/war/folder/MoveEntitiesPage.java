@@ -69,7 +69,6 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.PrivateTag;
-import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
@@ -268,7 +267,7 @@ public class MoveEntitiesPage extends SecureWebPage {
             new SimpleEditDicomObjectPanel(
                     "content", 
                     window, 
-                    studyModel.getDataset(), 
+                    studyModel, 
                     new ResourceModel("move.newStudyForMove.text").wrapOnAssignment(this).getObject(),
                     getStudyEditAttributes(), 
                     false
@@ -333,7 +332,7 @@ public class MoveEntitiesPage extends SecureWebPage {
             new SimpleEditDicomObjectPanel(
                     "content", 
                     window, 
-                    seriesModel.getDataset(),
+                    seriesModel, 
                     new ResourceModel("move.newSeriesForMove.text").wrapOnAssignment(this).getObject(),
                     getSeriesEditAttributes(), 
                     false

@@ -40,8 +40,8 @@ package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.dcm4che2.data.DicomObject;
@@ -61,7 +61,8 @@ import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 public class InstanceModel extends AbstractEditableDicomModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private List<FileModel> files = new ArrayList<FileModel>();
+    
+    private List<FileModel> files = Collections.synchronizedList(new ArrayList<FileModel>());
 
     public InstanceModel(Instance inst, SeriesModel seriesModel) {
         setPk(inst.getPk());
@@ -157,9 +158,11 @@ public class InstanceModel extends AbstractEditableDicomModel implements Seriali
     }
 
     public void retainSelectedFiles() {
-        for (Iterator<FileModel> it = files.iterator(); it.hasNext();) {
-            if (!it.next().isSelected()) {
-                it.remove();
+        for (int i = 0; i < files.size(); i++) {
+            FileModel file = files.get(i);
+            if (!file.isSelected()) {
+                files.remove(i);
+                i--;
             }
         }
     }

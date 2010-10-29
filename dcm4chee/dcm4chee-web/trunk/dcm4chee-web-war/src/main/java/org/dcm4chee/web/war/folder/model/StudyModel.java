@@ -40,10 +40,11 @@ package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
+import org.apache.wicket.RequestCycle;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -53,6 +54,7 @@ import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
@@ -66,7 +68,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
 
     private static final long serialVersionUID = 1L;
     
-    private List<PPSModel> ppss = new ArrayList<PPSModel>();
+    private List<PPSModel> ppss = Collections.synchronizedList(new ArrayList<PPSModel>());
 
     private String availability;
     private String modalities;
@@ -74,7 +76,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     private int numberOfStudyRelatedInstances;
     private List<String> studyPermissionActions;
     
-    public StudyModel(Study study, PatientModel patModel, List<String> studyPermissionActions) {
+    public StudyModel(Study study, PatientModel patModel) {
         if (study == null) {
             setPk(-1);
             dataset = new BasicDicomObject();
@@ -84,6 +86,10 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
             updateModel(study);
         }
         setPatient(patModel);
+    }
+    
+    public StudyModel(Study study, PatientModel patModel, List<String> studyPermissionActions) {
+        this(study, patModel);
         this.studyPermissionActions = studyPermissionActions;
     }
 
@@ -173,11 +179,12 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     }
 
     public void retainSelectedPPSs() {
-        for (Iterator<PPSModel> it = ppss.iterator(); it.hasNext();) {
-            PPSModel pps = it.next();
+        for (int i = 0; i < ppss.size(); i++) {
+            PPSModel pps = ppss.get(i);
             pps.retainSelectedSeries();
             if (pps.isCollapsed() && !pps.isSelected()) {
-                it.remove();
+                ppss.remove(i);
+                i--;
             }
         }
     }
@@ -223,7 +230,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         Study s = null;
         if (getPk() == -1) {
-            s = dao.addStudy(getPatient().getPk(), dicomObject);
+            s = dao.addStudy(getPatient().getPk(), dicomObject, ((SecureSession) RequestCycle.get().getSession()).getDicomRoles());
             setPk(s.getPk());
         } else {
             s = dao.updateStudy(getPk(), dicomObject);

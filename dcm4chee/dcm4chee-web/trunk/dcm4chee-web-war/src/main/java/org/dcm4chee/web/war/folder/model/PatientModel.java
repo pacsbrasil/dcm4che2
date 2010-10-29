@@ -40,8 +40,8 @@ package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.wicket.RequestCycle;
@@ -51,7 +51,6 @@ import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
@@ -66,7 +65,8 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
 
     private static final long serialVersionUID = 1L;
     
-    private List<StudyModel> studies = new ArrayList<StudyModel>();
+    private List<StudyModel> studies = Collections.synchronizedList(new ArrayList<StudyModel>());
+    
     private IModel<Boolean> latestStudyFirst;
 
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
@@ -134,11 +134,12 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     }
 
     public void retainSelectedStudies() {
-        for (Iterator<StudyModel> it = studies.iterator(); it.hasNext();) {
-            StudyModel study = it.next();
+        for (int i = 0; i < studies.size(); i++) {
+            StudyModel study = studies.get(i);
             study.retainSelectedPPSs();
             if (study.isCollapsed() && !study.isSelected()) {
-                it.remove();
+                studies.remove(i);
+                i--;
             }
         }
     }

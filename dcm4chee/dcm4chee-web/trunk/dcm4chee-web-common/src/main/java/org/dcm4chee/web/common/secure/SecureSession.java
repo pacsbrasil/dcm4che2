@@ -62,6 +62,7 @@ public class SecureSession extends WaspSession {
     private static final long serialVersionUID = 1L;
     
     private String username;
+    private boolean isRoot;
     private HashMap<String, String> swarmPrincipals;
     private List<String> dicomRoles;
 
@@ -75,6 +76,14 @@ public class SecureSession extends WaspSession {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public void setRoot(boolean isRoot) {
+        this.isRoot = isRoot;
+    }
+
+    public boolean isRoot() {
+        return isRoot;
     }
 
     public void setDicomSubject(Subject dicomSubject) {
