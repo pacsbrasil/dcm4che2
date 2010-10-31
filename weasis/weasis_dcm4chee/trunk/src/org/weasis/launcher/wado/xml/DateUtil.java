@@ -13,9 +13,9 @@ public class DateUtil {
 
     private static Logger logger = LoggerFactory.getLogger(DateUtil.class);
 
-    public static String DATE_FORMAT = "dd-MM-yyyy";
+    public static String DATE_FORMAT = "yyyyMMdd";
 
-    public static String TIME_FORMAT = "HH:mm:ss";
+    public static String TIME_FORMAT = "HHmmss";
 
     public static SimpleDateFormat WeasisTimeFormat = new SimpleDateFormat(TIME_FORMAT);
 
@@ -33,25 +33,6 @@ public class DateUtil {
             SimpleDateFormat sdf = new SimpleDateFormat(targetFormat);
             result = sdf.format(timestamp);
             logger.debug("Timestamp [{}] converted to [{}]", timestamp, result);
-        }
-        return result;
-    }
-
-    public static String convertDicomDateFormat(java.util.Date date) {
-        String result = null;
-        if (date != null) {
-
-            result = WeasisDateFormat.format(date);
-            logger.debug("Date [{}] converted to [{}]", date, result);
-        }
-        return result;
-    }
-
-    public static String convertDicomTimeFormat(java.util.Date timeInput) {
-        String result = null;
-        if (timeInput != null) {
-            result = WeasisTimeFormat.format(timeInput);
-            logger.debug("Date [{}] converted to [{}]", timeInput, result);
         }
         return result;
     }
@@ -116,10 +97,22 @@ public class DateUtil {
         return result;
     }
 
-    public static java.util.Date getDate(String date) {
-        if (date != null) {
+    public static java.util.Date getDate(String dateInput) {
+        if (dateInput != null) {
             try {
-                return WeasisDateFormat.parse(date);
+                java.util.Date date = WeasisDateFormat.parse(dateInput);
+                return date;
+            } catch (Exception e) {
+            }
+        }
+        return null;
+    }
+
+    public static java.util.Date getTime(String dateInput) {
+        if (dateInput != null) {
+            try {
+                java.util.Date date = WeasisTimeFormat.parse(dateInput);
+                return date;
             } catch (Exception e) {
             }
         }

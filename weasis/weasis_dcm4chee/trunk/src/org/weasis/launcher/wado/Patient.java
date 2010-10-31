@@ -108,11 +108,28 @@ public class Patient implements XmlDescription {
                 if (date1 != null && date2 != null) {
                     // inverse time
                     int rep = date2.compareTo(date1);
-                    if (rep != 0) {
+                    if (rep == 0) {
+                        Date time1 = DateUtil.getTime(o1.getStudyTime());
+                        Date time2 = DateUtil.getTime(o2.getStudyTime());
+                        if (time1 != null && time2 != null) {
+                            // inverse time
+                            return time2.compareTo(time1);
+                        }
+                    } else {
                         return rep;
                     }
                 }
-                return o1.getStudyInstanceUID().compareTo(o2.getStudyInstanceUID());
+                if (date1 == null && date2 == null) {
+                    return o1.getStudyInstanceUID().compareTo(o2.getStudyInstanceUID());
+                } else {
+                    if (date1 == null) {
+                        return 1;
+                    }
+                    if (date2 == null) {
+                        return -1;
+                    }
+                }
+                return 0;
             }
         });
         for (Study s : studiesList) {
