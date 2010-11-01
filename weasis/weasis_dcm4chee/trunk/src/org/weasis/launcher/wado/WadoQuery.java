@@ -47,6 +47,7 @@ public class WadoQuery {
             wadoQuery.append("<?xml version=\"1.0\" encoding=\"" + dbCharset + "\" ?>");
             wadoQuery.append("\n<");
             wadoQuery.append(WadoParameters.TAG_DOCUMENT_ROOT);
+            // wadoQuery.append(WadoParameters.TAG_SCHEMA);
             wadoQuery.append(" ");
             TagUtil.addXmlAttribute(WadoParameters.TAG_WADO_URL, wadoParameters.getWadoURL(), wadoQuery);
             TagUtil.addXmlAttribute(WadoParameters.TAG_WADO_WEB_LOGIN, wadoParameters.getWebLogin(), wadoQuery);

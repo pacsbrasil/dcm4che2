@@ -21,7 +21,7 @@ public class Patient implements XmlDescription {
     private String patientBirthDate = null;
     private String patientBirthTime = null;
     private String patientSex = null;
-    private List<Study> studiesList;
+    private final List<Study> studiesList;
 
     public Patient(String patientID) {
         if (patientID == null) {
@@ -92,51 +92,53 @@ public class Patient implements XmlDescription {
      */
     public String toXml() {
         StringBuffer result = new StringBuffer();
-        result.append("\n<" + TagElement.DICOM_LEVEL.Patient.name() + " ");
-        TagUtil.addXmlAttribute(TagElement.PatientID, patientID, result);
-        TagUtil.addXmlAttribute(TagElement.PatientName, patientName, result);
-        TagUtil.addXmlAttribute(TagElement.PatientBirthDate, patientBirthDate, result);
-        TagUtil.addXmlAttribute(TagElement.PatientBirthTime, patientBirthTime, result);
-        TagUtil.addXmlAttribute(TagElement.PatientSex, patientSex, result);
-        result.append(">");
+        if (patientID != null && patientName != null) {
+            result.append("\n<" + TagElement.DICOM_LEVEL.Patient.name() + " ");
 
-        Collections.sort(studiesList, new Comparator<Study>() {
+            TagUtil.addXmlAttribute(TagElement.PatientID, patientID, result);
+            TagUtil.addXmlAttribute(TagElement.PatientName, patientName, result);
+            TagUtil.addXmlAttribute(TagElement.PatientBirthDate, patientBirthDate, result);
+            TagUtil.addXmlAttribute(TagElement.PatientBirthTime, patientBirthTime, result);
+            TagUtil.addXmlAttribute(TagElement.PatientSex, patientSex, result);
+            result.append(">");
 
-            public int compare(Study o1, Study o2) {
-                Date date1 = DateUtil.getDate(o1.getStudyDate());
-                Date date2 = DateUtil.getDate(o2.getStudyDate());
-                if (date1 != null && date2 != null) {
-                    // inverse time
-                    int rep = date2.compareTo(date1);
-                    if (rep == 0) {
-                        Date time1 = DateUtil.getTime(o1.getStudyTime());
-                        Date time2 = DateUtil.getTime(o2.getStudyTime());
-                        if (time1 != null && time2 != null) {
-                            // inverse time
-                            return time2.compareTo(time1);
+            Collections.sort(studiesList, new Comparator<Study>() {
+
+                public int compare(Study o1, Study o2) {
+                    Date date1 = DateUtil.getDate(o1.getStudyDate());
+                    Date date2 = DateUtil.getDate(o2.getStudyDate());
+                    if (date1 != null && date2 != null) {
+                        // inverse time
+                        int rep = date2.compareTo(date1);
+                        if (rep == 0) {
+                            Date time1 = DateUtil.getTime(o1.getStudyTime());
+                            Date time2 = DateUtil.getTime(o2.getStudyTime());
+                            if (time1 != null && time2 != null) {
+                                // inverse time
+                                return time2.compareTo(time1);
+                            }
+                        } else {
+                            return rep;
                         }
+                    }
+                    if (date1 == null && date2 == null) {
+                        return o1.getStudyInstanceUID().compareTo(o2.getStudyInstanceUID());
                     } else {
-                        return rep;
+                        if (date1 == null) {
+                            return 1;
+                        }
+                        if (date2 == null) {
+                            return -1;
+                        }
                     }
+                    return 0;
                 }
-                if (date1 == null && date2 == null) {
-                    return o1.getStudyInstanceUID().compareTo(o2.getStudyInstanceUID());
-                } else {
-                    if (date1 == null) {
-                        return 1;
-                    }
-                    if (date2 == null) {
-                        return -1;
-                    }
-                }
-                return 0;
+            });
+            for (Study s : studiesList) {
+                result.append(s.toXml());
             }
-        });
-        for (Study s : studiesList) {
-            result.append(s.toXml());
+            result.append("\n</Patient>");
         }
-        result.append("\n</Patient>");
-
         logger.debug("Patient toXml [{}]", result.toString());
         return result.toString();
     }

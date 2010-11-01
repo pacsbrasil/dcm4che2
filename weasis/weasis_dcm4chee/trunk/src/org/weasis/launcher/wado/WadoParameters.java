@@ -3,6 +3,8 @@ package org.weasis.launcher.wado;
 public class WadoParameters {
 
     public static final String TAG_DOCUMENT_ROOT = "wado_query";
+    public static final String TAG_SCHEMA =
+        " xmlns= \"http://www.weasis.org/xsd\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
     public static final String TAG_WADO_URL = "wadoURL";
     public static final String TAG_WADO_ONLY_SOP_UID = "requireOnlySOPInstanceUID";
     public static final String TAG_WADO_ADDITIONNAL_PARAMETERS = "additionnalParameters";

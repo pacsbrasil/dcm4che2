@@ -87,38 +87,39 @@ public class Study implements XmlDescription {
 
     public String toXml() {
         StringBuffer result = new StringBuffer();
-        result.append("\n<" + TagElement.DICOM_LEVEL.Study.name() + " ");
-        TagUtil.addXmlAttribute(TagElement.StudyInstanceUID, studyInstanceUID, result);
-        TagUtil.addXmlAttribute(TagElement.StudyDescription, studyDescription, result);
-        TagUtil.addXmlAttribute(TagElement.StudyDate, studyDate, result);
-        TagUtil.addXmlAttribute(TagElement.StudyTime, studyTime, result);
-        TagUtil.addXmlAttribute(TagElement.AccessionNumber, accessionNumber, result);
-        TagUtil.addXmlAttribute(TagElement.StudyID, studyID, result);
-        TagUtil.addXmlAttribute(TagElement.ReferringPhysicianName, ReferringPhysicianName, result);
-        result.append(">");
-        Collections.sort(seriesList, new Comparator<Series>() {
+        if (studyInstanceUID != null) {
+            result.append("\n<" + TagElement.DICOM_LEVEL.Study.name() + " ");
+            TagUtil.addXmlAttribute(TagElement.StudyInstanceUID, studyInstanceUID, result);
+            TagUtil.addXmlAttribute(TagElement.StudyDescription, studyDescription, result);
+            TagUtil.addXmlAttribute(TagElement.StudyDate, studyDate, result);
+            TagUtil.addXmlAttribute(TagElement.StudyTime, studyTime, result);
+            TagUtil.addXmlAttribute(TagElement.AccessionNumber, accessionNumber, result);
+            TagUtil.addXmlAttribute(TagElement.StudyID, studyID, result);
+            TagUtil.addXmlAttribute(TagElement.ReferringPhysicianName, ReferringPhysicianName, result);
+            result.append(">");
+            Collections.sort(seriesList, new Comparator<Series>() {
 
-            public int compare(Series o1, Series o2) {
-                int nubmer1 = 0;
-                int nubmer2 = 0;
-                try {
-                    nubmer1 = Integer.parseInt(o1.getSeriesNumber());
-                    nubmer2 = Integer.parseInt(o2.getSeriesNumber());
-                } catch (NumberFormatException e) {
+                public int compare(Series o1, Series o2) {
+                    int nubmer1 = 0;
+                    int nubmer2 = 0;
+                    try {
+                        nubmer1 = Integer.parseInt(o1.getSeriesNumber());
+                        nubmer2 = Integer.parseInt(o2.getSeriesNumber());
+                    } catch (NumberFormatException e) {
+                    }
+                    int rep = (nubmer1 < nubmer2 ? -1 : (nubmer1 == nubmer2 ? 0 : 1));
+                    if (rep != 0) {
+                        return rep;
+                    }
+                    return o1.getSeriesInstanceUID().compareTo(o2.getSeriesInstanceUID());
                 }
-                int rep = (nubmer1 < nubmer2 ? -1 : (nubmer1 == nubmer2 ? 0 : 1));
-                if (rep != 0) {
-                    return rep;
-                }
-                return o1.getSeriesInstanceUID().compareTo(o2.getSeriesInstanceUID());
+            });
+            for (Series s : seriesList) {
+                result.append(s.toXml());
             }
-        });
-        for (Series s : seriesList) {
-            result.append(s.toXml());
+
+            result.append("\n</Study>");
         }
-
-        result.append("\n</Study>");
-
         return result.toString();
     }
 
