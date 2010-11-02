@@ -136,6 +136,12 @@ public class QueryRetrieveScpService extends AbstractScpService {
     static final UIDDictionary uidDict = 
             DictionaryFactory.getInstance().getDefaultUIDDictionary();
 
+    private boolean patchJpegLS;
+
+    private String patchJpegLSImplCUID;
+
+    private String patchJpegLSNewImplCUID;
+
     private String[] sendNoPixelDataToAETs = null;
 
     private String[] offerNoPixelDataToAETs = null;
@@ -753,6 +759,32 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     Set<String> notDecompressTsuidSet() {
         return notDecompressTsuidSet;
+    }
+
+    public final String getPatchJpegLSImplCUID() {
+        return patchJpegLS ? maskNull(patchJpegLSImplCUID, ANY) : NONE;
+    }
+
+    public final void setPatchJpegLSImplCUID(String s) {
+        String trim = s.trim();
+        patchJpegLS = !trim.equalsIgnoreCase(NONE);
+        this.patchJpegLSImplCUID = patchJpegLS ? unmaskNull(trim, ANY) : null;
+    }
+
+    private static String unmaskNull(String s, String mask) {
+        return s.equalsIgnoreCase(mask) ? null : s;
+    }
+
+    private static String maskNull(String s, String mask) {
+        return s == null ? mask : s;
+    }
+
+    public final String getPatchJpegLSNewImplCUID() {
+        return maskNull(patchJpegLSNewImplCUID, NONE);
+    }
+
+    public final void setPatchJpegLSNewImplCUID(String s) {
+        this.patchJpegLSNewImplCUID = unmaskNull(s.trim(), NONE);;
     }
 
     public final String getSendNoPixelDataToAETs() {
@@ -1382,6 +1414,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
         FileDataSource ds = new FileDataSource(f, mergeAttrs, buf);
         ds.setWithoutPixeldata(isWithoutPixelData(dest));
+        ds.setPatchJpegLS(patchJpegLS);
+        ds.setPatchJpegLSImplCUID(patchJpegLSImplCUID);
+        ds.setPatchJpegLSNewImplCUID(patchJpegLSNewImplCUID);
         Dimse rq = AssociationFactory.getInstance().newDimse(
                 presCtx.pcid(), storeRqCmd, ds);
         if (perfMon != null) {
@@ -1584,7 +1619,11 @@ public class QueryRetrieveScpService extends AbstractScpService {
                                         info.seriesAttrs,
                                         DatasetUtils .fromByteArray(
                                                 info.instAttrs))));
-                return new FileDataSource(f, mergeAttrs, new byte[bufferSize]);
+                FileDataSource ds = new FileDataSource(f, mergeAttrs, new byte[bufferSize]);
+                ds.setPatchJpegLS(patchJpegLS);
+                ds.setPatchJpegLSImplCUID(patchJpegLSImplCUID);
+                ds.setPatchJpegLSNewImplCUID(patchJpegLSNewImplCUID);
+                return ds;
             }
         }
         return null;

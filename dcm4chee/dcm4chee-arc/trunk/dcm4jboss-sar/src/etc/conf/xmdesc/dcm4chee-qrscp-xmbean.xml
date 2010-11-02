@@ -211,6 +211,36 @@ names:
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getPatchJpegLSImplCUID"
+      setMethod="setPatchJpegLSImplCUID">
+      <description><![CDATA[Patch faulty DICOM JPEG-LS images compressed by
+JAI-IMAGEIO JPEG-LS encoder with matching Implementation SOP Class UID on
+retrieval by inserting a LSE marker segment with encoder parameter values T1,
+T2 and T3 actually used by JAI-IMAGEIO JPEG-LS encoder. Also effective for WADO
+retrieval.
+<br/>NONE = Disable patching of DICOM JPEG-LS images
+<br/>ANY = Patch DICOM JPEG-LS images with any Implementation SOP Class UID]]>
+      </description>
+      <name>PatchJpegLSwithImplementationClassUID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="1.2.40.0.13.1.1" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPatchJpegLSNewImplCUID"
+      setMethod="setPatchJpegLSNewImplCUID">
+      <description><![CDATA[Replace Implementation SOP Class UID in patched 
+DICOM JPEG-LS images by specified value. Only effective for WADO retrieval.
+<br/>NONE = Keep original Implementation SOP Class UID]]>
+      </description>
+      <name>PatchJpegLSnewImplementationClassUID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="1.2.40.0.13.1.1.1" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getPixQueryCallingAETs"
       setMethod="setPixQueryCallingAETs">
       <description><![CDATA[AE Titles of C-FIND SCUs, for which a

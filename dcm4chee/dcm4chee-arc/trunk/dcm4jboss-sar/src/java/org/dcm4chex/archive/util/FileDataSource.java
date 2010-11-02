@@ -57,6 +57,7 @@ import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
+import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
@@ -73,6 +74,52 @@ import org.jboss.logging.Logger;
 public class FileDataSource implements DataSource {
 
     private static final Logger log = Logger.getLogger(FileDataSource.class);
+
+    private static final int SOI = 0xffd8;
+    private static final int SOF55 = 0xfff7;
+    private static final int LSE = 0xfff8;
+    private static final int SOS = 0xffda;
+    private static final byte[] LSE_13 = {
+        (byte) 0xff, (byte) 0xf8, (byte) 0x00, (byte) 0x0D,
+        (byte) 0x01, 
+        (byte) 0x1f, (byte) 0xff,
+        (byte) 0x00, (byte) 0x22,  // T1 = 34
+        (byte) 0x00, (byte) 0x83,  // T2 = 131
+        (byte) 0x02, (byte) 0x24,  // T3 = 548
+        (byte) 0x00, (byte) 0x40,
+        (byte) 0xff, (byte) 0xda
+    };
+    private static final byte[] LSE_14 = {
+        (byte) 0xff, (byte) 0xf8, (byte) 0x00, (byte) 0x0D,
+        (byte) 0x01, 
+        (byte) 0x3f, (byte) 0xff,
+        (byte) 0x00, (byte) 0x42, // T1 = 66
+        (byte) 0x01, (byte) 0x03, // T2 = 259
+        (byte) 0x04, (byte) 0x44, // T3 = 1092
+        (byte) 0x00, (byte) 0x40,
+        (byte) 0xff, (byte) 0xda
+    };
+    private static final byte[] LSE_15 = {
+        (byte) 0xff, (byte) 0xf8, (byte) 0x00, (byte) 0x0D,
+        (byte) 0x01, 
+        (byte) 0x7f, (byte) 0xff,
+        (byte) 0x00, (byte) 0x82, // T1 = 130
+        (byte) 0x02, (byte) 0x03, // T2 = 515
+        (byte) 0x08, (byte) 0x84, // T3 = 2180
+        (byte) 0x00, (byte) 0x40,
+        (byte) 0xff, (byte) 0xda
+    };
+    private static final byte[] LSE_16 = {
+        (byte) 0xff, (byte) 0xf8, (byte) 0x00, (byte) 0x0D,
+        (byte) 0x01, 
+        (byte) 0xff, (byte) 0xff,
+        (byte) 0x01, (byte) 0x02, // T1 = 258
+        (byte) 0x04, (byte) 0x03, // T2 = 1027
+        (byte) 0x11, (byte) 0x04, // T3 = 4356
+        (byte) 0x00, (byte) 0x40,
+        (byte) 0xff, (byte) 0xda
+    };
+
     private static Dataset defaultContributingEquipment;
 
     static {
@@ -97,6 +144,10 @@ public class FileDataSource implements DataSource {
     private int[] calculatedFrameList;
     private Dataset contributingEquipment =
             FileDataSource.defaultContributingEquipment;
+
+    private boolean patchJpegLS = true;
+    private String patchJpegLSImplCUID = "1.2.40.0.13.1.1";
+    private String patchJpegLSNewImplCUID = "1.2.40.0.13.1.1.1";
 
     public FileDataSource(File file, Dataset mergeAttrs, byte[] buffer) {
         this.file = file;
@@ -209,6 +260,30 @@ public class FileDataSource implements DataSource {
         this.contributingEquipment = contributingEquipment;
     }
 
+    public final boolean isPatchJpegLS() {
+        return patchJpegLS;
+    }
+
+    public final void setPatchJpegLS(boolean patchJpegLS) {
+        this.patchJpegLS = patchJpegLS;
+    }
+
+    public final String getPatchJpegLSImplCUID() {
+        return patchJpegLSImplCUID;
+    }
+
+    public final void setPatchJpegLSImplCUID(String patchJpegLSImplCUID) {
+        this.patchJpegLSImplCUID = patchJpegLSImplCUID;
+    }
+
+    public final String getPatchJpegLSNewImplCUID() {
+        return patchJpegLSNewImplCUID;
+    }
+
+    public final void setPatchJpegLSNewImplCUID(String patchJpegLSNewImplCUID) {
+        this.patchJpegLSNewImplCUID = patchJpegLSNewImplCUID;
+    }
+
     public final File getFile() {
         return file;
     }
@@ -237,20 +312,33 @@ public class FileDataSource implements DataSource {
                 parser.parseDataset(dcmDecodeParam, -1);
             }
             ds.putAll(mergeAttrs);
-            String tsOrig = DecompressCmd.getTransferSyntax(ds);
+            FileMetaInfo fmi = ds.getFileMetaInfo();
+            if (fmi == null) {
+                fmi = DcmObjectFactory.getInstance()
+                        .newFileMetaInfo(ds, UIDs.ImplicitVRLittleEndian);
+                ds.setFileMetaInfo(fmi);
+            }
+            String tsOrig = fmi.getTransferSyntaxUID();
+            if (tsUID == null)
+                tsUID = tsOrig;
+            boolean patchJpegLS = this.patchJpegLS
+                    && !withoutPixeldata1
+                    && tsUID.equals(UIDs.JPEGLSLossless)
+                    && (patchJpegLSImplCUID == null
+                            || patchJpegLSImplCUID.equals(
+                            fmi.getImplementationClassUID()))
+                    && ds.getInt(Tags.BitsAllocated, 0) == 16;
             if (writeFile) {
-                if (tsUID != null) {
-                    if (!tsUID.equals(tsOrig)) { // can only decompress here!
-                        if (!withoutPixeldata1 
-                                && !UIDs.ImplicitVRLittleEndian.equals(tsUID)) {
-                            tsUID = UIDs.ExplicitVRLittleEndian;
-                        }
-                        ds.setFileMetaInfo(DcmObjectFactory.getInstance()
-                                .newFileMetaInfo(ds, tsUID));
-                    }
-                } else {
-                    tsUID = tsOrig;
+                if (!(withoutPixeldata1 
+                        || tsUID.equals(tsOrig)
+                        || tsUID.equals(UIDs.ImplicitVRLittleEndian))) {
+                    tsUID = UIDs.ExplicitVRLittleEndian;
+                    fmi.putUI(Tags.TransferSyntaxUID, tsUID);
+                    patchJpegLS = false;
                 }
+                if (patchJpegLS && patchJpegLSNewImplCUID != null)
+                    fmi.putUI(Tags.ImplementationClassUID,
+                            patchJpegLSNewImplCUID);
             }
             DcmEncodeParam enc = DcmEncodeParam.valueOf(tsUID);
             if (!hasPixelData) {
@@ -332,21 +420,30 @@ public class FileDataSource implements DataSource {
             } else if (enc.encapsulated) {
                 // copy encapsulated Pixel Data
                 ds.writeHeader(out, enc, Tags.PixelData, VRs.OB, -1);
-                if (simpleFrameList == null) {
-                    do {
-                        parser.parseHeader();
-                        int itemlen = parser.getReadLength();
-                        ds.writeHeader(out, enc, parser.getReadTag(),
-                                VRs.NONE, itemlen);
-                        copyBytes(dis, out, itemlen, buffer);
-                    } while (parser.getReadTag() == Tags.Item);
+                parser.parseHeader();
+                int itemlen = parser.getReadLength();
+                if (simpleFrameList == null && !patchJpegLS) {
+                    // copy Basic Offset Table
+                    ds.writeHeader(out, enc, parser.getReadTag(),
+                            VRs.NONE, itemlen);
+                    copyBytes(dis, out, itemlen, buffer);
                 } else {
-                    parser.parseHeader();
-                    int itemlen = parser.getReadLength();
                     // write empty Basic Offset Table
                     ds.writeHeader(out, enc, Tags.Item, VRs.NONE, 0);
                     // skip Basic Offset Table
                     dis.skipBytes(itemlen);
+                }
+                if (simpleFrameList == null) {
+                    parser.parseHeader();
+                    while (parser.getReadTag() == Tags.Item) {
+                        itemlen = parser.getReadLength();
+                        copyItem(patchJpegLS, dis, ds, out, enc, itemlen);
+                        parser.parseHeader();
+                    };
+                    ds.writeHeader(out, enc, Tags.SeqDelimitationItem,
+                            VRs.NONE, 0);
+                    dis.skipBytes(itemlen);
+                } else {
                     // WARN frames spanning multiple data fragments not supported
                     // assume one item per frame
                     int frameIndex = 0;
@@ -358,8 +455,7 @@ public class FileDataSource implements DataSource {
                             parser.parseHeader();
                             itemlen = parser.getReadLength();
                         }
-                        ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
-                        copyBytes(dis, out, itemlen, buffer);
+                        copyItem(patchJpegLS, dis, ds, out, enc, itemlen);
                     }
                     ds.writeHeader(out, enc, Tags.SeqDelimitationItem,
                             VRs.NONE, 0);
@@ -407,6 +503,79 @@ public class FileDataSource implements DataSource {
         }
     }
     
+
+    private void copyItem(boolean patchJpegLS, DataInputStream dis,
+            Dataset ds, OutputStream out, DcmEncodeParam enc, int itemlen)
+            throws IOException {
+        if (patchJpegLS) {
+            byte[] jpegheader = buffer;
+            dis.readFully(jpegheader, 0, 17);
+            byte[] lse = selectLSE(jpegheader);
+            if (lse == null) {
+                ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
+                out.write(jpegheader, 0, 17);
+                copyBytes(dis, out, itemlen - 17, buffer);
+            } else {
+                ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen + 16);
+                out.write(jpegheader, 0, 15);
+                out.write(lse);
+                copyBytes(dis, out, itemlen - 17, buffer);
+                out.write(0);
+            }
+        } else {
+            ds.writeHeader(out, enc, Tags.Item, VRs.NONE, itemlen);
+            copyBytes(dis, out, itemlen, buffer);
+        }
+    }
+
+    private static int toInt(byte[] b, int off) {
+        return (b[off] & 0xff) << 8 | (b[off+1] & 0xff);
+    }
+
+    private static byte[] selectLSE(byte[] jpegheader) {
+        if (toInt(jpegheader, 0) != SOI) {
+            log.warn("SOI marker is missing - do not patch JPEG LS");
+            return null;
+        }
+        if (toInt(jpegheader, 2) != SOF55) {
+            log.warn("SOI marker is not followed by JPEG-LS SOF marker "
+                    + "- do not patch JPEG LS");
+            return null;
+        }
+        if (toInt(jpegheader, 4) != 11) {
+            log.warn("unexpected length of JPEG-LS SOF marker segment "
+                    + "- do not patch JPEG LS");
+            return null;
+        }
+        int marker = toInt(jpegheader, 15);
+        if (marker != SOS) {
+            log.warn(marker == LSE
+                ? "contains already LSE marker segment "
+                    + "- do not patch JPEG LS"
+                : "JPEG-LS SOF marker segment is not followed by SOS marker "
+                    + "- do not patch JPEG LS");
+            return null;
+        }
+        switch (jpegheader[6]) {
+        case 13:
+            log.info("Patch JPEG LS 13-bit with "
+                    + "LSE segment(T1=34, T2=131, T3=548)");
+            return LSE_13;
+        case 14:
+            log.info("Patch JPEG LS 14-bit with "
+                    + "LSE segment(T1=66, T2=259, T3=1092)");
+            return LSE_14;
+        case 15:
+            log.info("Patch JPEG LS 15-bit with "
+                    + "LSE segment(T1=130, T2=515, T3=2180)");
+            return LSE_15;
+        case 16:
+            log.info("Patch JPEG LS 16-bit with "
+                    + "LSE segment(T1=258, T2=1027, T3=4356)");
+            return LSE_16;
+        }
+        return null;
+    }
 
     private void adjustNumberOfFrames(Dataset ds) {
         ds.putIS(Tags.NumberOfFrames, simpleFrameList.length);

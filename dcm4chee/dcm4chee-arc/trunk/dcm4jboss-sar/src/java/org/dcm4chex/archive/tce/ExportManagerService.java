@@ -155,6 +155,8 @@ public class ExportManagerService extends AbstractScuService
 
     private static final String NONE = "NONE";
 
+    private static final String ANY = "ANY";
+
     private ObjectName storeScpServiceName;
 
     private ObjectName queryRetrieveScpServiceName;
@@ -164,6 +166,10 @@ public class ExportManagerService extends AbstractScuService
     private String queueName;
 
     private int concurrency = 1;
+
+    private boolean patchJpegLS;
+
+    private String patchJpegLSImplCUID;
 
     private String[][] exportSelectorTitles = null;
 
@@ -415,6 +421,24 @@ public class ExportManagerService extends AbstractScuService
             if (restart)
                 start();
         }
+    }
+
+    private static String unmaskNull(String s, String mask) {
+        return s.equalsIgnoreCase(mask) ? null : s;
+    }
+
+    private static String maskNull(String s, String mask) {
+        return s == null ? mask : s;
+    }
+
+    public final String getPatchJpegLSImplCUID() {
+        return patchJpegLS ? maskNull(patchJpegLSImplCUID, ANY) : NONE;
+    }
+
+    public final void setPatchJpegLSImplCUID(String s) {
+        String trim = s.trim();
+        patchJpegLS = !trim.equalsIgnoreCase(NONE);
+        this.patchJpegLSImplCUID = patchJpegLS ? unmaskNull(trim, ANY) : null;
     }
 
     public final ObjectName getJmsServiceName() {
@@ -833,6 +857,8 @@ public class ExportManagerService extends AbstractScuService
         cmd.initCStoreRQ(a.getAssociation().nextMsgID(), fileInfo.sopCUID,
                 attrs.getString(Tags.SOPInstanceUID), prior);
         FileDataSource src = new FileDataSource(getFile(fileInfo), attrs, buffer);
+        src.setPatchJpegLS(patchJpegLS);
+        src.setPatchJpegLSImplCUID(patchJpegLSImplCUID);
         Dimse dimse = AssociationFactory.getInstance().newDimse(pcid, cmd, src);
         a.invoke(dimse, this);
     }
