@@ -239,8 +239,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
             is.read(buf, 0, 2);
             is.reset();
         }
-        return (((buf[0] & 0xff) << 16) 
-                | (buf[0] & 0xff)) == ZLIB_HEADER;
+        return (((buf[0] & 0xff) << 8) 
+                | (buf[1] & 0xff)) == ZLIB_HEADER;
     }
 
     public final DcmDecodeParam getDcmDecodeParam() {
