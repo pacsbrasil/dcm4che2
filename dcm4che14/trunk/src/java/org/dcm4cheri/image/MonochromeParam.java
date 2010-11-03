@@ -101,7 +101,7 @@ final class MonochromeParam extends BasicColorModelParam  {
             width[i] = (max - min) / slope;
          }
       }
-      this.voilut = ds.getItem(Tags.VOILUTSeq);
+      this.voilut = center.length == 0 ? ds.getItem(Tags.VOILUTSeq) : null;
       this.pv2dll = pv2dll;
       this.pvBits = inBits(pv2dll.length);
       // Exclude all high-bit data (overlays typically)
