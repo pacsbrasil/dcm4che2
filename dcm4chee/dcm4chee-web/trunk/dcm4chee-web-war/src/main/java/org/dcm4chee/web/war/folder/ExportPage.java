@@ -369,7 +369,6 @@ public class ExportPage extends SecureWebPage {
         int NOTnrPat, NOTnrStudy, NOTnrSeries, NOTnrInstances;
         
         StudyListLocal dao;
-//        SecureSession secureSession;
 
         private ExportInfo(List<PatientModel> patients) {
             dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);

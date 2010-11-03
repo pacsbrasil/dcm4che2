@@ -45,10 +45,10 @@ import java.util.List;
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
-import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
@@ -95,8 +95,6 @@ public class DicomEchoWindow extends ModalWindow {
     private Integer nrOfTests = 1;
     private boolean echoPerformed = false;
     private String result;
-    private boolean echoRunning = false;
-    private Image hourglassImage;
     private boolean saveFailed;
 
     private transient EchoDelegate delegate;
@@ -112,14 +110,6 @@ public class DicomEchoWindow extends ModalWindow {
             @Override
             public Page createPage() {
                 return new DicomEchoPage();
-            }
-        });
-        setCloseButtonCallback(new CloseButtonCallback() {
-
-            private static final long serialVersionUID = 1L;
-
-            public boolean onCloseButtonClicked(AjaxRequestTarget target) {
-                return !echoRunning;
             }
         });
     }
@@ -179,281 +169,208 @@ public class DicomEchoWindow extends ModalWindow {
     
     public class DicomEchoPage extends SecureWebPage {
     
-    private static final long serialVersionUID = 1L;
-    private BaseForm form;
-    private Component timerComponent;
-    private AjaxButton saveBtn = new SaveButton("save");
-    private AjaxButton echoBtn = new EchoButton("echo");
-    private AjaxButton pingBtn = new PingButton("ping");
-    private AjaxButton cancelBtn;
-    private AbstractAjaxTimerBehavior timer;
-
-    private IModel<Integer> nrOfTestsModel = new IModel<Integer>() {
-
         private static final long serialVersionUID = 1L;
-        
-        public Integer getObject() {
-            return nrOfTests;
-        }
-        public void setObject(Integer object) {
-            nrOfTests = (Integer)object;
-        }
-        public void detach() {}
-    };
-    
-    private AbstractAjaxTimerBehavior getTimer() {
-        AbstractAjaxTimerBehavior timer = new AbstractAjaxTimerBehavior(Duration.milliseconds(200)) {
+        private BaseForm form;
+        private AjaxButton saveBtn;
+        private IModel<Integer> nrOfTestsModel = new IModel<Integer>() {
     
             private static final long serialVersionUID = 1L;
-            private String lastResult = null;
-            private boolean lastRunningState = false;
-            @Override
-            protected void onTimer(AjaxRequestTarget target) {
-                if (!echoRunning && !echoPerformed && echoOnShow) {
-                    doEcho(aeEcho);
-                } else if (echoRunning^lastRunningState) {
-                    addToTarget(target);
-                    if (!echoRunning) {
-                        stop();
-                    }
-                    lastRunningState = echoRunning;
-                } else if (!result.equals(lastResult)) {
-                    lastResult = result;
-                    target.addComponent(resultLabel);
-                }
+            
+            public Integer getObject() {
+                return nrOfTests;
             }
-        }; 
-        return timer;
-    }
-    
-    private Label resultLabel = new Label("result", 
-            new AbstractReadOnlyModel<Object>() {
-        
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public Object getObject() {
-                    return result;
-                }
-            })
-        {
-            private static final long serialVersionUID = 1L;
-    
-            @Override
-            public void onComponentTag(ComponentTag tag) {
-
-                tag.getAttributes().put("class", saveFailed ? "ae_save_failed" : 
-                         ((!echoPerformed || echoRunning) ? "ae_echo_pending" : 
-                         (result.indexOf("success") != -1 ? "ae_echo_succeed" : 
-                             (result.contains(getString("ae.ping_success")) ? "ae_ping_succeed" :  
-                             "ae_echo_failed"))));
-                super.onComponentTag(tag);
+            public void setObject(Integer object) {
+                nrOfTests = (Integer)object;
             }
+            public void detach() {}
         };
         
-    public DicomEchoPage() {
-        super();
-        
-        if (DicomEchoWindow.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(DicomEchoWindow.BaseCSS));
-        if (DicomEchoWindow.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(DicomEchoWindow.CSS));
-
-
-        form = new BaseForm("form");
-        form.setResourceIdPrefix("ae.");
-        
-        add(form);
-        CompoundPropertyModel<AE> model = new CompoundPropertyModel<AE>(aeEcho);
-        setDefaultModel(model);
-        form.add(timerComponent = new Label("aetLabel", new ResourceModel("ae.echoAETitle")).setOutputMarkupId(true));
-        form.add(new Label("ciphersLabel", new ResourceModel("ae.echoCiphers")));
-        form.add(new Label("nrOfTestsLabel", new ResourceModel("ae.echoNrOfTests")));
-        form.add(new Label("echoResultLabel", new ResourceModel("ae.echoResult")));
-        form.add(new TextField<String>("title").add(new AETitleValidator()).setRequired(true).setOutputMarkupId(true)); 
-        form.add(new TextField<String>("hostName").add(StringValidator.minimumLength(1)).setRequired(true).setOutputMarkupId(true)); 
-        form.add(new TextField<Integer>("port").add(new RangeValidator<Integer>(1,65535)).setOutputMarkupId(true));
-        form.add(new DropDownChoice<String>("ciphersuite1", new CipherModel(aeEcho, 0), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
-        form.add(new DropDownChoice<String>("ciphersuite2", new CipherModel(aeEcho, 1), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
-        form.add(new DropDownChoice<String>("ciphersuite3", new CipherModel(aeEcho, 2), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
-        form.add(new TextField<Integer>("nrOfTests", nrOfTestsModel, Integer.class).add(new RangeValidator<Integer>(1,2000)).setOutputMarkupId(true));
-        resultLabel.setOutputMarkupId(true).setEnabled(false);
-        form.add(resultLabel);
-        form.add(cancelBtn = new AjaxButton("cancel", new ResourceModel("cancelBtn")) {
+        private Label resultLabel = new Label("result", 
+                new AbstractReadOnlyModel<Object>() {
             
+                    private static final long serialVersionUID = 1L;
+    
+                    @Override
+                    public Object getObject() {
+                        return result;
+                    }
+                })
+            {
+                private static final long serialVersionUID = 1L;
+        
+                @Override
+                public void onComponentTag(ComponentTag tag) {
+    
+                    tag.getAttributes().put("class", saveFailed ? "ae_save_failed" : 
+                                 ((!echoPerformed) ? "ae_echo_pending" :
+                             (result.indexOf("success") != -1 ? "ae_echo_succeed" : 
+                                 (result.contains(getString("ae.ping_success")) ? "ae_ping_succeed" :  
+                                 "ae_echo_failed"))));
+                    super.onComponentTag(tag);
+                }
+            };
+            
+        public DicomEchoPage() {
+            super();
+            
+            if (DicomEchoWindow.BaseCSS != null)
+                add(CSSPackageResource.getHeaderContribution(DicomEchoWindow.BaseCSS));
+            if (DicomEchoWindow.CSS != null)
+                add(CSSPackageResource.getHeaderContribution(DicomEchoWindow.CSS));
+    
+    
+            form = new BaseForm("form");
+            form.setResourceIdPrefix("ae.");
+            
+            add(form);
+            CompoundPropertyModel<AE> model = new CompoundPropertyModel<AE>(aeEcho);
+            setDefaultModel(model);
+            form.add(new Label("aetLabel", new ResourceModel("ae.echoAETitle")).setOutputMarkupId(true));
+            form.add(new Label("ciphersLabel", new ResourceModel("ae.echoCiphers")));
+            form.add(new Label("nrOfTestsLabel", new ResourceModel("ae.echoNrOfTests")));
+            form.add(new Label("echoResultLabel", new ResourceModel("ae.echoResult")));
+            form.add(new TextField<String>("title").add(new AETitleValidator()).setRequired(true).setOutputMarkupId(true)); 
+            form.add(new TextField<String>("hostName").add(StringValidator.minimumLength(1)).setRequired(true).setOutputMarkupId(true)); 
+            form.add(new TextField<Integer>("port").add(new RangeValidator<Integer>(1,65535)).setOutputMarkupId(true));
+            form.add(new DropDownChoice<String>("ciphersuite1", new CipherModel(aeEcho, 0), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+            form.add(new DropDownChoice<String>("ciphersuite2", new CipherModel(aeEcho, 1), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+            form.add(new DropDownChoice<String>("ciphersuite3", new CipherModel(aeEcho, 2), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+            form.add(new TextField<Integer>("nrOfTests", nrOfTestsModel, Integer.class).add(new RangeValidator<Integer>(1,2000)).setOutputMarkupId(true));
+            resultLabel.setOutputMarkupId(true).setEnabled(false);
+            form.add(resultLabel);
+            form.add(new AjaxButton("cancel", new ResourceModel("cancelBtn")) {
+                
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+                protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                    close(target);
+                }
+                @Override
+                protected void onError(AjaxRequestTarget target, Form<?> form) {
+                    close(target);
+                }
+            }).setOutputMarkupId(true).add(FocusOnLoadBehaviour.newSimpleFocusBehaviour());
+            form.add((saveBtn = new SaveButton("save"))
+                .setEnabled(false));
+            MetaDataRoleAuthorizationStrategy.authorize(saveBtn, RENDER, "WebAdmin");
+                        form.add(new EchoButton("echo"));
+            form.add(new PingButton("ping"));
+            setOutputMarkupId(true);
+        }
+    
+    
+        @Override
+        protected void onBeforeRender() {
+            super.onBeforeRender();
+            
+            if (echoOnShow && !echoPerformed) {
+                result = getString("ae.echoResult.default");
+                getDelegate();
+                doEcho(aeEcho);
+            }
+        }
+    
+        public void doEcho(final AE ae) {
+            getDelegate(); 
+            try {
+                result = getDelegate().echo(ae, nrOfTests);
+                boolean chgd = !isSameNetCfg( aeOri, aeEcho);
+                if ( chgd != saveBtn.isEnabled()) 
+                    saveBtn.setEnabled(chgd);
+            } catch (Throwable t) {
+                t.printStackTrace();
+                result = "Echo failed! Reason:"+t.getMessage();
+            } finally {
+                echoPerformed = true;
+            }
+        }
+    
+        public void doPing(final AE ae) {
+            result = getString("ae.echoResult.ping", new Model<AE>(ae));
+            getDelegate();
+            final String success = getString("ae.ping_success");
+            final String failed = getString("ae.ping_failed");
+            try {
+                for (int i = 0 ; i < nrOfTests ; i++) {
+                    result += "\n";
+                    result += delegate.ping(ae.getHostName()) ? success : failed;
+                }
+            } catch (UnknownHostException x) {
+                result = "Ping failed! Unknown host:"+x.getMessage();
+            } finally {
+                echoPerformed = true;
+            }
+        }
+    
+        class EchoButton extends IndicatingAjaxButton {
+    
             private static final long serialVersionUID = 1L;
+            
+            private EchoButton(String id) {
+                super(id);
+                setModel(new ResourceModel("ae.echoButton"));
+                setOutputMarkupId(true);
+            }
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                close(target);
+                result = getString("ae.echoResult.default");
+                doEcho(aeEcho);
+                target.addComponent(saveBtn);
+                target.addComponent(resultLabel);
             }
+            
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-                close(target);
-            }
-        }).setOutputMarkupId(true).add(FocusOnLoadBehaviour.newSimpleFocusBehaviour());
-        saveBtn.setEnabled(false);
-        MetaDataRoleAuthorizationStrategy.authorize(saveBtn, RENDER, "WebAdmin");
-        form.add(saveBtn);
-        form.add(echoBtn = new EchoButton("echo"));
-        form.add(pingBtn = new PingButton("ping"));
-        form.add((hourglassImage = new Image("hourglass-image", ImageManager.IMAGE_COMMON_AJAXLOAD) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public boolean isVisible() {
-                return echoRunning;
-            }
-        }).setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true));
-        setOutputMarkupId(true);
-    }
-
-
-    @Override
-    protected void onBeforeRender() {
-        super.onBeforeRender();
-        
-        if (echoOnShow && !echoPerformed) {
-            result = getString("ae.echoResult.default");
-            getDelegate();
-            timerComponent.add(timer = getTimer());
-        }
-    }
-
-    private void addToTarget(AjaxRequestTarget target) {
-        target.addComponent(resultLabel);
-        target.addComponent(hourglassImage);
-        target.addComponent(echoBtn);
-        target.addComponent(pingBtn);
-        target.addComponent(cancelBtn);
-    }
-    
-    public void doEcho(final AE ae) {
-        echoRunning = true;
-        getDelegate();//ensure that delegate is initialized - will fail in new thread! 
-        new Thread(new Runnable(){
-            public void run() {
-                try {
-                    result = getDelegate().echo(ae, nrOfTests);
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                    result = "Echo failed! Reason:"+t.getMessage();
-                } finally {
-                    echoPerformed = true;
-                    echoRunning = false;
-                }
-            }}).start();
-    }
-
-    public void doPing(final AE ae) {
-        echoRunning = true;
-        result = getString("ae.echoResult.ping", new Model<AE>(ae));
-        getDelegate();
-        final String success = getString("ae.ping_success");
-        final String failed = getString("ae.ping_failed");
-        new Thread(new Runnable(){
-            public void run() {
-                try {
-                    for (int i = 0 ; i < nrOfTests ; i++) {
-                        result += "\n";
-                        result += delegate.ping(ae.getHostName()) ? success : failed;
-                    }
-                } catch (UnknownHostException x) {
-                    result = "Ping failed! Unknown host:"+x.getMessage();
-                } finally {
-                    echoPerformed = true;
-                    echoRunning = false;
-                }
-            }}).start();
-    }
-
-    private void newTimer() {
-        if (timer != null)
-            timerComponent.remove(timer);
-        timerComponent.add(timer = getTimer());
-    }
-
-    class EchoButton extends AjaxButton {
-
-        private static final long serialVersionUID = 1L;
-        
-        private EchoButton(String id) {
-            super(id, new ResourceModel("ae.echoButton"));
-            setOutputMarkupId(true);
-        }
-        @Override
-        protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-            newTimer();
-            result = getString("ae.echoResult.default");
-            doEcho(aeEcho);
-            boolean chgd = !isSameNetCfg( aeOri, aeEcho);
-            if ( chgd != saveBtn.isEnabled()) {
-                saveBtn.setEnabled(chgd);
-                target.addComponent(saveBtn);
-            }
-            target.addComponent(resultLabel);
-            target.addComponent(timerComponent);
-       }
-        @Override
-        protected void onError(AjaxRequestTarget target, Form<?> form) {
-            target.addComponent(resultLabel);
-            BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
-        }
-        @Override
-        public boolean isEnabled() {
-            return !echoRunning;
-        }
-    }
-
-    class PingButton extends AjaxButton {
-
-        private static final long serialVersionUID = 1L;
-        
-        private PingButton(String id) {
-            super(id, new ResourceModel("ae.pingButton"));
-            setOutputMarkupId(true);
-        }
-        @Override
-        protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-            newTimer();
-            doPing(aeEcho);
-            target.addComponent(resultLabel);
-            target.addComponent(timerComponent);
-        }
-        
-        @Override
-        protected void onError(AjaxRequestTarget target, Form<?> form) {
-            target.addComponent(resultLabel);
-            BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
-        }
-        @Override
-        public boolean isEnabled() {
-            return !echoRunning;
-        }
-    }
-    
-    class SaveButton extends AjaxButton {
-
-        private static final long serialVersionUID = 1L;
-        
-        private SaveButton(String id) {
-            super(id, new ResourceModel("saveBtn"));
-        }
-        @Override
-        protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-            try {
-                AEDelegate.getInstance().updateOrCreate(copyNetCfg(aeEcho, aeOri));
-                saveFailed = false;
-                saveBtn.setEnabled(false);
-                close(target);
-            } catch (Exception x) {
-                result = (String) getString("ae.titleAlreadyExist");
-                saveFailed = true;
                 target.addComponent(resultLabel);
-                target.addComponent(saveBtn);
+                BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
             }
         }
-    }
+    
+        class PingButton extends IndicatingAjaxButton {
+    
+            private static final long serialVersionUID = 1L;
+            
+            private PingButton(String id) {
+                super(id);
+                setModel(new ResourceModel("ae.pingButton"));
+                setOutputMarkupId(true);
+            }
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                doPing(aeEcho);
+                target.addComponent(resultLabel);
+            }
+            
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
+                target.addComponent(resultLabel);
+                BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
+            }
+        }
+        
+        class SaveButton extends AjaxButton {
+    
+            private static final long serialVersionUID = 1L;
+            
+            private SaveButton(String id) {
+                super(id, new ResourceModel("saveBtn"));
+            }
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                try {
+                    AEDelegate.getInstance().updateOrCreate(copyNetCfg(aeEcho, aeOri));
+                    saveFailed = false;
+                    saveBtn.setEnabled(false);
+                    close(target);
+                } catch (Exception x) {
+                    result = (String) getString("ae.titleAlreadyExist");
+                    saveFailed = true;
+                    target.addComponent(resultLabel);
+                    target.addComponent(saveBtn);
+                }
+            }
+        }
     }
 }

@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -62,7 +61,7 @@ public class InstanceModel extends AbstractEditableDicomModel implements Seriali
 
     private static final long serialVersionUID = 1L;
     
-    private List<FileModel> files = Collections.synchronizedList(new ArrayList<FileModel>());
+    private List<FileModel> files = new ArrayList<FileModel>();
 
     public InstanceModel(Instance inst, SeriesModel seriesModel) {
         setPk(inst.getPk());

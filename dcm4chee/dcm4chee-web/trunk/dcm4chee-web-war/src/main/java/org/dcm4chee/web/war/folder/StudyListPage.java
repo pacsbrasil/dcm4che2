@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.folder;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -58,7 +57,6 @@ import org.apache.wicket.PageMap;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.Session;
-import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
@@ -67,6 +65,7 @@ import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
@@ -128,6 +127,7 @@ import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.common.EditDicomObjectPanel;
+import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
@@ -185,14 +185,11 @@ public class StudyListPage extends Panel {
     
     private WebviewerLinkProvider webviewerLinkProvider;
     
-    private List<WebMarkupContainer> searchTableComponents = Collections.synchronizedList(new ArrayList<WebMarkupContainer>());
+    private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
      
-    protected boolean ajaxRunning = false;
-    protected boolean ajaxDone = false;
-    protected Image hourglassImage;
-    
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
     SecureSession secureSession = ((SecureSession) getSession());
+    private boolean useStudyPermissions = secureSession.getUseStudyPermissions();
     
     public StudyListPage(final String id) {
         super(id);
@@ -207,6 +204,7 @@ public class StudyListPage extends Panel {
             private static final long serialVersionUID = 1L;
 
             public void onClose(AjaxRequestTarget target) {
+                getPage().setOutputMarkupId(true);
                 target.addComponent(getPage());
             }            
         });
@@ -216,7 +214,6 @@ public class StudyListPage extends Panel {
         final StudyListFilter filter = viewport.getFilter();
         add(form = new BaseForm("form", new CompoundPropertyModel<Object>(filter)));
         form.setResourceIdPrefix("folder.");
-
         form.add(new AjaxFallbackLink<Object>("searchToggle") {
 
             private static final long serialVersionUID = 1L;
@@ -253,7 +250,6 @@ public class StudyListPage extends Panel {
         addQueryFields(filter, form);
         addQueryOptions(form);
         addNavigation(form);
-        addHourglass(form);
         addActions(form);
         
         header = new StudyListHeader("thead", form);
@@ -421,57 +417,24 @@ public class StudyListPage extends Panel {
         );
         form.addComponent(resetBtn);
 
-        final Button searchBtn = new AjaxButton("searchBtn") {
+        IndicatingAjaxButton searchBtn = new IndicatingAjaxButton("searchBtn") {
 
             private static final long serialVersionUID = 1L;
             
             @Override
-            public void onSubmit(AjaxRequestTarget target, final Form<?> form) {
-                  ajaxRunning = ajaxDone = false;
-                  
-                  target.addComponent(
-                      form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                          
-                          private static final long serialVersionUID = 1L;
-    
-                          @Override
-                          protected void onTimer(final AjaxRequestTarget target) {
-    
-                              if (!ajaxRunning) {
-                                  if (!ajaxDone) {
-                                      ajaxRunning = true;
-                                    new Thread(new Runnable() {
-                                          public void run() {
-                                              try {
-                                                  viewport.setOffset(0);
-                                                  queryStudies();
-                                              } catch (Throwable t) {
-                                                  log.error("search failed: ", t);
-                                              } finally {
-                                                  ajaxRunning = false;
-                                                  ajaxDone = true;
-                                              }
-                                          }
-                                      }).start();
-                                  } else {
-                                      this.stop();
-                                      target.addComponent(form);
-                                  }
-                                  target.addComponent(hourglassImage);
-                              }
-                          }
-                      })
-                  );
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                try {
+                    viewport.setOffset(0);
+                    queryStudies();
+                } catch (Throwable t) {
+                    log.error("search failed: ", t);
+                }
+                target.addComponent(form);
             }
             
             @Override
             public void onError(AjaxRequestTarget target, Form<?> form) {
                 BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
-            }
-            
-            @Override
-            public boolean isEnabled() {
-                return !ajaxRunning;
             }
         };
         searchBtn.setOutputMarkupId(true);
@@ -487,16 +450,12 @@ public class StudyListPage extends Panel {
         form.setDefaultButton(searchBtn);
         form.clearParent();
         
-        form.addDropDownChoice("pagesize", pagesize, WebCfgDelegate.getInstance().getPagesizeList(), new Model<Boolean>() {
-                    
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public Boolean getObject() {
-                return !ajaxRunning;
-            }
-        }, true).setNullValid(false)
-        .add(new AjaxFormSubmitBehavior(form, "onchange") {
+        form.addDropDownChoice("pagesize", pagesize, 
+                WebCfgDelegate.getInstance().getPagesizeList(), 
+                new Model<Boolean>(true), 
+                true)
+         .setNullValid(false)
+        .add(new IndicatingAjaxFormSubmitBehavior(form, "onchange") {
 
             private static final long serialVersionUID = 1L;
 
@@ -504,40 +463,12 @@ public class StudyListPage extends Panel {
             protected void onSubmit(AjaxRequestTarget target) {
                 if (!WebCfgDelegate.getInstance().isQueryAfterPagesizeChange())
                     return;
-                ajaxRunning = ajaxDone = false;
-                
-                target.addComponent(
-                    form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                        
-                        private static final long serialVersionUID = 1L;
-  
-                        @Override
-                        protected void onTimer(final AjaxRequestTarget target) {
-  
-                            if (!ajaxRunning) {
-                                if (!ajaxDone) {
-                                    ajaxRunning = true;
-                                    new Thread(new Runnable() {
-                                        public void run() {
-                                            try {
-                                                queryStudies();
-                                            } catch (Throwable t) {
-                                                log.error("search failed: ", t);
-                                            } finally {
-                                                ajaxRunning = false;
-                                                ajaxDone = true;
-                                            }
-                                        }
-                                    }).start();
-                                } else {
-                                    this.stop();
-                                    target.addComponent(form);
-                                }
-                                target.addComponent(hourglassImage);
-                            }
-                        }
-                    })
-                );
+                try {
+                    queryStudies();
+                } catch (Throwable t) {
+                    log.error("search failed: ", t);
+                }
+                target.addComponent(form);
             }
 
             @Override
@@ -612,20 +543,6 @@ public class StudyListPage extends Panel {
         }));
     }
 
-    private void addHourglass(final BaseForm form) {
-        form.add((hourglassImage = new Image("hourglass-image", ImageManager.IMAGE_COMMON_AJAXLOAD) {
-            private static final long serialVersionUID = 1L;
-    
-            @Override
-            public boolean isVisible() {
-                return ajaxRunning;
-            }
-        })
-        .setOutputMarkupPlaceholderTag(true)
-        .setOutputMarkupId(true)
-        );
-    }
-    
     private void addActions(final BaseForm form) {
         
         final ConfirmationWindow<SelectedEntities> confirmDelete = new ConfirmationWindow<SelectedEntities>("confirmDelete") {
@@ -654,54 +571,26 @@ public class StudyListPage extends Panel {
 
             @Override
             public void onConfirmation(AjaxRequestTarget target, final SelectedEntities selected) {
-                ajaxRunning = ajaxDone = false;
                 
                 this.setStatus(new StringResourceModel("folder.message.delete.running", StudyListPage.this, null));
                 okBtn.setVisible(false);
                 remarkLabel.setVisible(false);
                 
-                msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                    
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    protected void onTimer(final AjaxRequestTarget target) {
-
-                        if (!ajaxRunning) {
-                            if (!ajaxDone) {
-                                ajaxRunning = true;
-                                getDelegate();
-                                new Thread(new Runnable() {
-                                    public void run() {
-                                        try {
-                                            if (getDelegate().moveToTrash(selected)) {
-                                                setStatus(new StringResourceModel("folder.message.deleteDone", StudyListPage.this,null));
-                                                if (selected.hasPatients()) {
-                                                    viewport.clearPatients();
-                                                    queryStudies();
-                                                } else
-                                                    selected.refreshView(true);
-                                            } else
-                                                setStatus(new StringResourceModel("folder.message.deleteFailed", StudyListPage.this,null));
-                                        } catch (Throwable t) {
-                                            log.error("moveToTrash failed: ", t);
-                                        } finally {
-                                            ajaxRunning = false;
-                                            ajaxDone = true;
-                                        }
-                                    }
-                                }).start();
-                            } else {
-                                okBtn.setVisible(true);
-                                this.stop();        
-                            }
-                        } else 
-                            okBtn.setVisible(false);
-                        target.addComponent(msgLabel);
-                        target.addComponent(hourglassImage);
-                        target.addComponent(okBtn);
-                    }
-                });
+                try {
+                    if (getDelegate().moveToTrash(selected)) {
+                        setStatus(new StringResourceModel("folder.message.deleteDone", StudyListPage.this,null));
+                        if (selected.hasPatients()) {
+                            viewport.getPatients().clear();
+                            queryStudies();
+                        } else
+                            selected.refreshView(true);
+                    } else
+                        setStatus(new StringResourceModel("folder.message.deleteFailed", StudyListPage.this,null));
+                } catch (Throwable t) {
+                    log.error("moveToTrash failed: ", t);
+                }
+                target.addComponent(msgLabel);
+                target.addComponent(okBtn);
             }
             
             @Override
@@ -757,7 +646,9 @@ public class StudyListPage extends Panel {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 boolean hasIgnored = selected.update(((SecureSession) getSession()).getUseStudyPermissions(), viewport.getPatients(), StudyPermission.UPDATE_ACTION, true);
-                if (hasIgnored) {
+System.out.println("useStudyPermissions: " + useStudyPermissions);
+System.out.println("hasIgnored: " + hasIgnored);
+                if (useStudyPermissions && hasIgnored) {
                     msgWin.setColor("#FF0000");
                     msgWin.setInfoMessage(getString("folder.message.moveNotAllowed"));
                     msgWin.show(target);
@@ -844,54 +735,25 @@ public class StudyListPage extends Panel {
 
             @Override
             public void onConfirmation(AjaxRequestTarget target, final PPSModel ppsModel) {
-                ajaxRunning = ajaxDone = false;
                            
                 this.setStatus(new StringResourceModel("folder.message.unlink.running", StudyListPage.this, null));
                 okBtn.setVisible(false);
-                           
-                msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                   
-                    private static final long serialVersionUID = 1L;
-            
-                    @Override
-                    protected void onTimer(final AjaxRequestTarget target) {
-            
-                        if (!ajaxRunning) {
-                            if (!ajaxDone) {
-                                ajaxRunning = true;
-                                getDelegate();
-                                new Thread(new Runnable() {
-                                    public void run() {
-                                        try {
-                                            if (ContentEditDelegate.getInstance().unlink(ppsModel)) {
-                                                setStatus(new StringResourceModel("folder.message.unlinkDone", StudyListPage.this,null));
-                                                if (selected.hasPatients()) {
-                                                    viewport.getPatients().clear();
-                                                    queryStudies();
-                                                } else
-                                                    selected.refreshView(true);
-                                            } else 
-                                                setStatus(new StringResourceModel("folder.message.unlinkFailed", StudyListPage.this,null));
-                                        } catch (Throwable t) {
-                                            log.error("Unlink of MPPS failed:"+ppsModel, t);
-                                        } finally {
-                                            ajaxRunning = false;
-                                            ajaxDone = true;
-                                        }
-                                    }
-                                }).start();
-                            } else {
-                                okBtn.setVisible(true);
-                                this.stop();        
-                            }
-                        } else {
-                            okBtn.setVisible(false);
-                        }
-                        target.addComponent(msgLabel);
-                        target.addComponent(hourglassImage);
-                        target.addComponent(okBtn);
-                    }
-                });
+
+                try {
+                    if (ContentEditDelegate.getInstance().unlink(ppsModel)) {
+                        setStatus(new StringResourceModel("folder.message.unlinkDone", StudyListPage.this,null));
+                        if (selected.hasPatients()) {
+                            viewport.getPatients().clear();
+                            queryStudies();
+                        } else
+                            selected.refreshView(true);
+                    } else 
+                        setStatus(new StringResourceModel("folder.message.unlinkFailed", StudyListPage.this,null));
+                } catch (Throwable t) {
+                    log.error("Unlink of MPPS failed:"+ppsModel, t);
+                }
+                target.addComponent(msgLabel);
+                target.addComponent(okBtn);
             }
         };
         confirmUnlinkMpps.setInitialHeight(150);
@@ -1967,5 +1829,4 @@ public class StudyListPage extends Panel {
         SecureSession secureSession = ((SecureSession) getSession());
         return (!secureSession.getUseStudyPermissions() || secureSession.isRoot());
     }
-
 }

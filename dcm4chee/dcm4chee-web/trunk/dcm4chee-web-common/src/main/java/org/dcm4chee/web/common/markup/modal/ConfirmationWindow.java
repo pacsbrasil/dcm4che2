@@ -40,16 +40,16 @@ package org.dcm4chee.web.common.markup.modal;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxFallbackLink;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
-import org.dcm4chee.icons.ImageManager;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since Dec 11, 2009
  */
@@ -68,11 +68,11 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     protected boolean hasStatus;
     private boolean showCancel = false;
     
-    protected boolean ajaxRunning = false;
-    protected boolean ajaxDone = false;
+//    protected boolean ajaxRunning = false;
+//    protected boolean ajaxDone = false;
     protected Label msgLabel;
     protected Label remarkLabel;
-    protected Image hourglassImage;
+//    protected Image hourglassImage;
     protected AjaxFallbackLink<Object> okBtn;
 
     public ConfirmationWindow(String id, String titleResource) {
@@ -88,13 +88,17 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
             private static final long serialVersionUID = 1L;
 
             public boolean onCloseButtonClicked(AjaxRequestTarget target) {
-                if (!ajaxRunning) {
-                    msg = null;
-                    close(target);
-                }
-                return !ajaxRunning;
-            }
-        });
+                msg = null;
+                close(target);
+                return true;
+            }});
+//                if (!ajaxRunning) {
+//                    msg = null;
+//                    close(target);
+//                }
+//                return !ajaxRunning;
+//            }
+//        });
     }
 
     public ConfirmationWindow(String id, IModel<?> confirm, IModel<?> decline, IModel<?> cancel) {
@@ -162,18 +166,18 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
         public MessageWindowPanel(String id) {
             super(id);
 
-            add((hourglassImage = new Image("hourglass-image", ImageManager.IMAGE_COMMON_AJAXLOAD) {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public boolean isVisible() {
-                    return ajaxRunning;
-                }
-            })
-            .setOutputMarkupPlaceholderTag(true)
-            .setOutputMarkupId(true)
-            );
+//            add((hourglassImage = new Image("hourglass-image", ImageManager.IMAGE_COMMON_AJAXLOAD) {
+//
+//                private static final long serialVersionUID = 1L;
+//
+//                @Override
+//                public boolean isVisible() {
+//                    return ajaxRunning;
+//                }
+//            })
+//            .setOutputMarkupPlaceholderTag(true)
+//            .setOutputMarkupId(true)
+//            );
 
             add((msgLabel = new Label("msg", new AbstractReadOnlyModel<Object>() {
 
@@ -195,7 +199,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                 }
             })).setOutputMarkupId(true));
 
-            AjaxFallbackLink<Object> confirmBtn = new AjaxFallbackLink<Object>("confirm"){
+            IndicatingAjaxFallbackLink<Object> confirmBtn = new IndicatingAjaxFallbackLink<Object>("confirm"){
 
                 private static final long serialVersionUID = 1L;
 
@@ -209,6 +213,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                         close(target);
                     }
                 }
+                
                 @Override
                 public boolean isVisible() {
                     return !hasStatus;
@@ -266,12 +271,13 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                 
                 @Override
                 public boolean isVisible() {
-                    return ajaxRunning ? false : hasStatus;
+//                    return ajaxRunning ? false : hasStatus;
+                    return hasStatus;
                 }
             });
             okBtn.add(new Label("okLabel", new ResourceModel("okBtn")));
             okBtn
-            .setOutputMarkupId(true)     
+            .setOutputMarkupId(true)
             .setOutputMarkupPlaceholderTag(true);
             this.setOutputMarkupId(true);
         }

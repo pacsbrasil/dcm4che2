@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -65,7 +64,7 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
 
     private static final long serialVersionUID = 1L;
 
-    private List<InstanceModel> instances = Collections.synchronizedList(new ArrayList<InstanceModel>());
+    private List<InstanceModel> instances = new ArrayList<InstanceModel>();
 
     private String sourceAET;
     private String availability;

@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.folder;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.dcm4chee.web.common.util.GroupedChoices;
@@ -63,7 +62,7 @@ public class ViewPort implements Serializable {
 
     private final StudyListFilter filter = new StudyListFilter(GroupedChoices.get(SOURCE_AETS_PROPERTIES_FILENAME).getAllGroups());
 
-    private List<PatientModel> patients = Collections.synchronizedList(new ArrayList<PatientModel>());
+    private List<PatientModel> patients = new ArrayList<PatientModel>();
     
     public ViewPort() {
         clear();
@@ -101,9 +100,5 @@ public class ViewPort implements Serializable {
   
     public List<String> getSourceAetChoices(List<String> availableChoices) {
         return GroupedChoices.get(SOURCE_AETS_PROPERTIES_FILENAME).getChoices(availableChoices);
-    }
-
-    public void clearPatients() {
-        patients = Collections.synchronizedList(new ArrayList<PatientModel>());
     }
 }

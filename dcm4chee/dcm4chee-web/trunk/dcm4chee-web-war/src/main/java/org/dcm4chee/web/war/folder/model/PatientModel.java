@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -65,7 +64,7 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
 
     private static final long serialVersionUID = 1L;
     
-    private List<StudyModel> studies = Collections.synchronizedList(new ArrayList<StudyModel>());
+    private List<StudyModel> studies = new ArrayList<StudyModel>();
     
     private IModel<Boolean> latestStudyFirst;
 

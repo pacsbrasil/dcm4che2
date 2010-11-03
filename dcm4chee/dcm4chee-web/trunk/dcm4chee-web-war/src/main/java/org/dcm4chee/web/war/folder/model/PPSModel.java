@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -63,7 +62,7 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
 
     private static final long serialVersionUID = 1L;
     
-    private List<SeriesModel> seriess = Collections.synchronizedList(new ArrayList<SeriesModel>());
+    private List<SeriesModel> seriess = new ArrayList<SeriesModel>();
     
     private SeriesModel series1;
     private int numberOfInstances;

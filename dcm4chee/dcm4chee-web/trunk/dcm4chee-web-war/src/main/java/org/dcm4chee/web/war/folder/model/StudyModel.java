@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -68,7 +67,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
 
     private static final long serialVersionUID = 1L;
     
-    private List<PPSModel> ppss = Collections.synchronizedList(new ArrayList<PPSModel>());
+    private List<PPSModel> ppss = new ArrayList<PPSModel>();
 
     private String availability;
     private String modalities;

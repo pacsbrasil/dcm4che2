@@ -46,9 +46,9 @@ import java.util.Set;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
-import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
@@ -62,7 +62,6 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.security.components.SecureWebPage;
-import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -249,6 +248,7 @@ public class MoveEntitiesPage extends SecureWebPage {
         }
         return MSGID_ERR_SELECTION_MOVE_NO_SELECTION;
     }
+    
     private DicomObject combine(DicomObject instAttrs, DicomObject seriesAttrs, DicomObject studyAttrs) {
         DicomObject attrs = new BasicDicomObject();
         if (instAttrs != null)
@@ -259,6 +259,7 @@ public class MoveEntitiesPage extends SecureWebPage {
             studyAttrs.copyTo(attrs);
         return attrs;
     }
+    
     private void needNewStudy(DicomObject presetDS, final PatientModel pat) {
         missingState = missingState | MISSING_STUDY;
 // TODO: studyPermissionActions
@@ -442,11 +443,9 @@ public class MoveEntitiesPage extends SecureWebPage {
         private static final long serialVersionUID = 1L;
         
         private Label infoLabel;
-        private AjaxFallbackLink<Object> moveBtn;
-        private AjaxFallbackLink<Object> okBtn;
-        private AjaxFallbackLink<Object> cancelBtn;
-        private boolean ajaxRunning = false;
-        private Image hourglassImage;
+        private IndicatingAjaxFallbackLink<?> moveBtn;
+        private AjaxFallbackLink<?> okBtn;
+        private AjaxFallbackLink<?> cancelBtn;
         
         private IModel<String> infoModel = new AbstractReadOnlyModel<String>() {
             private static final long serialVersionUID = 1L;
@@ -467,16 +466,61 @@ public class MoveEntitiesPage extends SecureWebPage {
             add( new Label("infoTitle", new ResourceModel("move.pageTitle")));
             add( infoLabel = new Label("info", infoModel));
             infoLabel.setOutputMarkupId(true);
-            add((hourglassImage = new Image("hourglass-image", ImageManager.IMAGE_COMMON_AJAXLOAD) {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public boolean isVisible() {
-                    return ajaxRunning;
-                }
-            }).setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true));
             
+            moveBtn = new IndicatingAjaxFallbackLink<Object>("moveBtn") {
+                
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    try {
+                        if (prepareForMove()) {
+                            getPage().setOutputMarkupId(true);
+                            target.addComponent(getPage());
+                            return;
+                        }
+
+                        infoMsgId = "move.message.move.running";
+                        okBtn.setVisible(false);
+                        cancelBtn.setVisible(false);
+                        
+                        try {
+                            int nrOfMovedInstances = ContentEditDelegate.getInstance().moveEntities(selected);
+                            if (nrOfMovedInstances > 0) {
+                                infoMsgId = "move.message.moveDone";
+                            } else if (nrOfMovedInstances == 0) {
+                                infoMsgId = "move.message.moveNothing";
+                            } else {
+                                infoMsgId = "move.message.moveFailed";
+                                cancelBtn.setVisible(true);
+                            }
+                            okBtn.setVisible(true);
+                            moveBtn.setVisible(false);
+                        } catch (SelectionException x) {
+                            log.warn(x.getMessage());
+                            infoMsgId = x.getMsgId();
+                        }
+                    } catch (Throwable t) {
+                        log.error("Can not move selected entities!", t);
+                        infoMsgId = "move.message.moveFailed";
+                    }
+                    addToTarget(target);
+                }
+                
+                @Override
+                public boolean isEnabled() {
+                    return infoMsgId == null;
+                }
+
+            };
+            moveBtn.add(new Image("moveImg",ImageManager.IMAGE_FOLDER_MOVE)
+            .add(new ImageSizeBehaviour("vertical-align: middle;")));
+            moveBtn.add(new TooltipBehaviour("folder.", "moveBtn"));
+            moveBtn.add(new Label("moveText", new ResourceModel("folder.moveBtn.text"))
+                .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
+            );
+            add(moveBtn.setOutputMarkupId(true));
+
             okBtn = new AjaxFallbackLink<Object>("moveFinishedBtn") {
                 
                 private static final long serialVersionUID = 1L;
@@ -518,73 +562,11 @@ public class MoveEntitiesPage extends SecureWebPage {
                 .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle"))));
             okBtn.setVisible(false).setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true);
             add(okBtn);
-            moveBtn = new AjaxFallbackLink<Object>("moveBtn") {
-                
-                private static final long serialVersionUID = 1L;
-                
-                @Override
-                public void onClick(AjaxRequestTarget target) {
-                    try {
-                        if (prepareForMove()) {
-                            getPage().setOutputMarkupId(true);
-                            target.addComponent(getPage());
-                            return;
-                        }
 
-                        infoMsgId = "move.message.move.running";
-                        okBtn.setVisible(false);
-                        cancelBtn.setVisible(false);
-                        ajaxRunning = true;
-                        
-                        infoLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                            
-                            private static final long serialVersionUID = 1L;
-
-                            @Override
-                            protected void onTimer(AjaxRequestTarget target) {
-                                try {
-                                    int nrOfMovedInstances = ContentEditDelegate.getInstance().moveEntities(selected);
-                                    if (nrOfMovedInstances > 0) {
-                                        infoMsgId = "move.message.moveDone";
-                                    } else if (nrOfMovedInstances == 0) {
-                                        infoMsgId = "move.message.moveNothing";
-                                    } else {
-                                        infoMsgId = "move.message.moveFailed";
-                                        cancelBtn.setVisible(true);
-                                    }
-                                    okBtn.setVisible(true);
-                                    moveBtn.setVisible(false);
-                                } catch (SelectionException x) {
-                                    log.warn(x.getMessage());
-                                    infoMsgId = x.getMsgId();
-                                }
-                                //queryStudies();
-                                this.stop();
-                                ajaxRunning = false;
-                                addToTarget(target);
-                            }
-                        });
-                    } catch (Throwable t) {
-                        log.error("Can not move selected entities!", t);
-                        infoMsgId = "move.message.moveFailed";
-                    }
-                    addToTarget(target);
-                }
-                @Override
-                public boolean isEnabled() {
-                    return infoMsgId == null;
-                }
-
-            };
-            moveBtn.add(new Image("moveImg",ImageManager.IMAGE_FOLDER_MOVE)
-            .add(new ImageSizeBehaviour("vertical-align: middle;")));
-            moveBtn.add(new TooltipBehaviour("folder.", "moveBtn"));
-            moveBtn.add(new Label("moveText", new ResourceModel("folder.moveBtn.text"))
-                .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
-            );
-            add(moveBtn.setOutputMarkupId(true));
             cancelBtn = new AjaxFallbackLink<Object>("cancelBtn") {
+                
                 private static final long serialVersionUID = 1L;
+                
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     doCancel();
@@ -658,7 +640,6 @@ public class MoveEntitiesPage extends SecureWebPage {
 
         private void addToTarget(AjaxRequestTarget target) {
             target.addComponent(infoLabel);
-            target.addComponent(hourglassImage);
             target.addComponent(okBtn);
             target.addComponent(moveBtn);
             target.addComponent(cancelBtn);

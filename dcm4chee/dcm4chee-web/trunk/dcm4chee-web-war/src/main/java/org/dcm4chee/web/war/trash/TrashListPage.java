@@ -45,12 +45,11 @@ import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
-import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -71,7 +70,6 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
-import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
@@ -83,7 +81,6 @@ import org.dcm4chee.archive.entity.PrivateStudy;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
-import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.common.markup.BaseForm;
@@ -96,6 +93,7 @@ import org.dcm4chee.web.dao.trash.TrashListFilter;
 import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.service.common.FileImportOrder;
+import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
 import org.dcm4chee.web.war.trash.model.PrivInstanceModel;
@@ -107,6 +105,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since May 10, 2010
  */
@@ -130,10 +129,6 @@ public class TrashListPage extends Panel {
     
     private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
     
-    protected boolean ajaxRunning = false;
-    protected boolean ajaxDone = false;
-    protected Image hourglassImage;
-
     TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
     
     public TrashListPage(final String id) {
@@ -187,7 +182,6 @@ public class TrashListPage extends Panel {
         addQueryFields(filter, form);
         addQueryOptions(form);
         addNavigation(form);
-        addHourglass(form);
         addActions(form);
         
         form.add(header);
@@ -258,57 +252,24 @@ public class TrashListPage extends Panel {
         );
         form.addComponent(resetBtn);
         
-        Button searchBtn = new AjaxButton("searchBtn") {
+        IndicatingAjaxButton searchBtn = new IndicatingAjaxButton("searchBtn") {
             
             private static final long serialVersionUID = 1L;
             
             @Override
-            public void onSubmit(AjaxRequestTarget target, final Form<?> form) {
-                ajaxRunning = ajaxDone = false;
-                
-                target.addComponent(
-                    form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                        
-                        private static final long serialVersionUID = 1L;
-  
-                        @Override
-                        protected void onTimer(final AjaxRequestTarget target) {
-  
-                            if (!ajaxRunning) {
-                                if (!ajaxDone) {
-                                    ajaxRunning = true;
-                                    new Thread(new Runnable() {
-                                        public void run() {
-                                            try {
-                                                viewport.setOffset(0);
-                                                queryStudies();
-                                            } catch (Throwable t) {
-                                                log.error("search failed: ", t);
-                                            } finally {
-                                                ajaxRunning = false;
-                                                ajaxDone = true;
-                                            }
-                                        }
-                                    }).start();
-                                } else { 
-                                    this.stop();
-                                    target.addComponent(form);
-                                }
-                                target.addComponent(hourglassImage);
-                            }
-                        }
-                    })
-                );
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                try {
+                    viewport.setOffset(0);
+                    queryStudies();
+                } catch (Throwable t) {
+                    log.error("search failed: ", t);
+                }
+                target.addComponent(form);
             }
-            
+
             @Override
             public void onError(AjaxRequestTarget target, Form<?> form) {
                 BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
-            }
-            
-            @Override
-            public boolean isEnabled() {
-                return !ajaxRunning;
             }
         };
         searchBtn.setOutputMarkupId(true);
@@ -324,55 +285,25 @@ public class TrashListPage extends Panel {
         form.clearParent();
 
         pagesize.setObject(WebCfgDelegate.getInstance().getDefaultFolderPagesize());
-        form.addDropDownChoice("pagesize", pagesize, WebCfgDelegate.getInstance().getPagesizeList(), new Model<Boolean>() {
-                    
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public Boolean getObject() {
-                return !ajaxRunning;
-            }
-        }, true).setNullValid(false)
-        .add(new AjaxFormSubmitBehavior(form, "onchange") {
+        form.addDropDownChoice("pagesize", pagesize, 
+                WebCfgDelegate.getInstance().getPagesizeList(), 
+                new Model<Boolean>(true), 
+                true)
+        .setNullValid(false)
+        .add(new IndicatingAjaxFormSubmitBehavior(form, "onchange") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             protected void onSubmit(AjaxRequestTarget target) {
-                ajaxRunning = ajaxDone = false;
-
-                target.addComponent(
-                    form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                        
-                        private static final long serialVersionUID = 1L;
-  
-                        @Override
-                        protected void onTimer(final AjaxRequestTarget target) {
-  
-                            if (!ajaxRunning) {
-                                if (!ajaxDone) {
-                                    ajaxRunning = true;
-                                    new Thread(new Runnable() {
-                                        public void run() {
-                                            try {
-                                                queryStudies();
-                                            } catch (Throwable t) {
-                                                log.error("search failed: ", t);
-                                            } finally {
-                                                ajaxRunning = false;
-                                                ajaxDone = true;
-                                            }
-                                        }
-                                    }).start();
-                                } else {
-                                    this.stop();
-                                    target.addComponent(form);
-                                }
-                                target.addComponent(hourglassImage);
-                            }
-                        }
-                    })
-                );
+                if (!WebCfgDelegate.getInstance().isQueryAfterPagesizeChange())
+                    return;
+                try {
+                    queryStudies();
+                } catch (Throwable t) {
+                    log.error("search failed: ", t);
+                }
+                target.addComponent(form);
             }
 
             @Override
@@ -447,39 +378,12 @@ public class TrashListPage extends Panel {
         }));
     }
 
-    private void addHourglass(final BaseForm form) {
-        form.add((hourglassImage = new Image("hourglass-image", ImageManager.IMAGE_COMMON_AJAXLOAD) {
-            private static final long serialVersionUID = 1L;
-    
-            @Override
-            public boolean isVisible() {
-                return ajaxRunning;
-            }
-        })
-        .setOutputMarkupPlaceholderTag(true)
-        .setOutputMarkupId(true)
-        );
-    }
-
     private void addActions(final BaseForm form) {
         
         final ConfirmationWindow<PrivSelectedEntities> confirmRestore = new ConfirmationWindow<PrivSelectedEntities>("confirmRestore") {
 
             private static final long serialVersionUID = 1L;
             
-            private transient StoreBridgeDelegate delegate;
-            
-            private StoreBridgeDelegate getDelegate() {
-                if (delegate == null) {
-                    try {
-                        delegate = StoreBridgeDelegate.getInstance();
-                    } catch (Exception e) {
-                        log.error("Exception fetching delegate:"+e.getMessage(), e);
-                    }
-                }
-                return delegate;
-            }
-
             @Override
             public void onOk(AjaxRequestTarget target) {
                 target.addComponent(form);
@@ -493,72 +397,42 @@ public class TrashListPage extends Panel {
             
             @Override
             public void onConfirmation(AjaxRequestTarget target, final PrivSelectedEntities selected) {
-                ajaxRunning = false;
-                ajaxDone = false;
-                
+
                 this.setStatus(new StringResourceModel("trash.message.restore.running", TrashListPage.this, null));
                 okBtn.setVisible(false);
                 
-                msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                    
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    protected void onTimer(final AjaxRequestTarget target) {
-
-                        if (!ajaxRunning) {
-                            if (!ajaxDone) {
-                                ajaxRunning = true;
-                                getDelegate();
-                                new Thread(new Runnable() {
-                                    public void run() {
-                                        try {
-                                            FileImportOrder fio = new FileImportOrder();
-                                            List<PrivateFile> files = getFilesToRestore();
-                                          
-                                            for (PrivateFile privateFile : files) {
-                                                DicomObject dio = dao.getDicomAttributes(privateFile.getPk());
-                                                File file = new File();
-                                                file.setFilePath(privateFile.getFilePath());
-                                                file.setFileSize(privateFile.getFileSize());
-                                                file.setFileStatus(privateFile.getFileStatus());
-                                                file.setFileSystem(privateFile.getFileSystem());
-                                                file.setMD5Sum(privateFile.getFileMD5());
-                                                file.setTransferSyntaxUID(privateFile.getTransferSyntaxUID());
-                                                Instance instance = new Instance();
-                                                file.setInstance(instance);
-                                                fio.addFile(file, dio);
-                                            }
-                                            delegate.importFile(fio);
-                                            removeRestoredEntries();                            
-
-                                            setStatus(new StringResourceModel("trash.message.restoreDone", TrashListPage.this,null));
-                                            if (selected.hasPatients()) {
-                                                viewport.getPatients().clear();
-                                                queryStudies();
-                                            } else
-                                                selected.refreshView(true);
-                                        } catch (Throwable t) {
-                                            setStatus(new StringResourceModel("trash.message.restoreFailed", TrashListPage.this,null));
-                                            log.error("Exception restoring entry:"+t.getMessage(), t);
-                                        } finally {
-                                            ajaxRunning = false;
-                                            ajaxDone = true;
-                                        }
-                                    }
-                                }).start();
-                            } else {
-                                okBtn.setVisible(true);
-                                this.stop();        
-                            }
-                        } else {
-                            okBtn.setVisible(false);
-                        }
-                        target.addComponent(msgLabel);
-                        target.addComponent(hourglassImage);
-                        target.addComponent(okBtn);
+                try {
+                    FileImportOrder fio = new FileImportOrder();
+                    List<PrivateFile> files = getFilesToRestore();
+                  
+                    for (PrivateFile privateFile : files) {
+                        DicomObject dio = dao.getDicomAttributes(privateFile.getPk());
+                        File file = new File();
+                        file.setFilePath(privateFile.getFilePath());
+                        file.setFileSize(privateFile.getFileSize());
+                        file.setFileStatus(privateFile.getFileStatus());
+                        file.setFileSystem(privateFile.getFileSystem());
+                        file.setMD5Sum(privateFile.getFileMD5());
+                        file.setTransferSyntaxUID(privateFile.getTransferSyntaxUID());
+                        Instance instance = new Instance();
+                        file.setInstance(instance);
+                        fio.addFile(file, dio);
                     }
-                });
+                    StoreBridgeDelegate.getInstance().importFile(fio);
+                    removeRestoredEntries();                            
+
+                    setStatus(new StringResourceModel("trash.message.restoreDone", TrashListPage.this,null));
+                    if (selected.hasPatients()) {
+                        viewport.getPatients().clear();
+                        queryStudies();
+                    } else
+                        selected.refreshView(true);
+                } catch (Throwable t) {
+                    setStatus(new StringResourceModel("trash.message.restoreFailed", TrashListPage.this,null));
+                    log.error("Exception restoring entry:"+t.getMessage(), t);
+                }
+                target.addComponent(msgLabel);
+                target.addComponent(okBtn);
             }
         };
         confirmRestore.setInitialHeight(150);
@@ -604,54 +478,25 @@ public class TrashListPage extends Panel {
 
             @Override
             public void onConfirmation(AjaxRequestTarget target, final PrivSelectedEntities selected) {
-                ajaxRunning = false;
-                ajaxDone = false;
            
                 this.setStatus(new StringResourceModel("trash.message.delete.running", TrashListPage.this, null));
                 okBtn.setVisible(false);
            
-                msgLabel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-               
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    protected void onTimer(final AjaxRequestTarget target) {
-
-                        if (!ajaxRunning) {
-                            if (!ajaxDone) {
-                                ajaxRunning = true;
-                                new Thread(new Runnable() {
-                                    public void run() {
-                                        try {
-                                            if (selected == null ? removeTrashAll() : removeTrashItems(selected)) {
-                                                setStatus(new StringResourceModel("trash.message.deleteDone", TrashListPage.this,null));
-                                                if (selected == null || selected.hasPatients()) {
-                                                    viewport.getPatients().clear();
-                                                    queryStudies();
-                                                } else
-                                                    selected.refreshView(true);
-                                            } else
-                                                setStatus(new StringResourceModel("trash.message.deleteFailed", TrashListPage.this,null));
-                                        } catch (Throwable t) {
-                                            log.error((selected == null ? "removeTrashAll" : "removeTrashItems") + " failed: ", t);
-                                        } finally {
-                                            ajaxRunning = false;
-                                            ajaxDone = true;
-                                        }
-                                    }
-                                }).start();
-                            } else {
-                                okBtn.setVisible(true);
-                                this.stop();        
-                            }
-                        } else {
-                            okBtn.setVisible(false);
-                        }
-                        target.addComponent(msgLabel);
-                        target.addComponent(hourglassImage);
-                        target.addComponent(okBtn);
-                    }
-                });
+                try {
+                    if (selected == null ? removeTrashAll() : removeTrashItems(selected)) {
+                        setStatus(new StringResourceModel("trash.message.deleteDone", TrashListPage.this,null));
+                        if (selected == null || selected.hasPatients()) {
+                            viewport.getPatients().clear();
+                            queryStudies();
+                        } else
+                            selected.refreshView(true);
+                    } else
+                        setStatus(new StringResourceModel("trash.message.deleteFailed", TrashListPage.this,null));
+                } catch (Throwable t) {
+                    log.error((selected == null ? "removeTrashAll" : "removeTrashItems") + " failed: ", t);
+                }
+                target.addComponent(msgLabel);
+                target.addComponent(okBtn);
             }
         };
         confirmDelete.setInitialHeight(150);

@@ -44,9 +44,7 @@ import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
-import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
@@ -70,7 +68,6 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
-import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.common.SPSStatus;
 import org.dcm4chee.archive.entity.MWLItem;
@@ -87,10 +84,11 @@ import org.dcm4chee.web.common.markup.SimpleDateTimeField;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.validators.UIDValidator;
 import org.dcm4chee.web.dao.util.QueryUtil;
-import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
+import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.common.EditDicomObjectPanel;
+import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
 import org.dcm4chee.web.war.worklist.modality.MWLItemListView.MwlActionProvider;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
@@ -100,7 +98,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since 20.04.2010
+ * @since Apr 20, 2010
  */
 public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
@@ -392,7 +390,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 return !ajaxRunning;
             }
         }, true).setNullValid(false)
-        .add(new AjaxFormSubmitBehavior(form, "onchange") {
+        .add(new IndicatingAjaxFormSubmitBehavior(form, "onchange") {
 
             private static final long serialVersionUID = 1L;
 
@@ -400,41 +398,12 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             protected void onSubmit(AjaxRequestTarget target) {
                 if (!WebCfgDelegate.getInstance().isQueryAfterPagesizeChange())
                     return;
-                ajaxRunning = ajaxDone = false;
-
-                target.addComponent(navPanel.get("hourglass-image"));
-                target.addComponent(
-                    listPanel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                        
-                        private static final long serialVersionUID = 1L;
-  
-                        @Override
-                        protected void onTimer(final AjaxRequestTarget target) {
-  
-                            if (!ajaxRunning) {
-                                if (!ajaxDone) {
-                                    ajaxRunning = true;
-                                    new Thread(new Runnable() {
-                                        public void run() {
-                                            try {
-                                                queryMWLItems();
-                                            } catch (Throwable t) {
-                                                log.error("search failed: ", t);
-                                            } finally {
-                                                ajaxRunning = false;
-                                                ajaxDone = true;
-                                            }
-                                        }
-                                    }).start();
-                                } else {
-                                    this.stop();
-                                    addAfterQueryComponents(target);
-                                }
-                                target.addComponent(hourglassImage);
-                            }
-                        }
-                    })
-                );
+                try {
+                    queryMWLItems();
+                } catch (Throwable t) {
+                    log.error("search failed: ", t);
+                }
+                addAfterQueryComponents(target);
             }
 
             @Override
@@ -636,46 +605,19 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         );
     }
 
+    private void doSearch(AjaxRequestTarget target) {
+        try {
+            viewport.setOffset(0);
+            queryMWLItems();
+        } catch (Throwable t) {
+            log.error("search failed: ", t);
+        }
+        addAfterQueryComponents(target);
+    }
+
     private void addAfterQueryComponents(final AjaxRequestTarget target) {
         target.addComponent(pnField);
         target.addComponent(navPanel);
         target.addComponent(listPanel);
-    }
-
-    private void doSearch(AjaxRequestTarget target) {
-        ajaxRunning = ajaxDone = false;
-        target.addComponent(
-            listPanel.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-                
-                private static final long serialVersionUID = 1L;
-  
-                @Override
-                protected void onTimer(final AjaxRequestTarget target) {
-  
-                    if (!ajaxRunning) {
-                        if (!ajaxDone) {
-                            ajaxRunning = true;
-                            new Thread(new Runnable() {
-                                public void run() {
-                                    try {
-                                        viewport.setOffset(0);
-                                        queryMWLItems();
-                                    } catch (Throwable t) {
-                                        log.error("search failed: ", t);
-                                    } finally {
-                                        ajaxRunning = false;
-                                        ajaxDone = true;
-                                    }
-                                }
-                            }).start();
-                        } else {
-                            this.stop();
-                            addAfterQueryComponents(target);
-                        }
-                        target.addComponent(hourglassImage);
-                    }
-                }
-            })
-        );
     }
 }
