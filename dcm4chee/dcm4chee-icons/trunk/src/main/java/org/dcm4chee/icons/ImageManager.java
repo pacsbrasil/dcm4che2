@@ -54,8 +54,6 @@ public class ImageManager {
    
     public static final ResourceReference IMAGE_COMMON_ADD = 
         new ResourceReference(ImageManager.class, "common/add.png");
-    public static final ResourceReference IMAGE_COMMON_AJAXLOAD = 
-        new ResourceReference(ImageManager.class, "common/ajaxload.gif");
     public static final ResourceReference IMAGE_COMMON_BACK = 
         new ResourceReference(ImageManager.class, "common/" + schemeDependentPrefix + "back.png");
     public static final ResourceReference IMAGE_COMMON_COLLAPSE = 
