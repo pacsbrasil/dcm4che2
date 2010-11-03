@@ -190,12 +190,6 @@
       </descriptors>
    </attribute>
 
-   <attribute access="read-write" getMethod="getAuditLoggerName" setMethod="setAuditLoggerName">
-      <description>Used internally. Do not modify.
-      </description>
-      <name>AuditLoggerName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
    <attribute access="read-write" getMethod="getEchoServiceName" setMethod="setEchoServiceName">
       <description>Used internally. Do not modify.
       </description>
