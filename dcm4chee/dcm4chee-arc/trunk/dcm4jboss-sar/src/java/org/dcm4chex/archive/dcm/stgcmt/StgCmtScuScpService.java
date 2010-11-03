@@ -54,12 +54,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import javax.management.InstanceNotFoundException;
 import javax.management.JMException;
+import javax.management.ListenerNotFoundException;
+import javax.management.Notification;
+import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.dcm4che.data.Command;
@@ -85,8 +90,10 @@ import org.dcm4che.net.PDU;
 import org.dcm4che.net.RoleSelection;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4chex.archive.dcm.storescp.StoreScpService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
@@ -117,7 +124,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
     private static final int PCID_STGCMT = 1;
 
     protected ObjectName queryRetrieveScpServiceName;
-
+    private ObjectName storeScpServiceName;
+    
     private String queueName = "StgCmtScuScp";
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
@@ -141,6 +149,10 @@ public class StgCmtScuScpService extends AbstractScpService implements
     private int fetchSize;
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
+    
+    Map<String, String> rqStgCmtOnReceiveFromAETs = new HashMap<String, String>();
+    
+    private NotificationListener seriesStoredListener;
 
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
@@ -173,6 +185,14 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     public final void setScuRetryIntervalls(String s) {
         this.scuRetryIntervalls = new RetryIntervalls(s);
+    }
+
+    public ObjectName getStoreScpServiceName() {
+        return storeScpServiceName;
+    }
+
+    public void setStoreScpServiceName(ObjectName storeScpServiceName) {
+        this.storeScpServiceName = storeScpServiceName;
     }
 
     public final String getScpRetryIntervalls() {
@@ -272,6 +292,55 @@ public class StgCmtScuScpService extends AbstractScpService implements
     public void setFetchSize(int fetchSize) {
         this.fetchSize = fetchSize;
     }
+    
+    public String getRqStgCmtOnReceiveFromAETs() {
+        if (rqStgCmtOnReceiveFromAETs.isEmpty())
+            return NONE;
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> entry : rqStgCmtOnReceiveFromAETs.entrySet()) {
+            sb.append(entry.getKey());
+            if (!entry.getKey().equals(entry.getValue()))
+                sb.append('=').append(entry.getValue()).append('\n');
+        }
+        return sb.toString();
+    }
+    public void setRqStgCmtOnReceiveFromAETs(String s) throws InstanceNotFoundException, ListenerNotFoundException {
+        rqStgCmtOnReceiveFromAETs.clear();
+        if (!NONE.equals(s)) {
+            StringTokenizer st = new StringTokenizer(s, ";\n\r\t");
+            String tk = null;
+            int pos;
+            while (st.hasMoreTokens()) {
+                tk = st.nextToken();
+                pos = tk.indexOf('=');
+                if (pos == -1) {
+                    rqStgCmtOnReceiveFromAETs.put(tk, tk);
+                } else {
+                    rqStgCmtOnReceiveFromAETs.put(tk.substring(0, pos), tk.substring(++pos));
+                }
+            }
+        }
+        updateSeriesStoredListener();
+    }
+    
+    private void updateSeriesStoredListener() throws InstanceNotFoundException, ListenerNotFoundException {
+        if (server != null) {
+            if (rqStgCmtOnReceiveFromAETs.isEmpty()) {
+                if (seriesStoredListener != null) {
+                    server.removeNotificationListener(storeScpServiceName, seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
+                    seriesStoredListener = null;
+                }
+            } else if (seriesStoredListener == null){
+                seriesStoredListener = new NotificationListener() {
+                    public void handleNotification(Notification notif, Object handback) {
+                        onSeriesStored((SeriesStored) notif.getUserData());
+                    }
+                };
+                server.addNotificationListener(storeScpServiceName, seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
+            }
+        }
+    }
+    
 
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.StorageCommitmentPushModel, stgCmtScuScp);
@@ -314,9 +383,11 @@ public class StgCmtScuScpService extends AbstractScpService implements
     protected void startService() throws Exception {
         super.startService();
         jmsDelegate.startListening(queueName, this, concurrency);
+        updateSeriesStoredListener();
     }
 
     protected void stopService() throws Exception {
+        updateSeriesStoredListener();
         jmsDelegate.stopListening(queueName);
         super.stopService();
     }
@@ -603,6 +674,28 @@ public class StgCmtScuScpService extends AbstractScpService implements
                     storage.remove();
                 } catch (Exception ignore) {
                 }
+        }
+    }
+    
+    private void onSeriesStored(SeriesStored stored) {
+        log.info("##### handle SeriesStored:"+stored);
+        String aet = rqStgCmtOnReceiveFromAETs.get(stored.getSourceAET());
+        if (aet != null) {
+            Dataset actionInfo = stored.getIAN().get(Tags.RefSeriesSeq).getItem();
+            String callingAet;
+            int pos = aet.indexOf(':'); 
+            if (pos == -1) {
+                callingAet = this.calledAETs[0];
+            } else {
+                callingAet = aet.substring(0, pos);
+                aet = aet.substring(++pos);
+            }
+            try {
+                log.info("Queue StgCmt Order! calling:"+callingAet+" called:"+aet);
+                this.queueStgCmtOrder(callingAet, aet, actionInfo, false);
+            } catch (Exception x) {
+                log.error("Failed to queue StorageCommit Order! calledAet:"+aet,x);log.debug(actionInfo);
+            }
         }
     }
 }

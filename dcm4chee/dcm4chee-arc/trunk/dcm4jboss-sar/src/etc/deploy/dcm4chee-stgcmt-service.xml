@@ -29,6 +29,8 @@
       >dcm4chee.archive:service=TLSConfig</depends>
     <depends optional-attribute-name="JMSServiceName"
       >dcm4chee.archive:service=JMS</depends>
+    <depends optional-attribute-name="StoreScpServiceName"
+      >dcm4chee.archive:service=StoreScp</depends>
     <depends>dcm4chee.archive:service=Queue,name=StgCmtScuScp</depends>
   </mbean>
 </server>

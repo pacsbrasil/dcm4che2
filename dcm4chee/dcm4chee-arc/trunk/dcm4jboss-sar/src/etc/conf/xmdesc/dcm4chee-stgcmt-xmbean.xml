@@ -138,6 +138,24 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getRqStgCmtOnReceiveFromAETs"
+      setMethod="setRqStgCmtOnReceiveFromAETs">
+      <description><![CDATA[
+        List of AET's for which a Storage Commit should be requested when objects are received from there.<br/>
+        Format: 
+        &lt;AET&gt;[=[&lt;callingAET&gt;:]&lt;calledAET&gt;<br/>
+        AET        : The callingAET of C-STORE that should trigger a StgCmt request.<br/>
+        callingAET : Calling AET of StgCmt request (default: first entry of this CalledAETs attribute) <br/>
+        calledAET  : Called AET of StgCmt request (default: &lt;AET&gt;)
+        ]]>
+      </description>
+      <name>RequestStgCmtOnReceiveFromAETs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getMaxPDULength"
       setMethod="setMaxPDULength">
       <description>Maximum protocol data unit (PDU) package length for receiving PDUs.
@@ -282,6 +300,14 @@
       <description>Used internally. Do NOT modify.
       </description>
       <name>QueryRetrieveScpServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getStoreScpServiceName"
+      setMethod="setStoreScpServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>StoreScpServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
    <attribute access="read-write"
