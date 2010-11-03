@@ -41,8 +41,11 @@ package org.dcm4chex.archive.hl7;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -59,7 +62,12 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -70,6 +78,7 @@ import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
+import org.dcm4che.util.DTFormat;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScuService;
@@ -80,9 +89,13 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.DocumentSource;
 import org.dom4j.io.SAXContentHandler;
+import org.jboss.system.server.ServerConfigLocator;
 import org.regenstrief.xhl7.HL7XMLReader;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -94,12 +107,13 @@ public class PrefetchService extends AbstractScuService implements
 
     private static final String ONLINE = "ONLINE";
     private static final String NONE = "NONE";
-
+    
     private MessageTypeMatcher[] prefetchMessageTypes;
     private String prefetchSourceAET;
     private String destinationQueryAET;
     private String destinationStorageAET;
     private String xslPath;
+    private String postSelectXslPath;
     private ObjectName hl7ServerName;
     private ObjectName moveScuServiceName;
     private String queueName;
@@ -107,12 +121,15 @@ public class PrefetchService extends AbstractScuService implements
     private int sourceQueryPriority = 0;
     private int destinationQueryPriority = 0;
     private int retrievePriority = 0;
+    private boolean onlyKnownSeries;
+    private boolean logPostSelectXML;
     
     private int concurrency = 1;
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
     private TemplatesDelegate templates = new TemplatesDelegate(this);
-    
+    public static final SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
+
     public String getPrefetchMessageTypes() {
         if (prefetchMessageTypes == null || prefetchMessageTypes.length == 0) {
             return NONE;
@@ -196,6 +213,28 @@ public class PrefetchService extends AbstractScuService implements
         this.xslPath = path;
     }
     
+    public boolean isOnlyKnownSeries() {
+        return onlyKnownSeries;
+    }
+    public void setOnlyKnownSeries(boolean b) {
+        onlyKnownSeries = b;
+    }
+
+    public final String getPostSelectStylesheet() {
+        return postSelectXslPath == null ? NONE : postSelectXslPath;
+    }
+
+    public void setPostSelectStylesheet(String path) {
+        postSelectXslPath = NONE.equals(path) ? null : path;
+    }
+
+    public boolean isLogPostSelectXML() {
+        return logPostSelectXML;
+    }
+    public void setLogPostSelectXML(boolean b) {
+        logPostSelectXML = b;
+    }
+    
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
     }
@@ -275,8 +314,8 @@ public class PrefetchService extends AbstractScuService implements
     }
     
     public void handleNotification(Notification notif, Object handback) {
-        Object[] hl7msg = (Object[]) notif.getUserData();
-        Document hl7doc = (Document) hl7msg[1];
+        Object[] data = (Object[]) notif.getUserData();
+        Document hl7doc = (Document) data[1];
         if (matchPrefetchMessageTypes(hl7doc)) {
             Dataset findRQ = DcmObjectFactory.getInstance().newDataset();
             try {
@@ -292,7 +331,7 @@ public class PrefetchService extends AbstractScuService implements
                 return;
             }
             prepareFindReqDS(findRQ);
-            PrefetchOrder order = new PrefetchOrder(findRQ);
+            PrefetchOrder order = new PrefetchOrder(findRQ, hl7doc);
             try {
                 log.info("Scheduling " + order);
                 jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
@@ -351,17 +390,85 @@ public class PrefetchService extends AbstractScuService implements
     private void process(PrefetchOrder order) throws Exception {
         Dataset keys = order.getDataset();
         log.debug("SearchDS from order:");log.debug(keys);
-        Map srcList = doCFIND(prefetchSourceAET, keys, sourceQueryPriority);
-        Map destList = doCFIND(destinationQueryAET, keys, destinationQueryPriority);
-        List notAvail = this.getListOfNotAvail(srcList, destList);
+        Map<String, Dataset> srcList = doCFIND(prefetchSourceAET, keys, sourceQueryPriority);
+        Map<String, Dataset> destList = doCFIND(destinationQueryAET, keys, destinationQueryPriority);
+        List<Dataset> notAvail = this.getListOfNotAvail(srcList, destList);
         if (notAvail.size() > 0 ) {
             log.debug("notAvail:"+notAvail);
-            log.info(notAvail.size()+" Series are not available on destination AE! Schedule for Pre-Fetch");
-            for ( Iterator iter = notAvail.iterator() ; iter.hasNext() ; ) {
-                scheduleMove( prefetchSourceAET, destinationStorageAET, retrievePriority, 
-                        (Dataset) iter.next(), 0l);
+            if ( postSelectXslPath == null || !postSelect(notAvail, order, srcList) ) {
+                log.info(notAvail.size()+" Series are not available on destination AE! Schedule for Pre-Fetch");
+                for ( Iterator<Dataset> iter = notAvail.iterator() ; iter.hasNext() ; ) {
+                    scheduleMove( prefetchSourceAET, destinationStorageAET, retrievePriority, iter.next(), 0l);
+                }
             }
         }
+    }
+
+    private boolean postSelect(final List<Dataset> notAvail, final PrefetchOrder order, final Map<String, Dataset> srcList) {
+        try {
+            Document doc = order.getHL7Document();
+            if (logPostSelectXML) {
+                File logFile = new File(ServerConfigLocator.locate().getServerLogDir(), 
+                        "postselect/"+new DTFormat().format(new Date())+".xml");
+                logFile.getParentFile().mkdirs();
+                TransformerHandler thLog = tf.newTransformerHandler();
+                thLog.setResult(new StreamResult(new FileOutputStream(logFile)));
+                transformPostSelect(notAvail, thLog, doc);
+                log.info("postselect XML logged in "+logFile);
+            }            
+            File xslFile = FileUtils.toExistingFile(postSelectXslPath);
+            ContentHandler ch = new DefaultHandler() {
+                public void startElement (String uri, String localName,
+                                          String qName, Attributes attr) {
+                    if ("schedule".equals(qName)) {
+                        String seriesIUID = attr.getValue("seriesIUID");
+                        if (seriesIUID == null)
+                            throw new IllegalArgumentException("Missing seriesIUID attribute in schedule tag!");
+                        Dataset ds = srcList.get(seriesIUID);
+                        if (ds == null) {
+                            log.warn("Series IUID of schedule tag is not known on source! Ignored.");
+                        } else {
+                            String dt = attr.getValue("scheduleAt");
+                            long l;
+                            try {
+                                l = dt == null ? 0l : new DTFormat().parse(dt).getTime();
+                            } catch (ParseException x) {
+                                log.error("Attribute 'scheduleAt' is not in DateTime format (yyyyMMddHHmmss.SSS )!", x);
+                                l = 0l;
+                            }
+                            log.info("Schedule post selected series:"+seriesIUID+" at "+dt+" reason:"+attr.getValue("reason"));
+                            scheduleMove( prefetchSourceAET, destinationStorageAET, retrievePriority, ds, l);
+                        }                        
+                    }
+                }
+            };
+            TransformerHandler th = tf.newTransformerHandler(templates.getTemplates(xslFile));
+            th.setResult(new SAXResult(ch));
+            transformPostSelect(notAvail, th, doc);
+            return true;
+        } catch (Exception x) {
+            log.error("PostSelect of C-FIND results failed! Schedule prefetch C-MOVE requests without post selection!", x);
+            return false;
+        }
+    }
+
+    private void transformPostSelect(final List<Dataset> notAvail,
+            ContentHandler handler, Document hl7Doc) throws SAXException,
+            IOException, TransformerFactoryConfigurationError,
+            TransformerException {
+        ContentHandlerAdapter cha = new ContentHandlerAdapter(handler);
+        cha.forcedStartDocument();
+        cha.startElement("prefetch");
+        if (hl7Doc != null) {
+            DocumentSource src = new DocumentSource(hl7Doc);
+            Transformer trans = TransformerFactory.newInstance().newTransformer();
+            trans.transform(src, new SAXResult(cha));
+        } 
+        for ( Iterator<Dataset> iter = notAvail.iterator() ; iter.hasNext() ; ) {
+            iter.next().writeDataset2(cha, null, null, 64, null);
+        }
+        cha.endElement("prefetch");
+        cha.forcedEndDocument();
     }
 
     /**
@@ -380,12 +487,13 @@ public class PrefetchService extends AbstractScuService implements
         keys.putCS(Tags.InstanceAvailability);
     }
     
-    private Map doCFIND(String calledAET, Dataset keys, int priority )
+    @SuppressWarnings("unchecked")
+    private Map<String, Dataset> doCFIND(String calledAET, Dataset keys, int priority )
             throws Exception {
         ActiveAssociation assoc = openAssociation(calledAET,
                 UIDs.StudyRootQueryRetrieveInformationModelFIND);
         try {
-            Map result = new HashMap();
+            Map<String, Dataset> result = new HashMap<String, Dataset>();
             // send cfind request.
             Command cmd = DcmObjectFactory.getInstance().newCommand();
             cmd.initCFindRQ(1, UIDs.StudyRootQueryRetrieveInformationModelFIND,
@@ -394,11 +502,11 @@ public class PrefetchService extends AbstractScuService implements
                     keys);
             FutureRSP findRsp = assoc.invoke(mcRQ);
             Dimse dimse = findRsp.get();
-            List pending = findRsp.listPending();
-            Iterator iter = pending.iterator();
+            List<Dimse> pending = (List<Dimse>) findRsp.listPending();
+            Iterator<Dimse> iter = pending.iterator();
             Dataset ds;
             while (iter.hasNext()) {
-                ds = ((Dimse) iter.next()).getDataset();
+                ds = iter.next().getDataset();
                 result.put(ds.getString(Tags.SeriesInstanceUID), ds);
                 log.debug(calledAET+": received Dataset:");log.debug(ds);
             }
@@ -419,22 +527,28 @@ public class PrefetchService extends AbstractScuService implements
         }
     }
         
-    private List getListOfNotAvail(Map all, Map map ) {
-        ArrayList l = new ArrayList();
+    private List<Dataset> getListOfNotAvail(Map<String, Dataset> srcList, Map<String, Dataset> destList ) {
+        ArrayList<Dataset> l = new ArrayList<Dataset>();
         Dataset ds, dsAll;
-        Entry entry;
+        Entry<String, Dataset> entry;
         String seriesIUID;
         StringBuffer sb = new StringBuffer();
-        for ( Iterator iter = all.entrySet().iterator() ; iter.hasNext() ; ) {
-            entry = (Entry) iter.next();
-            seriesIUID = (String) entry.getKey();
-            dsAll = (Dataset) entry.getValue();
-            ds = (Dataset) map.get(seriesIUID);
+        ArrayList<String> destStudies = null;
+        for ( Iterator<Entry<String, Dataset>> iter = srcList.entrySet().iterator() ; iter.hasNext() ; ) {
+            entry = iter.next();
+            seriesIUID = entry.getKey();
+            dsAll = entry.getValue();
+            ds = destList.get(seriesIUID);
             sb.setLength(0);
             sb.append("Series ").append(seriesIUID).append(": ");
             if ( ds == null ) {
-                log.debug(sb.append("Only known on source AE"));
-                l.add( dsAll ); 
+                if (onlyKnownSeries) {
+                    sb.append(" - Ignored! Must be known on destination!");
+                } else {
+                    sb.append("Only known on source AE");
+                    l.add( dsAll );
+                }
+                log.debug(sb);
             } else if ( ! ONLINE.equals( ds.getString(Tags.InstanceAvailability)) ) {
                 log.debug(sb.append("Instances are not available (ONLINE) on destination AE!"));
                 l.add( dsAll ); 
@@ -491,7 +605,7 @@ public class PrefetchService extends AbstractScuService implements
             return;
         }
         this.prepareFindReqDS(findRQ);
-        PrefetchOrder order = new PrefetchOrder(findRQ);
+        PrefetchOrder order = new PrefetchOrder(findRQ, doc);
         try {
             log.info("Scheduling Test PrefetchOrder:" + order);
             jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY, 0L);
@@ -499,6 +613,5 @@ public class PrefetchService extends AbstractScuService implements
             log.error("Failed to schedule Test Order" + order, e);
         }            
      }
-    
     
 }

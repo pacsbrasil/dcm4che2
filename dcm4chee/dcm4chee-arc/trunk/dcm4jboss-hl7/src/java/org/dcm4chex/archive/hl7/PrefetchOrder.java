@@ -43,6 +43,7 @@ import java.io.Serializable;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.BaseJmsOrder;
+import org.dom4j.Document;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -53,14 +54,20 @@ public class PrefetchOrder extends BaseJmsOrder implements Serializable {
     
     private static final long serialVersionUID = -2393931515395601697L;
 
+    private final Document hl7doc;
     private final Dataset ds;
 
-    public PrefetchOrder(Dataset ds) {
+    public PrefetchOrder(Dataset ds, Document hl7doc) {
         this.ds = ds;
+        this.hl7doc = hl7doc;
     }
     
     public final Dataset getDataset() {
         return ds;
+    }
+
+    public Document getHL7Document() {
+        return hl7doc;
     }
 
     public String getOrderDetails() {

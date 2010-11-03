@@ -6,8 +6,11 @@
 <mbean>
    <description><![CDATA[The <b>Prefetch Service</b> prefetches no longer
      ONLINE available studies from an external archive or attached NEARLINE
-     storage on receive of a HL7 Order Message (ORM^O01) for the patient.]]>
-   </description>
+     storage on receive of a HL7 Order Message (ORM^O01) for the patient.<br/>
+     Therefore <code>Stylesheet</code> is used to create a C-FIND Request from the received HL7 message 
+     which is sent to source and destination AET. The results are used to get a list of series that are available on source but not on destination.<br />
+     The <code>PostSelectStylesheet</code> can be used for further, more detailed selection and/or to specify the schedule time of the C-MOVE request.
+      ]]></description>
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
@@ -32,6 +35,50 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="conf/dcm4chee-hl7/hl72prefetch.xsl" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isOnlyKnownSeries"
+      setMethod="setOnlyKnownSeries">
+      <description><![CDATA[Prefetch only series that are already known on destination?]]>
+      </description>
+      <name>OnlyKnownSeries</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getPostSelectStylesheet"
+      setMethod="setPostSelectStylesheet">
+      <description><![CDATA[Stylesheet for post selection of C-FIND responses.<br/>
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.<br/>
+      Use NONE to disable post selection (use the 'notAvailable' list gathered from C-FIND responses instead)<br/>
+      This stylesheet should create a 'schedule' tag for each series that should be prefetched:
+      &lt;schedule seriesIUID='...' [scheduleAt='yyyyMMddHHmmss.SSS'] [reason='some reason'] /&gt;<br/>
+      The 'input' xml format:<br/><code>
+      &lt;prefetch&gt;<br/>
+      &nbsp;&lt;hl7&gt; ... &lt;hl7&gt;<br/>
+      &nbsp;&lt;dataset&gt; ... &lt;dataset&gt;<br/>
+      &nbsp;...<br/>
+      &lt;/prefetch&gt;</code>
+      ]]></description>
+      <name>PostSelectStylesheet</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isLogPostSelectXML"
+      setMethod="setLogPostSelectXML">
+      <description><![CDATA[Log XML data for post selection as file. (in &lt;log_dir&gt;/postselect)]]>
+      </description>
+      <name>LogPostSelectXML</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
