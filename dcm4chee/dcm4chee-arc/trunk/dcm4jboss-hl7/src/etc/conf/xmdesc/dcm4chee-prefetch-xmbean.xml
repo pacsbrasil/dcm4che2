@@ -292,6 +292,20 @@ particular message field can be specified as additional condition.
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getPrefetchAuditEventID"
+      setMethod="setPrefetchAuditEventID">
+      <description><![CDATA[EventID of 'Prefetch Schedule' audit message or NONE to disable audit log.<br/>
+      		Format: &lt;code&gt;^&lt;code system&gt;^&lt;display name&gt; <br />
+      		Note: Neither DICOM Supplement 95 nor IHE defines a applicable audit message for such an event.
+      		Therefore we use a RFC 3881 compliant audit message with this EventID. e.g. prefetch^dcm4chee^Schedule Series Prefetch
+       ]]></description>
+      <name>PrefetchScheduleAuditEventID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getQueueName"
       setMethod="setQueueName">
       <description>Used internally - do NOT modify.

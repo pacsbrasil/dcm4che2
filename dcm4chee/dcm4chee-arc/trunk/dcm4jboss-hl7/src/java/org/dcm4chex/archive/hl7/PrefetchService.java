@@ -69,9 +69,11 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.ActiveAssociation;
@@ -79,9 +81,15 @@ import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
 import org.dcm4che.util.DTFormat;
+import org.dcm4che2.audit.message.ActiveParticipant;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.ParticipantObject;
+import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScuService;
+import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.FileUtils;
@@ -123,6 +131,7 @@ public class PrefetchService extends AbstractScuService implements
     private int retrievePriority = 0;
     private boolean onlyKnownSeries;
     private boolean logPostSelectXML;
+    private AuditEvent.ID prefetchAuditEventID;
     
     private int concurrency = 1;
 
@@ -233,6 +242,23 @@ public class PrefetchService extends AbstractScuService implements
     }
     public void setLogPostSelectXML(boolean b) {
         logPostSelectXML = b;
+    }
+    
+    public String getPrefetchAuditEventID() {
+        return prefetchAuditEventID == null ? NONE : 
+            prefetchAuditEventID.getCode()+"^"+prefetchAuditEventID.getCodeSystemName()+
+            "^"+prefetchAuditEventID.getDisplayName();
+    }
+
+    public void setPrefetchAuditEventID(String code) {
+        if (NONE.equals(code)) {
+            prefetchAuditEventID = null;
+        } else {
+            StringTokenizer st = new StringTokenizer(code, "^");
+            if (st.countTokens() != 3)
+                throw new IllegalArgumentException("EventID must be <code>^<code system>^<display name>! " + code);
+            prefetchAuditEventID = new AuditEvent.ID(st.nextToken(), st.nextToken(), st.nextToken());
+        }
     }
     
     public final ObjectName getJmsServiceName() {
@@ -533,7 +559,6 @@ public class PrefetchService extends AbstractScuService implements
         Entry<String, Dataset> entry;
         String seriesIUID;
         StringBuffer sb = new StringBuffer();
-        ArrayList<String> destStudies = null;
         for ( Iterator<Entry<String, Dataset>> iter = srcList.entrySet().iterator() ; iter.hasNext() ; ) {
             entry = iter.next();
             seriesIUID = entry.getKey();
@@ -571,6 +596,7 @@ public class PrefetchService extends AbstractScuService implements
  
     private void scheduleMove(String retrieveAET, String destAET, int priority,
             Dataset ds, long scheduledTime) {
+        boolean success = false;
         try {
             server.invoke(moveScuServiceName, "scheduleMove", new Object[] {
                     retrieveAET, destAET, new Integer(priority), ds.getString(Tags.PatientID),
@@ -581,12 +607,43 @@ public class PrefetchService extends AbstractScuService implements
                             String.class.getName(), String.class.getName(),
                             String.class.getName(), String[].class.getName(),
                             long.class.getName() });
+            success = true;
         } catch (Exception e) {
             log.error("Schedule Move failed:", e);
+        }
+        if (prefetchAuditEventID != null) {
+            logPrefetchSchedule(retrieveAET, destAET, ds, scheduledTime, success);
         }
     }
     
     
+    private void logPrefetchSchedule(String retrieveAET, String destAET,
+            Dataset ds, long scheduledTime, boolean success) {
+        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
+                .isEnableDNSLookups());
+        try {
+            SchedulePrefetchMessage msg = new SchedulePrefetchMessage(prefetchAuditEventID);
+            msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
+                AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+            msg.addActiveParticipant(ActiveParticipant.createActivePerson(userInfo.getUserId(), null, null, userInfo
+                    .getHostName(), true));
+            PersonName pn = ds.getPersonName(Tags.PatientName);
+            String pname = pn != null ? pn.format() : null;
+            msg.addParticipantObject(ParticipantObject.createPatient(ds.getString(Tags.PatientID), pname));
+            ParticipantObjectDescription descr = new ParticipantObjectDescription();
+            ParticipantObject study = msg.addParticipantObject(
+                    ParticipantObject.createStudy(ds.getString(Tags.StudyInstanceUID), descr));
+            String scheduledAt = scheduledTime == 0 ? "NOW" : new Date(scheduledTime).toString();
+            study.addParticipantObjectDetail("Description", "Prefetching series "+
+                    ds.getString(Tags.SeriesInstanceUID)+" from "+retrieveAET+" to "+destAET+
+                    " scheduled at "+scheduledAt);
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch (Exception x) {
+            log.warn("Audit Log 'Prefetch Schedule' failed:", x);
+        }
+    }
+
     public void processFile(String filename) throws DocumentException, IOException, SAXException {
         Dataset findRQ = DcmObjectFactory.getInstance().newDataset();
         HL7XMLReader reader = new HL7XMLReader();
@@ -614,4 +671,10 @@ public class PrefetchService extends AbstractScuService implements
         }            
      }
     
+    
+    class SchedulePrefetchMessage extends AuditMessage {
+        public SchedulePrefetchMessage(AuditEvent.ID eventID) {
+            super(new AuditEvent(eventID, AuditEvent.ActionCode.EXECUTE));
+        }
+    }
 }
