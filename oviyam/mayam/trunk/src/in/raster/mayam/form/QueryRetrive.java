@@ -43,6 +43,7 @@ import in.raster.mayam.delegate.DicomServerDelegate;
 import in.raster.mayam.delegate.EchoService;
 import in.raster.mayam.delegate.QueryService;
 import in.raster.mayam.delegate.MoveDelegate;
+import in.raster.mayam.delegate.WadoRetrieveDelegate;
 import in.raster.mayam.form.dialog.EchoStatus;
 import in.raster.mayam.form.dialog.StudyAvailabilityStatus;
 import in.raster.mayam.form.display.Display;
@@ -71,7 +72,6 @@ import javax.swing.event.ListSelectionEvent;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.util.DcmURL;
 import in.raster.mayam.model.table.renderer.CellRenderer;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableModel;
@@ -682,10 +682,20 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
                             "dicom" + "://" + dicomServerArray.get(i).getAe().getAeTitle() + "@" + dicomServerArray.get(i).getAe().getHostName() + ":" + dicomServerArray.get(i).getAe().getPort(),
                             "--dest", s[0], "--pid", dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), "--suid",
                             dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8)};
+                       
                         try {
                             if (!ApplicationContext.databaseRef.checkRecordExists("study", "StudyInstanceUID", dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8))) {
                                 MainScreen.sndRcvFrm.setVisible(true);
-                                MoveDelegate moveDelegate = new MoveDelegate(tem);
+                                MoveDelegate moveDelegate=null;
+                                if(dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("C-MOVE"))
+                                {                                    
+                                moveDelegate = new MoveDelegate(tem);
+                                }                                
+                                else if(dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("WADO"))
+                                {
+                                    WadoRetrieveDelegate wadoRetrieveDelegate=new WadoRetrieveDelegate();
+                                    wadoRetrieveDelegate.retrieveStudy(serverName, dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8));
+                                }
                             } else {
                                 MainScreen.sndRcvFrm.setVisible(true);
                             }
@@ -752,6 +762,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
     }
     private void studyListTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studyListTableMouseClicked
         String serverName = ((ServerTableModel) serverListTable.getModel()).getValueAt(serverListTable.getSelectedRow(), 0);
+        String[] s = ApplicationContext.databaseRef.getListenerDetails();
         if (evt.getClickCount() == 2) {
             if (dicomServerArray != null) {
                 for (int i = 0; i < dicomServerArray.size(); i++) {
@@ -759,7 +770,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
 
                         String tem[] = new String[]{
                             "dicom" + "://" + dicomServerArray.get(i).getAe().getAeTitle() + "@" + dicomServerArray.get(i).getAe().getHostName() + ":" + dicomServerArray.get(i).getAe().getPort(),
-                            "--dest", "MAYAM", "--pid", dicomServerArray.get(i).getStudyListModel().getValueAt(studyListTable.getSelectedRow(), 0), "--suid",
+                            "--dest", s[0], "--pid", dicomServerArray.get(i).getStudyListModel().getValueAt(studyListTable.getSelectedRow(), 0), "--suid",
                             dicomServerArray.get(i).getStudyListModel().getValueAt(studyListTable.getSelectedRow(), 8)};
                         try {
                             if (ApplicationContext.databaseRef.checkRecordExists("study", "StudyInstanceUID", dicomServerArray.get(i).getStudyListModel().getValueAt(studyListTable.getSelectedRow(), 8))) {

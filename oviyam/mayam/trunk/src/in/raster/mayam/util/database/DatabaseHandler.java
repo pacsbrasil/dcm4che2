@@ -356,7 +356,7 @@ public class DatabaseHandler {
             sql = "create table " + instanceTable + " (SopUID varchar(255) NOT NULL CONSTRAINT SopUID_pk PRIMARY KEY ," + "InstanceNo integer," + "multiframe varchar(50)," + "totalframe varchar(50)," + "SendStatus varchar(50)," + "ForwardDateTime varchar(30)," + "ReceivedDateTime varchar(30)," + "ReceiveStatus varchar(50)," + "FileStoreUrl varchar(750)," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255), foreign key (StudyInstanceUID) references Study(StudyInstanceUID)," + "SeriesInstanceUID varchar(255), foreign key (SeriesInstanceUID) references Series(SeriesInstanceUID))";
             statement.executeUpdate(sql);
 
-            sql = "create table ae(pk integer primary key GENERATED ALWAYS AS IDENTITY,logicalname varchar(255),hostname varchar(255),aetitle varchar(255),port integer)";
+            sql = "create table ae(pk integer primary key GENERATED ALWAYS AS IDENTITY,logicalname varchar(255),hostname varchar(255),aetitle varchar(255),port integer,retrievetype varchar(100),wadocontext varchar(100),wadoport integer,wadoprotocol varchar(100),retrievets varchar(255))";
             statement.executeUpdate(sql);
 
             sql = "create table modality(pk integer primary key GENERATED ALWAYS AS IDENTITY,logicalname varchar(255),shortname varchar(255))";
@@ -666,7 +666,7 @@ public class DatabaseHandler {
 
     public void updateServerListValues(ServerModel serverModel) {
         try {
-            int n = conn.createStatement().executeUpdate("update ae set logicalname='" + serverModel.getServerName() + "',hostname='" + serverModel.getHostName() + "',aetitle='" + serverModel.getAeTitle() + "',port=" + serverModel.getPort() + " where pk=" + serverModel.getPk());
+            int n = conn.createStatement().executeUpdate("update ae set logicalname='" + serverModel.getServerName() + "',hostname='" + serverModel.getHostName() + "',aetitle='" + serverModel.getAeTitle() + "',port=" + serverModel.getPort()+",retrievetype='"+serverModel.getRetrieveType() + "',wadocontext='"+serverModel.getWadoContextPath()+"',wadoport="+serverModel.getWadoPort()+",wadoprotocol='"+serverModel.getWadoProtocol()+"',retrievets='"+serverModel.getRetrieveTransferSyntax()+"' where pk=" + serverModel.getPk());
             conn.commit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -685,7 +685,7 @@ public class DatabaseHandler {
 
     public void insertServer(ServerModel serverModel) {
         try {
-            boolean insertStatus = conn.createStatement().execute("insert into" + " ae(logicalname,hostname,aetitle,port) values('" + serverModel.getServerName() + "','" + serverModel.getHostName() + "','" + serverModel.getAeTitle() + "'," + serverModel.getPort() + ")");
+            boolean insertStatus = conn.createStatement().execute("insert into" + " ae(logicalname,hostname,aetitle,port,retrievetype,wadocontext,wadoport,wadoprotocol,retrievets) values('" + serverModel.getServerName() + "','" + serverModel.getHostName() + "','" + serverModel.getAeTitle() + "'," + serverModel.getPort() +",'"+serverModel.getRetrieveType()+ "','"+serverModel.getWadoContextPath()+"',"+serverModel.getWadoPort()+",'"+serverModel.getWadoProtocol()+"','"+serverModel.getRetrieveTransferSyntax()+"')");
             conn.commit();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -695,7 +695,7 @@ public class DatabaseHandler {
     public ArrayList getServerList() {
         ArrayList serverList = new ArrayList();
         try {
-            String sql2 = "select pk,logicalname,hostname,aetitle,port from ae";
+            String sql2 = "select * from ae";
             ResultSet rs1 = conn.createStatement().executeQuery(sql2);
             while (rs1.next()) {
                 ServerModel serverModel = new ServerModel();
@@ -703,7 +703,12 @@ public class DatabaseHandler {
                 serverModel.setServerName(rs1.getString("logicalname"));
                 serverModel.setHostName(rs1.getString("hostname"));
                 serverModel.setAeTitle(rs1.getString("aetitle"));
-                serverModel.setPort(Integer.toString(rs1.getInt("port")));
+                serverModel.setPort(rs1.getInt("port"));
+                serverModel.setRetrieveType(rs1.getString("retrievetype"));
+                serverModel.setWadoContextPath(rs1.getString("wadocontext")!=null?rs1.getString("wadocontext"):"");
+                serverModel.setWadoPort(rs1.getInt("wadoport"));
+                serverModel.setWadoProtocol(rs1.getString("wadoprotocol"));
+                serverModel.setRetrieveTransferSyntax(rs1.getString("retrievets"));
                 serverList.add(serverModel);
             }
 
@@ -995,7 +1000,7 @@ public class DatabaseHandler {
             String sql = "Select * from AE where logicalname='" + serverName + "'";
             ResultSet rs = conn.createStatement().executeQuery(sql);
             while (rs.next()) {
-                ae = new AEModel(rs.getString("logicalname"), rs.getString("hostname"), rs.getString("aetitle"), rs.getInt("port"));
+                ae = new AEModel(rs.getString("logicalname"), rs.getString("hostname"), rs.getString("aetitle"), rs.getInt("port"),rs.getString("retrievetype"));
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1028,7 +1033,20 @@ public class DatabaseHandler {
         presetModel.setPresetName("Default");
         return presetModel;
     }
+    public ServerModel getServerModel(String serverName) {
+        ServerModel serverModel = null;
+        try {
+            String sql = "Select * from AE where logicalname='" + serverName + "'";
+            ResultSet rs = conn.createStatement().executeQuery(sql);
+            while (rs.next()) {
+                serverModel = new ServerModel(rs.getString("logicalname"), rs.getString("hostname"), rs.getString("aetitle"), rs.getInt("port"),rs.getString("retrievetype"),rs.getString("wadocontext"),rs.getInt("wadoport"),rs.getString("wadoprotocol"),rs.getString("retrievets"));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return serverModel;
 
+    }
     public PresetModel getPreset(String presetName) {
         PresetModel presetModel = null;
         try {

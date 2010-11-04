@@ -41,6 +41,8 @@ package in.raster.mayam.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 
 /**
  *
@@ -71,6 +73,17 @@ public class Series implements Serializable {
         multiframe=false;
         instanceUID="";
         imageList = new ArrayList<Instance>();
+    }
+    public Series(Dataset dataset)
+    {
+        this.SeriesInstanceUID=dataset.getString(Tags.SeriesInstanceUID);
+        this.StudyInstanceUID=dataset.getString(Tags.StudyInstanceUID);
+        this.SeriesNumber=dataset.getString(Tags.SeriesNumber)!=null ? dataset.getString(Tags.SeriesNumber):"";
+        this.Modality=dataset.getString(Tags.Modality);
+        this.bodyPartExamined=dataset.getString(Tags.BodyPartExamined);
+        this.seriesDesc=dataset.getString(Tags.SeriesDescription)!=null ?dataset.getString(Tags.SeriesDescription): "";
+        this.institutionName=dataset.getString(Tags.InstitutionName)!=null ?dataset.getString(Tags.InstitutionName):"";
+
     }
 
     /**

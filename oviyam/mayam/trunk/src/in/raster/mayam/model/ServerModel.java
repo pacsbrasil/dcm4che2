@@ -49,12 +49,29 @@ public class ServerModel {
     private int pk;
     private String serverName;
     private String hostName;
-    private String port;
-    private String aeTitle;    
+    private int port;
+    private String aeTitle;
+    private String retrieveType;
+    private int wadoPort;
+    private String wadoContextPath;
+    private String wadoProtocol;
+    private String retrieveTransferSyntax;
     
     public ServerModel() {
     }
 
+    public ServerModel(String serverName,String host,String aeTitle,int port,String retrieveType,String wadoContext,int wadoPort,String wadoProtocol,String retrieveTS)
+    {
+        this.serverName=serverName;
+        this.hostName=host;
+        this.aeTitle=aeTitle;
+        this.port=port;
+        this.retrieveType=retrieveType;
+        this.wadoContextPath=wadoContext;
+        this.wadoPort=wadoPort;
+        this.wadoProtocol=wadoProtocol;
+        this.retrieveTransferSyntax=retrieveTS;
+    }
     public int getPk() {
         return pk;
     }
@@ -79,11 +96,11 @@ public class ServerModel {
         this.hostName = hostName;
     }
 
-    public String getPort() {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(String port) {
+    public void setPort(int port) {
         this.port = port;
     }
 
@@ -93,5 +110,47 @@ public class ServerModel {
 
     public void setServerName(String serverName) {
         this.serverName = serverName;
-    }  
+    }
+
+    public String getRetrieveType() {
+        return retrieveType;
+    }
+
+    public void setRetrieveType(String retrieveType) {
+        this.retrieveType = retrieveType;
+    }
+
+    public int getWadoPort() {
+        return wadoPort;
+    }
+
+    public void setWadoPort(int wadoPort) {
+        this.wadoPort = wadoPort;
+    }
+
+    public String getWadoContextPath() {
+        return wadoContextPath;
+    }
+
+    public void setWadoContextPath(String wadoContextPath) {
+        this.wadoContextPath = wadoContextPath;
+    }
+
+    public String getRetrieveTransferSyntax() {
+        return retrieveTransferSyntax;
+    }
+
+    public void setRetrieveTransferSyntax(String retrieveTransferSyntax) {
+        this.retrieveTransferSyntax = retrieveTransferSyntax;
+    }
+
+    public String getWadoProtocol() {
+        return wadoProtocol;
+    }
+
+    public void setWadoProtocol(String wadoProtocol) {
+        this.wadoProtocol = wadoProtocol;
+    }
+
+
 }

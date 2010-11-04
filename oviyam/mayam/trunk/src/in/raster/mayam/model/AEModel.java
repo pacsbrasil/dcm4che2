@@ -47,16 +47,16 @@ public class AEModel {
     private String serverName="";
     private String hostName="";    
     private String aeTitle="";
-    private int port=0; 
+    private int port=0;
+    private String retrieveType;
    
-    public AEModel(String serverName,String host,String aeTitle,int port)
+    public AEModel(String serverName,String host,String aeTitle,int port,String retrieveType)
     {
         this.serverName=serverName;
         this.hostName=host;      
         this.aeTitle=aeTitle;
         this.port=port;
-      
-        
+        this.retrieveType=retrieveType;
     }
     public String getAeTitle() {
         return aeTitle;
@@ -89,6 +89,14 @@ public class AEModel {
 
     public void setServerName(String serverName) {
         this.serverName = serverName;
+    }
+
+    public String getRetrieveType() {
+        return retrieveType;
+    }
+
+    public void setRetrieveType(String retrieveType) {
+        this.retrieveType = retrieveType;
     }
 
 }

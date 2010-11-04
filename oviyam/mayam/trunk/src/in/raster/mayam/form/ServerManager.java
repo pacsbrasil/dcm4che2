@@ -52,11 +52,15 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.DefaultCellEditor;
 import javax.swing.InputMap;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
+import javax.swing.table.TableCellEditor;
 import org.dcm4che.util.DcmURL;
+import org.dcm4che2.data.TransferSyntax;
 
 
 /**
@@ -100,9 +104,18 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener{
         ServerTableModel serverTableModel=new ServerTableModel();
         serverTableModel.setData(ApplicationContext.databaseRef.getServerList());
         serverListTable.setModel(serverTableModel);
+        setServerRetrieveComboEditor();
         if(serverChangeListener!=null)
             addListenerToModel();
      
+    }
+    private void setServerRetrieveComboEditor()
+    {
+        String[] retrieveTypeArray={"C-MOVE","WADO"};
+        JComboBox comboBox = new JComboBox(retrieveTypeArray);
+        comboBox.setMaximumRowCount(4);
+        TableCellEditor editor = new DefaultCellEditor(comboBox);
+        serverListTable.getColumnModel().getColumn(4).setCellEditor(editor);
     }
     private void addOrDeleteServerNotification()
     {
@@ -163,9 +176,9 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener{
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE)
+            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(182, Short.MAX_VALUE)
+                .addContainerGap(261, Short.MAX_VALUE)
                 .add(jButton1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(addButton)
@@ -174,7 +187,7 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener{
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -190,7 +203,7 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener{
                     .add(addButton)
                     .add(jButton1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 131, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -260,7 +273,12 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener{
         serverModel.setServerName("Description");
         serverModel.setAeTitle("AETITLE");
         serverModel.setHostName("localhost");
-        serverModel.setPort("104");
+        serverModel.setPort(104);       
+        serverModel.setRetrieveType("C-MOVE");
+        serverModel.setWadoContextPath("wado");
+        serverModel.setWadoPort(0);
+        serverModel.setWadoProtocol("http");        
+        serverModel.setRetrieveTransferSyntax("");
         ApplicationContext.databaseRef.insertServer(serverModel);
         setServerTableModel();     
         addOrDeleteServerNotification();
