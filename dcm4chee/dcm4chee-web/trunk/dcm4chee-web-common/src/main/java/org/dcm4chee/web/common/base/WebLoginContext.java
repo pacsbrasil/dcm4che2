@@ -154,18 +154,11 @@ public class WebLoginContext extends UsernamePasswordContext {
             
             DefaultSubject subject = new DefaultSubject();
             for (Principal principal : context.getSubject().getPrincipals()) {
-System.out.println("PRINCIPAL: " + principal.getName());
-System.out.println("PRINCIPAL: isGroup?: " + (principal instanceof Group));
-if ((principal instanceof Group))
-    System.out.println(((Group) principal).members().hasMoreElements());
-System.out.println("PRINCIPAL: matches GroupName?: " + (rolesGroupName.equalsIgnoreCase(principal.getName())) + " rolesGroupName: " + rolesGroupName + " principal.getName(): " +  principal.getName());
-
                 if ((principal instanceof Group) && (rolesGroupName.equalsIgnoreCase(principal.getName()))) {
                     Enumeration<? extends Principal> members = ((Group) principal).members();
                     Set<String> swarmPrincipals = new HashSet<String>();
                     while (members.hasMoreElements()) {
                         Principal member = members.nextElement();
-System.out.println("PRINCIPAL: Group: " + member.getName());
                         subject.addPrincipal(new SimplePrincipal(member.getName()));
                         swarmPrincipals.add(member.getName());
                     }
