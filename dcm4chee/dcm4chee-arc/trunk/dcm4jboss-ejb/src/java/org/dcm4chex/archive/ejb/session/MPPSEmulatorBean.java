@@ -141,6 +141,10 @@ public abstract class MPPSEmulatorBean implements SessionBean {
      */
     public Dataset[] generateMPPS(Long studyPk, boolean ignoreReqAttrIfNoStudyAccNo) throws FinderException {
         StudyLocal study = studyHome.findByPrimaryKey(studyPk);
+        if (study.getNumberOfReceivingSeries() != 0) {
+            LOG.info("Skip generation of MPPS for study "+study.getStudyIuid()+"! Study contains series with status RECEIVING!");
+            return new Dataset[]{};
+        }
         String suid = study.getStudyIuid();
         SeriesLocal series;
         //Study may contain series with other Modality and/or SourceAET. We create MPPS for all series without ppsIuid to finish whole study in one step.
