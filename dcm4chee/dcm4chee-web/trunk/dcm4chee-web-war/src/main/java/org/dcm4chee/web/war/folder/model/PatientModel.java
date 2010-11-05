@@ -146,7 +146,7 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     @Override
     public void expand() {
         studies.clear();
-        dao.setDicomSecurityRoles(secureSession.getDicomRoles());
+        dao.setDicomSecurityRoles(secureSession.getDicomRoles(), secureSession.isRoot());
         for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst.getObject()))            
             this.studies.add(new StudyModel(study, this, dao.findStudyPermissionActions(study.getStudyInstanceUID(), secureSession.getDicomRoles())));
     }

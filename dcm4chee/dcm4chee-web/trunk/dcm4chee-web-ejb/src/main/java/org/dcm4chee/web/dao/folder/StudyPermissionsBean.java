@@ -129,6 +129,7 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
                                         .setParameter("roles", roleList)
                                         .getResultList();
         for (String rolename : newRoles) 
-            emUsr.persist(new Role(rolename));
+            emUsr.persist(new Role(rolename, "StudyPermissions"));
+// TODO: put the role type into the config service
     }
 }

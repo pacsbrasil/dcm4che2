@@ -60,7 +60,7 @@ public interface StudyListLocal {
 
     String JNDI_NAME = "dcm4chee-web-ear/StudyListBean/local";
 
-    void setDicomSecurityRoles(List<String> roles);
+    void setDicomSecurityRoles(List<String> roles, boolean root);
     
     int countStudies(StudyListFilter filter);
 

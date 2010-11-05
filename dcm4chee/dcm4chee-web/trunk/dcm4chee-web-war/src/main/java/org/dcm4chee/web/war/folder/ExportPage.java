@@ -137,7 +137,7 @@ public class ExportPage extends SecureWebPage {
     private static Logger log = LoggerFactory.getLogger(ExportPage.class);
     
     public ExportPage(List<PatientModel> list) {
-        super();
+        super();        
         
         if (ExportPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(ExportPage.BaseCSS));
@@ -164,16 +164,20 @@ public class ExportPage extends SecureWebPage {
         form.addLabel("selectedItems");
         form.addLabel("selectedPats");
         form.add( new Label("selectedPatsValue", new PropertyModel<Integer>(exportInfo, "nrOfPatients")));
-        form.add( new Label("deniedPatsValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfPatients")));
+        form.add( new Label("deniedPatsValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfPatients"))
+            .setVisible(((SecureSession) getSession()).getUseStudyPermissions()));
         form.addLabel("selectedStudies");
         form.add( new Label("selectedStudiesValue", new PropertyModel<Integer>(exportInfo, "nrOfStudies")));
-        form.add( new Label("deniedStudiesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfStudies")));
+        form.add( new Label("deniedStudiesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfStudies"))
+            .setVisible(((SecureSession) getSession()).getUseStudyPermissions()));
         form.addLabel("selectedSeries");
         form.add( new Label("selectedSeriesValue", new PropertyModel<Integer>(exportInfo, "nrOfSeries")));
-        form.add( new Label("deniedSeriesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfSeries")));
+        form.add( new Label("deniedSeriesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfSeries"))
+            .setVisible(((SecureSession) getSession()).getUseStudyPermissions()));
         form.addLabel("selectedInstances");
         form.add( new Label("selectedInstancesValue", new PropertyModel<Integer>(exportInfo, "nrOfInstances")));
-        form.add( new Label("deniedInstancesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfInstances")));
+        form.add( new Label("deniedInstancesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfInstances"))
+            .setVisible(((SecureSession) getSession()).getUseStudyPermissions()));
         form.add(new DropDownChoice<AE>("destinationAETs", destinationModel, destinationAETs, new IChoiceRenderer<AE>(){
             private static final long serialVersionUID = 1L;
 
@@ -369,11 +373,9 @@ public class ExportPage extends SecureWebPage {
         int NOTnrPat, NOTnrStudy, NOTnrSeries, NOTnrInstances;
         
         StudyListLocal dao;
-
+        
         private ExportInfo(List<PatientModel> patients) {
             dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-// TODO: 
-//            secureSession = ((SecureSession) getSession());
             
             this.requests = new ArrayList<MoveRequest>(patients.size());
             for (PatientModel pat : patients) {
@@ -434,46 +436,37 @@ public class ExportPage extends SecureWebPage {
         }
 
         private void prepareStudiesOfPatientRequests(PatientModel pat) {
-//            nrPat++;
-//            ArrayList<String> uids = new ArrayList<String>();
-//            List<Study> studies = getStudiesOfPatient(pat);
-//            for (Study study : studies) {
-//                uids.add(study.getStudyInstanceUID());
-//            }
-
             ArrayList<String> uids = new ArrayList<String>();
             List<Study> studies = getStudiesOfPatient(pat);
-            int selected = 0;
+            int allowed = 0;
             for (Study study : studies) {
-                if (dao.findStudyPermissionActions(study.getStudyInstanceUID(), ((SecureSession) getSession()).getDicomRoles()).contains(StudyPermission.EXPORT_ACTION)) {
+                if (dao.findStudyPermissionActions(study.getStudyInstanceUID(), ((SecureSession) getSession()).getDicomRoles()).contains(StudyPermission.EXPORT_ACTION)
+                        || !((SecureSession) getSession()).getUseStudyPermissions()
+                        || ((SecureSession) getSession()).isRoot()) {
                     uids.add(study.getStudyInstanceUID());
-                    selected++;
+                    allowed++;
                 } else 
                     NOTnrStudy++;
             }
-            if (selected == studies.size()) 
-                nrPat++;
-            else {
-                NOTnrPat++;
-                nrStudy += selected;
+            if (pat.isSelected()) {
+                if (allowed == studies.size())
+                    nrPat++;
+                else {
+                    NOTnrPat++;
+                }
+                nrStudy += allowed;
             }
+
             log.debug("Selected for export: Studies of Patient:{} StudyUIDs:{}", pat.getId(), uids);
             requests.add( new MoveRequest().setStudyMoveRequest(pat.getId(), toArray(uids)));
         }
 
         private void prepareStudyRequests(List<StudyModel> studies) {
-//            ArrayList<String> uids = new ArrayList<String>();
-//            for (StudyModel study : studies ) {
-//                if (study.isSelected()) {
-//                    nrStudy++;
-//                    uids.add(study.getStudyInstanceUID());
-//                } else {
-//                    prepareSeriesRequests(study.getStudyInstanceUID(), study.getPPSs());
-//                }
-//            }
             ArrayList<String> uids = new ArrayList<String>();
             for (StudyModel study : studies ) {
-                boolean denied = !dao.findStudyPermissionActions(study.getStudyInstanceUID(), ((SecureSession) getSession()).getDicomRoles()).contains(StudyPermission.EXPORT_ACTION);
+                boolean denied = !dao.findStudyPermissionActions(study.getStudyInstanceUID(), ((SecureSession) getSession()).getDicomRoles()).contains(StudyPermission.EXPORT_ACTION)
+                                && ((SecureSession) getSession()).getUseStudyPermissions()
+                                && !((SecureSession) getSession()).isRoot();
                 if (study.isSelected()) {
                     if (denied) {
                         NOTnrStudy++;
@@ -492,25 +485,6 @@ public class ExportPage extends SecureWebPage {
         }
         
         private void prepareSeriesRequests(String studyIUID, List<PPSModel> ppss, boolean denied) {
-//            ArrayList<String> uids = new ArrayList<String>();
-//            for (PPSModel pps : ppss ) {
-//                if (pps.isSelected()) {
-//                    log.debug("Selected for export: Series of selected PPS! AccNr:{}",pps.getAccessionNumber());
-//                    for (SeriesModel series : pps.getSeries()) {
-//                        nrSeries++;
-//                        uids.add(series.getSeriesInstanceUID());
-//                    }
-//                } else {
-//                    for (SeriesModel series : pps.getSeries()) {
-//                        if (series.isSelected()) {
-//                            nrSeries++;
-//                            uids.add(series.getSeriesInstanceUID());
-//                        } else {
-//                            prepareInstanceRequest(studyIUID, series.getSeriesInstanceUID(), series.getInstances());
-//                        }
-//                    }
-//                } 
-//            }
             ArrayList<String> uids = new ArrayList<String>();
             for (PPSModel pps : ppss ) {
                 if (pps.isSelected()) {
@@ -546,13 +520,6 @@ public class ExportPage extends SecureWebPage {
         
         private void prepareInstanceRequest(String studyIUID, String seriesIUID,
                 List<InstanceModel> instances, boolean denied) {
-//            ArrayList<String> uids = new ArrayList<String>();
-//            for (InstanceModel instance : instances) {
-//                if (instance.isSelected()) {
-//                    nrInstances++;
-//                    uids.add(instance.getSOPInstanceUID());
-//                }
-//            }
             ArrayList<String> uids = new ArrayList<String>();
             for (InstanceModel instance : instances) {
                 if (instance.isSelected()) {

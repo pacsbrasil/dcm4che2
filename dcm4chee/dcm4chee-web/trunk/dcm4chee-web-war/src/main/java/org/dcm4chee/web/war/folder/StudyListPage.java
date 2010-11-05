@@ -189,7 +189,6 @@ public class StudyListPage extends Panel {
      
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
     SecureSession secureSession = ((SecureSession) getSession());
-    private boolean useStudyPermissions = secureSession.getUseStudyPermissions();
     
     public StudyListPage(final String id) {
         super(id);
@@ -197,7 +196,7 @@ public class StudyListPage extends Panel {
         if (StudyListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
         
-        dao.setDicomSecurityRoles(((SecureSession) getSession()).getDicomRoles());
+        dao.setDicomSecurityRoles(secureSession.getDicomRoles(), secureSession.isRoot());
 
         add(modalWindow = new ModalWindow("modal-window"));
         modalWindow.setWindowClosedCallback(new WindowClosedCallback() {
@@ -613,7 +612,7 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                boolean hasIgnored = selected.update(((SecureSession) getSession()).getUseStudyPermissions(), viewport.getPatients(), StudyPermission.DELETE_ACTION);
+                boolean hasIgnored = selected.update(secureSession.getUseStudyPermissions() && !secureSession.isRoot(), viewport.getPatients(), StudyPermission.DELETE_ACTION);
                 selected.deselectChildsOfSelectedEntities();
                 confirmDelete.setRemark(hasIgnored ? new StringResourceModel("folder.message.deleteNotAllowed",this, null) : null);
                 if (selected.hasPPS()) {
@@ -624,8 +623,10 @@ public class StudyListPage extends Panel {
                     if (hasIgnored) {
                         msgWin.setInfoMessage(getString("folder.message.deleteNotAllowed"));
                         msgWin.setColor("#FF0000");
-                    } else
+                    } else {
                         msgWin.setInfoMessage(getString("folder.message.noSelection"));
+                        msgWin.setColor("");
+                    }
                     msgWin.show(target);
                 }
             }
@@ -645,15 +646,14 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                boolean hasIgnored = selected.update(((SecureSession) getSession()).getUseStudyPermissions(), viewport.getPatients(), StudyPermission.UPDATE_ACTION, true);
-System.out.println("useStudyPermissions: " + useStudyPermissions);
-System.out.println("hasIgnored: " + hasIgnored);
-                if (useStudyPermissions && hasIgnored) {
+                boolean hasIgnored = selected.update(secureSession.getUseStudyPermissions() && !secureSession.isRoot(), viewport.getPatients(), StudyPermission.UPDATE_ACTION, true);
+                if (secureSession.getUseStudyPermissions() && hasIgnored && !secureSession.isRoot()) {
                     msgWin.setColor("#FF0000");
                     msgWin.setInfoMessage(getString("folder.message.moveNotAllowed"));
                     msgWin.show(target);
                     return;
-                }
+                } else
+                    msgWin.setColor("");
                 log.info("Selected Entities:"+selected);
                 if (selected.hasDicomSelection()) {
                     modalWindow
@@ -693,7 +693,7 @@ System.out.println("hasIgnored: " + hasIgnored);
             @Override
             public void onClick() {
                 ExportPage page = new ExportPage(viewport.getPatients());
-                SelectedEntities.deselectAll(viewport.getPatients());
+//                SelectedEntities.deselectAll(viewport.getPatients());
                 this.setResponsePage(page);
             }
         };
@@ -1661,8 +1661,9 @@ System.out.println("hasIgnored: " + hasIgnored);
             
             @Override
             public boolean isVisible() {
-                return checkEditPermission(model)
-                    && secureSession.getUseStudyPermissions();
+                return (checkEditPermission(model)
+                    && secureSession.getUseStudyPermissions())
+                    || secureSession.isRoot();
             }
         };
         Image image = new Image("studyPermissionsImg",ImageManager.IMAGE_FOLDER_STUDY_PERMISSIONS);
@@ -1826,7 +1827,6 @@ System.out.println("hasIgnored: " + hasIgnored);
     }
     
     private boolean ignoreStudyPermissions() {
-        SecureSession secureSession = ((SecureSession) getSession());
         return (!secureSession.getUseStudyPermissions() || secureSession.isRoot());
     }
 }

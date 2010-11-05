@@ -82,6 +82,7 @@ public class SelectedEntities implements Serializable {
                 int allowedStudyCount = 0;
                 for (StudyModel study : patient.getStudies()) {
                     if (study.getStudyPermissionActions().contains(action) || !useStudyPermissions) {
+                        studies.add(study);
                         allowedStudyCount++;
                     }
                 }
@@ -89,13 +90,15 @@ public class SelectedEntities implements Serializable {
                     patients.add(patient);
                 else
                     ignoredNotAllowedEntities = true;
-            } else {
+            }
             if (all || !patient.isSelected()) {
                 for (StudyModel study : patient.getStudies()) {
-                    if (study.isSelected() && (study.getStudyPermissionActions().contains(action) || !useStudyPermissions)) {
-                        studies.add(study);
-                    } else 
-                        ignoredNotAllowedEntities = true;
+                    if (study.isSelected()) {
+                        if  (study.getStudyPermissionActions().contains(action) || !useStudyPermissions) 
+                            studies.add(study);
+                        else 
+                            ignoredNotAllowedEntities = true;
+                    }
                     if (all || !study.isSelected()) {
                         for ( PPSModel pps : study.getPPSs()) {
                             if (pps.isSelected() && (pps.getStudy().getStudyPermissionActions().contains(action) || !useStudyPermissions)) {
@@ -118,7 +121,6 @@ public class SelectedEntities implements Serializable {
                         }
                     }
                 }
-            }
             }
         }
         return ignoredNotAllowedEntities;

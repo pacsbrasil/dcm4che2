@@ -78,7 +78,6 @@ import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
-import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.dao.folder.StudyPermissionsLocal;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;

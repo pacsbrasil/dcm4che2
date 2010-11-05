@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import javax.annotation.PostConstruct;
 import javax.imageio.spi.ServiceRegistry;
 import javax.management.Attribute;
 import javax.management.Notification;
@@ -118,6 +117,9 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     
     private boolean useFamilyAndGivenNameQueryFields;
     
+    private String rolesMappingFilename;
+    private String studyPermissionsRoleType;
+    
     private static final String NONE = "NONE";
     private static final String NEWLINE = System.getProperty("line.separator", "\n");
     
@@ -144,7 +146,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public void setWadoBaseURL(String wadoBaseURL) {
         this.wadoBaseURL = wadoBaseURL;
     }
-    @SuppressWarnings("unchecked")
+    
     public String getInstalledWebViewer() {
         Iterator<WebviewerLinkProviderSPI> iter = ServiceRegistry.lookupProviders(WebviewerLinkProviderSPI.class);
         StringBuilder sb = new StringBuilder();
@@ -661,6 +663,22 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     
     public void updateDicomRoles() {
         ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).updateDicomRoles();
+    }
+
+    public void setRolesMappingFilename(String rolesMappingFilename) {
+        this.rolesMappingFilename = rolesMappingFilename;
+    }
+
+    public String getRolesMappingFilename() {
+        return rolesMappingFilename;
+    }
+
+    public void setStudyPermissionsRoleType(String studyPermissionsRoleType) {
+        this.studyPermissionsRoleType = studyPermissionsRoleType;
+    }
+
+    public String getStudyPermissionsRoleType() {
+        return studyPermissionsRoleType;
     }
 }
 
