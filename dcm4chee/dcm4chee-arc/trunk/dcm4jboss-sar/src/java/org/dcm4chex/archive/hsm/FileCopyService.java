@@ -285,24 +285,24 @@ public class FileCopyService extends AbstractFileCopyService {
         }
     }
 
-    private File prepareHSMFile(String destPath, String fileID)
+    private File prepareHSMFile(String fsID, String filePath)
             throws InstanceNotFoundException, MBeanException,
             ReflectionException {
-        return (File) server.invoke(hsmModuleServicename, "prepareHSMFile", new Object[]{destPath, fileID}, 
+        return (File) server.invoke(hsmModuleServicename, "prepareHSMFile", new Object[]{fsID, filePath}, 
                 new String[]{String.class.getName(),String.class.getName()});
     }
 
-    private String storeHSMFile(File file, String destPath, String fileID) throws InstanceNotFoundException, MBeanException,
+    private String storeHSMFile(File file, String fsID, String filePath) throws InstanceNotFoundException, MBeanException,
         ReflectionException {
         return (String) server.invoke(hsmModuleServicename, "storeHSMFile", 
-                new Object[]{file, destPath, fileID}, 
+                new Object[]{file, fsID, filePath}, 
                 new String[]{File.class.getName(),String.class.getName(),String.class.getName()});
     }
 
-    private void failedHSMFile(File file, String destPath, String fileID) throws InstanceNotFoundException, MBeanException,
+    private void failedHSMFile(File file, String fsID, String filePath) throws InstanceNotFoundException, MBeanException,
         ReflectionException {
             server.invoke(hsmModuleServicename, "failedHSMFile", 
-                    new Object[]{file, destPath, fileID}, 
+                    new Object[]{file, fsID, filePath}, 
                     new String[]{File.class.getName(),String.class.getName(),String.class.getName()});
 }
     

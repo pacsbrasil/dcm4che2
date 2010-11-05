@@ -144,12 +144,12 @@ public class HSMFileBasedModule extends AbstractHSMModule {
     }
 
     @Override
-    public File prepareHSMFile(String destPath, String fileID) {
-        return FileUtils.toFile(destPath, fileID);
+    public File prepareHSMFile(String fsID, String filePath) {
+        return FileUtils.toFile(fsID, filePath);
     }
 
     @Override
-    public String storeHSMFile(File file, String destPath, String fileID) throws HSMException {
+    public String storeHSMFile(File file, String fsID, String filePath) throws HSMException {
         if (setAccessTimeAfterSetReadonly)
             file.setReadOnly();
         if (accessTimeCmd != null) {
@@ -158,7 +158,7 @@ public class HSMFileBasedModule extends AbstractHSMModule {
         }
         if (!setAccessTimeAfterSetReadonly)
             file.setReadOnly();
-        return fileID;
+        return filePath;
     }
 
     private String getRetentionDate() {
@@ -168,27 +168,27 @@ public class HSMFileBasedModule extends AbstractHSMModule {
     }
 
     @Override
-    public void failedHSMFile(File file, String destPath, String fileID) {
+    public void failedHSMFile(File file, String fsID, String filePath) {
     }
 
     @Override
-    public File fetchHSMFile(String fsID, String path, String filename) throws HSMException {
+    public File fetchHSMFile(String fsID, String filePath) throws HSMException {
         if (fsID.startsWith("tar:"))
             fsID=fsID.substring(4);
-        return FileUtils.toFile(fsID, path);
+        return FileUtils.toFile(fsID, filePath);
     }
 
     @Override
-    public Integer queryStatus(String dirPath, String filePath, String userInfo) {
-        boolean isTar = dirPath.startsWith("tar:");
+    public Integer queryStatus(String fsID, String filePath, String userInfo) {
+        boolean isTar = fsID.startsWith("tar:");
         for ( Map.Entry<String,Integer> entry : extensionStatusMap.entrySet()) {
-            if (FileUtils.toFile(isTar ? dirPath.substring(4) : dirPath, filePath+entry.getKey()).exists()) {
+            if (FileUtils.toFile(isTar ? fsID.substring(4) : fsID, filePath+entry.getKey()).exists()) {
                 if (checkMD5forStatusChange) {
                     if (isTar) {
                         try {
-                            VerifyTar.verify(FileUtils.toFile(dirPath.substring(4), filePath), buf);
+                            VerifyTar.verify(FileUtils.toFile(fsID.substring(4), filePath), buf);
                         } catch (Exception x) {
-                            log.error("Verify tar file failed! dirPath:"+dirPath+" filePath:"+filePath, x);
+                            log.error("Verify tar file failed! dirPath:"+fsID+" filePath:"+filePath, x);
                             return FileStatus.MD5_CHECK_FAILED;
                         }
                     } else {

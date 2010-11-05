@@ -189,7 +189,6 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         String tarPath = fileID.substring(0, tarEnd);
         File cacheDir = new File(journal.getDataRootDir(),
                 tarPath.replace('/', File.separatorChar));
-        String tarName = cacheDir.getName();
         String fpath = fileID.substring(tarEnd + 1)
                             .replace('/', File.separatorChar);
         File f = new File(cacheDir, fpath);
@@ -198,27 +197,27 @@ public class TarRetrieverService extends ServiceMBeanSupport {
             return f;
         } else {
             boolean extracted = false;
-            if (extracting.add(tarName)) {
+            if (extracting.add(tarPath)) {
                 try {
-                    fetchAndExtractTar(fsID, tarPath, tarName, cacheDir);
+                    fetchAndExtractTar(fsID, tarPath, cacheDir);
                     extracted = true;
                 } finally {
                     synchronized (extracting) {
-                        extracting.remove(tarName);
+                        extracting.remove(tarPath);
                         extracting.notifyAll();
                     }
                 }
             } else {
                 if (log.isDebugEnabled())
                     log.debug("Wait for concurrent fetch and extract of tar: "
-                            + tarName);
+                            + tarPath);
                 synchronized (extracting) {
-                    while (extracting.contains(tarName))
+                    while (extracting.contains(tarPath))
                         try {
                             extracting.wait();
                         } catch (InterruptedException e) {
                             log.warn("Wait for concurrent fetch and extract of tar: "
-                            + tarName + " interrupted:", e);
+                            + tarPath + " interrupted:", e);
                         }
                 }
             }
@@ -231,22 +230,20 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         return f;
     }
 
-    private void fetchAndExtractTar(String fsID, String tarPath,
-            String tarName, File cacheDir) throws IOException,
+    private void fetchAndExtractTar(String fsID, String tarPath, File cacheDir) throws IOException,
             VerifyTarException {
         File tarFile = hsmModuleServicename == null ? 
                 FileUtils.toFile(fsID.substring(4), tarPath) :
-                fetchHSMFile(fsID, tarPath, tarName);
+                fetchHSMFile(fsID, tarPath);
         extractTar(tarFile, cacheDir);
     }
     
-    private File fetchHSMFile(String fsID, String tarPath, String tarName) throws IOException {
+    private File fetchHSMFile(String fsID, String tarPath) throws IOException {
         try {
-            return (File) server.invoke(hsmModuleServicename, "fetchHSMFile", new Object[]{fsID, tarPath, tarName}, 
-                new String[]{String.class.getName(),String.class.getName(),String.class.getName()});
+            return (File) server.invoke(hsmModuleServicename, "fetchHSMFile", new Object[]{fsID, tarPath}, 
+                new String[]{String.class.getName(),String.class.getName()});
         } catch (Exception x) {
-            log.error("Fetch of HSMFile failed! fsID:"+fsID+" tarPath:"+
-                    tarPath+" tarName:"+tarName, x);
+            log.error("Fetch of HSMFile failed! fsID:"+fsID+" tarPath:"+tarPath, x);
             IOException iox = new IOException("Fetch of HSMFile failed!");
             iox.initCause(x);
             throw iox;

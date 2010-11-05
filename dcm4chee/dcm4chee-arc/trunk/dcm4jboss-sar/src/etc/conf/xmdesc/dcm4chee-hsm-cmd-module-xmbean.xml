@@ -179,13 +179,13 @@
       ]]></description>
       <name>prepareHSMFile</name>
      <parameter>
-       <description>Destination Path</description>
-       <name>destPath</name>
+       <description>File system ID</description>
+       <name>fsID</name>
        <type>java.lang.String</type>
      </parameter>
      <parameter>
-       <description>FileID (file path relative to destination path)</description>
-       <name>fileID</name>
+       <description>File path relative to file system (fsID)</description>
+       <name>filePath</name>
        <type>java.lang.String</type>
      </parameter>
       <return-type>java.io.File</return-type>
@@ -199,13 +199,13 @@
        <type>java.io.File</type>
      </parameter>
      <parameter>
-       <description>Destination Path. (as configured in FileCopy Service)</description>
-       <name>destPath</name>
+       <description>File system ID</description>
+       <name>fsID</name>
        <type>java.lang.String</type>
      </parameter>
      <parameter>
-       <description>FileID (file path relative to destination path)</description>
-       <name>fileID</name>
+       <description>File path relative to file system (fsID)</description>
+       <name>filePath</name>
        <type>java.lang.String</type>
      </parameter>
       <return-type>java.lang.String</return-type>
@@ -219,13 +219,13 @@
        <type>java.io.File</type>
      </parameter>
      <parameter>
-       <description>Destination Path. (as configured in FileCopy Service)</description>
-       <name>destPath</name>
+       <description>File system ID</description>
+       <name>fsID</name>
        <type>java.lang.String</type>
      </parameter>
      <parameter>
-       <description>FileID (file path relative to destination path)</description>
-       <name>fileID</name>
+       <description>File path relative to file system (fsID)</description>
+       <name>filePath</name>
        <type>java.lang.String</type>
      </parameter>
       <return-type>void</return-type>
@@ -235,18 +235,13 @@
       <description>Fetch a File from HSM.</description>
       <name>fetchHSMFile</name>
      <parameter>
-       <description>File system ID (directory path/mount point)</description>
+       <description>File system ID</description>
        <name>fsID</name>
        <type>java.lang.String</type>
      </parameter>
      <parameter>
-       <description>File Path (with filename)</description>
+       <description>File path relative to file system (fsID)</description>
        <name>filePath</name>
-       <type>java.lang.String</type>
-     </parameter>
-     <parameter>
-       <description>Filename</description>
-       <name>filename</name>
        <type>java.lang.String</type>
      </parameter>
       <return-type>java.io.File</return-type>
@@ -256,12 +251,12 @@
       <description>Query status of file in HSM.</description>
       <name>queryStatus</name>
      <parameter>
-       <description>File system ID (directory path/mount point)</description>
+       <description>File system ID</description>
        <name>fsID</name>
        <type>java.lang.String</type>
      </parameter>
      <parameter>
-       <description>File Path</description>
+       <description>File path relative to file system (fsID)</description>
        <name>filePath</name>
        <type>java.lang.String</type>
      </parameter>

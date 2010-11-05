@@ -41,6 +41,7 @@ package org.dcm4chex.archive.hsm.module;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.regex.Pattern;
 
 import org.dcm4chex.archive.common.FileStatus;
@@ -169,27 +170,27 @@ public class HSMCommandModule extends AbstractHSMModule {
     }
 
     @Override
-    public File prepareHSMFile(String destPath, String fileID) {
+    public File prepareHSMFile(String fsID, String filePath) {
         if (copyCmd == null) {
-            return FileUtils.toFile(destPath +"/"+ fileID);
+            return FileUtils.toFile(fsID +"/"+ filePath);
         } else {
             return new File(absOutgoingDir,
-                    new File(fileID).getName());
+                    new File(filePath).getName());
         }
     }
 
     @Override
-    public String storeHSMFile(File file, String destPath, String fileID) throws HSMException {
+    public String storeHSMFile(File file, String fsID, String filePath) throws HSMException {
         if (copyCmd == null) {
             log.warn("No copy command configured!");
-            return fileID;
+            return filePath;
         } else {
             try {
-                String cmd = makeCopyCommand(file.getPath(), destPath, fileID);
+                String cmd = makeCopyCommand(file.getPath(), fsID, filePath);
                 log.info("Copy to HSM: " + cmd);
                 ByteArrayOutputStream stdout = new ByteArrayOutputStream();
                 this.doCommand(cmd, stdout, "storeHSMFile");
-                return fileIDFromStdOut ? stdout.toString().trim() : fileID;
+                return fileIDFromStdOut ? stdout.toString().trim() : filePath;
             } finally {
                 log.info("M-DELETE " + file);
                 file.delete();
@@ -198,34 +199,39 @@ public class HSMCommandModule extends AbstractHSMModule {
     }
     
     @Override
-    public void failedHSMFile(File file, String destPath, String fileID) {
+    public void failedHSMFile(File file, String fsID, String filePath) {
     }
 
     @Override
-    public File fetchHSMFile(String fsID, String path, String filename) throws HSMException {
+    public File fetchHSMFile(String fsID, String filePath) throws HSMException {
         if (fetchCmd == null) {
             int pos = fsID.indexOf(':');
             if (pos != -1)
                 fsID = fsID.substring(++pos);
-            return FileUtils.toFile(fsID, path);
+            return FileUtils.toFile(fsID, filePath);
         } else {
             if (absIncomingDir.mkdirs()) {
                 log.info("M-WRITE "+absIncomingDir);
             }
-            File tarFile = new File(absIncomingDir, filename);
-            String cmd = makeFetchCommand(fsID, path, tarFile.getPath());
+            File tarFile;
+            try {
+                tarFile = File.createTempFile("hsm_", ".tar", absIncomingDir);
+            } catch (IOException x) {
+                throw new HSMException("Failed to create temp file in "+absIncomingDir, x);
+            }
+            String cmd = makeFetchCommand(fsID, filePath, tarFile.getPath());
             this.doCommand(cmd, null, "fetchHSMFile");
             return tarFile;
         }
     }
 
     @Override
-    public Integer queryStatus(String dirpath, String filePath, String userInfo) {
+    public Integer queryStatus(String fsID, String filePath, String userInfo) {
         if (qryCmd == null) {
             log.warn("No QueryCommand configured! HSM File Status can not be updated!");
             return null;
         }
-        String cmd = makeQueryCommand(dirpath, filePath, userInfo);
+        String cmd = makeQueryCommand(fsID, filePath, userInfo);
         try {
             ByteArrayOutputStream stdout = new ByteArrayOutputStream();
             doCommand(cmd, stdout, "queryStatus");

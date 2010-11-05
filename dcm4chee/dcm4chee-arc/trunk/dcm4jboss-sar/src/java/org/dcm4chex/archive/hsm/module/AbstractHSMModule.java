@@ -78,22 +78,21 @@ public abstract class AbstractHSMModule extends ServiceMBeanSupport {
         this.fileCopyServiceName = fileCopyServiceName;
     }
 
-    public abstract File prepareHSMFile(String destPath, String fileID) throws HSMException;
+    public abstract File prepareHSMFile(String fsID, String filePath) throws HSMException;
 
-    public abstract String storeHSMFile(File file, String destPath, String fileID) throws HSMException;
+    public abstract String storeHSMFile(File file, String fsID, String filePath) throws HSMException;
     
-    public abstract void failedHSMFile(File file, String destPath, String fileID) throws HSMException;
+    public abstract void failedHSMFile(File file, String fsID, String filePath) throws HSMException;
 
     /**
      * 
-     * @param fsID      Filesystem ID
-     * @param path      Full path (with filename)
-     * @param filename  filename
+     * @param fsID      File System ID
+     * @param filePath  Full path of file within given fsID
      * @return
      */
-    public abstract File fetchHSMFile(String fsID, String path, String filename) throws HSMException;
+    public abstract File fetchHSMFile(String fsID, String filePath) throws HSMException;
     
-    public abstract Integer queryStatus(String dirpath, String filePath, String userInfo) throws HSMException;
+    public abstract Integer queryStatus(String fsID, String filePath, String userInfo) throws HSMException;
     
     protected String[] str2cmd(String cmd) {
         if (NONE.equalsIgnoreCase(cmd)) {

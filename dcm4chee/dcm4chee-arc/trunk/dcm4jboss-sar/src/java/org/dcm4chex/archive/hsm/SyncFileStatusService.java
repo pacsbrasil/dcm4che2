@@ -257,13 +257,13 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         return false;
     }
 
-    private Integer queryHSM(String dirpath, String filePath, String userInfo) throws IOException {
+    private Integer queryHSM(String fsID, String filePath, String userInfo) throws IOException {
         try {
             return (Integer) server.invoke(hsmModuleServicename, 
-                    "queryStatus", new Object[]{dirpath, filePath, userInfo}, 
+                    "queryStatus", new Object[]{fsID, filePath, userInfo}, 
                     new String[]{String.class.getName(),String.class.getName(),String.class.getName()});
         } catch (Exception x) {
-            log.error("queryHSM failed! dirpath:"+dirpath+" filePath:"+
+            log.error("queryHSM failed! fsID:"+fsID+" filePath:"+
                     filePath+" userInfo:"+userInfo, x);
             IOException iox = new IOException("Query status of HSMFile failed!");
             iox.initCause(x);
