@@ -81,4 +81,8 @@ public class ImageReaderFactory {
         throw new ConfigurationException("No Image Reader of class " + className
                 + " available for format:" + formatName); 
     }
+
+    public String patchJAIJpegLS() {
+        return map.getProperty("patchJAIJpegLS");
+    }
 }

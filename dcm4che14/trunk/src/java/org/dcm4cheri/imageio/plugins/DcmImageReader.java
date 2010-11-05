@@ -69,6 +69,7 @@ import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.FileFormat;
+import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.image.ColorModelFactory;
@@ -96,9 +97,9 @@ public class DcmImageReader extends ImageReader {
 
     private ImageReader decompressor = null;
 
-    private ItemParser itemParser = null;
+    private String patchJAIJpegLS;
 
-    private SegmentedImageInputStream siis = null;
+    private ItemParser itemParser = null;
 
     // The image to be written.
     private BufferedImage theImage = null;
@@ -401,25 +402,11 @@ public class DcmImageReader extends ImageReader {
         Iterator imageTypes = getImageTypes(imageIndex, readParam);
         this.theImage = getDestination(param, imageTypes, this.width,
                 this.height);
-        if (itemParser != null) {
-            if (decompressor == null) {
-                this.decompressor = createDecompressor();
-                this.siis = new SegmentedImageInputStream(stream, itemParser);
-            }
-            ImageReadParam decompressorReadParam = decompressor
-                    .getDefaultReadParam();
-            decompressorReadParam.setDestination(theImage);
-            decompressorReadParam.setSourceRegion(readParam.getSourceRegion());
-            decompressorReadParam.setSourceSubsampling(readParam
-                    .getSourceXSubsampling(),
-                    readParam.getSourceYSubsampling(), readParam
-                            .getSubsamplingXOffset(), readParam
-                            .getSubsamplingYOffset());
-            decompressorReadParam.setDestinationOffset(readParam
-                    .getDestinationOffset());
-            return adjustBufferedImage(decompress(imageIndex,
-                    decompressorReadParam), readParam);
-        }
+        if (itemParser != null)
+            return adjustBufferedImage(
+                    decompress(imageIndex, readParam),
+                    readParam);
+
         stream.seek(frame1StartPos + imageIndex * frameLength);
 
         this.theTile = theImage.getWritableTile(0, 0);
@@ -474,9 +461,14 @@ public class DcmImageReader extends ImageReader {
         return adjustBufferedImage(this.theImage, readParam);
     }
 
-    private ImageReader createDecompressor() {
-        ImageReaderFactory f = ImageReaderFactory.getInstance();
-        return f.getReaderForTransferSyntax(getTransferSyntaxUID());
+    private void initDecompressor() {
+        if (decompressor == null) {
+            ImageReaderFactory f = ImageReaderFactory.getInstance();
+            String tsuid = getTransferSyntaxUID();
+            decompressor = f.getReaderForTransferSyntax(tsuid);
+            patchJAIJpegLS = UIDs.JPEGLSLossless.equals(tsuid)
+                    ? f.patchJAIJpegLS() : null;
+        }
     }
 
     private BufferedImage adjustBufferedImage(BufferedImage bi,
@@ -620,12 +612,18 @@ public class DcmImageReader extends ImageReader {
         return new BufferedImage(cm, raster, false, null);
     }
 
-    private BufferedImage decompress(int imageIndex, ImageReadParam readParam)
-            throws IOException {
+    private BufferedImage decompress(int imageIndex,
+            DcmImageReadParam readParam) throws IOException {
+        initDecompressor();
         log.debug("Start decompressing frame#" + (imageIndex + 1));
+        SegmentedImageInputStream siis =
+                new SegmentedImageInputStream(stream, itemParser);
         itemParser.seekFrame(siis, imageIndex);
-        decompressor.setInput(siis);
-        BufferedImage bi = decompressor.read(0, readParam);
+        decompressor.setInput(
+                patchJpegLS() ? new PatchJpegLSImageInputStream(siis)
+                              : (ImageInputStream) siis);
+        BufferedImage bi =
+                decompressor.read(0, decompressorReadParam(readParam));
         // workaround for Bug in J2KImageReader and
         // J2KImageReaderCodecLib.setInput()
         if (decompressor.getClass().getName().startsWith(J2KIMAGE_READER)) {
@@ -636,6 +634,28 @@ public class DcmImageReader extends ImageReader {
         }
         log.debug("Finished decompressed frame#" + (imageIndex + 1));
         return bi;
+    }
+
+    private boolean patchJpegLS() {
+        return patchJAIJpegLS != null
+                && (patchJAIJpegLS.length() == 0 
+                        || patchJAIJpegLS.equals(theDataset.getFileMetaInfo()
+                                .getImplementationClassUID()));
+    }
+
+    private ImageReadParam decompressorReadParam(DcmImageReadParam readParam) {
+        ImageReadParam decompressorReadParam =
+                decompressor.getDefaultReadParam();
+        decompressorReadParam.setDestination(theImage);
+        decompressorReadParam.setSourceRegion(readParam.getSourceRegion());
+        decompressorReadParam.setSourceSubsampling(
+                readParam.getSourceXSubsampling(),
+                readParam.getSourceYSubsampling(),
+                readParam.getSubsamplingXOffset(),
+                readParam.getSubsamplingYOffset());
+        decompressorReadParam.setDestinationOffset(
+                readParam.getDestinationOffset());
+        return decompressorReadParam;
     }
 
     private void readByteSamples(int samples, byte[] dest) throws IOException {
@@ -799,6 +819,5 @@ public class DcmImageReader extends ImageReader {
         decompressor = null;
         ybr2rgb = false;
         itemParser = null;
-        siis = null;
     }
 }
