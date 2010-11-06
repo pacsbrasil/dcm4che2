@@ -108,11 +108,14 @@ public class WadoParam {
     }
 
     private String appendTransferSyntax() {
+        String transferSyntax="&transferSyntax=";
         if (retrieveTrasferSyntax != null && !retrieveTrasferSyntax.equalsIgnoreCase("")) {
             if (retrieveTrasferSyntax.equalsIgnoreCase("Explicit VR Little Endian")) {
-                return "&transferSyntax=" + TransferSyntax.ExplicitVRLittleEndian;
+                transferSyntax+= TransferSyntax.ExplicitVRLittleEndian.uid();
+                return  transferSyntax;
             } else if (retrieveTrasferSyntax.equalsIgnoreCase("Implicit VR Little Endian")) {
-                return "&transferSyntax=" + TransferSyntax.ImplicitVRLittleEndian;
+                transferSyntax+= TransferSyntax.ImplicitVRLittleEndian.uid();
+                return  transferSyntax;
             }
         }
         return "";
