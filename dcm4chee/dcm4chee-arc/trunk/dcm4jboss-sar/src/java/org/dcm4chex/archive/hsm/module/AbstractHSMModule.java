@@ -94,6 +94,10 @@ public abstract class AbstractHSMModule extends ServiceMBeanSupport {
     
     public abstract Integer queryStatus(String fsID, String filePath, String userInfo) throws HSMException;
     
+    protected String stripTarIdentifier(String s) {
+        return s.startsWith("tar:") ? s.substring(4) : s;
+    }
+    
     protected String[] str2cmd(String cmd) {
         if (NONE.equalsIgnoreCase(cmd)) {
             return null;

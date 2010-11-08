@@ -265,7 +265,7 @@ public class FileCopyService extends AbstractFileCopyService {
             File tarFile = FileUtils.toFile(destPath.substring(4), tarPath);
             mkTar(fileInfos, tarFile, tarEntryNames);
         } else {
-            File tarFile = prepareHSMFile(destPath.substring(4), tarPath);
+            File tarFile = prepareHSMFile(destPath, tarPath);
             try {
                 mkTar(fileInfos, tarFile, tarEntryNames);
                 tarPath = storeHSMFile(tarFile, destPath, tarPath);

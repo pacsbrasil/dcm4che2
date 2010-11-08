@@ -145,7 +145,7 @@ public class HSMFileBasedModule extends AbstractHSMModule {
 
     @Override
     public File prepareHSMFile(String fsID, String filePath) {
-        return FileUtils.toFile(fsID, filePath);
+        return FileUtils.toFile(stripTarIdentifier(fsID), filePath);
     }
 
     @Override

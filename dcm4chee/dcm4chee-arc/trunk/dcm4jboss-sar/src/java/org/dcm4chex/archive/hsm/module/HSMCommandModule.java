@@ -171,8 +171,9 @@ public class HSMCommandModule extends AbstractHSMModule {
 
     @Override
     public File prepareHSMFile(String fsID, String filePath) {
+        String path = stripTarIdentifier(fsID);
         if (copyCmd == null) {
-            return FileUtils.toFile(fsID +"/"+ filePath);
+            return FileUtils.toFile(path +"/"+ filePath);
         } else {
             return new File(absOutgoingDir,
                     new File(filePath).getName());
