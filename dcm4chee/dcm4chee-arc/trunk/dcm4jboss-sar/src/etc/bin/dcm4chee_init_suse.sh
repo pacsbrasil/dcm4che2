@@ -34,6 +34,16 @@ JAVAPTH=${JAVAPTH:-"/usr/java/jdk/bin"}
 #define the classpath for the shutdown class
 JBOSSCP=${JBOSSCP:-"$JBOSS_HOME/bin/shutdown.jar:$JBOSS_HOME/client/jnet.jar"}
 
+#configuration to use, usually one of 'minimal', 'default', 'all'
+JBOSS_CONF=${JBOSS_CONF:-"default"}
+
+# JMX console credentials
+JBOSS_ADMIN_USER=${JBOSS_ADMIN_USER:-"admin"}
+JBOSS_ADMIN_PASS=${JBOSS_ADMIN_PASS:-"admin"}
+ADMIN_USER_OPT="-u $JBOSS_ADMIN_USER"
+ADMIN_PASS_OPT="-p $JBOSS_ADMIN_PASS"
+
+
 #define the script to use to start jboss
 JBOSSSH=${JBOSSSH:-"$JBOSS_HOME/bin/run.sh -c $JBOSS_CONF"}
 
@@ -82,7 +92,7 @@ JBOSS_CONSOLE=${JBOSS_CONSOLE:-"/opt/jboss/log/jboss.log"}
 JBOSSUS=${JBOSSUS:-"pacs"}
 
 CMD_START="cd $JBOSS_HOME/bin; $JBOSSSH"
-CMD_STOP="java -classpath $JBOSSCP org.jboss.Shutdown --shutdown"
+CMD_STOP="java -classpath $JBOSSCP org.jboss.Shutdown --shutdown $ADMIN_USER_OPT $ADMIN_PASS_OPT"
 
 if [ "$JBOSSUS" = "RUNASIS" ]; then
   SUBIT=""

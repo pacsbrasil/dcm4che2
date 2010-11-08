@@ -28,6 +28,12 @@ JAVAPTH=${JAVAPTH:-"/usr/java/jdk/bin"}
 #configuration to use, usually one of 'minimal', 'default', 'all'
 JBOSS_CONF=${JBOSS_CONF:-"default"}
 
+# JMX console credentials
+JBOSS_ADMIN_USER=${JBOSS_ADMIN_USER:-"admin"}
+JBOSS_ADMIN_PASS=${JBOSS_ADMIN_PASS:-"admin"}
+ADMIN_USER_OPT="-u $JBOSS_ADMIN_USER"
+ADMIN_PASS_OPT="-p $JBOSS_ADMIN_PASS"
+
 #define the classpath for the shutdown class
 JBOSSCP=${JBOSSCP:-"$JBOSS_HOME/bin/shutdown.jar:$JBOSS_HOME/client/jnet.jar"}
 
@@ -58,7 +64,7 @@ fi
 JBOSS_CONSOLE=${JBOSS_CONSOLE:-"/dev/null"}
 
 JBOSS_CMD_START="cd $JBOSS_HOME/bin; $JBOSSSH"
-JBOSS_CMD_STOP=${JBOSS_CMD_STOP:-"java -classpath $JBOSSCP org.jboss.Shutdown --shutdown"}
+JBOSS_CMD_STOP=${JBOSS_CMD_STOP:-"java -classpath $JBOSSCP org.jboss.Shutdown --shutdown $ADMIN_USER_OPT $ADMIN_PASS_OPT"}
 
 if [ -z "`echo $PATH | grep $JAVAPTH`" ]; then
   export PATH=$PATH:$JAVAPTH
