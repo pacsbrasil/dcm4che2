@@ -69,7 +69,6 @@ import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.DcmValueException;
 import org.dcm4che.data.FileFormat;
-import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.image.ColorModelFactory;
@@ -97,7 +96,7 @@ public class DcmImageReader extends ImageReader {
 
     private ImageReader decompressor = null;
 
-    private String patchJAIJpegLS;
+    private boolean patchJpegLS;
 
     private ItemParser itemParser = null;
 
@@ -466,8 +465,16 @@ public class DcmImageReader extends ImageReader {
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             String tsuid = getTransferSyntaxUID();
             decompressor = f.getReaderForTransferSyntax(tsuid);
-            patchJAIJpegLS = UIDs.JPEGLSLossless.equals(tsuid)
-                    ? f.patchJAIJpegLS() : null;
+            patchJpegLS = false;
+            if (dataType == DataBuffer.TYPE_USHORT 
+                        && UIDs.JPEGLSLossless.equals(tsuid)) {
+                    String patchJAIJpegLS = f.patchJAIJpegLS();
+                    if (patchJAIJpegLS != null)
+                        patchJpegLS = patchJAIJpegLS.length() == 0 
+                                || patchJAIJpegLS.equals(
+                                        theDataset.getFileMetaInfo()
+                                            .getImplementationClassUID());
+            }
         }
     }
 
@@ -620,7 +627,7 @@ public class DcmImageReader extends ImageReader {
                 new SegmentedImageInputStream(stream, itemParser);
         itemParser.seekFrame(siis, imageIndex);
         decompressor.setInput(
-                patchJpegLS() ? new PatchJpegLSImageInputStream(siis)
+                patchJpegLS ? new PatchJpegLSImageInputStream(siis)
                               : (ImageInputStream) siis);
         BufferedImage bi =
                 decompressor.read(0, decompressorReadParam(readParam));
@@ -634,13 +641,6 @@ public class DcmImageReader extends ImageReader {
         }
         log.debug("Finished decompressed frame#" + (imageIndex + 1));
         return bi;
-    }
-
-    private boolean patchJpegLS() {
-        return patchJAIJpegLS != null
-                && (patchJAIJpegLS.length() == 0 
-                        || patchJAIJpegLS.equals(theDataset.getFileMetaInfo()
-                                .getImplementationClassUID()));
     }
 
     private ImageReadParam decompressorReadParam(DcmImageReadParam readParam) {

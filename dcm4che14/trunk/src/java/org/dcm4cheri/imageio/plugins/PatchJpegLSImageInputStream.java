@@ -52,7 +52,7 @@ import org.apache.log4j.Logger;
  * @version $Revision$ $Date:: xxxx-xx-xx $
  * @since Nov 4, 2010
  */
-class PatchJpegLSImageInputStream implements ImageInputStream {
+public class PatchJpegLSImageInputStream implements ImageInputStream {
 
     private static final Logger log =
             Logger.getLogger(PatchJpegLSImageInputStream.class);
@@ -231,14 +231,10 @@ class PatchJpegLSImageInputStream implements ImageInputStream {
     }
 
     public int read(byte[] b, int off, int len) throws IOException {
-        int remainingPatch = remainingPatch();
-        if (remainingPatch > 0) {
-            int l = Math.min(remainingPatch, len);
-            System.arraycopy(patch, patchPos, b, off, l);
-            patchPos += l;
-            return l;
-        }
-        return iis.read(b, off, len);
+        int l1 = Math.min(remainingPatch(), len);
+        System.arraycopy(patch, patchPos, b, off, l1);
+        patchPos += l1;
+        return l1 + iis.read(b, off+l1, len-l1);
     }
 
     public int read(byte[] b) throws IOException {
