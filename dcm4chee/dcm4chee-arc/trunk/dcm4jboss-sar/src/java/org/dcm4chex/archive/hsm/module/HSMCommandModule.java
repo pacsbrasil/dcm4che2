@@ -101,7 +101,7 @@ public class HSMCommandModule extends AbstractHSMModule {
     }
 
     public final void setQueryCommand(String cmd) {
-        qryCmd = fetchCmd =str2cmd(cmd);
+        qryCmd = str2cmd(cmd);
     }
 
     public final String getPattern() {
