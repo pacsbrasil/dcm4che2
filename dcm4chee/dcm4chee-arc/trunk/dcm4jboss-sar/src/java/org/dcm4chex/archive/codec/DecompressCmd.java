@@ -71,6 +71,7 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4cheri.image.ImageReaderFactory;
 import org.dcm4cheri.image.ItemParser;
+import org.dcm4cheri.imageio.plugins.PatchJpegLSImageInputStream;
 
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
 
@@ -89,8 +90,6 @@ public class DecompressCmd extends CodecCmd {
     private final ItemParser itemParser;
 
     private final ImageInputStream iis;
-
-    private SegmentedImageInputStream siis;
 
     private int[] simpleFrameList;
 
@@ -158,7 +157,6 @@ public class DecompressCmd extends CodecCmd {
         super(ds, tsuid);
         this.iis = parser.getImageInputStream();
         this.itemParser = new ItemParser(parser, frames, tsuid);
-        this.siis = new SegmentedImageInputStream(iis, itemParser);
     }
 
     public static void adjustPhotometricInterpretation(Dataset ds, String tsOrig) {
@@ -176,6 +174,7 @@ public class DecompressCmd extends CodecCmd {
         long t1;
         ImageReader reader = null;
         BufferedImage bi = null;
+        boolean patchJpegLS = false;
         boolean codecSemaphoreAquired = false;
         try {
             log.debug("acquire codec semaphore");
@@ -186,12 +185,22 @@ public class DecompressCmd extends CodecCmd {
             t1 = System.currentTimeMillis();
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(tsuid);
+            if (bitsAllocated == 16 && UIDs.JPEGLSLossless.equals(tsuid)) {
+                String patchJAIJpegLS = f.patchJAIJpegLS();
+                if (patchJAIJpegLS != null)
+                    patchJpegLS = patchJAIJpegLS.length() == 0
+                            || patchJAIJpegLS.equals(implClassUID);
+            }
             bi = getBufferedImage();
             for (int i = 0, n = getNumberOfFrames(); i < n; ++i) {
                 int frame = simpleFrameList != null ? (simpleFrameList[i]-1) : i;
                 log.debug("start decompression of frame #" + (frame + 1));
+                SegmentedImageInputStream siis =
+                        new SegmentedImageInputStream(iis, itemParser);
                 itemParser.seekFrame(siis, frame);
-                reader.setInput(siis);
+                reader.setInput(patchJpegLS 
+                        ? new PatchJpegLSImageInputStream(siis)
+                        : (ImageInputStream) siis);
                 ImageReadParam param = reader.getDefaultReadParam();
                 param.setDestination(bi);
                 bi = reader.read(0, param);

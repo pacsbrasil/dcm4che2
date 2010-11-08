@@ -44,6 +44,7 @@ import java.awt.image.DataBuffer;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 
@@ -81,6 +82,8 @@ public abstract class CodecCmd {
 
     static BufferedImagePool biPool = new BufferedImagePool();
 
+    protected final String implClassUID;
+
     protected final String photometricInterpretation;
 
     protected final int samples;
@@ -106,6 +109,9 @@ public abstract class CodecCmd {
     protected final int dataType;
 
     protected CodecCmd(Dataset ds, String tsuid) {
+        FileMetaInfo fmi = ds.getFileMetaInfo();
+        this.implClassUID = fmi != null ? fmi.getImplementationClassUID()
+                : null;
         this.photometricInterpretation = 
                 ds.getString(Tags.PhotometricInterpretation, "MONCHROME2");
         this.samples = ds.getInt(Tags.SamplesPerPixel, 1);
