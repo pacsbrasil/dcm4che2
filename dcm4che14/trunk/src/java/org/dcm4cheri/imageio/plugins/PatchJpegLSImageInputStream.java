@@ -174,10 +174,10 @@ public class PatchJpegLSImageInputStream extends ImageInputStreamImpl {
 
     public void flushBefore(long pos) throws IOException {
         super.flushBefore(pos);
-        iis.flushBefore(toStreamPosition(pos));
+        iis.flushBefore(adjustStreamPosition(pos));
     }
 
-    private long toStreamPosition(long pos) {
+    private long adjustStreamPosition(long pos) {
         if (patch == null)
             return pos;
         long index = pos - patchPos;
@@ -264,7 +264,7 @@ public class PatchJpegLSImageInputStream extends ImageInputStreamImpl {
 
     public void seek(long pos) throws IOException {
         super.seek(pos);
-        iis.seek(toStreamPosition(pos));
+        iis.seek(adjustStreamPosition(pos));
     }
 
 }
