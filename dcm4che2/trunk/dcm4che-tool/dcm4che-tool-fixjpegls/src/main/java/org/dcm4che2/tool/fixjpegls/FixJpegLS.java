@@ -319,7 +319,7 @@ public class FixJpegLS {
             case 16:
                 return LSE_16;
             }
-            throw new NoFixException("Bits Stored = " + bitsStored);
+            throw new NoFixException("JPEG-LS " + bitsStored + "-bit");
         }
 
     }
@@ -483,8 +483,8 @@ public class FixJpegLS {
                     throw new NoFixException("no Pixel Data Fragments");
                 replacements.applyTo(source, target);
                 counts[1]++;
-                System.out.println("FIXED   " + source + ": Bits Stored = "
-                        + replacements.bitsStored + " -> " + target);
+                System.out.println("PATCHED " + source + ": JPEG-LS "
+                        + replacements.bitsStored + "-bit -> " + target);
             } catch (Exception e) {
                 System.out.println("skipped " + source + ": " + e.getMessage());
             }
