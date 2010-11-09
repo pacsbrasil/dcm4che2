@@ -1142,6 +1142,12 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     public String showDeleterCriteria() {
         StringBuilder sb = new StringBuilder();
+        sb.append("Trigger intervall: ").append(getScheduleStudiesForDeletionInterval())
+        .append("\nTrigger on SeriesStored:").append(scheduleStudiesForDeletionOnSeriesStored);
+        if (scheduleStudiesForDeletionInterval == 0L && !scheduleStudiesForDeletionOnSeriesStored) {
+            sb.append("\nWARN: No studies will be deleted automatically from file systems of file system group ")
+            	.append(this.getFileSystemGroupID()).append("\n\n");
+        }
         if (maxNotAccessedFor==0) {
             sb.append("Only triggered by running out of disk space! Studies not accessed for ")
             .append(getDeleteStudyOnlyIfNotAccessedFor());
