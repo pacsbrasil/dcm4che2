@@ -77,6 +77,7 @@ import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.image.ImageReaderFactory;
 import org.dcm4cheri.image.ImageWriterFactory;
 import org.dcm4cheri.image.ItemParser;
+import org.dcm4cheri.imageio.plugins.PatchJpegLSImageInputStream;
 
 import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
@@ -121,7 +122,7 @@ public class Transcoder {
     private int frameIndex = 0;
     private boolean truncatePostPixelData = false;
     private ItemParser itemParser;
-    private SegmentedImageInputStream siis;
+    private boolean patchJpegLS;
 
     /**
      * if true, input stream is directly copied into output stream without pixel
@@ -271,12 +272,21 @@ public class Transcoder {
     private void readPixelHeader() throws IOException {
         iis.setByteOrder(decodeParam.byteOrder);
         if (decodeParam.encapsulated) {
-            String tsuid = dsIn.getFileMetaInfo().getTransferSyntaxUID();
+            FileMetaInfo fmi = dsIn.getFileMetaInfo();
+            String tsuid = fmi.getTransferSyntaxUID();
             itemParser = new ItemParser(parser,
                     pixelDataParam.getNumberOfFrames(), tsuid);
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(tsuid);
-            siis = new SegmentedImageInputStream(iis, itemParser);
+            patchJpegLS = false;
+            if (pixelDataParam.getBitsAllocated() == 16
+                    && UIDs.JPEGLSLossless.equals(tsuid)) {
+                String patchJAIJpegLS = f.patchJAIJpegLS();
+                if (patchJAIJpegLS != null)
+                    patchJpegLS = patchJAIJpegLS.length() == 0 
+                            || patchJAIJpegLS.equals(
+                                    fmi.getImplementationClassUID());
+            }
         }
         bi = pixelDataParam.createBufferedImage(isCompressionLossless(),
                     getMaxBits());
@@ -506,8 +516,12 @@ public class Transcoder {
             ImageReadParam param = reader.getDefaultReadParam();
             if (bi != null)
                 param.setDestination(bi);
+            SegmentedImageInputStream siis = 
+                    new SegmentedImageInputStream(iis, itemParser);
             itemParser.seekFrame(siis, frameIndex);
-            reader.setInput(siis);
+            reader.setInput(patchJpegLS 
+                    ? new PatchJpegLSImageInputStream(siis)
+                    : (ImageInputStream) siis);
             bi = reader.read(0, param);
         } else {
             DataBuffer db = bi.getRaster().getDataBuffer();
