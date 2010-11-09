@@ -38,12 +38,10 @@
 
 package org.dcm4cheri.imageio.plugins;
 
-import java.io.EOFException;
 import java.io.IOException;
-import java.nio.ByteOrder;
 
-import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageInputStreamImpl;
 
 import org.apache.log4j.Logger;
 
@@ -52,7 +50,7 @@ import org.apache.log4j.Logger;
  * @version $Revision$ $Date:: xxxx-xx-xx $
  * @since Nov 4, 2010
  */
-public class PatchJpegLSImageInputStream implements ImageInputStream {
+public class PatchJpegLSImageInputStream extends ImageInputStreamImpl {
 
     private static final Logger log =
             Logger.getLogger(PatchJpegLSImageInputStream.class);
@@ -69,7 +67,6 @@ public class PatchJpegLSImageInputStream implements ImageInputStream {
         (byte) 0x00, (byte) 0x83,  // T2 = 131
         (byte) 0x02, (byte) 0x24,  // T3 = 548
         (byte) 0x00, (byte) 0x40,
-        (byte) 0xff, (byte) 0xda
     };
     private static final byte[] LSE_14 = {
         (byte) 0xff, (byte) 0xf8, (byte) 0x00, (byte) 0x0D,
@@ -79,7 +76,6 @@ public class PatchJpegLSImageInputStream implements ImageInputStream {
         (byte) 0x01, (byte) 0x03, // T2 = 259
         (byte) 0x04, (byte) 0x44, // T3 = 1092
         (byte) 0x00, (byte) 0x40,
-        (byte) 0xff, (byte) 0xda
     };
     private static final byte[] LSE_15 = {
         (byte) 0xff, (byte) 0xf8, (byte) 0x00, (byte) 0x0D,
@@ -89,7 +85,6 @@ public class PatchJpegLSImageInputStream implements ImageInputStream {
         (byte) 0x02, (byte) 0x03, // T2 = 515
         (byte) 0x08, (byte) 0x84, // T3 = 2180
         (byte) 0x00, (byte) 0x40,
-        (byte) 0xff, (byte) 0xda
     };
     private static final byte[] LSE_16 = {
         (byte) 0xff, (byte) 0xf8, (byte) 0x00, (byte) 0x0D,
@@ -99,28 +94,30 @@ public class PatchJpegLSImageInputStream implements ImageInputStream {
         (byte) 0x04, (byte) 0x03, // T2 = 1027
         (byte) 0x11, (byte) 0x04, // T3 = 4356
         (byte) 0x00, (byte) 0x40,
-        (byte) 0xff, (byte) 0xda
     };
 
     private final ImageInputStream iis;
+    private final long patchPos;
     private final byte[] patch;
-    private int patchPos;
-    private int markPos;
 
     public PatchJpegLSImageInputStream(ImageInputStream iis)
             throws IOException {
         if (iis == null)
             throw new NullPointerException("iis");
+        super.streamPos = iis.getStreamPosition();
+        super.flushedPos = iis.getFlushedPosition();
         this.iis = iis;
-        this.patch = selectPatch();
-    }
-
-    private byte[] selectPatch() throws IOException {
+        this.patchPos = streamPos + 15;
         byte[] jpegheader = new byte[17];
         iis.readFully(jpegheader);
+        iis.seek(streamPos);
+        this.patch = selectPatch(jpegheader);
+    }
+
+    private byte[] selectPatch(byte[] jpegheader) {
         if (toInt(jpegheader, 0) != SOI) {
             log.warn("SOI marker is missing - do not patch JPEG LS");
-            return jpegheader;
+            return null;
         }
         int marker = toInt(jpegheader, 2);
         if (marker != SOF55) {
@@ -129,12 +126,12 @@ public class PatchJpegLSImageInputStream implements ImageInputStream {
                             + "- do not patch JPEG LS"
                     : "SOI marker is not followed by JPEG-LS SOF marker "
                             + "- do not patch JPEG LS");
-            return jpegheader;
+            return null;
         }
         if (toInt(jpegheader, 4) != 11) {
             log.warn("unexpected length of JPEG-LS SOF marker segment "
                     + "- do not patch JPEG LS");
-            return jpegheader;
+            return null;
         }
         marker = toInt(jpegheader, 15);
         if (marker != SOS) {
@@ -143,66 +140,50 @@ public class PatchJpegLSImageInputStream implements ImageInputStream {
                     + "- do not patch JPEG LS"
                 : "JPEG-LS SOF marker segment is not followed by SOS marker "
                     + "- do not patch JPEG LS");
-            return jpegheader;
+            return null;
         }
         switch (jpegheader[6]) {
         case 13:
             log.info("Patch JPEG LS 13-bit with "
                     + "LSE segment(T1=34, T2=131, T3=548)");
-            return makePatch(jpegheader, LSE_13);
+            return LSE_13;
         case 14:
             log.info("Patch JPEG LS 14-bit with "
                     + "LSE segment(T1=66, T2=259, T3=1092)");
-            return makePatch(jpegheader, LSE_14);
+            return LSE_14;
         case 15:
             log.info("Patch JPEG LS 15-bit with "
                     + "LSE segment(T1=130, T2=515, T3=2180)");
-            return makePatch(jpegheader, LSE_15);
+            return LSE_15;
         case 16:
             log.info("Patch JPEG LS 16-bit with "
                     + "LSE segment(T1=258, T2=1027, T3=4356)");
-            return makePatch(jpegheader, LSE_16);
+            return LSE_16;
         }
-        return jpegheader;
+        return null;
     }
 
     private static int toInt(byte[] b, int off) {
         return (b[off] & 0xff) << 8 | (b[off+1] & 0xff);
     }
 
-    private byte[] makePatch(byte[] jpegheader, byte[] lse) {
-        byte[] patch = new byte[32];
-        System.arraycopy(jpegheader, 0, patch, 0, 15);
-        System.arraycopy(lse, 0, patch, 15, 17);
-        return patch;
-    }
-
     public void close() throws IOException {
+        super.close();
         iis.close();
     }
 
-    public void flush() throws IOException {
-        iis.flush();
-    }
-
     public void flushBefore(long pos) throws IOException {
-        iis.flushBefore(17 + Math.max(pos - patch.length, 0));
+        super.flushBefore(pos);
+        iis.flushBefore(toStreamPosition(pos));
     }
 
-    public int getBitOffset() throws IOException {
-        return iis.getBitOffset();
-    }
-
-    public ByteOrder getByteOrder() {
-        return iis.getByteOrder();
-    }
-
-    public long getFlushedPosition() {
-        return iis.getFlushedPosition() + patchPos - 17;
-    }
-
-    public long getStreamPosition() throws IOException {
-        return iis.getStreamPosition() + patchPos - 17;
+    private long toStreamPosition(long pos) {
+        if (patch == null)
+            return pos;
+        long index = pos - patchPos;
+        return index < 0 ? pos 
+                : index < patch.length ? patchPos 
+                        : pos - patch.length;
     }
 
     public boolean isCached() {
@@ -217,183 +198,81 @@ public class PatchJpegLSImageInputStream implements ImageInputStream {
         return iis.isCachedMemory();
     }
 
-    public long length() throws IOException {
-        return iis.length() + patch.length - 17;
-    }
-
-    public void mark() {
-        markPos = patchPos;
-        iis.mark();
+    public long length() {
+        try {
+            long len = iis.length();
+            return patch == null || len < 0 ? len : len + patch.length;
+        } catch (IOException e) {
+            return -1;
+        }
     }
 
     public int read() throws IOException {
-        return remainingPatch() > 0 ? patch[patchPos++] & 0xff : iis.read();
-    }
-
-    public int read(byte[] b, int off, int len) throws IOException {
-        int l1 = Math.min(remainingPatch(), len);
-        System.arraycopy(patch, patchPos, b, off, l1);
-        patchPos += l1;
-        return l1 + iis.read(b, off+l1, len-l1);
-    }
-
-    public int read(byte[] b) throws IOException {
-        return read(b, 0, b.length);
-    }
-
-    public int readBit() throws IOException {
-        noRemainingPatch();
-        return iis.readBit();
-    }
-
-    public long readBits(int numBits) throws IOException {
-        noRemainingPatch();
-        return iis.readBits(numBits);
-    }
-
-    public boolean readBoolean() throws IOException {
-        return (readUnsignedByte() != 0);
-    }
-
-    public byte readByte() throws IOException {
-        return (byte)readUnsignedByte();
-    }
-
-    public void readBytes(IIOByteBuffer buf, int len) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public char readChar() throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public double readDouble() throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public float readFloat() throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public void readFully(byte[] b, int off, int len) throws IOException {
-        if (off < 0 || len < 0 || off + len > b.length || off + len < 0) {
-            throw new IndexOutOfBoundsException
-                ("off < 0 || len < 0 || off + len > b.length!");
+        int ch;
+        if (patch == null)
+            ch = iis.read();
+        else {
+            long index = streamPos - patchPos;
+            if (index >= 0 && index < patch.length)
+                ch = patch[(int) index];
+            else
+                ch = iis.read();
         }
-
-        int remainingPatch = remainingPatch();
-        if (remainingPatch > 0) {
-            int l = Math.min(remainingPatch, len);
-            System.arraycopy(patch, patchPos, b, off, l);
-            patchPos += l;
-            off += l;
-            len -= l;
-        }
-        iis.readFully(b, off, len);
-    }
-
-    public void readFully(byte[] b) throws IOException {
-        readFully(b, 0, b.length);
-    }
-
-    public void readFully(char[] c, int off, int len) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public void readFully(double[] d, int off, int len) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public void readFully(float[] f, int off, int len) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public void readFully(int[] i, int off, int len) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public void readFully(long[] l, int off, int len) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public void readFully(short[] s, int off, int len) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public int readInt() throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public String readLine() throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public long readLong() throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public short readShort() throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public int readUnsignedByte() throws IOException {
-        int ch = this.read();
-        if (ch < 0) {
-            throw new EOFException();
-        }
+        if (ch >= 0)
+            streamPos++;
         return ch;
     }
 
-    public long readUnsignedInt() throws IOException {
-        throw new UnsupportedOperationException();
+    public int read(byte[] b, int off, int len) throws IOException {
+        if (patch == null) {
+            int r = iis.read(b, off, len);
+            if (r > 0)
+                streamPos += r;
+            return r;
+        }
+        int r = 0;
+        if (streamPos < patchPos + patch.length) {
+            if (streamPos < patchPos) {
+                r = iis.read(b, off, (int) Math.min(patchPos - streamPos, len));
+                if (r < 0)
+                    return r;
+                streamPos += r;
+                if (streamPos < patchPos)
+                    return r;
+                off += r;
+                len -= r;
+            }
+            int index = (int) (patchPos - streamPos);
+            int r2 = (int) Math.min(patch.length - index, len);
+            System.arraycopy(patch, index, b, off, r2);
+            streamPos += r;
+            r += r2;
+            off += r2;
+            len -= r2;
+        }
+        if (len > 0) {
+            int r3 = iis.read(b, off, len);
+            if (r3 < 0)
+                return r3;
+            streamPos += r;
+            r += r3;
+        }
+        return r;
     }
 
-    public int readUnsignedShort() throws IOException {
-        throw new UnsupportedOperationException();
-    }
-
-    public String readUTF() throws IOException {
-        throw new UnsupportedOperationException();
+    public void mark() {
+        super.mark();
+        iis.mark();
     }
 
     public void reset() throws IOException {
-        patchPos = markPos;
+        super.reset();
         iis.reset();
     }
 
     public void seek(long pos) throws IOException {
-        patchPos = (int) Math.min(pos, patch.length);
-        iis.seek(17 + Math.max(pos - patch.length, 0));
-    }
-
-    public void setBitOffset(int bitOffset) throws IOException {
-        noRemainingPatch();
-        iis.setBitOffset(bitOffset);
-    }
-
-    public void setByteOrder(ByteOrder byteOrder) {
-        iis.setByteOrder(byteOrder);
-    }
-
-    public int skipBytes(int n) throws IOException {
-        int n1 = Math.min(remainingPatch(), n);
-        patchPos += n1;
-        return n1 + iis.skipBytes(n-n1);
-    }
-
-    public long skipBytes(long n) throws IOException {
-        int n1 = (int) Math.min(remainingPatch(), n);
-        patchPos += n1;
-        return n1 + iis.skipBytes(n-n1);
-    }
-
-    private int remainingPatch() {
-        return patch.length - patchPos;
-    }
-
-    private void noRemainingPatch() {
-        if (remainingPatch() > 0)
-            throw new IllegalStateException();
+        super.seek(pos);
+        iis.seek(toStreamPosition(pos));
     }
 
 }
