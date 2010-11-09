@@ -62,8 +62,6 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.TransformerHandler;
 
-import org.dcm4che.auditlog.AuditLoggerFactory;
-import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObject;

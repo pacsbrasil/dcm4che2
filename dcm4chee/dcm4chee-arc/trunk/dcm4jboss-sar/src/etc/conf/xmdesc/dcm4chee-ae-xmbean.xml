@@ -111,7 +111,6 @@
          dcm4chee.archive:service=AttributesModificationScp#CallingAETitles
          dcm4chee.archive:service=AttributesModificationScu#ForwardingRules
          dcm4chee.archive:service=AttributesModificationScu#CallingAETitle
-         dcm4chee.archive:service=AuditLogger#SupressLogForAETitles
          dcm4chee.archive:service=AuditLogger#LocalAETitles
          dcm4chee.archive:service=ContentEditService#CalledAETitle
          dcm4chee.archive:service=ContentEditService#CallingAETitle

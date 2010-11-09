@@ -48,9 +48,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimerTask;
 
-import org.dcm4che.auditlog.AuditLoggerFactory;
-import org.dcm4che.auditlog.InstancesAction;
-import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
@@ -130,10 +127,6 @@ public class MoveTask implements Runnable {
     private MoveScu moveScu;
 
     private boolean directForwarding;
-
-    private RemoteNode remoteNode;
-
-    private InstancesAction instancesAction;
 
     private RetrieveInfo retrieveInfo;
 
@@ -240,9 +233,6 @@ public class MoveTask implements Runnable {
                     + moveDest);
         }
         removeInstancesOfUnsupportedStorageSOPClasses(a);
-        AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
-        remoteNode = alf.newRemoteNode(storeAssoc.getAssociation().getSocket(),
-                storeAssoc.getAssociation().getCalledAET());
         return storeAssoc;
     }
 
@@ -388,7 +378,6 @@ public class MoveTask implements Runnable {
                     switch (dimse.getCommand().getStatus()) {
                     case Status.Success:
                         ++completed;
-                        updateInstancesAction(fileInfo);
                         updateStgCmtActionInfo(fileInfo);
                         successfulTransferred.add(fileInfo);
                         break;
@@ -396,7 +385,6 @@ public class MoveTask implements Runnable {
                     case Status.DataSetDoesNotMatchSOPClassWarning:
                     case Status.ElementsDiscarded:
                         ++warnings;
-                        updateInstancesAction(fileInfo);
                         updateStgCmtActionInfo(fileInfo);
                         successfulTransferred.add(fileInfo);
                         break;
@@ -469,21 +457,6 @@ public class MoveTask implements Runnable {
             service.queueStgCmtOrder(moveCalledAET, stgCmtAET,
                             stgCmtActionInfo);
         }
-    }
-    
-    private void updateInstancesAction(final FileInfo info) {
-        if (instancesAction == null) {
-            AuditLoggerFactory alf = AuditLoggerFactory.getInstance();
-            instancesAction = alf.newInstancesAction("Access", info.studyIUID,
-                    alf.newPatient(info.patID, info.patName));
-            instancesAction.setUser(alf.newRemoteUser(alf.newRemoteNode(
-                    moveAssoc.getAssociation().getSocket(), moveAssoc
-                            .getAssociation().getCallingAET())));
-        } else {
-            instancesAction.addStudyInstanceUID(info.studyIUID);
-        }
-        instancesAction.addSOPClassUID(info.sopCUID);
-        instancesAction.incNumberOfInstances(1);
     }
 
     private void updateStgCmtActionInfo(FileInfo fileInfo) {

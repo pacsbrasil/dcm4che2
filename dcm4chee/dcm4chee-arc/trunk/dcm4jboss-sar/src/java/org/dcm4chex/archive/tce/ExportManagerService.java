@@ -80,9 +80,6 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.apache.log4j.Logger;
-import org.dcm4che.auditlog.AuditLoggerFactory;
-import org.dcm4che.auditlog.Destination;
-import org.dcm4che.auditlog.Patient;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
