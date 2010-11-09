@@ -95,10 +95,6 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
-import org.dcm4che.auditlog.AuditLoggerFactory;
-import org.dcm4che.auditlog.InstancesAction;
-import org.dcm4che.auditlog.Patient;
-import org.dcm4che.auditlog.RemoteNode;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
@@ -185,9 +181,6 @@ public class WADOSupport implements NotificationListener {
     };
     
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WADOSupport.class);
-
-    private static final AuditLoggerFactory alf = AuditLoggerFactory
-    .getInstance();
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
@@ -1847,27 +1840,6 @@ public class WADOSupport implements NotificationListener {
         }
     }
     
-    protected void logInstancesSent(WADORequestObject req,
-            WADOResponseObject resp) {
-        Dataset ds = resp.getPatInfo();
-        Patient patient = alf.newPatient(ds.getString(Tags.PatientID), ds
-                .getString(Tags.PatientName));
-        String remoteHost = disableDNS ? req.getRemoteAddr() : req
-                .getRemoteHost();
-        RemoteNode rnode = alf.newRemoteNode(req.getRemoteAddr(), remoteHost,
-                null);
-        String suid = ds.getString(Tags.StudyInstanceUID);
-        try {
-            server.invoke(auditLogName, "logInstancesSent", new Object[] {
-                    rnode, alf.newInstancesAction("Access", suid, patient) },
-                    new String[] { RemoteNode.class.getName(),
-                    InstancesAction.class.getName() });
-        } catch (Exception e) {
-            log.warn("Failed to log Instances Sent:", e);
-        }
-
-    }
-
     /**
      * 
      */
