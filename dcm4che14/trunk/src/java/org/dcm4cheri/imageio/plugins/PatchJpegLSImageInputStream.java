@@ -209,29 +209,21 @@ public class PatchJpegLSImageInputStream extends ImageInputStreamImpl {
 
     public int read() throws IOException {
         int ch;
-        if (patch == null)
+        long index;
+        if (patch != null
+                && (index = streamPos - patchPos) >= 0 
+                && index < patch.length)
+            ch = patch[(int) index];
+        else
             ch = iis.read();
-        else {
-            long index = streamPos - patchPos;
-            if (index >= 0 && index < patch.length)
-                ch = patch[(int) index];
-            else
-                ch = iis.read();
-        }
         if (ch >= 0)
             streamPos++;
         return ch;
     }
 
     public int read(byte[] b, int off, int len) throws IOException {
-        if (patch == null) {
-            int r = iis.read(b, off, len);
-            if (r > 0)
-                streamPos += r;
-            return r;
-        }
         int r = 0;
-        if (streamPos < patchPos + patch.length) {
+        if (patch != null && streamPos < patchPos + patch.length) {
             if (streamPos < patchPos) {
                 r = iis.read(b, off, (int) Math.min(patchPos - streamPos, len));
                 if (r < 0)
@@ -245,7 +237,7 @@ public class PatchJpegLSImageInputStream extends ImageInputStreamImpl {
             int index = (int) (patchPos - streamPos);
             int r2 = (int) Math.min(patch.length - index, len);
             System.arraycopy(patch, index, b, off, r2);
-            streamPos += r;
+            streamPos += r2;
             r += r2;
             off += r2;
             len -= r2;
@@ -254,7 +246,7 @@ public class PatchJpegLSImageInputStream extends ImageInputStreamImpl {
             int r3 = iis.read(b, off, len);
             if (r3 < 0)
                 return r3;
-            streamPos += r;
+            streamPos += r3;
             r += r3;
         }
         return r;
