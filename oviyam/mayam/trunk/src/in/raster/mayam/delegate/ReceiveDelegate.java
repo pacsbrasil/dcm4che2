@@ -40,6 +40,7 @@ package in.raster.mayam.delegate;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.util.core.DcmRcv;
+import in.raster.mayam.util.core.MoveScu;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -68,6 +69,7 @@ public class ReceiveDelegate {
             dcmrcv.setTcpNoDelay(false);
             dcmrcv.initTransferCapability();
             dcmrcv.setTlsNeedClientAuth(false);
+            MoveScu.maskNull(s[0]);
         } catch (UnknownHostException ex) {
             Logger.getLogger(ReceiveDelegate.class.getName()).log(Level.SEVERE, null, ex);
         }
