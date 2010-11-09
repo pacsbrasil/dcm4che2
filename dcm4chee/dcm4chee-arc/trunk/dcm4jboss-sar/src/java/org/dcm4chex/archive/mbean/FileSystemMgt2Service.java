@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 
 import javax.ejb.FinderException;
