@@ -1144,7 +1144,7 @@
   <element tag="(0028,1221)" name="Segmented Red Palette Color Lookup Table Data" vr="OW" vm="1" key="SegmentedRedPaletteColorLUTData" />
   <element tag="(0028,1222)" name="Segmented Green Palette Color Lookup Table Data" vr="OW" vm="1" key="SegmentedGreenPaletteColorLUTData" />
   <element tag="(0028,1223)" name="Segmented Blue Palette Color Lookup Table Data" vr="OW" vm="1" key="SegmentedBluePaletteColorLUTData" />
-  <element tag="(0028,1300)" name="Implant Present" vr="CS" vm="1" key="ImplantPresent" />
+  <element tag="(0028,1300)" name="Breast Implant Present" vr="CS" vm="1" key="BreastImplantPresent" />
   <element tag="(0028,1350)" name="Partial View" vr="CS" vm="1" key="PartialView" />
   <element tag="(0028,1351)" name="Partial View Description" vr="ST" vm="1" key="PartialViewDescription" />
   <element tag="(0028,1401)" name="Data Frame Assignment Sequence" vr="SQ" vm="1" key="DataFrameAssignmentSeq" />
@@ -2747,6 +2747,7 @@
   <uid value="1.2.840.10008.5.1.4.1.1.12.3" name="X-Ray Angiographic Bi-Plane Image Storage (Retired)" key="XRayAngiographicBiPlaneImageStorageRetired" retired="true" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.13.1.1" name="X-Ray 3D Angiographic Image Storage" key="XRay3DAngiographicImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.13.1.2" name="X-Ray 3D Craniofacial Image Storage" key="XRay3DCraniofacialImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.13.1.3" name="Breast Tomosynthesis Image Storage" key="BreastTomosynthesisImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.20" name="Nuclear Medicine Image Storage" key="NuclearMedicineImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.66" name="Raw Data Storage" key="RawDataStorage" dirrecord="RAW DATA" />
   <uid value="1.2.840.10008.5.1.4.1.1.66.1" name="Spatial Registration Storage" key="SpatialRegistrationStorage" dirrecord="REGISTRATION" /> 
