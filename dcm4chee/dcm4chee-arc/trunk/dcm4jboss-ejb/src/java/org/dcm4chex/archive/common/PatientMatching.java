@@ -259,7 +259,7 @@ public class PatientMatching implements Serializable{
         int end = s.indexOf(')', after+2);
         if (end == -1 || s.charAt(after) != '(')
             throw new IllegalArgumentException(s);
-        char[] ignore = new char[end-after+1];
+        char[] ignore = new char[end-(after+1)];
         s.getChars(after+1, end, ignore, 0);
         return ignore;
     }
@@ -406,15 +406,19 @@ public class PatientMatching implements Serializable{
         if (appendFamilyName) {
             appendRegex(regex, ignoreChars(familyName), familyNameMustMatch,
                     familyNameInitialMatch, unknownFamilyNameAlwaysMatch);
+            regex.append("\\^");
             if (appendGivenName) {
                 appendRegex(regex, ignoreChars(givenName), givenNameMustMatch,
                         givenNameInitialMatch, unknownGivenNameAlwaysMatch);
+                regex.append("\\^");
                 if (appendMiddleName) {
                     appendRegex(regex, ignoreChars(middleName), middleNameMustMatch,
                             middleNameInitialMatch, unknownMiddleNameAlwaysMatch);
+                    regex.append("\\^");
                     if (appendNamePrefix) {
                         appendRegex(regex, ignoreChars(namePrefix), namePrefixMustMatch,
                                 namePrefixInitialMatch, unknownNamePrefixAlwaysMatch);
+                        regex.append("\\^");
                         if (appendNameSuffix) {
                             appendRegex(regex, ignoreChars(nameSuffix), nameSuffixMustMatch,
                                     nameSuffixInitialMatch, unknownNameSuffixAlwaysMatch);
@@ -423,7 +427,8 @@ public class PatientMatching implements Serializable{
                 }
             }
         }
-        regex.append(".*");
+        if (!appendNameSuffix)
+            regex.append(".*");
         return Pattern.compile(regex.toString());
     }
 
@@ -470,7 +475,6 @@ public class PatientMatching implements Serializable{
                  .append(value.charAt(0))
                  .append(unknownAlwaysMatch ? "\\E)?" : "\\E)");
         }
-        regex.append("\\^");
     }
 
     public boolean noMatchesFor(String pid, String issuer, String familyName,
