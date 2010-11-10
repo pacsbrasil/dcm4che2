@@ -458,7 +458,7 @@ public class MoveScu {
         System.exit(1);
     }
 
-    private static String maskNull(String aet) {
+    public static String maskNull(String aet) {
         return aet != null ? aet : "MAYAM";
     }
 
