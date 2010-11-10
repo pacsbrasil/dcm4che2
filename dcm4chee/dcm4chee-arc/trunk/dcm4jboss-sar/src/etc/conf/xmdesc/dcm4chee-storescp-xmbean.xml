@@ -677,6 +677,7 @@ Notifications for one Series.]]>
            EnhancedXRayRadiofluoroscopicImageStorage
            XRay3DAngiographicImageStorage
            XRay3DCraniofacialImageStorage
+           BreastTomosynthesisImageStorage
            NuclearMedicineImageStorage
            VLEndoscopicImageStorage
            VLMicroscopicImageStorage
