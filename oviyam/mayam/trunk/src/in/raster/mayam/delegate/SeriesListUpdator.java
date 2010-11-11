@@ -68,7 +68,7 @@ import org.dcm4che2.data.Tag;
  * @version 0.5
  *
  */
-public class SeriesListUpdator {
+public class SeriesListUpdator extends Thread{
 
     Study tempStudy = null;
     boolean studyAlreadyPresent = false;
@@ -78,18 +78,37 @@ public class SeriesListUpdator {
     private StudyAnnotation studyAnnotation = null;
     private ImageReader reader = null;
 
+    private boolean multiframeStatus;
+    private String instanceUID;
+
     public SeriesListUpdator() {
     }
 
-    public SeriesListUpdator(String studyUID, String seriesUID, boolean skipStudyParsing) {
+//    public SeriesListUpdator(String studyUID, String seriesUID, boolean skipStudyParsing) {
+//        this.studyUID = studyUID;
+//        this.seriesUID = seriesUID;
+//        this.skipStudyParsing = skipStudyParsing;
+//        //this.start();
+//    }
+
+    public SeriesListUpdator(String studyUID, String seriesUID,String instanceUID,boolean multiframeStatus, boolean skipStudyParsing) {
         this.studyUID = studyUID;
         this.seriesUID = seriesUID;
         this.skipStudyParsing = skipStudyParsing;
-        //this.start();
+        this.instanceUID=instanceUID;
+        this.multiframeStatus=multiframeStatus;
+        this.start();
     }
 
+    @Override
     public void run() {
-        addSeriesToStudyList(studyUID, seriesUID, skipStudyParsing);
+        //addSeriesToStudyList(studyUID, seriesUID, skipStudyParsing);
+
+          this.setDicomReader();
+        if(ApplicationContext.databaseRef.getMultiframeStatus())
+            this.addSeriesToStudyList(studyUID, seriesUID,multiframeStatus,instanceUID, false);
+        else
+        this.addSeriesToStudyList(studyUID, seriesUID, false);
     }
 
     /**

@@ -155,13 +155,8 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
     /**
      * This routine used to update the instance list in the studylist array
      */
-    public void updateInstanceList() {
-        SeriesListUpdator series = new SeriesListUpdator(studyUID, seriesUID, false);
-        series.setDicomReader();
-        if(ApplicationContext.databaseRef.getMultiframeStatus())
-            series.addSeriesToStudyList(studyUID, seriesUID,isMulitiFrame(),instanceUID, false);
-        else
-        series.addSeriesToStudyList(studyUID, seriesUID, false);
+    public void updateInstanceList() {        
+        SeriesListUpdator series = new SeriesListUpdator(studyUID, seriesUID,instanceUID,isMulitiFrame(), false);
     }
 
     /**
