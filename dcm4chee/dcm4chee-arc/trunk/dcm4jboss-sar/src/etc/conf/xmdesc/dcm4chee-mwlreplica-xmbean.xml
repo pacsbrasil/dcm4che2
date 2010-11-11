@@ -122,13 +122,14 @@
       <description><![CDATA[Defines which Patient Attributes in received HL7
 ORM messages are considered for selecting existing Patient records in the
 archive.
-<p>Format: pid,issuer[?][,<i>demograhic-match</i>]
-<br/><i>demograhic-match</i> ::= '['[<i>ignore-chars</i>',']<i>demograhic-fields</i>']' | [<i>ignore-chars</i>',']<i>demograhic-fields</i>
-<br/><i>ignore-chars</i> ::= 'ignore(' <i>char</i>[...] ')'
+<p>
+Format: pid[?],issuer[?][,<i>demograhic-match</i>]
+<br/><i>demograhic-match</i> ::= '['[<i>ignore</i>',']<i>demograhic-fields</i>']' | [<i>ignore</i>',']<i>demograhic-fields</i>
+<br/><i>ignore</i> ::= 'ignore("' <i>regular-expression</i> '")'
 <br/><i>demograhic-fields</i> ::= <i>demograhic-field</i>['?'][, ...]
 <br/><i>demograhic-field</i> ::= 'familyname'['(1)'] | 'givenname'['(1)'] | 'middlename'['(1)'] | 'nameprefix'['(1)'] | 'namesuffix'['(1)'] | birthdate | sex
 <p>
-Characters specified by 'ignore(...)' will be ignored for matching patient name
+Substrings specified by 'ignore("' <i>regular-expression</i> '")' will be ignored for matching patient name
 components.
 <p>
 A '(1)' suffix of the attribute name specifies that a value with only one
@@ -140,7 +141,7 @@ received HL7 ORM messages will match with any value for that field in
 existing Patient Records, as Patient Records with missing values for that field
 will match with any value for that field in received HL7 ORM messages. Field
 names without question marks specifies, that HL7 ORM messages without values
-for such fields will not match any existing Patient Record, as Patient Records
+for such fields will not match any existing Patient Record, and Patient Records
 without values for such fields will not get selected on receive of any HL7 ORM
 message.
 <p>
