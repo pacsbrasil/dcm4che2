@@ -38,6 +38,9 @@
 package org.dcm4chex.archive.common;
 
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -88,29 +91,30 @@ public class PatientMatching implements Serializable{
                 null   // ignore
                 );
 
-    public final boolean trustPatientIDWithIssuer;
-    public final boolean unknownPatientIDAlwaysMatch;
-    public final boolean unknownIssuerAlwaysMatch;
-    public final boolean familyNameMustMatch;
-    public final boolean familyNameInitialMatch;
-    public final boolean unknownFamilyNameAlwaysMatch;
-    public final boolean givenNameMustMatch;
-    public final boolean givenNameInitialMatch;
-    public final boolean unknownGivenNameAlwaysMatch;
-    public final boolean middleNameMustMatch;
-    public final boolean middleNameInitialMatch;
-    public final boolean unknownMiddleNameAlwaysMatch;
-    public final boolean namePrefixMustMatch;
-    public final boolean namePrefixInitialMatch;
-    public final boolean unknownNamePrefixAlwaysMatch;
-    public final boolean nameSuffixMustMatch;
-    public final boolean nameSuffixInitialMatch;
-    public final boolean unknownNameSuffixAlwaysMatch;
-    public final boolean birthDateMustMatch;
-    public final boolean unknownBirthDateAlwaysMatch;
-    public final boolean sexMustMatch;
-    public final boolean unknownSexAlwaysMatch;
-    public final Pattern ignore;
+    private final boolean trustPatientIDWithIssuer;
+    private final boolean unknownPatientIDAlwaysMatch;
+    private final boolean unknownIssuerAlwaysMatch;
+    private final boolean familyNameMustMatch;
+    private final boolean familyNameInitialMatch;
+    private final boolean unknownFamilyNameAlwaysMatch;
+    private final boolean givenNameMustMatch;
+    private final boolean givenNameInitialMatch;
+    private final boolean unknownGivenNameAlwaysMatch;
+    private final boolean middleNameMustMatch;
+    private final boolean middleNameInitialMatch;
+    private final boolean unknownMiddleNameAlwaysMatch;
+    private final boolean namePrefixMustMatch;
+    private final boolean namePrefixInitialMatch;
+    private final boolean unknownNamePrefixAlwaysMatch;
+    private final boolean nameSuffixMustMatch;
+    private final boolean nameSuffixInitialMatch;
+    private final boolean unknownNameSuffixAlwaysMatch;
+    private final boolean birthDateMustMatch;
+    private final boolean unknownBirthDateAlwaysMatch;
+    private final boolean sexMustMatch;
+    private final boolean unknownSexAlwaysMatch;
+    private final Pattern ignore;
+    private PatientMatching altDemographicsMatch;
     
     public PatientMatching(String s) {
         int pid = indexOf(s, PID);
@@ -217,7 +221,23 @@ public class PatientMatching implements Serializable{
                     ? Pattern.compile(ignore) : null;
     }
 
-    public boolean isUnknownPersonNameAlwaysMatch() {
+    public final boolean isTrustPatientIDWithIssuer() {
+        return trustPatientIDWithIssuer;
+    }
+
+    public boolean isUnknownIssuerAlwaysMatch() {
+        return unknownIssuerAlwaysMatch;
+    }
+
+    public final PatientMatching getAltDemographicsMatch() {
+        return altDemographicsMatch;
+    }
+
+    public final void setAltDemographicsMatch(PatientMatching altDemographicsMatch) {
+        this.altDemographicsMatch = altDemographicsMatch;
+    }
+
+    private boolean isUnknownPersonNameAlwaysMatch() {
         return unknownFamilyNameAlwaysMatch && unknownGivenNameAlwaysMatch
                 && unknownMiddleNameAlwaysMatch && unknownNamePrefixAlwaysMatch
                 && unknownNameSuffixAlwaysMatch;
@@ -372,10 +392,19 @@ public class PatientMatching implements Serializable{
         return sb.toString();
     }
 
+    public List<Pattern> compilePNPatterns(String familyName, String givenName,
+            String middleName, String namePrefix, String nameSuffix) {
+        List<Pattern> list = new LinkedList<Pattern>();
+        for (PatientMatching m = this; m != null; m = altDemographicsMatch )
+            list.add(m.compilePNPattern(familyName, givenName, middleName,
+                    namePrefix, nameSuffix));
+        return list ;
+    }
+
     public Pattern compilePNPattern(String familyName, String givenName,
             String middleName, String namePrefix, String nameSuffix) {
         if (allMatchesFor(familyName, givenName, middleName, namePrefix,
-                namePrefix)) {
+                nameSuffix)) {
             return null;
         }
         boolean appendNameSuffix =
@@ -458,16 +487,19 @@ public class PatientMatching implements Serializable{
     public boolean noMatchesFor(String familyName, String givenName,
             String middleName, String namePrefix, String nameSuffix,
             String birthdate, String sex) {
-        return !unknownFamilyNameAlwaysMatch && familyName == null
+        return (!unknownFamilyNameAlwaysMatch && familyName == null
                 || !unknownGivenNameAlwaysMatch && givenName == null
                 || !unknownMiddleNameAlwaysMatch && middleName == null
                 || !unknownNamePrefixAlwaysMatch && namePrefix == null
                 || !unknownNameSuffixAlwaysMatch && nameSuffix == null
                 || !unknownBirthDateAlwaysMatch && birthdate == null
-                || !unknownSexAlwaysMatch && sex == null;
+                || !unknownSexAlwaysMatch && sex == null)
+                && (altDemographicsMatch == null 
+                || altDemographicsMatch.noMatchesFor(familyName, givenName,
+                        middleName, namePrefix, nameSuffix, birthdate, sex));
     }
 
-    public boolean allMatchesFor(String familyName, String givenName,
+    private boolean allMatchesFor(String familyName, String givenName,
             String middleName, String namePrefix, String nameSuffix) {
         return (!familyNameMustMatch 
                         || unknownFamilyNameAlwaysMatch && familyName == null)
@@ -488,6 +520,29 @@ public class PatientMatching implements Serializable{
                 && (!birthDateMustMatch
                         || unknownBirthDateAlwaysMatch && birthdate == null)
                 && (!sexMustMatch
-                        || unknownSexAlwaysMatch && sex == null);
+                        || unknownSexAlwaysMatch && sex == null)
+                || altDemographicsMatch != null 
+                && altDemographicsMatch.allMatchesFor(familyName, givenName,
+                        middleName, namePrefix, nameSuffix, birthdate, sex);
+    }
+
+    public boolean matches(String pn, String birthdate, String sex,
+            Iterator<Pattern> pnPatternIter, String birthdate2, String sex2) {
+        Pattern pnPattern = pnPatternIter.next();
+        return (pnPattern == null 
+                        || (pn == null 
+                                ? isUnknownPersonNameAlwaysMatch()
+                                : pnPattern.matcher(ignore(pn)).matches()))
+                && (!birthDateMustMatch 
+                        || (birthdate == null || birthdate2 == null)
+                                ? unknownBirthDateAlwaysMatch
+                                : birthdate.equals(birthdate2))
+                && (!sexMustMatch 
+                        || ((sex == null || sex2 == null)
+                                ? unknownSexAlwaysMatch
+                                : sex.equals(sex2)))
+                || altDemographicsMatch != null
+                && altDemographicsMatch.matches(pn, birthdate, sex,
+                        pnPatternIter, birthdate2, sex2);
     }
 }

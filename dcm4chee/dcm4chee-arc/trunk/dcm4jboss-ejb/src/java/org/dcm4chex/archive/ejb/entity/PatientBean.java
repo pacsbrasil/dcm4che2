@@ -42,6 +42,7 @@ package org.dcm4chex.archive.ejb.entity;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.ejb.CreateException;
@@ -576,7 +577,7 @@ public abstract class PatientBean implements EntityBean {
             }
             if (issuer != null) {
                 int countWithIssuer = matchIssuer(matching, issuer, c);
-                if (!matching.trustPatientIDWithIssuer) {
+                if (!matching.isTrustPatientIDWithIssuer()) {
                     PatientLocal matchWithIssuer = (countWithIssuer > 0) ?
                                 (PatientLocal) c.iterator().next() : null;
                     matchDemographics(matching, familyName, givenName,
@@ -654,7 +655,7 @@ public abstract class PatientBean implements EntityBean {
                 }
             }
         }
-        if (countWithIssuer > 0 || !matching.unknownIssuerAlwaysMatch) {
+        if (countWithIssuer > 0 || !matching.isUnknownIssuerAlwaysMatch()) {
             for (Iterator iter = c.iterator(); iter.hasNext();) {
                 PatientLocal pat = (PatientLocal) iter.next();
                 String issuer2 = pat.getIssuerOfPatientId();
@@ -676,126 +677,18 @@ public abstract class PatientBean implements EntityBean {
         }
         if (matching.noMatchesFor(familyName, givenName, middleName,
                 namePrefix, nameSuffix, birthdate, sex)) {
-            throw new ObjectNotFoundException("Patient not found! No matches in matchDemographics for PatientMatching:"+matching);
+            throw new ObjectNotFoundException();
         }
-        Pattern pnPattern = matching.compilePNPattern(
+        List<Pattern> pnPatterns = matching.compilePNPatterns(
                 familyName, givenName, middleName, namePrefix, nameSuffix);
         for (Iterator iter = c.iterator(); iter.hasNext();) {
             PatientLocal pat = (PatientLocal) iter.next();
-            String pn2 = pat.getPatientName();
-            String birthdate2 = pat.getPatientBirthDate();
-            String sex2 = pat.getPatientSex();
-            if (pnPattern != null 
-                    && (pn2 == null 
-                            ? !matching.isUnknownPersonNameAlwaysMatch()
-                            : !pnPattern.matcher(matching.ignore(pn2)).matches())
-                    || matching.birthDateMustMatch 
-                    && ((birthdate2 == null || birthdate == null)
-                            ? !matching.unknownBirthDateAlwaysMatch
-                            : !birthdate.equals(birthdate2))
-                    || matching.sexMustMatch 
-                    && ((sex2 == null || sex == null)
-                            ? !matching.unknownSexAlwaysMatch
-                            : !sex.equals(sex2))) {
+            if (!matching.matches(pat.getPatientName(),
+                    pat.getPatientBirthDate(), pat.getPatientSex(),
+                    pnPatterns.iterator(), birthdate, sex))
                 iter.remove();
-            }
         }
     }
-
-    /*
-    public PatientLocal ejbHomeSelectPatientByID(Dataset ds)
-            throws FinderException {
-        PatientLocalHome patHome = (PatientLocalHome) ctx.getEJBLocalHome();
-        String pid = ds.getString(Tags.PatientID);
-        String issuer = ds.getString(Tags.IssuerOfPatientID);
-        Collection c = patHome.findByPatientId(pid);
-        if (issuer != null) {
-            for (Iterator iter = c.iterator(); iter.hasNext();) {
-                PatientLocal pat = (PatientLocal) iter.next();
-                String issuer2 = pat.getIssuerOfPatientId();
-                if (issuer2 != null && !issuer2.equals(issuer)) {
-                    iter.remove();
-                }
-            }
-        }
-        if (c.isEmpty()) {
-            throw new ObjectNotFoundException();
-        }
-        if (c.size() > 1) {
-            throw new NonUniquePatientException("Patient ID[id="
-                    + ds.getString(Tags.PatientID) + " ambiguous");
-        }
-        PatientLocal pat = (PatientLocal) c.iterator().next();
-        PatientLocal merged = pat.getMergedWith();
-        if (merged != null) {
-             String prompt = "Patient ID[id="
-                                + pat.getPatientId() + ",issuer="
-                                + pat.getIssuerOfPatientId()
-                                + "] merged with Patient ID[id="
-                                + merged.getPatientId() + ",issuer=" 
-                                + merged.getIssuerOfPatientId() + "]";
-            log.warn(prompt);
-            throw new PatientMergedException(prompt); 
-        }
-        return pat;
-    }
-
-    public Collection ejbHomeSelectPatientsByDemographics(Dataset ds)
-            throws FinderException {
-        PatientLocalHome patHome = (PatientLocalHome) ctx.getEJBLocalHome();
-        String pid = ds.getString(Tags.PatientID);
-        String issuer = ds.getString(Tags.IssuerOfPatientID);
-        if (pid != null && issuer != null) {
-            try {
-                return Collections.singleton(
-                        patHome.findByPatientIdWithIssuer(pid, issuer));
-            } catch (ObjectNotFoundException onfe) {}
-        }
-        PersonName pn = ds.getPersonName(Tags.PatientName);
-        String birthdate = normalizeDA(ds.getString(Tags.PatientBirthDate));
-        if (birthdate == null || pn == null
-                || pn.get(PersonName.FAMILY) == null
-                || pn.get(PersonName.GIVEN) == null ) {
-            return Collections.emptyList();
-        }
-        String pnwc = toWildCard(pn);
-        return pid == null
-                ? patHome.findByPatientNameAndBirthDate(pnwc, birthdate)
-                : issuer == null
-                ? patHome.findByPatientIdAndNameAndBirthDate(pid, pnwc, birthdate)
-                : patHome.findByPatientIdWithoutIssuerAndNameAndBirthDate(pid, pnwc, birthdate);
-    }
-
-    public PatientLocal ejbHomeFollowMergedWith(PatientLocal pat)
-            throws CircularMergedException {
-        PatientLocal result = pat;
-        PatientLocal merged;
-        while ((merged = result.getMergedWith()) != null) {
-            if (merged.isIdentical(pat)) {
-                String prompt = "Detect circular merged Patient "
-                    + pat.asString();
-                log.warn(prompt);
-                throw new CircularMergedException(prompt);
-            }
-            result = merged;
-        }
-        return result;
-    }
-
-
-    private String toWildCard(PersonName pn) {
-        StringBuilder sb = new StringBuilder(64);
-        sb.append(pn.get(PersonName.FAMILY).toUpperCase());
-        sb.append('^');
-        sb.append(pn.get(PersonName.GIVEN).toUpperCase());
-        if (pn.get(PersonName.MIDDLE) != null) {
-            sb.append('^');
-            sb.append(pn.get(PersonName.MIDDLE).toUpperCase());
-        }
-        sb.append("^%");
-        return sb.toString();
-    }
-*/
 
      /**
      * @ejb.interface-method
