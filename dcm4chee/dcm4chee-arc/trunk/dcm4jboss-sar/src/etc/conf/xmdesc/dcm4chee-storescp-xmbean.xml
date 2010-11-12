@@ -237,11 +237,15 @@ received DICOM Composite Objects of a DICOM Study shall be considered for the
 selection of an existing Patient records in the archive to which the new Study
 will be associated.
 <p>
-Format: pid[?],issuer[?][,<i>demograhic-match</i>]
-<br/><i>demograhic-match</i> ::= '['[<i>ignore</i>',']<i>demograhic-fields</i>']' | [<i>ignore</i>',']<i>demograhic-fields</i>
+Format: 'pid'['?']',issuer'['?'][',' ['['] <i>demograhic-matches</i> [']'] ]
+<br/><i>demograhic-matches</i> ::= <i>demograhic-match</i>['|' ...]
+<br/><i>demograhic-match</i> ::= [<i>ignore</i>',']<i>demograhic-fields</i>
 <br/><i>ignore</i> ::= 'ignore("' <i>regular-expression</i> '")'
-<br/><i>demograhic-fields</i> ::= <i>demograhic-field</i>['?'][, ...]
+<br/><i>demograhic-fields</i> ::= <i>demograhic-field</i>['?'][',' ...]
 <br/><i>demograhic-field</i> ::= 'familyname'['(1)'] | 'givenname'['(1)'] | 'middlename'['(1)'] | 'nameprefix'['(1)'] | 'namesuffix'['(1)'] | birthdate | sex
+<p>
+Multiple alternative <i>demograhic-matches</i> can be specified using '|' as
+delimiter.
 <p>
 Substrings specified by 'ignore("' <i>regular-expression</i> '")' will be ignored for matching patient name
 components.
@@ -262,7 +266,7 @@ receive of any DICOM Composite Object.
 With 'pid<b>?</b>', you have to configure the Patient's family name complex 
 ('familyname') as additional matching criterium.
 <p>
-Surrounding <i>demograhic-match</i> by brackets('[]') defines, that
+Surrounding <i>demograhic-matches</i> by brackets('[]') defines, that
 demographic fields shall *not* be considered for the selection of an existing
 Patient record, if the Patient ID is qualified by an Issuer/Authority in the
 received DICOM Composite Object *and* in the matching Patient Record.

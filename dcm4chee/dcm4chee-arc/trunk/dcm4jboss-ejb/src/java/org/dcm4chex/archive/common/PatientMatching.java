@@ -117,8 +117,17 @@ public class PatientMatching implements Serializable{
     private PatientMatching altDemographicsMatch;
     
     public PatientMatching(String s) {
-        int pid = indexOf(s, PID);
-        int issuer = indexOf(s, ISSUER);
+        this(indexOf(s, PID), indexOf(s, ISSUER), s);
+    }
+
+    private PatientMatching(int pid, int issuer, String s) {
+        boolean trust = s.charAt(s.length()-1) == ']';
+        int alt = indexOfAlt(s);
+        if (alt != -1) {
+            altDemographicsMatch = 
+                    new PatientMatching(pid, issuer, s.substring(alt+1));
+            s = s.substring(0, alt);
+        }
         int familyName = indexOf(s, FAMILYNAME);
         int givenName = indexOf(s, GIVENNAME);
         int middleName = indexOf(s, MIDDLENAME);
@@ -162,7 +171,7 @@ public class PatientMatching implements Serializable{
         unknownSexAlwaysMatch =
                 unknownAlwaysMatch(s, sex, SEX, false);
         ignore = ignorePattern(s);
-        trustPatientIDWithIssuer = s.charAt(s.length()-1) == ']'
+        trustPatientIDWithIssuer = trust
                 || !familyNameMustMatch
                 && !givenNameMustMatch && !middleNameMustMatch
                 && !namePrefixMustMatch && !nameSuffixMustMatch
@@ -170,6 +179,17 @@ public class PatientMatching implements Serializable{
         if (unknownPatientIDAlwaysMatch && !familyNameMustMatch) {
             throw new IllegalArgumentException(s);
         }
+    }
+
+    private int indexOfAlt(String s) {
+        int ignore = s.indexOf(IGNORE);
+        int alt = -1;
+        while ((alt = s.indexOf('|', alt+1)) != -1)
+            // check if '|' not part of ignore("<regex>")
+            if (ignore == -1 || ignore > alt
+                    || s.indexOf("\")", ignore+2) < alt)
+                return alt;
+        return -1;
     }
 
     private PatientMatching(boolean trustPatientIDWithIssuer, 
@@ -271,7 +291,7 @@ public class PatientMatching implements Serializable{
         return Pattern.compile(regex);
     }
 
-    private int indexOf(String str, String substr) {
+    private static int indexOf(String str, String substr) {
         int index = str.indexOf(substr);
         if (index != -1) {
             int after;
@@ -286,7 +306,10 @@ public class PatientMatching implements Serializable{
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        return toStringBuilder(new StringBuilder()).toString();
+    }
+
+    public StringBuilder toStringBuilder(StringBuilder sb) {
         sb.append(PID);
         if (unknownPatientIDAlwaysMatch) {
             sb.append('?');
@@ -302,100 +325,107 @@ public class PatientMatching implements Serializable{
             if (trustPatientIDWithIssuer) {
                 sb.append('[');
             }
-            int count = 0;
-            if (ignore != null) {
-                count++;
-                sb.append(IGNORE).append("(\"").append(ignore).append("\")");
-            }
-            if (familyNameMustMatch) {
-                if (count++ > 0) {
-                    sb.append(',');
-                }
-                sb.append(FAMILYNAME);
-                if (familyNameInitialMatch) {
-                    sb.append(INITIAL);
-                }
-                if (unknownFamilyNameAlwaysMatch) {
-                    sb.append('?');
-                }
-            }
-            if (givenNameMustMatch) {
-                if (count++ > 0) {
-                    sb.append(',');
-                }
-                sb.append(GIVENNAME);
-                if (givenNameInitialMatch) {
-                    sb.append(INITIAL);
-                }
-                if (unknownGivenNameAlwaysMatch) {
-                    sb.append('?');
-                }
-            }
-            if (middleNameMustMatch) {
-                if (count++ > 0) {
-                    sb.append(',');
-                }
-                sb.append(MIDDLENAME);
-                if (middleNameInitialMatch) {
-                    sb.append(INITIAL);
-                }
-                if (unknownMiddleNameAlwaysMatch) {
-                    sb.append('?');
-                }
-            }
-            if (namePrefixMustMatch) {
-                if (count++ > 0) {
-                    sb.append(',');
-                }
-                sb.append(NAMEPREFIX);
-                if (namePrefixInitialMatch) {
-                    sb.append(INITIAL);
-                }
-                if (unknownNamePrefixAlwaysMatch) {
-                    sb.append('?');
-                }
-            }
-            if (nameSuffixMustMatch) {
-                if (count++ > 0) {
-                    sb.append(',');
-                }
-                sb.append(NAMESUFFIX);
-                if (nameSuffixInitialMatch) {
-                    sb.append(INITIAL);
-                }
-                if (unknownNameSuffixAlwaysMatch) {
-                    sb.append('?');
-                }
-            }
-            if (birthDateMustMatch) {
-                if (count > 0) {
-                    sb.append(',');
-                }
-                sb.append(BIRTHDATE);
-                if (unknownBirthDateAlwaysMatch) {
-                    sb.append('?');
-                }
-            }
-            if (sexMustMatch) {
-                if (count > 0) {
-                    sb.append(',');
-                }
-                sb.append(SEX);
-                if (unknownSexAlwaysMatch) {
-                    sb.append('?');
-                }
-            }
+            appendDemographicsMatch(sb);
+            for (PatientMatching m = altDemographicsMatch; m != null;
+                    m = m.altDemographicsMatch)
+                m.appendDemographicsMatch(sb.append('|'));
             if (trustPatientIDWithIssuer) {
                 sb.append(']');
             }
         }
-        return sb.toString();
+        return sb;
+    }
+
+    private void appendDemographicsMatch(StringBuilder sb) {
+        int count = 0;
+        if (ignore != null) {
+            count++;
+            sb.append(IGNORE).append("(\"").append(ignore).append("\")");
+        }
+        if (familyNameMustMatch) {
+            if (count++ > 0) {
+                sb.append(',');
+            }
+            sb.append(FAMILYNAME);
+            if (familyNameInitialMatch) {
+                sb.append(INITIAL);
+            }
+            if (unknownFamilyNameAlwaysMatch) {
+                sb.append('?');
+            }
+        }
+        if (givenNameMustMatch) {
+            if (count++ > 0) {
+                sb.append(',');
+            }
+            sb.append(GIVENNAME);
+            if (givenNameInitialMatch) {
+                sb.append(INITIAL);
+            }
+            if (unknownGivenNameAlwaysMatch) {
+                sb.append('?');
+            }
+        }
+        if (middleNameMustMatch) {
+            if (count++ > 0) {
+                sb.append(',');
+            }
+            sb.append(MIDDLENAME);
+            if (middleNameInitialMatch) {
+                sb.append(INITIAL);
+            }
+            if (unknownMiddleNameAlwaysMatch) {
+                sb.append('?');
+            }
+        }
+        if (namePrefixMustMatch) {
+            if (count++ > 0) {
+                sb.append(',');
+            }
+            sb.append(NAMEPREFIX);
+            if (namePrefixInitialMatch) {
+                sb.append(INITIAL);
+            }
+            if (unknownNamePrefixAlwaysMatch) {
+                sb.append('?');
+            }
+        }
+        if (nameSuffixMustMatch) {
+            if (count++ > 0) {
+                sb.append(',');
+            }
+            sb.append(NAMESUFFIX);
+            if (nameSuffixInitialMatch) {
+                sb.append(INITIAL);
+            }
+            if (unknownNameSuffixAlwaysMatch) {
+                sb.append('?');
+            }
+        }
+        if (birthDateMustMatch) {
+            if (count > 0) {
+                sb.append(',');
+            }
+            sb.append(BIRTHDATE);
+            if (unknownBirthDateAlwaysMatch) {
+                sb.append('?');
+            }
+        }
+        if (sexMustMatch) {
+            if (count > 0) {
+                sb.append(',');
+            }
+            sb.append(SEX);
+            if (unknownSexAlwaysMatch) {
+                sb.append('?');
+            }
+        }
     }
 
     public List<Pattern> compilePNPatterns(String familyName, String givenName,
             String middleName, String namePrefix, String nameSuffix) {
         List<Pattern> list = new LinkedList<Pattern>();
-        for (PatientMatching m = this; m != null; m = altDemographicsMatch )
+        for (PatientMatching m = this; m != null; m = m.altDemographicsMatch )
             list.add(m.compilePNPattern(familyName, givenName, middleName,
                     namePrefix, nameSuffix));
         return list ;
@@ -544,5 +574,13 @@ public class PatientMatching implements Serializable{
                 || altDemographicsMatch != null
                 && altDemographicsMatch.matches(pn, birthdate, sex,
                         pnPatternIter, birthdate2, sex2);
+    }
+    
+    public static void main(String[] args) {
+        for (String s : args) {
+            System.out.println(s);
+            System.out.println(new PatientMatching(s));
+            System.out.println();
+        }
     }
 }

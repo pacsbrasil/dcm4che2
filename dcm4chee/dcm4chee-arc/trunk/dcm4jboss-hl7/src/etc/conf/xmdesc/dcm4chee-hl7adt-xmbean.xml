@@ -151,11 +151,16 @@ handled by this service.]]>
       <description><![CDATA[Defines which Patient Attributes in received HL7
 ADT messages are considered for selecting existing Patient records in the
 archive.
-Format: pid[?],issuer[?][,<i>demograhic-match</i>]
-<br/><i>demograhic-match</i> ::= '['[<i>ignore</i>',']<i>demograhic-fields</i>']' | [<i>ignore</i>',']<i>demograhic-fields</i>
+<p>
+Format: 'pid'['?']',issuer'['?'][',' ['['] <i>demograhic-matches</i> [']'] ]
+<br/><i>demograhic-matches</i> ::= <i>demograhic-match</i>['|' ...]
+<br/><i>demograhic-match</i> ::= [<i>ignore</i>',']<i>demograhic-fields</i>
 <br/><i>ignore</i> ::= 'ignore("' <i>regular-expression</i> '")'
-<br/><i>demograhic-fields</i> ::= <i>demograhic-field</i>['?'][, ...]
+<br/><i>demograhic-fields</i> ::= <i>demograhic-field</i>['?'][',' ...]
 <br/><i>demograhic-field</i> ::= 'familyname'['(1)'] | 'givenname'['(1)'] | 'middlename'['(1)'] | 'nameprefix'['(1)'] | 'namesuffix'['(1)'] | birthdate | sex
+<p>
+Multiple alternative <i>demograhic-matches</i> can be specified using '|' as
+delimiter.
 <p>
 Substrings specified by 'ignore("' <i>regular-expression</i> '")' will be ignored for matching patient name
 components.
