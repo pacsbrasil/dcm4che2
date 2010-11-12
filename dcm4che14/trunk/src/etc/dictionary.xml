@@ -525,6 +525,9 @@
   <element tag="(0018,1403)" name="Cassette Size" vr="CS" vm="1" key="CassetteSize" />
   <element tag="(0018,1404)" name="Exposures on Plate" vr="US" vm="1" key="ExposuresOnPlate" />
   <element tag="(0018,1405)" name="Relative X-ray Exposure" vr="IS" vm="1" key="RelativeXRayExposure" />
+  <element tag="(0018,1411)" name="Exposure Index" vr="DS" vm="1" key="ExposureIndex" />
+  <element tag="(0018,1412)" name="Target Exposure Index" vr="DS" vm="1" key="TargetExposureIndex" />
+  <element tag="(0018,1413)" name="Deviation Index" vr="DS" vm="1" key="DeviationIndex" />
   <element tag="(0018,1450)" name="Column Angulation" vr="CS" vm="1" key="ColumnAngulation" />
   <element tag="(0018,1460)" name="Tomo Layer Height" vr="DS" vm="1" key="TomoLayerHeight" />
   <element tag="(0018,1470)" name="Tomo Angle" vr="DS" vm="1" key="TomoAngle" />
