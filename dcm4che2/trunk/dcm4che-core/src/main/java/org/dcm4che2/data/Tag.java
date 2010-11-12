@@ -79,7 +79,6 @@ public class Tag {
                     tagPath[i] = 0;
                     i++;
                 }
-                //$FALL-THROUGH$
             case '[':
             case ']':
                 delim = ch0;              
@@ -1612,6 +1611,15 @@ public class Tag {
 
     /** (0018,1405) VR=IS, VM=1 Relative X-Ray Exposure  */
     public static final int RelativeXRayExposure = 0x00181405;
+
+    /** (0018,1411) VR=DS, VM=1 Exposure Index  */
+    public static final int ExposureIndex = 0x00181411;
+
+    /** (0018,1412) VR=DS, VM=1 Target Exposure Index  */
+    public static final int TargetExposureIndex = 0x00181412;
+
+    /** (0018,1413) VR=DS, VM=1 Deviation Index  */
+    public static final int DeviationIndex = 0x00181413;
 
     /** (0018,1450) VR=DS, VM=1 Column Angulation  */
     public static final int ColumnAngulation = 0x00181450;
