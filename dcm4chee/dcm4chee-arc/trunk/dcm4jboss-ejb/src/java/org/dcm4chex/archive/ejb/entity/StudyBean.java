@@ -1002,7 +1002,7 @@ public abstract class StudyBean implements EntityBean {
     }
     
     /**
-     * @ejb.select query="SELECT OBJECT(f) FROM File f WHERE f.instance.series.study.pk = ?1 AND f.fileSystem.pk = ?2"
+     * @ejb.select query="SELECT OBJECT(f) FROM File f WHERE f.instance.series.study.pk = ?1 AND f.fileSystem.pk = ?2 ORDER BY f.pk"
      *             transaction-type="Supports"
      */
     public abstract Collection ejbSelectFiles(java.lang.Long study_fk, java.lang.Long filesystem_fk)

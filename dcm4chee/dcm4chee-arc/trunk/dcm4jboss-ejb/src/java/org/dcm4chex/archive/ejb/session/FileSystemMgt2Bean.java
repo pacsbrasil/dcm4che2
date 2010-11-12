@@ -44,6 +44,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -729,16 +730,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
             FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
             Collection files = study.getFiles(fsPk);
-            try {
-                // check if new objects belonging to the study were stored
-                // after this DeleteStudyOrder was scheduled
-                sofHome.findByStudyAndFileSystem(study, fs);
-                throw new ConcurrentStudyStorageException(
-                        "Concurrent storage of study[uid="
-                        + study.getStudyIuid() + "] on file system[dir="
-                        + fs.getDirectoryPath() + "] - do not delete study");
-            } catch (ObjectNotFoundException onfe) {
-            }
+            checkConcurrentStudyStorage(study, fs);
             String fsPath = fs.getDirectoryPath();
             String[] fpaths = new String[files.size()];
             int i = 0;
@@ -756,20 +748,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             } else {
                 int availabilityOfExtRetr =
                         order.getExternalRetrieveAvailability();
-                Collection seriess = study.getSeries();
-                for (Iterator siter = seriess.iterator(); siter.hasNext();) {
-                    SeriesLocal series = (SeriesLocal) siter.next();
-                    Collection insts = series.getInstances();
-                    for (Iterator iiter = insts.iterator(); iiter.hasNext();) {
-                        InstanceLocal inst = (InstanceLocal) iiter.next();
-                        inst.updateRetrieveAETs();
-                        inst.updateAvailability(availabilityOfExtRetr);
-                    }
-                    series.updateRetrieveAETs();
-                    series.updateAvailability();
-                }
-                study.updateRetrieveAETs();
-                study.updateAvailability();
+                updateStudyAvailability(study, availabilityOfExtRetr);
              }
             return fpaths;
         } catch (FinderException e) {
@@ -779,6 +758,129 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         }
     }
 
+    private void checkConcurrentStudyStorage(StudyLocal study,
+            FileSystemLocal fs) throws FinderException,
+            ConcurrentStudyStorageException {
+        try {
+            // check if new objects belonging to the study were stored
+            // after this DeleteStudyOrder was scheduled
+            sofHome.findByStudyAndFileSystem(study, fs);
+            throw new ConcurrentStudyStorageException(
+                    "Concurrent storage of study[uid="
+                    + study.getStudyIuid() + "] on file system[dir="
+                    + fs.getDirectoryPath() + "] - do not delete study");
+        } catch (ObjectNotFoundException onfe) {
+        }
+    }
+
+    
+    /**    
+     * @ejb.interface-method
+     */
+    public FileDTO[] getFilesOfStudy(DeleteStudyOrder order) throws ConcurrentStudyStorageException {
+        try {
+            long fsPk = order.getFsPk();
+            StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
+            FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
+            checkConcurrentStudyStorage(study, fs);
+            return toFileDTOs(study.getFiles(fsPk));
+        } catch (FinderException x) {
+            throw new EJBException(x);
+        }
+    }
+    /**
+     * 
+     * Move File to another filesystem and/or path
+     * @param order
+     * @param files FileDTO with parameter of the destination file (filesystemPk and filePath). Pk is of file to move:
+     * @param keepSrcFiles 
+     * @param keepMovedFilesOnError  If set return a list of failed files instead of rollback and fail the whole order.
+     * 
+     * @return null or List of failed files
+     * @throws ConcurrentStudyStorageException
+     *
+     * @ejb.interface-method
+     */
+    public List<FileDTO> moveFiles(DeleteStudyOrder order, FileDTO[] dtos, boolean keepSrcFiles, boolean keepMovedFilesOnError) throws ConcurrentStudyStorageException {
+        try {
+            List<FileDTO> failed = null;
+            long fsPk = order.getFsPk();
+            StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
+            FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
+            checkConcurrentStudyStorage(study, fs);
+            FileSystemLocal fsDest = fileSystemHome.findByPrimaryKey(dtos[0].getFileSystemPk());
+            Collection<FileLocal> c = study.getFiles(fsPk);
+            FileLocal[] files = c.toArray(new FileLocal[c.size()]);
+            FileLocal fSrc;
+            FileDTO dto;
+            for (int i = 0; i< dtos.length ; i++) {
+                dto = dtos[i];
+                try {
+                    fSrc = getFile(dto.getPk(), files, i);
+                    if (fSrc != null) {
+                        if (keepSrcFiles) { 
+                            fileHome.create(dto.getFilePath(), fSrc.getFileTsuid(), 
+                                fSrc.getFileSize(), fSrc.getFileMd5(),fSrc.getFileStatus(), 
+                                fSrc.getInstance(), fsDest);
+                        } else {
+                            fSrc.setFilePath(dto.getFilePath());
+                            fSrc.setFileSystem(fsDest);
+                        }
+                    } else {
+                        log.error("Missing source file for:"+dto);
+                    }
+                } catch (Exception e) {
+                    if (!keepMovedFilesOnError) {
+                        throw (e instanceof RuntimeException) ? 
+                                (RuntimeException) e : new EJBException(e);
+                    }
+                    if (failed == null) {
+                        failed = new ArrayList<FileDTO>();
+                        order.setThrowable(e);
+                    }
+                    failed.add(dto);
+                }
+            }
+            int availabilityOfExtRetr =
+                order.getExternalRetrieveAvailability();
+            updateStudyAvailability(study, availabilityOfExtRetr);
+            return failed;
+        } catch (FinderException x) {
+            throw new EJBException(x);
+        }
+    }
+
+    private FileLocal getFile(long pk, FileLocal[] files, int i) {
+        if ( files[i].getPk() == pk)
+            return files[i];
+        for (int j = i+1 ; j < files.length ; j++) {
+            if (files[j].getPk() == pk) {
+                FileLocal f = files[j];
+                files[j] = files[i];
+                files[i] = f;
+                return f;
+            }
+        }
+        return null;
+    }
+
+    private void updateStudyAvailability(StudyLocal study, int availabilityOfExtRetr) {
+        Collection seriess = study.getSeries();
+        for (Iterator siter = seriess.iterator(); siter.hasNext();) {
+            SeriesLocal series = (SeriesLocal) siter.next();
+            Collection insts = series.getInstances();
+            for (Iterator iiter = insts.iterator(); iiter.hasNext();) {
+                InstanceLocal inst = (InstanceLocal) iiter.next();
+                inst.updateRetrieveAETs();
+                inst.updateAvailability(availabilityOfExtRetr);
+            }
+            series.updateRetrieveAETs();
+            series.updateAvailability();
+        }
+        study.updateRetrieveAETs();
+        study.updateAvailability();
+    }
+    
     /**    
      * @ejb.interface-method
      */
@@ -789,16 +891,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
             Collection seriesPKs = study.getSeriesPks();
             FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
-            try {
-                // check if new objects belonging to the study were stored
-                // after this DeleteStudyOrder was scheduled
-                sofHome.findByStudyAndFileSystem(study, fs);
-                throw new ConcurrentStudyStorageException(
-                        "Concurrent storage of study[uid="
-                        + study.getStudyIuid() + "] on file system[dir="
-                        + fs.getDirectoryPath() + "] - do not delete study");
-            } catch (ObjectNotFoundException onfe) {
-            }
+            checkConcurrentStudyStorage(study, fs);
             return seriesPKs;
         } catch (FinderException e) {
             throw new EJBException(e);

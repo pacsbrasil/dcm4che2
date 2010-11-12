@@ -40,65 +40,40 @@ package org.dcm4chex.archive.mbean;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Iterator;
 
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
-import javax.management.Attribute;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
-import org.dcm4che.data.Dataset;
-import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
-import org.dcm4chex.archive.common.DeleteStudyOrdersAndMaxAccessTime;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.SeriesStored;
-import org.dcm4chex.archive.config.DeleterThresholds;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.dcm.findscu.FindScuDelegate;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.notif.StorageFileSystemSwitched;
-import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
-import org.jboss.system.ServiceMBeanSupport;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
  * @since Aug 8, 2008
  */
-public class FileSystemMgt2Service extends ServiceMBeanSupport {
+public class FileSystemMgt2Service extends AbstractDeleterService {
 
-    private static final String NONE = "NONE";
-
-    private static final String AUTO = "AUTO";
-
-    private static final String GROUP = "group";
-
-    private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;
-
-    private final FindScuDelegate findScu = new FindScuDelegate(this);
+    protected static final String GROUP = "group";
 
     private final DeleteStudyDelegate deleteStudy =
             new DeleteStudyDelegate(this);
 
-    private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
-
-    private String timerIDScheduleStudiesForDeletion;
 
     private String timerIDDeleteOrphanedPrivateFiles;
 
-    private long scheduleStudiesForDeletionInterval;
-    private boolean isRunningScheduleStudiesForDeletion;
 
     private long deleteOrphanedPrivateFilesInterval;
     private boolean isRunningDeleteOrphanedPrivateFiles;
@@ -117,7 +92,6 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private String mountFailedCheckFile = "NO_MOUNT";
 
-    private long minFreeDiskSpace = MIN_FREE_DISK_SPACE;
 
     private long checkFreeDiskSpaceMinInterval;
 
@@ -129,33 +103,7 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private boolean noFreeDiskSpace;
 
-    private DeleterThresholds deleterThresholds;
-
-    private long expectedDataVolumePerDay = 100000L;
-
-    private long adjustExpectedDataVolumePerDay = 0;
-
-    private long maxNotAccessedFor = 0;
-
-    private long minNotAccessedFor = 0;
-
-    private boolean externalRetrievable;
-
-    private String instanceAvailabilityOfExternalRetrievable;
-
-    private boolean storageNotCommited;
-
-    private boolean copyOnMedia;
-
-    private String copyOnFSGroup;
-
-    private boolean copyArchived;
-
-    private boolean copyOnReadOnlyFS;
-
     private boolean scheduleStudiesForDeletionOnSeriesStored;
-
-    private int scheduleStudiesForDeletionBatchSize;
 
     private int deleteOrphanedPrivateFilesBatchSize;
 
@@ -163,19 +111,10 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     private FileSystemDTO storageFileSystem;
 
-    private Integer scheduleStudiesForDeletionListenerID;
-
     private Integer deleteOrphanedPrivateFilesListenerID;
 
     private ObjectName storeScpServiceName;
 
-    public ObjectName getFindScuServiceName() {
-        return findScu.getFindScuServiceName();
-    }
-
-    public void setFindScuServiceName(ObjectName findScuServiceName) {
-        findScu.setFindScuServiceName(findScuServiceName);
-    }
 
     public ObjectName getStoreScpServiceName() {
         return storeScpServiceName;
@@ -193,41 +132,6 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         deleteStudy.setDeleteStudyServiceName(deleteStudyServiceName);
     }
 
-    public ObjectName getSchedulerServiceName() {
-        return scheduler.getSchedulerServiceName();
-    }
-
-    public void setSchedulerServiceName(ObjectName schedulerServiceName) {
-        scheduler.setSchedulerServiceName(schedulerServiceName);
-    }
-
-    public void setTimerIDScheduleStudiesForDeletion(String timerID) {
-        this.timerIDScheduleStudiesForDeletion = timerID;
-    }
-
-    public String getTimerIDScheduleStudiesForDeletion() {
-        return timerIDScheduleStudiesForDeletion;
-    }
-
-    public String getScheduleStudiesForDeletionInterval() {
-        return RetryIntervalls.formatIntervalZeroAsNever(
-                scheduleStudiesForDeletionInterval);
-    }
-
-    public void setScheduleStudiesForDeletionInterval(String interval)
-            throws Exception {
-        this.scheduleStudiesForDeletionInterval = RetryIntervalls
-                .parseIntervalOrNever(interval);
-        if (getState() == STARTED) {
-            scheduler.stopScheduler(timerIDScheduleStudiesForDeletion,
-                    scheduleStudiesForDeletionListenerID,
-                    scheduleStudiesForDeletionListener);
-            scheduleStudiesForDeletionListenerID = scheduler.startScheduler(
-                    timerIDScheduleStudiesForDeletion,
-                    scheduleStudiesForDeletionInterval,
-                    scheduleStudiesForDeletionListener);
-        }
-    }
 
     public String getTimerIDDeleteOrphanedPrivateFiles() {
         return timerIDDeleteOrphanedPrivateFiles;
@@ -259,20 +163,13 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         }
     }
 
-    public boolean isRunningScheduleStudiesForDeletion() {
-        return isRunningScheduleStudiesForDeletion;
-    }
-
     public boolean isRunningDeleteOrphanedPrivateFiles() {
         return isRunningDeleteOrphanedPrivateFiles;
     }
 
     @Override
 	protected void startService() throws Exception {
-        scheduleStudiesForDeletionListenerID = scheduler.startScheduler(
-                timerIDScheduleStudiesForDeletion,
-                scheduleStudiesForDeletionInterval,
-                scheduleStudiesForDeletionListener);
+        super.startService();
         deleteOrphanedPrivateFilesListenerID = scheduler.startScheduler(
                 timerIDDeleteOrphanedPrivateFiles,
                 deleteOrphanedPrivateFilesInterval,
@@ -284,9 +181,6 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     @Override
 	protected void stopService() throws Exception {
-        scheduler.stopScheduler(timerIDScheduleStudiesForDeletion,
-                scheduleStudiesForDeletionListenerID,
-                scheduleStudiesForDeletionListener);
         scheduler.stopScheduler(timerIDDeleteOrphanedPrivateFiles,
                 deleteOrphanedPrivateFilesListenerID,
                 deleteOrphanedPrivateFilesListener);
@@ -294,17 +188,6 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                 scheduleStudiesForDeletionOnSeriesStoredListener,
                 SeriesStored.NOTIF_FILTER, null);
     }
-
-    private final NotificationListener scheduleStudiesForDeletionListener =
-            new NotificationListener() {
-        public void handleNotification(Notification notif, Object handback) {
-            new Thread(new Runnable() {
-                public void run() {
-                    startScheduleStudiesForDeletion();
-                }
-            }).start();
-        }
-    };
 
     private final NotificationListener scheduleStudiesForDeletionOnSeriesStoredListener =
             new NotificationListener() {
@@ -314,17 +197,6 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         }
     }
 };
-
-    private void startScheduleStudiesForDeletion() {
-        new Thread(new Runnable(){
-            public void run() {
-                try {
-                    scheduleStudiesForDeletion();
-                } catch (Exception e) {
-                    log.error("Schedule Studies for deletion failed:", e);
-                }
-            }}).start();
-    }
 
     private NotificationListener deleteOrphanedPrivateFilesListener =
             new NotificationListener() {
@@ -411,22 +283,8 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         this.mountFailedCheckFile = mountFailedCheckFile;
     }
 
-    public final String getMinFreeDiskSpace() {
-        return minFreeDiskSpace == 0 ? NONE
-                : FileUtils.formatSize(minFreeDiskSpace);
-    }
-
-    public final long getMinFreeDiskSpaceBytes() {
-        return minFreeDiskSpace;
-    }
-
-    public final void setMinFreeDiskSpace(String str) {
-        this.minFreeDiskSpace = str.equalsIgnoreCase(NONE) ? 0
-                : FileUtils.parseSize(str, MIN_FREE_DISK_SPACE);
-    }
-
     public long getFreeDiskSpaceOnCurFS() throws IOException {
-        if (storageFileSystem == null || minFreeDiskSpace == 0)
+        if (storageFileSystem == null || getMinFreeDiskSpaceBytes() == 0)
             return -1L;
         File dir = FileUtils.toFile(storageFileSystem.getDirectoryPath());
         return dir.isDirectory() ? FileSystemUtils.freeSpace(dir.getPath())
@@ -439,65 +297,13 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     public long getUsableDiskSpaceOnCurFS() throws IOException {
         long free = getFreeDiskSpaceOnCurFS();
-        return free == -1L ? -1L : Math.max(0, free - minFreeDiskSpace);
+        return free == -1L ? -1L : Math.max(0, free - getMinFreeDiskSpaceBytes());
     }
 
     public String getUsableDiskSpaceOnCurFSString() throws IOException {
         return FileUtils.formatSize(getUsableDiskSpaceOnCurFS());
     }
 
-    public long getFreeDiskSpace() throws Exception {
-        if (minFreeDiskSpace == 0) {
-            return -1L;
-        }
-        FileSystemDTO[] fsDTOs =
-            fileSystemMgt().getFileSystemsOfGroup(getFileSystemGroupID());
-        long free = 0L;
-        for (FileSystemDTO fsDTO : fsDTOs) {
-            int status = fsDTO.getStatus();
-            if (status == FileSystemStatus.RW
-                    || status == FileSystemStatus.DEF_RW) {
-                File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
-                if (dir.isDirectory()) {
-                    free += FileSystemUtils.freeSpace(dir.getPath());
-                }
-            }
-        }
-        return free;
-    }
-
-    public String getFreeDiskSpaceString() throws Exception {
-        return FileUtils.formatSize(getFreeDiskSpace());
-    }
-
-    public long getUsableDiskSpace() throws Exception {
-        if (minFreeDiskSpace == 0) {
-            return -1L;
-        }
-        return calcUsableDiskSpace(fileSystemMgt()
-                .getFileSystemsOfGroup(getFileSystemGroupID()));
-    }
-
-    private long calcUsableDiskSpace(FileSystemDTO[] fsDTOs) throws IOException {
-        long free = 0L;
-        for (FileSystemDTO fsDTO : fsDTOs) {
-            int status = fsDTO.getStatus();
-            if (status == FileSystemStatus.RW
-                    || status == FileSystemStatus.DEF_RW) {
-                File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
-                if (dir.isDirectory()) {
-                    free += Math.max(0,
-                            FileSystemUtils.freeSpace(dir.getPath())
-                            - minFreeDiskSpace);
-                }
-            }
-        }
-        return free;
-    }
-
-    public String getUsableDiskSpaceString() throws Exception {
-        return FileUtils.formatSize(getUsableDiskSpace());
-    }
 
     public final String getCheckFreeDiskSpaceMinimalInterval() {
         return RetryIntervalls.formatInterval(checkFreeDiskSpaceMinInterval);
@@ -523,175 +329,6 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         this.checkFreeDiskSpaceRetryInterval = RetryIntervalls.parseInterval(s);
     }
 
-    public final String getDeleterThresholds() {
-        return deleterThresholds == null ? NONE : deleterThresholds.toString();
-    }
-
-    public final void setDeleterThresholds(String s) {
-        this.deleterThresholds = s.equalsIgnoreCase(NONE) ? null
-                : new DeleterThresholds(s, true);
-    }
-
-    public final String getExpectedDataVolumePerDay() {
-        return FileUtils.formatSize(expectedDataVolumePerDay);
-    }
-
-    public final long getExpectedDataVolumePerDayBytes() {
-        return expectedDataVolumePerDay;
-    }
-
-    public final void setExpectedDataVolumePerDay(String s) {
-        this.expectedDataVolumePerDay = FileUtils.parseSize(s, FileUtils.MEGA);
-    }
-
-    public final boolean isAdjustExpectedDataVolumePerDay() {
-        return adjustExpectedDataVolumePerDay != 0L;
-    }
-
-    public final void setAdjustExpectedDataVolumePerDay(boolean b) {
-        this.adjustExpectedDataVolumePerDay = b ? nextMidnight() : 0L;
-    }
-
-    private long nextMidnight() {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, 23);
-        cal.set(Calendar.MINUTE, 59);
-        cal.set(Calendar.SECOND, 59);
-        cal.set(Calendar.MILLISECOND, 999);
-        return cal.getTimeInMillis();
-    }
-
-    public String adjustExpectedDataVolumePerDay() throws Exception {
-        FileSystemMgt2 fsMgt = fileSystemMgt();
-        return adjustExpectedDataVolumePerDay(fsMgt,
-                fsMgt.getFileSystemsOfGroup(getFileSystemGroupID()));
-    }
-
-    private String adjustExpectedDataVolumePerDay(FileSystemMgt2 fsMgt,
-            FileSystemDTO[] fss) throws Exception {
-        Calendar cal = Calendar.getInstance();
-        cal.roll(Calendar.DAY_OF_MONTH, false);
-        long after = cal.getTimeInMillis();
-        long sum = 0L;
-        for (FileSystemDTO fs : fss) {
-            sum = fsMgt.sizeOfFilesCreatedAfter(fs.getPk(), after);
-        }
-        String size = FileUtils.formatSize(sum);
-        if (sum > expectedDataVolumePerDay) {
-            server.setAttribute(super.serviceName, new Attribute(
-                    "ExpectedDataVolumePerDay", size));
-        }
-        return size;
-    }
-
-    public long getCurrentDeleterThreshold() throws Exception {
-        if (deleterThresholds == null) {
-            return -1L;
-        }
-        FileSystemMgt2 fsMgt = fileSystemMgt();
-        return getCurrentDeleterThreshold(fsMgt,
-                fsMgt.getFileSystemsOfGroup(getFileSystemGroupID()));
-    }
-
-    private long getCurrentDeleterThreshold(FileSystemMgt2 fsMgt,
-            FileSystemDTO[] fsDTOs) throws Exception {
-        Calendar now = Calendar.getInstance();
-        if (adjustExpectedDataVolumePerDay != 0
-                && now.getTimeInMillis() > adjustExpectedDataVolumePerDay) {
-            adjustExpectedDataVolumePerDay(fsMgt, fsDTOs);
-            adjustExpectedDataVolumePerDay = nextMidnight();
-        }
-        return deleterThresholds.getDeleterThreshold(now)
-                .getFreeSize(expectedDataVolumePerDay);
-    }
-
-    public String getDeleteStudyIfNotAccessedFor() {
-        return RetryIntervalls.formatIntervalZeroAsNever(maxNotAccessedFor);
-    }
-
-    public void setDeleteStudyIfNotAccessedFor(String interval) {
-        this.maxNotAccessedFor = RetryIntervalls.parseIntervalOrNever(interval);
-    }
-
-    public String getDeleteStudyOnlyIfNotAccessedFor() {
-        return RetryIntervalls.formatInterval(minNotAccessedFor);
-    }
-
-    public void setDeleteStudyOnlyIfNotAccessedFor(String interval) {
-        this.minNotAccessedFor = RetryIntervalls.parseInterval(interval);
-    }
-
-    public boolean isDeleteStudyOnlyIfStorageNotCommited() {
-        return storageNotCommited;
-    }
-
-    public void setDeleteStudyOnlyIfStorageNotCommited(
-            boolean storageNotCommited) {
-        this.storageNotCommited = storageNotCommited;
-    }
-
-    public boolean isDeleteStudyOnlyIfCopyOnMedia() {
-        return copyOnMedia;
-    }
-
-    public boolean isDeleteStudyOnlyIfCopyExternalRetrievable() {
-        return externalRetrievable;
-    }
-
-    public void setDeleteStudyOnlyIfCopyExternalRetrievable(
-            boolean externalRetrievable) {
-        this.externalRetrievable = externalRetrievable;
-    }
-
-    public final String getInstanceAvailabilityOfExternalRetrievable() {
-        return instanceAvailabilityOfExternalRetrievable != null
-                ? instanceAvailabilityOfExternalRetrievable : AUTO;
-    }
-
-    public final void setInstanceAvailabilityOfExternalRetrievable(
-            String availability) {
-        String trimmed = availability.trim();
-        this.instanceAvailabilityOfExternalRetrievable = 
-            trimmed.equalsIgnoreCase(AUTO) ? null 
-                    : Availability.toString(Availability.toInt(trimmed));
-    }
-
-    public void setDeleteStudyOnlyIfCopyOnMedia(boolean copyOnMedia) {
-        this.copyOnMedia = copyOnMedia;
-    }
-
-    public String getDeleteStudyOnlyIfCopyOnFileSystemOfFileSystemGroup() {
-        return copyOnFSGroup != null ? copyOnFSGroup : NONE;
-    }
-
-    public void setDeleteStudyOnlyIfCopyOnFileSystemOfFileSystemGroup(
-            String copyOnFSGroup) {
-        String trimmed = copyOnFSGroup.trim();
-        if (serviceName != null // may not be initialized when invoked during bean registration
-                && trimmed.equals(getFileSystemGroupID())) {
-            throw new IllegalArgumentException(
-                    "Must differ from file system group managed by this service");
-        }
-        this.copyOnFSGroup = trimmed.equalsIgnoreCase(NONE) ? null : trimmed;
-    }
-
-    public boolean isDeleteStudyOnlyIfCopyArchived() {
-        return copyArchived;
-    }
-
-    public void setDeleteStudyOnlyIfCopyArchived(boolean copyArchived) {
-        this.copyArchived = copyArchived;
-    }
-
-    public boolean isDeleteStudyOnlyIfCopyOnReadOnlyFileSystem() {
-        return copyOnReadOnlyFS;
-    }
-
-    public void setDeleteStudyOnlyIfCopyOnReadOnlyFileSystem(
-            boolean copyOnReadOnlyFS) {
-        this.copyOnReadOnlyFS = copyOnReadOnlyFS;
-    }
-
     public void setScheduleStudiesForDeletionOnSeriesStored(
             boolean scheduleStudiesForDeletionOnSeriesStored) {
         this.scheduleStudiesForDeletionOnSeriesStored =
@@ -700,17 +337,6 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
 
     public boolean isScheduleStudiesForDeletionOnSeriesStored() {
         return scheduleStudiesForDeletionOnSeriesStored;
-    }
-
-    public void setScheduleStudiesForDeletionBatchSize(int batchSize) {
-        if (batchSize <= 0) {
-            throw new IllegalArgumentException("batchSize: " + batchSize);
-        }
-        this.scheduleStudiesForDeletionBatchSize = batchSize;
-    }
-
-    public int getScheduleStudiesForDeletionBatchSize() {
-        return scheduleStudiesForDeletionBatchSize;
     }
 
     public void setDeleteOrphanedPrivateFilesBatchSize(int batchSize) {
@@ -916,20 +542,20 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                     + " seems broken - try to switch to next configured storage directory");
             return false;
         }
-        if (minFreeDiskSpace == 0) {
+        if (getMinFreeDiskSpaceBytes() == 0) {
             return true;
         }
         final long freeSpace = FileSystemUtils.freeSpace(dir.getPath());
         log.info("Free disk space on " + dir + ": "
                 + FileUtils.formatSize(freeSpace));
-        if (freeSpace < minFreeDiskSpace) {
+        if (freeSpace < getMinFreeDiskSpaceBytes()) {
             log.info("High Water Mark reached on current storage directory "
                     + dir
                     + " - try to switch to next configured storage directory");
             return false;
         }
         checkFreeDiskSpaceTime = System.currentTimeMillis() + Math.min(
-                freeSpace * checkFreeDiskSpaceMinInterval / minFreeDiskSpace,
+                freeSpace * checkFreeDiskSpaceMinInterval / getMinFreeDiskSpaceBytes(),
                 checkFreeDiskSpaceMaxInterval);
         return true;
     }
@@ -971,12 +597,6 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         checkFreeDiskSpaceTime = 0;
     }
 
-    static FileSystemMgt2 fileSystemMgt() throws Exception {
-        FileSystemMgt2Home home = (FileSystemMgt2Home) EJBHomeFactory
-                .getFactory().lookup(FileSystemMgt2Home.class,
-                        FileSystemMgt2Home.JNDI_NAME);
-        return home.create();
-    }
 
     private static String toString(FileSystemDTO[] fss) {
         StringBuilder sb = new StringBuilder();
@@ -1037,208 +657,15 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         return false;
     }
 
-    public int scheduleStudiesForDeletion() throws Exception {
-        if (maxNotAccessedFor == 0 && deleterThresholds == null) {
-            return 0;
-        }
-        synchronized(this) {
-            if (isRunningScheduleStudiesForDeletion) {
-                log.info("ScheduleStudiesForDeletion is already running!");
-                return -1;
-            }
-            isRunningScheduleStudiesForDeletion = true;
-        } 
-        try {
-            log.info("Check file system group " + getFileSystemGroupID()
-                    + " for deletion of studies");
-            int countStudies = 0;
-            FileSystemMgt2 fsMgt = fileSystemMgt();
-            if (maxNotAccessedFor > 0) {
-                countStudies = scheduleStudiesForDeletion(fsMgt,
-                        System.currentTimeMillis() - maxNotAccessedFor,
-                        Long.MAX_VALUE);
-            }
-            if (deleterThresholds != null) {
-                FileSystemDTO[] fsDTOs = fsMgt.getFileSystemsOfGroup(
-                        getFileSystemGroupID());
-                long threshold = getCurrentDeleterThreshold(fsMgt, fsDTOs);
-                long usable = calcUsableDiskSpace(fsDTOs);
-                long sizeToDel = threshold - usable;
-                if (sizeToDel > 0) {
-                    log.info("Try to free " + sizeToDel
-                            + " of disk space on file system group "
-                            + getFileSystemGroupID());
-                    countStudies += scheduleStudiesForDeletion(fsMgt,
-                            System.currentTimeMillis() - minNotAccessedFor,
-                            sizeToDel);
-                }
-            }
-            if (countStudies > 0) {
-                log.info("Scheduled " + countStudies
-                        + " studies for deletion on file system group "
-                        + getFileSystemGroupID());
-            }
-            return countStudies;
-        } finally {
-            isRunningScheduleStudiesForDeletion = false;
-        }
-    }
-
-    private int scheduleStudiesForDeletion(FileSystemMgt2 fsMgt,
-            long notAccessedAfter, long sizeToDel0) throws Exception {
-        int countStudies = 0;
-        long minAccessTime = 0;
-        long sizeToDel = sizeToDel0;
-        do {
-            DeleteStudyOrdersAndMaxAccessTime deleteOrdersAndAccessTime = 
-                    fsMgt.createDeleteOrdersForStudiesOnFSGroup(
-                            getFileSystemGroupID(), minAccessTime,
-                            notAccessedAfter,
-                            scheduleStudiesForDeletionBatchSize,
-                            externalRetrievable, storageNotCommited,
-                            copyOnMedia, copyOnFSGroup, copyArchived,
-                            copyOnReadOnlyFS);
-            if (deleteOrdersAndAccessTime == null) {
-                if (sizeToDel0 != Long.MAX_VALUE) {
-                    log.warn("Could not find any further study for deletion on "
-                            + "file system group " + getFileSystemGroupID());
-                }
-                break;
-            }
-            Iterator<DeleteStudyOrder> orderIter = 
-                    deleteOrdersAndAccessTime.deleteStudyOrders.iterator();
-            while (sizeToDel > 0 && orderIter.hasNext()) {
-                DeleteStudyOrder order = orderIter.next();
-                if (!checkExternalRetrievable(order))
-                    continue;
-                if (fsMgt.removeStudyOnFSRecord(order)) {
-                    try {
-                        deleteStudy.scheduleDeleteOrder(order);
-                    } catch (Exception e) {
-                        // re-insert SOF record, so the deleter keeps track 
-                        // for deletion of the study
-                        fsMgt.createStudyOnFSRecord(order);
-                        throw e;
-                    }
-                    sizeToDel -= fsMgt.getStudySize(order);
-                    countStudies++;
-                }
-            }
-            if (deleteOrdersAndAccessTime.deleteStudyOrders.size() == 0 && 
-                    minAccessTime == deleteOrdersAndAccessTime.maxAccessTime) {
-                log.warn("Possible infinite loop in deleter thread detected! Please check access_time in study_on_fs! Current minAccessTime:"+minAccessTime);
-                minAccessTime++;
-            } else {
-                minAccessTime = deleteOrdersAndAccessTime.maxAccessTime;
-            }
-        } while (sizeToDel > 0 && isRunningScheduleStudiesForDeletion);
-        if (countStudies == 0 && sizeToDel > 0) {
-            log.warn("No study found for deletion on filesystem group "+getFileSystemGroupID()+"! Please check your configuration!");
-            log.warn(showDeleterCriteria());
-        }
-        return countStudies;
-    }
-
-    public String showDeleterCriteria() {
+    protected String showTriggerInfo() {
         StringBuilder sb = new StringBuilder();
         sb.append("Trigger intervall: ").append(getScheduleStudiesForDeletionInterval())
         .append("\nTrigger on SeriesStored:").append(scheduleStudiesForDeletionOnSeriesStored);
-        if (scheduleStudiesForDeletionInterval == 0L && !scheduleStudiesForDeletionOnSeriesStored) {
+        if ("NEVER".equals(getScheduleStudiesForDeletionInterval()) && !scheduleStudiesForDeletionOnSeriesStored) {
             sb.append("\nWARN: No studies will be deleted automatically from file systems of file system group ")
-            	.append(this.getFileSystemGroupID()).append("\n\n");
+                .append(this.getFileSystemGroupID()).append("\n\n");
         }
-        if (maxNotAccessedFor==0) {
-            sb.append("Only triggered by running out of disk space! Studies not accessed for ")
-            .append(getDeleteStudyOnlyIfNotAccessedFor());
-        } else {
-            sb.append("Delete all studies not accessed for ").append(getDeleteStudyIfNotAccessedFor());
-            sb.append(".\n And studies not accessed for ").append(getDeleteStudyOnlyIfNotAccessedFor())
-            .append(" when running out of disk space!");
-        }
-        sb.append("\nDeleter Criteria: ");
-        int i = 0;
-        if (externalRetrievable)
-            sb.append("\n  ").append(++i).append(") External Retrievable");
-        if (copyOnFSGroup != null)
-            sb.append("\n  ").append(++i).append(") Copy on Filesystem Group "+copyOnFSGroup);
-        if (copyArchived)
-            sb.append("\n  ").append(++i).append(") Copy must be archived");
-        if (copyOnReadOnlyFS)
-            sb.append("\n  ").append(++i).append(") Copy on a ReadOnly Filesystem");
-        if (copyOnMedia)
-            sb.append("\n  ").append(++i).append(") Copy on Media");
-        if (storageNotCommited)
-            sb.append("\n  ").append(++i).append(") Storage Not Commited");
-        if (i==0) 
-            sb.append("\n  WARNING! No Deletion criteria configured!");
         return sb.toString();
-    }
-    
-    public void stopCurrentDeleterThread() {
-        isRunningScheduleStudiesForDeletion = false;
-    }
-
-    private boolean checkExternalRetrievable(DeleteStudyOrder order) {
-        String aet = order.getExternalRetrieveAET();
-        if (aet == null)
-            return true;
-        
-        String availability = instanceAvailabilityOfExternalRetrievable;
-        String studyIUID = order.getStudyIUID();
-        if (availability == null) {
-            try {
-                Dataset findRsp = findScu.findStudy(aet, studyIUID);
-                if (findRsp == null) {
-                    log.warn("Study:" + studyIUID + " not found at Retrieve AE: "
-                            + aet);
-                    return false;
-                }
-                availability = findRsp.getString(Tags.InstanceAvailability);
-                if (availability == null) {
-                    log.warn("Retrieve AE: " + aet
-                            + " does not return Instance Availability for study: "
-                            + studyIUID);
-                    return false;
-                }
-            } catch (Exception e) {
-               log.warn("Query external Retrieve AE: " + aet + " for study: "
-                       + studyIUID +  "failed:", e);
-               return false;
-            }
-        }
-        int availabilityAsInt = Availability.toInt(availability);
-        if (availabilityAsInt == Availability.UNAVAILABLE) {
-            log.warn("Retrieve AE: " + aet
-                    + " returns Instance Availability: UNAVAILABLE for study: "
-                    + studyIUID);
-            return false;
-        }
-        order.setExternalRetrieveAvailability(availabilityAsInt);
-        return true;
-    }
-
-    public long scheduleStudyForDeletion(String suid) throws Exception {
-        FileSystemMgt2 fsMgt = fileSystemMgt();
-        Collection<DeleteStudyOrder> orders = 
-            fsMgt.createDeleteOrdersForStudyOnFSGroup(suid,
-                    getFileSystemGroupID());
-        long sizeToDel = 0;
-        for (DeleteStudyOrder order : orders) {
-            if (!checkExternalRetrievable(order))
-                continue;
-            if (fsMgt.removeStudyOnFSRecord(order)) {
-                try {
-                    deleteStudy.scheduleDeleteOrder(order);
-                } catch (Exception e) {
-                    // re-insert SOF record, so the deleter keeps track 
-                    // for deletion of the study
-                    fsMgt.createStudyOnFSRecord(order);
-                    throw e;
-                }
-                sizeToDel  += fsMgt.getStudySize(order);
-            }
-        }
-        return sizeToDel;
     }
 
     public int deleteOrphanedPrivateFiles() throws Exception {
@@ -1275,5 +702,16 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         } finally {
             isRunningDeleteOrphanedPrivateFiles = false;
         }
+    }
+
+    @Override
+    protected void scheduleDeleteOrder(DeleteStudyOrder order) throws Exception {
+        this.deleteStudy.scheduleDeleteOrder(order);
+        
+    }
+
+    @Override
+    protected String getFileSystemGroupIDForDeleter() {
+        return this.getFileSystemGroupID();
     }
 }
