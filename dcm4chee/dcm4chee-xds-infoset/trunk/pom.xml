@@ -44,8 +44,8 @@
   <repositories>
     <repository>
       <id>jboss</id>
-      <name>jboss Repository</name>
-      <url>http://repository.jboss.com/maven2</url>
+      <name>Public Repository group on jboss</name>
+      <url>http://repository.jboss.org/nexus/content/groups/public</url>
     </repository>
     <repository>
       <id>maven2-repository.dev.java.net</id>
@@ -61,8 +61,8 @@
   </repositories>
   <pluginRepositories>
      <pluginRepository>
-       <id>maven2-repository.dev.java.net</id>
-       <url>http://download.java.net/maven/2/</url>
+       <id>Public Repository group on jboss</id>
+       <url>http://repository.jboss.org/nexus/content/groups/public</url>
      </pluginRepository>
   </pluginRepositories>
   <distributionManagement>
