@@ -67,13 +67,10 @@ import org.dcm4chex.archive.ejb.interfaces.PatientUpdateLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
-import org.dcm4chex.archive.exceptions.NonUniquePatientException;
-import org.dcm4chex.archive.exceptions.PatientMergedException;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date: 2010-09-22 09:25:09 +0200 (Wed, 22 Sep
- *          2010) $
+ * @version $Revision$ $Date:: 2010-09-22$
  * @since Jun 6, 2005
  * 
  * @ejb.bean name="StudyReconciliation" type="Stateless" view-type="remote"
@@ -96,6 +93,9 @@ public abstract class StudyReconciliationBean implements SessionBean {
 
     private static final Logger log = Logger
             .getLogger(StudyReconciliationBean.class);
+
+    private final PatientMatching patientMatching =
+            new PatientMatching("pid,issuer?");
 
     private StudyLocalHome studyHome;
 
@@ -184,7 +184,7 @@ public abstract class StudyReconciliationBean implements SessionBean {
      */
     public void updatePatient(Dataset attrs) throws FinderException,
             CreateException {
-        patientUpdate.updatePatient(attrs, PatientMatching.BY_ID);
+        patientUpdate.updatePatient(attrs, patientMatching);
     }
 
     /**
@@ -193,8 +193,7 @@ public abstract class StudyReconciliationBean implements SessionBean {
     public void mergePatient(Dataset dominant, Dataset prior, boolean keepPrior)
             throws FinderException, CreateException, EJBException,
             RemoveException {
-        patientUpdate.mergePatient(dominant, prior, PatientMatching.BY_ID,
-                keepPrior);
+        patientUpdate.mergePatient(dominant, prior, patientMatching, keepPrior);
     }
 
     /**

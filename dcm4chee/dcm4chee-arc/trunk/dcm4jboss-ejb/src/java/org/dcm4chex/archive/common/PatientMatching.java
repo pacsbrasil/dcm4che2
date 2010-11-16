@@ -64,33 +64,6 @@ public class PatientMatching implements Serializable{
     private static final String INITIAL = "(1)";
     private static final String IGNORE = "ignore";
 
-    public static final PatientMatching BY_ID = 
-        new PatientMatching(
-                true,   // trustPatientIDWithIssuer
-                false,  // unknownPatientIDAlwaysMatch
-                true,   // unknownIssuerAlwaysMatch
-                false,  // familyNameMustMatch
-                false,  // familyNameInitialMatch
-                true,  // unknownFamilyNameAlwaysMatch
-                false, // givenNameMustMatch
-                false, // givenNameInitialMatch
-                true,  // unknownGivenNameAlwaysMatch
-                false, // middleNameMustMatch,
-                false, // middleNameInitialMatch
-                true,  // unknownMiddleNameAlwaysMatch,
-                false, // namePrefixMustMatch,
-                false, // namePrefixInitialMatch
-                true,  // unknownnNamePrefixAlwaysMatch,
-                false, // nameSuffixMustMatch,
-                false, // nameSuffixInitialMatch
-                true,  // unknownnNameSuffixAlwaysMatch,
-                false, // birthDateMustMatch,
-                true,  // unknownBirthDateAlwaysMatch
-                false, // sexMustMatch,
-                true,  // unknownSexAlwaysMatch
-                null   // ignore
-                );
-
     private final boolean trustPatientIDWithIssuer;
     private final boolean unknownPatientIDAlwaysMatch;
     private final boolean unknownIssuerAlwaysMatch;
@@ -190,55 +163,6 @@ public class PatientMatching implements Serializable{
                     || s.indexOf("\")", ignore+2) < alt)
                 return alt;
         return -1;
-    }
-
-    private PatientMatching(boolean trustPatientIDWithIssuer, 
-            boolean unknownPatientIDAlwaysMatch,
-            boolean unknownIssuerAlwaysMatch,
-            boolean familyNameMustMatch,
-            boolean familyNameInitialMatch,
-            boolean unknownFamilyNameAlwaysMatch,
-            boolean givenNameMustMatch,
-            boolean givenNameInitialMatch,
-            boolean unknownGivenNameAlwaysMatch,
-            boolean middleNameMustMatch,
-            boolean middleNameInitialMatch,
-            boolean unknownMiddleNameAlwaysMatch,
-            boolean namePrefixMustMatch,
-            boolean namePrefixInitialMatch,
-            boolean unknownNamePrefixAlwaysMatch,
-            boolean nameSuffixMustMatch,
-            boolean nameSuffixInitialMatch,
-            boolean unknownNameSuffixAlwaysMatch,
-            boolean birthDateMustMatch,
-            boolean unknownBirthDateAlwaysMatch,
-            boolean sexMustMatch,
-            boolean unknownSexAlwaysMatch,
-            String ignore) {
-        this.trustPatientIDWithIssuer = trustPatientIDWithIssuer;
-        this.unknownPatientIDAlwaysMatch = unknownPatientIDAlwaysMatch;
-        this.unknownIssuerAlwaysMatch = unknownIssuerAlwaysMatch;
-        this.familyNameMustMatch = familyNameMustMatch;
-        this.familyNameInitialMatch = familyNameInitialMatch;
-        this.unknownFamilyNameAlwaysMatch = unknownFamilyNameAlwaysMatch;
-        this.givenNameMustMatch = givenNameMustMatch;
-        this.givenNameInitialMatch = givenNameInitialMatch;
-        this.unknownGivenNameAlwaysMatch = unknownGivenNameAlwaysMatch;
-        this.middleNameMustMatch = middleNameMustMatch;
-        this.middleNameInitialMatch = middleNameInitialMatch;
-        this.unknownMiddleNameAlwaysMatch = unknownMiddleNameAlwaysMatch;
-        this.namePrefixMustMatch = namePrefixMustMatch;
-        this.namePrefixInitialMatch = namePrefixInitialMatch;
-        this.unknownNamePrefixAlwaysMatch = unknownNamePrefixAlwaysMatch;
-        this.nameSuffixMustMatch = nameSuffixMustMatch;
-        this.nameSuffixInitialMatch = nameSuffixInitialMatch;
-        this.unknownNameSuffixAlwaysMatch = unknownNameSuffixAlwaysMatch;
-        this.birthDateMustMatch = birthDateMustMatch;
-        this.unknownBirthDateAlwaysMatch = unknownBirthDateAlwaysMatch;
-        this.sexMustMatch = sexMustMatch;
-        this.unknownSexAlwaysMatch = unknownSexAlwaysMatch;
-        this.ignore = (ignore != null && ignore.length() != 0) 
-                    ? Pattern.compile(ignore) : null;
     }
 
     public final boolean isTrustPatientIDWithIssuer() {

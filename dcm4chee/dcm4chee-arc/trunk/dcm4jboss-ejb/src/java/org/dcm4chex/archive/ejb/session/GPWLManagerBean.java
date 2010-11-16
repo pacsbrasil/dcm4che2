@@ -106,6 +106,8 @@ public abstract class GPWLManagerBean implements SessionBean {
     private InstanceLocalHome instanceHome;
 
     private GPSPSLocalHome gpspsHome;
+    private final PatientMatching patientMatching =
+            new PatientMatching("pid,issuer?");
 
     public void setSessionContext(SessionContext ctx) {
         Context jndiCtx = null;
@@ -194,7 +196,7 @@ public abstract class GPWLManagerBean implements SessionBean {
     private PatientLocal findOrCreatePatient(Dataset ds)
             throws FinderException, CreateException {
         try {
-            return patHome.selectPatient(ds, PatientMatching.BY_ID, true);
+            return patHome.selectPatient(ds, patientMatching , true);
         } catch (ObjectNotFoundException onfe) {
             return patHome.create(ds.subSet(PATIENT_ATTRS));
         }
