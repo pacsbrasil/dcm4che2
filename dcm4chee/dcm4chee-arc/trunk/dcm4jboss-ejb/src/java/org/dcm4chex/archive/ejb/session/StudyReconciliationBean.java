@@ -72,12 +72,13 @@ import org.dcm4chex.archive.exceptions.PatientMergedException;
 
 /**
  * @author gunter.zeilinger@tiani.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2010-09-22 09:25:09 +0200 (Wed, 22 Sep
+ *          2010) $
  * @since Jun 6, 2005
  * 
  * @ejb.bean name="StudyReconciliation" type="Stateless" view-type="remote"
  *           jndi-name="ejb/StudyReconciliation"
- *           
+ * 
  * @ejb.transaction-type type="Container"
  * @ejb.transaction type="Required"
  * 
@@ -85,133 +86,145 @@ import org.dcm4chex.archive.exceptions.PatientMergedException;
  * @ejb.ejb-ref ejb-name="Study" view-type="local" ref-name="ejb/Study"
  * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series"
  * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance"
- * @ejb.ejb-ref ejb-name="PatientUpdate" view-type="local" ref-name="ejb/PatientUpdate" 
+ * @ejb.ejb-ref ejb-name="PatientUpdate" view-type="local"
+ *              ref-name="ejb/PatientUpdate"
  * 
  * @ejb.env-entry name="AttributeFilterConfigURL" type="java.lang.String"
  *                value="resource:dcm4chee-attribute-filter.xml"
  */
 public abstract class StudyReconciliationBean implements SessionBean {
 
-    private static final Logger log = Logger.getLogger(StudyReconciliationBean.class);
-	
-	private StudyLocalHome studyHome;
+    private static final Logger log = Logger
+            .getLogger(StudyReconciliationBean.class);
 
-	private PatientUpdateLocal patientUpdate;
+    private StudyLocalHome studyHome;
 
-	public void setSessionContext(SessionContext arg0) throws EJBException,
-			RemoteException {
-		Context jndiCtx = null;
-		try {
-			jndiCtx = new InitialContext();
-			studyHome = (StudyLocalHome) jndiCtx
-					.lookup("java:comp/env/ejb/Study");
+    private PatientUpdateLocal patientUpdate;
+
+    public void setSessionContext(SessionContext arg0) throws EJBException,
+            RemoteException {
+        Context jndiCtx = null;
+        try {
+            jndiCtx = new InitialContext();
+            studyHome = (StudyLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/Study");
             patientUpdate = ((PatientUpdateLocalHome) jndiCtx
-            		.lookup("java:comp/env/ejb/PatientUpdate")).create();
+                    .lookup("java:comp/env/ejb/PatientUpdate")).create();
 
-		} catch (NamingException e) {
-			throw new EJBException(e);
-		} catch (CreateException e) {
-			throw new EJBException(e);
-		} finally {
-			if (jndiCtx != null) {
-				try {
-					jndiCtx.close();
-				} catch (NamingException ignore) {
-				}
-			}
-		}
-	}
+        } catch (NamingException e) {
+            throw new EJBException(e);
+        } catch (CreateException e) {
+            throw new EJBException(e);
+        } finally {
+            if (jndiCtx != null) {
+                try {
+                    jndiCtx.close();
+                } catch (NamingException ignore) {
+                }
+            }
+        }
+    }
 
-	public void unsetSessionContext() {
-		studyHome = null;
-	}
-	
-	private StudyLocal getStudy(String suid) 
-			throws FinderException, DcmServiceException {
-		try {
-			return studyHome.findByStudyIuid(suid);
-		} catch (ObjectNotFoundException e) {
-			throw new DcmServiceException(Status.NoSuchSOPClass, suid);
-		}
-	}
-	
-	/**
+    public void unsetSessionContext() {
+        studyHome = null;
+    }
+
+    private StudyLocal getStudy(String suid) throws FinderException,
+            DcmServiceException {
+        try {
+            return studyHome.findByStudyIuid(suid);
+        } catch (ObjectNotFoundException e) {
+            throw new DcmServiceException(Status.NoSuchSOPClass, suid);
+        }
+    }
+
+    /**
      * @throws FinderException
-	 * @ejb.interface-method
+     * @ejb.interface-method
      */
-    public Collection getStudyIuidsWithStatus(int status,Timestamp createdBefore, int limit) throws FinderException {
-    	Collection col = studyHome.findStudiesWithStatus( status, createdBefore, limit );
-    	ArrayList studyIuids = new ArrayList();
-    	for ( Iterator iter = col.iterator() ; iter.hasNext() ;) {
-    		studyIuids.add( ((StudyLocal) iter.next()).getStudyIuid());
-    	}
-    	return studyIuids;
+    public Collection getStudyIuidsWithStatus(int status,
+            Timestamp createdBefore, int limit) throws FinderException {
+        Collection col = studyHome.findStudiesWithStatus(status, createdBefore,
+                limit);
+        ArrayList studyIuids = new ArrayList();
+        for (Iterator iter = col.iterator(); iter.hasNext();) {
+            studyIuids.add(((StudyLocal) iter.next()).getStudyIuid());
+        }
+        return studyIuids;
     }
 
-	/**
+    /**
      * @throws DcmServiceException
-	 * @throws FinderException
-	 * @ejb.interface-method
+     * @throws FinderException
+     * @ejb.interface-method
      */
-    public void updateStatus(Collection studyIuids, int status) throws FinderException, DcmServiceException {
-    	if ( studyIuids == null ) return;
-    	for ( Iterator iter = studyIuids.iterator() ; iter.hasNext() ;) {
-    		getStudy((String) iter.next()).setStudyStatus(status);	
-    	}
+    public void updateStatus(Collection studyIuids, int status)
+            throws FinderException, DcmServiceException {
+        if (studyIuids == null)
+            return;
+        for (Iterator iter = studyIuids.iterator(); iter.hasNext();) {
+            getStudy((String) iter.next()).setStudyStatus(status);
+        }
     }
-    
-	/**
+
+    /**
      * @throws DcmServiceException
-	 * @throws FinderException
-	 * @ejb.interface-method
+     * @throws FinderException
+     * @ejb.interface-method
      */
-    public void updateStatus(String studyIuid, int status) throws FinderException, DcmServiceException {
-    	if ( studyIuid == null ) return;
-   		getStudy(studyIuid).setStudyStatus(status);	
+    public void updateStatus(String studyIuid, int status)
+            throws FinderException, DcmServiceException {
+        if (studyIuid == null)
+            return;
+        getStudy(studyIuid).setStudyStatus(status);
     }
-    
+
     /**
      * @ejb.interface-method
      */
-    public void updatePatient(Dataset attrs)
-            throws FinderException, CreateException {
-    	patientUpdate.updatePatient(attrs, PatientMatching.BY_ID);
+    public void updatePatient(Dataset attrs) throws FinderException,
+            CreateException {
+        patientUpdate.updatePatient(attrs, PatientMatching.BY_ID);
     }
-    
+
     /**
      * @ejb.interface-method
      */
     public void mergePatient(Dataset dominant, Dataset prior, boolean keepPrior)
-            throws FinderException, CreateException, EJBException, RemoveException {
-    	patientUpdate.mergePatient(dominant, prior, PatientMatching.BY_ID, keepPrior);
+            throws FinderException, CreateException, EJBException,
+            RemoveException {
+        patientUpdate.mergePatient(dominant, prior, PatientMatching.BY_ID,
+                keepPrior);
     }
 
-	/**
+    /**
      * @throws DcmServiceException
-	 * @throws FinderException
-	 * @ejb.interface-method
+     * @throws FinderException
+     * @ejb.interface-method
      */
-    public void updateStudyAndSeries(String studyIuid, int studyStatus, Map map) throws FinderException, DcmServiceException {
-    	if ( studyIuid == null ) return;
-   		StudyLocal study = getStudy(studyIuid);
-   		study.setStudyStatus(studyStatus);
-   		if ( map != null && !map.isEmpty()) {
-   			Iterator iter = study.getSeries().iterator();
-   			Dataset ds, dsOrig;
-   			SeriesLocal sl;
-   			do {
-   				sl = (SeriesLocal)iter.next();
-   				ds = sl.getAttributes(false);
-   				dsOrig = (Dataset)map.get(sl.getSeriesIuid());
-   				ds.putAll(dsOrig);
-   				sl.setAttributes(ds);
-   			} while ( iter.hasNext() );
-   			ds = study.getAttributes(false);
-   			ds.putAll(dsOrig); 
-   			study.setAttributes(ds); 
-   			study.updateModalitiesInStudy();
-   			study.updateSOPClassesInStudy();
-   		}
+    public void updateStudyAndSeries(String studyIuid, int studyStatus, Map map)
+            throws FinderException, DcmServiceException {
+        if (studyIuid == null)
+            return;
+        StudyLocal study = getStudy(studyIuid);
+        study.setStudyStatus(studyStatus);
+        if (map != null && !map.isEmpty()) {
+            Iterator iter = study.getSeries().iterator();
+            Dataset ds, dsOrig;
+            SeriesLocal sl;
+            do {
+                sl = (SeriesLocal) iter.next();
+                ds = sl.getAttributes(false);
+                dsOrig = (Dataset) map.get(sl.getSeriesIuid());
+                ds.putAll(dsOrig);
+                sl.setAttributes(ds);
+            } while (iter.hasNext());
+            ds = study.getAttributes(false);
+            ds.putAll(dsOrig);
+            study.setAttributes(ds);
+            study.updateModalitiesInStudy();
+            study.updateSOPClassesInStudy();
+        }
     }
-    
+
 }
