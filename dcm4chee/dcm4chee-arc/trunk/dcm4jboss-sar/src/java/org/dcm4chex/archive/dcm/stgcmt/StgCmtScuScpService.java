@@ -122,6 +122,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
     private static final int ERR_ASSOC_RJ = -1;
 
     private static final int PCID_STGCMT = 1;
+    
+    private static final String NEW_LINE = System.getProperty("line.separator", "\n");
 
     protected ObjectName queryRetrieveScpServiceName;
     private ObjectName storeScpServiceName;
@@ -300,7 +302,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
         for (Map.Entry<String, String> entry : rqStgCmtOnReceiveFromAETs.entrySet()) {
             sb.append(entry.getKey());
             if (!entry.getKey().equals(entry.getValue()))
-                sb.append('=').append(entry.getValue()).append('\n');
+                sb.append('=').append(entry.getValue());
+            sb.append(NEW_LINE);
         }
         return sb.toString();
     }
