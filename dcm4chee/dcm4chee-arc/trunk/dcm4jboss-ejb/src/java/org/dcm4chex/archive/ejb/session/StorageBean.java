@@ -77,7 +77,6 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
-import org.dcm4chex.archive.ejb.interfaces.PIDCreator;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
@@ -185,8 +184,7 @@ public abstract class StorageBean implements SessionBean {
      */
     public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
             long fspk, java.lang.String fileid, long size, byte[] md5,
-            boolean updateStudyAccessTime, PatientMatching matching,
-            PIDCreator genpid) throws DcmServiceException {
+            boolean updateStudyAccessTime, PatientMatching matching) throws DcmServiceException, NonUniquePatientIDException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
         final String cuid = fmi.getMediaStorageSOPClassUID();
@@ -200,7 +198,7 @@ public abstract class StorageBean implements SessionBean {
                 coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
                 instance = instHome.create(ds,
-                        getSeries(matching, ds, coercedElements, genpid));
+                        getSeries(matching, ds, coercedElements));
             }
             if (fspk != -1) {
                 FileSystemLocal fs = fileSystemHome.findByPrimaryKey(new Long(fspk));
@@ -224,8 +222,10 @@ public abstract class StorageBean implements SessionBean {
             log.error("inserting records for instance[uid=" + iuid
                     + "] failed:", e);
             sessionCtx.setRollbackOnly();
-            if (e instanceof DcmServiceException) {
-                throw (DcmServiceException) e;                
+            if (e instanceof NonUniquePatientIDException) {
+                throw (NonUniquePatientIDException) e;
+            } else if (e instanceof DcmServiceException){
+                throw (DcmServiceException) e;
             } else {
                 throw new DcmServiceException(Status.ProcessingFailure, e);
             }
@@ -396,7 +396,7 @@ public abstract class StorageBean implements SessionBean {
     }
 
     private SeriesLocal getSeries(PatientMatching matching, Dataset ds,
-            Dataset coercedElements, PIDCreator genpid) throws Exception {
+            Dataset coercedElements) throws Exception {
         final String uid = ds.getString(Tags.SeriesInstanceUID);
         SeriesLocal series;
         try {
@@ -404,7 +404,7 @@ public abstract class StorageBean implements SessionBean {
         } catch (ObjectNotFoundException onfe) {
             try {
                 return seriesHome.create(ds,
-                        getStudy(matching, ds, coercedElements, genpid));
+                        getStudy(matching, ds, coercedElements));
             } catch (CreateException e1) {
                 // check if Series record was inserted by concurrent thread
                 try {
@@ -419,7 +419,7 @@ public abstract class StorageBean implements SessionBean {
     }
 
     private StudyLocal getStudy(PatientMatching matching, Dataset ds,
-            Dataset coercedElements, PIDCreator genpid) throws Exception {
+            Dataset coercedElements) throws Exception {
         final String uid = ds.getString(Tags.StudyInstanceUID);
         StudyLocal study;
         try {
@@ -427,7 +427,7 @@ public abstract class StorageBean implements SessionBean {
         } catch (ObjectNotFoundException onfe) {
             try {
                 return studyHome.create(ds,
-                        getPatient(matching, ds, coercedElements, genpid));
+                        getPatient(matching, ds, coercedElements));
             } catch (CreateException e1) {
                 // check if Study record was inserted by concurrent thread
                 try {
@@ -442,7 +442,7 @@ public abstract class StorageBean implements SessionBean {
     }
 
     private PatientLocal getPatient(PatientMatching matching, Dataset ds,
-            Dataset coercedElements, PIDCreator genpid) throws Exception {
+            Dataset coercedElements) throws Exception {
         PatientLocal pat;
         try {
             pat = patHome.selectPatient(ds, matching, true);
@@ -469,15 +469,6 @@ public abstract class StorageBean implements SessionBean {
                      throw ce;
                  }
             }
-            
-        } catch (NonUniquePatientIDException nupide) {
-            log.warn(nupide.getMessage());
-            genpid.coercePatientID(ds);
-            coercedElements.putLO(Tags.PatientID,
-                    ds.getString(Tags.PatientID));
-            coercedElements.putLO(Tags.IssuerOfPatientID,
-                    ds.getString(Tags.IssuerOfPatientID));
-            return patHome.create(ds);
         } catch (NonUniquePatientException nupe) {
             return patHome.create(ds);
         }
@@ -665,6 +656,15 @@ public abstract class StorageBean implements SessionBean {
      */
     public void removeFromSeriesPkCache(String uid){
         seriesPkCache.remove(uid);
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public Dataset getPatientByIDWithIssuer(String pid, String issuer)
+            throws FinderException{
+        return patHome.findByPatientIdWithIssuer(pid, issuer)
+                .getAttributes(false);
     }
 }
 

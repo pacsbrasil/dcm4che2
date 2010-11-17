@@ -81,7 +81,6 @@ import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
-import org.dcm4chex.archive.ejb.interfaces.PIDCreator;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
@@ -96,8 +95,7 @@ import org.dcm4chex.archive.util.HomeFactoryException;
  * @version $Revision$ $Date::            $
  * @since 03.08.2003
  */
-public class StoreScpService extends AbstractScpService
-        implements PIDCreator {
+public class StoreScpService extends AbstractScpService {
 
     public static final String EVENT_TYPE_OBJECT_STORED = 
             "org.dcm4chex.archive.dcm.storescp";
@@ -846,7 +844,7 @@ public class StoreScpService extends AbstractScpService
         ds.setFileMetaInfo(fmi);
         String filePath = fileDTO.getFilePath();
         scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, fileDTO.getFileSize(),
-                fileDTO.getFileMd5(), true, this);
+                fileDTO.getFileMd5(), true);
         if (last) {
             logInstancesStoredAndSendSeriesStoredNotification(store, seriuid);
         }
@@ -989,7 +987,7 @@ public class StoreScpService extends AbstractScpService
         return fsmgt.isFileSystemGroupLocalAccessable(fsgrpid);
     }
 
-    public void coercePatientID(Dataset ds) {
+    void coercePatientID(Dataset ds) throws DcmServiceException {
         if (storeOriginalPatientIDInOtherPatientIDsSeq) {
             DcmElement opidsq = ds.get(Tags.OtherPatientIDSeq);
             if (opidsq == null)

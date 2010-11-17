@@ -40,7 +40,6 @@
 package org.dcm4chex.archive.dcm;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -50,6 +49,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.StringTokenizer;
 
+import javax.ejb.ObjectNotFoundException;
 import javax.management.Attribute;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -59,20 +59,19 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObject;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che.dict.VRs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmService;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.PDataTF;
 import org.dcm4che.net.UserIdentityNegotiator;
@@ -86,6 +85,8 @@ import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
+import org.dcm4chex.archive.ejb.interfaces.Storage;
+import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionManager;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionManagerHome;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
@@ -130,6 +131,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected String[] callingAETs;
 
     protected String[] generatePatientID = null;
+    protected boolean pnameHashInGeneratePatientID;
 
     protected String issuerOfGeneratedPatientID;
 
@@ -299,19 +301,22 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             return;
         }
         int pl = pattern.indexOf('#');
-        int pr = pl != -1 ? pattern.lastIndexOf('#') : -1;
+        boolean pnameHash = pl != -1;
+        int pr = pnameHash ? pattern.lastIndexOf('#') : -1;
         int sl = pattern.indexOf('$');
         int sr = sl != -1 ? pattern.lastIndexOf('$') : -1;
-        if (pl == -1 && sl == -1) {
+        if (!pnameHash && sl == -1) {
             this.generatePatientID = new String[] { pattern };
-        } else if (pl != -1 && sl != -1) {
-            this.generatePatientID = pl < sl ? split(pattern, pl, pr, sl, sr)
+        } else if (pnameHash && sl != -1) {
+            this.generatePatientID = pl < sl 
+                    ? split(pattern, pl, pr, sl, sr)
                     : split(pattern, sl, sr, pl, pr);
-
         } else {
-            this.generatePatientID = pl != -1 ? split(pattern, pl, pr) : split(
-                    pattern, sl, sr);
+            this.generatePatientID = pnameHash 
+                    ? split(pattern, pl, pr)
+                    : split(pattern, sl, sr);
         }
+        pnameHashInGeneratePatientID =  pnameHash;
     }
 
     private static String[] split(String pattern, int l1, int r1) {
@@ -922,7 +927,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
     }
 
-    public void generatePatientID(Dataset pat, Dataset sty, String calledAET) {
+    public void generatePatientID(Dataset pat, Dataset sty, String calledAET)
+            throws DcmServiceException {
         if (generatePatientID == null) {
             return;
         }
@@ -931,6 +937,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             return;
         }
         String pname = pat.getString(Tags.PatientName);
+        String issuer = issuerOfGeneratedPatientID(calledAET);
         if (generatePatientID.length == 1) {
             pid = generatePatientID[0];
         } else {
@@ -940,34 +947,52 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             // generate different Patient IDs for different studies
             // if no Patient Name
             int pnameHash = pname == null ? suidHash : pname.hashCode() * 37
-                    + pat.getString(Tags.PatientBirthDate, "").hashCode();
-
-            StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < generatePatientID.length; i++) {
-                String s = generatePatientID[i];
-                int l = s.length();
-                if (l == 0)
-                    continue;
-                char c = s.charAt(0);
-                if (c != '#' && c != '$') {
-                    sb.append(s);
-                    continue;
+                    + pat.getString(Tags.PatientBirthDate, "").hashCode()
+                    + pat.getString(Tags.PatientSex, "").hashCode();
+            
+            pid = generatePatientID(pnameHash, suidHash);
+            if (pnameHashInGeneratePatientID && pname != null) {
+                try {
+                    Storage s = getStorage();
+                    while (!pname.equals(
+                            s.getPatientByIDWithIssuer(pid, issuer)
+                            .getString(Tags.PatientName)))
+                        pid = generatePatientID(++pnameHash, suidHash);
+                } catch (ObjectNotFoundException e) {
+                } catch (Exception e) {
+                    log.error("Failed to query DB for patient with pid="
+                            + pid + ", issuer=" + issuer);
+                    throw new DcmServiceException(Status.ProcessingFailure, e);
                 }
-                String v = Long
-                        .toString((c == '#' ? pnameHash : suidHash) & 0xffffffffL);
-                for (int j = v.length() - l; j < 0; j++) {
-                    sb.append('0');
-                }
-                sb.append(v);
             }
-            pid = sb.toString();
         }
         pat.putLO(Tags.PatientID, pid);
-        String issuer = issuerOfGeneratedPatientID(calledAET);
         pat.putLO(Tags.IssuerOfPatientID, issuer);
         if (log.isInfoEnabled())
             log.info("Generate Patient ID: " + pid + "^^^" + issuer
                     + " for Patient: " + pname);
+    }
+
+    private String generatePatientID(int pnameHash, int suidHash) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < generatePatientID.length; i++) {
+            String s = generatePatientID[i];
+            int l = s.length();
+            if (l == 0)
+                continue;
+            char c = s.charAt(0);
+            if (c != '#' && c != '$') {
+                sb.append(s);
+                continue;
+            }
+            String v = Long
+                    .toString((c == '#' ? pnameHash : suidHash) & 0xffffffffL);
+            for (int j = v.length() - l; j < 0; j++) {
+                sb.append('0');
+            }
+            sb.append(v);
+        }
+        return sb.toString();
     }
 
     private String issuerOfGeneratedPatientID(String calledAET) {
@@ -1025,4 +1050,10 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         return mgt;
     }
 
+
+    private Storage getStorage() throws Exception {
+        StorageHome home = (StorageHome) EJBHomeFactory.getFactory()
+                .lookup(StorageHome.class, StorageHome.JNDI_NAME);
+        return home.create();
+    }
 }

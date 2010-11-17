@@ -102,11 +102,11 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
-import org.dcm4chex.archive.ejb.interfaces.PIDCreator;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
+import org.dcm4chex.archive.exceptions.NonUniquePatientIDException;
 import org.dcm4chex.archive.perf.PerfCounterEnum;
 import org.dcm4chex.archive.perf.PerfMonDelegate;
 import org.dcm4chex.archive.perf.PerfPropertyEnum;
@@ -700,10 +700,19 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             perfMon.start(activeAssoc, rq,
                     PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
             long fileLength = file != null ? file.length() : 0L;
-            Dataset coercedElements = updateDB(store, ds, 
-                    fsDTO != null ? fsDTO.getPk() : -1L,
-                    filePath, fileLength, md5sum,
-                    newSeries, service);
+            long fspk = fsDTO != null ? fsDTO.getPk() : -1L;
+            Dataset coercedElements;
+            try {
+                coercedElements = updateDB(store, ds, fspk, filePath,
+                        fileLength, md5sum, newSeries);
+            } catch (NonUniquePatientIDException e) {
+                service.coercePatientID(ds);
+                coerced.putLO(Tags.PatientID, ds.getString(Tags.PatientID));
+                coerced.putLO(Tags.IssuerOfPatientID,
+                        ds.getString(Tags.IssuerOfPatientID));
+                coercedElements = updateDB(store, ds, fspk, filePath,
+                        fileLength, md5sum, newSeries);
+            }
             if(newSeries) {
                seriesStored = initSeriesStored(ds, callingAET, retrieveAET);
                assoc.putProperty(SERIES_STORED, seriesStored);
@@ -998,9 +1007,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     protected Dataset updateDB(Storage storage, Dataset ds, long fspk,
             String filePath, long fileLength, byte[] md5,
-            boolean updateStudyAccessTime, PIDCreator genpid)
-            throws DcmServiceException, CreateException, HomeFactoryException,
-            IOException {
+            boolean updateStudyAccessTime)
+            throws DcmServiceException, NonUniquePatientIDException {
         int retry = 0;
         for (;;) {
             try {
@@ -1008,13 +1016,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     synchronized (storage) {
                         return storage.store(ds, fspk, filePath, fileLength,
                                 md5, updateStudyAccessTime,
-                                service.patientMatching(), genpid);
+                                service.patientMatching());
                     }
                 } else {
                     return storage.store(ds, fspk, filePath, fileLength,
                             md5, updateStudyAccessTime,
-                            service.patientMatching(), genpid);
+                            service.patientMatching());
                 }
+            } catch (NonUniquePatientIDException e) {
+                throw e;
             } catch (Exception e) {
                 ++retry;
                 if (retry > updateDatabaseMaxRetries) {
