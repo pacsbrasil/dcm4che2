@@ -311,6 +311,40 @@ public class StgCmtScuScpService extends AbstractScpService implements
         }
     }
 
+    public int scheduleStgCmtForStudy(String suid, String called, String calling) throws Exception {
+        Dataset retrRq = DcmObjectFactory.getInstance().newDataset();
+        retrRq.putCS(Tags.QueryRetrieveLevel, "STUDY");
+        retrRq.putUI(Tags.StudyInstanceUID, suid);
+        return scheduleStgCmtForRetrRq(retrRq, called, calling);
+    }
+    
+    public int scheduleStgCmtForSeries(String suid, String called, String calling) throws Exception {
+        Dataset retrRq = DcmObjectFactory.getInstance().newDataset();
+        retrRq.putCS(Tags.QueryRetrieveLevel, "SERIES");
+        retrRq.putUI(Tags.SeriesInstanceUID, suid);
+        return scheduleStgCmtForRetrRq(retrRq, called, calling);
+    }
+
+    private int scheduleStgCmtForRetrRq(Dataset retrRq, String called, String calling) throws Exception {
+        if (called == null || called.trim().length() == 0)
+            throw new IllegalArgumentException("Missing CalledAET");
+        aeMgr().findByAET(called);
+        Dataset actionInfo = DcmObjectFactory.getInstance().newDataset();
+        DcmElement refSOPSeq = actionInfo.putSQ(Tags.RefSOPSeq);
+        RetrieveCmd cmd = RetrieveCmd.create(retrRq);
+        cmd.setFetchSize(fetchSize);
+        FileInfo[][] fileInfos =cmd.getFileInfos();
+        Dataset item;
+        for (int i = 0 ; i < fileInfos.length ; i++) {
+            item = refSOPSeq.addNewItem();
+            item.putUI(Tags.RefSOPClassUID, fileInfos[i][0].sopCUID);
+            item.putUI(Tags.RefSOPInstanceUID, fileInfos[i][0].sopIUID);
+        }
+        if (refSOPSeq.countItems() > 0)
+            queueStgCmtOrder(calling, called, actionInfo, Boolean.FALSE);
+        return refSOPSeq.countItems();
+    }
+    
     public void queueStgCmtOrder(String calling, String called,
             Dataset actionInfo, boolean scpRole) throws Exception {
         if (calling == null || calling.trim().length() == 0) 

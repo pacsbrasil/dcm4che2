@@ -341,6 +341,50 @@
       <return-type>void</return-type>
    </operation>
 
+   <operation impact="ACTION">
+      <description>Schedule Storage Commitment Request for Study. 
+      	Return number of instances of scheduled StgCmt request.</description>
+      <name>scheduleStgCmtForStudy</name>
+      <parameter>
+        <description>Study Instance UID</description>
+        <name>suid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Called AET of StgCmt SCP to send request.</description>
+        <name>called</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Calling AET in StgCmt request. (Use first AET of CalledAETs attribute as default)</description>
+        <name>calling</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description>Schedule Storage Commitment Request for Series. 
+      	Return number of instances of scheduled StgCmt request.</description>
+      <name>scheduleStgCmtForSeries</name>
+      <parameter>
+        <description>Series Instance UID</description>
+        <name>suid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Called AET of StgCmt SCP to send request.</description>
+        <name>called</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Calling AET in StgCmt request. (Use first AET of CalledAETs attribute as default)</description>
+        <name>calling</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>
+
    <!-- Notifications -->
 </mbean>
 
