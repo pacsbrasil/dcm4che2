@@ -123,10 +123,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     private static final int PCID_STGCMT = 1;
     
-    private static final String NEW_LINE = System.getProperty("line.separator", "\n");
-
     protected ObjectName queryRetrieveScpServiceName;
-    private ObjectName storeScpServiceName;
     
     private String queueName = "StgCmtScuScp";
 
@@ -152,10 +149,6 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
     
-    Map<String, String> rqStgCmtOnReceiveFromAETs = new HashMap<String, String>();
-    
-    private NotificationListener seriesStoredListener;
-
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
     }
@@ -187,14 +180,6 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     public final void setScuRetryIntervalls(String s) {
         this.scuRetryIntervalls = new RetryIntervalls(s);
-    }
-
-    public ObjectName getStoreScpServiceName() {
-        return storeScpServiceName;
-    }
-
-    public void setStoreScpServiceName(ObjectName storeScpServiceName) {
-        this.storeScpServiceName = storeScpServiceName;
     }
 
     public final String getScpRetryIntervalls() {
@@ -295,56 +280,6 @@ public class StgCmtScuScpService extends AbstractScpService implements
         this.fetchSize = fetchSize;
     }
     
-    public String getRqStgCmtOnReceiveFromAETs() {
-        if (rqStgCmtOnReceiveFromAETs.isEmpty())
-            return NONE;
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> entry : rqStgCmtOnReceiveFromAETs.entrySet()) {
-            sb.append(entry.getKey());
-            if (!entry.getKey().equals(entry.getValue()))
-                sb.append('=').append(entry.getValue());
-            sb.append(NEW_LINE);
-        }
-        return sb.toString();
-    }
-    public void setRqStgCmtOnReceiveFromAETs(String s) throws InstanceNotFoundException, ListenerNotFoundException {
-        rqStgCmtOnReceiveFromAETs.clear();
-        if (!NONE.equals(s)) {
-            StringTokenizer st = new StringTokenizer(s, ";\n\r\t");
-            String tk = null;
-            int pos;
-            while (st.hasMoreTokens()) {
-                tk = st.nextToken();
-                pos = tk.indexOf('=');
-                if (pos == -1) {
-                    rqStgCmtOnReceiveFromAETs.put(tk, tk);
-                } else {
-                    rqStgCmtOnReceiveFromAETs.put(tk.substring(0, pos), tk.substring(++pos));
-                }
-            }
-        }
-        updateSeriesStoredListener();
-    }
-    
-    private void updateSeriesStoredListener() throws InstanceNotFoundException, ListenerNotFoundException {
-        if (server != null) {
-            if (rqStgCmtOnReceiveFromAETs.isEmpty()) {
-                if (seriesStoredListener != null) {
-                    server.removeNotificationListener(storeScpServiceName, seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
-                    seriesStoredListener = null;
-                }
-            } else if (seriesStoredListener == null){
-                seriesStoredListener = new NotificationListener() {
-                    public void handleNotification(Notification notif, Object handback) {
-                        onSeriesStored((SeriesStored) notif.getUserData());
-                    }
-                };
-                server.addNotificationListener(storeScpServiceName, seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
-            }
-        }
-    }
-    
-
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.StorageCommitmentPushModel, stgCmtScuScp);
     }
@@ -378,6 +313,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     public void queueStgCmtOrder(String calling, String called,
             Dataset actionInfo, boolean scpRole) throws Exception {
+        if (calling == null || calling.trim().length() == 0) 
+            calling = calledAETs[0];
         StgCmtOrder order = new StgCmtOrder(calling, called, actionInfo, scpRole);
         order.processOrderProperties();
         jmsDelegate.queue(queueName, order, 0, 0);
@@ -386,11 +323,9 @@ public class StgCmtScuScpService extends AbstractScpService implements
     protected void startService() throws Exception {
         super.startService();
         jmsDelegate.startListening(queueName, this, concurrency);
-        updateSeriesStoredListener();
     }
 
     protected void stopService() throws Exception {
-        updateSeriesStoredListener();
         jmsDelegate.stopListening(queueName);
         super.stopService();
     }
@@ -680,25 +615,4 @@ public class StgCmtScuScpService extends AbstractScpService implements
         }
     }
     
-    private void onSeriesStored(SeriesStored stored) {
-        log.info("##### handle SeriesStored:"+stored);
-        String aet = rqStgCmtOnReceiveFromAETs.get(stored.getSourceAET());
-        if (aet != null) {
-            Dataset actionInfo = stored.getIAN().get(Tags.RefSeriesSeq).getItem();
-            String callingAet;
-            int pos = aet.indexOf(':'); 
-            if (pos == -1) {
-                callingAet = this.calledAETs[0];
-            } else {
-                callingAet = aet.substring(0, pos);
-                aet = aet.substring(++pos);
-            }
-            try {
-                log.info("Queue StgCmt Order! calling:"+callingAet+" called:"+aet);
-                this.queueStgCmtOrder(callingAet, aet, actionInfo, false);
-            } catch (Exception x) {
-                log.error("Failed to queue StorageCommit Order! calledAet:"+aet,x);log.debug(actionInfo);
-            }
-        }
-    }
 }
