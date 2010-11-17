@@ -18,6 +18,7 @@
         <include>dcm4che-imageio-rle/**</include>
         <include>dcm4che-iod/**</include>
         <include>dcm4che-net/**</include>
+        <include>dcm4che-soundex/**</include>
         <include>dcm4che-tool/**</include>
         <include>pom.xml</include>
         <include>src/**</include>

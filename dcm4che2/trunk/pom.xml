@@ -25,6 +25,7 @@
     <module>dcm4che-imageio-rle</module>
     <module>dcm4che-net</module>
     <module>dcm4che-hp</module>
+    <module>dcm4che-soundex</module>
     <module>dcm4che-tool</module>
   </modules>
   <build>
