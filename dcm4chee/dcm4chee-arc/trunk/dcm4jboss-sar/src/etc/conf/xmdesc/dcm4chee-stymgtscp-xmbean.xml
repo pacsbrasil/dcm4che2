@@ -74,9 +74,8 @@ delimiter.
 Substrings specified by 'ignore("' <i>regular-expression</i> '")' will be ignored for matching patient name
 components.
 <p>
-A '(1)' suffix of the attribute name specifies that a value with only one
-character will be interpreted as initial, and match with any value starting
-with this character.
+A '(1)' suffix of the attribute name specifies that only the first character
+need to match.
 <p>
 A question mark('?') after a attribute name specifies that a missing value in
 received DICOM N-CREATE requests will match with any value for that attribute

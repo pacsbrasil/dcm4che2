@@ -411,20 +411,14 @@ public class PatientMatching implements Serializable{
             boolean unknownAlwaysMatch) {
         if (!mustMatch || value == null) {
             regex.append("[^\\^]*");
-        } else if (!initialMatch) {
+        } else if (initialMatch) {
+            regex.append(unknownAlwaysMatch ? "(\\Q" : "\\Q")
+                .append(value.charAt(0))
+                .append(unknownAlwaysMatch ? "\\E[^\\^]*)?" : "\\E[^\\^]*");
+        } else {
             regex.append(unknownAlwaysMatch ? "(\\Q" : "\\Q")
                  .append(value)
                  .append(unknownAlwaysMatch ? "\\E)?" : "\\E");
-        } else if (value.length() == 1) {
-            regex.append(unknownAlwaysMatch ? "(\\Q" : "\\Q")
-                 .append(value)
-                 .append(unknownAlwaysMatch ? "\\E[^\\^]*)?" : "\\E[^\\^]*");
-        } else {
-            regex.append("(\\Q")
-                 .append(value)
-                 .append("\\E|\\Q")
-                 .append(value.charAt(0))
-                 .append(unknownAlwaysMatch ? "\\E)?" : "\\E)");
         }
     }
 
