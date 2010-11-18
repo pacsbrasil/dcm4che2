@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.web.maverick;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4chex.archive.web.maverick.model.PatientModel;
 
@@ -60,7 +61,7 @@ public class PatientUpdateCtrl extends Dcm4cheeFormController {
 
     private String submit = null;
 
-    private String cancel = null;
+    protected static Logger log = Logger.getLogger(PatientUpdateCtrl.class);
 
     protected String perform() throws Exception {
         getCtx().getRequest().getSession().setAttribute("errorMsg", null);
@@ -96,6 +97,7 @@ public class PatientUpdateCtrl extends Dcm4cheeFormController {
             form.setEditPatient(null);
             return SUCCESS;
         } catch (Exception e) {
+            log.error("Create Patient failed!", e);
             form.setExternalPopupMsg("folder.err_createPatient",new String[]{e.getMessage()});
             return ERROR;
         }
@@ -158,9 +160,5 @@ public class PatientUpdateCtrl extends Dcm4cheeFormController {
 
     public final void setSubmit(String update) {
         this.submit = update;
-    }
-
-    public final void setCancel(String cancel) {
-        this.cancel = cancel;
     }
 }

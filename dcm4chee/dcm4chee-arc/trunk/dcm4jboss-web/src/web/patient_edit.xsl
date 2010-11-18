@@ -18,7 +18,7 @@
 		   <table border="1" cellspacing="0" cellpadding="0" width="100%"><tr><td>
            <table border="0">
             <tr>
-               <td class="label" bgcolor="#eeeeee">Patient ID:</td>
+               <td class="required" bgcolor="#eeeeee">Patient ID:</td>
                <td>							 
 							   <xsl:choose>
 								 	<xsl:when test="pk = -1">
@@ -31,7 +31,12 @@
 							 </td>
             </tr>
             <tr>
-               <td class="label" bgcolor="#eeeeee">Issuer of Patient ID:</td>
+               <td bgcolor="#eeeeee">
+               	  <xsl:if test="/model/emptyIssuerAllowed='false'">
+					 <xsl:attribute name="class">required</xsl:attribute>
+				  </xsl:if>
+                  <xsl:text>Issuer of Patient ID:</xsl:text>
+               </td>
                <td>							 
 							   <xsl:choose>
 								 	<xsl:when test="pk = -1">
@@ -44,7 +49,7 @@
 							 </td>
             </tr>
             <tr>
-               <td class="label" bgcolor="#eeeeee">Patient Name:</td>
+               <td class="required" bgcolor="#eeeeee">Patient Name:</td>
                <td>
                   <input size="64" name="patientName" type="text" value="{patientName}" />
                </td>
@@ -87,13 +92,18 @@
                   <input size="16" name="patientBirthDate" type="text" value="{patientBirthDate}" />
                </td>
             </tr>
-
             <tr>
                <td align="left">
 							   <xsl:choose>
 								 	<xsl:when test="pk = -1">
-										<input type="submit" name="submit" value="Add Patient" 
-											onclick="return checkPatientFields(this.form)"/>									
+								 		<xsl:if test="/model/emptyIssuerAllowed='true'">
+											<input type="submit" name="submit" value="Add Patient" 
+												onclick="return checkPatientFields(this.form)"/>
+										</xsl:if>
+								 		<xsl:if test="/model/emptyIssuerAllowed='false'">
+											<input type="submit" name="submit" value="Add Patient" 
+												onclick="return checkPatientFieldsWithIssuer(this.form)"/>
+										</xsl:if>
 									</xsl:when>
 									<xsl:otherwise>
 										<input type="submit" name="submit" value="Update" />

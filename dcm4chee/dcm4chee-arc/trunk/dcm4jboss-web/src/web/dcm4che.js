@@ -53,6 +53,20 @@ function checkPatientFields( form ) //checks if certain patient fields are not e
 		form.patientID.focus();
 		return false;
 	}
+	if ( isBlank(form.patientName.value) ) {
+		alert('Field Patient Name is empty!' );
+		form.patientName.focus();
+		return false;
+	}
+	return true;
+}
+function checkPatientFieldsWithIssuer( form ) //checks if certain patient fields are not empty
+{
+	if ( isBlank(form.patientID.value) ) {
+		alert('Field Patient ID is empty!' );
+		form.patientID.focus();
+		return false;
+	}
 	if ( isBlank(form.issuerOfPatientID.value) ) {
 		alert('Field Issuer of Patient ID is empty!' );
 		form.issuerOfPatientID.focus();
@@ -65,6 +79,7 @@ function checkPatientFields( form ) //checks if certain patient fields are not e
 	}
 	return true;
 }
+
 
 //-------------------------------------------------------------------
 // isBlank(value)

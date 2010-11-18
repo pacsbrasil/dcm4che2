@@ -50,6 +50,7 @@ import org.dcm4chex.archive.web.maverick.model.PatientModel;
 public class PatientEditCtrl extends Dcm4cheeFormController
 {
     private long pk = -1;
+    private Boolean emptyIssuerAllowed = null;
 
     public final void setPk(long pk)
     {
@@ -65,6 +66,16 @@ public class PatientEditCtrl extends Dcm4cheeFormController
         PatientModel pat = new PatientModel();
         pat.setSpecificCharacterSet("ISO_IR 100");
         return pat;
+    }
+    
+    public boolean isEmptyIssuerAllowed() {
+        if (emptyIssuerAllowed == null)
+            emptyIssuerAllowed = "true".equals(getCtx().getServletConfig().getInitParameter("emptyIssuerAllowed"));
+        return emptyIssuerAllowed;
+    }
+
+    public void setEmptyIssuerAllowed(boolean allowEmptyIssuer) {
+        this.emptyIssuerAllowed = allowEmptyIssuer;
     }
 
     public String getPopupMsg() {

@@ -83,7 +83,7 @@
       </td>
     </tr>
     <tr>
-      <td class="label" bgcolor="#eeeeee">Modality:</td>
+      <td class="required" bgcolor="#eeeeee">Modality:</td>
       <td>
         <input size="16" name="modality" type="text" value="{modality}"/>
       </td>

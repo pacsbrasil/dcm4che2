@@ -63,7 +63,7 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
 
     private int limit = 20;
 
-    private List patients;
+    private List patients = new ArrayList();
 
     private final Set stickyPatients = new HashSet();
 

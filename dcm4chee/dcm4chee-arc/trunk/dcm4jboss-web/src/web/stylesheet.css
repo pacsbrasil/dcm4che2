@@ -171,6 +171,12 @@ td.xds_doc_header {
 	vertical-align: middle;
 }
 
+td.required {
+	font-family : Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size : 11px;
+	font-weight : bold;
+}
+
 a.tab {
 	color : #335533;
 }
@@ -213,7 +219,7 @@ UL, LI {
 B {
 	font-family : Verdana, Geneva, Arial, Helvetica, sans-serif;
 	font-size : 11px;
-	font : bold;
+	font-weight : bold;
 }
 
 HR {
