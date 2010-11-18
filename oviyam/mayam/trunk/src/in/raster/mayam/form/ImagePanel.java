@@ -50,6 +50,7 @@ import in.raster.mayam.param.TextOverlayParam;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -80,6 +81,7 @@ import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import javax.media.jai.PlanarImage;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -653,7 +655,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
         widowingFlag = false;
         newBufferedImage = false;
-
+        this.getCanvas().repaint();
 
     }
 
@@ -676,6 +678,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         widowingFlag = false;
         newBufferedImage = false;
         this.repaint();
+        repaintTextOverlay();
     }
 
     /**
@@ -697,6 +700,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         widowingFlag = false;
         newBufferedImage = false;
         this.repaint();
+        repaintTextOverlay();
 
     }
     /*
@@ -1165,6 +1169,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         scaleFactor = scaleFactor + 0.5;
         displayZoomLevel();
         scaleProcess();
+        this.getCanvas().repaint();
 
     }
 
@@ -1189,6 +1194,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             scaleFactor = 0.5;
         }
         displayZoomLevel();
+        this.getCanvas().repaint();
     }
 
     /**
@@ -1288,6 +1294,10 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         } catch (Exception e) {
             System.out.println("Windowing can't be applied");
         }
+    }
+    public void repaintTextOverlay()
+    {
+        this.getCanvas().getLayeredCanvas().textOverlay.repaint();
     }
 
     public ColorModel getColorModel() {
@@ -1895,7 +1905,12 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         } catch (Exception e) {
             System.out.println("Array index out of bound exception");
         }
+
         return hu;
+    }
+
+    public int[] getPixels(int x, int y, int w, int h) {
+        return currentbufferedimage.getSampleModel().getPixels(x, y, w, h, (int[]) null, currentbufferedimage.getRaster().getDataBuffer());
     }
 
     public void mouseMoved(MouseEvent e) {
@@ -1908,6 +1923,28 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             probeParameter[2] = calculateHU((int) Math.round(mouseLocX2 / this.scaleFactor), (int) Math.round(mouseLocY2 / this.scaleFactor));
             this.getCanvas().getLayeredCanvas().textOverlay.setProbeParameters(probeParameter);
         }
+    }
+
+    public float getRescaleIntercept() {
+        if(rescaleIntercept!=null &&!rescaleIntercept.equalsIgnoreCase(""))
+        return Float.parseFloat(rescaleIntercept);
+        else
+            return 0.0f;
+    }
+
+    public void setRescaleIntercept(String rescaleIntercept) {
+        this.rescaleIntercept = rescaleIntercept;
+    }
+
+    public float getRescaleSlope() {
+        if(rescaleSlope!=null &&!rescaleSlope.equalsIgnoreCase(""))
+        return Float.parseFloat(rescaleSlope);
+        else
+            return 0.0f;
+    }
+
+    public void setRescaleSlope(String rescaleSlope) {
+        this.rescaleSlope = rescaleSlope;
     }
 
     public String getModality() {

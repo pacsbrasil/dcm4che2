@@ -730,6 +730,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             ApplicationContext.imgPanel.flipHorizontal();
             ApplicationContext.annotationPanel.doFlipHorizontal();
             ApplicationContext.imgPanel.repaint();
+            ApplicationContext.layeredCanvas.textOverlay.repaint();
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
         }
@@ -740,6 +741,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             ApplicationContext.imgPanel.flipVertical();
             ApplicationContext.annotationPanel.doFlipVertical();
             ApplicationContext.imgPanel.repaint();
+            ApplicationContext.layeredCanvas.textOverlay.repaint();
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
         }
