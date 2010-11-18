@@ -75,14 +75,37 @@ public class Soundex implements FuzzyStr {
         for (; i < in.length && j < codeLength; i++) {
             switch (in[i]) {
             case 'A':
-            case 'E':
-            case 'I':
-            case 'O':
-            case 'U':
-            case 'Y':
             case 'Ä':
+            case 'À':
+            case 'Á':
+            case 'Â':
+            case 'Ã':
+            case 'Å':
+            case 'Æ':
+            case 'E':
+            case 'È':
+            case 'É':
+            case 'Ê':
+            case 'Ë':
+            case 'I':
+            case 'Ì':
+            case 'Í':
+            case 'Î':
+            case 'Ï':
+            case 'O':
+            case 'Ò':
+            case 'Ó':
+            case 'Ô':
+            case 'Õ':
             case 'Ö':
+            case 'Ø':
+            case 'U':
+            case 'Ù':
+            case 'Ú':
+            case 'Û':
             case 'Ü':
+            case 'Y':
+            case 'Ý':
                 prevout = '0';
                 continue;
             case 'B':
@@ -92,6 +115,7 @@ public class Soundex implements FuzzyStr {
                 curout = '1';
                 break;
             case 'C':
+            case 'Ç':
             case 'G':
             case 'J':
             case 'K':
