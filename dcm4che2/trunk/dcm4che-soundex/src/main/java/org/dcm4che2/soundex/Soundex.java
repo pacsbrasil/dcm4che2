@@ -56,7 +56,7 @@ public class Soundex implements FuzzyStr {
     }
 
     public String toFuzzy(String s) {
-        if (s.length() == 0)
+        if (s == null || s.length() == 0)
             return "";
 
         char[] in = s.toUpperCase().toCharArray();

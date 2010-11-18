@@ -54,7 +54,7 @@ package org.dcm4che2.soundex;
 public class Phonem implements FuzzyStr {
 
     public String toFuzzy(String s) {
-        if (s.length() == 0)
+        if (s == null || s.length() == 0)
             return "";
 
         char[] in = s.toUpperCase().toCharArray();
