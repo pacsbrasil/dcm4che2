@@ -185,6 +185,15 @@ public abstract class StorageBean implements SessionBean {
     public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
             long fspk, java.lang.String fileid, long size, byte[] md5,
             boolean updateStudyAccessTime, PatientMatching matching) throws DcmServiceException, NonUniquePatientIDException {
+    	return store(ds, fspk, fileid, size, md5, updateStudyAccessTime, matching, true);
+    }
+    /**
+     * @ejb.interface-method
+     */
+    public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
+            long fspk, java.lang.String fileid, long size, byte[] md5,
+            boolean updateStudyAccessTime, PatientMatching matching
+            , boolean canRollback) throws DcmServiceException, NonUniquePatientIDException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
         final String cuid = fmi.getMediaStorageSOPClassUID();
@@ -219,9 +228,9 @@ public abstract class StorageBean implements SessionBean {
             log.info("inserted records for instance[uid=" + iuid + "]");
             return coercedElements;
         } catch (Exception e) {
-            log.error("inserting records for instance[uid=" + iuid
-                    + "] failed:", e);
-            sessionCtx.setRollbackOnly();
+            log.warn("inserting records for instance[uid=" + iuid
+                    + "] failed: " + e.getMessage());
+            if (canRollback) sessionCtx.setRollbackOnly(); 
             if (e instanceof NonUniquePatientIDException) {
                 throw (NonUniquePatientIDException) e;
             } else if (e instanceof DcmServiceException){
