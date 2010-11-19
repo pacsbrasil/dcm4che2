@@ -49,11 +49,11 @@ public class DeleteStudyOrdersAndMaxAccessTime implements Serializable {
 
     private static final long serialVersionUID = 8798735468613522541L;
 
-    public final Collection deleteStudyOrders;
+    public final Collection<DeleteStudyOrder> deleteStudyOrders;
     public final long maxAccessTime;
 
     public DeleteStudyOrdersAndMaxAccessTime(
-            Collection deleteStudyOrders, long maxAccessTime) {
+            Collection<DeleteStudyOrder> deleteStudyOrders, long maxAccessTime) {
         this.deleteStudyOrders = deleteStudyOrders;
         this.maxAccessTime = maxAccessTime;
     }
