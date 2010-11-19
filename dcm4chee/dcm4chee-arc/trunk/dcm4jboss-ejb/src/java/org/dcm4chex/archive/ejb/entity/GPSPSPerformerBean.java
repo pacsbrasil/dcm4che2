@@ -53,13 +53,15 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
+import org.dcm4che2.soundex.FuzzyStr;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
 
 /**
- * @author gunter.zeilinger@tiani.com
- * @version Revision $Date$
+ * @author gunterze@gmail.com
+ * @version $Revision$ $Date::            $
  * @since 01.04.2005
  * 
  * @ejb.bean name="GPSPSPerformer" type="CMP" view-type="local"
@@ -106,6 +108,13 @@ public abstract class GPSPSPerformerBean implements EntityBean {
         PersonName pn = ds.getPersonName(Tags.HumanPerformerName);
         if (pn != null) {
             setHumanPerformerName(toUpperCase(pn.toComponentGroupString(false)));
+            FuzzyStr soundex = AttributeFilter.getSoundex();
+            if (soundex != null) {
+                setHumanPerformerFamilyNameSoundex(
+                        soundex.toFuzzy(pn.get(PersonName.FAMILY)));
+                setHumanPerformerGivenNameSoundex(
+                        soundex.toFuzzy(pn.get(PersonName.GIVEN)));
+            }
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setHumanPerformerIdeographicName(ipn.toComponentGroupString(false));
@@ -159,6 +168,20 @@ public abstract class GPSPSPerformerBean implements EntityBean {
      */
     public abstract String getHumanPerformerName();
     public abstract void setHumanPerformerName(String name);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="hum_perf_fn_sx"
+     */
+    public abstract String getHumanPerformerFamilyNameSoundex();
+    public abstract void setHumanPerformerFamilyNameSoundex(String name);
+        
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="hum_perf_gn_sx"
+     */
+    public abstract String getHumanPerformerGivenNameSoundex();
+    public abstract void setHumanPerformerGivenNameSoundex(String name);
 
     /**
      * @ejb.interface-method

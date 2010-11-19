@@ -3,7 +3,7 @@
   <property file="build.properties"/>
   <property file="../build.properties"/>
 
-  <property name="version" value="2.15.1"/>
+  <property name="version" value="2.16.0"/>
   <property name="audit-version" value="2.15.0"/>
   <property name="docstore-version" value="1.0.0"/>
   <property name="target.dir" value="${basedir}/target"/>

@@ -62,6 +62,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -286,6 +287,20 @@ public abstract class PatientBean implements EntityBean {
      */
     public abstract String getPatientName();
     public abstract void setPatientName(String name);
+        
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="pat_fn_sx"
+     */
+    public abstract String getPatientFamilyNameSoundex();
+    public abstract void setPatientFamilyNameSoundex(String name);
+        
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="pat_gn_sx"
+     */
+    public abstract String getPatientGivenNameSoundex();
+    public abstract void setPatientGivenNameSoundex(String name);
         
     /**
      * @ejb.interface-method
@@ -748,6 +763,13 @@ public abstract class PatientBean implements EntityBean {
             setPatientName(
                     filter.toUpperCase(pn.toComponentGroupString(false),
                             Tags.PatientName));
+            FuzzyStr soundex = AttributeFilter.getSoundex();
+            if (soundex != null) {
+                setPatientFamilyNameSoundex(
+                        soundex.toFuzzy(pn.get(PersonName.FAMILY)));
+                setPatientGivenNameSoundex(
+                        soundex.toFuzzy(pn.get(PersonName.GIVEN)));
+            }
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setPatientIdeographicName(ipn.toComponentGroupString(false));

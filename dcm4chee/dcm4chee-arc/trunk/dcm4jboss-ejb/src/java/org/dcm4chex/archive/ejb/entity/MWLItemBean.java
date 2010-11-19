@@ -56,8 +56,10 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
+import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.SPSStatus;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 
 /**
@@ -176,6 +178,20 @@ public abstract class MWLItemBean implements EntityBean {
     public abstract void setPerformingPhysicianName(String name);
 
     /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="perf_phys_fn_sx"
+     */
+    public abstract String getPerformingPhysicianFamilyNameSoundex();
+    public abstract void setPerformingPhysicianFamilyNameSoundex(String name);
+        
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="perf_phys_gn_sx"
+     */
+    public abstract String getPerformingPhysicianGivenNameSoundex();
+    public abstract void setPerformingPhysicianGivenNameSoundex(String name);
+
+    /**
      * @ejb.persistence column-name="perf_phys_i_name"
      */
     public abstract String getPerformingPhysicianIdeographicName();
@@ -284,6 +300,13 @@ public abstract class MWLItemBean implements EntityBean {
         PersonName pn = spsItem.getPersonName(Tags.PerformingPhysicianName);
         if (pn != null) {
             setPerformingPhysicianName(toUpperCase(pn.toComponentGroupString(false)));
+            FuzzyStr soundex = AttributeFilter.getSoundex();
+            if (soundex != null) {
+                setPerformingPhysicianFamilyNameSoundex(
+                        soundex.toFuzzy(pn.get(PersonName.FAMILY)));
+                setPerformingPhysicianGivenNameSoundex(
+                        soundex.toFuzzy(pn.get(PersonName.GIVEN)));
+            }
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setPerformingPhysicianIdeographicName(ipn.toComponentGroupString(false));

@@ -62,6 +62,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
@@ -245,6 +246,20 @@ public abstract class StudyBean implements EntityBean {
      */
     public abstract String getReferringPhysicianName();
     public abstract void setReferringPhysicianName(String name);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="ref_phys_fn_sx"
+     */
+    public abstract String getReferringPhysicianFamilyNameSoundex();
+    public abstract void setReferringPhysicianFamilyNameSoundex(String name);
+        
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="ref_phys_gn_sx"
+     */
+    public abstract String getReferringPhysicianGivenNameSoundex();
+    public abstract void setReferringPhysicianGivenNameSoundex(String name);
 
     /**
      * @ejb.interface-method
@@ -924,6 +939,13 @@ public abstract class StudyBean implements EntityBean {
             setReferringPhysicianName(
                     filter.toUpperCase(pn.toComponentGroupString(false),
                             Tags.ReferringPhysicianName));
+            FuzzyStr soundex = AttributeFilter.getSoundex();
+            if (soundex != null) {
+                setReferringPhysicianFamilyNameSoundex(
+                        soundex.toFuzzy(pn.get(PersonName.FAMILY)));
+                setReferringPhysicianGivenNameSoundex(
+                        soundex.toFuzzy(pn.get(PersonName.GIVEN)));
+            }
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setReferringPhysicianIdeographicName(ipn.toComponentGroupString(false));                

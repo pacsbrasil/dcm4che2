@@ -33,6 +33,8 @@ CREATE TABLE patient (
     pat_id            VARCHAR(250) BINARY,
     pat_id_issuer     VARCHAR(250) BINARY,
     pat_name          VARCHAR(250) BINARY,
+    pat_fn_sx         VARCHAR(250) BINARY,
+    pat_gn_sx         VARCHAR(250) BINARY,
     pat_i_name        VARCHAR(250) BINARY,
     pat_p_name        VARCHAR(250) BINARY,
     pat_birthdate     VARCHAR(250) BINARY,
@@ -48,6 +50,8 @@ FOREIGN KEY (merge_fk) REFERENCES patient(pk)
 CREATE INDEX pat_merge_fk ON patient(merge_fk);
 CREATE INDEX pat_id ON patient(pat_id(64), pat_id_issuer(64));
 CREATE INDEX pat_name ON patient(pat_name(64));
+CREATE INDEX pat_fn_sx ON patient(pat_fn_sx);
+CREATE INDEX pat_gn_sx ON patient(pat_gn_sx);
 CREATE INDEX pat_i_name ON patient(pat_i_name(64));
 CREATE INDEX pat_p_name ON patient(pat_p_name(64));
 CREATE INDEX pat_birthdate ON patient(pat_birthdate(8));
@@ -80,6 +84,8 @@ CREATE TABLE study (
     study_datetime    DATETIME,
     accession_no      VARCHAR(250) BINARY,
     ref_physician     VARCHAR(250) BINARY,
+    ref_phys_fn_sx    VARCHAR(250) BINARY,
+    ref_phys_gn_sx    VARCHAR(250) BINARY,
     ref_phys_i_name   VARCHAR(250) BINARY,
     ref_phys_p_name   VARCHAR(250) BINARY,
     study_desc        VARCHAR(250) BINARY,
@@ -109,6 +115,8 @@ CREATE INDEX study_id ON study(study_id(64));
 CREATE INDEX study_datetime ON study(study_datetime);
 CREATE INDEX accession_no ON study(accession_no(16));
 CREATE INDEX ref_physician ON study(ref_physician(64));
+CREATE INDEX ref_phys_fn_sx ON study(ref_phys_fn_sx);
+CREATE INDEX ref_phys_gn_sx ON study(ref_phys_gn_sx);
 CREATE INDEX ref_phys_i_name ON study(ref_phys_i_name(64));
 CREATE INDEX ref_phys_p_name ON study(ref_phys_p_name(64));
 CREATE INDEX study_desc ON study(study_desc(64));
@@ -176,6 +184,8 @@ CREATE TABLE series (
     station_name      VARCHAR(250) BINARY,
     department        VARCHAR(250) BINARY,
     perf_physician    VARCHAR(250) BINARY,
+    perf_phys_fn_sx   VARCHAR(250) BINARY,
+    perf_phys_gn_sx   VARCHAR(250) BINARY,
     perf_phys_i_name  VARCHAR(250) BINARY,
     perf_phys_p_name  VARCHAR(250) BINARY,
     pps_start         DATETIME,
@@ -209,6 +219,8 @@ CREATE INDEX institution ON series(institution(64));
 CREATE INDEX station_name ON series(station_name(16));
 CREATE INDEX department ON series(department(64));
 CREATE INDEX perf_physician ON series(perf_physician(64));
+CREATE INDEX perf_phys_fn_sx ON series(perf_phys_fn_sx);
+CREATE INDEX perf_phys_gn_sx ON series(perf_phys_gn_sx);
 CREATE INDEX perf_phys_i_name ON series(perf_phys_i_name(64));
 CREATE INDEX perf_phys_p_name ON series(perf_phys_p_name(64));
 CREATE INDEX series_pps_start ON series(pps_start);
@@ -229,6 +241,8 @@ CREATE TABLE series_req (
     sps_id            VARCHAR(250) BINARY,
     req_service       VARCHAR(250) BINARY,
     req_physician     VARCHAR(250) BINARY,
+    req_phys_fn_sx    VARCHAR(250) BINARY,
+    req_phys_gn_sx    VARCHAR(250) BINARY,
     req_phys_i_name   VARCHAR(250) BINARY,
     req_phys_p_name   VARCHAR(250) BINARY,
     FOREIGN KEY (series_fk) REFERENCES series(pk)
@@ -239,6 +253,8 @@ CREATE INDEX ser_req_proc_id ON series_req(req_proc_id(16));
 CREATE INDEX ser_req_sps_id ON series_req(sps_id(16));    
 CREATE INDEX ser_req_service ON series_req(req_service(64));
 CREATE INDEX ser_req_phys ON series_req(req_physician(64));
+CREATE INDEX ser_req_phys_fn_sx ON series_req(req_phys_fn_sx);
+CREATE INDEX ser_req_phys_gn_sx ON series_req(req_phys_gn_sx);
 CREATE INDEX ser_req_phys_i ON series_req(req_phys_i_name(64));
 CREATE INDEX ser_req_phys_p ON series_req(req_phys_p_name(64));
 
@@ -304,6 +320,8 @@ CREATE TABLE verify_observer (
     instance_fk       BIGINT,
     verify_datetime   DATETIME,
     observer_name     VARCHAR(250) BINARY,
+    observer_fn_sx    VARCHAR(250) BINARY,
+    observer_gn_sx    VARCHAR(250) BINARY,
     observer_i_name   VARCHAR(250) BINARY,
     observer_p_name   VARCHAR(250) BINARY,
 FOREIGN KEY (instance_fk) REFERENCES instance(pk)
@@ -311,6 +329,8 @@ FOREIGN KEY (instance_fk) REFERENCES instance(pk)
 CREATE INDEX observer_inst_fk ON verify_observer(instance_fk);
 CREATE INDEX verify_datetime ON verify_observer(verify_datetime);
 CREATE INDEX observer_name ON verify_observer(observer_name(64));
+CREATE INDEX observer_fn_sx ON verify_observer(observer_fn_sx);
+CREATE INDEX observer_gn_sx ON verify_observer(observer_gn_sx);
 CREATE INDEX observer_i_name ON verify_observer(observer_i_name(64));
 CREATE INDEX observer_p_name ON verify_observer(observer_p_name(64));
 
@@ -377,6 +397,8 @@ CREATE TABLE mwl_item (
     station_name      VARCHAR(250) BINARY,
     modality          VARCHAR(250) BINARY NOT NULL,
     perf_physician    VARCHAR(250) BINARY,
+    perf_phys_fn_sx   VARCHAR(250) BINARY,
+    perf_phys_gn_sx   VARCHAR(250) BINARY,
     perf_phys_i_name  VARCHAR(250) BINARY,
     perf_phys_p_name  VARCHAR(250) BINARY,
     req_proc_id       VARCHAR(250) BINARY NOT NULL,
@@ -395,6 +417,8 @@ CREATE INDEX mwl_station_aet ON mwl_item(station_aet(16));
 CREATE INDEX mwl_station_name ON mwl_item(station_name(16));
 CREATE INDEX mwl_modality ON mwl_item(modality(16));
 CREATE INDEX mwl_perf_physician ON mwl_item(perf_physician(64));
+CREATE INDEX mwl_perf_phys_fn_sx ON mwl_item(perf_phys_fn_sx);
+CREATE INDEX mwl_perf_phys_gn_sx ON mwl_item(perf_phys_gn_sx);
 CREATE INDEX mwl_perf_phys_i_nm ON mwl_item(perf_phys_i_name(64));
 CREATE INDEX mwl_perf_phys_p_nm ON mwl_item(perf_phys_p_name(64));
 CREATE INDEX mwl_req_proc_id ON mwl_item(req_proc_id(16));
@@ -467,6 +491,8 @@ CREATE TABLE gpsps_perf (
     gpsps_fk          BIGINT,
     code_fk           BIGINT,
     human_perf_name   VARCHAR(250) BINARY,
+    hum_perf_fn_sx    VARCHAR(250) BINARY,
+    hum_perf_gn_sx    VARCHAR(250) BINARY,
     hum_perf_i_name   VARCHAR(250) BINARY,
     hum_perf_p_name   VARCHAR(250) BINARY,
 FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
@@ -475,6 +501,8 @@ FOREIGN KEY (code_fk) REFERENCES code(pk)
 CREATE INDEX gpsps_perf_sps_fk ON gpsps_perf(gpsps_fk);
 CREATE INDEX gpsps_perf_code_fk ON gpsps_perf(code_fk);
 CREATE INDEX gpsps_perf_name ON gpsps_perf(human_perf_name(64));
+CREATE INDEX gpsps_perf_fn_sx ON gpsps_perf(hum_perf_fn_sx);
+CREATE INDEX gpsps_perf_gn_sx ON gpsps_perf(hum_perf_gn_sx);
 CREATE INDEX gpsps_perf_i_name ON gpsps_perf(hum_perf_i_name(64));
 CREATE INDEX gpsps_perf_p_name ON gpsps_perf(hum_perf_p_name(64));
 

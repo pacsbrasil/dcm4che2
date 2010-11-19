@@ -45,6 +45,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 
 /**
@@ -55,6 +56,7 @@ import org.dcm4chex.archive.exceptions.ConfigurationException;
  */
 public final class AttributeFilter {
     private static final String CONFIG_URL = "resource:dcm4chee-attribute-filter.xml";
+    static FuzzyStr soundex = null;
     static AttributeFilter patientFilter;
     static AttributeFilter studyFilter;
     static AttributeFilter seriesFilter;
@@ -83,6 +85,7 @@ public final class AttributeFilter {
     }
 
     public static void reload() {
+        AttributeFilter.soundex = null;
         AttributeFilter.patientFilter = null;
         AttributeFilter.studyFilter = null;
         AttributeFilter.seriesFilter = null;
@@ -100,6 +103,10 @@ public final class AttributeFilter {
         return conn.getLastModified();
     }
     
+    public static FuzzyStr getSoundex()  {
+        return soundex;
+    }
+
     public static AttributeFilter getPatientAttributeFilter()  {
         return patientFilter;
     }

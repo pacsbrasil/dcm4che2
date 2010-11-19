@@ -5,7 +5,7 @@
 	<property file="build.properties"/>
         <property file="../build.properties" />
 
-	<property name="version" value="2.15.1"/>
+	<property name="version" value="2.16.0"/>
   
 	<property name="javac.debug" value="on"/>
 	<property name="javac.deprecation" value="off"/>
@@ -50,58 +50,6 @@
 	<property name="jboss-common.jar" value="${jboss.home}/lib/jboss-common.jar"/>
 	<property name="jboss-common-jdbc-wrapper.jar" value="${jboss.conf}/lib/jboss-common-jdbc-wrapper.jar"/>		
 
-	<path id="base.path">
-		<pathelement location="${jboss-system.jar}"/>
-		<pathelement location="${jboss.jar}"/>
-		<pathelement location="${jboss-common.jar}"/>
-		<pathelement location="${jboss-common-jdbc-wrapper.jar}"/>
-		<pathelement location="${concurrent.jar}"/>
-		<pathelement location="${ejb.jar}"/>
-		<pathelement location="${log4j.jar}"/>
-		<pathelement location="${getopt.jar}"/>
-		<pathelement location="${dcm4che.jar}"/>
-	</path>
-
-	<path id="jboss.client.path">
-		<fileset dir="${jboss.home}/client">
-			<include name="*.jar"/>
-		</fileset>
-		<pathelement location="${log4j.jar}"/>
-		<pathelement location="${dcm4che.jar}"/>
-	</path>
-	
-	<path id="xdoclet.path">
-        <pathelement location="${basedir}/lib/xjavadoc-1.5-snapshot050611.jar"/>
-		<fileset dir="${xdoclet.lib}">
-			<include name="*.jar"/>
-            <exclude name="xjavadoc-1.1.jar"/>
-		</fileset>
-		<path refid="base.path"/>
-	</path>
-	
-	<fileset id="cactus.container.jars" dir="${cactus.lib}">
-      	<include name="aspectjrt-*.jar"/>
-        <include name="cactus-*.jar"/>
-        <include name="commons-logging-*.jar"/>
-        <include name="junit-*.jar"/>
-        <exclude name="cactus-ant-*.jar"/>
-	</fileset>
-	<path id="cactus.client.path">
-		<fileset refid="cactus.container.jars"/>
-		<fileset dir="${cactus.lib}">
-    	  	<include name="commons-httpclient*.jar"/>
-    	</fileset>
-		<path refid="base.path"/>
-	</path>
-	
-	<path id="cactus.build.path">
-		<fileset dir="${cactus.lib}">
-    	  	<include name="cactus-*.jar"/>
-        	<include name="junit-*.jar"/>
-		</fileset>
-		<path refid="base.path"/>
-	</path>
-	
 	<property name="src.java" value="${basedir}/src/java"/>
 	<property name="src.res" value="${basedir}/src/resources"/>
 	<property name="src.etc" value="${basedir}/src/etc"/>
@@ -131,7 +79,59 @@
 
 	<property name="dist" value="${ant.project.name}-${version}"/>
 	
-	
+    <path id="base.path">
+        <pathelement location="${jboss-system.jar}"/>
+        <pathelement location="${jboss.jar}"/>
+        <pathelement location="${jboss-common.jar}"/>
+        <pathelement location="${jboss-common-jdbc-wrapper.jar}"/>
+        <pathelement location="${concurrent.jar}"/>
+        <pathelement location="${ejb.jar}"/>
+        <pathelement location="${log4j.jar}"/>
+        <pathelement location="${getopt.jar}"/>
+        <pathelement location="${dcm4che.jar}"/>
+        <pathelement location="${src.etc}/common/lib/dcm4che-soundex-2.0.25.jar"/>
+    </path>
+
+    <path id="jboss.client.path">
+        <fileset dir="${jboss.home}/client">
+            <include name="*.jar"/>
+        </fileset>
+        <pathelement location="${log4j.jar}"/>
+        <pathelement location="${dcm4che.jar}"/>
+    </path>
+    
+    <path id="xdoclet.path">
+        <pathelement location="${basedir}/lib/xjavadoc-1.5-snapshot050611.jar"/>
+        <fileset dir="${xdoclet.lib}">
+            <include name="*.jar"/>
+            <exclude name="xjavadoc-1.1.jar"/>
+        </fileset>
+        <path refid="base.path"/>
+    </path>
+    
+    <fileset id="cactus.container.jars" dir="${cactus.lib}">
+        <include name="aspectjrt-*.jar"/>
+        <include name="cactus-*.jar"/>
+        <include name="commons-logging-*.jar"/>
+        <include name="junit-*.jar"/>
+        <exclude name="cactus-ant-*.jar"/>
+    </fileset>
+    <path id="cactus.client.path">
+        <fileset refid="cactus.container.jars"/>
+        <fileset dir="${cactus.lib}">
+            <include name="commons-httpclient*.jar"/>
+        </fileset>
+        <path refid="base.path"/>
+    </path>
+    
+    <path id="cactus.build.path">
+        <fileset dir="${cactus.lib}">
+            <include name="cactus-*.jar"/>
+            <include name="junit-*.jar"/>
+        </fileset>
+        <path refid="base.path"/>
+    </path>
+    
     <!-- =================================================================== -->
     <!-- Invoke XDoclet's ejbdoclet                                          -->
     <!-- =================================================================== -->

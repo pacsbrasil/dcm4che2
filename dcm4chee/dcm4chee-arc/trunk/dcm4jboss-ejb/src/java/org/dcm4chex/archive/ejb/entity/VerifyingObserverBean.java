@@ -44,6 +44,7 @@ import javax.ejb.EntityBean;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
+import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 
 /**
@@ -92,6 +93,20 @@ public abstract class VerifyingObserverBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="observer_fn_sx"
+     */
+    public abstract String getVerifyingObserverFamilyNameSoundex();
+    public abstract void setVerifyingObserverFamilyNameSoundex(String name);
+        
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="observer_gn_sx"
+     */
+    public abstract String getVerifyingObserverGivenNameSoundex();
+    public abstract void setVerifyingObserverGivenNameSoundex(String name);
+
+    /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="observer_i_name"
      */
     public abstract String getVerifyingObserverIdeographicName();
@@ -114,6 +129,13 @@ public abstract class VerifyingObserverBean implements EntityBean {
         if ((name = pn.toComponentGroupString(false)) != null) {
             AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(null);
             setVerifyingObserverName(filter.toUpperCase(name, Tags.VerifyingObserverName));
+            FuzzyStr soundex = AttributeFilter.getSoundex();
+            if (soundex != null) {
+                setVerifyingObserverFamilyNameSoundex(
+                        soundex.toFuzzy(pn.get(PersonName.FAMILY)));
+                setVerifyingObserverGivenNameSoundex(
+                        soundex.toFuzzy(pn.get(PersonName.GIVEN)));
+            }
         }
         if (ipn != null && (name = ipn.toComponentGroupString(false)) != null) {
             setVerifyingObserverIdeographicName(name.toUpperCase());

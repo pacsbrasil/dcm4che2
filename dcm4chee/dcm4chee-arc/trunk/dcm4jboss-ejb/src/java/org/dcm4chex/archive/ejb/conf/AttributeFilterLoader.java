@@ -45,6 +45,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
+import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -124,6 +125,16 @@ class AttributeFilterLoader extends DefaultHandler {
                 throw new SAXException("more than one patient element");
             }
             AttributeFilter.patientFilter = filter = makeFilter(attributes);
+        } else if (qName.equals("soundex")) {
+            String clazz = attributes.getValue("class");
+            try {
+                AttributeFilter.soundex =
+                    (FuzzyStr) Class.forName(clazz).newInstance();
+            } catch (Exception e) {
+                throw new SAXException(
+                        "Failed to instantiate Soundex implementation: "
+                        + clazz, e);
+            }
         }
     }
 

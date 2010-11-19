@@ -33,7 +33,10 @@ Minimal descriptor for DICOM Standard Conformance of Query/Retrieve Service:
   </dcm4chee-attribute-filter>
 -->
 
-<!ELEMENT dcm4chee-attribute-filter (patient+,study+,series+,instance+)>
+<!ELEMENT dcm4chee-attribute-filter (soundex?,patient+,study+,series+,instance+)>
+
+<!ELEMENT soundex EMPTY>
+<!ATTLIST soundex class CDATA #REQUIRED>
 
 <!ELEMENT patient (attr)*>
 <!ATTLIST patient tsuid CDATA #IMPLIED>
