@@ -343,12 +343,14 @@ CREATE TABLE study_on_fs (
     study_fk        BIGINT,
     filesystem_fk   BIGINT,
     access_time     TIMESTAMP NOT NULL,
+    mark_to_delete  SMALLINT NOT NULL,
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
 );
 CREATE UNIQUE INDEX i_study_on_fs ON study_on_fs(study_fk, filesystem_fk);
 CREATE INDEX fs_of_study ON study_on_fs(filesystem_fk);
 CREATE INDEX access_time ON study_on_fs(access_time);
+CREATE INDEX mark_to_delete ON study_on_fs(mark_to_delete);
 
 
 CREATE TABLE files (

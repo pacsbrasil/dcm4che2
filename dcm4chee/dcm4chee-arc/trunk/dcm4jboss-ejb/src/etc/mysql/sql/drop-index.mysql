@@ -108,6 +108,7 @@ ALTER TABLE files DROP INDEX file_status;
 ALTER TABLE study_on_fs DROP INDEX i_study_on_fs;
 ALTER TABLE study_on_fs DROP INDEX fs_of_study;
 ALTER TABLE study_on_fs DROP INDEX access_time;
+ALTER TABLE study_on_fs DROP INDEX mark_to_delete;
 ALTER TABLE mwl_item DROP INDEX mwl_patient_fk;
 ALTER TABLE mwl_item DROP INDEX sps_status;
 ALTER TABLE mwl_item DROP INDEX mwl_sps_id;

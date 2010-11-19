@@ -1,0 +1,11 @@
+-- Update DB from dcm4chee-2.15.x to dcm4chee-2.1.x
+
+CONNECT TO pacsdb;
+SET CURRENT SCHEMA pacsdb;
+
+ALTER TABLE study_on_fs
+   ADD mark_to_delete SMALLINT NOT NULL DEFAULT 0;
+
+CREATE INDEX mark_to_delete ON study_on_fs(mark_to_delete);
+   
+

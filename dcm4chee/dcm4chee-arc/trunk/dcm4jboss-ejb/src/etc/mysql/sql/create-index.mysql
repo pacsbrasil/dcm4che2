@@ -108,6 +108,7 @@ CREATE INDEX file_status ON files(file_status);
 CREATE UNIQUE INDEX i_study_on_fs ON study_on_fs(study_fk, filesystem_fk);
 CREATE INDEX fs_of_study ON study_on_fs(filesystem_fk);
 CREATE INDEX access_time ON study_on_fs(access_time);
+CREATE INDEX mark_to_delete ON study_on_fs(mark_to_delete);
 CREATE INDEX mwl_patient_fk ON mwl_item(patient_fk);
 CREATE INDEX sps_status ON mwl_item(sps_status);
 CREATE UNIQUE INDEX mwl_sps_id ON mwl_item(sps_id(16),req_proc_id(16));
