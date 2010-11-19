@@ -179,6 +179,7 @@ public class XDSIService extends ServiceMBeanSupport {
     private boolean logSOAPMessage = true;
     private boolean indentSOAPLog = true;
     private boolean useXDSb = false;
+    private boolean removeNamespaceID = false;
 
     private final NotificationListener ianListener = 
         new NotificationListener() {
@@ -508,6 +509,13 @@ public class XDSIService extends ServiceMBeanSupport {
         affinityDomain = domain;
     }
 
+    public boolean isRemoveNamespaceID() {
+        return removeNamespaceID;
+    }
+    public void setRemoveNamespaceID(boolean removeNamespaceID) {
+        this.removeNamespaceID = removeNamespaceID;
+    }
+    
     /**
      * Adds a 'mappingString' (format:&lt;key&gt;=&lt;value&gt;...) to a map.
      * 
@@ -836,6 +844,7 @@ public class XDSIService extends ServiceMBeanSupport {
         if ( mdProps == null ) mdProps = this.metadataProps;
         String user = mdProps.getProperty("user");
         mdProps.setProperty("xadPatientID", getAffinityDomainPatientID(kos));
+        mdProps.setProperty("srcPatientID", getSourcePatientID(kos));
         XDSIDocument[] docs;
         String pdfIUID = mdProps.getProperty("pdf_iuid");
         if ( pdfIUID == null || !UIDs.isValid(pdfIUID) ) {
@@ -890,6 +899,7 @@ public class XDSIService extends ServiceMBeanSupport {
         String user = mdProps.getProperty("user");
         mdProps.setProperty("mimetype", "application/pdf");
         mdProps.setProperty("xadPatientID", getAffinityDomainPatientID(ds));
+        mdProps.setProperty("srcPatientID", getSourcePatientID(ds));
         XDSIDocument[] docs = new XDSIURLDocument[]
                                                   {new XDSIURLDocument(new URL(ridURL+iuid),"application/pdf",PDF_DOCUMENT_ID,pdfUID)};
         addAssociations(docs, mdProps);
@@ -905,6 +915,7 @@ public class XDSIService extends ServiceMBeanSupport {
         Dataset ds = queryInstance(patDsIUID);
         log.info("create XDS Folder for patient:"+ds.getString(Tags.PatientID));
         mdProps.setProperty("xadPatientID", getAffinityDomainPatientID(ds));
+        mdProps.setProperty("srcPatientID", getSourcePatientID(ds));
         log.info("XAD patient:"+mdProps.getProperty("xadPatientID"));
         XDSMetadata md = new XDSMetadata(null, mdProps, null);
         Document metadata = md.getMetadata();
@@ -1065,6 +1076,26 @@ public class XDSIService extends ServiceMBeanSupport {
             }
         }
     }
+
+    public String getSourcePatientID(Dataset kos) {
+        String patID = kos.getString(Tags.PatientID);
+        String issuer = kos.getString(Tags.IssuerOfPatientID);
+        if ( localDomain != null ) {
+            if ( localDomain.charAt(0) == '=') {
+                String oldIssuer = issuer;
+                issuer = localDomain.substring(1);
+                log.info("Local domain changed from "+oldIssuer+" to "+issuer);
+            } else if ( issuer == null ) {
+                issuer = localDomain;
+                log.info("Unknown local assigning authority changed to "+issuer);
+            }
+        } else if ( issuer == null ) {
+            issuer = "";
+        }
+        String pid = toPIDString(StringUtils.split(patID+"&"+issuer, '&'));
+        log.debug("Source PatientID:"+pid);
+        return pid;
+    }
     
     protected boolean isFromDomain(String pid) {
         String assAuth = getAssigningAuthority(pid);
@@ -1101,12 +1132,17 @@ public class XDSIService extends ServiceMBeanSupport {
         StringBuffer sb = new StringBuffer(pid[0]);
         log.debug("pid[0]:"+pid[0]);
         if ( pid.length > 1 ) {
-            sb.append("^^^").append(pid[1]);
-            log.debug("pid[1]:"+pid[1]);
-        }
-        for (int i = 2 ; i < pid.length; i++) {
-            sb.append('&').append(pid[i]);
-            log.debug("pid["+i+"]:"+pid[i]);
+            sb.append("^^^");
+            if (removeNamespaceID) {
+                log.info("Remove Namespace ID '"+pid[1]+"'!");
+            } else {
+                sb.append(pid[1]);
+                log.debug("pid[1]:"+pid[1]);
+            }
+            for (int i = 2 ; i < pid.length; i++) {
+                sb.append('&').append(pid[i]);
+                log.debug("pid["+i+"]:"+pid[i]);
+            }
         }
         return sb.toString();
     }

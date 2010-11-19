@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -83,7 +82,6 @@ public class XDSMetadata {
     private static final String FOLDER_DOC_ASSOC = "FolderDocAssoc";
     private static final String TAG_ASSOCIATION = "Association";
     private static final String DEFAULT_TIME_STRING = "010101";
-    private static final String DEFAULT_DATE_STRING = "20090101";
     private static final String ATTR_CLASSIFICATION_NODE = "classificationNode";
     private static final String ATTR_NODE_REPRESENTATION = "nodeRepresentation";
     private static final String ATTR_CLASSIFICATION_SCHEME = "classificationScheme";
@@ -415,8 +413,9 @@ public class XDSMetadata {
         addSlot( "creationTime", getTime(Tags.InstanceCreationDate,Tags.InstanceCreationTime, Tags.ContentDate, Tags.ContentTime));
         addSlot( "languageCode", mdValues.getProperty("languageCode", "en-us"));
         addSlot( "serviceStartTime", getTime(Tags.StudyDate,Tags.StudyTime, -1,-1));
-        addSlot( "sourcePatientId", getPatID(manifest.getString(Tags.PatientID), manifest.getString(Tags.IssuerOfPatientID)));
-        addSlot( "sourcePatientInfo", getPatientInfo());
+        String srcPatId = mdValues.getProperty("srcPatientID");
+        addSlot( "sourcePatientId", srcPatId);
+        addSlot( "sourcePatientInfo", getPatientInfo(srcPatId));
         if( "true".equals( mdValues.getProperty("useOldAuthorSlot") ) ) {
             addSlot( XDSIService.AUTHOR_SPECIALITY, mdValues.getProperty(XDSIService.AUTHOR_SPECIALITY, null));
             addSlot( "authorInstitution", mdValues.getProperty(XDSIService.AUTHOR_INSTITUTION, null));
@@ -484,7 +483,6 @@ public class XDSMetadata {
 
         StringTokenizer st = new StringTokenizer( eventCodeList, "|");
         String[] code;//0..codeValue, 1.. codeMeaning (2..codeDesignator)
-        int pos;
         while ( st.hasMoreTokens() ) {
             code = StringUtils.split(st.nextToken(), '^');
             addClassification(UUID.XDSDocumentEntry_eventCodeList, doc.getDocumentID(), 
@@ -520,9 +518,9 @@ public class XDSMetadata {
     /**
      * @return
      */
-    private String[] getPatientInfo() {
+    private String[] getPatientInfo(String patId) {
         String[] values = new String[5];
-        values[0] = "PID-3|"+getPatID(manifest.getString(Tags.PatientID), manifest.getString(Tags.IssuerOfPatientID));
+        values[0] = "PID-3|"+patId;
         values[1] = "PID-5|"+manifest.getString(Tags.PatientName);
         String birthdate = manifest.getString(Tags.PatientBirthDate);
         if (birthdate == null ) {
@@ -540,16 +538,6 @@ public class XDSMetadata {
             values[4] = "PID-11|"+manifest.getString(Tags.PatientAddress);
         }
         return values;
-    }
-    /**
-     * @param string
-     * @param string2
-     * @return
-     */
-    private String getPatID(String patID, String issuer) {
-        patID += "^^^";
-        if ( issuer == null ) return patID;
-        return patID+issuer;
     }
     public String getSubmissionSetUID() {
         return submissionSetUID;
@@ -664,18 +652,7 @@ public class XDSMetadata {
         
         
     }
-    /**
-     * @param property
-     * @return
-     */
-    private String[] split(String s, String delim) {
-        StringTokenizer st = new StringTokenizer( s, delim);
-        String[] sa = new String[ st.countTokens() ];
-        for ( int i = 0; i < sa.length ; i++ ) {
-            sa[i] = st.nextToken();
-        }
-        return sa;
-    }
+
     /**
      * @param string
      * @param string2
@@ -701,15 +678,4 @@ public class XDSMetadata {
         }
         th.endElement("", name, name );
     }
-    private static void dumpNode( Node n, String ident ) {
-        log.info(ident+"node:"+n.getNodeName());
-        NodeList nl = n.getChildNodes();
-        String ident1 = ident+"  ";
-        for ( int i = 0, len = nl.getLength() ; i < len ; i++ ) {
-            log.info(ident+"child("+i+"):");
-            dumpNode(nl.item(i), ident1);
-        }
-    }
-
-
 }
