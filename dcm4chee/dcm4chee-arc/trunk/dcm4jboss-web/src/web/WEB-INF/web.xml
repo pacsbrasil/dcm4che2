@@ -83,6 +83,13 @@
             <param-name>defaultQueryHasIssuer</param-name>
             <param-value>disabled</param-value>
         </init-param>
+        <!-- Allow empty Issuer for patient create.
+             default is false.
+        -->
+        <init-param>
+            <param-name>emptyIssuerAllowed</param-name>
+            <param-value>false</param-value>
+        </init-param> 
 		<!-- 
 			Used by dcm4chee-web application to find AuditLogger MBean.
 			Value must match mbean name in configured in
