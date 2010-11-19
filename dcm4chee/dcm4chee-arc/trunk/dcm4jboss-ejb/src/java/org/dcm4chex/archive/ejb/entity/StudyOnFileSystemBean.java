@@ -74,12 +74,12 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
  * @ejb.finder signature="org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal findByStudyAndFileSystem(org.dcm4chex.archive.ejb.interfaces.StudyLocal study, org.dcm4chex.archive.ejb.interfaces.FileSystemLocal filesystem)"
  *             query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.study=?1 AND sof.fileSystem=?2" transaction-type="Supports"
  * @ejb.finder signature="java.util.Collection findByStudyIUIDAndFSGroup(java.lang.String siuid, java.lang.String groupId)"
- *             query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.study.studyIuid=?1 AND sof.fileSystem.groupID=?2"
+ *             query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.markedForDeletion = FALSE AND sof.study.studyIuid=?1 AND sof.fileSystem.groupID=?2"
  *             transaction-type="Supports"
  * @ejb.finder signature="java.util.Collection findByFSGroupAndAccessedBetween(java.lang.String groupId, java.sql.Timestamp tsAfter, java.sql.Timestamp tsBefore, int limit )"
  *             query="" transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findByFSGroupAndAccessedBetween(java.lang.String groupId, java.sql.Timestamp tsAfter, java.sql.Timestamp tsBefore, int limit )"
- *              query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.fileSystem.groupID = ?1 AND sof.fileSystem.status IN (0,1) AND sof.accessTime > ?2 AND sof.accessTime < ?3 ORDER BY sof.accessTime ASC LIMIT ?4"
+ *              query="SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE sof.markedForDeletion = FALSE AND sof.fileSystem.groupID = ?1 AND sof.fileSystem.status IN (0,1) AND sof.accessTime > ?2 AND sof.accessTime < ?3 ORDER BY sof.accessTime ASC LIMIT ?4"
  *              strategy="on-find" eager-load-group="*"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndStatusAndFileStatus(org.dcm4chex.archive.ejb.interfaces.StudyLocal study, java.lang.String fsGroupId, int fsStatus, int fileStatus)"
  *              query="SELECT COUNT(DISTINCT i) FROM Instance i, IN(i.files) f WHERE i.series.study = ?1 AND f.fileSystem.groupID = ?2 AND f.fileSystem.status = ?3 AND f.fileStatus = ?4"
@@ -149,6 +149,17 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
     public abstract void setFileSystem(FileSystemLocal fs);
 
     /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="mark_to_delete"
+     */
+    public abstract boolean getMarkedForDeletion();
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setMarkedForDeletion(boolean b);
+
+    
+    /**
      * @ejb.create-method
      */
     public Long ejbCreate(StudyLocal study, FileSystemLocal fs)
@@ -161,6 +172,7 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
             throws CreateException {
         setStudy(study);
         setFileSystem(fs);
+        setMarkedForDeletion(false);
     }
 
     /**
@@ -168,6 +180,12 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
      */
     public void touch() {
         setAccessTime(new Timestamp(System.currentTimeMillis()));
+        if (getMarkedForDeletion()) {
+            setMarkedForDeletion(false);
+            log.info("Study is marked for deletion on filesystem "+this.getFileSystem().getDirectoryPath()+
+                    " ! Deletion mark for study "+this.getStudy().getStudyIuid()+" removed because study is touched now!");
+        }
+
     }
 
     /**

@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.jms.JMSException;
@@ -69,9 +68,6 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
-import org.dcm4chex.archive.ejb.interfaces.MD5;
-import org.dcm4chex.archive.ejb.interfaces.Storage;
-import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.exceptions.ConcurrentStudyStorageException;
 import org.dcm4chex.archive.mbean.AbstractDeleterService;
 import org.dcm4chex.archive.mbean.FileSystemMgt2Delegate;
@@ -276,22 +272,52 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
             }
             FileSystemMgt2 mgt = fileSystemMgt();
             FileDTO[] files = mgt.getFilesOfStudy(order);
+            File[] srcFiles;
             log.info("Move "+ files.length +" files of study "+order.getStudyIUID()+" to Filesystem:"+fsDTO);
             if (files.length > 0) {
                 String destPath = fsDTO.getDirectoryPath();
                 if (destPath.startsWith("tar:")) {
-                    copyTar(files, destPath, fsDTO.getPk());
+                    srcFiles = copyTar(files, destPath, fsDTO.getPk());
                     mgt.moveFiles(order, files, keepSrcFiles, false);
                 } else {
-                    copyFiles(files, destPath, fsDTO.getPk());
+                    srcFiles = copyFiles(files, destPath, fsDTO.getPk());
                     List<FileDTO> failed = mgt.moveFiles(order, files, keepSrcFiles, keepMovedFilesOnError);
                     log.info("moveFiles done! failed:"+failed);
                     if (failed != null) {
-                        for (FileDTO dto : failed) {
-                            FileUtils.toFile(dto.getDirectoryPath() + '/' + dto.getFilePath()).delete();
+                        if (keepSrcFiles) {
+                            FileDTO dto;
+                            for (int i = 0 ; i < failed.size() ; i++) {
+                                dto = failed.get(i);
+                                deleteFile(FileUtils.toFile(dto.getDirectoryPath() + 
+                                            '/' + dto.getFilePath()) );
+                            }
+                            
+                        } else {
+                            int j = 0;
+                            FileDTO failedDto = failed.get(j);
+                            for (int i = 0 ; i < srcFiles.length ; i++) {
+                                if (failedDto != null && files[i].getPk() == failedDto.getPk()) {
+                                    deleteFile(FileUtils.toFile(failedDto.getDirectoryPath() + 
+                                            '/' + failedDto.getFilePath()) );
+                                    failedDto = ++j < failed.size() ? failed.get(j) : null;
+                                } else {
+                                    deleteFile(srcFiles[i]);
+                                }
+                            }
                         }
                         throw (Exception)order.getThrowable();
                     }
+                }
+                if (!keepSrcFiles) {
+                    for (int i = 0 ; i < srcFiles.length ; i++) {
+                        deleteFile(srcFiles[i]);
+                    }
+                    try {
+                        mgt.removeStudyOnFSRecord(order);
+                    } catch (Exception x) {
+                        log.warn("Remove StudyOnFS record failed for "+order, x);
+                    }
+                    
                 }
             }
         } catch (ConcurrentStudyStorageException x) {
@@ -299,25 +325,33 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
         }
         
     }
-    private void copyFiles(FileDTO[] files, String dirPath, long destFsPk) throws Exception {
+
+    private void deleteFile(File f) {
+        log.info("M-DELETE file:" + f);
+        if (!f.delete())
+            log.error("Failed to delete file:"+f);
+    }
+    
+    private File[] copyFiles(FileDTO[] files, String dirPath, long destFsPk) throws Exception {
         byte[] buffer = new byte[bufferSize];
         Exception ex = null;
         MessageDigest digest = null;
+        File[] srcFiles = new File[files.length];
         if (verifyCopy)
             digest = MessageDigest.getInstance("MD5");
         FileDTO dtoSrc;
         for (int i = 0 ; i < files.length ; i++) {
             dtoSrc = files[i];
-            File src = FileUtils.toFile(dtoSrc.getDirectoryPath() + '/' + dtoSrc.getFilePath());
+            srcFiles[i] = FileUtils.toFile(dtoSrc.getDirectoryPath() + '/' + dtoSrc.getFilePath());
             File dst = FileUtils.toFile(dirPath + '/' + dtoSrc.getFilePath());
             try {
-                copy(src, dst, buffer);
+                copy(srcFiles[i], dst, buffer);
                 byte[] md5sum0 = dtoSrc.getFileMd5();
                 if (md5sum0 != null && digest != null) {
                     byte[] md5sum = MD5Utils.md5sum(dst, digest, buffer);
                     if (!Arrays.equals(md5sum0, md5sum)) {
                         String prompt = "md5 sum of copy " + dst
-                                + " differs from md5 sum in DB for file " + src;
+                                + " differs from md5 sum in DB for file " + srcFiles[i];
                         log.warn(prompt);
                         throw new IOException(prompt);
                     }
@@ -325,13 +359,14 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
                 dtoSrc.setFileSystemPk(destFsPk);
                 dtoSrc.setDirectoryPath(dirPath);
             } catch (Exception e) {
-                dst.delete();
+                deleteFile(dst);
                 ex = e;
             }
         }
         if (ex != null) {
             throw ex;
         }
+        return srcFiles;
     }
 
     private void copy(File src, File dst, byte[] buffer) throws IOException {
@@ -354,23 +389,24 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
         }
     }
     
-    private void copyTar(FileDTO[] files, String destPath, long destFsPk) throws Exception {
+    private File[] copyTar(FileDTO[] files, String destPath, long destFsPk) throws Exception {
         String tarPath = mkTarPath(files[0].getFilePath());
         String[] tarEntryNames = new String[files.length];
+        File[] srcFiles;
         for (int i = 0; i < tarEntryNames.length; i++) {
             tarEntryNames[i] = mkTarEntryName(files[i]);
         }
         if (hsmModuleServicename == null) {
             File tarFile = FileUtils.toFile(destPath.substring(4), tarPath);
-            mkTar(files, tarFile, tarEntryNames);
+            srcFiles = mkTar(files, tarFile, tarEntryNames);
         } else {
             File tarFile = prepareHSMFile(destPath, tarPath);
             try {
-                mkTar(files, tarFile, tarEntryNames);
+                srcFiles = mkTar(files, tarFile, tarEntryNames);
                 tarPath = storeHSMFile(tarFile, destPath, tarPath);
             } catch (Exception x) {
                 log.error("Make Tar file failed!",x);
-                tarFile.delete();
+                deleteFile(tarFile);
                 failedHSMFile(tarFile,destPath, tarPath);
                 throw x;
             }
@@ -381,10 +417,12 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
             files[i].setDirectoryPath(destPath);
             files[i].setFilePath(fileId);
         }
+        return srcFiles;
     }
     
-    private void mkTar(FileDTO[] dto, File tarFile,
+    private File[] mkTar(FileDTO[] dto, File tarFile,
             String[] tarEntryNames) throws Exception {
+        File[] srcFiles = new File[dto.length];
         try {
             if (tarFile.getParentFile().mkdirs()) {
                 log.info("M-WRITE " + tarFile.getParent());
@@ -395,7 +433,7 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
             try {
                 writeMD5SUM(tar, dto, tarEntryNames);
                 for (int i = 0; i < tarEntryNames.length; i++) {
-                    writeFile(tar, dto[i], tarEntryNames[i]);
+                    srcFiles[i] = writeFile(tar, dto[i], tarEntryNames[i]);
                 }
             } finally {
                 tar.close();
@@ -404,9 +442,10 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
                 VerifyTar.verify(tarFile, new byte[bufferSize]);
             }
         } catch (Exception e) {
-            tarFile.delete();
+            deleteFile(tarFile);
             throw e;
         }
+        return srcFiles;
     }
     
     private void writeMD5SUM(TarOutputStream tar, FileDTO[] dto,
@@ -431,7 +470,7 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
         tar.closeEntry();
     }
 
-    private void writeFile(TarOutputStream tar, FileDTO dto,
+    private File writeFile(TarOutputStream tar, FileDTO dto,
             String tarEntryName) 
     throws IOException, FileNotFoundException {
         File file = FileUtils.toFile(dto.getDirectoryPath(), dto.getFilePath());
@@ -445,6 +484,7 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
             fis.close();
         }
         tar.closeEntry();
+        return file;
     }
 
     private File prepareHSMFile(String fsID, String filePath) 

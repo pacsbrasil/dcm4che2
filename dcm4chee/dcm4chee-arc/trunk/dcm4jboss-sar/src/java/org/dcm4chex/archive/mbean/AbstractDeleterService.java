@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.management.Attribute;
 import javax.management.Notification;
@@ -531,22 +532,10 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
             }
             Iterator<DeleteStudyOrder> orderIter = 
                     deleteOrdersAndAccessTime.deleteStudyOrders.iterator();
-            while (sizeToDel > 0 && orderIter.hasNext()) {
-                DeleteStudyOrder order = orderIter.next();
-                if (!checkExternalRetrievable(order))
-                    continue;
-                if (fsMgt.removeStudyOnFSRecord(order)) {
-                    try {
-                        scheduleDeleteOrder(order);
-                    } catch (Exception e) {
-                        // re-insert SOF record, so the deleter keeps track 
-                        // for deletion of the study
-                        fsMgt.createStudyOnFSRecord(order);
-                        throw e;
-                    }
-                    sizeToDel -= fsMgt.getStudySize(order);
-                    countStudies++;
-                }
+            long[] result = markAndScheduleDeleteOrders(deleteOrdersAndAccessTime.deleteStudyOrders, sizeToDel);
+            if (result[0] != 0) {
+                sizeToDel -= result[0];
+                countStudies += result[1];
             }
             if (deleteOrdersAndAccessTime.deleteStudyOrders.size() == 0 && 
                     minAccessTime == deleteOrdersAndAccessTime.maxAccessTime) {
@@ -563,6 +552,32 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
         return countStudies;
     }
 
+    private long[] markAndScheduleDeleteOrders(Collection<DeleteStudyOrder> orders, long maxSize) throws Exception {
+        FileSystemMgt2 fsMgt = fileSystemMgt();
+        long[] result = new long[]{0,0};
+        if (orders.size() > 0) {
+            Iterator<DeleteStudyOrder> iter = orders.iterator();
+            boolean dontCheckMax = maxSize < 1;
+            DeleteStudyOrder order;
+            while (iter.hasNext() && (dontCheckMax || result[0] < maxSize )) {
+                order = iter.next();
+                if (!checkExternalRetrievable(order))
+                    continue;
+                if (fsMgt.markStudyOnFSRecordForDeletion(order, true)) {
+                    try {
+                        scheduleDeleteOrder(order);
+                    } catch (Exception e) {
+                        fsMgt.markStudyOnFSRecordForDeletion(order, false);
+                        throw e;
+                    }
+                    result[0] += fsMgt.getStudySize(order);
+                    result[1]++;
+                }
+            }
+        }
+        return result;
+    }
+    
     protected abstract void scheduleDeleteOrder(DeleteStudyOrder order) throws Exception;
 
     protected String showTriggerInfo() {
@@ -647,22 +662,6 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
         Collection<DeleteStudyOrder> orders = 
             fsMgt.createDeleteOrdersForStudyOnFSGroup(suid,
                     getFileSystemGroupIDForDeleter());
-        long sizeToDel = 0;
-        for (DeleteStudyOrder order : orders) {
-            if (!checkExternalRetrievable(order))
-                continue;
-            if (fsMgt.removeStudyOnFSRecord(order)) {
-                try {
-                    scheduleDeleteOrder(order);
-                } catch (Exception e) {
-                    // re-insert SOF record, so the deleter keeps track 
-                    // for deletion of the study
-                    fsMgt.createStudyOnFSRecord(order);
-                    throw e;
-                }
-                sizeToDel  += fsMgt.getStudySize(order);
-            }
-        }
-        return sizeToDel;
+        return markAndScheduleDeleteOrders(orders, -1)[0];
     }
 }

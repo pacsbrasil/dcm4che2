@@ -505,14 +505,36 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
+    public boolean markStudyOnFSRecordForDeletion(DeleteStudyOrder order, boolean b)
+            throws RemoveException, FinderException {
+        StudyOnFileSystemLocal sof = sofHome.findByPrimaryKey(order.getSoFsPk());
+        boolean marked = sof.getMarkedForDeletion();
+        if (b) {
+            if (marked) {
+                logOrderInfoMsg(order,"is already marked for deletion!");
+                return false;
+            }
+            if (sof.getAccessTime().getTime() > order.getAccessTime()) {
+                logOrderInfoMsg(order, "may have updated after check of deletion constraints"
+                        + " -> do not mark study for deletion.");
+                return false;
+            }
+        } else if (!marked) {
+            logOrderInfoMsg(order, "Remove of deletion mark ignored! (not marked for deletion)");
+            return false;
+        }
+        sof.setMarkedForDeletion(b);
+        return true;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
     public boolean removeStudyOnFSRecord(DeleteStudyOrder order)
             throws RemoveException, FinderException {
         StudyOnFileSystemLocal sof = sofHome.findByPrimaryKey(order.getSoFsPk());
-        if (sof.getAccessTime().getTime() > order.getAccessTime()) {
-            log.info("Study[pk=" + order.getStudyPk() + "] on FileSystem[pk="
-                    + order.getFsPk()
-                    + "] may have updated after check of deletion constraints"
-                    + " -> do not schedule study for deletion.");
+        if (!sof.getMarkedForDeletion()) {
+            logOrderInfoMsg(order, "is not marked for deletion -> do not remove StudyOnFSRecord!");
             return false;
         }
         sof.remove();
@@ -545,12 +567,12 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**    
      * @ejb.interface-method
      */
-    public Collection createDeleteOrdersForStudyOnFSGroup(String suid,
+    public Collection<DeleteStudyOrder> createDeleteOrdersForStudyOnFSGroup(String suid,
             String fsGroup) throws FinderException {
-        Collection sofs = sofHome.findByStudyIUIDAndFSGroup(suid, fsGroup);
-        Collection orders = new ArrayList(sofs.size());
-        for (Iterator iter = sofs.iterator(); iter.hasNext();) {
-            StudyOnFileSystemLocal sof = (StudyOnFileSystemLocal) iter.next();
+        Collection<StudyOnFileSystemLocal> sofs = sofHome.findByStudyIUIDAndFSGroup(suid, fsGroup);
+        Collection<DeleteStudyOrder> orders = new ArrayList<DeleteStudyOrder>(sofs.size());
+        for (Iterator<StudyOnFileSystemLocal> iter = sofs.iterator(); iter.hasNext();) {
+            StudyOnFileSystemLocal sof = iter.next();
             StudyLocal study = sof.getStudy();
             DeleteStudyOrder deleteStudyOrder = new DeleteStudyOrder(
                     sof.getPk(), study.getPk(), sof.getFileSystem().getPk(),
@@ -569,7 +591,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             boolean copyOnReadOnlyFS) throws FinderException {
         if (sofs.isEmpty())
             return null;
-        Collection orders = new ArrayList(sofs.size());
+        Collection<DeleteStudyOrder> orders = new ArrayList<DeleteStudyOrder>(sofs.size());
         long maxAccessTime = 0;
         for (Iterator iter = sofs.iterator(); iter.hasNext();) {
             StudyOnFileSystemLocal sof = (StudyOnFileSystemLocal) iter.next();
@@ -763,9 +785,9 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             ConcurrentStudyStorageException {
         try {
             // check if new objects belonging to the study were stored
-            // after this DeleteStudyOrder was scheduled
-            sofHome.findByStudyAndFileSystem(study, fs);
-            throw new ConcurrentStudyStorageException(
+            // after this DeleteStudyOrder was scheduled (MarkedForDeletion is set to false)
+            if (!sofHome.findByStudyAndFileSystem(study, fs).getMarkedForDeletion())
+                throw new ConcurrentStudyStorageException(
                     "Concurrent storage of study[uid="
                     + study.getStudyIuid() + "] on file system[dir="
                     + fs.getDirectoryPath() + "] - do not delete study");
@@ -1230,6 +1252,10 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                         fsGroupID, otherFSGroupID, cuid, bodyPart, srcAET, before, limit));
     }
 
+    private void logOrderInfoMsg(DeleteStudyOrder order, String msg) {
+       log.info( "Study "+order.getStudyIUID()+" [pk=" + order.getStudyPk() + 
+           "] on FileSystem[pk="+ order.getFsPk()+ "] "+msg);
+    }
 }
 
 

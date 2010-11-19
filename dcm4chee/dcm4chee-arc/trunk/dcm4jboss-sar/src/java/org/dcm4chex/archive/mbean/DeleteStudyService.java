@@ -264,6 +264,11 @@ public class DeleteStudyService extends ServiceMBeanSupport
         for (int i = 0; i < filePaths.length; i++) {
             FileUtils.delete(FileUtils.toFile(filePaths[i]), true, fsDto.getDirectoryPath());
         }
+        try {
+            fsMgt.removeStudyOnFSRecord(order);
+        } catch (Exception x) {
+            log.warn("Remove StudyOnFS record failed for "+order, x);
+        }
         if (createIANonStudyDelete) {
             try {
                 try {
