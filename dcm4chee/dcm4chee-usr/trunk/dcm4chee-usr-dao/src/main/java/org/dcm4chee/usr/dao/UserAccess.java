@@ -42,9 +42,9 @@ import java.util.List;
 
 import javax.ejb.Local;
 
-import org.dcm4chee.usr.entity.Role;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
+import org.dcm4chee.usr.model.Role;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -71,7 +71,8 @@ public interface UserAccess {
     public void assignRole(UserRoleAssignment ura);
     public void unassignRole(UserRoleAssignment ura);
 
-    public List<Role> getAllRolenames();
+    public List<String> getAllRolenames();
+    public List<Role> getAllRoles();
     public void addRole(Role role);
     public void updateRole(Role role);
     public void removeRole(Role role);

@@ -38,52 +38,42 @@
 
 package org.dcm4chee.usr.war.pages;
 
-import org.apache.wicket.PageParameters;
-import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.pages.InternalErrorPage;
-import org.dcm4chee.usr.dao.UserAccess;
-import org.dcm4chee.usr.ui.usermanagement.ChangePasswordLink;
+import java.util.Properties;
+
+import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.model.Model;
+import org.apache.wicket.security.swarm.SwarmWebApplication;
+import org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel;
 import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
-import org.dcm4chee.usr.util.JNDIUtils;
-import org.dcm4chee.usr.war.session.JaasWicketSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.dcm4chee.web.common.base.ModuleSelectorPanel;
+import org.dcm4chee.web.common.secure.SecureWicketPage;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since 18.11.2009
  */
-public class UserManagementMainPage extends WebPage {
+public class UserManagementMainPage extends SecureWicketPage {
     
     private static final long serialVersionUID = 1L;
     
-    private static Logger log = LoggerFactory.getLogger(UserManagementMainPage.class);
-    
-    private ModalWindow window;
-    
-    public UserManagementMainPage(final PageParameters parameters) {
+    public UserManagementMainPage() {
+        super();
+        addModules(getModuleSelectorPanel());
+    }
+
+    private void addModules(ModuleSelectorPanel selectorPanel) {
+        selectorPanel.addModule(UserListPanel.class);
+        selectorPanel.addModule(RoleListPanel.class);
+
         try {
-            String name = ((JaasWicketSession) this.getSession()).getUsername();
-            add(this.window = new ModalWindow("window"));
-            add(new ChangePasswordLink("change-my-password-link", this.window, name, ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getUser(name)));
-            add(new Link<Object>("logout-link") {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onClick() {
-                    this.getSession().invalidateNow();
-                    setResponsePage(this.getApplication().getHomePage());
-                }
-            });
-            add(new UserListPanel("userListPanel"));
-        } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
-            log.debug("Exception: ", e);
-            this.redirectToInterceptPage(new InternalErrorPage());
-        }
-    }    
+            Properties properties = new Properties();
+            properties.load(((SwarmWebApplication) getApplication()).getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));
+            selectorPanel.get("img_logo").add(new AttributeModifier("title", true, 
+                    new Model<String>((
+                            (properties.getProperty("Implementation-Title") == null ? "" : properties.getProperty("Implementation-Title"))
+                            + ": "
+                            + (properties.getProperty("Implementation-Build") == null ? "" : properties.getProperty("Implementation-Build"))))));            
+        } catch (Exception ignore) {}
+    }
 }

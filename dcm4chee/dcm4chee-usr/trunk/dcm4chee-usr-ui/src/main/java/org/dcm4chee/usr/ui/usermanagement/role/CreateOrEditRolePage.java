@@ -51,13 +51,14 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.usr.dao.UserAccess;
-import org.dcm4chee.usr.entity.Role;
+import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.ui.usermanagement.markup.ColorPicker;
 import org.dcm4chee.usr.ui.validator.RoleValidator;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,7 +148,7 @@ public class CreateOrEditRolePage extends SecureWebPage {
                             role.setColor(colorPicker.getColorValue());
                             userAccess.updateRole(role);
                         }
-                        allRolenames.setObject(userAccess.getAllRolenames());
+                        allRolenames.setObject(userAccess.getAllRoles());
                         window.close(target);
                     } catch (final Exception e) {
                         log.error(this.getClass().toString() + ": " + "onSubmit: " + e.getMessage());

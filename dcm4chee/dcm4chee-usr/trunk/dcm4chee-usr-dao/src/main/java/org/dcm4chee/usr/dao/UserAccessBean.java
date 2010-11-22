@@ -38,7 +38,16 @@
 
 package org.dcm4chee.usr.dao;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateful;
@@ -49,10 +58,13 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
-import org.dcm4chee.usr.entity.Role;
+import net.sf.json.JSONObject;
+
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
+import org.dcm4chee.usr.model.Role;
 import org.jboss.annotation.ejb.LocalBinding;
+import org.jboss.system.server.ServerConfigLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,10 +84,12 @@ public class UserAccessBean implements UserAccess {
 
     private ObjectName serviceObjectName;
     private MBeanServerConnection server = null;
-
+    private String mappingFilename;
+    
     @SuppressWarnings("unused")
     @PostConstruct
-    private void initMBeanServer() {
+    private void initMBeanServerAndMappingFile() {
+
         if (this.server == null) {
             List<?> servers = MBeanServerFactory.findMBeanServer(null);
             if (servers != null && !servers.isEmpty()) {
@@ -86,6 +100,19 @@ public class UserAccessBean implements UserAccess {
                 return;
             }
         }   
+
+        // TODO: put the filename into the config service
+        mappingFilename = 
+            ServerConfigLocator.locate().getServerConfigURL().getPath() + 
+            Role.mappingFilename;
+        
+        File file = new File(mappingFilename);
+        if (!file.exists())
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                log.error(getClass().getName() + ": " + e.getLocalizedMessage());
+            }
     }
     
     public void init(String serviceObjectName) {
@@ -98,7 +125,7 @@ public class UserAccessBean implements UserAccess {
                 this.serviceObjectName, 
                 "adminRoleName");
             
-            List<Role> roleList = getAllRolenames();
+            List<Role> roleList = getAllRoles();
             if (roleList.size() > 0) {
                 boolean haveUserRoleName = false;
                 boolean haveAdminRoleName = false;
@@ -110,12 +137,12 @@ public class UserAccessBean implements UserAccess {
                         haveAdminRoleName = true;
                 }
                 if (!haveUserRoleName) 
-                    addRole(new Role(userRoleName, true));
+                    addRole(new Role(userRoleName));
                 if (!haveAdminRoleName) 
-                    addRole(new Role(adminRoleName, true));
+                    addRole(new Role(adminRoleName));
             } else {
-                addRole(new Role(userRoleName, true));
-                addRole(new Role(adminRoleName, true));
+                addRole(new Role(userRoleName));
+                addRole(new Role(adminRoleName));
             }
         } catch (Exception e) {
             log.debug("Exception: ", e);
@@ -209,42 +236,127 @@ public class UserAccessBean implements UserAccess {
         .executeUpdate();
     }
 
-    // TODO: change this to generic version using JPA 2.0 implementation
-    @SuppressWarnings("unchecked")
-    public List<Role> getAllRolenames() {
-        return this.em.createQuery("SELECT DISTINCT r FROM Role r ORDER BY r.isSystemRole DESC, r.rolename")
-        .getResultList();        
+    public List<String> getAllRolenames() {
+        try {
+            List<String> rolenameList = new ArrayList<String>();
+            String line;
+            BufferedReader reader = new BufferedReader(new FileReader(mappingFilename));
+            while ((line = reader.readLine()) != null)
+                rolenameList.add(((Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class)).getRolename());
+            return rolenameList;
+        } catch (Exception e) {
+            log.debug("Exception: ", e);
+            return null;
+        }
+    }
+
+    public List<Role> getAllRoles() {
+        try {
+            List<Role> roleList = new ArrayList<Role>();
+            String line;
+            BufferedReader reader = new BufferedReader(new FileReader(mappingFilename));
+            while ((line = reader.readLine()) != null)
+                roleList.add((Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class));
+            return roleList;
+        } catch (Exception e) {
+            log.debug("Exception: ", e);
+            return null;
+        }
     }
 
     public void addRole(Role role) {
-        this.em.persist(role);
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(mappingFilename, true));
+            JSONObject jsonObject = JSONObject.fromObject(role);
+            writer.write(jsonObject.toString());
+            writer.newLine();
+            writer.close();
+            sort(mappingFilename);
+        } catch (IOException e) {
+            log.debug("Exception: ", e);
+        }
     }
 
     public void updateRole(Role role) {
-        this.em.createQuery("UPDATE UserRoleAssignment ura SET ura.role = :newRolename WHERE ura.role = :oldRolename")
-        .setParameter("oldRolename", this.em.find(Role.class, role.getPk()).getRolename())
-        .setParameter("newRolename", role.getRolename())
-        .executeUpdate();
-        this.em.merge(role);
+        String oldRolename = null;
+        for(Role current : getAllRoles())
+            if (role.getUuid().equals(current.getUuid()))
+                oldRolename = current.getRolename();
+        if (oldRolename != null && !oldRolename.equals(role.getRolename()))
+            this.em.createQuery("UPDATE UserRoleAssignment ura SET ura.role = :newRolename WHERE ura.role = :oldRolename")
+            .setParameter("oldRolename", oldRolename)
+            .setParameter("newRolename", role.getRolename())
+            .executeUpdate();
+        modifyRole(role, false);
     }
 
     public void removeRole(Role role) {
+        this.em.createQuery("DELETE FROM StudyPermission sp WHERE sp.role = :rolename")
+        .setParameter("rolename", role.getRolename())
+        .executeUpdate();
         this.em.createQuery("DELETE FROM UserRoleAssignment ura WHERE ura.role = :rolename")
         .setParameter("rolename", role.getRolename())
         .executeUpdate();
-        this.em.createQuery("DELETE FROM Role r WHERE r.rolename = :rolename")
-        .setParameter("rolename", role.getRolename())
-        .executeUpdate();
+        modifyRole(role, true);
+    }
+    
+    private void modifyRole(Role role, boolean delete) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(mappingFilename));
+            File mappingFile = new File(mappingFilename);
+            String tempFilename = mappingFile.getAbsolutePath().substring(0, mappingFile.getAbsolutePath().length() - mappingFile.getName().length()) 
+                                + UUID.randomUUID().toString();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFilename, true));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!((Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class)).getRolename().equals(role.getRolename())) {
+                  writer.write(line);
+                  writer.newLine();
+                } else {
+                    if (!delete) {
+                        JSONObject jsonObject = JSONObject.fromObject(role);
+                        writer.write(jsonObject.toString());
+                        writer.newLine();
+                    }
+                }
+            }
+            reader.close();
+            writer.close();
+            mappingFile.delete();
+            new File(tempFilename).renameTo(mappingFile);
+            sort(mappingFilename);
+        } catch (IOException e) {
+            log.debug("Exception: ", e);
+        }
+    }
+
+    private void sort(String filename) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(filename));
+            File mappingFile = new File(filename);            
+            String tempFilename = mappingFile.getAbsolutePath().substring(0, mappingFile.getAbsolutePath().length() - mappingFile.getName().length()) 
+                                + UUID.randomUUID().toString();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFilename, true));
+            String line;
+            List<Role> roleList = new ArrayList<Role>();
+            while ((line = reader.readLine()) != null) 
+                roleList.add((Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class));             
+            Collections.sort(roleList);
+            for (Role role : roleList) {
+                JSONObject jsonObject = JSONObject.fromObject(role);
+                writer.write(jsonObject.toString());
+                writer.newLine();
+            }
+            reader.close();
+            writer.close();
+            mappingFile.delete();
+            new File(tempFilename).renameTo(mappingFile);
+        } catch (IOException e) {
+            log.debug("Exception: ", e);
+        }       
     }
 
     public Boolean roleExists(String rolename) {
-        try {
-            this.em.createQuery("SELECT DISTINCT r FROM Role r WHERE r.rolename = :rolename")
-            .setParameter("rolename", rolename)
-            .getSingleResult();
-            return true;
-        } catch (NoResultException nre) {
-            return false;
-        }
+        return getAllRoles().contains(new Role(rolename));
     }    
 }

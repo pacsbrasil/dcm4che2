@@ -64,9 +64,9 @@ import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.usr.dao.UserAccess;
-import org.dcm4chee.usr.entity.Role;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
+import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordLink;
 import org.dcm4chee.usr.ui.usermanagement.UserManagementPanel;
 import org.dcm4chee.usr.ui.util.CSSUtils;
@@ -76,7 +76,6 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
-import org.dcm4chee.web.common.secure.ExtendedSwarmStrategy;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 
@@ -95,7 +94,7 @@ public class UserListPanel extends Panel {
     private UserAccess userAccess;
     
     private ListModel<User> allUsers;
-    private ListModel<Role> allRolenames;
+    private ListModel<Role> allRoles;
 
     private String userId;
 
@@ -120,7 +119,7 @@ public class UserListPanel extends Panel {
         add(this.changePasswordWindow = new ModalWindow("change-password-window"));
                
         this.allUsers = new ListModel<User>(getAllUsers());
-        this.allRolenames = new ListModel<Role>(getAllRolenames());
+        this.allRoles = new ListModel<Role>(getAllRoles());
         
         add(this.confirmationWindow = new ConfirmationWindow<User>("confirmation-window") {
 
@@ -163,10 +162,10 @@ public class UserListPanel extends Panel {
         super.onBeforeRender();
 
         this.allUsers.setObject(getAllUsers());
-        this.allRolenames.setObject(getAllRolenames());
+        this.allRoles.setObject(getAllRoles());
 
         RepeatingView roleHeaders = new RepeatingView("role-headers");
-        for (Role role : this.allRolenames.getObject())
+        for (Role role : this.allRoles.getObject())
             roleHeaders.add(new Label(roleHeaders.newChildId(), role.getRolename()));
         addOrReplace(roleHeaders);
 
@@ -212,7 +211,7 @@ public class UserListPanel extends Panel {
             RepeatingView roleDividers = new RepeatingView("role-dividers");
             rowParent.add(roleDividers);
 
-            for (final Role role : this.allRolenames.getObject()) {
+            for (final Role role : this.allRoles.getObject()) {
                 AjaxCheckBox roleCheckbox = new AjaxCheckBox("role-checkbox", new HasRoleModel(user, role.getRolename())) {
 
                     private static final long serialVersionUID = 1L;
@@ -228,7 +227,6 @@ public class UserListPanel extends Panel {
                         tag.put("title", new ResourceModel(((HasRoleModel) this.getModel()).getObject().booleanValue() ? "userlist.has-role-checkbox.remove.tooltip" : "userlist.has-role-checkbox.add.tooltip").wrapOnAssignment(this).getObject());
                     }
                 };
-                
                 if (this.userId.equals(user.getUserID())) {
                     if (role.getRolename().equals(userAccess.getUserRoleName()) || role.getRolename().equals(userAccess.getAdminRoleName())) {
                         for (UserRoleAssignment ura : user.getRoles()) {
@@ -296,9 +294,9 @@ public class UserListPanel extends Panel {
         return allUsers;
     }
     
-    private List<Role> getAllRolenames() {
+    private List<Role> getAllRoles() {
         List<Role> allRolenames = new ArrayList<Role>(2);
-        allRolenames.addAll(userAccess.getAllRolenames());
+        allRolenames.addAll(userAccess.getAllRoles());
         return allRolenames;
     }
     

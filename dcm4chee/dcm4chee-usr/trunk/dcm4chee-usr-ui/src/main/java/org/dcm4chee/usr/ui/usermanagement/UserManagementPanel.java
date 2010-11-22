@@ -38,7 +38,6 @@
 
 package org.dcm4chee.usr.ui.usermanagement;
 
-import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel;
 import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
 import org.dcm4chee.web.common.secure.SecureAjaxTabbedPanel;
@@ -55,8 +54,8 @@ public class UserManagementPanel extends SecureAjaxTabbedPanel {
     public UserManagementPanel(String id) {
         super(id);
         
-        addModule(UserListPanel.class, new ResourceModel("usermanagement.tabs.tab1.name"));
-        addModule(RoleListPanel.class, new ResourceModel("usermanagement.tabs.tab2.name"));
+        addModule(UserListPanel.class, null);
+        addModule(RoleListPanel.class, null);
     }
 
     public static String getModuleName() {

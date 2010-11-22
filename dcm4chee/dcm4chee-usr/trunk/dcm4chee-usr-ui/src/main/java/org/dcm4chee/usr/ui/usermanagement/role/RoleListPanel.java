@@ -41,7 +41,7 @@ package org.dcm4chee.usr.ui.usermanagement.role;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Properties;
+import java.util.Set;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
@@ -65,7 +65,7 @@ import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.usr.dao.UserAccess;
-import org.dcm4chee.usr.entity.Role;
+import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.ui.usermanagement.UserManagementPanel;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
@@ -91,7 +91,7 @@ public class RoleListPanel extends Panel {
     
     UserAccess userAccess;
     
-    private ListModel<Role> allRolenames;
+    private ListModel<Role> allRoles;
 
     private ConfirmationWindow<Role> confirmationWindow;
 
@@ -99,18 +99,17 @@ public class RoleListPanel extends Panel {
     
     public RoleListPanel(String id) {
         super(id);
-        
+
         if (RoleListPanel.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(RoleListPanel.BaseCSS));
         if (RoleListPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(RoleListPanel.CSS));
 
-//        serviceObjectName = ((BaseWicketApplication) getApplication()).getInitParameter("UserAccessServiceName");
         userAccess = JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, ((BaseWicketApplication) getApplication()).getInitParameter("UserAccessServiceName"));
         
         setOutputMarkupId(true);
 
-        this.allRolenames = new ListModel<Role>(getAllRolenames());
+        this.allRoles = new ListModel<Role>(getAllRoles());
 
         add(this.confirmationWindow = new ConfirmationWindow<Role>("confirmation-window") {
 
@@ -120,7 +119,7 @@ public class RoleListPanel extends Panel {
             public void onConfirmation(AjaxRequestTarget target, Role role) {
                 userAccess.removeRole(role);
                 target.addComponent(RoleListPanel.this);
-                allRolenames.setObject(getAllRolenames());
+                allRoles.setObject(getAllRoles());
             }
         });
 
@@ -141,7 +140,7 @@ public class RoleListPanel extends Panel {
                       
                     @Override
                     public Page createPage() {
-                        return new CreateOrEditRolePage(modalWindow, allRolenames, null);
+                        return new CreateOrEditRolePage(modalWindow, allRoles, null);
                     }
                 });
                 super.onClick(target);
@@ -177,8 +176,8 @@ public class RoleListPanel extends Panel {
         RepeatingView roleRows = new RepeatingView("role-rows");
         addOrReplace(roleRows);
         
-        for (int i = 0; i < this.allRolenames.getObject().size(); i++) {
-            final Role role = this.allRolenames.getObject().get(i);
+        for (int i = 0; i < this.allRoles.getObject().size(); i++) {
+            final Role role = this.allRoles.getObject().get(i);
             
             WebMarkupContainer rowParent;
             roleRows.add((rowParent = new WebMarkupContainer(roleRows.newChildId()))
@@ -203,7 +202,7 @@ public class RoleListPanel extends Panel {
                           
                         @Override
                         public Page createPage() {
-                            return new CreateOrEditRolePage(modalWindow, allRolenames, role);
+                            return new CreateOrEditRolePage(modalWindow, allRoles, role);
                         }
                     });
                     super.onClick(target);
@@ -272,26 +271,22 @@ public class RoleListPanel extends Panel {
         public HasPrincipalModel(Role role, String principal) {
             this.role = role;
             this.principalname = principal;
-            Properties swarmPrincipals = role.getSwarmPrincipals();
-            if (!swarmPrincipals.containsKey(role.getRolename())) {
-                swarmPrincipals.put(role.getRolename(), "");
-                role.setSwarmPrincipals(swarmPrincipals);
-            }
         }
         
         @Override
         public Boolean getObject() {
-            return role.getSwarmPrincipals().getProperty(role.getRolename()).contains(principalname);
+            return role.getSwarmPrincipals().contains(principalname);
         }
         
         @Override
         public void setObject(Boolean hasPrincipal) {
-            Properties swarmPrincipals = role.getSwarmPrincipals();
+            Set<String> swarmPrincipals = role.getSwarmPrincipals();
             if (hasPrincipal) 
-                swarmPrincipals.put(role.getRolename(), role.getSwarmPrincipals().getProperty(role.getRolename()).concat("," + principalname));
+                swarmPrincipals.add(principalname);
             else 
-                swarmPrincipals.put(role.getRolename(), role.getSwarmPrincipals().getProperty(role.getRolename()).replace(("," + principalname), ""));
+                swarmPrincipals.remove(principalname);
             role.setSwarmPrincipals(swarmPrincipals);
+            userAccess.updateRole(role);
         }
         
         @Override
@@ -299,10 +294,10 @@ public class RoleListPanel extends Panel {
         }
     }
 
-    private ArrayList<Role> getAllRolenames() {
-        ArrayList<Role> allRolenames = new ArrayList<Role>(2);
-        allRolenames.addAll(userAccess.getAllRolenames());
-        return allRolenames;
+    private ArrayList<Role> getAllRoles() {
+        ArrayList<Role> allRoles = new ArrayList<Role>(2);
+        allRoles.addAll(userAccess.getAllRoles());
+        return allRoles;
     }
     
     public static String getModuleName() {

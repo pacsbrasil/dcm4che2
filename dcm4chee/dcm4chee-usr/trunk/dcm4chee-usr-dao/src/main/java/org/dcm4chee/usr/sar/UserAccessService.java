@@ -39,7 +39,7 @@
 package org.dcm4chee.usr.sar;
 
 import org.dcm4chee.usr.dao.UserAccess;
-import org.dcm4chee.usr.entity.Role;
+import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.jboss.system.ServiceMBeanSupport;
 
@@ -77,10 +77,6 @@ public class UserAccessService extends ServiceMBeanSupport {
 
     public String getRoleFilename() {
         return roleFilename;
-    }
-
-    public String listRoles() {
-        return JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceName.getCanonicalName()).getAllRolenames().toString();
     }
 
     public void addRole(String rolename) {
