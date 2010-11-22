@@ -243,6 +243,6 @@ public class ReportPanel extends Panel {
     }
     
     public static String getModuleName() {
-        return "report";
+        return "dashboard.report";
     }
 }

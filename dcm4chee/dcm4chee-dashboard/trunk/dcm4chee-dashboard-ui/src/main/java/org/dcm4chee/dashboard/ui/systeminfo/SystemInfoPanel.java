@@ -287,4 +287,8 @@ public class SystemInfoPanel extends Panel {
             return memoryString.substring(0, Math.min(memoryString.length(), this.memoryDisplayLength)) + " MB";
         }
     }
+    
+    public static String getModuleName() {
+        return "dashboard.systeminfo";
+    }
 }

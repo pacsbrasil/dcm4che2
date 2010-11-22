@@ -11,32 +11,6 @@
 		</title>
 	</head>
 	<body>
-		<table width="100%" style="border-style: none">
-			<tr>
-				<td style="text-align: left">
-					<img src="images/logo.gif" style="background-color: white"/>
-				</td>
-				<td style="text-align: left">
-					<div>						
-						<wicket:message key="dashboard.application.title">
-							[Dashboard]
-						</wicket:message>
-					</div>
-				</td>
-				<td width="140px" style="text-align: right">
-				</td>
-				<td width="50px" style="text-align: right">
-				</td>
-				<td width="50px" style="text-align: right">
-					<a wicket:id="logout-link" href="#">
-						<wicket:message key="dashboard.application.logout">
-							[Log out]
-						</wicket:message>
-					</a>
-				</td>
-			</tr>
-		</table>
-		<div wicket:id="modules" class="tabpanel">[Tabbed panel with modules]</div>
-		<wicket:child />
+        <wicket:extend> </wicket:extend>
 	</body>
 </html>	

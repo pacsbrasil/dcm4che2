@@ -287,4 +287,8 @@ public class QueuePanel extends Panel {
             return isQueue;
         }
     }
+    
+    public static String getModuleName() {
+        return "dashboard.queue";
+    }    
 }

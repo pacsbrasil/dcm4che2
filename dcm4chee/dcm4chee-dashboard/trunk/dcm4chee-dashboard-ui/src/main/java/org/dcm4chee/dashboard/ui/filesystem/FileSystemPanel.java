@@ -511,5 +511,9 @@ public class FileSystemPanel extends Panel {
         public String getRemainingTimeString() {
             return this.remainingTime >= 0 ? "~ " + this.daysFormatter.format(new Float(this.remainingTime)) : ""; 
         }
+    }
+    
+    public static String getModuleName() {
+        return "dashboard.filesystem";
     }    
 }

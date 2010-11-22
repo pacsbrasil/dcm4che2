@@ -38,7 +38,6 @@
 
 package org.dcm4chee.dashboard.ui;
 
-import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.ui.filesystem.FileSystemPanel;
 import org.dcm4chee.dashboard.ui.messaging.QueuePanel;
 import org.dcm4chee.dashboard.ui.report.ReportPanel;
@@ -57,10 +56,10 @@ public class DashboardPanel extends SecureAjaxTabbedPanel {
     public DashboardPanel(String id) {
         super(id);
         
-        addModule(FileSystemPanel.class, new ResourceModel("dashboard.tabs.tab1.name"));
-        addModule(ReportPanel.class, new ResourceModel("dashboard.tabs.tab2.name"));
-        addModule(SystemInfoPanel.class, new ResourceModel("dashboard.tabs.tab3.name"));
-        addModule(QueuePanel.class, new ResourceModel("dashboard.tabs.tab4.name"));
+        addModule(FileSystemPanel.class, null);
+        addModule(ReportPanel.class, null);
+        addModule(SystemInfoPanel.class, null);
+        addModule(QueuePanel.class, null);
     }
     
     public static String getModuleName() {

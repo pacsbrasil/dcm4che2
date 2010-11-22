@@ -38,134 +38,27 @@
 
 package org.dcm4chee.dashboard.war;
 
-import java.security.Principal;
-import java.security.acl.Group;
-import java.util.Enumeration;
-
-import javax.security.auth.Subject;
-
 import org.apache.wicket.Page;
-import org.apache.wicket.authentication.AuthenticatedWebApplication;
-import org.apache.wicket.authentication.AuthenticatedWebSession;
-import org.apache.wicket.authorization.strategies.role.Roles;
-import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.protocol.http.WebApplication;
-import org.dcm4chee.dashboard.war.common.AccessDeniedPage;
-import org.dcm4chee.dashboard.war.common.InternalErrorPage;
-import org.dcm4chee.dashboard.war.common.PageExpiredErrorPage;
+import org.apache.wicket.Request;
+import org.apache.wicket.Response;
 import org.dcm4chee.dashboard.war.pages.DashboardMainPage;
-import org.dcm4chee.dashboard.war.pages.LoginPage;
-import org.dcm4chee.dashboard.war.session.JaasWicketSession;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
+import org.dcm4chee.web.common.secure.SecureSession;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since 14.12.2009
  */
-public class WicketApplication extends AuthenticatedWebApplication {
-
-    private String webApplicationPolicy;
-    private String rolesGroupName;
-    private String userRoleName;
-    private String adminRoleName;
-
-    private String hashEncoding;
-    private String hashCharset;
-    private String hashAlgorithm;
-    
-    public String getSecurityDomainName() {
-        return webApplicationPolicy;
-    }
-
-    public String getRolesGroupName() {
-        return rolesGroupName;
-    }
-
-    public String getUserRoleName() {
-        return userRoleName;
-    }
-
-    public String getAdminRoleName() {
-        return adminRoleName;
-    }
-
-    public static WicketApplication get() {
-        return (WicketApplication) WebApplication.get();
-    }
-
-    public void setHashEncoding(String hashEncoding) {
-        this.hashEncoding = hashEncoding;
-    }
-
-    public String getHashEncoding() {
-        return hashEncoding;
-    }
-
-    public void setHashCharset(String hashCharset) {
-        this.hashCharset = hashCharset;
-    }
-
-    public String getHashCharset() {
-        return hashCharset;
-    }
-
-    public void setHashAlgorithm(String hashAlgorithm) {
-        this.hashAlgorithm = hashAlgorithm;
-    }
-
-    public String getHashAlgorithm() {
-        return hashAlgorithm;
-    }
-
-    @Override
-    protected void init() {
-        super.init();
-        
-        getApplicationSettings().setAccessDeniedPage(AccessDeniedPage.class);
-        getApplicationSettings().setInternalErrorPage(InternalErrorPage.class);
-        getApplicationSettings().setPageExpiredErrorPage(PageExpiredErrorPage.class);
-
-        this.webApplicationPolicy = getInitParameter("webApplicationPolicy");
-        this.rolesGroupName = getInitParameter("rolesGroupName");
-        this.userRoleName = getInitParameter("userRoleName");
-        this.adminRoleName = getInitParameter("adminRoleName");        
-    }
-
-    public Roles getRoles(Subject subject) {
-        Roles roles = new Roles();
-        for (Principal p : subject.getPrincipals()) {
-            if ((p instanceof Group) && (rolesGroupName.equals(p.getName()))) {
-                Group g = (Group) p;
-                Enumeration<? extends Principal> members = g.members();
-                while (members.hasMoreElements()) {
-                    Principal member = members.nextElement();
-                    String name = member.getName();
-                    if (userRoleName.equals(name))
-                        roles.add(Roles.USER);
-                    if (adminRoleName.equals(name))
-                        roles.add(Roles.ADMIN);
-                }
-            }
-        }
-        return roles;
-    }
-
-    public boolean isUserOrAdminRole(String role) {
-        return userRoleName.equals(role) || adminRoleName.equals(role);
-    }
+public class WicketApplication extends BaseWicketApplication {
 
     @Override
     public Class<? extends Page> getHomePage() {
         return DashboardMainPage.class;
     }
-
+    
     @Override
-    protected Class<? extends WebPage> getSignInPageClass() {
-        return LoginPage.class;
-    }
-
-    @Override
-    protected Class<? extends AuthenticatedWebSession> getWebSessionClass() {
-        return JaasWicketSession.class;
+    public SecureSession newSession(Request request, Response response) {
+        return new SecureSession(this, request);
     }
 }

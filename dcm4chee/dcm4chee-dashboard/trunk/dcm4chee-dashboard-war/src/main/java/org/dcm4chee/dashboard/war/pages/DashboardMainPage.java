@@ -38,53 +38,46 @@
 
 package org.dcm4chee.dashboard.war.pages;
 
-import org.apache.wicket.PageParameters;
-import org.apache.wicket.ResourceReference;
-import org.apache.wicket.authorization.strategies.role.annotations.AuthorizeInstantiation;
-import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.resources.CompressedResourceReference;
-import org.dcm4chee.dashboard.ui.DashboardPanel;
-import org.dcm4chee.web.common.base.BaseWicketPage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Properties;
+
+import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.model.Model;
+import org.apache.wicket.security.swarm.SwarmWebApplication;
+import org.dcm4chee.dashboard.ui.filesystem.FileSystemPanel;
+import org.dcm4chee.dashboard.ui.messaging.QueuePanel;
+import org.dcm4chee.dashboard.ui.report.ReportPanel;
+import org.dcm4chee.dashboard.ui.systeminfo.SystemInfoPanel;
+import org.dcm4chee.web.common.base.ModuleSelectorPanel;
+import org.dcm4chee.web.common.secure.SecureWicketPage;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since 18.11.2009
  */
-@AuthorizeInstantiation({"USER","ADMIN"})
-public class DashboardMainPage extends WebPage {
+public class DashboardMainPage extends SecureWicketPage {
     
     private static final long serialVersionUID = 1L;
     
-    private static Logger log = LoggerFactory.getLogger(DashboardMainPage.class);
-    private static final ResourceReference CSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    public DashboardMainPage() {
+        super();
+        addModules(getModuleSelectorPanel());
+    }
 
-    public DashboardMainPage(final PageParameters parameters) {
+    private void addModules(ModuleSelectorPanel selectorPanel) {
+        selectorPanel.addModule(FileSystemPanel.class);
+        selectorPanel.addModule(ReportPanel.class);
+        selectorPanel.addModule(SystemInfoPanel.class);
+        selectorPanel.addModule(QueuePanel.class);
+
         try {
-            if (DashboardMainPage.CSS != null)
-                add(CSSPackageResource.getHeaderContribution(DashboardMainPage.CSS));
-
-            add(new Link<Object>("logout-link") {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onClick() {
-                    this.getSession().invalidateNow();
-                    setResponsePage(this.getApplication().getHomePage());
-                }
-            });
-
-            add(new DashboardPanel("modules"));
-        } catch (Exception e) {
-            log.error(this.getClass().toString() + ": " + "init: " + e.getMessage());
-            log.debug("Exception: ", e);
-            this.getApplication().getSessionStore().setAttribute(getRequest(), "exception", e);
-            throw new RuntimeException();
-        }
+            Properties properties = new Properties();
+            properties.load(((SwarmWebApplication) getApplication()).getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));
+            selectorPanel.get("img_logo").add(new AttributeModifier("title", true, 
+                    new Model<String>((
+                            (properties.getProperty("Implementation-Title") == null ? "" : properties.getProperty("Implementation-Title"))
+                            + ": "
+                            + (properties.getProperty("Implementation-Build") == null ? "" : properties.getProperty("Implementation-Build"))))));            
+        } catch (Exception ignore) {}
     }
 }
