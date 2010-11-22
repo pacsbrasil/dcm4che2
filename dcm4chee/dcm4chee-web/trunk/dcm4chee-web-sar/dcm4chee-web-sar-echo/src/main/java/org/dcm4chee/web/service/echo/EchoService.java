@@ -39,8 +39,6 @@
 package org.dcm4chee.web.service.echo;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -53,6 +51,8 @@ import org.dcm4che2.net.ExtRetrieveTransferCapability;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.service.common.AbstractScuService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author franz.willer@gmail.com
@@ -60,6 +60,8 @@ import org.dcm4chee.web.service.common.AbstractScuService;
  * @since Jul 29, 2009
  */
 public class EchoService extends AbstractScuService {
+    
+    private static Logger log = LoggerFactory.getLogger(EchoService.class);
     
     private int pingTimeout;
     

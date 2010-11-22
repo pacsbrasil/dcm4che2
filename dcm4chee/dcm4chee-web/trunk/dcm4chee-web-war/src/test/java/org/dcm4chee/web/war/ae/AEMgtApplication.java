@@ -44,6 +44,7 @@ import org.apache.wicket.Page;
 import org.apache.wicket.Request;
 import org.apache.wicket.Response;
 import org.apache.wicket.WicketRuntimeException;
+import org.apache.wicket.protocol.http.MockServletContext;
 import org.apache.wicket.security.hive.HiveMind;
 import org.apache.wicket.security.hive.config.PolicyFileHiveFactory;
 import org.apache.wicket.security.hive.config.SwarmPolicyFileHiveFactory;
@@ -68,7 +69,7 @@ public class AEMgtApplication extends BaseWicketApplication {
 
     @Override
     protected Object getHiveKey() {
-        return getServletContext().getContextPath();
+        return ((MockServletContext) getServletContext()).getContextPath();
     }
 
     @Override

@@ -58,7 +58,6 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.InstancesAccessedMessage;
@@ -95,6 +94,8 @@ import org.dcm4chee.web.service.common.HttpUserInfo;
 import org.dcm4chee.web.service.common.TemplatesDelegate;
 import org.dcm4chee.web.service.common.XSLTUtils;
 import org.jboss.system.ServiceMBeanSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author franz.willer@gmail.com
@@ -103,6 +104,8 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public class ContentEditService extends ServiceMBeanSupport {
 
+    private static Logger log = LoggerFactory.getLogger(ContentEditService.class);
+    
     private static final String MWL2STORE_XSL = "mwl-cfindrsp2cstorerq.xsl";
 
     private static final int[] EXCLUDE_PPS_ATTRS = new int[]{
@@ -797,7 +800,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                     study.addParticipantObjectDetail("Description", getStudySeriesDetail(detailMessage, item));
             }
             msg.validate();
-            Logger.getLogger("auditlog").info(msg);
+            LoggerFactory.getLogger("auditlog").info(msg.toString());
         } catch (Exception x) {
             log.warn("Audit Log 'Instances Accessed' (actionCode:" + actionCode
                     + ") failed:", x);
@@ -836,7 +839,7 @@ public class ContentEditService extends ServiceMBeanSupport {
             ParticipantObject study = msg.addStudy(studyIuid, poDesc);
             study.addParticipantObjectDetail("Description", desc);
             msg.validate();
-            Logger.getLogger("auditlog").info(msg);
+            LoggerFactory.getLogger("auditlog").info(msg.toString());
         } catch (Exception x) {
             log.warn("Audit Log 'Procedure Record' failed:", x);
         }
@@ -875,7 +878,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                 msg.addStudy(crpeSeqItem.getString(Tag.StudyInstanceUID),
                         getStudyDescription(crpeSeqItem, true));
                 msg.validate();
-                Logger.getLogger("auditlog").info(msg);
+                LoggerFactory.getLogger("auditlog").info(msg.toString());
             }
         } catch (Exception x) {
             log.warn("Audit Log 'Study Deleted' failed:", x);

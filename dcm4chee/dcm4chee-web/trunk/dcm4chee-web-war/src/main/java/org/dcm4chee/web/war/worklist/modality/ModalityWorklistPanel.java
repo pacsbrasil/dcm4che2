@@ -183,7 +183,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         addQueryFields(filter, form);
         addQueryOptions(form);
         addNavigation(form);
-        addHourglass(form);
         
         form.setResourceIdPrefix("mw.");
 
@@ -479,20 +478,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
         }));
         form.clearParent();
-    }
-
-    private void addHourglass(final BaseForm form) {
-        navPanel.add((hourglassImage = new Image("hourglass-image", ImageManager.IMAGE_COMMON_AJAXLOAD) {
-            private static final long serialVersionUID = 1L;
-    
-            @Override
-            public boolean isVisible() {
-                return ajaxRunning;
-            }
-        })
-        .setOutputMarkupPlaceholderTag(true)
-        .setOutputMarkupId(true)
-        );
     }
 
     protected void queryMWLItems() {

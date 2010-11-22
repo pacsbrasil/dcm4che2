@@ -46,7 +46,6 @@ import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
@@ -211,7 +210,6 @@ public class AEListPanel extends Panel {
                     .add(new TooltipBehaviour("ae."))
                     .add(new SecurityBehavior(getModuleName() + ":editAETLink"))
                 );
-                MetaDataRoleAuthorizationStrategy.authorize(editAET, RENDER, "WebAdmin");
                     
                 AjaxLink<?> removeAET = new AjaxLink<Object>("removeAET") {
     

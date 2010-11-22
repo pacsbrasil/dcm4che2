@@ -63,6 +63,8 @@ import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.folder.StudyPermissionsLocal;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
 import org.jboss.system.ServiceMBeanSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author franz.willer@gmail.com
@@ -72,6 +74,9 @@ import org.jboss.system.ServiceMBeanSupport;
 public class WebCfgService extends ServiceMBeanSupport implements NotificationListener, NotificationFilter {
 
     private static final long serialVersionUID = 1L;
+    
+    private static Logger log = LoggerFactory.getLogger(WebCfgService.class);
+    
     private static final String DEFAULT_TIMER_SERVICE = "jboss:service=Timer";
     private static final long ONE_DAY_IN_MILLIS = 60000*60*24;
 
@@ -117,6 +122,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     
     private boolean useFamilyAndGivenNameQueryFields;
     
+    private String loginAllowedRolename;
     private String rolesMappingFilename;
     private String studyPermissionsRoleType;
     
@@ -679,6 +685,14 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public String getStudyPermissionsRoleType() {
         return studyPermissionsRoleType;
+    }
+
+    public void setLoginAllowedRolename(String loginAllowedRolename) {
+        this.loginAllowedRolename = loginAllowedRolename;
+    }
+
+    public String getLoginAllowedRolename() {
+        return loginAllowedRolename;
     }
 }
 

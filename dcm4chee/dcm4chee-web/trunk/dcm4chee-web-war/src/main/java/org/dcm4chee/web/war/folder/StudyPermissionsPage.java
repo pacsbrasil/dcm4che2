@@ -39,45 +39,33 @@
 package org.dcm4chee.web.war.folder;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
-import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.security.components.SecureWebPage;
-import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.entity.StudyPermission;
-import org.dcm4chee.icons.ImageManager;
-import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.usr.dao.UserAccess;
-import org.dcm4chee.usr.entity.Role;
-import org.dcm4chee.usr.ui.util.CSSUtils;
+import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
-import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
-import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.dao.folder.StudyPermissionsLocal;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
@@ -157,7 +145,7 @@ public class StudyPermissionsPage extends SecureWebPage {
         RepeatingView roleRows = new RepeatingView("role-rows");
         add(roleRows);
 
-        for (final Role role : getAllRolenames()) {
+        for (final Role role : getAllRoles()) {
             WebMarkupContainer rowParent;
             roleRows.add((rowParent = new WebMarkupContainer(roleRows.newChildId()))
                     .add(new Label("rolename", role.getRolename())
@@ -261,10 +249,10 @@ public class StudyPermissionsPage extends SecureWebPage {
         }
     }
 
-    private ArrayList<Role> getAllRolenames() {
-        ArrayList<Role> allRolenames = new ArrayList<Role>(2);
-        allRolenames.addAll(JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, ((BaseWicketApplication) getApplication()).getInitParameter("UserAccessServiceName")).getAllRolenames());
-        return allRolenames;
+    private ArrayList<Role> getAllRoles() {
+        ArrayList<Role> allRoles = new ArrayList<Role>(2);
+        allRoles.addAll(JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, ((BaseWicketApplication) getApplication()).getInitParameter("UserAccessServiceName")).getAllRoles());
+        return allRoles;
     }
     
     public static String getModuleName() {

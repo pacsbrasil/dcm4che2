@@ -521,7 +521,17 @@
          <value value="dcm4chee.archive:service=MPPSEmulator"/>
       </descriptors>
    </attribute>
-
+   <attribute access="read-write"
+      getMethod="getLoginAllowedRolename"
+      setMethod="setLoginAllowedRolename">
+      <description><![CDATA[Filename for the roles mapping.
+      ]]></description>
+      <name>loginAllowedRolename</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="LoginAllowed"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getRolesMappingFilename"
       setMethod="setRolesMappingFilename">
@@ -530,7 +540,7 @@
       <name>rolesMappingFilename</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="rolesMapping-roles.properties"/>
+         <value value="rolesMapping-roles.json"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

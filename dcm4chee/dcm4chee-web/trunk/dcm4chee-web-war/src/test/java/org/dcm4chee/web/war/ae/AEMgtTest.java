@@ -1,33 +1,17 @@
 package org.dcm4chee.web.war.ae;
 
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.management.ObjectName;
-
-import org.apache.wicket.Page;
-import org.apache.wicket.authorization.strategies.role.IRoleCheckingStrategy;
-import org.apache.wicket.authorization.strategies.role.RoleAuthorizationStrategy;
-import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.protocol.http.WebApplication;
-import org.apache.wicket.security.actions.Actions;
-import org.apache.wicket.security.hive.HiveMind;
 import org.apache.wicket.util.tester.FormTester;
 import org.apache.wicket.util.tester.WicketTester;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.entity.FileSystem;
 import org.dcm4chee.web.dao.ae.AEHomeBean;
-import org.dcm4chee.web.war.MainPage;
 import org.dcm4chee.web.war.WASPTestUtil;
-import org.dcm4chee.web.war.WicketApplication;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.bm.testsuite.BaseSessionBeanFixture;
 
@@ -38,8 +22,6 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
     private WicketTester wicketTester;
     private ArrayList<AE> aeList = new ArrayList<AE>(5);
 
-    private static Logger log = LoggerFactory.getLogger(AEMgtTest.class);
-    
     private static final Class<?>[] usedBeans = {FileSystem.class, AE.class};
 
     public AEMgtTest() throws Exception {

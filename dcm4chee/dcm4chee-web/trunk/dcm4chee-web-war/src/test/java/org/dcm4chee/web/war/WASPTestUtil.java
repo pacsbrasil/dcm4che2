@@ -61,7 +61,7 @@ public class WASPTestUtil {
         String contextPath = new java.io.File(WASPTestUtil.class.getResource("WASPTestUtil.class").toURI()).getParent();
         WicketTester wicketTester = new WicketTester(testApplicaton, contextPath);
         if (actionKey == null) {
-            hiveKey = testApplicaton.getServletContext().getContextPath();
+            hiveKey = ((MockServletContext) testApplicaton.getServletContext()).getContextPath();
             actionKey = testApplicaton.getClass().getName() + ":" + hiveKey;
         }
         MockServletContext ctx =(MockServletContext)wicketTester.getApplication().getServletContext();

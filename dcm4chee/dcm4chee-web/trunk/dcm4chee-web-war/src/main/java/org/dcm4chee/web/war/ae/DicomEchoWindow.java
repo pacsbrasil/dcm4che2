@@ -47,7 +47,6 @@ import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
-import org.apache.wicket.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
@@ -253,8 +252,7 @@ public class DicomEchoWindow extends ModalWindow {
             }).setOutputMarkupId(true).add(FocusOnLoadBehaviour.newSimpleFocusBehaviour());
             form.add((saveBtn = new SaveButton("save"))
                 .setEnabled(false));
-            MetaDataRoleAuthorizationStrategy.authorize(saveBtn, RENDER, "WebAdmin");
-                        form.add(new EchoButton("echo"));
+            form.add(new EchoButton("echo"));
             form.add(new PingButton("ping"));
             setOutputMarkupId(true);
         }

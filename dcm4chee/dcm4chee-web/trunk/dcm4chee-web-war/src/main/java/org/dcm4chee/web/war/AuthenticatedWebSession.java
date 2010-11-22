@@ -39,7 +39,6 @@
 package org.dcm4chee.web.war;
 
 import org.apache.wicket.Request;
-import org.apache.wicket.security.WaspApplication;
 import org.dcm4chee.web.common.secure.SecureSession;
 
 /**
@@ -55,8 +54,8 @@ public class AuthenticatedWebSession extends SecureSession {
     private org.dcm4chee.web.war.folder.ViewPort folderViewport = new org.dcm4chee.web.war.folder.ViewPort();
     private org.dcm4chee.web.war.worklist.modality.ViewPort mwViewport = new org.dcm4chee.web.war.worklist.modality.ViewPort();
     
-    public AuthenticatedWebSession(WaspApplication application, Request request) {
-        super(application, request);
+    public AuthenticatedWebSession(WicketApplication wicketApplication, Request request) {
+        super(wicketApplication, request);
     }
 
     public org.dcm4chee.web.war.folder.ViewPort getFolderViewPort() {

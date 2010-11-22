@@ -1,8 +1,6 @@
 package org.dcm4chee.web.war;
 
 
-import java.net.URL;
-
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
@@ -10,10 +8,6 @@ import javax.management.ObjectName;
 import org.apache.wicket.Page;
 import org.apache.wicket.Session;
 import org.apache.wicket.authorization.strategies.role.Roles;
-import org.apache.wicket.protocol.http.MockServletContext;
-import org.apache.wicket.protocol.http.WebApplication;
-import org.apache.wicket.security.actions.Actions;
-import org.apache.wicket.security.hive.HiveMind;
 import org.apache.wicket.security.hive.authorization.Principal;
 import org.apache.wicket.security.swarm.strategies.SwarmStrategy;
 import org.apache.wicket.util.tester.FormTester;
@@ -40,9 +34,7 @@ import org.dcm4chee.archive.entity.VerifyingObserver;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
 import org.dcm4chee.web.common.base.LoginPage;
-import org.dcm4chee.web.common.base.WebLoginContext;
 import org.dcm4chee.web.dao.folder.StudyListBean;
-import org.junit.After;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
