@@ -1313,6 +1313,7 @@ public class DcmSnd extends StorageCommitmentService {
                     if (dis.tag() >= Tag.PixelData) {
                         copyPixelData(dis, dos, out);
                         // copy attrs after PixelData
+                        dis.setHandler(dis);
                         attrs = dis.readDicomObject();
                         dos.writeDataset(attrs, tsuid);
                     }
