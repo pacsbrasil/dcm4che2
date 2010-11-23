@@ -98,7 +98,7 @@ import org.dcm4chex.archive.util.Convert;
  *             transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findAll(int offset, int limit)"
  *              query="SELECT OBJECT(p) FROM Patient AS p ORDER BY p.pk OFFSET ?1 LIMIT ?2"
- *              
+ *              strategy="on-find"
  * @ejb.finder signature="java.util.Collection findByPatientId(java.lang.String pid)"
  *             query="SELECT OBJECT(p) FROM Patient AS p WHERE p.patientId = ?1"
  *             transaction-type="Supports"
@@ -293,6 +293,10 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.persistence column-name="pat_fn_sx"
      */
     public abstract String getPatientFamilyNameSoundex();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setPatientFamilyNameSoundex(String name);
         
     /**
@@ -300,13 +304,21 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.persistence column-name="pat_gn_sx"
      */
     public abstract String getPatientGivenNameSoundex();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setPatientGivenNameSoundex(String name);
-        
+
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_i_name"
      */
     public abstract String getPatientIdeographicName();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setPatientIdeographicName(String name);
 
     /**

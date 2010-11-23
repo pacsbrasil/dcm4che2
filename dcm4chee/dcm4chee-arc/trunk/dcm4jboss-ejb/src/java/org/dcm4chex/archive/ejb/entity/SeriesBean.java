@@ -94,6 +94,10 @@ import org.dcm4chex.archive.util.Convert;
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
  * 
+ * @ejb.finder signature="Collection findAll()"
+ *             query="SELECT OBJECT(s) FROM Series AS s"
+ *             transaction-type="Supports"
+ *
  * @ejb.finder signature="java.util.Collection findSeriesOnMedia(org.dcm4chex.archive.ejb.interfaces.MediaLocal media)"
  *             query="SELECT DISTINCT OBJECT(s) FROM Series s, IN(s.instances) i WHERE i.media = ?1"
  *             transaction-type="Supports"
@@ -275,6 +279,7 @@ public abstract class SeriesBean implements EntityBean {
     public abstract void setStationName(String name);
 
     /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="perf_physician"
      */
     public abstract String getPerformingPhysicianName();
@@ -285,6 +290,10 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.persistence column-name="perf_phys_fn_sx"
      */
     public abstract String getPerformingPhysicianFamilyNameSoundex();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setPerformingPhysicianFamilyNameSoundex(String name);
         
     /**
@@ -292,6 +301,10 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.persistence column-name="perf_phys_gn_sx"
      */
     public abstract String getPerformingPhysicianGivenNameSoundex();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setPerformingPhysicianGivenNameSoundex(String name);
 
     /**

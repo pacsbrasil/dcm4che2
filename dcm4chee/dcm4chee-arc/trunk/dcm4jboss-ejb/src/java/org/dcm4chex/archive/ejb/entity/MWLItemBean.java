@@ -172,6 +172,7 @@ public abstract class MWLItemBean implements EntityBean {
     public abstract void setModality(String md);
 
     /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="perf_physician"
      */
     public abstract String getPerformingPhysicianName();
@@ -182,6 +183,10 @@ public abstract class MWLItemBean implements EntityBean {
      * @ejb.persistence column-name="perf_phys_fn_sx"
      */
     public abstract String getPerformingPhysicianFamilyNameSoundex();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setPerformingPhysicianFamilyNameSoundex(String name);
         
     /**
@@ -189,6 +194,10 @@ public abstract class MWLItemBean implements EntityBean {
      * @ejb.persistence column-name="perf_phys_gn_sx"
      */
     public abstract String getPerformingPhysicianGivenNameSoundex();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setPerformingPhysicianGivenNameSoundex(String name);
 
     /**

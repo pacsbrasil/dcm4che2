@@ -3,7 +3,7 @@
 <dcm4chee-attribute-filter>
     <patient>
         <attr tag="00080005"/> <!-- Specific Character Set -->
-        <attr tag="00100010" case-insensitive-matching="true"/> <!--  Patient's Name -->
+        <attr tag="00100010" case-sensitive="false"/> <!--  Patient's Name -->
         <attr tag="00100020"/> <!--  Patient ID -->
     </patient>
     <study>

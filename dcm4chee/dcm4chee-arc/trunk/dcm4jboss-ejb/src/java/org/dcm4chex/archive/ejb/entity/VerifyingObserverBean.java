@@ -58,6 +58,10 @@ import org.dcm4chex.archive.ejb.conf.AttributeFilter;
  * @ejb.persistence table-name="verify_observer"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ *
+ * @ejb.finder signature="Collection findAll()"
+ *             query="SELECT OBJECT(o) FROM VerifyingObserver AS o"
+ *             transaction-type="Supports"
  */
 public abstract class VerifyingObserverBean implements EntityBean {
 
@@ -96,6 +100,10 @@ public abstract class VerifyingObserverBean implements EntityBean {
      * @ejb.persistence column-name="observer_fn_sx"
      */
     public abstract String getVerifyingObserverFamilyNameSoundex();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setVerifyingObserverFamilyNameSoundex(String name);
         
     /**
@@ -103,6 +111,10 @@ public abstract class VerifyingObserverBean implements EntityBean {
      * @ejb.persistence column-name="observer_gn_sx"
      */
     public abstract String getVerifyingObserverGivenNameSoundex();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setVerifyingObserverGivenNameSoundex(String name);
 
     /**

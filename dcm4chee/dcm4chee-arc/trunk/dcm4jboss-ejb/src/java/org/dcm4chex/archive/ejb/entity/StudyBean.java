@@ -92,6 +92,10 @@ import org.dcm4chex.archive.util.Convert;
  * @jboss.audit-created-time field-name="createdTime"
  * @jboss.audit-updated-time field-name="updatedTime"
  *
+ * @ejb.finder signature="Collection findAll()"
+ *             query="SELECT OBJECT(s) FROM Study AS s"
+ *             transaction-type="Supports"
+ *
  * @ejb.finder transaction-type="Supports"
  *             signature="org.dcm4chex.archive.ejb.interfaces.StudyLocal findByStudyIuid(java.lang.String uid)"
  *             query="SELECT OBJECT(a) FROM Study AS a WHERE a.studyIuid = ?1"
@@ -252,6 +256,10 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.persistence column-name="ref_phys_fn_sx"
      */
     public abstract String getReferringPhysicianFamilyNameSoundex();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setReferringPhysicianFamilyNameSoundex(String name);
         
     /**
@@ -259,6 +267,10 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.persistence column-name="ref_phys_gn_sx"
      */
     public abstract String getReferringPhysicianGivenNameSoundex();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setReferringPhysicianGivenNameSoundex(String name);
 
     /**

@@ -71,6 +71,10 @@ import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
+ * 
+ * @ejb.finder signature="Collection findAll()"
+ *             query="SELECT OBJECT(p) FROM GPSPSPerformer AS p"
+ *             transaction-type="Supports"
  */
 
 public abstract class GPSPSPerformerBean implements EntityBean {
@@ -174,13 +178,21 @@ public abstract class GPSPSPerformerBean implements EntityBean {
      * @ejb.persistence column-name="hum_perf_fn_sx"
      */
     public abstract String getHumanPerformerFamilyNameSoundex();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setHumanPerformerFamilyNameSoundex(String name);
-        
+
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="hum_perf_gn_sx"
      */
     public abstract String getHumanPerformerGivenNameSoundex();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setHumanPerformerGivenNameSoundex(String name);
 
     /**

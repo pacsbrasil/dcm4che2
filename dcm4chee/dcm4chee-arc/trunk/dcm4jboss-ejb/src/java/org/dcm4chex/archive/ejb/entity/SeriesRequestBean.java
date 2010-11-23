@@ -62,6 +62,10 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  * @ejb.persistence table-name="series_req"
  * @ejb.transaction type="Required"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ *
+ * @ejb.finder signature="Collection findAll()"
+ *             query="SELECT OBJECT(r) FROM SeriesRequest AS r"
+ *             transaction-type="Supports"
  */
 
 public abstract class SeriesRequestBean implements EntityBean {
@@ -156,6 +160,7 @@ public abstract class SeriesRequestBean implements EntityBean {
     public abstract void setRequestingService(String service);
 
     /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="req_physician"
      */
     public abstract String getRequestingPhysician();
@@ -166,6 +171,10 @@ public abstract class SeriesRequestBean implements EntityBean {
      * @ejb.persistence column-name="req_phys_fn_sx"
      */
     public abstract String getRequestingPhysicianFamilyNameSoundex();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setRequestingPhysicianFamilyNameSoundex(String name);
         
     /**
@@ -173,6 +182,10 @@ public abstract class SeriesRequestBean implements EntityBean {
      * @ejb.persistence column-name="req_phys_gn_sx"
      */
     public abstract String getRequestingPhysicianGivenNameSoundex();
+
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setRequestingPhysicianGivenNameSoundex(String name);
 
     /**
