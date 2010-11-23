@@ -598,7 +598,7 @@ public abstract class VR {
                 boolean last, SpecificCharacterSet cs)
         {
             if (sb.length() == 0)
-                return null;
+                return last ? out.toByteArray() : null;
             int begin = 0;
             int end;
             while ((end = sb.indexOf("\\", begin)) != -1)
@@ -790,7 +790,7 @@ public abstract class VR {
                 boolean last, SpecificCharacterSet cs)
         {
             if (sb.length() == 0)
-                return null;
+                return last ? out.toByteArray() : null;
             int begin = 0;
             int end;
             while ((end = sb.indexOf("\\", begin)) != -1)
@@ -1347,7 +1347,7 @@ public abstract class VR {
                 boolean last, SpecificCharacterSet cs)
         {
             if (sb.length() == 0)
-                return null;
+                return last ? out.toByteArray() : null;
             int begin = 0;
             int end;
             while ((end = sb.indexOf("\\", begin)) != -1)
@@ -1519,7 +1519,7 @@ public abstract class VR {
                 boolean last, SpecificCharacterSet cs)
         {
             if (sb.length() == 0)
-                return null;
+                return last ? out.toByteArray() : null;
             int begin = 0;
             int end;
             while ((end = sb.indexOf("\\", begin)) != -1)
@@ -2161,7 +2161,7 @@ public abstract class VR {
                 boolean last, SpecificCharacterSet cs)
         {
             if (sb.length() == 0)
-                return null;
+                return last ? out.toByteArray() : null;
             int begin = 0;
             for (int end = sb.length() - 2; begin < end; ++begin)
             {
