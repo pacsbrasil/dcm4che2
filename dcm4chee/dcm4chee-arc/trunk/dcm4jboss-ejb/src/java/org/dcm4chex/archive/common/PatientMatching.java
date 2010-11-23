@@ -409,7 +409,7 @@ public class PatientMatching implements Serializable{
     private static void appendRegex(StringBuilder regex, String value,
             boolean mustMatch, boolean initialMatch,
             boolean unknownAlwaysMatch) {
-        if (!mustMatch || value == null) {
+        if (!mustMatch || value == null || value.length() == 0) {
             regex.append("[^\\^]*");
         } else if (initialMatch) {
             regex.append(unknownAlwaysMatch ? "(\\Q" : "\\Q")

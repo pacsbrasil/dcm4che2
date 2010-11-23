@@ -580,6 +580,25 @@
       </junit>
     </target>
     
+    <target name="test-patient-matching">
+        <javac destdir="target\classes" srcdir="test\java\">
+            <classpath>
+                <path refid="jboss.client.path"/>
+                <pathelement location="${cactus.lib}/junit-3.8.2.jar"/>
+            </classpath>
+            <include name="**/PatientMatchingTest.java"/>
+        </javac>
+        <junit printsummary="true" fork="yes">
+            <classpath>
+                <path refid="jboss.client.path"/>
+                <pathelement location="${target.classes}"/>
+                <pathelement location="${cactus.lib}/junit-3.8.2.jar"/>
+            </classpath>
+            <formatter type='brief' usefile='false'/>
+            <test name="org.dcm4chex.archive.common.PatientMatchingTest"/>
+        </junit>
+    </target>
+    
     <target name="test-query">
       <junit printsummary="true" fork="yes">
          <classpath>
