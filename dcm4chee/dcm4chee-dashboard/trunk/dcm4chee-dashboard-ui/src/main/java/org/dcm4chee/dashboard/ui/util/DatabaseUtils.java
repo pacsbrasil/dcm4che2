@@ -43,8 +43,12 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -54,6 +58,8 @@ import java.util.regex.Pattern;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
+
+import org.apache.wicket.RequestCycle;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -96,9 +102,10 @@ public class DatabaseUtils {
     }
     
     private static PreparedStatement createPreparedStatement(Connection connection, String sqlStatement, Map<String, String> parameters) throws SQLException, Exception {
-        
-        PreparedStatement preparedStatement = (connection.prepareStatement(createSQLStatement(sqlStatement), ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY));        
+
+        PreparedStatement preparedStatement = connection.prepareStatement(createSQLStatement(sqlStatement), ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);        
         int i = 1;
+
         for (String parameterName : getParameterOccurences(sqlStatement)) {
             if (parameterName.startsWith("text"))
                 preparedStatement.setString(i, parameters.get(parameterName));
@@ -108,8 +115,17 @@ public class DatabaseUtils {
                 preparedStatement.setFloat(i, new Float(parameters.get(parameterName)));
             else if (parameterName.startsWith("boolean"))
                 preparedStatement.setBoolean(i, new Boolean(parameters.get(parameterName)));
-            else if (parameterName.startsWith("date"))
-                preparedStatement.setDate(i, Date.valueOf(parameters.get(parameterName)));
+            else if (parameterName.startsWith("date")) 
+                preparedStatement.setDate(i, Date.valueOf(
+                        new SimpleDateFormat("yyyy-MM-dd").format(
+                                SimpleDateFormat.getDateInstance(
+                                        SimpleDateFormat.SHORT, 
+                                        RequestCycle.get().getSession().getLocale()
+                                ).parse(parameters.get(parameterName)
+                            )
+                        )
+                    )
+                );
             i++;
         }
         return preparedStatement;
