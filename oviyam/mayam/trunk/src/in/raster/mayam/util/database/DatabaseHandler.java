@@ -1235,7 +1235,7 @@ public class DatabaseHandler {
         ArrayList<Series> arr = new ArrayList();
         try {
             ResultSet rs1 = null;
-            String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe from image where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + seriesUID + "'" + " AND multiframe='true'";
+            String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe from image where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + seriesUID + "'" + " AND multiframe='true'" + " order by InstanceNo asc";
             rs1 = conn.createStatement().executeQuery(sql1);
             while (rs1.next()) {
                 Series series = new Series();
