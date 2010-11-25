@@ -153,6 +153,8 @@ public class DcmMWL {
     private static final String[] LE_TS = {
         UID.ExplicitVRLittleEndian, 
         UID.ImplicitVRLittleEndian };
+  
+    private static final byte[] EXT_NEG_INFO_FUZZY_MATCHING = { 0, 0, 1 };
     
     private final Executor executor;
     private final NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
@@ -165,6 +167,8 @@ public class DcmMWL {
     private int cancelAfter = Integer.MAX_VALUE;
     private final DicomObject keys = new BasicDicomObject();
     private final DicomObject spsKeys = new BasicDicomObject();
+
+    private boolean fuzzySemanticPersonNameMatching;
 
     private String keyStoreURL = "resource:tls/test_sys_1.p12";
     
@@ -336,11 +340,17 @@ public class DcmMWL {
         spsKeys.putString(tag, null, value);
     }
 
+    public void setFuzzySemanticPersonNameMatching(boolean b) {
+        this.fuzzySemanticPersonNameMatching = b;
+    }
+
     public void setTransferSyntax(String[] ts) {
-        TransferCapability[] tc = { new TransferCapability(
+        TransferCapability tc = new TransferCapability(
                 UID.ModalityWorklistInformationModelFIND, ts,
-                TransferCapability.SCU) };
-        ae.setTransferCapability(tc);       
+                TransferCapability.SCU);
+        if (fuzzySemanticPersonNameMatching)
+            tc.setExtInfo(EXT_NEG_INFO_FUZZY_MATCHING);
+        ae.setTransferCapability(new TransferCapability[]{tc});
     }
     
     public void open() throws IOException, ConfigurationException,
@@ -455,6 +465,8 @@ public class DcmMWL {
             dcmmwl.setPriority(CommandUtils.LOW);
         if (cl.hasOption("highprior"))
             dcmmwl.setPriority(CommandUtils.HIGH);
+        if (cl.hasOption("fuzzy"))
+            dcmmwl.setFuzzySemanticPersonNameMatching(true);
         if (cl.hasOption("q")) {
             String[] matchingKeys = cl.getOptionValues("q");
             for (int i = 1; i < matchingKeys.length; i++, i++)
@@ -659,6 +671,8 @@ public class DcmMWL {
                 
         opts.addOption("ivrle", false,
                 "offer only Implicit VR Little Endian Transfer Syntax.");
+        opts.addOption("fuzzy", false, 
+                "negotiate support of fuzzy semantic person name attribute matching.");
         opts.addOption("pdv1", false,
                 "send only one PDV in one P-Data-TF PDU, pack command and data " +
                 "PDV in one P-DATA-TF PDU by default.");
