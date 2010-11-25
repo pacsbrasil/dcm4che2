@@ -311,7 +311,7 @@ public class WADOSupport implements NotificationListener {
             dsQ.putUI(Tags.SeriesInstanceUID);
             dsQ.putUI(Tags.MIMETypeOfEncapsulatedDocument);
             dsQ.putCS(Tags.QueryRetrieveLevel, "IMAGE");
-            cmd = QueryCmd.create(dsQ, true, true, false, null);
+            cmd = QueryCmd.create(dsQ, true, false, true, false, null);
             cmd.execute();
             if (cmd.next()) {
                 objectDs = cmd.getDataset();
