@@ -53,7 +53,6 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
-import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
@@ -112,13 +111,6 @@ public abstract class GPSPSPerformerBean implements EntityBean {
         PersonName pn = ds.getPersonName(Tags.HumanPerformerName);
         if (pn != null) {
             setHumanPerformerName(toUpperCase(pn.toComponentGroupString(false)));
-            FuzzyStr soundex = AttributeFilter.getSoundex();
-            if (soundex != null) {
-                setHumanPerformerFamilyNameSoundex(
-                        soundex.toFuzzy(pn.get(PersonName.FAMILY)));
-                setHumanPerformerGivenNameSoundex(
-                        soundex.toFuzzy(pn.get(PersonName.GIVEN)));
-            }
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setHumanPerformerIdeographicName(ipn.toComponentGroupString(false));
@@ -128,6 +120,12 @@ public abstract class GPSPSPerformerBean implements EntityBean {
                 setHumanPerformerPhoneticName(ppn.toComponentGroupString(false));
             }
         }        
+        if (AttributeFilter.isSoundexEnabled()) {
+            setHumanPerformerFamilyNameSoundex(
+                    AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
+            setHumanPerformerGivenNameSoundex(
+                    AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*"));
+        }
         return null;
     }
 

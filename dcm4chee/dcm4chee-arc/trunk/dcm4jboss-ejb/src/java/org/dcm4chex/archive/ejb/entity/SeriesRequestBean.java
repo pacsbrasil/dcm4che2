@@ -47,7 +47,6 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
-import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 
@@ -87,13 +86,6 @@ public abstract class SeriesRequestBean implements EntityBean {
             setRequestingPhysician(
                     filter.toUpperCase(pn.toComponentGroupString(false),
                             Tags.RequestingPhysician));
-            FuzzyStr soundex = AttributeFilter.getSoundex();
-            if (soundex != null) {
-                setRequestingPhysicianFamilyNameSoundex(
-                        soundex.toFuzzy(pn.get(PersonName.FAMILY)));
-                setRequestingPhysicianGivenNameSoundex(
-                        soundex.toFuzzy(pn.get(PersonName.GIVEN)));
-            }
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setRequestingPhysicianIdeographicName(
@@ -104,6 +96,12 @@ public abstract class SeriesRequestBean implements EntityBean {
                 setRequestingPhysicianPhoneticName(
                         ppn.toComponentGroupString(false));                
             }
+        }
+        if (AttributeFilter.isSoundexEnabled()) {
+            setRequestingPhysicianFamilyNameSoundex(
+                    AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
+            setRequestingPhysicianGivenNameSoundex(
+                    AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*"));
         }
         return null;
     }

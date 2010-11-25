@@ -775,13 +775,6 @@ public abstract class PatientBean implements EntityBean {
             setPatientName(
                     filter.toUpperCase(pn.toComponentGroupString(false),
                             Tags.PatientName));
-            FuzzyStr soundex = AttributeFilter.getSoundex();
-            if (soundex != null) {
-                setPatientFamilyNameSoundex(
-                        soundex.toFuzzy(pn.get(PersonName.FAMILY)));
-                setPatientGivenNameSoundex(
-                        soundex.toFuzzy(pn.get(PersonName.GIVEN)));
-            }
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setPatientIdeographicName(ipn.toComponentGroupString(false));
@@ -790,6 +783,12 @@ public abstract class PatientBean implements EntityBean {
             if (ppn != null) {
                 setPatientPhoneticName(ppn.toComponentGroupString(false));
             }
+        }
+        if (AttributeFilter.isSoundexEnabled()) {
+            setPatientFamilyNameSoundex(
+                    AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
+            setPatientGivenNameSoundex(
+                    AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*"));
         }
         setPatientBirthDate(normalizeDA(ds.getString(Tags.PatientBirthDate)));
         setPatientSex(filter.getString(ds, Tags.PatientSex));
@@ -803,7 +802,7 @@ public abstract class PatientBean implements EntityBean {
             setField(filter.getField(fieldTags[i]), filter.getString(ds, fieldTags[i]));
         }
     }
-    
+
     /**
      * @throws DcmServiceException 
      * @ejb.interface-method

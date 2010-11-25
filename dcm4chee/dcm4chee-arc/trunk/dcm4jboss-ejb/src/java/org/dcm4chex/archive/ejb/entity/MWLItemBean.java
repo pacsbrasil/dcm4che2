@@ -309,13 +309,6 @@ public abstract class MWLItemBean implements EntityBean {
         PersonName pn = spsItem.getPersonName(Tags.PerformingPhysicianName);
         if (pn != null) {
             setPerformingPhysicianName(toUpperCase(pn.toComponentGroupString(false)));
-            FuzzyStr soundex = AttributeFilter.getSoundex();
-            if (soundex != null) {
-                setPerformingPhysicianFamilyNameSoundex(
-                        soundex.toFuzzy(pn.get(PersonName.FAMILY)));
-                setPerformingPhysicianGivenNameSoundex(
-                        soundex.toFuzzy(pn.get(PersonName.GIVEN)));
-            }
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setPerformingPhysicianIdeographicName(ipn.toComponentGroupString(false));
@@ -324,6 +317,12 @@ public abstract class MWLItemBean implements EntityBean {
             if (ppn != null) {
                 setPerformingPhysicianPhoneticName(ppn.toComponentGroupString(false));
              }
+        }
+        if (AttributeFilter.isSoundexEnabled()) {
+            setPerformingPhysicianFamilyNameSoundex(
+                    AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
+            setPerformingPhysicianGivenNameSoundex(
+                    AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*"));
         }
         setModality(spsItem.getString(Tags.Modality));
         setRequestedProcedureId(ds.getString(Tags.RequestedProcedureID));

@@ -62,7 +62,6 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
-import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -951,13 +950,6 @@ public abstract class SeriesBean implements EntityBean {
             setPerformingPhysicianName(
                     filter.toUpperCase(pn.toComponentGroupString(false),
                             Tags.PerformingPhysicianName));
-            FuzzyStr soundex = AttributeFilter.getSoundex();
-            if (soundex != null) {
-                setPerformingPhysicianFamilyNameSoundex(
-                        soundex.toFuzzy(pn.get(PersonName.FAMILY)));
-                setPerformingPhysicianGivenNameSoundex(
-                        soundex.toFuzzy(pn.get(PersonName.GIVEN)));
-            }
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setPerformingPhysicianIdeographicName(ipn.toComponentGroupString(false));
@@ -966,6 +958,12 @@ public abstract class SeriesBean implements EntityBean {
             if (ppn != null) {
                 setPerformingPhysicianPhoneticName(ppn.toComponentGroupString(false));
              }
+        }
+        if (AttributeFilter.isSoundexEnabled()) {
+            setPerformingPhysicianFamilyNameSoundex(
+                    AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
+            setPerformingPhysicianGivenNameSoundex(
+                    AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*"));
         }
         try {
             setPpsStartDateTime(

@@ -301,22 +301,29 @@ class SqlBuilder {
         if (val == null || val.length() == 0 || val.equals("*"))
             return;
         PersonName pn = DcmObjectFactory.getInstance().newPersonName(val);
-        if (pn != null) {
-            String pnalpha = pn.toComponentGroupMatch();
-            addWildCardMatch(null, nameFields[0], type2,
-                    icase ? pnalpha.toUpperCase() : pnalpha);
-            PersonName ipn = pn.getIdeographic();
-            if (ipn != null) {
-                addWildCardMatch(null, nameFields[1], type2,
-                        ipn.toComponentGroupMatch());
-            }
-            PersonName ppn = pn.getPhonetic();
-            if (ppn != null) {
-                addWildCardMatch(null, nameFields[2], type2,
-                        ppn.toComponentGroupMatch());
-            }
+        String pnalpha = pn.toComponentGroupMatch();
+        addWildCardMatch(null, nameFields[0], type2,
+                icase ? pnalpha.toUpperCase() : pnalpha);
+        PersonName ipn = pn.getIdeographic();
+        if (ipn != null) {
+            addWildCardMatch(null, nameFields[1], type2,
+                    ipn.toComponentGroupMatch());
+        }
+        PersonName ppn = pn.getPhonetic();
+        if (ppn != null) {
+            addWildCardMatch(null, nameFields[2], type2,
+                    ppn.toComponentGroupMatch());
         }
     }   
+
+
+    public void addPNFuzzyMatch(String[] fields, String val) {
+        if (val == null || val.length() == 0 || val.equals("*"))
+            return;
+        PersonName pn = DcmObjectFactory.getInstance().newPersonName(val);
+        addMatch(new Match.PNFuzzy(fields,
+                DcmObjectFactory.getInstance().newPersonName(val)));
+    }
 
     /**
      * Returns true if at least one match is not supported. 

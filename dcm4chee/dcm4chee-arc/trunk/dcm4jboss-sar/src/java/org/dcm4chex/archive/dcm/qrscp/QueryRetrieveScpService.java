@@ -94,6 +94,7 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
@@ -122,6 +123,8 @@ import org.jboss.util.deadlock.ApplicationDeadlockException;
  * @since 31.08.2003
  */
 public class QueryRetrieveScpService extends AbstractScpService {
+
+    private static final int FUZZY_MATCHING = 2;
 
     private static final String ANY = "ANY";
 
@@ -1100,8 +1103,11 @@ public class QueryRetrieveScpService extends AbstractScpService {
         dcmHandler.removeAssociationListener(moveScp);
     }
 
-    private static final ExtNegotiator ECHO_EXT_NEG = new ExtNegotiator() {
+    private static final ExtNegotiator extNegotiator = new ExtNegotiator() {
         public byte[] negotiate(byte[] offered) {
+            if (offered.length > FUZZY_MATCHING)
+                offered[FUZZY_MATCHING] &=
+                    AttributeFilter.isSoundexEnabled() ? 1 : 0;
             return offered;
         }
     };
@@ -1121,7 +1127,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     protected void putPresContexts(AcceptorPolicy policy, String[] cuids,
             String[] tsuids) {
         super.putPresContexts(policy, cuids, tsuids);
-        ExtNegotiator neg = tsuids != null ? ECHO_EXT_NEG : null;
+        ExtNegotiator neg = tsuids != null ? extNegotiator : null;
         for (int i = 0; i < cuids.length; i++) {
             policy.putExtNegPolicy(cuids[i], neg);
         }

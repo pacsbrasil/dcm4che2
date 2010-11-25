@@ -45,6 +45,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.dcm4che.data.PersonName;
+import org.dcm4che2.soundex.FuzzyStr;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+
 /**
  * @author Gunter.Zeilinger@tiani.com
  * @version $Revision$ $Date: 2008-10-28 13:34:01 +0100 (Tue, 28 Oct
@@ -635,6 +639,46 @@ abstract class Match {
 
         protected void appendBodyTo(StringBuffer sb) {
             sb.append(subQueryStr);
+        }
+
+    }
+
+    public static class PNFuzzy extends Match {
+
+        private String[] columns;
+        private String[] soundex;
+
+        public PNFuzzy(String[] fields, PersonName pn) {
+            columns = JdbcProperties.getInstance().getProperties(fields);
+            soundex = new String[] {
+                    AttributeFilter.toSoundex(pn, PersonName.FAMILY, null),
+                    AttributeFilter.toSoundex(pn, PersonName.GIVEN, null)
+            };
+        }
+
+        @Override
+        protected void appendBodyTo(StringBuffer sb) {
+            sb.append(columns[0]).append(" IN ('*', '");
+            if (soundex[0] != null && soundex[1] != null) {
+                sb.append(soundex[0]).append("') AND ")
+                    .append(columns[1]).append(" IN ('*', '")
+                    .append(soundex[1]).append("') OR ")
+                    .append(columns[0]).append(" IN ('*', '")
+                    .append(soundex[1]).append("') AND ")
+                    .append(columns[1]).append(" IN ('*', '")
+                    .append(soundex[0]);
+            } else {
+                String soundex0 = soundex[soundex[0] != null ? 0 : 1];
+                sb.append(soundex0).append("') OR ")
+                    .append(columns[1]).append(" IN ('*', '")
+                    .append(soundex0);
+            }
+            sb.append("')");
+        }
+
+        @Override
+        public boolean isUniveralMatch() {
+            return soundex[0] == null && soundex[1] == null;
         }
 
     }

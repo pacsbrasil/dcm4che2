@@ -51,7 +51,6 @@ import javax.naming.NamingException;
 
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.PersonName;
-import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.GPSPSPerformerLocal;
 import org.dcm4chex.archive.ejb.interfaces.GPSPSPerformerLocalHome;
@@ -153,8 +152,7 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.transaction type="Never"
      */
     public int updatePatientNameSoundex() {
-        FuzzyStr soundex = AttributeFilter.getSoundex();
-        if (soundex == null)
+        if (!AttributeFilter.isSoundexEnabled())
             return 0;
 
         try {
@@ -176,17 +174,12 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.interface-method view-type="local"
      */
     public void updatePatientNameSoundex(PatientLocal pat) {
-        String s = pat.getPatientName();
-        if (s == null)
-            return;
-
-        FuzzyStr soundex = AttributeFilter.getSoundex();
         DcmObjectFactory pnFact = DcmObjectFactory.getInstance();
-        PersonName pn = pnFact.newPersonName(s);
+        PersonName pn = pnFact.newPersonName(pat.getPatientName());
         pat.setPatientFamilyNameSoundex(
-                soundex.toFuzzy(pn.get(PersonName.FAMILY)));
+                AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
         pat.setPatientGivenNameSoundex(
-                soundex.toFuzzy(pn.get(PersonName.GIVEN)));
+                AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*"));
     }
 
     /**
@@ -194,8 +187,7 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.transaction type="Never"
      */
     public int updateReferringPhysicianNameSoundex() {
-        FuzzyStr soundex = AttributeFilter.getSoundex();
-        if (soundex == null)
+        if (!AttributeFilter.isSoundexEnabled())
             return 0;
 
         try {
@@ -217,17 +209,13 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.interface-method view-type="local"
      */
     public void updateReferringPhysicianNameSoundex(StudyLocal study) {
-        String s = study.getReferringPhysicianName();
-        if (s == null)
-            return;
-
-        FuzzyStr soundex = AttributeFilter.getSoundex();
         DcmObjectFactory pnFact = DcmObjectFactory.getInstance();
-        PersonName pn = pnFact.newPersonName(s);
+        PersonName pn = pnFact.newPersonName(
+                study.getReferringPhysicianName());
         study.setReferringPhysicianFamilyNameSoundex(
-                soundex.toFuzzy(pn.get(PersonName.FAMILY)));
+                AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
         study.setReferringPhysicianGivenNameSoundex(
-                soundex.toFuzzy(pn.get(PersonName.GIVEN)));
+                AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*"));
     }
 
     /**
@@ -235,8 +223,7 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.transaction type="Never"
      */
     public int updatePerformingPhysicianNameSoundex() {
-        FuzzyStr soundex = AttributeFilter.getSoundex();
-        if (soundex == null)
+        if (!AttributeFilter.isSoundexEnabled())
             return 0;
 
         try {
@@ -258,17 +245,13 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.interface-method view-type="local"
      */
     public void updatePerformingPhysicianNameSoundex(SeriesLocal series) {
-        String s = series.getPerformingPhysicianName();
-        if (s == null)
-            return;
-
-        FuzzyStr soundex = AttributeFilter.getSoundex();
         DcmObjectFactory pnFact = DcmObjectFactory.getInstance();
-        PersonName pn = pnFact.newPersonName(s);
+        PersonName pn = pnFact.newPersonName(
+                series.getPerformingPhysicianName());
         series.setPerformingPhysicianFamilyNameSoundex(
-                soundex.toFuzzy(pn.get(PersonName.FAMILY)));
+                AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
         series.setPerformingPhysicianGivenNameSoundex(
-                soundex.toFuzzy(pn.get(PersonName.GIVEN)));
+                AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*"));
     }
 
     /**
@@ -276,8 +259,7 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.transaction type="Never"
      */
     public int updateRequestingPhysicianNameSoundex() {
-        FuzzyStr soundex = AttributeFilter.getSoundex();
-        if (soundex == null)
+        if (!AttributeFilter.isSoundexEnabled())
             return 0;
 
         try {
@@ -299,17 +281,13 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.interface-method view-type="local"
      */
     public void updateRequestingPhysicianNameSoundex(SeriesRequestLocal seriesRequest) {
-        String s = seriesRequest.getRequestingPhysician();
-        if (s == null)
-            return;
-
-        FuzzyStr soundex = AttributeFilter.getSoundex();
         DcmObjectFactory pnFact = DcmObjectFactory.getInstance();
-        PersonName pn = pnFact.newPersonName(s);
+        PersonName pn = pnFact.newPersonName(
+                seriesRequest.getRequestingPhysician());
         seriesRequest.setRequestingPhysicianFamilyNameSoundex(
-                soundex.toFuzzy(pn.get(PersonName.FAMILY)));
+                AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
         seriesRequest.setRequestingPhysicianGivenNameSoundex(
-                soundex.toFuzzy(pn.get(PersonName.GIVEN)));
+                AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*"));
     }
 
     /**
@@ -317,8 +295,7 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.transaction type="Never"
      */
     public int updateVerifyingObserverNameSoundex() {
-        FuzzyStr soundex = AttributeFilter.getSoundex();
-        if (soundex == null)
+        if (!AttributeFilter.isSoundexEnabled())
             return 0;
 
         try {
@@ -340,17 +317,13 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.interface-method view-type="local"
      */
     public void updateVerifyingObserverNameSoundex(VerifyingObserverLocal observer) {
-        String s = observer.getVerifyingObserverName();
-        if (s == null)
-            return;
-
-        FuzzyStr soundex = AttributeFilter.getSoundex();
         DcmObjectFactory pnFact = DcmObjectFactory.getInstance();
-        PersonName pn = pnFact.newPersonName(s);
+        PersonName pn = pnFact.newPersonName(
+                observer.getVerifyingObserverName());
         observer.setVerifyingObserverFamilyNameSoundex(
-                soundex.toFuzzy(pn.get(PersonName.FAMILY)));
+                AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
         observer.setVerifyingObserverGivenNameSoundex(
-                soundex.toFuzzy(pn.get(PersonName.GIVEN)));
+                AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*"));
     }
 
     /**
@@ -358,8 +331,7 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.transaction type="Never"
      */
     public int updateMWLPerformingPhysicianNameSoundex() {
-        FuzzyStr soundex = AttributeFilter.getSoundex();
-        if (soundex == null)
+        if (!AttributeFilter.isSoundexEnabled())
             return 0;
 
         try {
@@ -381,17 +353,13 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.interface-method view-type="local"
      */
     public void updateMWLPerformingPhysicianNameSoundex(MWLItemLocal mwlitem) {
-        String s = mwlitem.getPerformingPhysicianName();
-        if (s == null)
-            return;
-
-        FuzzyStr soundex = AttributeFilter.getSoundex();
         DcmObjectFactory pnFact = DcmObjectFactory.getInstance();
-        PersonName pn = pnFact.newPersonName(s);
+        PersonName pn = pnFact.newPersonName(
+                mwlitem.getPerformingPhysicianName());
         mwlitem.setPerformingPhysicianFamilyNameSoundex(
-                soundex.toFuzzy(pn.get(PersonName.FAMILY)));
+                AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
         mwlitem.setPerformingPhysicianGivenNameSoundex(
-                soundex.toFuzzy(pn.get(PersonName.GIVEN)));
+                AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*"));
     }
 
     /**
@@ -399,8 +367,7 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.transaction type="Never"
      */
     public int updateGPSPSHumanPerformerNameSoundex() {
-        FuzzyStr soundex = AttributeFilter.getSoundex();
-        if (soundex == null)
+        if (!AttributeFilter.isSoundexEnabled())
             return 0;
 
         try {
@@ -422,16 +389,11 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.interface-method view-type="local"
      */
     public void updateGPSPSPerformerNameSoundex(GPSPSPerformerLocal performer) {
-        String s = performer.getHumanPerformerName();
-        if (s == null)
-            return;
-
-        FuzzyStr soundex = AttributeFilter.getSoundex();
         DcmObjectFactory pnFact = DcmObjectFactory.getInstance();
-        PersonName pn = pnFact.newPersonName(s);
+        PersonName pn = pnFact.newPersonName(performer.getHumanPerformerName());
         performer.setHumanPerformerFamilyNameSoundex(
-                soundex.toFuzzy(pn.get(PersonName.FAMILY)));
+                AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
         performer.setHumanPerformerGivenNameSoundex(
-                soundex.toFuzzy(pn.get(PersonName.GIVEN)));
+                AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*"));
     }
 }

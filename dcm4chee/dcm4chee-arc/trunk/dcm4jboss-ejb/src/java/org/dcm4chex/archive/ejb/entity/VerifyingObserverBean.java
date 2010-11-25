@@ -44,7 +44,6 @@ import javax.ejb.EntityBean;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
-import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 
 /**
@@ -132,28 +131,26 @@ public abstract class VerifyingObserverBean implements EntityBean {
     public abstract void setVerifyingObserverPhoneticName(String name);
     
     private void setVerifyingObserverName(PersonName pn) {
-        if (pn == null) {
-            return;
-        }
-        PersonName ipn = pn.getIdeographic();
-        PersonName ppn = pn.getPhonetic();
-        String name;
-        if ((name = pn.toComponentGroupString(false)) != null) {
-            AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(null);
-            setVerifyingObserverName(filter.toUpperCase(name, Tags.VerifyingObserverName));
-            FuzzyStr soundex = AttributeFilter.getSoundex();
-            if (soundex != null) {
-                setVerifyingObserverFamilyNameSoundex(
-                        soundex.toFuzzy(pn.get(PersonName.FAMILY)));
-                setVerifyingObserverGivenNameSoundex(
-                        soundex.toFuzzy(pn.get(PersonName.GIVEN)));
+        if (pn != null) {
+            PersonName ipn = pn.getIdeographic();
+            PersonName ppn = pn.getPhonetic();
+            String name;
+            if ((name = pn.toComponentGroupString(false)) != null) {
+                AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(null);
+                setVerifyingObserverName(filter.toUpperCase(name, Tags.VerifyingObserverName));
+            }
+            if (ipn != null && (name = ipn.toComponentGroupString(false)) != null) {
+                setVerifyingObserverIdeographicName(name.toUpperCase());
+            }
+            if (ppn != null && (name = ppn.toComponentGroupString(false)) != null) {
+                setVerifyingObserverPhoneticName(name.toUpperCase());
             }
         }
-        if (ipn != null && (name = ipn.toComponentGroupString(false)) != null) {
-            setVerifyingObserverIdeographicName(name.toUpperCase());
-        }
-        if (ppn != null && (name = ppn.toComponentGroupString(false)) != null) {
-            setVerifyingObserverPhoneticName(name.toUpperCase());
+        if (AttributeFilter.isSoundexEnabled()) {
+            setVerifyingObserverFamilyNameSoundex(
+                    AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
+            setVerifyingObserverGivenNameSoundex(
+                    AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*"));
         }
     }
 

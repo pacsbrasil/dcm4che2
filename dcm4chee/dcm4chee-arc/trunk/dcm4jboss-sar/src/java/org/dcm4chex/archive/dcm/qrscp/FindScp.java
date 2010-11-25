@@ -65,6 +65,7 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
+import org.dcm4che.net.ExtNegotiation;
 import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.perf.PerfCounterEnum;
@@ -81,6 +82,7 @@ import org.jboss.logging.Logger;
 public class FindScp extends DcmServiceBase implements AssociationListener {
     protected static final int PID = 0;
     protected static final int ISSUER = 1;
+    private static final int FUZZY_MATCHING = 2;
     private static final String QUERY_XSL = "cfindrq.xsl";
     private static final String RESULT_XSL = "cfindrsp.xsl";
     private static final String QUERY_XML = "-cfindrq.xml";
@@ -134,6 +136,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         try {
             perfMon.start(assoc, rq, PerfCounterEnum.C_FIND_SCP_QUERY_DB);
 
+            Command rqCmd = rq.getCommand();
             Dataset rqData = rq.getDataset();
             perfMon.setProperty(assoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
 
@@ -162,15 +165,18 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             }
             boolean hideWithoutIssuerOfPID = 
                     service.isHideWithoutIssuerOfPIDFromAET(callingAET);
+            boolean fuzzyMatchingOfPN = fuzzyMatchingOfPN(
+                    a.getAcceptedExtNegotiation(
+                            rqCmd.getAffectedSOPClassUID()));
             MultiDimseRsp rsp;
             if (service.hasUnrestrictedQueryPermissions(callingAET)) {
-                rsp = newMultiCFindRsp(rqData, hideWithoutIssuerOfPID,
-                        otherPIDinRQ, null);
+                rsp = newMultiCFindRsp(rqData, fuzzyMatchingOfPN,
+                        hideWithoutIssuerOfPID, otherPIDinRQ, null);
             } else {
                 Subject subject = (Subject) a.getProperty("user");
                 if (subject != null) {
-                    rsp = newMultiCFindRsp(rqData, hideWithoutIssuerOfPID,
-                            otherPIDinRQ, subject);
+                    rsp = newMultiCFindRsp(rqData, fuzzyMatchingOfPN,
+                            hideWithoutIssuerOfPID, otherPIDinRQ, subject);
                 } else {
                     log
                             .info("Missing user identification -> no records returned");
@@ -185,6 +191,13 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             log.error("Query DB failed:", e);
             throw new DcmServiceException(Status.UnableToProcess, e);
         }
+    }
+
+    private boolean fuzzyMatchingOfPN(ExtNegotiation extNeg) {
+        byte[] info;
+        return extNeg != null 
+                && (info = extNeg.info()).length > FUZZY_MATCHING
+                && info[FUZZY_MATCHING] != 0;
     }
 
     private boolean isUniversalMatching(String key) {
@@ -311,10 +324,12 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
     }
 
     protected MultiDimseRsp newMultiCFindRsp(Dataset rqData,
-            boolean hideWithoutIssuerOfPID, boolean otherPIDinRQ,
-            Subject subject) throws SQLException, DcmServiceException {
+            boolean fuzzyMatchingOfPN, boolean hideWithoutIssuerOfPID,
+            boolean otherPIDinRQ, Subject subject) throws SQLException,
+                    DcmServiceException {
         QueryCmd queryCmd = QueryCmd.create(rqData, filterResult,
-                service.isNoMatchForNoValue(), hideWithoutIssuerOfPID, subject);
+                fuzzyMatchingOfPN, service.isNoMatchForNoValue(),
+                hideWithoutIssuerOfPID, subject);
         queryCmd.setFetchSize(service.getFetchSize()).execute();
         if (!otherPIDinRQ) // remove OPIDSeq added by pixQuery
             rqData.remove(Tags.OtherPatientIDSeq);

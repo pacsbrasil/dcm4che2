@@ -45,6 +45,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.PersonName;
 import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 
@@ -103,10 +104,6 @@ public final class AttributeFilter {
         return conn.getLastModified();
     }
     
-    public static FuzzyStr getSoundex()  {
-        return soundex;
-    }
-
     public static AttributeFilter getPatientAttributeFilter()  {
         return patientFilter;
     }
@@ -247,5 +244,20 @@ public final class AttributeFilter {
 
     public static String toUpperCase(String s) {
         return s != null ? s.toUpperCase() : s;
+    }
+
+    public static boolean isSoundexEnabled()  {
+        return soundex != null;
+    }
+
+    public static String toSoundex(PersonName pn, int field, String defval) {
+        if (soundex == null)
+            throw new IllegalStateException("Soundex disabled");
+        if (pn != null) {
+            String fuzzy = soundex.toFuzzy(pn.get(field));
+            if (fuzzy.length() > 0)
+                return fuzzy;
+        }
+        return defval;
     }
 }

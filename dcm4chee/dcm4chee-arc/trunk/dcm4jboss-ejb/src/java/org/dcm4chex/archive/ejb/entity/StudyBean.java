@@ -62,7 +62,6 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
-import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
@@ -951,13 +950,6 @@ public abstract class StudyBean implements EntityBean {
             setReferringPhysicianName(
                     filter.toUpperCase(pn.toComponentGroupString(false),
                             Tags.ReferringPhysicianName));
-            FuzzyStr soundex = AttributeFilter.getSoundex();
-            if (soundex != null) {
-                setReferringPhysicianFamilyNameSoundex(
-                        soundex.toFuzzy(pn.get(PersonName.FAMILY)));
-                setReferringPhysicianGivenNameSoundex(
-                        soundex.toFuzzy(pn.get(PersonName.GIVEN)));
-            }
             PersonName ipn = pn.getIdeographic();
             if (ipn != null) {
                 setReferringPhysicianIdeographicName(ipn.toComponentGroupString(false));                
@@ -966,6 +958,12 @@ public abstract class StudyBean implements EntityBean {
             if (ppn != null) {
                 setReferringPhysicianPhoneticName(ppn.toComponentGroupString(false));                
             }
+        }
+        if (AttributeFilter.isSoundexEnabled()) {
+            setReferringPhysicianFamilyNameSoundex(
+                    AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
+            setReferringPhysicianGivenNameSoundex(
+                    AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*"));
         }
         setStudyDescription(filter.getString(ds, Tags.StudyDescription));
         
