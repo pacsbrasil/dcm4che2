@@ -128,7 +128,7 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
                         new String[] {
                                 "MWLItem.performingPhysicianFamilyNameSoundex",
                                 "MWLItem.performingPhysicianGivenNameSoundex" },
-                                keys.getString(Tags.PatientName));
+                                keys.getString(Tags.PerformingPhysicianName));
             else
                 sqlBuilder.addPNMatch(new String[] {
                         "MWLItem.performingPhysicianName",
@@ -153,7 +153,14 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
         sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
                 type2,
                 patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
-        sqlBuilder.addPNMatch(new String[] {
+        if (fuzzyMatchingOfPN)
+            sqlBuilder.addPNFuzzyMatch(
+                    new String[] {
+                            "Patient.patientFamilyNameSoundex",
+                            "Patient.patientGivenNameSoundex" },
+                            keys.getString(Tags.PatientName));
+        else
+            sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
