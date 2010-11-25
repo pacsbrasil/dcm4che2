@@ -125,6 +125,10 @@ public interface Association {
     
     List listAcceptedPresContext(String asuid);
     
+    ExtNegotiation getRequestedExtNegotiation(String cuid);
+    
+    ExtNegotiation getAcceptedExtNegotiation(String cuid);
+    
     int countAcceptedPresContext();
     
     AAssociateRQ getAAssociateRQ();

@@ -84,6 +84,7 @@ import org.dcm4che.net.AAssociateRQ;
 import org.dcm4che.net.AAssociateRJ;
 import org.dcm4che.net.AAbort;
 import org.dcm4che.net.Dimse;
+import org.dcm4che.net.ExtNegotiation;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PresContext;
 
@@ -377,6 +378,14 @@ final class AssociationImpl implements Association {
 
     public final int countAcceptedPresContext() {
         return fsm.countAcceptedPresContext();
+    }
+
+    public ExtNegotiation getRequestedExtNegotiation(String cuid) {
+        return fsm.getRequestedExtNegotiation(cuid);
+    }
+
+    public ExtNegotiation getAcceptedExtNegotiation(String cuid) {
+        return fsm.getAcceptedExtNegotiation(cuid);
     }
 
     public Object getProperty(Object key) {

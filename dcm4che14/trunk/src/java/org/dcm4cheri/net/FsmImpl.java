@@ -59,6 +59,7 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationListener;
 import org.dcm4che.net.AsyncOpsWindow;
 import org.dcm4che.net.Dimse;
+import org.dcm4che.net.ExtNegotiation;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PDUException;
 import org.dcm4che.net.PDataTF;
@@ -413,6 +414,20 @@ final class FsmImpl
         return ac.countAcceptedPresContext();
     }
 
+
+    public ExtNegotiation getRequestedExtNegotiation(String sopClass) {
+        if (rq == null) {
+            throw new IllegalStateException(state.toString());
+        }
+        return rq.getExtNegotiation(sopClass);
+    }
+
+    public ExtNegotiation getAcceptedExtNegotiation(String sopClass) {
+        if (ac == null) {
+            throw new IllegalStateException(state.toString());
+        }
+        return ac.getExtNegotiation(sopClass);
+    }
 
     /**
      *  Gets the maxOpsInvoked attribute of the FsmImpl object
@@ -1522,5 +1537,6 @@ final class FsmImpl
         MDC.remove("calling");
         MDC.remove("called");
     }
+
 }
 
