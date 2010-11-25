@@ -102,6 +102,7 @@ public class FolderSubmitCtrl2 extends FolderSubmitCtrl {
                 PatientModel pat = (PatientModel) patients.get(i);
                 Patient patient = new Patient(pat.getPatientID());
                 patient.setPatientName(pat.getPatientName());
+                patient.setPatientBirthDate(pat.getPatientBirthDate());
                 if (folderForm.isSticky(pat)) {
                     addStudiesOfPatientForView(patient, pat.getPk());
                 } else {
@@ -201,6 +202,8 @@ public class FolderSubmitCtrl2 extends FolderSubmitCtrl {
         Series s = study.getSeries(uid);
         if (s == null) {
             s = new Series(uid);
+            s.setModality(seriesDataset.getString(Tags.Modality));
+            s.setSeriesNumber(seriesDataset.getString(Tags.SeriesNumber));
             s.setSeriesDescription(seriesDataset.getString(Tags.SeriesDescription));
         }
         return s;
@@ -210,7 +213,9 @@ public class FolderSubmitCtrl2 extends FolderSubmitCtrl {
         List instances = listInstancesOfSeries(seriesPk);
         for (int i = 0; i < instances.size(); i++) {
             final Dataset ds = (Dataset) instances.get(i);
-            series.addSOPInstance(new SOPInstance(ds.getString(Tags.SOPInstanceUID)));
+            SOPInstance sop = new SOPInstance(ds.getString(Tags.SOPInstanceUID));
+            sop.setInstanceNumber(ds.getString(Tags.InstanceNumber));
+            series.addSOPInstance(sop);
         }
     }
 

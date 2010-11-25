@@ -12,18 +12,8 @@ public class TagElement {
 
     };
 
-    public static final TagElement SeriesLoading = new TagElement("Loading", TagType.Integer);
-    public static final TagElement SeriesSelected = new TagElement("Selected", TagType.Boolean);
-    public static final TagElement SeriesOpen = new TagElement("Open", TagType.Boolean);
-    public static final TagElement ImageWidth = new TagElement("Image Width", TagType.Integer);
-    public static final TagElement ImageHeight = new TagElement("Image Height", TagType.Integer);
-    public static final TagElement ImageDepth = new TagElement("Image Depth", TagType.Integer);
-    public static final TagElement ImageBitsPerPixel = new TagElement("Image Bits Per Pixel", TagType.Integer);
     public static final TagElement WadoCompressionRate = new TagElement("Wado Compression Rate", TagType.Integer);
     public final static TagElement WadoTransferSyntaxUID = new TagElement("Wado Transfer Syntax UID", TagType.String);
-
-    public final static TagElement RootElement = new TagElement("Root Element", TagType.String);
-    public final static TagElement CurrentFolder = new TagElement("Current Folder", TagType.String);
 
     public final static TagElement TransferSyntaxUID =
         new TagElement(0x00020010, "Transfer Syntax UID", TagType.String);
