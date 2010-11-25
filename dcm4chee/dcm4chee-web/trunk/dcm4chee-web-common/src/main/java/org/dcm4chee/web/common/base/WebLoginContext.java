@@ -164,7 +164,6 @@ public class WebLoginContext extends UsernamePasswordContext {
             for (Principal principal : context.getSubject().getPrincipals()) {
                 if ((principal instanceof Group) && (rolesGroupName.equalsIgnoreCase(principal.getName()))) {
                     Enumeration<? extends Principal> members = ((Group) principal).members();                    
-
                     String mappingFilename = 
                         ServerConfigLocator.locate().getServerConfigURL().getPath() +
                         (String) server.getAttribute(
@@ -199,12 +198,17 @@ public class WebLoginContext extends UsernamePasswordContext {
                     }
                 }
             }
-            if (!subject.getPrincipals().contains(new SimplePrincipal(
+            
+            String loginAllowedRolename = 
                 (String) server.getAttribute(
-                        new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("WebCfgServiceName")),  
-                        "loginAllowedRolename"
-                )
-            )))                              
+                    new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("WebCfgServiceName")),  
+                    "loginAllowedRolename"
+                );          
+
+            if ((!(loginAllowedRolename.equals("") || loginAllowedRolename.equals("NONE"))) && 
+                (!subject.getPrincipals().contains(new SimplePrincipal(
+                    loginAllowedRolename
+            ))))                             
               ((SecureSession) RequestCycle.get().getSession()).invalidate();
         } catch (Exception e) {
             log.error("Exception: ", e);
