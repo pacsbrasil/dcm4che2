@@ -62,6 +62,8 @@ class PersonNameImpl implements org.dcm4che.data.PersonName {
     public PersonNameImpl() {}
     
     public PersonNameImpl(String s, boolean lenient) {
+        if (s == null)
+            return;
         int grLen = s.indexOf('=');
         if ((grLen == -1 ? s.length() : grLen) > 64) {
             if (lenient) {
