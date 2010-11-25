@@ -43,6 +43,7 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+
 import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.Role;
@@ -57,7 +58,7 @@ import org.jboss.annotation.ejb.LocalBinding;
 @Stateless
 @LocalBinding (jndiBinding=StudyPermissionsLocal.JNDI_NAME)
 public class StudyPermissionsBean implements StudyPermissionsLocal {
-
+    
     @PersistenceContext(unitName="dcm4chee-arc")
     private EntityManager em;
 
@@ -119,7 +120,7 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
     
     // TODO: change this to the generic version using JPA2.0 implementation
     @SuppressWarnings("unchecked")
-    public void updateDicomRoles() {
+    public void updateDicomRoles(String studyPermissionsRoleType) {
         UserAccess dao = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);
         List<String> rolenames = dao.getAllRolenames();
         List<String> newRoles = 
@@ -128,8 +129,9 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
                                    : em.createQuery("SELECT DISTINCT sp.role FROM StudyPermission sp WHERE sp.role NOT IN (:roles)")
                                         .setParameter("roles", rolenames)
                                         .getResultList();
+        if (studyPermissionsRoleType == null)
+                studyPermissionsRoleType = "";
         for (String rolename : newRoles) 
-            dao.addRole(new Role(rolename, "StudyPermissions"));
-// TODO: put the role type into the config service
+            dao.addRole(new Role(rolename, studyPermissionsRoleType));
     }
 }

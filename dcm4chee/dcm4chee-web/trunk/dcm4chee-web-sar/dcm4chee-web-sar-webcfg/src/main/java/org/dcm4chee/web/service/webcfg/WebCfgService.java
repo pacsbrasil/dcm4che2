@@ -125,6 +125,8 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private String loginAllowedRolename;
     private String rolesMappingFilename;
     private String studyPermissionsRoleType;
+    private String studyPermissionsAllRolename;
+    private String studyPermissionsOwnRolename;
     
     private static final String NONE = "NONE";
     private static final String NEWLINE = System.getProperty("line.separator", "\n");
@@ -668,7 +670,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
     
     public void updateDicomRoles() {
-        ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).updateDicomRoles();
+        ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).updateDicomRoles(studyPermissionsRoleType);
     }
 
     public void setRolesMappingFilename(String rolesMappingFilename) {
@@ -693,6 +695,24 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public String getLoginAllowedRolename() {
         return loginAllowedRolename;
+    }
+
+    public void setStudyPermissionsAllRolename(
+            String studyPermissionsAllRolename) {
+        this.studyPermissionsAllRolename = studyPermissionsAllRolename;
+    }
+
+    public String getStudyPermissionsAllRolename() {
+        return studyPermissionsAllRolename;
+    }
+
+    public void setStudyPermissionsOwnRolename(
+            String studyPermissionsOwnRolename) {
+        this.studyPermissionsOwnRolename = studyPermissionsOwnRolename;
+    }
+
+    public String getStudyPermissionsOwnRolename() {
+        return studyPermissionsOwnRolename;
     }
 }
 
