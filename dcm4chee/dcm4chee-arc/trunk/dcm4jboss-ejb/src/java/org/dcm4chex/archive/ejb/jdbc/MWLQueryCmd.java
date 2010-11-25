@@ -90,7 +90,8 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
      * @param ds
      * @throws SQLException
      */
-    public MWLQueryCmd(Dataset keys, boolean noMatchForNoValue) throws SQLException {
+    public MWLQueryCmd(Dataset keys, boolean fuzzyMatchingOfPN,
+            boolean noMatchForNoValue) throws SQLException {
         super(keys, true, noMatchForNoValue, transactionIsolationLevel);
         AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
         defineColumnTypes(new int[] { blobAccessType, blobAccessType });
@@ -122,13 +123,20 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
             sqlBuilder.addWildCardMatch(null, "MWLItem.scheduledStationName",
                     type2,
                     spsItem.getStrings(Tags.ScheduledStationName));
-            sqlBuilder.addPNMatch(new String[] {
-                    "MWLItem.performingPhysicianName",
-                    "MWLItem.performingPhysicianIdeographicName",
-                    "MWLItem.performingPhysicianPhoneticName"},
-                    true, // TODO make ICASE configurable
-                    type2,
-                    spsItem.getString(Tags.PerformingPhysicianName));
+            if (fuzzyMatchingOfPN)
+                sqlBuilder.addPNFuzzyMatch(
+                        new String[] {
+                                "MWLItem.performingPhysicianFamilyNameSoundex",
+                                "MWLItem.performingPhysicianGivenNameSoundex" },
+                                keys.getString(Tags.PatientName));
+            else
+                sqlBuilder.addPNMatch(new String[] {
+                        "MWLItem.performingPhysicianName",
+                        "MWLItem.performingPhysicianIdeographicName",
+                        "MWLItem.performingPhysicianPhoneticName"},
+                        true, // TODO make ICASE configurable
+                        type2,
+                        spsItem.getString(Tags.PerformingPhysicianName));
         }
         sqlBuilder.addWildCardMatch(null, "MWLItem.requestedProcedureId",
                 SqlBuilder.TYPE1,

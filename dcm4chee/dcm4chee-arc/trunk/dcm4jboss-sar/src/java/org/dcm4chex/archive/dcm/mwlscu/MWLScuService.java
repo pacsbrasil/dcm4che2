@@ -204,11 +204,12 @@ public class MWLScuService extends AbstractScuService {
     /**
      * Get a list of work list entries.
      */
-    public int findMWLEntries(Dataset searchDS, List result) {
+    public int findMWLEntries(Dataset searchDS, boolean fuzzyMatchingOfPN,
+                List result) {
         log.debug("Query MWL SCP: " + calledAET + " with keys:");
         log.debug(searchDS);
         if (isLocal()) {
-            return findMWLEntriesLocal(searchDS, result);
+            return findMWLEntriesLocal(searchDS, fuzzyMatchingOfPN, result);
         } else {
             return findMWLEntriesFromAET(searchDS, result);
         }
@@ -218,10 +219,12 @@ public class MWLScuService extends AbstractScuService {
      * @param searchDS
      * @return
      */
-    public int findMWLEntriesLocal(Dataset searchDS, List result) {
+    public int findMWLEntriesLocal(Dataset searchDS,
+            boolean fuzzyMatchingOfPN, List result) {
         MWLQueryCmd queryCmd = null;
         try {
-            queryCmd = new MWLQueryCmd(searchDS, noMatchForNoValue);
+            queryCmd = new MWLQueryCmd(searchDS, fuzzyMatchingOfPN,
+                    noMatchForNoValue);
             queryCmd.setFetchSize(getFetchSize()).execute();
             while (queryCmd.next()) {
                 if (result.size() >= maxResults) {

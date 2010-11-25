@@ -50,12 +50,14 @@ import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
+import org.dcm4che.net.ExtNegotiation;
 import org.jboss.logging.Logger;
 
 /**
@@ -63,6 +65,7 @@ import org.jboss.logging.Logger;
  * @version $Revision$ $Date$
  */
 public class MWLFindScp extends DcmServiceBase {
+    private static final int FUZZY_MATCHING = 2;
     private static final String QUERY_XSL = "mwl-cfindrq.xsl";
     private static final String RESULT_XSL = "mwl-cfindrsp.xsl";
     private static final String QUERY_XML = "-mwl-cfindrq.xml";
@@ -95,13 +98,24 @@ public class MWLFindScp extends DcmServiceBase {
         List l = new ArrayList();
         boolean forceLocal = !(service.isUseProxy() && service
                 .checkMWLScuConfig());
+        boolean fuzzyMatchingOfPN = fuzzyMatchingOfPN(
+                a.getAcceptedExtNegotiation(
+                        UIDs.ModalityWorklistInformationModelFIND));
         try {
-            int pendingStatus = service.findMWLEntries(rqData, l, forceLocal);
+            int pendingStatus = service.findMWLEntries(rqData,
+                    fuzzyMatchingOfPN, l, forceLocal);
             return new MultiCFindRsp(l, pendingStatus);
         } catch (Exception e) {
             log.error("Forwarding request to proxy failed!", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
+    }
+
+    private boolean fuzzyMatchingOfPN(ExtNegotiation extNeg) {
+        byte[] info;
+        return extNeg != null 
+                && (info = extNeg.info()).length > FUZZY_MATCHING
+                && info[FUZZY_MATCHING] != 0;
     }
 
     private class MultiCFindRsp implements MultiDimseRsp {

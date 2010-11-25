@@ -917,9 +917,12 @@ public class StoreScpService extends AbstractScpService {
 
     public List findMWLEntries(Dataset ds) throws Exception {
         List resp = new ArrayList();
-        server.invoke(mwlScuServiceName, "findMWLEntries", new Object[] { ds,
-                resp }, new String[] { Dataset.class.getName(),
-                List.class.getName() });
+        server.invoke(mwlScuServiceName, "findMWLEntries", 
+                new Object[] { ds, false, resp },
+                new String[] {
+                    Dataset.class.getName(),
+                    boolean.class.getName(),
+                    List.class.getName() });
         return resp;
     }
 

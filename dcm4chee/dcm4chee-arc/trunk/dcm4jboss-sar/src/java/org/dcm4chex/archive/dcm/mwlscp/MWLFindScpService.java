@@ -55,8 +55,10 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4che.net.ExtNegotiator;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.dcm.mppsscp.MPPSScpService;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.MWLManager;
@@ -72,6 +74,8 @@ import org.dcm4chex.archive.util.HomeFactoryException;
 public class MWLFindScpService extends AbstractScpService implements
         NotificationListener {
 
+    private static final int FUZZY_MATCHING = 2;
+
     private static final String SPS_STATUS_STARTED = "STARTED";
 
     private static final String PPS_STATUS_IN_PROGRESS = "IN PROGRESS";
@@ -83,6 +87,15 @@ public class MWLFindScpService extends AbstractScpService implements
         mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_RECEIVED);
         mppsFilter.enableType(MPPSScpService.EVENT_TYPE_MPPS_LINKED);
     }
+
+    private final ExtNegotiator extNegotiator = new ExtNegotiator() {
+        public byte[] negotiate(byte[] offered) {
+            if (offered.length > FUZZY_MATCHING)
+                offered[FUZZY_MATCHING] &=
+                    !useProxy && AttributeFilter.isSoundexEnabled() ? 1 : 0;
+            return offered;
+        }
+    };
 
     private ObjectName mppsScpServiceName;
     
@@ -165,11 +178,14 @@ public class MWLFindScpService extends AbstractScpService implements
     protected void enablePresContexts(AcceptorPolicy policy) {
         policy.putPresContext(UIDs.ModalityWorklistInformationModelFIND,
                 valuesToStringArray(tsuidMap));
+        policy.putExtNegPolicy(UIDs.ModalityWorklistInformationModelFIND,
+                extNegotiator);
     }
 
     protected void disablePresContexts(AcceptorPolicy policy) {
         policy.putPresContext(UIDs.ModalityWorklistInformationModelFIND, null);
-    }
+        policy.putExtNegPolicy(UIDs.ModalityWorklistInformationModelFIND, null);
+   }
 
     private MWLManagerHome getMWLManagerHome() throws HomeFactoryException {
         return (MWLManagerHome) EJBHomeFactory.getFactory().lookup(
@@ -268,9 +284,15 @@ public class MWLFindScpService extends AbstractScpService implements
         return true;
     }
     
-    public int findMWLEntries( Dataset rqData, List l, boolean forceLocal ) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        return ((Integer) server.invoke(this.mwlScuServiceName, forceLocal ? "findMWLEntriesLocal":"findMWLEntries", 
-                new Object[] {rqData, l}, 
-                new String[]{Dataset.class.getName(), List.class.getName()})).intValue();
+    public int findMWLEntries( Dataset rqData, boolean fuzzyMatchingOfPN, 
+            List l, boolean forceLocal ) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        return ((Integer) server.invoke(this.mwlScuServiceName,
+                forceLocal ? "findMWLEntriesLocal":"findMWLEntries", 
+                new Object[] {rqData, fuzzyMatchingOfPN, l}, 
+                new String[] {
+                    Dataset.class.getName(),
+                    boolean.class.getName(),
+                    List.class.getName()}
+                )).intValue();
     }
 }
