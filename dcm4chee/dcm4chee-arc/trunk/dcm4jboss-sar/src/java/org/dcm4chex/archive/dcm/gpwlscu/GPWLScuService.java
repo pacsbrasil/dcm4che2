@@ -127,7 +127,7 @@ public class GPWLScuService extends AbstractScuService {
         List l = new ArrayList();
         GPWLQueryCmd queryCmd = null;
         try {
-            queryCmd = new GPWLQueryCmd(searchDS);
+            queryCmd = new GPWLQueryCmd(searchDS, false);
             queryCmd.execute();
             while (queryCmd.next()) {
                 l.add(queryCmd.getDataset());

@@ -46,12 +46,14 @@ import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
+import org.dcm4che.net.ExtNegotiation;
 import org.dcm4chex.archive.ejb.jdbc.GPWLQueryCmd;
 import org.jboss.logging.Logger;
 
@@ -62,6 +64,7 @@ import org.jboss.logging.Logger;
  */
 
 class GPWLFindScp extends DcmServiceBase {
+    private static final int FUZZY_MATCHING = 2;
     private final GPWLScpService service;
 	private final Logger log;
 
@@ -83,13 +86,23 @@ class GPWLFindScp extends DcmServiceBase {
             Association a = assoc.getAssociation();
             service.logDicomQuery(a, rq.getCommand().getAffectedSOPClassUID(),
                     rqData);
-            queryCmd = new GPWLQueryCmd(rqData);
+            boolean fuzzyMatchingOfPN = fuzzyMatchingOfPN(
+                    a.getAcceptedExtNegotiation(
+                            UIDs.GeneralPurposeWorklistInformationModelFIND));
+            queryCmd = new GPWLQueryCmd(rqData, fuzzyMatchingOfPN);
             queryCmd.execute();
         } catch (Exception e) {
             service.getLog().error("Query DB failed:", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
         return new MultiCFindRsp(queryCmd);
+    }
+
+    private boolean fuzzyMatchingOfPN(ExtNegotiation extNeg) {
+        byte[] info;
+        return extNeg != null 
+                && (info = extNeg.info()).length > FUZZY_MATCHING
+                && info[FUZZY_MATCHING] != 0;
     }
 
     private class MultiCFindRsp implements MultiDimseRsp {

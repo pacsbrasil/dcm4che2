@@ -78,7 +78,8 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
     private static final String DEVLOC_CODE = "devloc_code";
     private static final String PERF_CODE = "perf_code";
     
-    public GPWLQueryCmd(Dataset keys) throws SQLException {
+    public GPWLQueryCmd(Dataset keys, boolean fuzzyMatchingOfPN)
+            throws SQLException {
         super(keys, true, false, transactionIsolationLevel);
         AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
         defineColumnTypes(new int[] { blobAccessType, blobAccessType });
@@ -123,7 +124,14 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
         addCodeMatch(Tags.ScheduledStationGeographicLocationCodeSeq, DEVLOC_CODE);
         Dataset item = keys.getItem(Tags.ScheduledHumanPerformersSeq);
         if (item != null) {
-            sqlBuilder.addPNMatch(new String[] {
+            if (fuzzyMatchingOfPN)
+                sqlBuilder.addPNFuzzyMatch(
+                        new String[] {
+                                "GPSPSPerformer.humanPerformerFamilyNameSoundex",
+                                "GPSPSPerformer.humanPerformerGivenNameSoundex" },
+                                keys.getString(Tags.HumanPerformerName));
+            else
+                sqlBuilder.addPNMatch(new String[] {
                     "GPSPSPerformer.humanPerformerName",
                     "GPSPSPerformer.humanPerformerIdeographicName",
                     "GPSPSPerformer.humanPerformerPhoneticName"},
@@ -149,7 +157,14 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
         sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
                 SqlBuilder.TYPE2,
                 patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
-        sqlBuilder.addPNMatch(new String[] {
+        if (fuzzyMatchingOfPN)
+            sqlBuilder.addPNFuzzyMatch(
+                    new String[] {
+                            "Patient.patientFamilyNameSoundex",
+                            "Patient.patientGivenNameSoundex" },
+                            keys.getString(Tags.PatientName));
+        else
+            sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},

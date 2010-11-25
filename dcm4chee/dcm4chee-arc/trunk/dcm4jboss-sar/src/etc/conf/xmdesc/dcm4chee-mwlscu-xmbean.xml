@@ -154,6 +154,11 @@ specified matching keys (= non DICOM conform matching behavior). Effective if
         <type>org.dcm4che.data.Dataset</type>
       </parameter>
       <parameter>
+        <description>fuzzy semantic matching of person names</description>
+        <name>fuzzyMatchingOfPN</name>
+        <type>boolean</type>
+      </parameter>
+      <parameter>
         <description>Result list</description>
         <name>result</name>
         <type>java.util.List</type>
@@ -168,6 +173,11 @@ specified matching keys (= non DICOM conform matching behavior). Effective if
         <description>Dataset for C-Find</description>
         <name>searchDS</name>
         <type>org.dcm4che.data.Dataset</type>
+      </parameter>
+      <parameter>
+        <description>fuzzy semantic matching of person names</description>
+        <name>fuzzyMatchingOfPN</name>
+        <type>boolean</type>
       </parameter>
       <parameter>
         <description>Result list</description>

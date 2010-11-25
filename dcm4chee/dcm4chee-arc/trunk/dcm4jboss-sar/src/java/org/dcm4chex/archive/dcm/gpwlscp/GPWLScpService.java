@@ -50,7 +50,9 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
+import org.dcm4che.net.ExtNegotiator;
 import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.jdbc.GPWLQueryCmd;
 
 /**
@@ -60,6 +62,8 @@ import org.dcm4chex.archive.ejb.jdbc.GPWLQueryCmd;
  */
 
 public class GPWLScpService extends AbstractScpService {
+
+    private static final int FUZZY_MATCHING = 2;
 
     public static final String ON_PPS_NOTIF = "org.dcm4chex.archive.dcm.gpwlscp.onpps";
 
@@ -82,8 +86,17 @@ public class GPWLScpService extends AbstractScpService {
             return ON_SPS_ACTION_NOTIF.equals(notif.getType());
         }
     };
-    
-    /** Map containing accepted SOP Class UIDs.
+
+    private static final ExtNegotiator extNegotiator = new ExtNegotiator() {
+        public byte[] negotiate(byte[] offered) {
+            if (offered.length > FUZZY_MATCHING)
+                offered[FUZZY_MATCHING] &= 
+                        AttributeFilter.isSoundexEnabled() ? 1 : 0;
+            return offered;
+        }
+    };
+
+/** Map containing accepted SOP Class UIDs.
      * key is name (as in config string), value is real uid) */
     private Map cuidMap = new LinkedHashMap();
     private GPWLFindScp gpwlFindScp = new GPWLFindScp(this);
@@ -153,9 +166,13 @@ public class GPWLScpService extends AbstractScpService {
     protected void enablePresContexts(AcceptorPolicy policy) {
         putPresContexts(policy, valuesToStringArray(cuidMap),
                 valuesToStringArray(tsuidMap));
+        policy.putExtNegPolicy(UIDs.GeneralPurposeWorklistInformationModelFIND,
+                extNegotiator);
     }
 
     protected void disablePresContexts(AcceptorPolicy policy) {
         putPresContexts(policy, valuesToStringArray(cuidMap),null);
+        policy.putExtNegPolicy(UIDs.GeneralPurposeWorklistInformationModelFIND,
+                null);
     }
 }
