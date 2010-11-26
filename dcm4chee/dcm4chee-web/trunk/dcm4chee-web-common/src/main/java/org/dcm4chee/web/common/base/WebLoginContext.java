@@ -114,21 +114,23 @@ public class WebLoginContext extends UsernamePasswordContext {
             secureSession.setUsername(username);
             boolean useStudyPermissions = Boolean.parseBoolean(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("useStudyPermissions"));
             secureSession.setRoot(username.equals(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root")));
-            if (useStudyPermissions) {
+            if (useStudyPermissions) {                       
                 server.invoke(
                         new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("WebCfgServiceName")), 
                         "updateDicomRoles",
                         new Object[] {},
                         new String[] {}
-                );                    
+                );
+                javax.security.auth.Subject subject = new javax.security.auth.Subject();
                 server.invoke(
                         new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("DicomSecurityService")), 
                         "isValid",
-                        new Object[] { username, password, new javax.security.auth.Subject() },
+                        new Object[] { username, password, subject },
                         new String[] { String.class.getName(), 
                                 String.class.getName(), 
                                 javax.security.auth.Subject.class.getName()}
                 );
+                secureSession.setDicomSubject(subject);
             }
             secureSession.setUseStudyPermissions(useStudyPermissions);
         } catch (Exception e) {
