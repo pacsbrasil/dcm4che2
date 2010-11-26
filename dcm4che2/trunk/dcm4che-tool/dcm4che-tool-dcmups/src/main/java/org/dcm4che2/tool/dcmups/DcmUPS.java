@@ -121,6 +121,7 @@ public class DcmUPS {
             "\nExample: dcmups find UPSSCP@localhost:11112 -state SCHEDULED\n" +
             "=> Search Application Entity UPSSCP listening on local port 11112 " +
             "for all scheduled UPS";
+    private static final byte[] EXT_NEG_INFO_FUZZY_MATCHING = { 0, 0, 1 };
     private static final String[] IVRLE_TS = { UID.ImplicitVRLittleEndian };
     private static final String[] NATIVE_LE_TS = {
         UID.ExplicitVRLittleEndian,
@@ -257,6 +258,7 @@ public class DcmUPS {
     private char[] trustStorePassword = SECRET;
     private String iuid;
     private String cuid;
+    private boolean fuzzySemanticPersonNameMatching;
 
     private DicomObject attrs = new BasicDicomObject();
     private Association assoc;
@@ -490,6 +492,10 @@ public class DcmUPS {
         conn.setSendBufferSize(bufferSize);
     }
 
+    public void setFuzzySemanticPersonNameMatching(boolean b) {
+        this.fuzzySemanticPersonNameMatching = b;
+    }
+
     public void setTransactionUID(String uid) {
         attrs.putString(Tag.TransactionUID, VR.UI, uid);
     }
@@ -527,10 +533,16 @@ public class DcmUPS {
         TransferCapability eventtc = new TransferCapability(
                 UID.UnifiedProcedureStepEventSOPClass, tsuids,
                 TransferCapability.SCU);
-        TransferCapability[] tcs = cuid == null ?
-                new TransferCapability[]{ eventtc } :
-                new TransferCapability[]{ eventtc, new TransferCapability(
-                        cuid, tsuids, TransferCapability.SCU)};
+        TransferCapability[] tcs;
+        if (cuid == null) {
+            tcs = new TransferCapability[]{ eventtc };
+        } else {
+            TransferCapability tc = new TransferCapability(
+                    cuid, tsuids, TransferCapability.SCU);
+            if (fuzzySemanticPersonNameMatching)
+                tc.setExtInfo(EXT_NEG_INFO_FUZZY_MATCHING);
+            tcs = new TransferCapability[]{ eventtc, tc };
+        }
         ae.setTransferCapability(tcs);
     }
 
@@ -1009,7 +1021,8 @@ public class DcmUPS {
         
         opts.addOption("ivrle", false,
                 "offer only Implicit VR Little Endian Transfer Syntax.");
-
+        opts.addOption("fuzzy", false, 
+                "negotiate support of fuzzy semantic person name attribute matching.");
         opts.addOption("pdv1", false,
                 "send only one PDV in one P-Data-TF PDU, pack command and data " +
                 "PDV in one P-DATA-TF PDU by default.");
