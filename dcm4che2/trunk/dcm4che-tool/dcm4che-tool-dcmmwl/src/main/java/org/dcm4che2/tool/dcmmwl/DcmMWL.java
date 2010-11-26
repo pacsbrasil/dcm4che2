@@ -154,7 +154,7 @@ public class DcmMWL {
         UID.ExplicitVRLittleEndian, 
         UID.ImplicitVRLittleEndian };
   
-    private static final byte[] EXT_NEG_INFO_FUZZY_MATCHING = { 0, 0, 1 };
+    private static final byte[] EXT_NEG_INFO_FUZZY_MATCHING = { 1, 1, 1 };
     
     private final Executor executor;
     private final NetworkApplicationEntity remoteAE = new NetworkApplicationEntity();
