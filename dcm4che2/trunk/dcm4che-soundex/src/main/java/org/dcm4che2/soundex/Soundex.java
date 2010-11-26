@@ -106,6 +106,8 @@ public class Soundex implements FuzzyStr {
             case 'Ü':
             case 'Y':
             case 'Ý':
+            case 'H':
+            case 'W':
                 prevout = '0';
                 continue;
             case 'B':
