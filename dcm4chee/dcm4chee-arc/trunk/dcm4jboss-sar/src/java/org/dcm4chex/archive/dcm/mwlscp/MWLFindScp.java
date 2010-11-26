@@ -83,6 +83,7 @@ public class MWLFindScp extends DcmServiceBase {
             Command rspCmd) throws IOException, DcmServiceException {
         Association a = assoc.getAssociation();
         final String callingAET = a.getCallingAET();
+        Command rqCmd = rq.getCommand();
         Dataset rqData = rq.getDataset();
         log.debug("Identifier:\n");
         log.debug(rqData);
@@ -100,7 +101,7 @@ public class MWLFindScp extends DcmServiceBase {
                 .checkMWLScuConfig());
         boolean fuzzyMatchingOfPN = fuzzyMatchingOfPN(
                 a.getAcceptedExtNegotiation(
-                        UIDs.ModalityWorklistInformationModelFIND));
+                        rqCmd.getAffectedSOPClassUID()));
         try {
             int pendingStatus = service.findMWLEntries(rqData,
                     fuzzyMatchingOfPN, l, forceLocal);
