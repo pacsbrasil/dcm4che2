@@ -80,6 +80,7 @@ class GPWLFindScp extends DcmServiceBase {
         throws IOException, DcmServiceException {
         final GPWLQueryCmd queryCmd;
         try {
+            Command rqCmd = rq.getCommand();
             Dataset rqData = rq.getDataset();
 			log.debug("Identifier:\n");
 			log.debug(rqData);
@@ -88,7 +89,7 @@ class GPWLFindScp extends DcmServiceBase {
                     rqData);
             boolean fuzzyMatchingOfPN = fuzzyMatchingOfPN(
                     a.getAcceptedExtNegotiation(
-                            UIDs.GeneralPurposeWorklistInformationModelFIND));
+                            rqCmd.getAffectedSOPClassUID()));
             queryCmd = new GPWLQueryCmd(rqData, fuzzyMatchingOfPN);
             queryCmd.execute();
         } catch (Exception e) {
