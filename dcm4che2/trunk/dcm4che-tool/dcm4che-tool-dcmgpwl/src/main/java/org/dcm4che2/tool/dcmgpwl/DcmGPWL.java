@@ -104,7 +104,7 @@ public class DcmGPWL {
             "=> Query Application Entity GPWLSCP listening on local port 11112 for " +
             "all scheduled GP-SPS";
 
-    private static final byte[] EXT_NEG_INFO_FUZZY_MATCHING = { 0, 0, 1 };
+    private static final byte[] EXT_NEG_INFO_FUZZY_MATCHING = { 1, 1, 1 };
 
     private static String[] TLS1 = { "TLSv1" };
 
