@@ -121,7 +121,7 @@ public class DcmUPS {
             "\nExample: dcmups find UPSSCP@localhost:11112 -state SCHEDULED\n" +
             "=> Search Application Entity UPSSCP listening on local port 11112 " +
             "for all scheduled UPS";
-    private static final byte[] EXT_NEG_INFO_FUZZY_MATCHING = { 0, 0, 1 };
+    private static final byte[] EXT_NEG_INFO_FUZZY_MATCHING = { 1, 1, 1 };
     private static final String[] IVRLE_TS = { UID.ImplicitVRLittleEndian };
     private static final String[] NATIVE_LE_TS = {
         UID.ExplicitVRLittleEndian,
