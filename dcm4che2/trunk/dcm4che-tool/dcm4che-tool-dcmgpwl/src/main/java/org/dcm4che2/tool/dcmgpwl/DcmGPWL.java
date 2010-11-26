@@ -104,6 +104,8 @@ public class DcmGPWL {
             "=> Query Application Entity GPWLSCP listening on local port 11112 for " +
             "all scheduled GP-SPS";
 
+    private static final byte[] EXT_NEG_INFO_FUZZY_MATCHING = { 0, 0, 1 };
+
     private static String[] TLS1 = { "TLSv1" };
 
     private static String[] SSL3 = { "SSLv3" };
@@ -227,6 +229,7 @@ public class DcmGPWL {
     private Association assoc;
     private int priority = 0;
     private int cancelAfter = Integer.MAX_VALUE;
+    private boolean fuzzySemanticPersonNameMatching; 
     private final DicomObject attrs = new BasicDicomObject();
 
     private String keyStoreURL = "resource:tls/test_sys_1.p12";
@@ -237,7 +240,7 @@ public class DcmGPWL {
     
     private String trustStoreURL = "resource:tls/mesa_certs.jks";
     
-    private char[] trustStorePassword = SECRET; 
+    private char[] trustStorePassword = SECRET;
     
     public DcmGPWL(String name) {
         device = new Device(name);
@@ -496,7 +499,11 @@ public class DcmGPWL {
     public final void setRetrieveAET(String aet) {
         this.retrieveAET = aet;        
     }
-    
+
+    public void setFuzzySemanticPersonNameMatching(boolean b) {
+        this.fuzzySemanticPersonNameMatching = b;
+    }
+
     public void addAttr(int tag, String value) {
         attrs.putString(tag, null, value);
     }
@@ -572,8 +579,11 @@ public class DcmGPWL {
         TransferCapability[] tc = new TransferCapability[cuids.length];
         for (int i = 0; i < tc.length; i++) {
             tc[i] = new TransferCapability(cuids[i], ts, TransferCapability.SCU);
+            if (fuzzySemanticPersonNameMatching 
+                    && UID.GeneralPurposeWorklistInformationModelFIND.equals(cuids[i]))
+                tc[i].setExtInfo(EXT_NEG_INFO_FUZZY_MATCHING);
         }
-        ae.setTransferCapability(tc);       
+        ae.setTransferCapability(tc);
     }
 
     public void setTransactionUID(String uid) {
@@ -828,6 +838,8 @@ public class DcmGPWL {
                 dcmgpwl.setPriority(CommandUtils.LOW);
             if (cl.hasOption("highprior"))
                 dcmgpwl.setPriority(CommandUtils.HIGH);
+            if (cl.hasOption("fuzzy"))
+                dcmgpwl.setFuzzySemanticPersonNameMatching(true);
             if (cl.hasOption("A")) {
                 String[] matchingKeys = cl.getOptionValues("A");
                 for (int i = 1; i < matchingKeys.length; i++, i++)
@@ -1099,7 +1111,8 @@ public class DcmGPWL {
                 "offer General Purpose Worklist Management Meta SOP Class.");
         opts.addOption("ivrle", false,
                 "offer only Implicit VR Little Endian Transfer Syntax.");
-        
+        opts.addOption("fuzzy", false, 
+                "negotiate support of fuzzy semantic person name attribute matching.");
         opts.addOption("pdv1", false,
                 "send only one PDV in one P-Data-TF PDU, pack command and data " +
                 "PDV in one P-DATA-TF PDU by default.");
