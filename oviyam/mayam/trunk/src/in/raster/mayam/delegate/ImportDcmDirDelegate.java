@@ -297,12 +297,32 @@ public class ImportDcmDirDelegate {
     public static void findAndLoadDcmDirFiles() {
         try {
             ImportDcmDirDelegate importDcmDirDelegate = new ImportDcmDirDelegate();
-            importDcmDirDelegate.findDcmDirInMedia();
+            importDcmDirDelegate.findAndLoadDcmDir();
             if (importDcmDirDelegate.dcmDirFile != null && System.getProperty("user.dir").startsWith(importDcmDirDelegate.dcmDirFile.getParent())) {
                 importDcmDirDelegate.run();
             }
         } catch (Exception ee) {
             ee.printStackTrace();
+        }
+    }
+
+    public void findAndLoadDcmDir() {
+        try {
+            String userDir = System.getProperty("user.dir");
+            File file = new File(userDir + File.separator + "DCMDIR");
+            if (file.canRead()) {
+                dcmDirFile = file;
+            }
+            file = new File(userDir + File.separator + "dicomdir");
+            if (file.canRead()) {
+                dcmDirFile = file;
+            }
+            file = new File(userDir + File.separator + "dicomdir.");
+            if (file.canRead()) {
+                dcmDirFile = file;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
