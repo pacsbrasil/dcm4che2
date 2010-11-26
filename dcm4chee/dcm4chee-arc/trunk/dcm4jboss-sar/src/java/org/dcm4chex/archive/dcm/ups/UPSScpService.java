@@ -102,6 +102,7 @@ public class UPSScpService extends AbstractScpService
     private final Map<String, String> cuidMap =
             new LinkedHashMap<String, String>();
     private final UPSScp pushScp = new UPSScp(this);
+    private final UPSFindScp findScp = new UPSFindScp(this);
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
@@ -278,10 +279,14 @@ public class UPSScpService extends AbstractScpService
 
     protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.UnifiedProcedureStepPushSOPClass, pushScp);
-    }
+        services.bind(UIDs.UnifiedProcedureStepPullSOPClass, findScp);
+        services.bind(UIDs.UnifiedProcedureStepWatchSOPClass, findScp);
+   }
 
     protected void unbindDcmServices(DcmServiceRegistry services) {
         services.unbind(UIDs.UnifiedProcedureStepPushSOPClass);
+        services.unbind(UIDs.UnifiedProcedureStepPullSOPClass);
+        services.unbind(UIDs.UnifiedProcedureStepWatchSOPClass);
     }
 
     protected void enablePresContexts(AcceptorPolicy policy) {
@@ -641,4 +646,12 @@ public class UPSScpService extends AbstractScpService
         super.stopService();
     }
 
+    static int upsStateAsInt(String upsState) throws DcmServiceException {
+        try {
+            return UPSState.toInt(upsState);
+        } catch (IllegalArgumentException e) {
+            throw new DcmServiceException(Status.InvalidAttributeValue,
+                    "Illegal UPS State Value: " + upsState);
+        }
+    }
 }

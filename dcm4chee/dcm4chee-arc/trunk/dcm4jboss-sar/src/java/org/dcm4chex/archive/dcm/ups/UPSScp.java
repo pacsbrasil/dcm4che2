@@ -39,7 +39,6 @@
 package org.dcm4chex.archive.dcm.ups;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Date;
 
 import org.dcm4che.data.Command;
@@ -53,9 +52,7 @@ import org.dcm4che.net.Association;
 import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
-import org.dcm4che.net.DimseListener;
 import org.dcm4chex.archive.common.UPSState;
-import org.dcm4chex.archive.ejb.jdbc.UPSQueryCmd;
 import org.jboss.logging.Logger;
 
 
@@ -151,23 +148,13 @@ class UPSScp extends DcmServiceBase {
         type2(rqData, Tags.RelatedProcedureStepSeq);
         checkRelatedProcedureSteps(rqData);
         type1(rqData, Tags.UPSState);
-        if (upsStateAsInt(rqData.getString(Tags.UPSState))
+        if (UPSScpService.upsStateAsInt(rqData.getString(Tags.UPSState))
                 != UPSState.SCHEDULED)
             throw new DcmServiceException(UPS_STATE_WAS_NOT_SCHEDULED,
                     "The provided value of UPS State was not SCHEDULED");
         shallBeEmpty(rqData, Tags.UPSProgressInformationSeq);
         shallBeEmpty(rqData, Tags.UPSPerformedProcedureSeq);
    }
-
-    private static int upsStateAsInt(String upsState)
-            throws DcmServiceException {
-        try {
-            return UPSState.toInt(upsState);
-        } catch (IllegalArgumentException e) {
-            throw new DcmServiceException(Status.InvalidAttributeValue,
-                    "Illegal UPS State Value: " + upsState);
-        }
-    }
 
     private static void checkRelatedProcedureSteps(Dataset rqData)
             throws DcmServiceException {
@@ -510,88 +497,6 @@ class UPSScp extends DcmServiceBase {
     }
 
     @Override
-    protected MultiDimseRsp doCFind(ActiveAssociation assoc, Dimse rq,
-            Command rspCmd) throws IOException, DcmServiceException {
-        Association a = assoc.getAssociation();
-        Command rqCmd = rq.getCommand();
-        Dataset rqData = rq.getDataset();
-        if (!abstractSyntaxEquals(assoc, rq,
-                UIDs.UnifiedProcedureStepPullSOPClass,
-                UIDs.UnifiedProcedureStepWatchSOPClass))
-            throw new DcmServiceException(UNRECOGNIZE_OPERATION);
-        if (rqData == null)
-            throw new DcmServiceException(Status.MistypedArgument,
-                    "C-FIND-RQ without Data Set");
-        log.debug("Identifier:\n");
-        log.debug(rqData);
-        checkCFindRQ(rqData);
-        try {
-            service.logDicomQuery(a, rqCmd.getAffectedSOPClassUID(),
-                    rqData);
-            UPSQueryCmd queryCmd = 
-                    new UPSQueryCmd(rqData, service.isNoMatchForNoValue());
-            queryCmd.setFetchSize(service.getFetchSize()).execute();
-            return new MultiCFindRsp(queryCmd);
-        } catch (Exception e) {
-            service.getLog().error("Query DB failed:", e);
-            throw new DcmServiceException(Status.ProcessingFailure, e);
-        }
-    }
-
-    private void checkCFindRQ(Dataset rqData) throws DcmServiceException {
-        String s = rqData.getString(Tags.UPSState);
-        if (s != null)
-            upsStateAsInt(s);
-    }
-
-    private class MultiCFindRsp implements MultiDimseRsp {
-        private final UPSQueryCmd queryCmd;
-        private boolean canceled = false;
-
-        public MultiCFindRsp(UPSQueryCmd queryCmd) {
-            this.queryCmd = queryCmd;
-        }
-
-        public DimseListener getCancelListener() {
-            return new DimseListener() {
-                public void dimseReceived(Association assoc, Dimse dimse) {
-                    canceled = true;
-                }
-            };
-        }
-
-        public Dataset next(ActiveAssociation assoc, Dimse rq, Command rspCmd)
-            throws DcmServiceException
-        {
-            if (canceled) {
-                rspCmd.putUS(Tags.Status, Status.Cancel);
-                return null;
-            }
-            try {
-                if (!queryCmd.next()) {
-                    rspCmd.putUS(Tags.Status, Status.Success);
-                    return null;
-                }
-                rspCmd.putUS(Tags.Status, Status.Pending);
-                Dataset rspData = queryCmd.getDataset();
-                                log.debug("Identifier:\n");
-                                log.debug(rspData);
-                return rspData;
-            } catch (SQLException e) {
-                service.getLog().error("Retrieve DB record failed:", e);
-                throw new DcmServiceException(Status.ProcessingFailure, e);                
-            } catch (Exception e) {
-                service.getLog().error("Corrupted DB record:", e);
-                throw new DcmServiceException(Status.ProcessingFailure, e);                
-            }
-        }
-
-        public void release() {
-            queryCmd.close();
-        }
-    }
-
-    @Override
     protected Dataset doNAction(ActiveAssociation assoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
         Association a = assoc.getAssociation();
@@ -611,7 +516,7 @@ class UPSScp extends DcmServiceBase {
             if (abstractSyntaxEquals(assoc, rq,
                     UIDs.UnifiedProcedureStepPullSOPClass)) {
                 type1(rqData, Tags.UPSState);
-                state = upsStateAsInt(rqData.getString(Tags.UPSState));
+                state = UPSScpService.upsStateAsInt(rqData.getString(Tags.UPSState));
                 if (state == UPSState.SCHEDULED)
                         throw new DcmServiceException(MAY_ONLY_BECOME_SCHEDULED_VIA_NCREATE);
                 tuid = rqData.getString(Tags.TransactionUID);
