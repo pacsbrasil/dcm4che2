@@ -52,6 +52,7 @@ import org.dcm4che.net.DcmServiceBase;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
+import org.dcm4che.net.ExtNegotiation;
 import org.dcm4chex.archive.common.UPSState;
 import org.dcm4chex.archive.ejb.jdbc.UPSQueryCmd;
 import org.jboss.logging.Logger;
@@ -63,6 +64,8 @@ import org.jboss.logging.Logger;
  * @since Apr 19, 2010
  */
 class UPSFindScp extends DcmServiceBase {
+
+    private static final int FUZZY_MATCHING = 2;
 
     private final UPSScpService service;
 
@@ -88,8 +91,12 @@ class UPSFindScp extends DcmServiceBase {
         try {
             service.logDicomQuery(a, rqCmd.getAffectedSOPClassUID(),
                     rqData);
+            boolean fuzzyMatchingOfPN = fuzzyMatchingOfPN(
+                    a.getAcceptedExtNegotiation(
+                            rqCmd.getAffectedSOPClassUID()));
             UPSQueryCmd queryCmd = 
-                    new UPSQueryCmd(rqData, service.isNoMatchForNoValue());
+                    new UPSQueryCmd(rqData, fuzzyMatchingOfPN,
+                            service.isNoMatchForNoValue());
             queryCmd.setFetchSize(service.getFetchSize()).execute();
             return new MultiCFindRsp(queryCmd);
         } catch (Exception e) {
@@ -98,7 +105,14 @@ class UPSFindScp extends DcmServiceBase {
         }
     }
 
-    private void checkCFindRQ(Dataset rqData) throws DcmServiceException {
+    private boolean fuzzyMatchingOfPN(ExtNegotiation extNeg) {
+        byte[] info;
+        return extNeg != null 
+                && (info = extNeg.info()).length > FUZZY_MATCHING
+                && info[FUZZY_MATCHING] != 0;
+    }
+
+   private void checkCFindRQ(Dataset rqData) throws DcmServiceException {
         String s = rqData.getString(Tags.UPSState);
         if (s != null)
             UPSScpService.upsStateAsInt(s);

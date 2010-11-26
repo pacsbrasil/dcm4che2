@@ -64,12 +64,14 @@ import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che.net.Dimse;
+import org.dcm4che.net.ExtNegotiator;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.RoleSelection;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4chex.archive.common.UPSState;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.UPSManager;
@@ -88,12 +90,23 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 public class UPSScpService extends AbstractScpService
         implements MessageListener {
 
+    private static final int FUZZY_MATCHING = 2;
+
     private static final int UNKNOWN_RECEIVING_AET = 0xC308;
     private static final int MSG_ID = 1;
     private static final int ERR_UPSEVENT_RJ = -2;
     private static final int ERR_ASSOC_RJ = -1;
     private static final int PCID_UPSEVENT = 1;
     private static final UIDGenerator uidgen = UIDGenerator.getInstance();
+
+    private static final ExtNegotiator extNegotiator = new ExtNegotiator() {
+        public byte[] negotiate(byte[] offered) {
+            if (offered.length > FUZZY_MATCHING)
+                offered[FUZZY_MATCHING] &= 
+                        AttributeFilter.isSoundexEnabled() ? 1 : 0;
+            return offered;
+        }
+    };
 
     private boolean noMatchForNoValue;
 
@@ -292,10 +305,16 @@ public class UPSScpService extends AbstractScpService
     protected void enablePresContexts(AcceptorPolicy policy) {
         putPresContexts(policy, valuesToStringArray(cuidMap),
                 valuesToStringArray(tsuidMap));
+        policy.putExtNegPolicy(UIDs.UnifiedProcedureStepPullSOPClass,
+                extNegotiator);
+        policy.putExtNegPolicy(UIDs.UnifiedProcedureStepWatchSOPClass,
+                extNegotiator);
     }
 
     protected void disablePresContexts(AcceptorPolicy policy) {
         putPresContexts(policy, valuesToStringArray(cuidMap),null);
+        policy.putExtNegPolicy(UIDs.UnifiedProcedureStepPullSOPClass, null);
+        policy.putExtNegPolicy(UIDs.UnifiedProcedureStepWatchSOPClass, null);
     }
 
     String createUID() {
