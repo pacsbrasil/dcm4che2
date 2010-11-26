@@ -247,6 +247,9 @@ public class Dcm2Jpg {
                 exit("dcm2jpg: when converting several files, "
                         + "last argument must be a directory\n");
             }
+			if (!src.exists()){
+				exit("Cannot find the file specified: " + argList.get(0));
+			}
             dcm2jpg.convert(src, dest);
         }
         long t2 = System.currentTimeMillis();
