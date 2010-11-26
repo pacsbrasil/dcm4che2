@@ -67,8 +67,8 @@ public class UPSQueryCmd extends BaseDSQueryCmd {
 
     private static final String ITEM_CODE = "item_code";
 
-    public UPSQueryCmd(Dataset keys, boolean noMatchForNoValue)
-            throws SQLException {
+    public UPSQueryCmd(Dataset keys, boolean fuzzyMatchingOfPN,
+            boolean noMatchForNoValue) throws SQLException {
         super(keys, true, noMatchForNoValue, transactionIsolationLevel);
         AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
         defineColumnTypes(new int[] { blobAccessType, blobAccessType });
@@ -162,7 +162,14 @@ public class UPSQueryCmd extends BaseDSQueryCmd {
         sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
                 type2,
                 patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
-        sqlBuilder.addPNMatch(new String[] {
+        if (fuzzyMatchingOfPN)
+            sqlBuilder.addPNFuzzyMatch(
+                    new String[] {
+                            "Patient.patientFamilyNameSoundex",
+                            "Patient.patientGivenNameSoundex" },
+                            keys.getString(Tags.PatientName));
+        else
+            sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
                 "Patient.patientPhoneticName"},
