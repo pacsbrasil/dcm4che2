@@ -603,7 +603,7 @@ public class DcmUPS {
         String tsuid = selectTransferSyntax();
         LOG.info("Send C-FIND Request using {}:\n{}",
                UIDDictionary.getDictionary().prompt(cuid), attrs);
-        assoc.cfind(cuid, UID.UnifiedProcedureStepPushSOPClass,
+        assoc.cfind(cuid, cuid,
                 priority.ordinal(), attrs, tsuid, rspHandler);
     }
 
