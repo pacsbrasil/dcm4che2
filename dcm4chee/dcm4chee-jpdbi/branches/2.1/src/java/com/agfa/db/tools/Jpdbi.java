@@ -21,7 +21,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 
 public class Jpdbi {
-    public final static String VERSION = "2.1.0";
+    public final static String VERSION = "2.1.1";
 
     public final static String ID = "$Id$";
 
