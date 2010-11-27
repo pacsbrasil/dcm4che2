@@ -60,6 +60,8 @@ class Config {
 
 	private int dbType = Jdbexp.DB_TYPES_UNKNOWN;
 
+    private String xsl = null;
+
 	public void setDbType(String s) {
 		if (s.equalsIgnoreCase("ORACLE"))
 			this.dbType = Jdbexp.DB_TYPES_ORACLE;
@@ -145,6 +147,14 @@ class Config {
 	public boolean isHeader() {
 		return this.header;
 	}
+
+    public void setXSL(String s) {
+        this.xsl = s;
+    }
+
+    public String getXSL() {
+        return this.xsl;
+    }
 
 	//
 	public void setLabel(boolean b) {
@@ -343,17 +353,33 @@ class Config {
 			options.addOption(OptionBuilder.withLongOpt("sqlfile").withDescription("read statemtents from sqlfile")
 					.hasArg().withArgName("FILE").create());
 
-			OptionGroup dbGroup = new OptionGroup();
-			dbGroup.addOption(OptionBuilder.withLongOpt("url").withDescription("jdbc connection url").hasArg()
-					.withArgName("JDBCURL").create("U"));
-			dbGroup.addOption(OptionBuilder.withLongOpt("db").withDescription("DB alias").hasArg().withArgName(
-					"ALIAS | list").create("db"));
-			options.addOptionGroup(dbGroup);
+            options.addOption("h", "help", false, "print this message");
+            options.addOption("v", "version", false, "version information");
+            
+            options.addOption(OptionBuilder.withLongOpt("delimiter").withDescription("field delimiter").hasArg()
+                    .withArgName("DELIMITER").create("d"));
+            options.addOption(OptionBuilder.withLongOpt("commit").withDescription("commit after <COMMIT> statements")
+                    .hasArg().withArgName("COMMIT").create());
+            options.addOption(OptionBuilder.withLongOpt("macro").withDescription("exec macro").hasArg().withArgName(
+                    "MACRO | list").create("M"));
+            options.addOption(OptionBuilder.withLongOpt("out").withDescription("output stdout to FILE").hasArg()
+                    .withArgName("FILE").create("O"));
+            options.addOption(OptionBuilder.withLongOpt("gzip").withDescription("compress output").create("z"));
+            options.addOption(OptionBuilder.withLongOpt("err").withDescription("output stderr to FILE").hasArg()
+                    .withArgName("FILE").create("E"));
+            options.addOption(OptionBuilder.withLongOpt("debug").withDescription("output debug").create());
+            options.addOption(OptionBuilder.withLongOpt("xsl").withDescription("transform via xsl").hasArg().withArgName("FILE").create());
+            options.addOption(OptionBuilder.withLongOpt("jdbcurlhelp").withDescription("print URL help").create());
+            options.addOption(OptionBuilder.withLongOpt("displaylobs").withDescription("display LOB's as base64")
+                    .create());
+            options.addOption(OptionBuilder.withLongOpt("ignoresqlerrors").withDescription("ignore SQL errors")
+                    .create());
+            options.addOption(OptionBuilder.withLongOpt("sqlfile").withDescription("read statemtents from sqlfile").hasArg().withArgName("FILE").create());
 
 			OptionGroup displayGroup = new OptionGroup();
 			displayGroup.addOption(OptionBuilder.withLongOpt("label").withDescription("display labels").create("L"));
 			displayGroup.addOption(OptionBuilder.withLongOpt("header").withDescription("display header").create("H"));
-			displayGroup.addOption(OptionBuilder.withLongOpt("cvs").withDescription("display as cvs").create("cvs"));
+			displayGroup.addOption(OptionBuilder.withLongOpt("csv").withDescription("display as csv").create("csv"));
 			displayGroup.addOption(OptionBuilder.withLongOpt("insert").withDescription("display with insert statements")
 					.create("insert"));
 			displayGroup.addOption(OptionBuilder.withLongOpt("dump").withDescription("display as dump").create("dump"));
@@ -364,15 +390,18 @@ class Config {
 			argv = line.getArgs();
 			int i = 0;
 
-			if (line.hasOption("debug"))
-				this.debug = true;
-			if (line.hasOption("displaylobs"))
-				this.displayLobs = true;
-			if (line.hasOption("commit")) {
-				this.commitInterval = Long.parseLong(line.getOptionValue("commit").trim());
-			}
-
-			if (line.hasOption("cvs"))
+            if (line.hasOption("debug"))
+                this.debug = true;
+            if (line.hasOption("displaylobs"))
+                this.displayLobs = true;
+            if (line.hasOption("commit")) {
+                this.commitInterval = Long.parseLong(line.getOptionValue("commit").trim());
+            }
+            
+            if (line.hasOption("xsl"))
+                setXSL(line.getOptionValue("xsl").trim());
+            
+			if (line.hasOption("csv"))
 				setCsv(true);
 
 			if (line.hasOption("insert"))
