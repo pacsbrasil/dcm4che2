@@ -121,16 +121,19 @@ public class Jpdbi {
         }
     }
 
-    private static void UpdateField(PreparedStatement stmt, Long pk, boolean debug) throws SQLException {
+    private static void UpdateField(PreparedStatement stmt, Long pk, String uid, boolean debug) throws SQLException {
         if (debug)
             System.err.println("DEBUG: Update: < PK=" + pk + " >");
         else {
-            stmt.setLong(1, pk);
+            int p = 1;
+            if (uid != null)
+                stmt.setString(p++, uid);
+            stmt.setLong(p, pk);
             stmt.execute();
         }
     }
 
-    static void UpdateField(ResultSet rs, PreparedStatement stmt, Long pk, String field, String[][] update,
+    static void UpdateField(ResultSet rs, PreparedStatement stmt, Long pk, String field, String[][] update, String uid,
             boolean debug) throws SQLException, IOException {
 
         if (debug)
@@ -153,7 +156,9 @@ public class Jpdbi {
             for (int loop = 0; loop < update.length; loop++) {
                 String DcmField = update[loop][1];
                 String DcmValue = update[loop][2];
+
                 if (DcmField != null) {
+
                     int TAG = 0;
                     if (DcmField.startsWith("x", 0))
                         TAG = Integer.parseInt(DcmField.substring(1), 16);
@@ -166,8 +171,11 @@ public class Jpdbi {
                             ds = null;
 
                     } else {
-                        ds.putXX(TAG, DcmValue);
-
+                        if (DcmValue.equals("%UID%")) {
+                            ds.putXX(TAG, uid);
+                        } else {
+                            ds.putXX(TAG, DcmValue);
+                        }
                     }
                 }
             }
@@ -186,14 +194,22 @@ public class Jpdbi {
                 if (debug)
                     System.err.println("DEBUG: Update < PK=" + pk + " >");
                 else {
+                    int p = 1;
+
                     int len = ds.calcLength(DcmEncodeParam.EVR_LE);
                     ByteArrayOutputStream bos = new ByteArrayOutputStream(len);
                     ds.writeDataset(bos, DcmEncodeParam.EVR_LE);
-                    stmt.setBinaryStream(1, new ByteArrayInputStream(bos.toByteArray()), len);
-                    stmt.setLong(2, pk);
+
+                    if (uid != null)
+                        stmt.setString(p++, uid);
+
+                    stmt.setBinaryStream(p++, new ByteArrayInputStream(bos.toByteArray()), len);
+                    stmt.setLong(p, pk);
                     stmt.execute();
                 }
             }
+        } else {
+            System.err.println("DEBUG: Reading " + field + " failed.");
         }
 
     }
@@ -202,6 +218,7 @@ public class Jpdbi {
             throws SQLException, IOException {
         Statement stmt = conn.createStatement();
         ResultSet rs = null;
+        boolean updUid = false;      
         
         String [] query=cfg.getSqlPortions();
 
@@ -258,7 +275,13 @@ public class Jpdbi {
                     else if (UpdateStatement.length() > 0)
                         UpdateStatement += ",";
                     UpdateStatement += update[loop][0].toUpperCase();
-                    UpdateStatement += (UpdValue == null) ? "=null" : "='" + UpdValue + "'";
+
+                    if (UpdValue.equals("%UID%")) {
+                        updUid = true;
+                        UpdateStatement += "=?";
+                    } else {
+                        UpdateStatement += (UpdValue == null) ? "=null" : "='" + UpdValue + "'";
+                    }
                 }
             }
 
@@ -303,8 +326,10 @@ public class Jpdbi {
 
             long PK = -1;
             long LastPK = -1;
+            long cnt = 0L;
 
             while (rs.next()) {
+                cnt++;
                 for (int i = 0; i < Jpdbi.Tables.length; i++) {
                     if (cfg.isDisplayLevel(i)) {
                         switch (i) {
@@ -333,10 +358,14 @@ public class Jpdbi {
                             break;
                         }
                         if (cfg.isUpdateLevel(i) && PK > -1) {
+                            String uid = null;
+                            if (updUid) 
+                                uid = Uid.Generate(cfg.getUidBase(), cnt);
+                            
                             if (cfg.getUpdateDS().isEmpty())
-                                UpdateField(UpdStmt, PK, cfg.isDebug());
+                                UpdateField(UpdStmt, PK, uid, cfg.isDebug());
                             else
-                                UpdateField(rs, UpdStmt, PK, Jpdbi.Attrs[i], update, cfg.isDebug());
+                                UpdateField(rs, UpdStmt, PK, Jpdbi.Attrs[i], update, uid, cfg.isDebug());
                         }
                     }
                 }
