@@ -421,6 +421,18 @@ class Config {
 		updateLevel.set(updateLevel1);
 	}
 
+    //
+    private String uidBase = null;
+
+    public String setUidBase(String s) {
+        uidBase = s;
+        return s;
+    }
+
+    public String getUidBase() {
+        return uidBase;
+    }
+
 	String nl = System.getProperty("line.separator");
 
 	static SimpleDateFormat fTimeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -510,9 +522,11 @@ class Config {
 			// URL
 			options.addOption(OptionBuilder.withLongOpt("url").withDescription("jdbc url").hasArg().withArgName("JDBCURL")
 					.create("U"));
-			options.addOption(OptionBuilder.withLongOpt("db").withDescription("DB alias").hasArg().withArgName(
-					"ALIAS | list").create());
-			//
+            //
+            options.addOption(OptionBuilder.withLongOpt("db").withDescription("DB alias").hasArg().withArgName("ALIAS | list").create());
+            //
+            options.addOption(OptionBuilder.withLongOpt("uid").withDescription("UID template").hasArg().withArgName("TEMPLATE").create());
+            //
 			options.addOption(OptionBuilder.withLongOpt("pks").withDescription("print primary keys").create());
 			// options.addOption(OptionBuilder.withLongOpt("ignoreempty").withDescription("ignore patients with no studies/series").create("i"));
 			options.addOption(OptionBuilder.withLongOpt("all").withDescription("display all results").create("a"));
@@ -551,9 +565,9 @@ class Config {
 			optionGroup.addOption(OptionBuilder.withLongOpt("patient-level").withDescription("display patient level")
 					.create("l1"));
 			optionGroup.addOption(OptionBuilder.withLongOpt("series-level").withDescription("display series level")
-					.create("l2"));
+					.create("l3"));
 			optionGroup.addOption(OptionBuilder.withLongOpt("study-level").withDescription("display study level").create(
-					"l3"));
+					"l2"));
 			optionGroup.addOption(OptionBuilder.withLongOpt("instance-level").withDescription("display instance level")
 					.create("l4"));
 			optionGroup.addOption(OptionBuilder.withLongOpt("path").withDescription("display object path").create("l5"));
@@ -760,23 +774,30 @@ class Config {
 			}
 
 			// jdbc url
-			if (line.hasOption("U"))
-				setJdbcUrl(line.getOptionValue("U"));
+            if (line.hasOption("U"))
+                setJdbcUrl(line.getOptionValue("U"));
 
 			if (getJdbcUrl() == null) {
 				if (setJdbcUrl(System.getProperty("jdbc.url")) == null) {
 					String s = applicationProps.getProperty("jdbc.url"); 
 					if (s.startsWith("$")) {
-						s = applicationProps.getProperty("jdbc.url." + s.substring(1));
-						if (s == null) {
+						String s1 = applicationProps.getProperty("jdbc.url." + s.substring(1));
+						if (s1 == null) {
 							Jpdbi.exit(1, "ERROR: DB Alias: < " + s.substring(1) + " > not found!");
 						}
+						s = s1;
 					}
 					if (setJdbcUrl(s) == null) {
 						Jpdbi.exit(1, "ERROR: Missing JDBC Url.");
 					}
 				}
 			}
+
+			
+            if (line.hasOption("uid"))
+                setUidBase(line.getOptionValue("uid"));
+            else
+                setUidBase(applicationProps.getProperty("uid.template"));
 
 			setProps(applicationProps);
 
@@ -1004,7 +1025,7 @@ class Config {
 
 			// Series
 			{
-				String myWhere = "";
+			    String myWhere = "";
 				if (getSeriesIuid() != null)
 					myWhere = addWhere(myWhere, "SERIES.SERIES_IUID", getSeriesIuid(), Types.VARCHAR);
 
@@ -1070,15 +1091,16 @@ class Config {
 			}
 
 			if (seriesLink || isDisplayLevel(Jpdbi.SERIE) || isUpdateDS(Jpdbi.SERIE)) {
-				if (seriesLink || isIgnoreEmpty()) {
+                if (seriesLink || isIgnoreEmpty()) {
 					studyLink = true;
 					from = ",SERIES" + from;
 					links += "STUDY.PK=SERIES.STUDY_FK and ";
 				} else {
 					join = "left join SERIES on STUDY.PK=STUDY_FK " + join;
 				}
-				if (isDisplayDS(Jpdbi.SERIE) || isUpdateDS(Jpdbi.SERIE))
+				if (isDisplayDS(Jpdbi.SERIE) || isUpdateDS(Jpdbi.SERIE)) 
 					select = PrependSql("SERIES_ATTRS ", select);
+				
 				if (isDisplayLevel(Jpdbi.SERIE)) {
 					setDisplayLevel(Jpdbi.STUDY);
 					if (isDisplayAETs())
