@@ -1101,7 +1101,7 @@ class Config {
                     select = PrependSql("FILESYSTEM.PK F, FS_GROUP_ID FSGRP", select);
                 }
                 select = PrependSql(
-                        "FILES.PK E, DIRPATH, FILEPATH, FILE_SIZE FILESIZE, filesystem.availability FSAVAIL", select);
+                        "FILES.PK E, DIRPATH, FILEPATH, FILE_SIZE FILESIZE, FILE_STATUS FILESTATUS, filesystem.availability FSAVAIL", select);
                 order = PrependSql("E", order);
             }
 

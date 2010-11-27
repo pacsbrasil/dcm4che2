@@ -379,6 +379,7 @@ public class Display {
         String tmpPath = rs.getString("DIRPATH") + "/" + rs.getString("FILEPATH");
         out += DisplayValue("PATH", tmpPath, cfg.isDisplayFields());
         out += DisplayValue(rs, "SIZE", "FILESIZE", Types.NUMERIC, cfg.isDisplayFields(), cfg.isDisplayStatus());
+        out += DisplayValue(rs, "STAT", "FILESTATUS", Types.NUMERIC, cfg.isDisplayFields(), cfg.isDisplayStatus());
         out += DisplayValue(rs, "AVAIL", "FSAVAIL", Types.NUMERIC, cfg.isDisplayFields(), cfg.isDisplayStatus());
 
         if (cfg.isDisplayLevel(Jpdbi.FILESYSTEM)) {
