@@ -16,11 +16,7 @@ import java.sql.*;
 
 public class Jdbexp {
 
-<<<<<<< .mine
     public final static String VERSION = "2.1.2";
-=======
-    public final static String VERSION = "2.1.1";
->>>>>>> .r14428
 
     public final static String ID = "$Id$";
 
