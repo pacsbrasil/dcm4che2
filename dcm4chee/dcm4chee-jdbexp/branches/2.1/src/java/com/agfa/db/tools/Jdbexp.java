@@ -2,18 +2,25 @@
 
 package com.agfa.db.tools;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+
+import java.io.*;
 import java.sql.*;
 
 // import oracle.jdbc.*;
 
 public class Jdbexp {
 
+<<<<<<< .mine
+    public final static String VERSION = "2.1.2";
+=======
     public final static String VERSION = "2.1.1";
+>>>>>>> .r14428
 
     public final static String ID = "$Id$";
 
@@ -78,6 +85,21 @@ public class Jdbexp {
         return sb.toString();
     }
 
+    /*
+     * private static String blob2String(Blob blob) throws Exception {
+     * 
+     * StringBuffer sb = new StringBuffer(); int getLen = -1; int readLen =
+     * 1024; byte[] tmpbyte = new byte[readLen];
+     * 
+     * InputStream inputStream = blob.getBinaryStream(); while ((getLen =
+     * inputStream.read(tmpbyte, 0, readLen)) > 0) { sb.append(new
+     * String(tmpbyte, 0, getLen)); }
+     * 
+     * return sb.toString();
+     * 
+     * }// End method: blob2String(Blob)
+     */
+
     private static String sqlFileRead(BufferedReader br) {
         String s = null;
         StringBuffer sb = new StringBuffer();
@@ -109,10 +131,11 @@ public class Jdbexp {
     }
 
     private static String getColumn(ResultSet rs, int col, int ColumnType, String ColumnTypeName,
-            String StringDelimiter, boolean cvs, boolean dump, boolean inserts, boolean displaylobs)
+            String StringDelimiter, boolean cvs, boolean dump, boolean inserts, boolean displaylobs, String xsl)
             throws SQLException, IOException {
         String result = null;
         String value = null;
+
         switch (ColumnType) {
         case Types.TIMESTAMP:
             Timestamp ts = rs.getTimestamp(col);
@@ -164,10 +187,24 @@ public class Jdbexp {
         case Types.LONGVARBINARY:
             Blob blob = rs.getBlob(col);
             if (!rs.wasNull()) {
-                if (displaylobs || dump || inserts)
-                    value = "::" + Base64.Encode(lob2String(blob));
-                else
-                    value = "[" + ColumnTypeName + ":" + blob.length() + "]";
+                if (xsl != null) {
+                    try {
+                        SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
+                        Templates tp = tf.newTemplates(new StreamSource(xsl));
+
+                        String s = lob2String(blob) + "\n";
+                        StreamSource is = new StreamSource(
+                                new InputStreamReader(new ByteArrayInputStream(s.getBytes())));
+                        tp.newTransformer().transform(is, new StreamResult(System.out));
+                        value = "";
+                    } catch (Exception e) {
+                    }
+                } else {
+                    if (displaylobs || dump || inserts)
+                        value = "::" + Base64.Encode(lob2String(blob));
+                    else
+                        value = "[" + ColumnTypeName + ":" + blob.length() + "]";
+                }
             }
             break;
 
@@ -264,7 +301,7 @@ public class Jdbexp {
 
             for (int j = 1; j <= count; j++) {
                 String result = getColumn(rs, j, md.getColumnType(j), md.getColumnTypeName(j), cfg.getDelimitor(), cfg
-                        .isCsv(), cfg.isDump(), cfg.isInsert(), cfg.isDisplayLobs());
+                        .isCsv(), cfg.isDump(), cfg.isInsert(), cfg.isDisplayLobs(), cfg.getXSL());
                 if (j > 1)
                     values = values.concat(cfg.getFieldSeperator());
 
