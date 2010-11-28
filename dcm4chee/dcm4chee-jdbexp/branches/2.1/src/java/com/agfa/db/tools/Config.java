@@ -516,10 +516,11 @@ class Config {
 				if (setJdbcUrl(System.getProperty("jdbc.url")) == null) {
 					String s = applicationProps.getProperty("jdbc.url");
 					if (s.startsWith("$")) {
-						s = applicationProps.getProperty("jdbc.url." + s.substring(1));
-						if (s == null) {
+						String s1 = applicationProps.getProperty("jdbc.url." + s.substring(1));
+						if (s1 == null) {
 							Jdbexp.exit(1, "ERROR: DB Alias: < " + s.substring(1) + " > not found!");
 						}
+					    s = s1;
 					}
 					if (setJdbcUrl(s) == null) {
 						Jdbexp.exit(1, "ERROR: Missing JDBC Url.");
