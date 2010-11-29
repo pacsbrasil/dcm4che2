@@ -297,10 +297,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         if (useOtherPatientIdSequenceForMatch(otherPatIdSQ)) {
             addListOfPatIdMatch(otherPatIdSQ);
         } else {
-            sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2,
-                    filter.getStrings(keys, Tags.PatientID));
+            String[] pid = filter.getStrings(keys, Tags.PatientID);
             String issuer = filter.getString(keys, Tags.IssuerOfPatientID);
-            if (issuer != null) {
+            sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2, pid);
+            if (pid != null && pid.length > 0 && issuer != null) {
                 sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
                         type2, issuer);
             } else if (noMatchWithoutIssuerOfPID) {
