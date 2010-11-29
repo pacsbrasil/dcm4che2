@@ -87,17 +87,20 @@ public class SecureSession extends WaspSession {
     }
 
     public void setDicomSubject(Subject dicomSubject) {
-        dicomRoles = new ArrayList<String>();
-        Iterator<Principal> i = dicomSubject.getPrincipals().iterator();
-        @SuppressWarnings("unused")
-        String dicomUsername = (i.hasNext() ? i.next().getName() : null);
-        Principal rolesPrincipal = (i.hasNext() ? i.next() : null);
-        if (rolesPrincipal instanceof Group) {
-            Enumeration<? extends Principal> e = ((Group) rolesPrincipal).members();
-            while (e.hasMoreElements()) 
-                dicomRoles.add(e.nextElement().getName());
+        if (dicomSubject == null) {
+            dicomRoles = null;
+        } else {
+            dicomRoles = new ArrayList<String>();
+            Iterator<Principal> i = dicomSubject.getPrincipals().iterator();
+            @SuppressWarnings("unused")
+            String dicomUsername = (i.hasNext() ? i.next().getName() : null);
+            Principal rolesPrincipal = (i.hasNext() ? i.next() : null);
+            if (rolesPrincipal instanceof Group) {
+                Enumeration<? extends Principal> e = ((Group) rolesPrincipal).members();
+                while (e.hasMoreElements()) 
+                    dicomRoles.add(e.nextElement().getName());
+            }
         }
-        this.setDicomRoles(dicomRoles);
     }
 
     public void setSwarmPrincipals(HashMap<String, String> principals) {
@@ -112,18 +115,7 @@ public class SecureSession extends WaspSession {
         return dicomRoles;
     }
     
-    public void setDicomRoles(List<String> dicomRoles) {
-        this.dicomRoles = dicomRoles;
-    }
-
     public boolean getUseStudyPermissions() {
         return dicomRoles != null;
-    }
-    
-    public void setUseStudyPermissions(boolean useStudyPermissions) {
-        if (useStudyPermissions) {
-            if (dicomRoles == null) dicomRoles = new ArrayList<String>(); 
-        } else
-            this.dicomRoles = null;
     }
 }

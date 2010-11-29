@@ -124,7 +124,7 @@ public class BaseWicketApplication extends SwarmWebApplication {
 
     @Override
     protected Object getHiveKey() {
-        return getServletContext().getContextPath();
+        return "hive_"+getName();
     }
 
     @Override
