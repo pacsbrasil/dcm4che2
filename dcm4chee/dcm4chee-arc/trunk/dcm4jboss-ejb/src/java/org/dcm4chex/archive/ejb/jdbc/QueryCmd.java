@@ -699,7 +699,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
                 boolean noMatchWithoutIssuerOfPID, Subject subject)
                 throws SQLException {
-            super(keys, fuzzyMatchingOfPN, filterResult, noMatchForNoValue,
+            super(keys, filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
                     noMatchWithoutIssuerOfPID, subject);
             defineColumnTypes(new int[] { blobAccessType });
         }
@@ -731,7 +731,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
                 boolean noMatchWithoutIssuerOfPID, Subject subject)
                 throws SQLException {
-            super(keys, fuzzyMatchingOfPN, filterResult, noMatchForNoValue,
+            super(keys, filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
                     noMatchWithoutIssuerOfPID, subject);
             defineColumnTypes(new int[] {
                     blobAccessType,     // Patient.encodedAttributes
@@ -808,7 +808,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
                 boolean noMatchWithoutIssuerOfPID, Subject subject)
                 throws SQLException {
-            super(keys, fuzzyMatchingOfPN, filterResult, noMatchForNoValue,
+            super(keys, filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
                     noMatchWithoutIssuerOfPID, subject);
             defineColumnTypes(new int[] {
                     blobAccessType,     // Patient.encodedAttributes
@@ -904,7 +904,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
                 boolean noMatchWithoutIssuerOfPID, Subject subject)
                 throws SQLException {
-            super(keys, fuzzyMatchingOfPN, filterResult, noMatchForNoValue,
+            super(keys, filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
                     noMatchWithoutIssuerOfPID, subject);
             defineColumnTypes(lazyFetchSeriesAttrsOnImageLevelQuery
                     ? new int[] {
