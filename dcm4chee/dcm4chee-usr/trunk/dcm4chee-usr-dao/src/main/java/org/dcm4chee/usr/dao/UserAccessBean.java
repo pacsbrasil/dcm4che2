@@ -40,6 +40,7 @@ package org.dcm4chee.usr.dao;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -47,13 +48,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateful;
-import javax.management.MBeanServerConnection;
-import javax.management.MBeanServerFactory;
-import javax.management.ObjectName;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -82,95 +79,63 @@ public class UserAccessBean implements UserAccess {
     @PersistenceContext(unitName="dcm4chee-usr")
     private EntityManager em;
 
-    private ObjectName serviceObjectName;
-    private MBeanServerConnection server = null;
-    private String mappingFilename;
+    private File mappingFile;
+    private String userRoleName;
+    private String adminRoleName;
+    private boolean ensureUserAndAdminRole;
     
     @SuppressWarnings("unused")
     @PostConstruct
-    private void initMBeanServerAndMappingFile() {
-
-        if (this.server == null) {
-            List<?> servers = MBeanServerFactory.findMBeanServer(null);
-            if (servers != null && !servers.isEmpty()) {
-                this.server = (MBeanServerConnection) servers.get(0);
-                log.debug("Found MBeanServer:"+this.server);
-            } else {
-                log.error("Failed to get MBeanServerConnection! MbeanDelegate class:"+getClass().getName());
-                return;
+    private void config() {
+        if (this.mappingFile == null) {
+            userRoleName = System.getProperty("dcm4chee-usr.cfg.userrole", "+WebUser");
+            adminRoleName = System.getProperty("dcm4chee-usr.cfg.adminrole", "+WebAdmin");
+            mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.role-mapping-filename", "conf/dcm4chee-usr/rolesMapping-roles.json"));
+            if (!mappingFile.isAbsolute())
+                mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
+            if (log.isDebugEnabled()) {
+                log.debug("UserAccess configuration:\nuserRoleName:"+userRoleName);
+                log.debug("adminRoleName:"+adminRoleName);
+                log.debug("ensureUserAndAdminRole:"+ensureUserAndAdminRole);
+                log.debug("mappingFile:"+mappingFile);
             }
-        }   
-
-        // TODO: put the filename into the config service
-        mappingFilename = 
-            ServerConfigLocator.locate().getServerConfigURL().getPath() + 
-            Role.mappingFilename;
-        
-        File file = new File(mappingFilename);
-        if (!file.exists())
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                log.error(getClass().getName() + ": " + e.getLocalizedMessage());
-            }
-    }
-    
-    public void init(String serviceObjectName) {
-        try {
-            this.serviceObjectName = new ObjectName(serviceObjectName);
-            String userRoleName = (String) this.server.getAttribute(
-                this.serviceObjectName, 
-                "userRoleName");
-            String adminRoleName = (String) this.server.getAttribute(
-                this.serviceObjectName, 
-                "adminRoleName");
-            
-            List<Role> roleList = getAllRoles();
-            if (roleList.size() > 0) {
-                boolean haveUserRoleName = false;
-                boolean haveAdminRoleName = false;
-                
-                for (Role role : roleList) {               
-                    if (role.getRolename().equals(userRoleName))
-                        haveUserRoleName = true;
-                    if (role.getRolename().equals(adminRoleName))
-                        haveAdminRoleName = true;
+            if (!mappingFile.exists()) {
+                try {
+                    if (mappingFile.getParentFile().mkdirs())
+                        log.info("M-WRITE dir:" +mappingFile.getParent());
+                    mappingFile.createNewFile();
+                } catch (IOException e) {
+                    log.error("RoleMapping file doesn't exist and can't be created!", e);
                 }
-                if (!haveUserRoleName) 
-                    addRole(new Role(userRoleName));
-                if (!haveAdminRoleName) 
-                    addRole(new Role(adminRoleName));
-            } else {
-                addRole(new Role(userRoleName));
-                addRole(new Role(adminRoleName));
             }
-        } catch (Exception e) {
-            log.debug("Exception: ", e);
+        }  
+        List<Role> roles = null;
+        if (userRoleName.charAt(0)=='+') {
+            userRoleName = userRoleName.substring(1);
+            roles = getAllRoles();
+            Role userRole = new Role(userRoleName);
+            if (!roles.contains(userRole)) {
+                addRole(userRole);
+                roles.add(userRole);
+            }
+        }
+        if (adminRoleName.charAt(0)=='+') {
+            adminRoleName = adminRoleName.substring(1);
+            Role adminRole = new Role(adminRoleName);
+            if ( roles == null) 
+                roles = getAllRoles();
+            if (!roles.contains(adminRole)) {
+                addRole(adminRole);
+            }
         }
     }
 
     public String getUserRoleName() {
-        try {
-            return
-                (String) this.server.getAttribute(
-                    this.serviceObjectName, 
-                    "userRoleName");
-        } catch (Exception e) {
-            log.debug("Exception: ", e);
-            return null;
-        }
+        return userRoleName;
     }
 
     public String getAdminRoleName() {
-        try {
-            return 
-                (String) this.server.getAttribute(
-                    this.serviceObjectName, 
-                    "adminRoleName");
-        } catch (Exception e) {
-            log.debug("Exception: ", e);
-            return null;
-        }
+        return adminRoleName;
     }
 
     // TODO: change this to generic version using JPA 2.0 implementation
@@ -237,57 +202,63 @@ public class UserAccessBean implements UserAccess {
     }
 
     public List<String> getAllRolenames() {
-        try {
-            List<String> rolenameList = new ArrayList<String>();
-            String line;
-            BufferedReader reader = new BufferedReader(new FileReader(mappingFilename));
-            while ((line = reader.readLine()) != null)
-                rolenameList.add(((Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class)).getRolename());
-            return rolenameList;
-        } catch (Exception e) {
-            log.debug("Exception: ", e);
-            return null;
-        }
+        List<Role> roles = getAllRoles();
+        List<String> rolenameList = new ArrayList<String>(roles.size());
+        for (int i=0,len=roles.size(); i < len ; i++)
+            rolenameList.add(roles.get(i).getRolename());
+        return rolenameList;
     }
 
     public List<Role> getAllRoles() {
+        BufferedReader reader = null;
         try {
             List<Role> roleList = new ArrayList<Role>();
             String line;
-            BufferedReader reader = new BufferedReader(new FileReader(mappingFilename));
+            reader = new BufferedReader(new FileReader(mappingFile));
             while ((line = reader.readLine()) != null)
                 roleList.add((Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class));
+            Collections.sort(roleList);
             return roleList;
         } catch (Exception e) {
-            log.debug("Exception: ", e);
+            log.error("Can't get roles from roles mapping file!", e);
             return null;
+        } finally {
+            close(reader, "mapping file reader");
         }
     }
 
     public void addRole(Role role) {
+        BufferedWriter writer = null;
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(mappingFilename, true));
+            writer = new BufferedWriter(new FileWriter(mappingFile, true));
             JSONObject jsonObject = JSONObject.fromObject(role);
             writer.write(jsonObject.toString());
             writer.newLine();
-            writer.close();
-            sort(mappingFilename);
         } catch (IOException e) {
-            log.debug("Exception: ", e);
+            log.error("Can't add role to roles mapping file!", e);
+        } finally {
+            close(writer, "mapping file reader");
         }
     }
 
     public void updateRole(Role role) {
-        String oldRolename = null;
-        for(Role current : getAllRoles())
+        Role oldRole = null;
+        List<Role> roles = getAllRoles();
+        for(Role current : roles)
             if (role.getUuid().equals(current.getUuid()))
-                oldRolename = current.getRolename();
-        if (oldRolename != null && !oldRolename.equals(role.getRolename()))
-            this.em.createQuery("UPDATE UserRoleAssignment ura SET ura.role = :newRolename WHERE ura.role = :oldRolename")
-            .setParameter("oldRolename", oldRolename)
-            .setParameter("newRolename", role.getRolename())
-            .executeUpdate();
-        modifyRole(role, false);
+                oldRole = current;
+        if (oldRole != null) {
+            if (!oldRole.getRolename().equals(role.getRolename())) {
+                this.em.createQuery("UPDATE UserRoleAssignment ura SET ura.role = :newRolename WHERE ura.role = :oldRolename")
+                .setParameter("oldRolename", oldRole.getRolename())
+                .setParameter("newRolename", role.getRolename())
+                .executeUpdate();
+            }
+            roles.set(roles.indexOf(oldRole), role);
+            saveRoles(roles);
+        } else {
+            log.warn("Update Role "+role+" failed! Removed from roles mapping file!");
+        }
     }
 
     public void removeRole(Role role) {
@@ -297,63 +268,47 @@ public class UserAccessBean implements UserAccess {
         this.em.createQuery("DELETE FROM UserRoleAssignment ura WHERE ura.role = :rolename")
         .setParameter("rolename", role.getRolename())
         .executeUpdate();
-        modifyRole(role, true);
-    }
-    
-    private void modifyRole(Role role, boolean delete) {
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(mappingFilename));
-            File mappingFile = new File(mappingFilename);
-            String tempFilename = mappingFile.getAbsolutePath().substring(0, mappingFile.getAbsolutePath().length() - mappingFile.getName().length()) 
-                                + UUID.randomUUID().toString();
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFilename, true));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (!((Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class)).getRolename().equals(role.getRolename())) {
-                  writer.write(line);
-                  writer.newLine();
-                } else {
-                    if (!delete) {
-                        JSONObject jsonObject = JSONObject.fromObject(role);
-                        writer.write(jsonObject.toString());
-                        writer.newLine();
-                    }
-                }
-            }
-            reader.close();
-            writer.close();
-            mappingFile.delete();
-            new File(tempFilename).renameTo(mappingFile);
-            sort(mappingFilename);
-        } catch (IOException e) {
-            log.debug("Exception: ", e);
+        List<Role> roles = getAllRoles();
+        if (roles.remove(role)) {
+            saveRoles(roles);
+        } else {
+            log.warn("Role "+role+" already removed from roles mapping file!");
         }
     }
-
-    private void sort(String filename) {
+    
+    private void saveRoles(List<Role> roles) {
+        BufferedWriter writer = null;
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(filename));
-            File mappingFile = new File(filename);            
-            String tempFilename = mappingFile.getAbsolutePath().substring(0, mappingFile.getAbsolutePath().length() - mappingFile.getName().length()) 
-                                + UUID.randomUUID().toString();
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFilename, true));
-            String line;
-            List<Role> roleList = new ArrayList<Role>();
-            while ((line = reader.readLine()) != null) 
-                roleList.add((Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class));             
-            Collections.sort(roleList);
-            for (Role role : roleList) {
-                JSONObject jsonObject = JSONObject.fromObject(role);
+            File tmpFile = File.createTempFile(mappingFile.getName(), null, mappingFile.getParentFile());
+            writer = new BufferedWriter(new FileWriter(tmpFile, true));
+            JSONObject jsonObject;
+            for (int i=0,len=roles.size() ; i < len ; i++) {
+                jsonObject = JSONObject.fromObject(roles.get(i));
                 writer.write(jsonObject.toString());
                 writer.newLine();
             }
-            reader.close();
-            writer.close();
+            if (close(writer, "Temporary mapping file"))
+                writer = null;
             mappingFile.delete();
-            new File(tempFilename).renameTo(mappingFile);
+            tmpFile.renameTo(mappingFile);
         } catch (IOException e) {
-            log.debug("Exception: ", e);
-        }       
+            log.error("Can't save roles in roles mapping file!", e);
+        } finally {
+            close(writer, "Temporary mapping file (in finally block)");
+        }
+    }
+
+    private boolean close(Closeable toClose, String desc) {
+        log.debug("Closing ",desc);
+        if (toClose != null) {
+            try {
+                toClose.close();
+                return true;
+            } catch (IOException ignore) {
+                log.warn("Error closing : "+desc, ignore);
+            }
+        }
+        return false;
     }
 
     public Boolean roleExists(String rolename) {

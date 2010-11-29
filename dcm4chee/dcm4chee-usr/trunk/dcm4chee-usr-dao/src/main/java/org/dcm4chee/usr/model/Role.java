@@ -51,9 +51,6 @@ public class Role implements Serializable, Comparable<Role> {
 
     private static final long serialVersionUID = 1L;
 
-    // TODO: sync this with the entry in the web.xml
-    public static final String mappingFilename = "rolesMapping-roles.json";
-    
     private String uuid;
     private String rolename;
     private String type;
@@ -130,6 +127,22 @@ public class Role implements Serializable, Comparable<Role> {
     }
 
     public int compareTo(Role role) {
-        return rolename.toUpperCase().compareTo(role.getRolename().toUpperCase());
+        int i = rolename.toUpperCase().compareTo(role.getRolename().toUpperCase());
+        return i == 0 ? rolename.compareTo(role.getRolename()) : i;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Role) {
+            String rn = ((Role)o).rolename;
+            return rolename == null ? rn == null : rolename.equals(rn);
+        } else {
+            return false;
+        }
+    }
+    
+    @Override
+    public int hashCode() {
+        return rolename.hashCode();
     }
 }

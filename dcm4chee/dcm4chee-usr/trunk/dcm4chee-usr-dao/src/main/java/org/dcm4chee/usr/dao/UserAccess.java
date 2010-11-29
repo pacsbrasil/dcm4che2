@@ -55,8 +55,6 @@ import org.dcm4chee.usr.model.Role;
 public interface UserAccess {
     String JNDI_NAME = "dcm4chee-usr-dao/UserAccess/local";
 
-    public void init(String serviceObjectName);
-    
     public String getUserRoleName();
     public String getAdminRoleName();
     

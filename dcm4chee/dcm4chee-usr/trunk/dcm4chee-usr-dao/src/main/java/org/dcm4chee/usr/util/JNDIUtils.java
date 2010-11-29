@@ -40,8 +40,6 @@ package org.dcm4chee.usr.util;
 
 import javax.naming.InitialContext;
 
-import org.dcm4chee.usr.dao.UserAccess;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
@@ -62,11 +60,5 @@ public class JNDIUtils {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-    
-    public static UserAccess lookupAndInit(String name, String serviceObjectName) {
-        UserAccess ua = (UserAccess) lookup(name);
-        ua.init(serviceObjectName);
-        return ua;
     }
 }

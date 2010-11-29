@@ -25,10 +25,6 @@
           <param-name>WebCfgServiceName</param-name>
           <param-value>dcm4chee.web:service=WebConfig</param-value>
         </init-param>
-		<init-param>
-	      <param-name>UserAccessServiceName</param-name>
-	      <param-value>dcm4chee.usr:service=UserAccessService</param-value>
-	    </init-param>
 	</filter>
 	<filter-mapping>
 		<filter-name>wicket.dcm4chee-usr</filter-name>
