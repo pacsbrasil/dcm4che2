@@ -223,7 +223,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
                 !folderForm.isShowWithoutStudies(), 
                 folderForm.isNoMatchForNoValue(), folderForm.getQueryHasIssuerOfPID(),
                 subject).list(folderForm.getOffset(), folderForm.getLimit(), folderForm.isLatestStudiesFirst() );
-        if (subject != null) {
+        if (subject != null && studyList.size() > 0) {
             folderForm.setGrantedStudyActions(queryGrantedStudyActions(studyList,subject));
         }
         folderForm.setStudies(studyList);
