@@ -130,7 +130,7 @@ public class ImportDelegate extends Thread {
             DicomObject data = new BasicDicomObject();
             data = dis.readDicomObject();
             if (data != null) {
-                ApplicationContext.databaseRef.importDataToDatabase(data, parseFile);
+                ApplicationContext.databaseRef.importDataToDatabase(data, parseFile,false);
             }
         } catch (IOException ex) {
             ex.printStackTrace();

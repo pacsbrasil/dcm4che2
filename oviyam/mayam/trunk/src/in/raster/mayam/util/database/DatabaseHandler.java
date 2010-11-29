@@ -349,7 +349,7 @@ public class DatabaseHandler {
             statement.executeUpdate(sql);
 
             //creating study table if it is not exist already
-            sql = "create table " + studyTable + "(StudyInstanceUID varchar(255)  NOT NULL CONSTRAINT StudyInstanceUID_pk PRIMARY KEY ," + "StudyDate varchar(30), " + "AccessionNo varchar(50), " + "ReferringPhysicianName varchar(255), " + "StudyDescription  varchar(80), " + "ModalityInStudy varchar(10), " + "NoOfSeries integer," + "NoOfInstances integer," + "RecdImgCnt Integer," + "SendImgCnt integer," + "RetrieveAET varchar(50)," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId))";
+            sql = "create table " + studyTable + "(StudyInstanceUID varchar(255)  NOT NULL CONSTRAINT StudyInstanceUID_pk PRIMARY KEY ," + "StudyDate varchar(30), " + "AccessionNo varchar(50), " + "ReferringPhysicianName varchar(255), " + "StudyDescription  varchar(80), " + "ModalityInStudy varchar(10), " + "NoOfSeries integer," + "NoOfInstances integer," + "RecdImgCnt Integer," + "SendImgCnt integer," + "RetrieveAET varchar(50),"+"StudyType varchar(75)," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId))";
             statement.executeUpdate(sql);
 
             //creating series table if it is not exist already
@@ -801,14 +801,14 @@ public class DatabaseHandler {
 
     public void writeDataToDatabase(DicomObject dataset) {
         insertPatientData(dataset);
-        insertStudyData(dataset);
+        insertStudyData(dataset,false);
         insertSeriesData(dataset);
         insertImageData(dataset);
     }
 
-    public void importDataToDatabase(DicomObject dataset, File dicomFile) {
+    public void importDataToDatabase(DicomObject dataset, File dicomFile,boolean saveAsLink) {
         insertPatientData(dataset);
-        insertStudyData(dataset);
+        insertStudyData(dataset,saveAsLink);
         insertSeriesData(dataset);
         insertImageData(dataset, dicomFile);
     }
@@ -833,8 +833,7 @@ public class DatabaseHandler {
             }
         }
     }
-
-    public void insertStudyData(DicomObject dataset) {
+     public void insertStudyData(DicomObject dataset,boolean saveAslink) {
         if (checkRecordExists(studyTable, "StudyInstanceUID", dataset.getString(Tag.StudyInstanceUID))) {
         } else {
             try {
@@ -863,11 +862,43 @@ public class DatabaseHandler {
                 if (dataset.getString(Tag.StudyDescription) != null && dataset.getString(Tag.StudyDescription).length() > 0) {
                     studyDescription = dataset.getString(Tag.StudyDescription);
                 }
-                conn.createStatement().execute("insert into " + studyTable + " values('" + dataset.getString(Tag.StudyInstanceUID) + "'," + dat + ",'" + accessionno + "','" + refName + "','" + studyDescription.replace('\'', ' ') + "','" + dataset.getString(Tag.Modality) + "'," + noSeries + "," + noInstance + "," + 0 + "," + 1 + ",'" + retAe + "','" + dataset.getString(Tag.PatientID) + "')");
+                String studyType="local";
+                if(saveAslink)
+                    studyType="link";
+                conn.createStatement().execute("insert into " + studyTable + " values('" + dataset.getString(Tag.StudyInstanceUID) + "'," + dat + ",'" + accessionno + "','" + refName + "','" + studyDescription.replace('\'', ' ') + "','" + dataset.getString(Tag.Modality) + "'," + noSeries + "," + noInstance + "," + 0 + "," + 1 + ",'" + retAe + "','"+studyType+"','" + dataset.getString(Tag.PatientID) + "')");
                 conn.commit();
             } catch (SQLException ex) {
                 Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
+    }
+     public void deleteCopyAsLinkStudies() {
+        try {
+            String sql = "Select StudyInstanceUID from " + studyTable + " where studytype='link'";
+            ResultSet rs = conn.createStatement().executeQuery(sql);
+            while (rs.next()) {
+                String studyUID = rs.getString("StudyInstanceUID");
+                String sql1 = "select SeriesInstanceUID from series where StudyInstanceUID='" + studyUID + "'";
+                ResultSet rs1 = conn.createStatement().executeQuery(sql1);
+                while (rs1.next()) {
+                    String sql2 = "select SopUID from image where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + rs1.getString("SeriesInstanceUID") + "'";
+                    ResultSet rs2 = conn.createStatement().executeQuery(sql2);
+                    while (rs2.next()) {
+                        instanceTableRowDelete(rs2.getString("SopUID"));
+                    }
+                    seriesTableRowDelete(rs1.getString("SeriesInstanceUID"));
+                }
+                studyTableRowDelete(studyUID);
+            }
+                SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                MainScreen.refreshLocalDBStorage();
+            }
+        });
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

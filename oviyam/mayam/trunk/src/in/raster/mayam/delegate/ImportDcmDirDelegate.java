@@ -41,6 +41,7 @@ package in.raster.mayam.delegate;
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.facade.ApplicationFacade;
 import in.raster.mayam.form.MainScreen;
+import in.raster.mayam.util.database.DatabaseHandler;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -64,6 +65,7 @@ public class ImportDcmDirDelegate {
 
     private DicomDirReader dicomDir;
     private File dcmDirFile;
+    private boolean copyAsLink=false;
     private DicomObject dataset = new BasicDicomObject();
 
     public ImportDcmDirDelegate() {
@@ -184,7 +186,7 @@ public class ImportDcmDirDelegate {
                     new DatasetUpdator().updateInstanceInfo(instance);
                     File f = dicomDir.toReferencedFile(instance);
                     //import to database
-                    ApplicationContext.databaseRef.importDataToDatabase(dataset, f);
+                    ApplicationContext.databaseRef.importDataToDatabase(dataset, f,copyAsLink);
                 }
                 instance = dicomDir.findNextSiblingRecord(instance);
             }//instance loop completed
@@ -297,9 +299,13 @@ public class ImportDcmDirDelegate {
 
     public static void findAndLoadDcmDirFiles() {
         try {
+            ApplicationContext.databaseRef.deleteCopyAsLinkStudies();
             ImportDcmDirDelegate importDcmDirDelegate = new ImportDcmDirDelegate();
             importDcmDirDelegate.findAndLoadDcmDir();
             if (importDcmDirDelegate.dcmDirFile != null && importDcmDirDelegate.dcmDirFile.getParent().startsWith(ApplicationFacade.binPath)) {
+                //if a DICOM DIR file present in the binary directory then it will clear dicom data's in database.
+                //ApplicationContext.databaseRef.deleteRows();
+                importDcmDirDelegate.copyAsLink=true;
                 importDcmDirDelegate.run();
             }
         } catch (Exception ee) {
