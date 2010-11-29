@@ -55,6 +55,8 @@ public class ApplicationFacade {
 
     public static SplashScreen splash;
     public static MainScreen mainScreen;
+    public String applicationName="Mayam";
+    public static String binPath="";
 
     public ApplicationFacade() {
     }
@@ -72,13 +74,16 @@ public class ApplicationFacade {
     private void setSystemProperties() {
         if (System.getProperty("os.name").startsWith("Mac")) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
-            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Mayam");
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", applicationName);
             System.setProperty("apple.awt.brushMetalLook", "true");
             System.setProperty("com.sun.media.jai.disableMediaLib", "true");
             System.setProperty("apple.awt.graphics.EnableLazyPixelConversion.TYPE_3BYTE_BGR", "false");
             System.setProperty("apple.awt.graphics.EnableLazyDrawing", "false");
             System.setProperty("apple.awt.rendering", "speed");
         }
+        binPath=System.getProperty("user.dir");
+        System.setProperty("user.dir",Platform.getAppDirectory(applicationName).getAbsolutePath());
+
     }
 
     public static void exitApp(String exitString) {
@@ -102,3 +107,4 @@ public class ApplicationFacade {
         }
     }
 }
+

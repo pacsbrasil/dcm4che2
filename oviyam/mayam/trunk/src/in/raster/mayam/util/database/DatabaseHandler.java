@@ -121,6 +121,10 @@ public class DatabaseHandler {
             if (!ApplicationContext.canWrite(System.getProperty("user.dir"))) {
                 System.setProperty("derby.system.home", System.getProperty("java.io.tmpdir"));
             }
+            else
+            {
+                System.setProperty("derby.system.home", System.getProperty("user.dir"));
+            }
             try {
                 Class.forName(driver).newInstance();
             } catch (InstantiationException e) {
@@ -563,7 +567,7 @@ public class DatabaseHandler {
 
     public void insertDefaultListenerDetail() {
         try {
-            boolean insertStatus = conn.createStatement().execute("insert into" + " listener(aetitle,port,storagelocation) values('MAYAM',1025,'archive')");
+            boolean insertStatus = conn.createStatement().execute("insert into" + " listener(aetitle,port,storagelocation) values('MAYAM',1025,'"+System.getProperty("user.dir")+File.separator+"archive')");
             conn.commit();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -918,7 +922,7 @@ public class DatabaseHandler {
         } else {
             try {
                 Calendar today = Calendar.getInstance();
-                String struturedDestination = "archive" + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + dataset.getString(Tag.StudyInstanceUID) + File.separator + dataset.getString(Tag.SOPInstanceUID);
+                String struturedDestination = System.getProperty("user.dir")+File.separator+"archive" + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + dataset.getString(Tag.StudyInstanceUID) + File.separator + dataset.getString(Tag.SOPInstanceUID);
                 String multiframe = "false";
                 int totalFrame = 0;
                 if (dataset.getString(Tags.NumberOfFrames) != null && Integer.parseInt(dataset.getString(Tags.NumberOfFrames)) > 1) {

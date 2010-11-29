@@ -39,6 +39,7 @@
 package in.raster.mayam.delegate;
 
 import in.raster.mayam.context.ApplicationContext;
+import in.raster.mayam.facade.ApplicationFacade;
 import in.raster.mayam.form.MainScreen;
 import java.io.File;
 import java.io.IOException;
@@ -298,7 +299,7 @@ public class ImportDcmDirDelegate {
         try {
             ImportDcmDirDelegate importDcmDirDelegate = new ImportDcmDirDelegate();
             importDcmDirDelegate.findAndLoadDcmDir();
-            if (importDcmDirDelegate.dcmDirFile != null && System.getProperty("user.dir").startsWith(importDcmDirDelegate.dcmDirFile.getParent())) {
+            if (importDcmDirDelegate.dcmDirFile != null && importDcmDirDelegate.dcmDirFile.getParent().startsWith(ApplicationFacade.binPath)) {
                 importDcmDirDelegate.run();
             }
         } catch (Exception ee) {
@@ -308,7 +309,7 @@ public class ImportDcmDirDelegate {
 
     public void findAndLoadDcmDir() {
         try {
-            String userDir = System.getProperty("user.dir");
+            String userDir = ApplicationFacade.binPath;
             File file = new File(userDir + File.separator + "DCMDIR");
             if (file.canRead()) {
                 dcmDirFile = file;
