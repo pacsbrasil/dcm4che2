@@ -73,12 +73,14 @@ public class QueryStudyPermissionCmd extends BaseReadCmd {
     
 	
     public Map getGrantedActionsForStudies(String[] studyIUIDs, Subject subject) throws SQLException {
+        HashMap result = new HashMap();
+        if (studyIUIDs == null || studyIUIDs.length < 1)
+            return result;
     	String[] roles = SecurityUtils.rolesOf(subject);
     	sqlBuilder.addListOfStringMatch(null, "StudyPermission.studyIuid", false, studyIUIDs );
    		sqlBuilder.addListOfStringMatch(null, "StudyPermission.role", false, roles );
         try {
             execute(sqlBuilder.getSql());
-            HashMap result = new HashMap();
             Set actions;
             String suid;
             while (next()) {
