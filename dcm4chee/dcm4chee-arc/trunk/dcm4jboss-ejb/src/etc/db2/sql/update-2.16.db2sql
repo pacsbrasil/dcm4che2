@@ -3,6 +3,8 @@
 CONNECT TO pacsdb;
 SET CURRENT SCHEMA pacsdb;
 
+CREATE INDEX inst_created ON instance(created_time);
+
 ALTER TABLE study_on_fs
    ADD mark_to_delete SMALLINT NOT NULL DEFAULT 0;
 
