@@ -4,7 +4,12 @@ package org.dcm4chee.web.war.ae;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.ObjectName;
+
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.protocol.http.MockServletContext;
 import org.apache.wicket.util.tester.FormTester;
 import org.apache.wicket.util.tester.WicketTester;
 import org.dcm4chee.archive.entity.AE;
@@ -12,6 +17,8 @@ import org.dcm4chee.archive.entity.FileSystem;
 import org.dcm4chee.web.dao.ae.AEHomeBean;
 import org.dcm4chee.web.war.WASPTestUtil;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bm.testsuite.BaseSessionBeanFixture;
 
@@ -23,6 +30,8 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
     private ArrayList<AE> aeList = new ArrayList<AE>(5);
 
     private static final Class<?>[] usedBeans = {FileSystem.class, AE.class};
+    
+    private static Logger log = LoggerFactory.getLogger(AEMgtTest.class);
 
     public AEMgtTest() throws Exception {
         super(AEHomeBean.class, usedBeans);
@@ -31,13 +40,30 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
     @Override
     public void setUp() throws Exception
     {
+        this.initDummyMBean();
+        WASPTestUtil.initRolesMappingFile();
         super.setUp();
         testApplicaton = new AEMgtApplication();
         wicketTester = WASPTestUtil.getWicketTester(testApplicaton);
+        MockServletContext ctx =(MockServletContext)wicketTester.getApplication().getServletContext();
+        ctx.addInitParameter("WebCfgServiceName", "dcm4chee.web:service=WebConfig");
+
         aeList.add(getTestAE("AE_TEST", "localhost", 11112));
         //aeList.add(getTestAE("AE_FAILED", "localhost", 12222));
         //aeList.add(getTestAE("AE_TEST2", "localhost", 11113));
         //aeList.add(getTestAE("AE_TEST3", "localhost", 11114));
+    }
+    
+    private void initDummyMBean() {
+        MBeanServer mbServer = MBeanServerFactory.createMBeanServer("jboss");
+        try {
+            mbServer.createMBean("org.dcm4chee.web.war.DummyWebCfgMBean", 
+                    new ObjectName("dcm4chee.web:service=WebConfig"));
+        } catch (Exception ignore) {log.error("Can't create DummyWebCfgMBean!",ignore);}        
+        try {
+            mbServer.createMBean("org.dcm4chee.web.war.DummyServerConfigMBean", 
+                    new ObjectName("jboss.system:type=ServerConfig"));
+        } catch (Exception ignore) {log.error("Can't create ServerConfigBean!",ignore);}        
     }
     
     @Test

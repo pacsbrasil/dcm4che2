@@ -69,7 +69,7 @@ public class AEMgtApplication extends BaseWicketApplication {
 
     @Override
     protected Object getHiveKey() {
-        return ((MockServletContext) getServletContext()).getContextPath();
+        return "hive_"+getName();
     }
 
     @Override

@@ -38,8 +38,9 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import javax.management.Attribute;
 import javax.management.AttributeList;
@@ -53,49 +54,65 @@ import javax.management.ReflectionException;
 
 import org.jboss.system.ServiceMBeanSupport;
 
-public class DummyWebCfgMBean extends ServiceMBeanSupport implements DynamicMBean {
+public class DummyServerConfigMBean extends ServiceMBeanSupport implements DynamicMBean {
 
-    
     public Object getAttribute(String attribute)
             throws AttributeNotFoundException, MBeanException,
             ReflectionException {
-        if (attribute.endsWith("Pagesize")) return 10;
-        if ("QueryAfterPagesizeChange".equals(attribute)) return true;
-        if ("useFamilyAndGivenNameQueryFields".equals(attribute)) return false;
-        if ("roleFilename".equals(attribute)) return "role.json";
-        if ("loginAllowedRolename".equals(attribute)) return "LoginAllowed";
-        
+        try {
+            if ("ServerConfigURL".equals(attribute))
+                return getServerConfigURL();
+            if ("ServerHomeDir".equals(attribute))
+                return getServerHomeDir();
+        } catch (Exception t) {
+            throw new MBeanException(t);
+        }
         return null;
     }
+    
+    public URL getServerConfigURL() throws MalformedURLException {
+        return new File(getServerHomeDir(), "conf").toURL();
+    }
 
+    public File getServerHomeDir() {
+        return new File("target/serverhome/");
+    }
+    
     public AttributeList getAttributes(String[] attributes) {
+        // TODO Auto-generated method stub
         return null;
     }
 
     public MBeanInfo getMBeanInfo() {
         MBeanOperationInfo[] ops = new MBeanOperationInfo[]{};
-        MBeanInfo info = new MBeanInfo(getClass().getName(), "Dummy WebCfg and UserAccess Service implementation for unit testing", null, null, ops, null);
+        MBeanInfo info = new MBeanInfo(getClass().getName(), "Dummy JBoss Config Service for unit testing", null, null, ops, null);
         return info;
     }
 
-    public Object invoke(String actionName, Object[] p, String[] signature)
+    public Object invoke(String actionName, Object[] params, String[] signature)
             throws MBeanException, ReflectionException {
-        if ("getPagesizeList".equals(actionName)) return new ArrayList<Integer>(Arrays.asList(10,25,50));
-        if ("getModalityList".equals(actionName)) return new ArrayList<String>(Arrays.asList("CT","MR"));
-        if ("getSourceAETList".equals(actionName)) return new ArrayList<String>(Arrays.asList("DCMSND","CT1"));
-        if ("getStationAETList".equals(actionName)) return new ArrayList<String>(Arrays.asList("DCMSND","CT1"));
-        if ("getStationNameList".equals(actionName)) return new ArrayList<String>(Arrays.asList("STATION1","STATION2"));
-        if ("getWindowSize".equals(actionName)) return new int[]{800,600};
+        try {
+            if ("getServerConfigURL".equals(actionName))
+                return getServerConfigURL();
+            if ("getServerHomeDir".equals(actionName))
+                return getServerHomeDir();
+        } catch (Exception t) {
+            throw new MBeanException(t);
+        }
         return null;
     }
 
     public void setAttribute(Attribute attribute)
             throws AttributeNotFoundException, InvalidAttributeValueException,
             MBeanException, ReflectionException {
+        // TODO Auto-generated method stub
+        
     }
 
     public AttributeList setAttributes(AttributeList attributes) {
+        // TODO Auto-generated method stub
         return null;
     }
 
+    
 }

@@ -8,6 +8,7 @@ import javax.management.ObjectName;
 import org.apache.wicket.Page;
 import org.apache.wicket.Session;
 import org.apache.wicket.authorization.strategies.role.Roles;
+import org.apache.wicket.protocol.http.MockServletContext;
 import org.apache.wicket.security.hive.authorization.Principal;
 import org.apache.wicket.security.swarm.strategies.SwarmStrategy;
 import org.apache.wicket.util.tester.FormTester;
@@ -61,17 +62,24 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
     @Override
     public void setUp() throws Exception {
         this.initDummyMBean();
+        WASPTestUtil.initRolesMappingFile();
         super.setUp();
         testApplicaton = new WicketApplication();
         wicketTester = WASPTestUtil.getWicketTester(testApplicaton);
+        MockServletContext ctx =(MockServletContext)wicketTester.getApplication().getServletContext();
+        ctx.addInitParameter("WebCfgServiceName", "dcm4chee.web:service=WebConfig");
     }
     
     private void initDummyMBean() {
-        MBeanServer mbServer = MBeanServerFactory.createMBeanServer();
+        MBeanServer mbServer = MBeanServerFactory.createMBeanServer("jboss");
         try {
             mbServer.createMBean("org.dcm4chee.web.war.DummyWebCfgMBean", 
                     new ObjectName("dcm4chee.web:service=WebConfig"));
-        } catch (Exception ignore) {log.error("Can't create DummyEchoMBean!",ignore);}        
+        } catch (Exception ignore) {log.error("Can't create DummyWebCfgMBean!",ignore);}        
+        try {
+            mbServer.createMBean("org.dcm4chee.web.war.DummyServerConfigMBean", 
+                    new ObjectName("jboss.system:type=ServerConfig"));
+        } catch (Exception ignore) {log.error("Can't create ServerConfigBean!",ignore);}        
     }
 
     
@@ -103,20 +111,26 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
 
     @Test
     public void testAdminRoles() {
-         checkRoles(ADMIN, new String[]{"WebUser","WebAdmin","Doctor","JBossAdmin","AuditLogUser",
-                 "LoginAllowed","FolderRead","FolderWrite","AERead","AEWrite"});
+         checkRoles(ADMIN, new String[]{"FolderActions","Dashboard","FileSystem","AEWrite","MWLRead","UserRead",
+                 "SystemInfo","UserManagement","FolderRead","MWLWrite","FolderWrite","RoleWrite","AERead",
+                 "RoleRead","StudyPermissionsWrite","LoginAllowed","ReportWrite","Queue","ReportRead",
+                 "UserWrite","TrashActions","TrashRead"});
     }
     @Test
     public void testUserRoles() {
-        checkRoles( USER, new String[]{"WebUser","AuditLogUser","LoginAllowed","FolderRead","AERead"});
+        checkRoles( USER, new String[]{"FolderActions","Dashboard","AEWrite","FileSystem","MWLRead","SystemInfo",
+                "FolderRead","MWLWrite","FolderWrite","AERead","LoginAllowed","StudyPermissionsWrite","Queue",
+                "ReportRead","TrashActions","TrashRead"});
     }
+    
     @Test
     public void testDocRoles() {
-        checkRoles( "doc", new String[]{"WebUser","Doctor","AuditLogUser","LoginAllowed","FolderRead"});
+        checkRoles( "doc", new String[]{"FolderActions","Dashboard","MWLRead","FolderRead","MWLWrite","FolderWrite",
+                "LoginAllowed","StudyPermissionsWrite","TrashActions","TrashRead"});
     }
     @Test
     public void testGuestRoles() {
-        checkRoles( "guest", new String[]{"WebUser","LoginAllowed","FolderRead"});
+        checkRoles( "guest", new String[]{"FolderRead","LoginAllowed"});
     }
 /*_*/
     private void checkLogin(String user, String passwd, Class<? extends Page> pageClass) {
