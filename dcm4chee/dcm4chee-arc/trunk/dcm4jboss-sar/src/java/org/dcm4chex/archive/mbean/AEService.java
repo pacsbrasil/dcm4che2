@@ -256,21 +256,21 @@ public class AEService extends ServiceMBeanSupport {
         return home.create();
     }
 
-    public void updateAETitle(String prevAET, String newAET)
-            throws Exception {
+    public void updateAETitle(String prevAET, String newAET) throws Exception {
+    	prevAET = prevAET.trim();
+    	newAET = newAET.trim();
         if (prevAET.equals(newAET)) {
             return;
         }
-        fileSystemMgt().updateFileSystemRetrieveAET(prevAET, newAET,
-                updateStudiesBatchSize);
+        
         AEManager aeManager = aeMgr();
-        boolean sendNotification = false;
-        try {
-            AEDTO ae = aeManager.findByAET(prevAET);
-            ae.setTitle(newAET);
-            aeManager.updateAE(ae);
-            sendNotification = true;
-        } catch (UnknownAETException e) {}
+        AEDTO ae = aeManager.findByAET(prevAET);
+        ae.setTitle(newAET);
+        aeManager.updateAE(ae);
+        
+        fileSystemMgt().updateFileSystemRetrieveAET(prevAET, newAET,
+        		updateStudiesBatchSize);
+
         for (int i = 0; i < otherServiceNames.length; i++) {
             if (server.isRegistered(otherServiceNames[i])) {
                 updateAETitle(otherServiceNames[i], otherServiceAETAttrs[i],
@@ -283,9 +283,8 @@ public class AEService extends ServiceMBeanSupport {
                 }
             }
         }
-        if (sendNotification) {
-            notifyAETchange(prevAET, newAET, "");
-        }
+        log.info("AE title changed from " + prevAET + " to " + newAET);
+        notifyAETchange(prevAET, newAET, "");
     }
 
     private boolean updateAETitle(ObjectName name, String attr,
@@ -510,7 +509,8 @@ public class AEService extends ServiceMBeanSupport {
         return home.create();
     }
 
-    protected void startService() throws Exception {
+    @Override
+	protected void startService() throws Exception {
         aeMgr().setMaxCacheSize(maxCacheSize);
     }
 }
