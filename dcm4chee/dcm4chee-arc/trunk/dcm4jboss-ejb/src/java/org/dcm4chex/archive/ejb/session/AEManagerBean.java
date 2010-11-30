@@ -91,7 +91,8 @@ public abstract class AEManagerBean implements SessionBean {
 
                 private static final long serialVersionUID = -5477659896294241869L;
 
-                protected boolean removeEldestEntry(Map.Entry eldest) {
+                @Override
+				protected boolean removeEldestEntry(Map.Entry eldest) {
                     return size() > maxCacheSize;
                 }
             });
@@ -173,6 +174,7 @@ public abstract class AEManagerBean implements SessionBean {
      */
     public AEDTO findByAET(String aet)
             throws FinderException, UnknownAETException {
+    	aet = aet.trim();
     	AEDTO ae = (AEDTO) AEManagerBean.aeCache.get(aet);
     	if (ae == null) {
 	        try {

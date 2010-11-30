@@ -281,7 +281,7 @@ public abstract class AEBean implements EntityBean {
      * @ejb.interface-method
      */
     public void update(AEDTO dto) {
-        setTitle(dto.getTitle());
+        setTitle(dto.getTitle().trim());
         setHostName(dto.getHostName());
         setPort(dto.getPort());
         setCipherSuites(dto.getCipherSuitesAsString());
