@@ -38,6 +38,10 @@
 
 package org.dcm4che2.tool.dcm2jpg;
 
+
+
+
+
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -50,9 +54,14 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.imageio.IIOException;
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -65,7 +74,9 @@ import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.util.CloseUtils;
 
+import com.sun.image.codec.jpeg.ImageFormatException;
 import com.sun.image.codec.jpeg.JPEGCodec;
+import com.sun.image.codec.jpeg.JPEGEncodeParam;
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
 /**
@@ -89,7 +100,11 @@ public class Dcm2Jpg {
     private boolean autoWindowing;
     private DicomObject prState;
     private short[] pval2gray;
+    private String formatName = "JPEG";
+    private String compressionType = "jpeg";
     private String fileExt = ".jpg";
+    private Float imageQuality;
+    private String imageWriterClassname;
 
     private void setFrameNumber(int frame) {
         this.frame = frame;
@@ -122,6 +137,34 @@ public class Dcm2Jpg {
     public final void setFileExt(String fileExt) {
         this.fileExt = fileExt;
     }
+    
+    private void setImageWriter (String imagewriter) {
+    	this.imageWriterClassname = imagewriter;
+    }
+    
+    public void setFormatName(String formatName) {
+        this.formatName = formatName;
+    }
+
+    private void setImageQuality (int quality) {
+    	this.imageQuality = new Float(quality / 100f);
+    }
+    
+    private ImageWriter getImageWriter(String imageWriterClass) throws IIOException {
+        ImageWriter writer;
+        for (Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName(formatName) ; it.hasNext() ;) {
+            writer = it.next();
+            if ("*".equals(imageWriterClass)
+                    ||writer.getClass().getName().equals(imageWriterClass)) {
+                return writer;
+            }
+        }
+        throw new IIOException("No such ImageWriter - " + imageWriterClass);
+    }
+    
+    public void setCompressionType(String compressionType) {
+        this.compressionType = compressionType;
+    }
 
     public void convert(File src, File dest) throws IOException {
         Iterator<ImageReader> iter = ImageIO.getImageReadersByFormatName("DICOM");
@@ -135,8 +178,7 @@ public class Dcm2Jpg {
         param.setPValue2Gray(pval2gray);
         param.setAutoWindowing(autoWindowing);
         ImageInputStream iis = ImageIO.createImageInputStream(src);
-        BufferedImage bi;
-        OutputStream out = null;
+        BufferedImage bi;  
         try {
             reader.setInput(iis, false);
             bi = reader.read(frame - 1, param);
@@ -144,14 +186,62 @@ public class Dcm2Jpg {
                 System.out.println("\nError: " + src + " - couldn't read!");
                 return;
             }
-            out = new BufferedOutputStream(new FileOutputStream(dest));
-            JPEGImageEncoder enc = JPEGCodec.createJPEGEncoder(out);
-            enc.encode(bi);
+            if (imageWriterClassname == null) {
+                encodeByJPEGEncoder(bi, dest);
+            } else {
+                encodeByImageIO(bi, dest);
+            }
         } finally {
             CloseUtils.safeClose(iis);
-            CloseUtils.safeClose(out);
         }
         System.out.print('.');
+    }
+    
+    private void encodeByJPEGEncoder(BufferedImage bi, File dest) throws ImageFormatException, IOException {
+        OutputStream out = null;
+        try {
+            out = new BufferedOutputStream(new FileOutputStream(dest));
+            JPEGImageEncoder enc = JPEGCodec.createJPEGEncoder(out);
+            if (imageQuality != null) {
+                JPEGEncodeParam param = JPEGCodec.getDefaultJPEGEncodeParam(bi);
+                param.setQuality(imageQuality, true);
+                enc.setJPEGEncodeParam(param);
+            }
+            enc.encode(bi);
+        } finally {
+            CloseUtils.safeClose(out);
+        }
+    }
+    private void encodeByImageIO(BufferedImage bi, File dest) throws IOException {
+        ImageWriter writer = getImageWriter(imageWriterClassname);
+        ImageOutputStream out = null;
+        try {
+            out = ImageIO.createImageOutputStream(dest);
+            writer.setOutput(out);
+            ImageWriteParam iwparam = writer.getDefaultWriteParam();
+            if (iwparam.canWriteCompressed()) {
+                iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                String[] compressionTypes = iwparam.getCompressionTypes();
+                if (compressionTypes != null && compressionTypes.length > 0) {
+                    if (compressionType != null || iwparam.getCompressionType() == null) {
+                        for (int i = 0; i < compressionTypes.length; i++) {
+                            if (compressionType == null || compressionTypes[i].compareToIgnoreCase(compressionType) == 0) {
+                                iwparam.setCompressionType(compressionTypes[i]);
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (imageQuality != null)
+                    iwparam.setCompressionQuality(imageQuality);
+            } else if (imageQuality != null) {
+                System.out.println("Selected Image Writer can not compress! imageQuality is ignored!");
+            }
+            writer.write(null, new IIOImage(bi, null, null), iwparam);
+        } finally {
+            CloseUtils.safeClose(out);
+            writer.dispose();
+        }
     }
 
     public int mconvert(List<String> args, int optind, File destDir)
@@ -226,6 +316,30 @@ public class Dcm2Jpg {
                     parseFloat(cl.getOptionValue("w"),
                             "illegal argument of option -w"));
         }
+        
+        if (cl.hasOption("q")) {
+            dcm2jpg.setImageQuality(
+                    parseInt(cl.getOptionValue("q"),
+                            "illegal argument of option -q", 0, 100));
+        }
+        
+        if (cl.hasOption("F")) {
+            String fn =cl.getOptionValue("F");
+            dcm2jpg.setFormatName(fn.toUpperCase());
+            dcm2jpg.setImageWriter("*");
+            dcm2jpg.setFileExt("."+fn.toLowerCase());
+            dcm2jpg.setCompressionType("JPEG".equalsIgnoreCase(fn) ? "jpeg" : null);
+        }
+
+        if (cl.hasOption("T")) {
+            String type =cl.getOptionValue("T");
+            dcm2jpg.setCompressionType("*".equals(type) ? null :type);
+        }
+
+        if (cl.hasOption("imagewriter")) {
+            dcm2jpg.setImageWriter(cl.getOptionValue("imagewriter"));
+        }
+        
         if (cl.hasOption("sigmoid")) {
             dcm2jpg.setVoiLutFunction(DicomImageReadParam.SIGMOID);
         }
@@ -233,6 +347,11 @@ public class Dcm2Jpg {
         if (cl.hasOption("jpgext")) {
             dcm2jpg.setFileExt(cl.getOptionValue("jpgext"));
         }
+        if (cl.hasOption("s")) {
+            dcm2jpg.showImageWriters();
+            return;
+        }
+
         final List<String> argList = cl.getArgList();
         int argc = argList.size();
 
@@ -255,6 +374,32 @@ public class Dcm2Jpg {
         long t2 = System.currentTimeMillis();
         System.out.println("\nconverted " + count + " files in " + (t2 - t1)
                 / 1000f + " s.");
+    }
+
+    private void showImageWriters() {
+        ImageWriter writer;
+        System.out.println("ImageWriters for format name:"+formatName);
+        int i = 0;
+        for (Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName(formatName) ; it.hasNext() ;) {
+            writer = it.next();
+            System.out.println("Writer["+(i++)+"]: "+writer.getClass().getName()+":");
+            System.out.println("   Write Param:");
+            ImageWriteParam param = writer.getDefaultWriteParam();
+            System.out.println("       canWriteCompressed:"+param.canWriteCompressed());
+            System.out.println("      canWriteProgressive:"+param.canWriteProgressive());
+            System.out.println("            canWriteTiles:"+param.canWriteTiles());
+            System.out.println("           canOffsetTiles:"+param.canOffsetTiles());
+            if (param.canWriteCompressed()) {
+                String[] types = param.getCompressionTypes();
+                System.out.println("   Compression Types:");
+                if (types != null && types.length > 0) {
+                    for (int j = 0 ; j < types.length ; j++) {
+                        System.out.println("           Type["+j+"]:"+types[j]);
+                    }
+                }
+            }
+            System.out.println("-----------------------------");
+        }
     }
 
     private static DicomObject loadDicomObject(File file) {
@@ -314,6 +459,31 @@ public class Dcm2Jpg {
         OptionBuilder.withDescription(
                 "frame to convert, 1 (= first frame) by default");
         opts.addOption(OptionBuilder.create("f"));
+        
+        OptionBuilder.withArgName("imagequality");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "JPEG Image Quality (0-100)");
+        opts.addOption(OptionBuilder.create("q"));
+        
+        OptionBuilder.withArgName("ImageWriterClass");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "ImageWriter to be used [Default: JPEGImageEncoder instead of imageIO]. Use * to choose the first ImageIO Writer found for given image format");
+        opts.addOption(OptionBuilder.create("imagewriter"));
+        opts.addOption("s", "showimagewriter", false, "Show all available Image Writer for specified format name.");
+
+        OptionBuilder.withArgName("formatName");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "Image Format Name. [default JPEG] This option will imply default values for ImageWriterClass='*' and jpgext='.<formatname>'");
+        opts.addOption(OptionBuilder.create("F"));
+        OptionBuilder.withArgName("compressionType");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "Compression Type. [default: '*' (exception: jpeg for format JPEG)] Only applicable if an ImageWriterClass is used! Use * to choose the first compression type.");
+        opts.addOption(OptionBuilder.create("T"));
+        
         OptionBuilder.withArgName("prfile");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription(
@@ -357,7 +527,7 @@ public class Dcm2Jpg {
             System.out.println("dcm2jpg v" + p.getImplementationVersion());
             System.exit(0);
         }
-        if (cl.hasOption('h') || cl.getArgList().size() < 2) {
+        if (cl.hasOption('h') || !cl.hasOption('s') && cl.getArgList().size() < 2) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
             System.exit(0);
