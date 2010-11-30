@@ -116,10 +116,12 @@ public class Jpdbi {
             else
                 stmt.executeUpdate(sql);
             stmt.close();
-        } catch (SQLException e) {           
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
+    // Update DB Field only
 
     private static void UpdateField(PreparedStatement stmt, Long pk, String uid, boolean debug) throws SQLException {
         if (debug)
@@ -133,6 +135,7 @@ public class Jpdbi {
         }
     }
 
+    // Update DicomBlob and DB Field or both
     static void UpdateField(ResultSet rs, PreparedStatement stmt, Long pk, String field, String[][] update, String uid,
             boolean debug) throws SQLException, IOException {
 
@@ -214,13 +217,13 @@ public class Jpdbi {
 
     }
 
-    private static void ParseQuery(Connection conn, Config cfg)
-            throws SQLException, IOException {
+    private static void ParseQuery(Connection conn, Config cfg) throws SQLException, IOException {
         Statement stmt = conn.createStatement();
         ResultSet rs = null;
-        boolean updUid = false;      
-        
-        String [] query=cfg.getSqlPortions();
+        boolean updUid = false;
+        String uidTemplate = null;
+
+        String[] query = cfg.getSqlPortions();
 
         String SQLStatement = "";
 
@@ -242,7 +245,7 @@ public class Jpdbi {
             System.err.println("DEBUG: Query: < " + QueryStatement + " >");
         }
 
-        String[][] update=cfg.getUpdDicom();
+        String[][] update = cfg.getUpdDicom();
         boolean multi = false;
         boolean UpdModality = false;
         String UpdateStatement = null;
@@ -276,9 +279,16 @@ public class Jpdbi {
                         UpdateStatement += ",";
                     UpdateStatement += update[loop][0].toUpperCase();
 
-                    if (UpdValue.equals("%UID%")) {
-                        updUid = true;
+                    if (UpdValue.equals("%UID%") || UpdValue.startsWith("+")) {
                         UpdateStatement += "=?";
+                        if (UpdValue.startsWith("+")) {
+                            uidTemplate = UpdValue.substring(1);
+                        } else {
+                            uidTemplate = cfg.getUidBase();
+                        }
+                        if (cfg.isDebug()) {
+                            System.err.println("DEBUG: Update Template: < " + uidTemplate + " >");
+                        }
                     } else {
                         UpdateStatement += (UpdValue == null) ? "=null" : "='" + UpdValue + "'";
                     }
@@ -313,11 +323,11 @@ public class Jpdbi {
                 if (!multi && rows != 1) {
                     Jpdbi.exit(1, "Multiple Updates not allowed on this Configuration.");
                 }
-                
-                if ( cfg.getUpdateCount() == -666 || rows == cfg.getUpdateCount() ) {
+
+                if (cfg.getUpdateCount() == -666 || rows == cfg.getUpdateCount()) {
                     UpdStmt = conn.prepareStatement("update " + Jpdbi.Tables[UpdateLevel] + " set " + UpdateStatement);
                 } else {
-                    Jpdbi.exit(1, "Updating ["+rows+"] rows.  Please supply correct \"--count\" option.");
+                    Jpdbi.exit(1, "Updating [" + rows + "] rows.  Please supply correct \"--count\" option.");
                 }
             }
 
@@ -359,9 +369,9 @@ public class Jpdbi {
                         }
                         if (cfg.isUpdateLevel(i) && PK > -1) {
                             String uid = null;
-                            if (updUid) 
-                                uid = Uid.Generate(cfg.getUidBase(), cnt);
-                            
+                            if (uidTemplate != null)
+                                uid = Uid.Generate(uidTemplate, cnt);
+
                             if (cfg.getUpdateDS().isEmpty())
                                 UpdateField(UpdStmt, PK, uid, cfg.isDebug());
                             else
@@ -411,4 +421,3 @@ public class Jpdbi {
         Jpdbi.exit(0);
     }
 }
-
