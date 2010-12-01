@@ -139,11 +139,14 @@ public class ImageDiff {
 
 	/** Returns the difference in the colour component */
 	protected int colourDiff(int c1, int c2) {
-		int a = (c1 >> 24) & 0xFF - ((c2 >> 24) & 0xFF);
-		int r = (c1 >> 16) & 0xFF - ((c2 >> 16) & 0xFF);
-		int g = (c1 >> 8) & 0xFF -  ((c2 >> 8) & 0xFF);
-		int b = c1 & 0xFF - (c2 & 0xFF);
-		return (int) Math.sqrt(a*a+r*r+g*g+b*b);
+	        c1 = 0xFFFFFF & c1;
+	        c2 = 0xFFFFFF & c2;
+		int a = ((c1 >> 24) & 0xFF) - ((c2 >> 24) & 0xFF);
+		int r = ((c1 >> 16) & 0xFF) - ((c2 >> 16) & 0xFF);
+		int g = ((c1 >> 8) & 0xFF) -  ((c2 >> 8) & 0xFF);
+		int b = ((c1 & 0xFF)) - (c2 & 0xFF);
+		int ret = (int) Math.sqrt(a*a+r*r+g*g+b*b);
+		return ret;
 	}
 
 	/** Returns a pixel representing the difference in the colour component */
