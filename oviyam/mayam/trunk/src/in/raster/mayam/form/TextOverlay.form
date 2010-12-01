@@ -17,19 +17,22 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" max="-2" attributes="0">
                   <Component id="instanceNoLabel" alignment="0" min="-2" pref="178" max="-2" attributes="0"/>
-                  <Component id="patientNameLabel" alignment="0" min="-2" pref="160" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="patientNameLabel" min="-2" pref="167" max="-2" attributes="0"/>
+                      <EmptySpace pref="67" max="32767" attributes="1"/>
+                  </Group>
                   <Component id="patientIDLabel" alignment="0" min="-2" pref="152" max="-2" attributes="0"/>
                   <Component id="huLabel" alignment="0" min="-2" pref="187" max="-2" attributes="0"/>
                   <Component id="windowingLabel" alignment="0" min="-2" pref="234" max="-2" attributes="0"/>
                   <Component id="slicePositionLabel" alignment="0" min="-2" pref="185" max="-2" attributes="0"/>
                   <Component id="patientSexLabel" alignment="0" min="-2" pref="91" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jLabel8" pref="171" max="32767" attributes="1"/>
+                  <Component id="jLabel8" pref="257" max="32767" attributes="1"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="studyDateLabel" min="-2" pref="118" max="-2" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -51,12 +54,11 @@
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace min="41" pref="41" max="41" attributes="0"/>
-                      <Component id="institutionLabel" min="-2" pref="110" max="-2" attributes="2"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="patientPositionLabel" min="-2" pref="151" max="-2" attributes="1"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="patientPositionLabel" min="-2" pref="151" max="-2" attributes="1"/>
+                      <Component id="institutionLabel" min="-2" pref="237" max="-2" attributes="2"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>

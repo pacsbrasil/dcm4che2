@@ -242,7 +242,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     public ImagePanel(String dicomFileUrl, Canvas canvas) {
         this.dicomFileUrl = dicomFileUrl;
         this.canvas = canvas;
-        readDicomFile(new File(dicomFileUrl));       
+        readDicomFile(new File(dicomFileUrl));
         retriveTagInfo();
         initComponents();
         addlisteners();
@@ -303,8 +303,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         rescaleSlope = dataset.getString(Tags.RescaleSlope);
         rescaleIntercept = dataset.getString(Tags.RescaleIntercept);
         aspectRatio = dataset.getStrings(Tags.PixelAspectRatio);
-        try {           
-            currentInstanceNo = Integer.parseInt(dataset.getString(Tags.InstanceNumber));           
+        try {
+            currentInstanceNo = Integer.parseInt(dataset.getString(Tags.InstanceNumber));
         } catch (NumberFormatException e) {
             System.out.println("Instance Number format error ");
             currentInstanceNo = 1;
@@ -840,6 +840,17 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
     }
 
+    public void setWindowingToolsAsDefault() {
+        if (!(tool.equalsIgnoreCase("windowing"))) {
+            tool = "windowing";
+            System.out.println(" tool has been set as windowing");
+        }
+    }
+
+    public boolean isWindowingSelected() {
+        return (tool.equalsIgnoreCase("windowing"));
+    }
+
     /**
      * This routine used to get the dataset value of the current image box
      * @return
@@ -1208,6 +1219,10 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
     }
 
+    public boolean isStackSelected() {
+        return (tool.equalsIgnoreCase("stack"));
+    }
+
     public void setToolsToNull() {
         tool = "";
     }
@@ -1295,8 +1310,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             System.out.println("Windowing can't be applied");
         }
     }
-    public void repaintTextOverlay()
-    {
+
+    public void repaintTextOverlay() {
         this.getCanvas().getLayeredCanvas().textOverlay.repaint();
     }
 
@@ -1926,10 +1941,11 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     }
 
     public float getRescaleIntercept() {
-        if(rescaleIntercept!=null &&!rescaleIntercept.equalsIgnoreCase(""))
-        return Float.parseFloat(rescaleIntercept);
-        else
+        if (rescaleIntercept != null && !rescaleIntercept.equalsIgnoreCase("")) {
+            return Float.parseFloat(rescaleIntercept);
+        } else {
             return 0.0f;
+        }
     }
 
     public void setRescaleIntercept(String rescaleIntercept) {
@@ -1937,10 +1953,11 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     }
 
     public float getRescaleSlope() {
-        if(rescaleSlope!=null &&!rescaleSlope.equalsIgnoreCase(""))
-        return Float.parseFloat(rescaleSlope);
-        else
+        if (rescaleSlope != null && !rescaleSlope.equalsIgnoreCase("")) {
+            return Float.parseFloat(rescaleSlope);
+        } else {
             return 0.0f;
+        }
     }
 
     public void setRescaleSlope(String rescaleSlope) {
@@ -1987,7 +2004,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         return referencedSOPInstanceUID;
     }
 
-    private void designContext() {     
+    private void designContext() {
         ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList(this.studyUID);
         JMenu menu;
         if ((this.studyDesc == null) || (this.studyDesc.equalsIgnoreCase(""))) {

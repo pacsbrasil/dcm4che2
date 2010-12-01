@@ -262,6 +262,9 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
                         .add(toSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 128, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
+
+        jPanel1Layout.linkSize(new java.awt.Component[] {anydateRadio, betweenRadio, lastmonthRadio, lastweekRadio, todayRadio, yesterdayRadio}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
@@ -284,7 +287,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
                 .add(26, 26, 26))
         );
 
-        jPanel1Layout.linkSize(new java.awt.Component[] {betweenRadio, yesterdayRadio}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        jPanel1Layout.linkSize(new java.awt.Component[] {anydateRadio, betweenRadio, lastmonthRadio, lastweekRadio, todayRadio, yesterdayRadio}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         jPanel10.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
@@ -521,21 +524,21 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
         jScrollPane2.setViewportView(studyListTable);
 
         serverNameLabel.setBackground(new java.awt.Color(117, 113, 113));
-        serverNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        serverNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         serverNameLabel.setForeground(new java.awt.Color(0, 0, 104));
         serverNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         serverNameLabel.setText(" Server Name");
         serverNameLabel.setOpaque(true);
 
         headerLabel.setBackground(new java.awt.Color(117, 113, 113));
-        headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         headerLabel.setForeground(new java.awt.Color(0, 0, 104));
         headerLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         headerLabel.setText(" DICOM Nodes ");
         headerLabel.setOpaque(true);
 
         jLabel1.setBackground(new java.awt.Color(117, 113, 113));
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         jLabel1.setForeground(new java.awt.Color(0, 0, 104));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Query Filter");
@@ -682,18 +685,15 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
                             "dicom" + "://" + dicomServerArray.get(i).getAe().getAeTitle() + "@" + dicomServerArray.get(i).getAe().getHostName() + ":" + dicomServerArray.get(i).getAe().getPort(),
                             "--dest", s[0], "--pid", dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), "--suid",
                             dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8)};
-                       
+
                         try {
                             if (!ApplicationContext.databaseRef.checkRecordExists("study", "StudyInstanceUID", dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8))) {
                                 MainScreen.sndRcvFrm.setVisible(true);
-                                MoveDelegate moveDelegate=null;
-                                if(dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("C-MOVE"))
-                                {                                    
-                                moveDelegate = new MoveDelegate(tem);
-                                }                                
-                                else if(dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("WADO"))
-                                {
-                                    WadoRetrieveDelegate wadoRetrieveDelegate=new WadoRetrieveDelegate();
+                                MoveDelegate moveDelegate = null;
+                                if (dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("C-MOVE")) {
+                                    moveDelegate = new MoveDelegate(tem);
+                                } else if (dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("WADO")) {
+                                    WadoRetrieveDelegate wadoRetrieveDelegate = new WadoRetrieveDelegate();
                                     wadoRetrieveDelegate.retrieveStudy(serverName, dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8));
                                 }
                             } else {

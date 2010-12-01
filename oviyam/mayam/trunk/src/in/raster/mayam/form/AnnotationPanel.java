@@ -238,7 +238,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             int pointY = evt.getY() - mousePointBoxSize / 2;
             int width = mousePointBoxSize;
             int height = mousePointBoxSize;
-            if (lineObject.intersects(pointX, pointY, width, height)) {               
+            if (lineObject.intersects(pointX, pointY, width, height)) {
                 lineObj.remove(t);
                 break;
             }
@@ -272,14 +272,14 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         while (ite.hasNext()) {
             AnnotationObj t = ite.next();
             Shape test = new Line2D.Float(t.getX1(), t.getY1(), t.getX2(), t.getY2());
-            if (test.contains(evt.getX(), evt.getY())) {              
+            if (test.contains(evt.getX(), evt.getY())) {
             }
         }
         Iterator<AnnotationObj> ite1 = rectObj.iterator();
-        while (ite1.hasNext()) {           
+        while (ite1.hasNext()) {
             AnnotationObj t = ite1.next();
             Shape test2 = new Rectangle2D.Float(t.getX1(), t.getY1(), t.getX2() - t.getX1(), t.getY2() - t.getY1());
-            if (test2.contains(evt.getX(), evt.getY())) {                
+            if (test2.contains(evt.getX(), evt.getY())) {
                 rectObj.remove(t);
                 break;
             }
@@ -307,23 +307,22 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         while (ite.hasNext()) {
             AnnotationObj t = ite.next();
             ShapeCoordinates shapeCoordinates = new ShapeCoordinates(t.getX1(), t.getY1(), t.getX2(), t.getY2());
-            int mousePointBoxSize=2;
+            int mousePointBoxSize = 2;
             Shape lineObject = new Line2D.Float(t.getX1(), t.getY1(), t.getX2(), t.getY2());
-            int pointX=evt.getX()-mousePointBoxSize/2;
-            int pointY=evt.getY()-mousePointBoxSize/2;
-                    int width=mousePointBoxSize;
-            int height=mousePointBoxSize;
-            if(lineObject.intersects(pointX,pointY, width, height))
-            {
+            int pointX = evt.getX() - mousePointBoxSize / 2;
+            int pointY = evt.getY() - mousePointBoxSize / 2;
+            int width = mousePointBoxSize;
+            int height = mousePointBoxSize;
+            if (lineObject.intersects(pointX, pointY, width, height)) {
                 Shape test = new Rectangle2D.Float(shapeCoordinates.getX(), shapeCoordinates.getY(), shapeCoordinates.getWidth(), shapeCoordinates.getHeight());
-                 int diffX = t.getX2() - t.getX1();
+                int diffX = t.getX2() - t.getX1();
                 int diffY = t.getY2() - t.getY1();
-                if ((diffX < 0 && diffY < 0) || (diffX > 0 && diffY > 0) ||(diffX==0&&diffY>0)||(diffY==0&&diffX>0)) {
+                if ((diffX < 0 && diffY < 0) || (diffX > 0 && diffY > 0) || (diffX == 0 && diffY > 0) || (diffY == 0 && diffX > 0)) {
                     selectedShapeOrientation = "left";
                 } else {
                     selectedShapeOrientation = "right";
                 }
-               boundingRect = test.getBounds();
+                boundingRect = test.getBounds();
                 seletedShape = test;
                 selectedShapeType = "line";
                 selectedShapeDisplayStringValue = t.getLength();
@@ -331,7 +330,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                 break;
             }
 
-            
+
         }
     }
 
@@ -440,6 +439,14 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         }
     }
 
+    public boolean isDeleteMeasurement() {
+        return this.deleteMeasurement;
+    }
+
+    public void setDeleteMeasurement(boolean deleteMeasurement) {
+        this.deleteMeasurement = deleteMeasurement;
+    }
+
     /**
      * This routine used to reset the selected measurement.
      */
@@ -489,6 +496,14 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             deleteMeasurement = false;
             resizeMeasurement = false;
         }
+    }
+
+    public static boolean isMoveMeasurement() {
+        return moveMeasurement;
+    }
+
+    public static void setMoveMeasurement(boolean moveMeasurement) {
+        moveMeasurement = moveMeasurement;
     }
 
     /**
@@ -851,10 +866,9 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     }
 
     public void stopPanning() {
-        if(tool.equalsIgnoreCase("panning"))
-        {
-        tool = "";        
-        this.layeredCanvas.imgpanel.tool = "";
+        if (tool.equalsIgnoreCase("panning")) {
+            tool = "";
+            this.layeredCanvas.imgpanel.tool = "";
         }
     }
 
@@ -879,12 +893,12 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         if (showAnnotation) {
             Graphics2D g = (Graphics2D) gs;
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
             if (this.layeredCanvas.imgpanel.isScaleFlag()) {
                 g.scale(this.layeredCanvas.imgpanel.getScaleFactor(), this.layeredCanvas.imgpanel.getScaleFactor());
             }
-            gs.setColor(Color.YELLOW);           
+            gs.setColor(Color.YELLOW);
             //Condition used to draw new line as per the line flag values and coordinates of the annotation mouse point
             if ((mouseLocX1 != -1 && mouseLocX2 != -1 && mouseLocY1 != -1 && mouseLocY2 != -1) && addLine) {
                 g.drawString("Length:" + calculateDiff((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocX2 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY2 / this.layeredCanvas.imgpanel.getScaleFactor())), (int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) ((mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()) - 20));
@@ -924,7 +938,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             if ((mouseLocX1 != -1 && mouseLocX2 != -1 && mouseLocY1 != -1 && mouseLocY2 != -1) && addEllipse) {
 //           //Draws the strings such as area,mean,stddev for the current shape
                 ShapeCoordinates shapeCoordinates = new ShapeCoordinates((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocX2 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY2 / this.layeredCanvas.imgpanel.getScaleFactor()));
-                gs.drawString("Area:" + calculateOvalArea((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocX2 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY2 / this.layeredCanvas.imgpanel.getScaleFactor())) , shapeCoordinates.getX(), shapeCoordinates.getY() - 60);
+                gs.drawString("Area:" + calculateOvalArea((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocX2 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY2 / this.layeredCanvas.imgpanel.getScaleFactor())), shapeCoordinates.getX(), shapeCoordinates.getY() - 60);
                 gs.drawString("Mean:", shapeCoordinates.getX(), shapeCoordinates.getY() - 40);
                 gs.drawString("Std Dev:", shapeCoordinates.getX(), shapeCoordinates.getY() - 20);
                 gs.drawOval(shapeCoordinates.getX(), shapeCoordinates.getY(), shapeCoordinates.getWidth(), shapeCoordinates.getHeight());
@@ -949,24 +963,25 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             }
             // Selecting the annotations
             if (boundingRect != null) {
-                if(selectedShapeType.equalsIgnoreCase("line"))
+                if (selectedShapeType.equalsIgnoreCase("line")) {
                     drawHighlightLines(g, boundingRect);
-                else
-                drawHighlightSquares(g, boundingRect);
+                } else {
+                    drawHighlightSquares(g, boundingRect);
+                }
             }
             if (curCursor != null) {
                 setCursor(curCursor);
             }
-            if (seletedShape != null) {               
-                if (selectedShapeType.equalsIgnoreCase("line")) {                   
-                    gs.drawString("Length:" + selectedShapeDisplayStringValue , seletedShape.getBounds().x, seletedShape.getBounds().y - 20);
+            if (seletedShape != null) {
+                if (selectedShapeType.equalsIgnoreCase("line")) {
+                    gs.drawString("Length:" + selectedShapeDisplayStringValue, seletedShape.getBounds().x, seletedShape.getBounds().y - 20);
                     if (selectedShapeOrientation.equalsIgnoreCase("left")) {
                         gs.drawLine(seletedShape.getBounds().x, seletedShape.getBounds().y, seletedShape.getBounds().x + seletedShape.getBounds().width, seletedShape.getBounds().y + seletedShape.getBounds().height);
                     } else {
                         gs.drawLine(seletedShape.getBounds().x + seletedShape.getBounds().width, seletedShape.getBounds().y, seletedShape.getBounds().x, seletedShape.getBounds().y + seletedShape.getBounds().height);
                     }
-                   // gs.drawString("Length:" + selectedShapeDisplayStringValue + " cm", seletedShape.getBounds().x, seletedShape.getBounds().y - 20);
-                   // g.draw(seletedShape);
+                    // gs.drawString("Length:" + selectedShapeDisplayStringValue + " cm", seletedShape.getBounds().x, seletedShape.getBounds().y - 20);
+                    // g.draw(seletedShape);
                 } else if (selectedShapeType.equalsIgnoreCase("ellipse")) {
                     //Used to draw the area,mean and std dev values in the annotation panel                    
                     gs.drawString("Area:" + selectedShapeDisplayStringValue, seletedShape.getBounds().x, seletedShape.getBounds().y - 60);
@@ -974,8 +989,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                     gs.drawString("Std Dev:", seletedShape.getBounds().x, seletedShape.getBounds().y - 20);
                     gs.drawOval(seletedShape.getBounds().x, seletedShape.getBounds().y, seletedShape.getBounds().width, seletedShape.getBounds().height);
 
-                } else {                   
-                    gs.drawString("Area:" + selectedShapeDisplayStringValue , seletedShape.getBounds().x, seletedShape.getBounds().y - 60);
+                } else {
+                    gs.drawString("Area:" + selectedShapeDisplayStringValue, seletedShape.getBounds().x, seletedShape.getBounds().y - 60);
                     gs.drawString("Mean:", seletedShape.getBounds().x, seletedShape.getBounds().y - 40);
                     gs.drawString("Std Dev:", seletedShape.getBounds().x, seletedShape.getBounds().y - 20);
                     g.draw(seletedShape);
@@ -1003,7 +1018,6 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     public boolean isShowAnnotation() {
         return showAnnotation;
     }
-
 
     /**
      * This routine used to draw the highlight square around the selected measurement.

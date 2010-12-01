@@ -145,12 +145,12 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="todayRadio" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="anydateRadio" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="yesterdayRadio" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="lastweekRadio" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="lastmonthRadio" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="betweenRadio" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="todayRadio" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="anydateRadio" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="yesterdayRadio" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="lastweekRadio" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="lastmonthRadio" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="betweenRadio" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Group type="102" alignment="1" attributes="0">
                                   <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
                                   <Component id="fromSpinner" pref="128" max="32767" attributes="1"/>
@@ -168,15 +168,15 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="anydateRadio" min="-2" pref="15" max="-2" attributes="0"/>
+                          <Component id="anydateRadio" linkSize="5" min="-2" pref="15" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="todayRadio" min="-2" pref="23" max="-2" attributes="0"/>
+                          <Component id="todayRadio" linkSize="5" min="-2" pref="23" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="yesterdayRadio" linkSize="5" min="-2" pref="10" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="lastweekRadio" min="-2" max="-2" attributes="0"/>
+                          <Component id="lastweekRadio" linkSize="5" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="lastmonthRadio" min="-2" pref="17" max="-2" attributes="0"/>
+                          <Component id="lastmonthRadio" linkSize="5" min="-2" pref="17" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                           <Component id="betweenRadio" linkSize="5" min="-2" pref="19" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>

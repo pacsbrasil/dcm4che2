@@ -146,16 +146,12 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         layoutButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/layout.png"))); // NOI18N
         layoutButton.setToolTipText("Layout");
-        layoutButton.setBorderPainted(false);
         layoutButton.setComponentPopupMenu(jPopupMenu1);
-        layoutButton.setContentAreaFilled(false);
-        layoutButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/layout2.png"))); // NOI18N
+        layoutButton.setDisabledSelectedIcon(null);
         layoutButton.setFocusable(false);
         layoutButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         layoutButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        layoutButton.setRolloverEnabled(true);
-        layoutButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/layout1.png"))); // NOI18N
-        layoutButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/layout1.png"))); // NOI18N
+        layoutButton.setRequestFocusEnabled(false);
         layoutButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         layoutButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -166,18 +162,12 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         windowing.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/windowing.png"))); // NOI18N
         windowing.setToolTipText("Windowing");
-        windowing.setBorderPainted(false);
         toolsButtonGroup.add(windowing);
-        windowing.setContentAreaFilled(false);
-        windowing.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/windowing2.png"))); // NOI18N
-        windowing.setDisabledSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/windowing2.png"))); // NOI18N
         windowing.setFocusPainted(false);
         windowing.setFocusable(false);
         windowing.setHorizontalTextPosition(0);
         windowing.setPreferredSize(new java.awt.Dimension(45, 45));
-        windowing.setRolloverEnabled(true);
-        windowing.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/windowing1.png"))); // NOI18N
-        windowing.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/windowing1.png"))); // NOI18N
+        windowing.setRequestFocusEnabled(false);
         windowing.setVerticalTextPosition(3);
         windowing.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -188,18 +178,14 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         presetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/drop_down.png"))); // NOI18N
         presetButton.setToolTipText("Preset");
-        presetButton.setBorderPainted(false);
         presetButton.setComponentPopupMenu(jPopupMenu2);
-        presetButton.setContentAreaFilled(false);
-        presetButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/drop_down2.png"))); // NOI18N
+        presetButton.setDisabledSelectedIcon(null);
         presetButton.setFocusable(false);
         presetButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         presetButton.setMaximumSize(new java.awt.Dimension(12, 24));
         presetButton.setMinimumSize(new java.awt.Dimension(12, 24));
         presetButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        presetButton.setRolloverEnabled(true);
-        presetButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/drop_down1.png"))); // NOI18N
-        presetButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/angle.png"))); // NOI18N
+        presetButton.setRequestFocusEnabled(false);
         presetButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         presetButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -220,15 +206,11 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         probeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/probe.png"))); // NOI18N
         probeButton.setToolTipText("Probe");
-        probeButton.setBorderPainted(false);
-        probeButton.setContentAreaFilled(false);
-        probeButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/probe2.png"))); // NOI18N
+        probeButton.setDisabledSelectedIcon(null);
         probeButton.setFocusable(false);
         probeButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         probeButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        probeButton.setRolloverEnabled(true);
-        probeButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/probe1.png"))); // NOI18N
-        probeButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/probe1.png"))); // NOI18N
+        probeButton.setRequestFocusEnabled(false);
         probeButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         probeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -239,16 +221,10 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         verticalFlip.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/flip_vertical.png"))); // NOI18N
         verticalFlip.setToolTipText("Vertical Flip");
-        verticalFlip.setBorderPainted(false);
-        verticalFlip.setContentAreaFilled(false);
-        verticalFlip.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/flip_vertical2.png"))); // NOI18N
+        verticalFlip.setDisabledSelectedIcon(null);
         verticalFlip.setFocusable(false);
         verticalFlip.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         verticalFlip.setPreferredSize(new java.awt.Dimension(45, 45));
-        verticalFlip.setRolloverEnabled(true);
-        verticalFlip.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/flip_vertical1.png"))); // NOI18N
-        verticalFlip.setRolloverSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/flip_vertical1.png"))); // NOI18N
-        verticalFlip.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/flip_vertical1.png"))); // NOI18N
         verticalFlip.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         verticalFlip.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -259,15 +235,11 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         horizontalFlip.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/flip_horizontal.png"))); // NOI18N
         horizontalFlip.setToolTipText("Horizontal Flip");
-        horizontalFlip.setBorderPainted(false);
-        horizontalFlip.setContentAreaFilled(false);
-        horizontalFlip.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/flip_horizontal2.png"))); // NOI18N
+        horizontalFlip.setDisabledSelectedIcon(null);
         horizontalFlip.setFocusable(false);
         horizontalFlip.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         horizontalFlip.setPreferredSize(new java.awt.Dimension(45, 45));
-        horizontalFlip.setRolloverEnabled(true);
-        horizontalFlip.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/flip_horizontal1.png"))); // NOI18N
-        horizontalFlip.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/flip_horizontal1.png"))); // NOI18N
+        horizontalFlip.setRequestFocusEnabled(false);
         horizontalFlip.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         horizontalFlip.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -278,15 +250,10 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         leftRotate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rotate_left.png"))); // NOI18N
         leftRotate.setToolTipText("Rotate Left");
-        leftRotate.setBorderPainted(false);
-        leftRotate.setContentAreaFilled(false);
-        leftRotate.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rotate_left2.png"))); // NOI18N
+        leftRotate.setDisabledSelectedIcon(null);
         leftRotate.setFocusable(false);
         leftRotate.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         leftRotate.setPreferredSize(new java.awt.Dimension(45, 45));
-        leftRotate.setRolloverEnabled(true);
-        leftRotate.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rotate_left1.png"))); // NOI18N
-        leftRotate.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rotate_left1.png"))); // NOI18N
         leftRotate.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         leftRotate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -297,15 +264,10 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         rightRotate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rotate_right.png"))); // NOI18N
         rightRotate.setToolTipText("Rotate Right");
-        rightRotate.setBorderPainted(false);
-        rightRotate.setContentAreaFilled(false);
-        rightRotate.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rotate_right2.png"))); // NOI18N
+        rightRotate.setDisabledSelectedIcon(null);
         rightRotate.setFocusable(false);
         rightRotate.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         rightRotate.setPreferredSize(new java.awt.Dimension(45, 45));
-        rightRotate.setRolloverEnabled(true);
-        rightRotate.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rotate_right1.png"))); // NOI18N
-        rightRotate.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rotate_right1.png"))); // NOI18N
         rightRotate.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         rightRotate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -316,15 +278,10 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         zoomin.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/zoomin.png"))); // NOI18N
         zoomin.setToolTipText("Zoom In");
-        zoomin.setBorderPainted(false);
-        zoomin.setContentAreaFilled(false);
-        zoomin.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/zoomin2.png"))); // NOI18N
+        zoomin.setDisabledSelectedIcon(null);
         zoomin.setFocusable(false);
         zoomin.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         zoomin.setPreferredSize(new java.awt.Dimension(45, 45));
-        zoomin.setRolloverEnabled(true);
-        zoomin.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/zoomin1.png"))); // NOI18N
-        zoomin.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/zoomin1.png"))); // NOI18N
         zoomin.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         zoomin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -335,15 +292,10 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         zoomoutButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/zoomout.png"))); // NOI18N
         zoomoutButton.setToolTipText("Zoom Out");
-        zoomoutButton.setBorderPainted(false);
-        zoomoutButton.setContentAreaFilled(false);
-        zoomoutButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/zoomout2.png"))); // NOI18N
+        zoomoutButton.setDisabledSelectedIcon(null);
         zoomoutButton.setFocusable(false);
         zoomoutButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         zoomoutButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        zoomoutButton.setRolloverEnabled(true);
-        zoomoutButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/zoomout1.png"))); // NOI18N
-        zoomoutButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/zoomout1.png"))); // NOI18N
         zoomoutButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         zoomoutButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -354,17 +306,11 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         panButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/pan.png"))); // NOI18N
         panButton.setToolTipText("Pan");
-        panButton.setBorderPainted(false);
         toolsButtonGroup.add(panButton);
-        panButton.setContentAreaFilled(false);
-        panButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/pan2.png"))); // NOI18N
-        panButton.setDisabledSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/pan2.png"))); // NOI18N
         panButton.setFocusable(false);
         panButton.setHorizontalTextPosition(0);
         panButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        panButton.setRolloverEnabled(true);
-        panButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/pan1.png"))); // NOI18N
-        panButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/pan1.png"))); // NOI18N
+        panButton.setRequestFocusEnabled(false);
         panButton.setVerticalTextPosition(3);
         panButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -375,15 +321,11 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         invert.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/invert.png"))); // NOI18N
         invert.setToolTipText("Invert");
-        invert.setBorderPainted(false);
-        invert.setContentAreaFilled(false);
-        invert.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/invert2.png"))); // NOI18N
+        invert.setDisabledSelectedIcon(null);
         invert.setFocusable(false);
         invert.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         invert.setPreferredSize(new java.awt.Dimension(45, 45));
-        invert.setRolloverEnabled(true);
-        invert.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/invert1.png"))); // NOI18N
-        invert.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/invert1.png"))); // NOI18N
+        invert.setRequestFocusEnabled(false);
         invert.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         invert.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -395,17 +337,11 @@ public class ImageToolbar extends javax.swing.JPanel {
         rulerButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ruler.png"))); // NOI18N
         rulerButton.setToolTipText("Ruler");
         rulerButton.setActionCommand("ruler");
-        rulerButton.setBorderPainted(false);
         toolsButtonGroup.add(rulerButton);
-        rulerButton.setContentAreaFilled(false);
-        rulerButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ruler2.png"))); // NOI18N
-        rulerButton.setDisabledSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ruler2.png"))); // NOI18N
         rulerButton.setFocusable(false);
         rulerButton.setHorizontalTextPosition(0);
         rulerButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        rulerButton.setRolloverEnabled(true);
-        rulerButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ruler1.png"))); // NOI18N
-        rulerButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ruler1.png"))); // NOI18N
+        rulerButton.setRequestFocusEnabled(false);
         rulerButton.setVerticalTextPosition(3);
         rulerButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -417,17 +353,11 @@ public class ImageToolbar extends javax.swing.JPanel {
         rectangleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rectangle.png"))); // NOI18N
         rectangleButton.setToolTipText("Rectangle ROI");
         rectangleButton.setActionCommand("rectangle");
-        rectangleButton.setBorderPainted(false);
         toolsButtonGroup.add(rectangleButton);
-        rectangleButton.setContentAreaFilled(false);
-        rectangleButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rectangle2.png"))); // NOI18N
-        rectangleButton.setDisabledSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rectangle2.png"))); // NOI18N
         rectangleButton.setFocusable(false);
         rectangleButton.setHorizontalTextPosition(0);
         rectangleButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        rectangleButton.setRolloverEnabled(true);
-        rectangleButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rectangle1.png"))); // NOI18N
-        rectangleButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rectangle1.png"))); // NOI18N
+        rectangleButton.setRequestFocusEnabled(false);
         rectangleButton.setVerticalTextPosition(3);
         rectangleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -439,17 +369,11 @@ public class ImageToolbar extends javax.swing.JPanel {
         ellipseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ellipse.png"))); // NOI18N
         ellipseButton.setToolTipText("Elliptical ROI");
         ellipseButton.setActionCommand("ellipse");
-        ellipseButton.setBorderPainted(false);
         toolsButtonGroup.add(ellipseButton);
-        ellipseButton.setContentAreaFilled(false);
-        ellipseButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ellipse2.png"))); // NOI18N
-        ellipseButton.setDisabledSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ellipse2.png"))); // NOI18N
         ellipseButton.setFocusable(false);
         ellipseButton.setHorizontalTextPosition(0);
         ellipseButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        ellipseButton.setRolloverEnabled(true);
-        ellipseButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ellipse1.png"))); // NOI18N
-        ellipseButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ellipse1.png"))); // NOI18N
+        ellipseButton.setRequestFocusEnabled(false);
         ellipseButton.setVerticalTextPosition(3);
         ellipseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -461,13 +385,9 @@ public class ImageToolbar extends javax.swing.JPanel {
         clearAllMeasurement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/clear_all_annotation.png"))); // NOI18N
         clearAllMeasurement.setToolTipText("Clear All Measurement");
         clearAllMeasurement.setActionCommand("clearAll");
-        clearAllMeasurement.setBorderPainted(false);
-        clearAllMeasurement.setContentAreaFilled(false);
-        clearAllMeasurement.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/clear_all_annotation2.png"))); // NOI18N
+        clearAllMeasurement.setDisabledSelectedIcon(null);
         clearAllMeasurement.setPreferredSize(new java.awt.Dimension(45, 45));
-        clearAllMeasurement.setRolloverEnabled(true);
-        clearAllMeasurement.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/clear_all_annotation1.png"))); // NOI18N
-        clearAllMeasurement.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/clear_all_annotation1.png"))); // NOI18N
+        clearAllMeasurement.setRequestFocusEnabled(false);
         clearAllMeasurement.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clearAllMeasurementActionPerformed(evt);
@@ -478,17 +398,11 @@ public class ImageToolbar extends javax.swing.JPanel {
         deleteMeasurement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/delete_annotation.png"))); // NOI18N
         deleteMeasurement.setToolTipText("Delete Measurement");
         deleteMeasurement.setActionCommand("deleteMeasurement");
-        deleteMeasurement.setBorderPainted(false);
         toolsButtonGroup.add(deleteMeasurement);
-        deleteMeasurement.setContentAreaFilled(false);
-        deleteMeasurement.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/delete_annotation2.png"))); // NOI18N
-        deleteMeasurement.setDisabledSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/delete_annotation2.png"))); // NOI18N
         deleteMeasurement.setFocusable(false);
         deleteMeasurement.setHorizontalTextPosition(0);
         deleteMeasurement.setPreferredSize(new java.awt.Dimension(45, 45));
-        deleteMeasurement.setRolloverEnabled(true);
-        deleteMeasurement.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/delete_annotation1.png"))); // NOI18N
-        deleteMeasurement.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/delete_annotation1.png"))); // NOI18N
+        deleteMeasurement.setRequestFocusEnabled(false);
         deleteMeasurement.setVerticalTextPosition(3);
         deleteMeasurement.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -500,18 +414,12 @@ public class ImageToolbar extends javax.swing.JPanel {
         moveMeasurement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/annotation_selection.png"))); // NOI18N
         moveMeasurement.setToolTipText("Measurement Selection");
         moveMeasurement.setActionCommand("moveMeasurement");
-        moveMeasurement.setBorderPainted(false);
         toolsButtonGroup.add(moveMeasurement);
-        moveMeasurement.setContentAreaFilled(false);
-        moveMeasurement.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/annotation_selection2.png"))); // NOI18N
-        moveMeasurement.setDisabledSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/annotation_selection2.png"))); // NOI18N
         moveMeasurement.setDoubleBuffered(true);
         moveMeasurement.setFocusable(false);
         moveMeasurement.setHorizontalTextPosition(0);
         moveMeasurement.setPreferredSize(new java.awt.Dimension(45, 45));
-        moveMeasurement.setRolloverEnabled(true);
-        moveMeasurement.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/annotation_selection1.png"))); // NOI18N
-        moveMeasurement.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/annotation_selection1.png"))); // NOI18N
+        moveMeasurement.setRequestFocusEnabled(false);
         moveMeasurement.setVerticalTextPosition(3);
         moveMeasurement.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -522,16 +430,10 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         annotationVisibility.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/annotation_overlay.png"))); // NOI18N
         annotationVisibility.setToolTipText("Annotation Overlay");
-        annotationVisibility.setBorderPainted(false);
-        annotationVisibility.setContentAreaFilled(false);
-        annotationVisibility.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/annotation_overlay2.png"))); // NOI18N
+        annotationVisibility.setDisabledSelectedIcon(null);
         annotationVisibility.setFocusable(false);
         annotationVisibility.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         annotationVisibility.setPreferredSize(new java.awt.Dimension(45, 45));
-        annotationVisibility.setRolloverEnabled(true);
-        annotationVisibility.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/annotation_overlay1.png"))); // NOI18N
-        annotationVisibility.setRolloverSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/annotation_overlay1.png"))); // NOI18N
-        annotationVisibility.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/annotation_selection1.png"))); // NOI18N
         annotationVisibility.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         annotationVisibility.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -542,15 +444,10 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         textOverlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/textoverlay.png"))); // NOI18N
         textOverlay.setToolTipText("Text Overlay");
-        textOverlay.setBorderPainted(false);
-        textOverlay.setContentAreaFilled(false);
-        textOverlay.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/textoverlay2.png"))); // NOI18N
+        textOverlay.setDisabledSelectedIcon(null);
         textOverlay.setFocusable(false);
         textOverlay.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         textOverlay.setPreferredSize(new java.awt.Dimension(45, 45));
-        textOverlay.setRolloverEnabled(true);
-        textOverlay.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/textoverlay1.png"))); // NOI18N
-        textOverlay.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/textoverlay1.png"))); // NOI18N
         textOverlay.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         textOverlay.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -561,15 +458,10 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         reset.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/reset.png"))); // NOI18N
         reset.setToolTipText("Reset");
-        reset.setBorderPainted(false);
-        reset.setContentAreaFilled(false);
-        reset.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/reset2.png"))); // NOI18N
+        reset.setDisabledSelectedIcon(null);
         reset.setFocusable(false);
         reset.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         reset.setPreferredSize(new java.awt.Dimension(45, 45));
-        reset.setRolloverEnabled(true);
-        reset.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/reset1.png"))); // NOI18N
-        reset.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/reset1.png"))); // NOI18N
         reset.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         reset.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -580,15 +472,10 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         exportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/export_series.png"))); // NOI18N
         exportButton.setToolTipText("Export");
-        exportButton.setBorderPainted(false);
-        exportButton.setContentAreaFilled(false);
-        exportButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/export_series2.png"))); // NOI18N
+        exportButton.setDisabledSelectedIcon(null);
         exportButton.setFocusable(false);
         exportButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         exportButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        exportButton.setRolloverEnabled(true);
-        exportButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/export_series1.png"))); // NOI18N
-        exportButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/export_series1.png"))); // NOI18N
         exportButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         exportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -599,15 +486,10 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         metaDataButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/metadata_viewerpage.png"))); // NOI18N
         metaDataButton.setToolTipText("Meta Data");
-        metaDataButton.setBorderPainted(false);
-        metaDataButton.setContentAreaFilled(false);
-        metaDataButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/metadata_viewerpage2.png"))); // NOI18N
+        metaDataButton.setDisabledSelectedIcon(null);
         metaDataButton.setFocusable(false);
         metaDataButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         metaDataButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        metaDataButton.setRolloverEnabled(true);
-        metaDataButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/metadata_viewerpage1.png"))); // NOI18N
-        metaDataButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/metadata_viewerpage1.png"))); // NOI18N
         metaDataButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         metaDataButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -618,17 +500,10 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         stackButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/stack.png"))); // NOI18N
         stackButton.setToolTipText("Stack");
-        stackButton.setBorderPainted(false);
         toolsButtonGroup.add(stackButton);
-        stackButton.setContentAreaFilled(false);
-        stackButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/stack2.png"))); // NOI18N
-        stackButton.setDisabledSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/stack2.png"))); // NOI18N
         stackButton.setFocusable(false);
         stackButton.setHorizontalTextPosition(0);
         stackButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        stackButton.setRolloverEnabled(true);
-        stackButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/stack1.png"))); // NOI18N
-        stackButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/stack1.png"))); // NOI18N
         stackButton.setVerticalTextPosition(3);
         stackButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -639,17 +514,10 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         scoutButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/scout.png"))); // NOI18N
         scoutButton.setToolTipText("ScoutLine");
-        scoutButton.setBorderPainted(false);
         toolsButtonGroup.add(scoutButton);
-        scoutButton.setContentAreaFilled(false);
-        scoutButton.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/scout2.png"))); // NOI18N
-        scoutButton.setDisabledSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/scout2.png"))); // NOI18N
         scoutButton.setFocusable(false);
         scoutButton.setHorizontalTextPosition(0);
         scoutButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        scoutButton.setRolloverEnabled(true);
-        scoutButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/scout1.png"))); // NOI18N
-        scoutButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/scout1.png"))); // NOI18N
         scoutButton.setVerticalTextPosition(3);
         scoutButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -786,13 +654,13 @@ public class ImageToolbar extends javax.swing.JPanel {
 }//GEN-LAST:event_probeButtonActionPerformed
 
     private void panButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_panButtonActionPerformed
+        toolsButtonGroup.clearSelection();
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.annotationPanel.setAddLine(false);
             ApplicationContext.annotationPanel.setAddEllipse(false);
             ApplicationContext.annotationPanel.setAddRect(false);
             ApplicationContext.imgPanel.doPan();
-            ApplicationContext.annotationPanel.doPan();
-            toolsButtonGroup.clearSelection();
+            ApplicationContext.annotationPanel.doPan();           
             toolsButtonGroup.setSelected(panButton.getModel(), true);
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
@@ -815,21 +683,20 @@ public class ImageToolbar extends javax.swing.JPanel {
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
         }
-
     }
     private void rulerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rulerButtonActionPerformed
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.annotationPanel.stopPanning();
             ApplicationContext.imgPanel.setToolsToNull();
             ApplicationContext.annotationPanel.setMouseLocX1(-1);
+            toolsButtonGroup.clearSelection();
             if (!ApplicationContext.annotationPanel.isAddLine()) {
                 ApplicationContext.annotationPanel.setAddLine(true);
                 ApplicationContext.annotationPanel.setAddEllipse(false);
                 ApplicationContext.annotationPanel.setAddRect(false);
             } else {
                 ApplicationContext.annotationPanel.setAddLine(false);
-            }
-            toolsButtonGroup.clearSelection();
+            }           
             toolsButtonGroup.setSelected(rulerButton.getModel(), true);
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
@@ -896,6 +763,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         scoutButton.setEnabled(false);
     }
     private void stackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stackButtonActionPerformed
+        toolsButtonGroup.clearSelection();
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.annotationPanel.stopPanning();
             storeAnnotationHook();
@@ -903,9 +771,10 @@ public class ImageToolbar extends javax.swing.JPanel {
             ApplicationContext.annotationPanel.setAddEllipse(false);
             ApplicationContext.annotationPanel.setAddRect(false);
             ApplicationContext.imgPanel.doStack();
-            ApplicationContext.imgPanel.repaint();
-            toolsButtonGroup.clearSelection();
-            toolsButtonGroup.setSelected(stackButton.getModel(), true);
+            ApplicationContext.imgPanel.repaint();            
+            if (ApplicationContext.imgPanel.isStackSelected()) {
+                toolsButtonGroup.setSelected(stackButton.getModel(), true);
+            }
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
         }
@@ -964,6 +833,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         }
     }
     private void rectangleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rectangleButtonActionPerformed
+        toolsButtonGroup.clearSelection();
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.annotationPanel.stopPanning();
             ApplicationContext.imgPanel.setToolsToNull();
@@ -974,8 +844,7 @@ public class ImageToolbar extends javax.swing.JPanel {
                 ApplicationContext.annotationPanel.setAddRect(true);
             } else {
                 ApplicationContext.annotationPanel.setAddRect(false);
-            }
-            toolsButtonGroup.clearSelection();
+            }           
             toolsButtonGroup.setSelected(rectangleButton.getModel(), true);
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
@@ -984,6 +853,7 @@ public class ImageToolbar extends javax.swing.JPanel {
 }//GEN-LAST:event_rectangleButtonActionPerformed
 
     private void ellipseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ellipseButtonActionPerformed
+        toolsButtonGroup.clearSelection();
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.annotationPanel.stopPanning();
             ApplicationContext.imgPanel.setToolsToNull();
@@ -994,8 +864,7 @@ public class ImageToolbar extends javax.swing.JPanel {
                 ApplicationContext.annotationPanel.setAddRect(false);
             } else {
                 ApplicationContext.annotationPanel.setAddEllipse(false);
-            }
-            toolsButtonGroup.clearSelection();
+            }            
             toolsButtonGroup.setSelected(ellipseButton.getModel(), true);
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
@@ -1052,16 +921,28 @@ public class ImageToolbar extends javax.swing.JPanel {
     }
 
     public void setWindowingTool() {
+        toolsButtonGroup.clearSelection();
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.annotationPanel.setAddLine(false);
             ApplicationContext.annotationPanel.setAddEllipse(false);
             ApplicationContext.annotationPanel.setAddRect(false);
             ApplicationContext.annotationPanel.stopPanning();
             ApplicationContext.imgPanel.doWindowing();
-        }
-        toolsButtonGroup.clearSelection();
-        toolsButtonGroup.setSelected(windowing.getModel(), true);
+              if (ApplicationContext.imgPanel.isWindowingSelected()) {
+                toolsButtonGroup.setSelected(windowing.getModel(), true);
+            }
+        }       
     }
+
+    public void setWindowing() {
+        if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
+            ApplicationContext.imgPanel.setWindowingToolsAsDefault();
+            if (ApplicationContext.imgPanel.isWindowingSelected()) {
+                toolsButtonGroup.setSelected(windowing.getModel(), true);
+            }
+        }
+    }
+
 
     public void setAnnotationToolsStatus() {
         if (ApplicationContext.annotationPanel.isShowAnnotation()) {
@@ -1072,22 +953,26 @@ public class ImageToolbar extends javax.swing.JPanel {
     }
 
     private void deleteMeasurementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteMeasurementActionPerformed
+        toolsButtonGroup.clearSelection();
         if (ApplicationContext.annotationPanel != null) {
             ApplicationContext.annotationPanel.doDeleteMeasurement();
-            toolsButtonGroup.clearSelection();
-            toolsButtonGroup.setSelected(deleteMeasurement.getModel(), true);
+           if (ApplicationContext.annotationPanel.isDeleteMeasurement()) {
+                toolsButtonGroup.setSelected(deleteMeasurement.getModel(), true);
+            }
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
         }
 }//GEN-LAST:event_deleteMeasurementActionPerformed
 
     private void moveMeasurementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveMeasurementActionPerformed
+        toolsButtonGroup.clearSelection();
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.imgPanel.tool = "";
             ApplicationContext.annotationPanel.tool = "";
             ApplicationContext.annotationPanel.doMoveMeasurement();
-            toolsButtonGroup.clearSelection();
-            toolsButtonGroup.setSelected(moveMeasurement.getModel(), true);
+             if (ApplicationContext.annotationPanel.isMoveMeasurement()) {
+                toolsButtonGroup.setSelected(moveMeasurement.getModel(), true);
+            }
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
         }

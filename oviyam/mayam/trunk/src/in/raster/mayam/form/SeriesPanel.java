@@ -94,7 +94,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
     private boolean instanceListAdded = false;
     private int nFrames = 0;
     private boolean mulitiFrame = false;
-    private String instanceUID="";
+    private String instanceUID = "";
 
     public SeriesPanel() {
         initComponents();
@@ -141,22 +141,23 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
 
         studyUID = dataset.getString(Tags.StudyInstanceUID);
         seriesUID = dataset.getString(Tags.SeriesInstanceUID);
-        if(ApplicationContext.databaseRef.getMultiframeStatus())
+        if (ApplicationContext.databaseRef.getMultiframeStatus()) {
             setTotalInstacne();
-        else
-        totalInstace = ApplicationContext.databaseRef.getSeriesLevelInstance(studyUID, seriesUID);
+        } else {
+            totalInstace = ApplicationContext.databaseRef.getSeriesLevelInstance(studyUID, seriesUID);
+        }
         seriesDesc = dataset.getString(Tags.SeriesDescription);
         modality = dataset.getString(Tags.Modality);
         institutionName = dataset.getString(Tags.InstitutionName);
-        instanceUID=dataset.getString(Tags.SOPInstanceUID);
+        instanceUID = dataset.getString(Tags.SOPInstanceUID);
 
     }
 
     /**
      * This routine used to update the instance list in the studylist array
      */
-    public void updateInstanceList() {        
-        SeriesListUpdator series = new SeriesListUpdator(studyUID, seriesUID,instanceUID,isMulitiFrame(), false);
+    public void updateInstanceList() {
+        SeriesListUpdator series = new SeriesListUpdator(studyUID, seriesUID, instanceUID, isMulitiFrame(), false);
     }
 
     /**
@@ -219,22 +220,24 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
      * This routine used to set the selection coloring
      */
     public void setSelectionColoring() {
-        this.setBorder(new LineBorder(Color.DARK_GRAY, 2));
-        seriesDescriptionText.setForeground(Color.black);
-        totalImagesText.setForeground(Color.black);
-        modalityText.setForeground(Color.black);
-        institutionText.setForeground(Color.black);
+        this.setBorder(new LineBorder(Color.BLACK, 2));
+        this.setBackground(Color.black);
+        seriesDescriptionText.setForeground(new Color(255, 195, 0));
+        totalImagesText.setForeground(new Color(255, 195, 0));
+        modalityText.setForeground(new Color(255, 195, 0));
+        institutionText.setForeground(new Color(255, 195, 0));
     }
 
     /**
      * This routine used to remove the selection coloring.
      */
     public void setNoSelectionColoring() {
-        this.setBorder(new LineBorder(Color.lightGray));
-        seriesDescriptionText.setForeground(new Color(0, 70, 104));
-        totalImagesText.setForeground(new Color(0, 70, 104));
-        modalityText.setForeground(new Color(0, 70, 104));
-        institutionText.setForeground(new Color(0, 70, 104));
+        this.setBackground(new Color(51, 51, 51));
+        this.setBorder(new LineBorder(new Color(101, 101, 101)));
+        seriesDescriptionText.setForeground(Color.gray);
+        totalImagesText.setForeground(Color.gray);
+        modalityText.setForeground(Color.gray);
+        institutionText.setForeground(Color.gray);
     }
 
     private void setTotalInstacne() {

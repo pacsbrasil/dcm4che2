@@ -63,7 +63,6 @@ public class Canvas extends javax.swing.JPanel {
     private String columnLeft = "";
     private String rowTop = "";
     private String rowDown = "";
-   
 
     public Canvas(LayeredCanvas canvas) {
         initComponents();
@@ -126,13 +125,13 @@ public class Canvas extends javax.swing.JPanel {
             repaint();
         }
         if (this.focusGained) {
-            g.setColor(Color.YELLOW);
+            g.setColor(new Color(255, 138, 0));
         } else {
             g.setColor(Color.DARK_GRAY);
         }
         g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
         if (this.layeredCanvas.imgpanel != null) {
-            if (this.layeredCanvas.imgpanel.getPixelSpacingY() != -1&&this.layeredCanvas.imgpanel.getPixelSpacingY()!=0) {
+            if (this.layeredCanvas.imgpanel.getPixelSpacingY() != -1 && this.layeredCanvas.imgpanel.getPixelSpacingY() != 0) {
                 int viewScaleHeight = (int) ((int) (100 / this.layeredCanvas.imgpanel.getPixelSpacingY()) * this.layeredCanvas.imgpanel.getScaleFactor() * this.layeredCanvas.imgpanel.getCurrentScaleFactor());
                 int y1 = (this.getHeight() - viewScaleHeight) / 2;
                 int hx = 20;
@@ -373,8 +372,9 @@ public class Canvas extends javax.swing.JPanel {
         ApplicationContext.layeredCanvas = this.layeredCanvas;
         ApplicationContext.annotationPanel = this.layeredCanvas.annotationPanel;
         ApplicationContext.layeredCanvas.getCanvas().setSelectionColoring();
-        if(ApplicationContext.imageViewExist())
+        if (ApplicationContext.imageViewExist()) {
             ApplicationContext.imgView.getImageToolbar().refreshToolsDisplay();
+        }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables

@@ -68,7 +68,7 @@ public class ButtonTabComp extends JPanel {
                 return null;
             }
         };
-
+        label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
         add(label);
         //add more space between the label and the button
         label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2));
@@ -109,8 +109,6 @@ public class ButtonTabComp extends JPanel {
                 if (i >= 1) {
                     x++;
                 }
-                //storeAnnotationHook(x);
-                // saveAnnotation(x);
                 AnnotationDelegate annotationDelegate = new AnnotationDelegate();
                 annotationDelegate.storeAnnotationHook(x);
                 annotationDelegate.saveAnnotation(x);
@@ -122,6 +120,7 @@ public class ButtonTabComp extends JPanel {
             }
         }
         //we don't want to update UI for this button
+
         public void updateUI() {
         }
 
@@ -153,6 +152,7 @@ public class ButtonTabComp extends JPanel {
                 button.setBorderPainted(true);
             }
         }
+
         public void mouseExited(MouseEvent e) {
             Component component = e.getComponent();
             if (component instanceof AbstractButton) {
