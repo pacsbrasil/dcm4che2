@@ -51,6 +51,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -60,6 +61,8 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.spi.ImageWriterSpi;
+import javax.imageio.spi.ServiceRegistry;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
@@ -347,6 +350,10 @@ public class Dcm2Jpg {
         if (cl.hasOption("jpgext")) {
             dcm2jpg.setFileExt(cl.getOptionValue("jpgext"));
         }
+        if (cl.hasOption("S")) {
+            dcm2jpg.showFormatNames();
+            return;
+        }
         if (cl.hasOption("s")) {
             dcm2jpg.showImageWriters();
             return;
@@ -400,6 +407,24 @@ public class Dcm2Jpg {
             }
             System.out.println("-----------------------------");
         }
+    }
+    
+    private void showFormatNames() {
+        System.out.println("List of supported Format Names of registered ImageWriters:");
+        Iterator<ImageWriterSpi> writers = ServiceRegistry.lookupProviders(ImageWriterSpi.class);
+        HashSet<String> allNames = new HashSet<String>();
+        String[] names;
+        for (; writers.hasNext() ;) {
+            names = writers.next().getFormatNames();
+            for (int i = 0 ; i < names.length ; i++) {
+                allNames.add(names[i].toUpperCase());
+            }
+        }
+        System.out.print("   Found "+allNames.size()+" format names: ");
+        for (String n : allNames) {
+            System.out.print("'"+n+"', ");
+        }
+        System.out.println();
     }
 
     private static DicomObject loadDicomObject(File file) {
@@ -471,6 +496,7 @@ public class Dcm2Jpg {
         OptionBuilder.withDescription(
                 "ImageWriter to be used [Default: JPEGImageEncoder instead of imageIO]. Use * to choose the first ImageIO Writer found for given image format");
         opts.addOption(OptionBuilder.create("imagewriter"));
+        opts.addOption("S", "showFormats", false, "Show all supported format names by registered ImageWriters.");
         opts.addOption("s", "showimagewriter", false, "Show all available Image Writer for specified format name.");
 
         OptionBuilder.withArgName("formatName");
@@ -527,7 +553,7 @@ public class Dcm2Jpg {
             System.out.println("dcm2jpg v" + p.getImplementationVersion());
             System.exit(0);
         }
-        if (cl.hasOption('h') || !cl.hasOption('s') && cl.getArgList().size() < 2) {
+        if (cl.hasOption('h') || !(cl.hasOption('s') || cl.hasOption('S')) && cl.getArgList().size() < 2) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
             System.exit(0);
