@@ -259,6 +259,7 @@ public class DisplayReportDiagramPanel extends Panel {
             addOrReplace(new Label("error-message", "").setVisible(false));
             addOrReplace(new Label("error-reason", "").setVisible(false));
         } catch (Exception e) {
+            log.error("Exception: " + e.getMessage());
             addOrReplace(((DynamicDisplayPage) this.getPage()).new PlaceholderLink("diagram-download"));
             addOrReplace(new Image("diagram-print-image"));
             addOrReplace(new Image("diagram"));

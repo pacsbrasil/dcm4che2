@@ -21,9 +21,9 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
 // DOC: swarm.principal.ReportRead
     permission ${ComponentPermission} "org.dcm4chee.dashboard.ui.report.ReportPanel", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.dashboard.ui.report.ConfigureReportPage", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.dashboard.war.pages.DashboardMainPage:report:DisplayDiagramLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.dashboard.war.pages.DashboardMainPage:report:DisplayTableLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.dashboard.war.pages.DashboardMainPage.MainPage:report:DisplayDiagramAndTableLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.dashboard.war.pages.DashboardMainPage:dashboard.report:DisplayDiagramLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.dashboard.war.pages.DashboardMainPage:dashboard.report:DisplayTableLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.dashboard.war.pages.DashboardMainPage:dashboard.report:DisplayDiagramAndTableLink", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "ReportWrite"
@@ -31,9 +31,9 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
 // DOC: swarm.principal.ReportWrite
     permission ${ComponentPermission} "org.dcm4chee.dashboard.ui.report.CreateGroupPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.dashboard.ui.report.CreateOrEditReportPage", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.dashboard.war.pages.DashboardMainPage:report:newGroupLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.dashboard.war.pages.DashboardMainPage:report:CreateOrEditReportLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.dashboard.war.pages.DashboardMainPage:report:RemoveLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.dashboard.war.pages.DashboardMainPage:dashboard.report:newGroupLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.dashboard.war.pages.DashboardMainPage:dashboard.report:CreateOrEditReportLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.dashboard.war.pages.DashboardMainPage:dashboard.report:RemoveLink", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "SystemInfo"

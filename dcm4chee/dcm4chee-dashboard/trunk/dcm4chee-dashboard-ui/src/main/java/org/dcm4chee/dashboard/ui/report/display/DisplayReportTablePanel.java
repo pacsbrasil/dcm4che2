@@ -269,6 +269,7 @@ public class DisplayReportTablePanel extends Panel {
             addOrReplace(new Label("error-message", "").setVisible(false));
             addOrReplace(new Label("error-reason", "").setVisible(false));
         } catch (Exception e) {
+            log.error("Exception: " + e.getMessage());
             addOrReplace(((DynamicDisplayPage) this.getPage()).new PlaceholderLink("table-download-xml"));
             addOrReplace(((DynamicDisplayPage) this.getPage()).new PlaceholderLink("table-download-csv"));
             addOrReplace(new Image("table-print-image"));
