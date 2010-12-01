@@ -44,7 +44,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.management.MBeanServerConnection;
+import javax.management.MBeanServerFactory;
+
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
@@ -66,14 +70,15 @@ import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.common.secure.SecureSession.StudyPermissionRight;
 import org.dcm4chee.web.dao.folder.StudyPermissionsLocal;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
@@ -94,6 +99,9 @@ public class StudyPermissionsPage extends SecureWebPage {
    
     List<StudyPermission> currentStudyPermissions;
     
+    boolean studyPermissionsAll = false;
+    boolean studyPermissionsOwn = false;
+    
     public StudyPermissionsPage(final ModalWindow modalWindow, AbstractEditableDicomModel model) {
         super();
 
@@ -101,7 +109,18 @@ public class StudyPermissionsPage extends SecureWebPage {
 
         if (StudyPermissionsPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(StudyPermissionsPage.BaseCSS));
-
+        
+        try {
+            List<?> servers = MBeanServerFactory.findMBeanServer(null);
+            MBeanServerConnection server = null;
+            if (servers != null && !servers.isEmpty()) {
+                server = (MBeanServerConnection) servers.get(0);
+                log.debug("Found MBeanServer:"+server);
+            }
+        } catch(Exception e) {
+            log.error("Failed to get WebConfig Service Attributes: " + e.getMessage());
+            return;
+        }
         if (model instanceof org.dcm4chee.web.war.folder.model.PatientModel) forPatient = true;
         else if (model instanceof org.dcm4chee.web.war.folder.model.StudyModel) {}
         else
@@ -157,6 +176,7 @@ public class StudyPermissionsPage extends SecureWebPage {
             RepeatingView actionDividers = new RepeatingView("action-dividers");
             rowParent.add(actionDividers);
 
+            final SecureSession secureSession = ((SecureSession) RequestCycle.get().getSession());            
             iterator = studyPermissionActions.iterator();
             while (iterator.hasNext()) {
                 final String action = iterator.next();
@@ -165,6 +185,15 @@ public class StudyPermissionsPage extends SecureWebPage {
 
                     private static final long serialVersionUID = 1L;
 
+                    @Override
+                    public boolean isEnabled() {
+                        if (secureSession.getStudyPermissionRight().equals(StudyPermissionRight.ALL))
+                            return true;
+                        if (secureSession.getStudyPermissionRight().equals(StudyPermissionRight.OWN))
+                            return secureSession.getDicomRoles().contains(role.getRolename());
+                        return false;
+                    }
+                    
                     @Override
                     protected void onUpdate(AjaxRequestTarget target) {
                         target.addComponent(this);
@@ -177,6 +206,8 @@ public class StudyPermissionsPage extends SecureWebPage {
                         tag.put("title", new ResourceModel(((HasStudyPermissionModel) this.getModel()).getObject().booleanValue() ? "studypermission.has-study-permission-checkbox.add.tooltip" : "studypermission.has-study-permission-checkbox.add.tooltip").wrapOnAssignment(this).getObject());
                     }
                 };
+                
+//                roleCheckbox.add(new StudyPermissionSecurityBehavior(getModuleName() + ":changeStudyPermissionAssignmentCheckbox", dicomRoles.contains(role.getRolename())));
                 actionDividers.add(
                         new WebMarkupContainer(roleRows.newChildId())
                         .add(roleCheckbox)
@@ -257,5 +288,5 @@ public class StudyPermissionsPage extends SecureWebPage {
     
     public static String getModuleName() {
         return "studypermissions";
-    }
+    }    
 }

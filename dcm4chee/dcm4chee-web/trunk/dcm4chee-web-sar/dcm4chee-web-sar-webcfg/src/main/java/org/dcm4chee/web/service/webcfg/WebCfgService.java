@@ -664,10 +664,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         }
     }
     
-    public void updateDicomRoles() {
-        ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).updateDicomRoles();
-    }
-
     public void setRolesMappingFilename(String name) {
         if (NONE.equals(name)) {
             System.getProperties().remove("dcm4chee-usr.cfg.role-mapping-filename");

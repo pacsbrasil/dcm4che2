@@ -45,9 +45,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.dcm4chee.archive.entity.StudyPermission;
-import org.dcm4chee.usr.dao.UserAccess;
-import org.dcm4chee.usr.model.Role;
-import org.dcm4chee.usr.util.JNDIUtils;
 import org.jboss.annotation.ejb.LocalBinding;
 
 /**
@@ -116,22 +113,5 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
         em.createQuery("SELECT COUNT(s) FROM Patient p, IN(p.studies) s WHERE p.pk = :pk")
         .setParameter("pk", pk)
         .getSingleResult();
-    }
-    
-    // TODO: change this to the generic version using JPA2.0 implementation
-    @SuppressWarnings("unchecked")
-    public void updateDicomRoles(String studyPermissionsRoleType) {
-        UserAccess dao = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);
-        List<String> rolenames = dao.getAllRolenames();
-        List<String> newRoles = 
-            (rolenames.size() == 0) ? em.createQuery("SELECT DISTINCT sp.role FROM StudyPermission sp")
-                                        .getResultList()
-                                   : em.createQuery("SELECT DISTINCT sp.role FROM StudyPermission sp WHERE sp.role NOT IN (:roles)")
-                                        .setParameter("roles", rolenames)
-                                        .getResultList();
-        if (studyPermissionsRoleType == null)
-                studyPermissionsRoleType = "";
-        for (String rolename : newRoles) 
-            dao.addRole(new Role(rolename, studyPermissionsRoleType));
-    }
+    }    
 }

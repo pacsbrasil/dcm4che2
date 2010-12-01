@@ -78,7 +78,7 @@ public class BaseWicketApplication extends SwarmWebApplication {
     @Override
     protected void init() {
         super.init();
-
+        
         signinPage = (Class<? extends Page>) getPageClass(getInitParameter("signinPageClass"), LoginPage.class);
         homePage = getPageClass(getInitParameter("homePageClass"), null);
         accessDeniedPage = (Class<? extends Page>) getPageClass(getInitParameter("accessDeniedPageClass"), AccessDeniedPage.class);

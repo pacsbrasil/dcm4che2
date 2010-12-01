@@ -161,7 +161,7 @@ public class StudyListBean implements StudyListLocal {
             appendDicomSecurityFilter(ql);
         Query query = em.createQuery(ql.toString());
         if (useSecurity)
-            query.setParameter("roles", roles);
+            query.setParameter("roles", roles);        
         setQueryParameters(query, filter);
         return ((Number) query.getSingleResult()).intValue();
     }

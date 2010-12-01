@@ -166,19 +166,6 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
         public MessageWindowPanel(String id) {
             super(id);
 
-//            add((hourglassImage = new Image("hourglass-image", ImageManager.IMAGE_COMMON_AJAXLOAD) {
-//
-//                private static final long serialVersionUID = 1L;
-//
-//                @Override
-//                public boolean isVisible() {
-//                    return ajaxRunning;
-//                }
-//            })
-//            .setOutputMarkupPlaceholderTag(true)
-//            .setOutputMarkupId(true)
-//            );
-
             add((msgLabel = new Label("msg", new AbstractReadOnlyModel<Object>() {
 
                 private static final long serialVersionUID = 1L;

@@ -17,18 +17,18 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.MoveEntitiesPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.WadoImagePage", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.folder.StudyPermissionsPage", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.folder.StudyPermissionsPage:studypermissions:changeStudyPermissionAssignmentCheckbox", "render";
+//    permission ${ComponentPermission} "org.dcm4chee.web.war.folder.StudyPermissionsPage:studypermissions:changeStudyPermissionAssignmentCheckbox", "render";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:mpps2MwlLinkWindow", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:imageSelectionWindow", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:wadoImageWindow", "render, enable";
 // Permissions for edit patient
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:editPatientLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsPatientLink", "render, enable";
+//    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsPatientLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:addStudyLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerPatientLink", "render, enable";
 // Permissions for edit study
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:editStudyLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsStudyLink", "render, enable";
+//    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsStudyLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:addSeriesLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:imageSelectionStudyLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerStudyLink", "render, enable";
@@ -47,10 +47,20 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:wadoImageInstanceLink", "render, enable";
 };
 
-grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "StudyPermissionsWrite"
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "StudyPermissionsAll"
 {
-// DOC: swarm.principal.StudyPermissionsWrite
-    permission ${ComponentPermission} "org.dcm4chee.web.war.folder.StudyPermissionsPage:studypermissions:changeStudyPermissionAssignmentCheckbox", "enable";
+// DOC: swarm.principal.StudyPermissionsAll
+    permission ${ComponentPermission} "org.dcm4chee.web.war.folder.StudyPermissionsPage:studypermissions:changeStudyPermissionAssignmentCheckbox", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsPatientLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsStudyLink", "render, enable";
+};
+
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "StudyPermissionsOwn"
+{
+// DOC: swarm.principal.StudyPermissionsOwn
+    permission ${ComponentPermission} "org.dcm4chee.web.war.folder.StudyPermissionsPage:studypermissions:changeStudyPermissionAssignmentCheckbox", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsPatientLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsStudyLink", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "FolderActions"
@@ -150,9 +160,9 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
 // DOC: swarm.principal.ReportRead
 	permission ${ComponentPermission} "org.dcm4chee.dashboard.ui.report.ReportPanel", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.dashboard.ui.report.ConfigureReportPage", "render, enable";
-	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:report:DisplayDiagramLink", "render, enable";
-	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:report:DisplayTableLink", "render, enable";
-	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:report:DisplayDiagramAndTableLink", "render, enable";
+	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:dashboard.report:DisplayDiagramLink", "render, enable";
+	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:dashboard.report:DisplayTableLink", "render, enable";
+	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:dashboard.report:DisplayDiagramAndTableLink", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "ReportWrite"
@@ -160,9 +170,9 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
 // DOC: swarm.principal.ReportWrite
 	permission ${ComponentPermission} "org.dcm4chee.dashboard.ui.report.CreateGroupPage", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.dashboard.ui.report.CreateOrEditReportPage", "render, enable";
-	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:report:newGroupLink", "render, enable";
-	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:report:CreateOrEditReportLink", "render, enable";
-	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:report:RemoveLink", "render, enable";
+	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:dashboard.report:newGroupLink", "render, enable";
+	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:dashboard.report:CreateOrEditReportLink", "render, enable";
+	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:dashboard.report:RemoveLink", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "SystemInfo"

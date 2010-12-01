@@ -65,6 +65,7 @@ public class SecureSession extends WaspSession {
     private boolean isRoot;
     private HashMap<String, String> swarmPrincipals;
     private List<String> dicomRoles;
+    private StudyPermissionRight studyPermissionRight;
 
     public SecureSession(WaspApplication application, Request request) {
         super(application, request);
@@ -117,5 +118,17 @@ public class SecureSession extends WaspSession {
     
     public boolean getUseStudyPermissions() {
         return dicomRoles != null;
+    }
+
+    public void setStudyPermissionRight(StudyPermissionRight studyPermissionRight) {
+        this.studyPermissionRight = studyPermissionRight;
+    }
+
+    public StudyPermissionRight getStudyPermissionRight() {
+        return studyPermissionRight;
+    }
+    
+    public enum StudyPermissionRight {
+        NONE, OWN, ALL 
     }
 }

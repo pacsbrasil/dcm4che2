@@ -1622,7 +1622,7 @@ public class StudyListPage extends Panel {
             
             @Override
             public boolean isVisible() {
-                return checkEditPermission(model);
+                return checkEditStudyPermission(model);
             }
         };
         Image image = new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT);
@@ -1660,7 +1660,7 @@ public class StudyListPage extends Panel {
             
             @Override
             public boolean isVisible() {
-                return (checkEditPermission(model)
+                return (checkEditStudyPermission(model)
                     && secureSession.getUseStudyPermissions())
                     || secureSession.isRoot();
             }
@@ -1672,20 +1672,20 @@ public class StudyListPage extends Panel {
         return editLink;
     }
 
-    private boolean checkEditPermission(AbstractDicomModel model) {
+    private boolean checkEditStudyPermission(AbstractDicomModel model) {
         SecureSession secureSession = (SecureSession) getSession();
         if (!secureSession.getUseStudyPermissions() || secureSession.isRoot()) return true;
-        int hasEditPermission = 0;
-        if (model instanceof PatientModel) {
-            for (StudyModel study : ((PatientModel) model).getStudies())
-                if (study.getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
-                    hasEditPermission++;
-            return (hasEditPermission == ((PatientModel) model).getStudies().size())
-                && model.getDataset() != null;
-        } else if (model instanceof StudyModel) {
-            return model.getDataset() != null 
-                && ((StudyModel) model).getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION);
-        }
+//        int hasEditPermission = 0;
+//        if (model instanceof PatientModel) {
+//            for (StudyModel study : ((PatientModel) model).getStudies())
+//                if (study.getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
+//                    hasEditPermission++;
+//            return (hasEditPermission == ((PatientModel) model).getStudies().size())
+//                && model.getDataset() != null;
+//        } else if (model instanceof StudyModel) {
+//            return model.getDataset() != null 
+//                && ((StudyModel) model).getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION);
+//        }
         return model.getDataset() != null;
     }
     
