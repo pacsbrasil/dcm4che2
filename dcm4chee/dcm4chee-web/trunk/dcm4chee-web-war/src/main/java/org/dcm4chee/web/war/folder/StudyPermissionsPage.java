@@ -92,20 +92,16 @@ public class StudyPermissionsPage extends SecureWebPage {
     
     private static Logger log = LoggerFactory.getLogger(StudyPermissionsPage.class);
 
-    private AbstractEditableDicomModel model;
-    
     private boolean forPatient = false;
     private long studyCountForPatient = -1;
    
     List<StudyPermission> currentStudyPermissions;
-    
-    boolean studyPermissionsAll = false;
-    boolean studyPermissionsOwn = false;
+
+    long pk;
+    String studyInstanceUID;
     
     public StudyPermissionsPage(final ModalWindow modalWindow, AbstractEditableDicomModel model) {
         super();
-
-        this.model = model;
 
         if (StudyPermissionsPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(StudyPermissionsPage.BaseCSS));
@@ -121,9 +117,12 @@ public class StudyPermissionsPage extends SecureWebPage {
             log.error("Failed to get WebConfig Service Attributes: " + e.getMessage());
             return;
         }
-        if (model instanceof org.dcm4chee.web.war.folder.model.PatientModel) forPatient = true;
-        else if (model instanceof org.dcm4chee.web.war.folder.model.StudyModel) {}
-        else
+        if (model instanceof org.dcm4chee.web.war.folder.model.PatientModel) {
+            pk = ((PatientModel) model).getPk();
+            forPatient = true;
+        } else if (model instanceof org.dcm4chee.web.war.folder.model.StudyModel) {
+            studyInstanceUID = ((StudyModel) model).getStudyInstanceUID();
+        } else
             log.error(this.getClass() + ": No valid model for StudyPermission assignment");
         
         add(new WebMarkupContainer("studyPermissions-patient").setVisible(forPatient));
@@ -175,8 +174,7 @@ public class StudyPermissionsPage extends SecureWebPage {
 
             RepeatingView actionDividers = new RepeatingView("action-dividers");
             rowParent.add(actionDividers);
-
-            final SecureSession secureSession = ((SecureSession) RequestCycle.get().getSession());            
+           
             iterator = studyPermissionActions.iterator();
             while (iterator.hasNext()) {
                 final String action = iterator.next();
@@ -187,6 +185,7 @@ public class StudyPermissionsPage extends SecureWebPage {
 
                     @Override
                     public boolean isEnabled() {
+                        SecureSession secureSession = ((SecureSession) RequestCycle.get().getSession());
                         if (secureSession.getStudyPermissionRight().equals(StudyPermissionRight.ALL))
                             return true;
                         if (secureSession.getStudyPermissionRight().equals(StudyPermissionRight.OWN))
@@ -207,7 +206,6 @@ public class StudyPermissionsPage extends SecureWebPage {
                     }
                 };
                 
-//                roleCheckbox.add(new StudyPermissionSecurityBehavior(getModuleName() + ":changeStudyPermissionAssignmentCheckbox", dicomRoles.contains(role.getRolename())));
                 actionDividers.add(
                         new WebMarkupContainer(roleRows.newChildId())
                         .add(roleCheckbox)
@@ -250,7 +248,6 @@ public class StudyPermissionsPage extends SecureWebPage {
         public void setObject(Boolean hasStudyPermission) {
             if (forPatient) {
                 StudyPermissionsLocal dao = (StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME);
-                long pk = ((PatientModel) model).getPk();
                 if (hasStudyPermission) 
                     dao.grantForPatient(pk, action, role.getRolename());
                 else
@@ -259,7 +256,7 @@ public class StudyPermissionsPage extends SecureWebPage {
             } else {
                 if (hasStudyPermission) {
                     StudyPermission sp = new StudyPermission();
-                    sp.setStudyInstanceUID(((StudyModel) model).getStudyInstanceUID());
+                    sp.setStudyInstanceUID(studyInstanceUID);
                     sp.setRole(role.getRolename());
                     sp.setAction(action);
                     ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).grant(sp);
