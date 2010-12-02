@@ -56,15 +56,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
 import javax.management.MBeanServerFactory;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.management.ReflectionException;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -154,29 +149,52 @@ public class WebLoginContext extends UsernamePasswordContext {
             ((SecureSession) RequestCycle.get().getSession()).invalidate();
             subject = new DefaultSubject();
         }
+        
+        String fn = System.getProperty("dcm4chee-usr.cfg.role-mapping-filename");
+System.out.println("!*!*!*!*!*!*!!* Getting mapping file from: " + fn);
+File mappingFile = new File(fn);
+if (!mappingFile.isAbsolute())
+    mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
+System.out.println("WebLoginContext: *!*!*!*!*!*!*!*!*!*!*!*!*: mappingFile:"+mappingFile.getPath());
+        
+//        System.out.println("R'OEL: ********************************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+//        Iterator<org.apache.wicket.security.hive.authorization.Principal> i = subject.getPrincipals().iterator();
+//        while (i.hasNext())
+//            System.out.println("R'OEL: " + i.next().getName());
+        
         return subject;
     }
 
-    private void checkStudyPermissionRoles(MBeanServerConnection server, DefaultSubject subject, WebApplication app) 
-            throws AttributeNotFoundException, InstanceNotFoundException, MalformedObjectNameException, 
-                MBeanException, ReflectionException, NullPointerException, IOException {
+    private void checkStudyPermissionRoles(MBeanServerConnection server, DefaultSubject subject, WebApplication app) {
         SecureSession secureSession = ((SecureSession) RequestCycle.get().getSession());
         if (secureSession.getUseStudyPermissions()) {
             secureSession.setStudyPermissionRight(StudyPermissionRight.NONE);
-            String all = (String) server.getAttribute(
-                    new ObjectName(((BaseWicketApplication) app).getInitParameter("WebCfgServiceName")),
-                    "studyPermissionsAllRolename");                
-            String own = (String) server.getAttribute(
-                    new ObjectName(((BaseWicketApplication) app).getInitParameter("WebCfgServiceName")),
-                    "studyPermissionsOwnRolename");
-            if (all != null || own != null) {
+            String studyPermissionsAll;
+            try {
+                studyPermissionsAll = (String) server.getAttribute(
+                        new ObjectName(((BaseWicketApplication) app).getInitParameter("WebCfgServiceName")),
+                        "studyPermissionsAllRolename");
+            } catch (Exception e) {
+                studyPermissionsAll = "StudyPermissionsAll";
+                log.warn("Failed to get 'studyPermissionsAllRolename' attribute from Web Config Service! Use default='StudyPermissionsAll'", e);
+            }  
+            String studyPermissionsOwn;
+            try {
+                studyPermissionsOwn = (String) server.getAttribute(
+                        new ObjectName(((BaseWicketApplication) app).getInitParameter("WebCfgServiceName")),
+                        "studyPermissionsOwnRolename");
+            } catch (Exception e) {
+                studyPermissionsOwn = "StudyPermissionsOwn";
+                log.warn("Failed to get 'studyPermissionsOwnRolename' attribute from Web Config Service! Use default='StudyPermissionsOwn'", e);
+            }  
+            if (studyPermissionsAll != null || studyPermissionsOwn != null) {
                 Iterator<org.apache.wicket.security.hive.authorization.Principal> i = subject.getPrincipals().iterator();
                 while (i.hasNext()) {
                     String rolename = i.next().getName();    
-                    if (rolename.equals(all)) {
+                    if (rolename.equals(studyPermissionsAll)) {
                         secureSession.setStudyPermissionRight(StudyPermissionRight.ALL);
                         break;
-                    } else if (rolename.equals(own))
+                    } else if (rolename.equals(studyPermissionsOwn))
                         secureSession.setStudyPermissionRight(StudyPermissionRight.OWN);
                 }
             }
@@ -194,8 +212,10 @@ public class WebLoginContext extends UsernamePasswordContext {
             rolename = "LoginAllowed";
             log.warn("Failed to get 'loginAllowedRolename' attribute from Web Config Service! Use default='loginAllowed'", x);
         }
-        if (!subject.getPrincipals().contains(new SimplePrincipal(rolename)))                              
+        if (!subject.getPrincipals().contains(new SimplePrincipal(rolename))) {                            
           ((SecureSession) RequestCycle.get().getSession()).invalidate();
+          log.warn("Failed to authorize subject for login, denied. See 'LoginAllowed' rolename attribute in Web Config Service.");
+        }
     }
 
     private DefaultSubject toSwarmSubject(String rolesGroupName, Subject jaasSubject) throws IOException {
@@ -228,7 +248,7 @@ public class WebLoginContext extends UsernamePasswordContext {
     private Map<String, Set<String>> readRoleMappingFile() throws IOException {
         String fn = System.getProperty("dcm4chee-usr.cfg.role-mapping-filename");
         if (fn == null) {
-            throw new FileNotFoundException("RoleMappingFile not found! Not specified with System properrty 'dcm4chee-usr.cfg.role-mapping-filename'");
+            throw new FileNotFoundException("RoleMappingFile not found! Not specified with System property 'dcm4chee-usr.cfg.role-mapping-filename'");
         }
         File mappingFile = new File(fn);
         if (!mappingFile.isAbsolute())

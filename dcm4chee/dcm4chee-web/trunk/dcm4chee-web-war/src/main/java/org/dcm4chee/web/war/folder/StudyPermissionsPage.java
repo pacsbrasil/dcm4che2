@@ -282,7 +282,7 @@ public class StudyPermissionsPage extends SecureWebPage {
 
     private ArrayList<Role> getAllRoles() {
         ArrayList<Role> allRoles = new ArrayList<Role>(2);
-        allRoles.addAll(JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, ((BaseWicketApplication) getApplication()).getInitParameter("UserAccessServiceName")).getAllRoles());
+        allRoles.addAll(((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getAllRoles());
         return allRoles;
     }
     

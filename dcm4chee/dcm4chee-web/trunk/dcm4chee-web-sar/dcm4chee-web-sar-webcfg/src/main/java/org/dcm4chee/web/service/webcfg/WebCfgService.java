@@ -60,11 +60,8 @@ import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.webview.link.spi.WebviewerLinkProviderSPI;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
-import org.dcm4chee.web.dao.folder.StudyPermissionsLocal;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
 import org.jboss.system.ServiceMBeanSupport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author franz.willer@gmail.com
@@ -122,6 +119,8 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     
     private String loginAllowedRolename;
     private String studyPermissionsRoleType;
+    private String studyPermissionsAllRolename;
+    private String studyPermissionsOwnRolename;
     
     private static final String NONE = "NONE";
     private static final String NEWLINE = System.getProperty("line.separator", "\n");
@@ -713,6 +712,24 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public String getLoginAllowedRolename() {
         return loginAllowedRolename;
+    }
+
+    public void setStudyPermissionsAllRolename(
+            String studyPermissionsAllRolename) {
+        this.studyPermissionsAllRolename = studyPermissionsAllRolename;
+    }
+
+    public String getStudyPermissionsAllRolename() {
+        return studyPermissionsAllRolename;
+    }
+
+    public void setStudyPermissionsOwnRolename(
+            String studyPermissionsOwnRolename) {
+        this.studyPermissionsOwnRolename = studyPermissionsOwnRolename;
+    }
+
+    public String getStudyPermissionsOwnRolename() {
+        return studyPermissionsOwnRolename;
     }
 }
 
