@@ -143,6 +143,15 @@ public class WADOService extends AbstractCacheService {
         cache.setImageWriterClass(imageWriterClass);
     }
 
+    public boolean isForceRGB() {
+        return support.isForceRGB();
+    }
+
+    public void setForceRGB(boolean forceRGB) {
+        support.setForceRGB(forceRGB);
+    }
+    
+    
     /**
      * @return Returns the useTransferSyntaxOfFileAsDefault.
      */

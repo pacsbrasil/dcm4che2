@@ -221,12 +221,22 @@ public class WADOSupport {
 
     private boolean renderOverlays = false;
 
+    private boolean forceRGB;
+
     public boolean isRenderOverlays() {
         return renderOverlays;
     }
 
     public void setRenderOverlays(boolean renderOverlays) {
         this.renderOverlays = renderOverlays;
+    }
+
+    public boolean isForceRGB() {
+        return forceRGB;
+    }
+
+    public void setForceRGB(boolean forceRGB) {
+        this.forceRGB = forceRGB;
     }
 
     public WADOSupport(MBeanServer mbServer) {
@@ -1242,13 +1252,14 @@ public class WADOSupport {
         } else {
             w = (int) (h * aspectRatio + .5f);
         }
-        boolean ybr = bi.getColorModel().getColorSpace() instanceof SimpleYBRColorSpace;
+        boolean needRGB = bi.getColorModel().getColorSpace() instanceof SimpleYBRColorSpace ||
+                            forceRGB && bi.getColorModel().getPixelSize() > 8;
         boolean rescale = w != bi.getWidth() || h != bi.getHeight();
-        if (!ybr && !rescale)
+        if (!needRGB && !rescale)
             return bi;
 
-        boolean banded = bi.getSampleModel() instanceof BandedSampleModel;
-        if (ybr || banded) {
+        if (needRGB || bi.getSampleModel() instanceof BandedSampleModel) {
+            log.debug("Convert BufferedImage to TYPE_INT_RGB!");
             // convert YBR to RGB to workaround jai-imageio-core issue #173:
             // CLibJPEGImageWriter ignores CororSpace != sRGB
             // convert RGB color-by-plane to TYPE_INT_RGB, otherwise
