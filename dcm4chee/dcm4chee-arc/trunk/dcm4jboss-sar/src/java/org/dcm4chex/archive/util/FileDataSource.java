@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.imageio.stream.FileImageInputStream;
+import javax.management.JMException;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
@@ -149,13 +150,21 @@ public class FileDataSource implements DataSource {
     private String patchJpegLSImplCUID = "1.2.40.0.13.1.1";
     private String patchJpegLSNewImplCUID = "1.2.40.0.13.1.1.1";
 
+	private DatasetUpdater datasetUpdater;
+
     public FileDataSource(File file, Dataset mergeAttrs, byte[] buffer) {
         this.file = file;
         this.mergeAttrs = mergeAttrs;
         this.buffer = buffer;
     }
 
-    public static final Dataset getDefaultContributingEquipment() {
+    public FileDataSource(File file, Dataset mergeAttrs, byte[] buffer, DatasetUpdater datasetUpdater) {
+    	this(file, mergeAttrs, buffer);
+    	this.datasetUpdater = datasetUpdater;
+    	
+	}
+
+	public static final Dataset getDefaultContributingEquipment() {
         return defaultContributingEquipment;
     }
 
@@ -312,6 +321,10 @@ public class FileDataSource implements DataSource {
                 parser.parseDataset(dcmDecodeParam, -1);
             }
             ds.putAll(mergeAttrs);
+            // hook to perform any other dataset updates after the file has been read from the file system
+            if (datasetUpdater != null) {
+            	ds = datasetUpdater.updateDataset(ds);
+            }            
             FileMetaInfo fmi = ds.getFileMetaInfo();
             if (fmi == null) {
                 fmi = DcmObjectFactory.getInstance()
@@ -488,6 +501,8 @@ public class FileDataSource implements DataSource {
             // parse attributes after Pixel Data
             parser.parseDataset(dcmDecodeParam, -1);
             ds.subSet(Tags.PixelData, -1).writeDataset(out, enc);
+        } catch (JMException jme) {
+            throw new RuntimeException("Unable to update dataset:", jme);
         } finally {
             try {
                 if (dis != null)

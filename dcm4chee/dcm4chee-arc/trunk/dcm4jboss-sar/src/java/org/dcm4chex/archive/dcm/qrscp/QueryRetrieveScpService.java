@@ -111,6 +111,7 @@ import org.dcm4chex.archive.mbean.DicomSecurityDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.perf.PerfMonDelegate;
 import org.dcm4chex.archive.perf.PerfPropertyEnum;
+import org.dcm4chex.archive.util.DatasetUpdater;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
@@ -270,6 +271,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private boolean coerceAttributeTopDown = false;
 
     private boolean cFindRspDebugLogDeferToDoBeforeRsp = false;
+    
+    protected DatasetUpdater datasetUpdater = null;
     
     public QueryRetrieveScpService() {
     	moveScp = createMoveScp();
@@ -1399,7 +1402,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
             storeRqCmd.putUS(Tags.MoveOriginatorMessageID, moveRqMsgID);
             storeRqCmd.putAE(Tags.MoveOriginatorAET, moveOriginatorAET);
         }
-        File f = getFile(info);
+
         Dataset mergeAttrs;
         if (coerceAttributeTopDown) {
         	mergeAttrs = DatasetUtils.fromByteArray(info.instAttrs,
@@ -1418,7 +1421,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
             buf = new byte[bufferSize];
             assoc.putProperty(SEND_BUFFER, buf);
         }
-        FileDataSource ds = new FileDataSource(f, mergeAttrs, buf);
+        File f = getFile(info);
+        FileDataSource ds = new FileDataSource(f, mergeAttrs, buf, datasetUpdater);
         ds.setWithoutPixeldata(isWithoutPixelData(dest));
         ds.setPatchJpegLS(patchJpegLS);
         ds.setPatchJpegLSImplCUID(patchJpegLSImplCUID);
@@ -1451,7 +1455,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         if (coerceTpl == null) {
             coerceTpl = getCoercionTemplates(assoc.getCalledAET(),
                     CSTORE_OUT_XSL);
-            assoc.putProperty(COERCE_TPL, (Templates) coerceTpl);
+            assoc.putProperty(COERCE_TPL, coerceTpl);
         }
         Dataset coerce = getCoercionAttributesFor(assoc, CSTORE_OUT_XSL, ds,
                 coerceTpl);
