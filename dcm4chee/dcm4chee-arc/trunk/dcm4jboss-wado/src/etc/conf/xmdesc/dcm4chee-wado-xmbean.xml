@@ -184,6 +184,17 @@ date, 'HH' by the current hour and 'mm' by the current minute.<br/>
         value="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter" />
     </descriptors>
   </attribute>
+  
+  <attribute access="read-write" getMethod="isForceRGB"
+    setMethod="setForceRGB">
+    <description>Force 8-bit RGB conversion for > 8bit/pixel images to avoid problems with ImageWriter 
+    that have no support for 12 bit images with indexed colors.</description>
+    <name>ForceRGB</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="false" />
+    </descriptors>
+  </attribute>
 
   <attribute access="read-write" getMethod="isClientRedirect"
     setMethod="setClientRedirect">
