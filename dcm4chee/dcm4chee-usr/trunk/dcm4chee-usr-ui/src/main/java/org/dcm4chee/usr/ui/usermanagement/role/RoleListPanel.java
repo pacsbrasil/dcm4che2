@@ -105,8 +105,7 @@ public class RoleListPanel extends Panel {
         if (RoleListPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(RoleListPanel.CSS));
 
-        userAccess = JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, ((BaseWicketApplication) getApplication()).getInitParameter("UserAccessServiceName"));
-        
+        userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);        
         setOutputMarkupId(true);
 
         this.allRoles = new ListModel<Role>(getAllRoles());
@@ -161,14 +160,13 @@ public class RoleListPanel extends Panel {
         RepeatingView principalHeaders = new RepeatingView("principal-headers");
         HashMap<String, String> principalsAndComments = ((SecureSession) getSession()).getSwarmPrincipals();
         Iterator<String> principals = principalsAndComments.keySet().iterator();
-        
         while(principals.hasNext()) {
             String principal = principals.next();
             String comment;
             principalHeaders.add(new Label(principalHeaders.newChildId(), principal)
                 .add(new AttributeModifier("title", true, 
                         (comment = principalsAndComments.get(principal)) != null ? 
-                                new ResourceModel(comment) : 
+                                new ResourceModel(comment) :
                                     new Model<String>(principal))));
         }
         addOrReplace(principalHeaders);

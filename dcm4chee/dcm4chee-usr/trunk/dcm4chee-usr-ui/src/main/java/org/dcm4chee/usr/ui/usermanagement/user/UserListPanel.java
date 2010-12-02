@@ -111,7 +111,7 @@ public class UserListPanel extends Panel {
         if (UserListPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(UserListPanel.CSS));
 
-        userAccess = JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, ((BaseWicketApplication) getApplication()).getInitParameter("UserAccessServiceName"));
+        userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);
         
         setOutputMarkupId(true);
         

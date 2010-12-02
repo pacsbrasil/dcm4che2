@@ -133,7 +133,7 @@ public class CreateOrEditRolePage extends SecureWebPage {
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
-                        UserAccess userAccess = JNDIUtils.lookupAndInit(UserAccess.JNDI_NAME, serviceObjectName);
+                        UserAccess userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);
                         if (role == null) {
                             Role newRole = new Role(rolename.getObject());
                             newRole.setType(type.getObject());

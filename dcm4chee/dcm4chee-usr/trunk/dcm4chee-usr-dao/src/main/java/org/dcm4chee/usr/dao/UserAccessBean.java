@@ -93,6 +93,7 @@ public class UserAccessBean implements UserAccess {
             mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.role-mapping-filename", "conf/dcm4chee-usr/rolesMapping-roles.json"));
             if (!mappingFile.isAbsolute())
                 mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
+System.out.println("UserAccessBean: *!*!*!*!*!*!*!*!*!*!*!*!*: mappingFile:"+mappingFile.getPath());
             if (log.isDebugEnabled()) {
                 log.debug("UserAccess configuration:\nuserRoleName:"+userRoleName);
                 log.debug("adminRoleName:"+adminRoleName);
@@ -141,6 +142,10 @@ public class UserAccessBean implements UserAccess {
     // TODO: change this to generic version using JPA 2.0 implementation
     @SuppressWarnings("unchecked")
     public List<User> getAllUsers() {
+        mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.role-mapping-filename", "conf/dcm4chee-usr/rolesMapping-roles.json"));
+        if (!mappingFile.isAbsolute())
+            mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
+System.out.println("UserAccessBean: *!*!*!*!*!*!*!*!*!*!*!*!*: mappingFile:"+mappingFile.getPath());
         return this.em.createQuery("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles ORDER BY u.userID")
         .getResultList();
     }
