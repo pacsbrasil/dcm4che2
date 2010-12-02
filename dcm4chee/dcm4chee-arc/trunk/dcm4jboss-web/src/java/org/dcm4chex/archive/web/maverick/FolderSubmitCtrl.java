@@ -148,7 +148,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             if ( (folderForm.getTotal() < 1 && !"true".equals(getCtx().getServletConfig().getInitParameter("startWithoutQuery" ) ) )
                     || rq.getParameter("filter") != null
                     || rq.getParameter("filter.x") != null) { 
-                return query(true); 
+                return query(true, false); 
             } else if ( folderForm.getAets() == null ) { 
                 queryAETList(folderForm);
             }
@@ -160,7 +160,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             if (rq.getParameter("prev") != null
                     || rq.getParameter("prev.x") != null
                     || rq.getParameter("next") != null
-                    || rq.getParameter("next.x") != null) { return query(false); }
+                    || rq.getParameter("next.x") != null) { return query(false, false); }
             if (rq.getParameter("send") != null
                     || rq.getParameter("send.x") != null) { return send(); }
             if ( allowedMethods.contains("folder.delete") ) {
@@ -195,14 +195,16 @@ public class FolderSubmitCtrl extends FolderCtrl {
         }
     }
 
-    private String query(boolean newQuery) throws Exception {
+    private String query(boolean newQuery, boolean force) throws Exception {
         FolderForm folderForm = (FolderForm) getForm();
         StudyFilterModel filter;
         String[] allowedAets = getAEFilterPermissions();
         try {
             filter = folderForm.getStudyFilter();
-            if (!filter.hasQueryParameters() && getCtx().getRequest().getParameter("filter.x")==null) {
+            if (!force && !filter.hasQueryParameters() && getCtx().getRequest().getParameter("filter.x")==null) {
                 log.info("Filter has no query parameter! Ignore auto query!");
+                if (newQuery)
+                    queryAETList(folderForm);
                 return FOLDER;
             }
             if ( ! folderForm.isFilterAET() ) { //only if not filter a single AET!
@@ -354,7 +356,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
         }
         deletePatients(folderForm.getPatients());
         folderForm.removeStickies();
-        query(true);
+        query(true, true);
 
         return FOLDER;
     }
