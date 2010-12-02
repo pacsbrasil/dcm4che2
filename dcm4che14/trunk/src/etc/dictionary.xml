@@ -339,6 +339,13 @@
   <element tag="(0012,0062)" name="Patient Identity Removed" vr="CS" vm="1" key="PatientIdentityRemoved" />
   <element tag="(0012,0063)" name="De-identification Method" vr="LO" vm="1-n" key="DeIdentificationMethod" />
   <element tag="(0012,0064)" name="De-identification Method Code Sequence" vr="SQ" vm="1" key="DeIdentificationMethodCodeSeq" />
+  <element tag="(0012,0071)" name="Clinical Trial Series ID" vr="LO" vm="1" key="ClinicalTrialSeriesID" />
+  <element tag="(0012,0072)" name="Clinical Trial Series Description" vr="LO" vm="1" key="ClinicalTrialSeriesDescription" /> 
+  <element tag="(0012,0081)" name="Clinical Trial Protocol Ethics Committee Name" vr="LO" vm="1" key="ClinicalTrialProtocolEthicsCommitteeName" /> 
+  <element tag="(0012,0082)" name="Clinical Trial Protocol Ethics Committee Approval Number" vr="LO" vm="1" key="ClinicalTrialProtocolEthicsCommitteeApprovalNumber" /> 
+  <element tag="(0012,0083)" name="Consent for Clinical Trial Use Sequence" vr="SQ" vm="1" key="ConsentForClinicalTrialUseSequence" /> 
+  <element tag="(0012,0084)" name="Distribution Type" vr="CS" vm="1" key="DistributionType" /> 
+  <element tag="(0012,0085)" name="Consent for Distribution Flag" vr="CS" vm="1" key="ConsentForDistributionFlag" />
   
   <element tag="(0018,0010)" name="Contrast/Bolus Agent" vr="LO" vm="1" key="ContrastBolusAgent" />
   <element tag="(0018,0012)" name="Contrast/Bolus Agent Sequence" vr="SQ" vm="1" key="ContrastBolusAgentSeq" />
