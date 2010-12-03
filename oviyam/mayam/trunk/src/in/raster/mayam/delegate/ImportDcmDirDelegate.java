@@ -303,8 +303,6 @@ public class ImportDcmDirDelegate {
             ImportDcmDirDelegate importDcmDirDelegate = new ImportDcmDirDelegate();
             importDcmDirDelegate.findAndLoadDcmDir();
             if (importDcmDirDelegate.dcmDirFile != null && importDcmDirDelegate.dcmDirFile.getParent().startsWith(ApplicationFacade.binPath)) {
-                //if a DICOM DIR file present in the binary directory then it will clear dicom data's in database.
-                //ApplicationContext.databaseRef.deleteRows();
                 importDcmDirDelegate.copyAsLink=true;
                 importDcmDirDelegate.run();
             }
