@@ -332,4 +332,13 @@ public class ImportDcmDirDelegate {
             e.printStackTrace();
         }
     }
+
+    public boolean isCopyAsLink() {
+        return copyAsLink;
+    }
+
+    public void setCopyAsLink(boolean copyAsLink) {
+        this.copyAsLink = copyAsLink;
+    }
+
 }

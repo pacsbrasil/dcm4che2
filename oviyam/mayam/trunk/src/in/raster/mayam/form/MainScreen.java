@@ -906,6 +906,7 @@ public class MainScreen extends javax.swing.JFrame {
      */
     private void cdImportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cdImportButtonActionPerformed
         ImportDcmDirDelegate importDcmDirDelegate = new ImportDcmDirDelegate();
+        importDcmDirDelegate.setCopyAsLink(true);
         importDcmDirDelegate.findAndRun();
     }//GEN-LAST:event_cdImportButtonActionPerformed
 
