@@ -38,6 +38,15 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.service.webcfg;
 
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -62,6 +71,7 @@ import org.dcm4chee.web.common.webview.link.spi.WebviewerLinkProviderSPI;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * @author franz.willer@gmail.com
@@ -667,7 +677,11 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         if (NONE.equals(name)) {
             System.getProperties().remove("dcm4chee-usr.cfg.role-mapping-filename");
         } else {
+            String old = System.getProperty("dcm4chee-usr.cfg.role-mapping-filename");
             System.setProperty("dcm4chee-usr.cfg.role-mapping-filename", name);
+            if (old == null) {
+                initDefaultMappingFile();
+            }
         }
     }
 
@@ -713,7 +727,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public String getLoginAllowedRolename() {
         return loginAllowedRolename;
     }
-
+    
     public void setStudyPermissionsAllRolename(
             String studyPermissionsAllRolename) {
         this.studyPermissionsAllRolename = studyPermissionsAllRolename;
@@ -730,6 +744,42 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public String getStudyPermissionsOwnRolename() {
         return studyPermissionsOwnRolename;
+    }
+    
+    private void initDefaultMappingFile() {
+        File mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.role-mapping-filename", "conf/dcm4chee-web3/rolesMapping-roles.json"));
+        if (!mappingFile.isAbsolute())
+            mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
+        log.info("Init default Role Mapping file! mappingFile:"+mappingFile);
+        if (mappingFile.getParentFile().mkdirs())
+            log.info("M-WRITE dir:" +mappingFile.getParent());
+        FileChannel fos = null;
+        InputStream is = null;
+        try {
+            URL url = getClass().getResource("/META-INF/rolesMapping-default.json");
+            log.info("Use default Mapping File content of url:"+url);
+            is = url.openStream();
+            ReadableByteChannel inCh = Channels.newChannel(is);
+            fos = new FileOutputStream(mappingFile).getChannel();
+            int pos = 0;
+            while (is.available() > 0)
+                pos += fos.transferFrom(inCh, pos, is.available());
+        } catch (Exception e) {
+            log.error("RoleMapping file doesn't exist and the default can't be created!", e);
+        } finally {
+            close(is);
+            close(fos);
+        }
+    }
+    
+    private void close(Closeable toClose) {
+        if (toClose != null) {
+            try {
+                toClose.close();
+            } catch (IOException ignore) {
+                log.debug("Error closing : "+toClose.getClass().getName(), ignore);
+            }
+        }
     }
 }
 
