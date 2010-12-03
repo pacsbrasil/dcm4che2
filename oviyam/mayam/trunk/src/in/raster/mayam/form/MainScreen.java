@@ -538,6 +538,9 @@ public class MainScreen extends javax.swing.JFrame {
                 .add(queueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(272, 272, 272))
         );
+
+        headerPanelLayout.linkSize(new java.awt.Component[] {exportButton, importButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         headerPanelLayout.setVerticalGroup(
             headerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(headerPanelLayout.createSequentialGroup()
