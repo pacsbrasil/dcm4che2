@@ -1248,7 +1248,9 @@ public class DatabaseHandler {
                 ResultSet rs1 = null;
                 String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" + "AND multiframe='false'" + " order by InstanceNo asc";
                 rs1 = conn.createStatement().executeQuery(sql1);
+                boolean allInstanceAreMultiframe=true;
                 while (rs1.next()) {
+                    allInstanceAreMultiframe=false;
                     Instance img = new Instance();
                     img.setFilepath(rs1.getString("FileStoreUrl"));
                     img.setSop_iuid(rs1.getString("SopUID"));
@@ -1257,6 +1259,7 @@ public class DatabaseHandler {
                     series.setMultiframe(false);
                     series.getImageList().add(img);
                 }
+                if(!allInstanceAreMultiframe)
                 arr.add(series);
                 arr.addAll(getMultiframeSeriesList(siuid, series.getSeriesInstanceUID()));
             }

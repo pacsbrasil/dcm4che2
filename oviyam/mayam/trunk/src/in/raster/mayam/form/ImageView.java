@@ -40,6 +40,7 @@ package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegate.AnnotationDelegate;
+import java.awt.Toolkit;
 import javax.swing.JFrame;
 
 /**
@@ -81,6 +82,7 @@ public class ImageView extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Image View");
         setBackground(new java.awt.Color(0, 0, 0));
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/in/raster/mayam/form/images/fav_mayam.png")));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent evt) {
                 windowCloseHandler(evt);

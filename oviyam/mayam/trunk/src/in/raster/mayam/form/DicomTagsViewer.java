@@ -41,6 +41,7 @@ package in.raster.mayam.form;
 import in.raster.mayam.util.DicomTags;
 import in.raster.mayam.model.table.TagsTableDataModel;
 import in.raster.mayam.model.table.renderer.CellRenderer;
+import java.awt.Toolkit;
 import java.util.ArrayList;
 
 /**
@@ -82,6 +83,7 @@ public class DicomTagsViewer extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
 
         setTitle("Meta Data");
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/in/raster/mayam/form/images/fav_mayam.png")));
 
         dicomTagTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {

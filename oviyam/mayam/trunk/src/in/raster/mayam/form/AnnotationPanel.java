@@ -903,7 +903,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             if (this.layeredCanvas.imgpanel.isScaleFlag()) {
                 g.scale(this.layeredCanvas.imgpanel.getScaleFactor(), this.layeredCanvas.imgpanel.getScaleFactor());
             }
-            gs.setColor(Color.YELLOW);
+            g.setColor(new Color(255,138,0));
+            gs.setColor(new Color(255,138,0));
             //Condition used to draw new line as per the line flag values and coordinates of the annotation mouse point
             if ((mouseLocX1 != -1 && mouseLocX2 != -1 && mouseLocY1 != -1 && mouseLocY2 != -1) && addLine) {
                 g.drawString("Length:" + calculateDiff((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocX2 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY2 / this.layeredCanvas.imgpanel.getScaleFactor())), (int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) ((mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()) - 20));

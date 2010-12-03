@@ -60,6 +60,7 @@ import in.raster.mayam.model.Study;
 import in.raster.mayam.model.table.StudyListModel;
 import in.raster.mayam.model.table.renderer.CellRenderer;
 import java.awt.Cursor;
+import java.awt.Toolkit;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -275,6 +276,7 @@ public class MainScreen extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Raster Images | Mayam");
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/in/raster/mayam/form/images/fav_mayam.png")));
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14));
         jLabel1.setText(" Local Database");

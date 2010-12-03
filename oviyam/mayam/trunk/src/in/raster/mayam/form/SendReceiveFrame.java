@@ -38,6 +38,8 @@
 * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
+import java.awt.Toolkit;
+
 /**
  *
  * @author  BabuHussain
@@ -63,6 +65,7 @@ public class SendReceiveFrame extends javax.swing.JFrame {
 
         setTitle("Job Queue");
         setBackground(new java.awt.Color(102, 102, 102));
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/in/raster/mayam/form/images/fav_mayam.png")));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

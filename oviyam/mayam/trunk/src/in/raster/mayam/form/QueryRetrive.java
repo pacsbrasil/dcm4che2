@@ -72,6 +72,7 @@ import javax.swing.event.ListSelectionEvent;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.util.DcmURL;
 import in.raster.mayam.model.table.renderer.CellRenderer;
+import java.awt.Toolkit;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableModel;
@@ -212,6 +213,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
         jLabel1 = new javax.swing.JLabel();
 
         setTitle("Query/Retrieve");
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/in/raster/mayam/form/images/fav_mayam.png")));
 
         jPanel9.setMaximumSize(new java.awt.Dimension(1200, 1400));
 
@@ -444,7 +446,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
                             .add(crCheckBox))))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(modalityText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(55, Short.MAX_VALUE))
+                .addContainerGap(77, Short.MAX_VALUE))
         );
 
         org.jdesktop.layout.GroupLayout jPanel7Layout = new org.jdesktop.layout.GroupLayout(jPanel7);
