@@ -212,6 +212,9 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.persistence column-name="updated_time"
      */
     public abstract java.sql.Timestamp getUpdatedTime();
+    /**
+     * @ejb.interface-method
+     */
     public abstract void setUpdatedTime(java.sql.Timestamp time);
 
     /**

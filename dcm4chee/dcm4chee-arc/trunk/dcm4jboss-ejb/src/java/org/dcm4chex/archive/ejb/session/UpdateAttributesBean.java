@@ -154,6 +154,10 @@ public abstract class UpdateAttributesBean implements SessionBean {
             StudyLocal study = series.getStudy();
             PatientLocal patient = study.getPatient();
             series.coerceAttributes(ds, null);
+            // set series.series.update_time even if series.series_attrs
+            // was not updated to ensure that the series will not selected
+            // again with next seriesIuidsForAttributesUpdate()
+            series.setUpdatedTime(new Timestamp(System.currentTimeMillis()));
             study.coerceAttributes(ds, null);
             patient.coerceAttributes(ds, null);
         } catch (Exception e) {
