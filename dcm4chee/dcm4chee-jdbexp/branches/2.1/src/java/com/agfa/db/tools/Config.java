@@ -60,7 +60,7 @@ class Config {
 
 	private int dbType = Jdbexp.DB_TYPES_UNKNOWN;
 
-    private String xsl = null;
+	private String xsl = null;
 
 	public void setDbType(String s) {
 		if (s.equalsIgnoreCase("ORACLE"))
@@ -148,13 +148,13 @@ class Config {
 		return this.header;
 	}
 
-    public void setXSL(String s) {
-        this.xsl = s;
-    }
+	public void setXSL(String s) {
+		this.xsl = s;
+	}
 
-    public String getXSL() {
-        return this.xsl;
-    }
+	public String getXSL() {
+		return this.xsl;
+	}
 
 	//
 	public void setLabel(boolean b) {
@@ -346,6 +346,14 @@ class Config {
 			options.addOption(OptionBuilder.withLongOpt("err").withDescription("output stderr to FILE").hasArg()
 					.withArgName("FILE").create("E"));
 			options.addOption(OptionBuilder.withLongOpt("debug").withDescription("output debug").create());
+
+			// URL
+			options.addOption(OptionBuilder.withLongOpt("url").withDescription("jdbc url").hasArg().withArgName(
+					"JDBCURL | help").create("U"));
+			//
+			options.addOption(OptionBuilder.withLongOpt("db").withDescription("DB alias").hasArg().withArgName(
+					"ALIAS | list").create());
+
 			options.addOption(OptionBuilder.withLongOpt("jdbcurlhelp").withDescription("print URL help").create());
 			options
 					.addOption(OptionBuilder.withLongOpt("displaylobs").withDescription("display LOB's as base64").create());
@@ -353,28 +361,8 @@ class Config {
 			options.addOption(OptionBuilder.withLongOpt("sqlfile").withDescription("read statemtents from sqlfile")
 					.hasArg().withArgName("FILE").create());
 
-            options.addOption("h", "help", false, "print this message");
-            options.addOption("v", "version", false, "version information");
-            
-            options.addOption(OptionBuilder.withLongOpt("delimiter").withDescription("field delimiter").hasArg()
-                    .withArgName("DELIMITER").create("d"));
-            options.addOption(OptionBuilder.withLongOpt("commit").withDescription("commit after <COMMIT> statements")
-                    .hasArg().withArgName("COMMIT").create());
-            options.addOption(OptionBuilder.withLongOpt("macro").withDescription("exec macro").hasArg().withArgName(
-                    "MACRO | list").create("M"));
-            options.addOption(OptionBuilder.withLongOpt("out").withDescription("output stdout to FILE").hasArg()
-                    .withArgName("FILE").create("O"));
-            options.addOption(OptionBuilder.withLongOpt("gzip").withDescription("compress output").create("z"));
-            options.addOption(OptionBuilder.withLongOpt("err").withDescription("output stderr to FILE").hasArg()
-                    .withArgName("FILE").create("E"));
-            options.addOption(OptionBuilder.withLongOpt("debug").withDescription("output debug").create());
-            options.addOption(OptionBuilder.withLongOpt("xsl").withDescription("transform via xsl").hasArg().withArgName("FILE").create());
-            options.addOption(OptionBuilder.withLongOpt("jdbcurlhelp").withDescription("print URL help").create());
-            options.addOption(OptionBuilder.withLongOpt("displaylobs").withDescription("display LOB's as base64")
-                    .create());
-            options.addOption(OptionBuilder.withLongOpt("ignoresqlerrors").withDescription("ignore SQL errors")
-                    .create());
-            options.addOption(OptionBuilder.withLongOpt("sqlfile").withDescription("read statemtents from sqlfile").hasArg().withArgName("FILE").create());
+			options.addOption(OptionBuilder.withLongOpt("xsl").withDescription("transform via xsl").hasArg().withArgName(
+					"FILE").create());
 
 			OptionGroup displayGroup = new OptionGroup();
 			displayGroup.addOption(OptionBuilder.withLongOpt("label").withDescription("display labels").create("L"));
@@ -390,17 +378,17 @@ class Config {
 			argv = line.getArgs();
 			int i = 0;
 
-            if (line.hasOption("debug"))
-                this.debug = true;
-            if (line.hasOption("displaylobs"))
-                this.displayLobs = true;
-            if (line.hasOption("commit")) {
-                this.commitInterval = Long.parseLong(line.getOptionValue("commit").trim());
-            }
-            
-            if (line.hasOption("xsl"))
-                setXSL(line.getOptionValue("xsl").trim());
-            
+			if (line.hasOption("debug"))
+				this.debug = true;
+			if (line.hasOption("displaylobs"))
+				this.displayLobs = true;
+			if (line.hasOption("commit")) {
+				this.commitInterval = Long.parseLong(line.getOptionValue("commit").trim());
+			}
+
+			if (line.hasOption("xsl"))
+				setXSL(line.getOptionValue("xsl").trim());
+
 			if (line.hasOption("csv"))
 				setCsv(true);
 
@@ -509,8 +497,14 @@ class Config {
 				setSql(argv[i++].trim());
 
 			// jdbc url
-			if (line.hasOption("U"))
+			if (line.hasOption("U")) {
+				if (line.getOptionValue("U").equalsIgnoreCase("help")) {
+					UrlHelp();
+					System.exit(0);
+				}
+
 				setJdbcUrl(line.getOptionValue("U"));
+			}
 
 			if (getJdbcUrl() == null)
 				if (setJdbcUrl(System.getProperty("jdbc.url")) == null) {
@@ -520,7 +514,7 @@ class Config {
 						if (s1 == null) {
 							Jdbexp.exit(1, "ERROR: DB Alias: < " + s.substring(1) + " > not found!");
 						}
-					    s = s1;
+						s = s1;
 					}
 					if (setJdbcUrl(s) == null) {
 						Jdbexp.exit(1, "ERROR: Missing JDBC Url.");
