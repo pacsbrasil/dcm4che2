@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Used in page-tpl.xsl -->
-<!ENTITY English "エゲレス語">
-<!ENTITY German "ドイツん語">
-<!ENTITY French "おフランス語">
-<!ENTITY Japanese "大日本帝国語">
+<!ENTITY English "英語">
+<!ENTITY German "ドイツ語">
+<!ENTITY French "フランス語">
+<!ENTITY Japanese "日本語">
 <!ENTITY Folder "アーカイブ一覧">
 <!ENTITY Trash "ゴミ箱">
 <!ENTITY AEManagement "AE管理">
 <!ENTITY OfflineStorage "オフラインストレージ">
 <!ENTITY WorklistConsole "ワークリストコンソール">
-<!ENTITY MPPSConsole "MPPS コンソール">
-<!ENTITY GPWorklistConsole "GP ワークリストコンソール">
-<!ENTITY GPPPSConsole "GPPPS コンソール">
+<!ENTITY MPPSConsole "MPPSコンソール">
+<!ENTITY GPWorklistConsole "GPワークリストコンソール">
+<!ENTITY GPPPSConsole "GPPPSコンソール">
 <!ENTITY UserAdmin "ユーザー管理">
 <!ENTITY AuditRepository "監査リポジトリ">
 <!ENTITY Logout "ログアウト">
@@ -46,7 +46,7 @@
 <!ENTITY confirmSendSelectedEntitiesTo2 "?">
 <!ENTITY SendDestination "送り先へ送っておいたよ">
 <!ENTITY ShowOnlyStudiesFromSelectedSourceAET "選択したAEタイトルの検査のみ表示">
-<!ENTITY AETFilter "AEタイトルでフィルタ">
+<!ENTITY AETFilter "AETFilter">
 <!ENTITY PatientName "患者名">
 <!ENTITY PatientID "患者ID">
 <!ENTITY formatPatientID "書式: id[^^^問題]">
@@ -73,8 +73,8 @@
 <!ENTITY AccNo "受入番号">
 <!ENTITY RefPhysician "医師名">
 <!ENTITY Status "ステータス">
-<!ENTITY NoS "シリーズ数">
-<!ENTITY NoI "イメージ数">
+<!ENTITY NoS "NoS">
+<!ENTITY NoI "NoI">
 <!ENTITY Series "シリーズ">
 <!ENTITY SeriesNoMedia "シリーズ番号 (メディア)">
 <!ENTITY SeriesDescription "シリーズ概要">
@@ -99,7 +99,7 @@
 <!ENTITY ShowSeries "シリーズ表示">
 <!ENTITY HideSeries "シリーズ非表示">
 <!ENTITY StudyDateTime "検査日/時">
-<!ENTITY StudyStatusID "検査ステータス ID">
+<!ENTITY StudyStatusID "検査ステータスID">
 <!ENTITY NumberOfSeries "シリーズ数">
 <!ENTITY NumberOfInstances "インスタンス数">
 <!ENTITY ViewStudyInWebviewer "Webviewerで検査表示">
@@ -124,8 +124,8 @@
 <!ENTITY ImageType "画像タイプ">
 <!ENTITY PixelMatrix "ピクセルマトリックス">
 <!ENTITY NumberOfFiles "ファイル数">
-<!ENTITY RetrieveAET "リトリーブ AET">
-<!ENTITY SopIUID "SOP インスタンス UID">
+<!ENTITY RetrieveAET "リトリーブAET">
+<!ENTITY SopIUID "SOP インスタンスUID">
 <!ENTITY ViewImage "画像表示">
 <!ENTITY ShowInstanceAttributesInDB "DBのインスタンス属性を表示">
 <!ENTITY ShowDICOMAttributes "DICOM属性を表示">
@@ -146,10 +146,10 @@
 <!ENTITY ViewWaveform "波形表示">
 <!ENTITY MIMEType "MIMEタイプ">
 <!ENTITY ViewDocument "書類表示">
-<!ENTITY TSUID "トランスファー シンタックス UID" >
+<!ENTITY TSUID "トランスファー シンタックスUID" >
 <!ENTITY OK "おけ" >
 <!ENTITY toArchive "アーカイブへ" >
-<!ENTITY archived "アーカイブされたお" >
+<!ENTITY archived "アーカイブされた" >
 <!ENTITY compressionFailed "圧縮に失敗" >
 <!ENTITY compressionVerificationFailed "圧縮照合に失敗" >
 <!ENTITY MD5CheckFailed "MD5チェックに失敗">
@@ -173,4 +173,4 @@
 <!ENTITY QueryHasIssuer_text3 "患者IDに問題">
 <!ENTITY AlternativeStudyUID "Alternative query to find study with Study IUID of an order that doesn't match with StudyIUID of received composite object.">
 <!ENTITY AlternativeStudyUID_text "of Order">
-<!ENTITY ViewSelectedEntities "View selected Entities in Weasis">
+<!ENTITY ViewSelectedEntities "選択したデータをWeasisで表示">
