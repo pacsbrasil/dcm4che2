@@ -275,7 +275,7 @@ public class MainScreen extends javax.swing.JFrame {
         aboutMenu = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Raster Images | Mayam");
+        setTitle("Mayam");
         setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/in/raster/mayam/form/images/fav_mayam.png")));
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14));

@@ -102,7 +102,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
      * Zoom level can be adjusted with out changing the component size and SHAPEORIGIN.
      * So there is no need of changing this SHAPEORIGIN value and component size. 
      */
-    private final static int SHAPEORIGIN=256;
+    private final static int SHAPEORIGIN = 256;
     private Annotation annotation;
     private boolean focusGained;
     public static String tool = "";
@@ -637,10 +637,10 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         Iterator<AnnotationObj> ite = lineObj.iterator();
         while (ite.hasNext()) {
             AnnotationObj t = ite.next();
-            int x1 = (int) -1 * t.getCenterBasedY1();
-            int y1 = (int) 1 * t.getCenterBasedX1();
-            int x2 = (int) -1 * t.getCenterBasedY2();
-            int y2 = (int) 1 * t.getCenterBasedX2();
+            int x1 = -1 * t.getCenterBasedY1();
+            int y1 = 1 * t.getCenterBasedX1();
+            int x2 = -1 * t.getCenterBasedY2();
+            int y2 = 1 * t.getCenterBasedX2();
             t.setCenterBasedLocation(x1, y1, x2, y2);
         }
     }
@@ -652,10 +652,10 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         Iterator<AnnotationObj> ite1 = rectObj.iterator();
         while (ite1.hasNext()) {
             AnnotationObj t = ite1.next();
-            int x1 = (int) -1 * t.getCenterBasedY1();
-            int y1 = (int) 1 * t.getCenterBasedX1();
-            int x2 = (int) -1 * t.getCenterBasedY2();
-            int y2 = (int) 1 * t.getCenterBasedX2();
+            int x1 = -1 * t.getCenterBasedY1();
+            int y1 = 1 * t.getCenterBasedX1();
+            int x2 = -1 * t.getCenterBasedY2();
+            int y2 = 1 * t.getCenterBasedX2();
             t.setCenterBasedLocation(x1, y1, x2, y2);
         }
     }
@@ -667,10 +667,10 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         Iterator<AnnotationObj> ite2 = ellipseObj.iterator();
         while (ite2.hasNext()) {
             AnnotationObj t = ite2.next();
-            int x1 = (int) -1 * t.getCenterBasedY1();
-            int y1 = (int) 1 * t.getCenterBasedX1();
-            int x2 = (int) -1 * t.getCenterBasedY2();
-            int y2 = (int) 1 * t.getCenterBasedX2();
+            int x1 = -1 * t.getCenterBasedY1();
+            int y1 = 1 * t.getCenterBasedX1();
+            int x2 = -1 * t.getCenterBasedY2();
+            int y2 = 1 * t.getCenterBasedX2();
             t.setCenterBasedLocation(x1, y1, x2, y2);
         }
     }
@@ -694,10 +694,10 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         Iterator<AnnotationObj> ite = lineObj.iterator();
         while (ite.hasNext()) {
             AnnotationObj t = ite.next();
-            int x1 = (int) 1 * t.getCenterBasedY1();
-            int y1 = (int) -1 * t.getCenterBasedX1();
-            int x2 = (int) 1 * t.getCenterBasedY2();
-            int y2 = (int) -1 * t.getCenterBasedX2();
+            int x1 = 1 * t.getCenterBasedY1();
+            int y1 = -1 * t.getCenterBasedX1();
+            int x2 = 1 * t.getCenterBasedY2();
+            int y2 = -1 * t.getCenterBasedX2();
             t.setCenterBasedLocation(x1, y1, x2, y2);
         }
     }
@@ -709,10 +709,10 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         Iterator<AnnotationObj> ite1 = rectObj.iterator();
         while (ite1.hasNext()) {
             AnnotationObj t = ite1.next();
-            int x1 = (int) 1 * t.getCenterBasedY1();
-            int y1 = (int) -1 * t.getCenterBasedX1();
-            int x2 = (int) 1 * t.getCenterBasedY2();
-            int y2 = (int) -1 * t.getCenterBasedX2();
+            int x1 = 1 * t.getCenterBasedY1();
+            int y1 = -1 * t.getCenterBasedX1();
+            int x2 = 1 * t.getCenterBasedY2();
+            int y2 = -1 * t.getCenterBasedX2();
             t.setCenterBasedLocation(x1, y1, x2, y2);
         }
     }
@@ -724,10 +724,10 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         Iterator<AnnotationObj> ite2 = ellipseObj.iterator();
         while (ite2.hasNext()) {
             AnnotationObj t = ite2.next();
-            int x1 = (int) 1 * t.getCenterBasedY1();
-            int y1 = (int) -1 * t.getCenterBasedX1();
-            int x2 = (int) 1 * t.getCenterBasedY2();
-            int y2 = (int) -1 * t.getCenterBasedX2();
+            int x1 = 1 * t.getCenterBasedY1();
+            int y1 = -1 * t.getCenterBasedX1();
+            int x2 = 1 * t.getCenterBasedY2();
+            int y2 = -1 * t.getCenterBasedX2();
             t.setCenterBasedLocation(x1, y1, x2, y2);
         }
     }
@@ -751,10 +751,10 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         Iterator<AnnotationObj> ite = lineObj.iterator();
         while (ite.hasNext()) {
             AnnotationObj t = ite.next();
-            int x1 = (int) 1 * t.getCenterBasedX1();
-            int y1 = (int) -1 * t.getCenterBasedY1();
-            int x2 = (int) 1 * t.getCenterBasedX2();
-            int y2 = (int) -1 * t.getCenterBasedY2();
+            int x1 = 1 * t.getCenterBasedX1();
+            int y1 = -1 * t.getCenterBasedY1();
+            int x2 = 1 * t.getCenterBasedX2();
+            int y2 = -1 * t.getCenterBasedY2();
             t.setCenterBasedLocation(x1, y1, x2, y2);
         }
     }
@@ -766,10 +766,10 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         Iterator<AnnotationObj> ite1 = rectObj.iterator();
         while (ite1.hasNext()) {
             AnnotationObj t = ite1.next();
-            int x1 = (int) 1 * t.getCenterBasedX1();
-            int y1 = (int) -1 * t.getCenterBasedY1();
-            int x2 = (int) 1 * t.getCenterBasedX2();
-            int y2 = (int) -1 * t.getCenterBasedY2();
+            int x1 = 1 * t.getCenterBasedX1();
+            int y1 = -1 * t.getCenterBasedY1();
+            int x2 = 1 * t.getCenterBasedX2();
+            int y2 = -1 * t.getCenterBasedY2();
             t.setCenterBasedLocation(x1, y1, x2, y2);
         }
     }
@@ -781,10 +781,10 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         Iterator<AnnotationObj> ite2 = ellipseObj.iterator();
         while (ite2.hasNext()) {
             AnnotationObj t = ite2.next();
-            int x1 = (int) 1 * t.getCenterBasedX1();
-            int y1 = (int) -1 * t.getCenterBasedY1();
-            int x2 = (int) 1 * t.getCenterBasedX2();
-            int y2 = (int) -1 * t.getCenterBasedY2();
+            int x1 = 1 * t.getCenterBasedX1();
+            int y1 = -1 * t.getCenterBasedY1();
+            int x2 = 1 * t.getCenterBasedX2();
+            int y2 = -1 * t.getCenterBasedY2();
             t.setCenterBasedLocation(x1, y1, x2, y2);
         }
     }
@@ -809,10 +809,10 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         Iterator<AnnotationObj> ite = lineObj.iterator();
         while (ite.hasNext()) {
             AnnotationObj t = ite.next();
-            int x1 = (int) -1 * t.getCenterBasedX1();
-            int y1 = (int) 1 * t.getCenterBasedY1();
-            int x2 = (int) -1 * t.getCenterBasedX2();
-            int y2 = (int) 1 * t.getCenterBasedY2();
+            int x1 = -1 * t.getCenterBasedX1();
+            int y1 = 1 * t.getCenterBasedY1();
+            int x2 = -1 * t.getCenterBasedX2();
+            int y2 = 1 * t.getCenterBasedY2();
             t.setCenterBasedLocation(x1, y1, x2, y2);
         }
     }
@@ -824,10 +824,10 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         Iterator<AnnotationObj> ite1 = rectObj.iterator();
         while (ite1.hasNext()) {
             AnnotationObj t = ite1.next();
-            int x1 = (int) -1 * t.getCenterBasedX1();
-            int y1 = (int) 1 * t.getCenterBasedY1();
-            int x2 = (int) -1 * t.getCenterBasedX2();
-            int y2 = (int) 1 * t.getCenterBasedY2();
+            int x1 = -1 * t.getCenterBasedX1();
+            int y1 = 1 * t.getCenterBasedY1();
+            int x2 = -1 * t.getCenterBasedX2();
+            int y2 = 1 * t.getCenterBasedY2();
             t.setCenterBasedLocation(x1, y1, x2, y2);
         }
     }
@@ -839,10 +839,10 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         Iterator<AnnotationObj> ite2 = ellipseObj.iterator();
         while (ite2.hasNext()) {
             AnnotationObj t = ite2.next();
-            int x1 = (int) -1 * t.getCenterBasedX1();
-            int y1 = (int) 1 * t.getCenterBasedY1();
-            int x2 = (int) -1 * t.getCenterBasedX2();
-            int y2 = (int) 1 * t.getCenterBasedY2();
+            int x1 = -1 * t.getCenterBasedX1();
+            int y1 = 1 * t.getCenterBasedY1();
+            int x2 = -1 * t.getCenterBasedX2();
+            int y2 = 1 * t.getCenterBasedY2();
             t.setCenterBasedLocation(x1, y1, x2, y2);
         }
     }
@@ -903,8 +903,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             if (this.layeredCanvas.imgpanel.isScaleFlag()) {
                 g.scale(this.layeredCanvas.imgpanel.getScaleFactor(), this.layeredCanvas.imgpanel.getScaleFactor());
             }
-            g.setColor(new Color(255,138,0));
-            gs.setColor(new Color(255,138,0));
+            g.setColor(new Color(255, 138, 0));
+            gs.setColor(new Color(255, 138, 0));
             //Condition used to draw new line as per the line flag values and coordinates of the annotation mouse point
             if ((mouseLocX1 != -1 && mouseLocX2 != -1 && mouseLocY1 != -1 && mouseLocY2 != -1) && addLine) {
                 g.drawString("Length:" + calculateDiff((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocX2 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY2 / this.layeredCanvas.imgpanel.getScaleFactor())), (int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) ((mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()) - 20));

@@ -1612,6 +1612,33 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
     }
 
+    public String[] getInstancesFilePath() {
+        String[] s = null;
+        Iterator studyItr = MainScreen.studyList.iterator();
+        while (studyItr.hasNext()) {
+            Study study = (Study) studyItr.next();
+            if (study.getStudyInstanceUID().equalsIgnoreCase(ApplicationContext.imgPanel.getStudyUID())) {
+                ArrayList seriesList = (ArrayList) study.getSeriesList();
+                for (int i = 0; i < seriesList.size(); ++i) {
+                    Series series = (Series) seriesList.get(i);
+                    if (series.getSeriesInstanceUID().equalsIgnoreCase(this.seriesUID)) {
+                        s = new String[series.getImageList().size()];
+                        int x = 0;
+                        for (Iterator i$ = series.getImageList().iterator(); i$.hasNext();) {
+                            Instance instance = (Instance) i$.next();
+
+                            s[x] = instance.getFilepath();
+                            ++x;
+                        }
+                    }
+                }
+            }
+
+        }
+
+        return s;
+    }
+
     public void mouseClicked(MouseEvent e) {
     }
 

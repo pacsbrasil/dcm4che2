@@ -46,6 +46,11 @@ import in.raster.mayam.util.DicomTagsReader;
 import in.raster.mayam.form.display.Display;
 import in.raster.mayam.delegate.CineTimer;
 import in.raster.mayam.delegate.DestinationFinder;
+import in.raster.mayam.form.dcm3d.DicomMIP;
+import in.raster.mayam.form.dcm3d.DicomMPR2D;
+import in.raster.mayam.form.dcm3d.DicomMPR3DSlider;
+import in.raster.mayam.form.dcm3d.DicomVolumeRendering;
+import in.raster.mayam.form.dcm3d.SurfaceRendering;
 import in.raster.mayam.model.Instance;
 import in.raster.mayam.model.PresetModel;
 import in.raster.mayam.model.Series;
@@ -59,8 +64,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Timer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JMenuItem;
@@ -80,6 +92,11 @@ public class ImageToolbar extends javax.swing.JPanel {
     CineTimer cineTimer;
     Timer timer;
     ImageView imgView;
+    SurfaceRendering surface = null;
+    DicomMIP dcmMip = null;
+    DicomMPR2D dcmMPR2D = null;
+    DicomMPR3DSlider mpr3DSlider = null;
+    DicomVolumeRendering dicomVolumeRendering = null;
 
     public ImageToolbar() {
         initComponents();
@@ -110,6 +127,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         jPopupMenu2 = new javax.swing.JPopupMenu();
         toolsButtonGroup = new javax.swing.ButtonGroup();
         jPopupMenu3 = new javax.swing.JPopupMenu();
+        jPopupMenu4 = new javax.swing.JPopupMenu();
         jToolBar3 = new javax.swing.JToolBar();
         layoutButton = new javax.swing.JButton();
         windowing = new javax.swing.JButton();
@@ -137,6 +155,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         metaDataButton = new javax.swing.JButton();
         stackButton = new javax.swing.JButton();
         scoutButton = new javax.swing.JButton();
+        cube3DButton = new javax.swing.JButton();
         loopCheckbox = new javax.swing.JCheckBox();
         loopSlider = new javax.swing.JSlider();
 
@@ -147,7 +166,6 @@ public class ImageToolbar extends javax.swing.JPanel {
         layoutButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/layout.png"))); // NOI18N
         layoutButton.setToolTipText("Layout");
         layoutButton.setComponentPopupMenu(jPopupMenu1);
-        layoutButton.setDisabledSelectedIcon(null);
         layoutButton.setFocusable(false);
         layoutButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         layoutButton.setPreferredSize(new java.awt.Dimension(45, 45));
@@ -179,7 +197,6 @@ public class ImageToolbar extends javax.swing.JPanel {
         presetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/drop_down.png"))); // NOI18N
         presetButton.setToolTipText("Preset");
         presetButton.setComponentPopupMenu(jPopupMenu2);
-        presetButton.setDisabledSelectedIcon(null);
         presetButton.setFocusable(false);
         presetButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         presetButton.setMaximumSize(new java.awt.Dimension(12, 24));
@@ -206,7 +223,6 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         probeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/probe.png"))); // NOI18N
         probeButton.setToolTipText("Probe");
-        probeButton.setDisabledSelectedIcon(null);
         probeButton.setFocusable(false);
         probeButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         probeButton.setPreferredSize(new java.awt.Dimension(45, 45));
@@ -221,7 +237,6 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         verticalFlip.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/flip_vertical.png"))); // NOI18N
         verticalFlip.setToolTipText("Vertical Flip");
-        verticalFlip.setDisabledSelectedIcon(null);
         verticalFlip.setFocusable(false);
         verticalFlip.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         verticalFlip.setPreferredSize(new java.awt.Dimension(45, 45));
@@ -235,7 +250,6 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         horizontalFlip.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/flip_horizontal.png"))); // NOI18N
         horizontalFlip.setToolTipText("Horizontal Flip");
-        horizontalFlip.setDisabledSelectedIcon(null);
         horizontalFlip.setFocusable(false);
         horizontalFlip.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         horizontalFlip.setPreferredSize(new java.awt.Dimension(45, 45));
@@ -250,7 +264,6 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         leftRotate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rotate_left.png"))); // NOI18N
         leftRotate.setToolTipText("Rotate Left");
-        leftRotate.setDisabledSelectedIcon(null);
         leftRotate.setFocusable(false);
         leftRotate.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         leftRotate.setPreferredSize(new java.awt.Dimension(45, 45));
@@ -264,7 +277,6 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         rightRotate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rotate_right.png"))); // NOI18N
         rightRotate.setToolTipText("Rotate Right");
-        rightRotate.setDisabledSelectedIcon(null);
         rightRotate.setFocusable(false);
         rightRotate.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         rightRotate.setPreferredSize(new java.awt.Dimension(45, 45));
@@ -278,7 +290,6 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         zoomin.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/zoomin.png"))); // NOI18N
         zoomin.setToolTipText("Zoom In");
-        zoomin.setDisabledSelectedIcon(null);
         zoomin.setFocusable(false);
         zoomin.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         zoomin.setPreferredSize(new java.awt.Dimension(45, 45));
@@ -292,7 +303,6 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         zoomoutButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/zoomout.png"))); // NOI18N
         zoomoutButton.setToolTipText("Zoom Out");
-        zoomoutButton.setDisabledSelectedIcon(null);
         zoomoutButton.setFocusable(false);
         zoomoutButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         zoomoutButton.setPreferredSize(new java.awt.Dimension(45, 45));
@@ -321,7 +331,6 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         invert.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/invert.png"))); // NOI18N
         invert.setToolTipText("Invert");
-        invert.setDisabledSelectedIcon(null);
         invert.setFocusable(false);
         invert.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         invert.setPreferredSize(new java.awt.Dimension(45, 45));
@@ -385,7 +394,6 @@ public class ImageToolbar extends javax.swing.JPanel {
         clearAllMeasurement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/clear_all_annotation.png"))); // NOI18N
         clearAllMeasurement.setToolTipText("Clear All Measurement");
         clearAllMeasurement.setActionCommand("clearAll");
-        clearAllMeasurement.setDisabledSelectedIcon(null);
         clearAllMeasurement.setPreferredSize(new java.awt.Dimension(45, 45));
         clearAllMeasurement.setRequestFocusEnabled(false);
         clearAllMeasurement.addActionListener(new java.awt.event.ActionListener() {
@@ -430,7 +438,6 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         annotationVisibility.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/annotation_overlay.png"))); // NOI18N
         annotationVisibility.setToolTipText("Annotation Overlay");
-        annotationVisibility.setDisabledSelectedIcon(null);
         annotationVisibility.setFocusable(false);
         annotationVisibility.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         annotationVisibility.setPreferredSize(new java.awt.Dimension(45, 45));
@@ -444,7 +451,6 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         textOverlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/textoverlay.png"))); // NOI18N
         textOverlay.setToolTipText("Text Overlay");
-        textOverlay.setDisabledSelectedIcon(null);
         textOverlay.setFocusable(false);
         textOverlay.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         textOverlay.setPreferredSize(new java.awt.Dimension(45, 45));
@@ -458,7 +464,6 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         reset.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/reset.png"))); // NOI18N
         reset.setToolTipText("Reset");
-        reset.setDisabledSelectedIcon(null);
         reset.setFocusable(false);
         reset.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         reset.setPreferredSize(new java.awt.Dimension(45, 45));
@@ -472,7 +477,6 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         exportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/export_series.png"))); // NOI18N
         exportButton.setToolTipText("Export");
-        exportButton.setDisabledSelectedIcon(null);
         exportButton.setFocusable(false);
         exportButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         exportButton.setPreferredSize(new java.awt.Dimension(45, 45));
@@ -486,7 +490,6 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         metaDataButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/metadata_viewerpage.png"))); // NOI18N
         metaDataButton.setToolTipText("Meta Data");
-        metaDataButton.setDisabledSelectedIcon(null);
         metaDataButton.setFocusable(false);
         metaDataButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         metaDataButton.setPreferredSize(new java.awt.Dimension(45, 45));
@@ -526,7 +529,25 @@ public class ImageToolbar extends javax.swing.JPanel {
         });
         jToolBar3.add(scoutButton);
 
-        loopCheckbox.setFont(new java.awt.Font("Lucida Grande", 1, 12));
+        cube3DButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/Cube3D.png"))); // NOI18N
+        cube3DButton.setToolTipText("3D");
+        cube3DButton.setComponentPopupMenu(jPopupMenu4);
+        cube3DButton.setFocusable(false);
+        cube3DButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        cube3DButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        cube3DButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                cube3DButtonMouseClicked(evt);
+            }
+        });
+        cube3DButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cube3DButtonActionPerformed(evt);
+            }
+        });
+        jToolBar3.add(cube3DButton);
+
+        loopCheckbox.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         loopCheckbox.setText("Loop");
         loopCheckbox.setFocusable(false);
         loopCheckbox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
@@ -1055,6 +1076,21 @@ public class ImageToolbar extends javax.swing.JPanel {
         textOverlay.dispatchEvent(new java.awt.event.MouseEvent(this.textOverlay, MouseEvent.MOUSE_CLICKED, z, mo, x, y, cc, true));
           }
     }//GEN-LAST:event_textOverlayMousePressed
+
+    private void cube3DButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cube3DButtonMouseClicked
+
+        int x = evt.getX();
+        int y = evt.getY();
+        long z = evt.getWhen();
+        int mo = evt.getModifiers();
+        int cc = evt.getClickCount();
+        design3DPopup();
+        cube3DButton.dispatchEvent(new java.awt.event.MouseEvent(this.cube3DButton, MouseEvent.MOUSE_CLICKED, z, mo, x, y, cc, true));
+}//GEN-LAST:event_cube3DButtonMouseClicked
+
+    private void cube3DButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cube3DButtonActionPerformed
+
+}//GEN-LAST:event_cube3DButtonActionPerformed
     private void designPresetContext() {
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ArrayList presetList = ApplicationContext.databaseRef.getPresetValueForModality(ApplicationContext.imgPanel.getModality());
@@ -1093,6 +1129,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton annotationVisibility;
     private javax.swing.JButton clearAllMeasurement;
+    private javax.swing.JButton cube3DButton;
     private javax.swing.JButton deleteMeasurement;
     private javax.swing.JButton ellipseButton;
     private javax.swing.JButton exportButton;
@@ -1102,6 +1139,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JPopupMenu jPopupMenu2;
     private javax.swing.JPopupMenu jPopupMenu3;
+    private javax.swing.JPopupMenu jPopupMenu4;
     private javax.swing.JToolBar jToolBar3;
     private javax.swing.JButton layoutButton;
     private javax.swing.JButton leftRotate;
@@ -1347,7 +1385,116 @@ public class ImageToolbar extends javax.swing.JPanel {
     public void jb9ActionPerformed(ActionEvent e) {
         changeLayout(3, 3);
     }
+    public String seriesDir = "";
+    public String studyDir = "";
+    private void design3DPopup() {
 
+        JMenuItem mpr = new JMenuItem("2D Orthogonal MPR");
+        JMenuItem mpr3D = new JMenuItem("3D MPR");
+        JMenuItem mip = new JMenuItem("3D MIP");
+        JMenuItem surfaceRendering = new JMenuItem("3D Surface Rendering");
+        JMenuItem volumeRendering = new JMenuItem("Volume Rendering");
+
+        jPopupMenu4.removeAll();
+        jPopupMenu4.add(mpr);
+        jPopupMenu4.addSeparator();
+        jPopupMenu4.add(mpr3D);
+        jPopupMenu4.add(mip);
+        jPopupMenu4.add(surfaceRendering);
+        jPopupMenu4.add(volumeRendering);
+
+        LayeredCanvas tempCanvas = null;
+        surfaceRendering.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent ae) {
+                doFileCopy();
+                surface = new SurfaceRendering();
+                surface.readDicomDir(seriesDir);
+                surface.setLocationRelativeTo(ImageToolbar.this);
+                surface.setVisible(true);
+            }
+        });
+        mip.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent ae) {
+                doFileCopy();
+                dcmMip = new DicomMIP();
+                dcmMip.readDicomDir(seriesDir);
+                dcmMip.setLocationRelativeTo(ImageToolbar.this);
+                dcmMip.setVisible(true);
+            }
+        });
+        mpr.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent ae) {
+                doFileCopy();
+                dcmMPR2D = new DicomMPR2D();
+                dcmMPR2D.readDicomDir(seriesDir);
+                dcmMPR2D.setLocationRelativeTo(ImageToolbar.this);
+                dcmMPR2D.setVisible(true);
+            }
+        });
+        mpr3D.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                doFileCopy();
+                mpr3DSlider = new DicomMPR3DSlider();
+                mpr3DSlider.readDicom(seriesDir);
+                mpr3DSlider.setLocationRelativeTo(ImageToolbar.this);
+                mpr3DSlider.setVisible(true);
+            }
+        });
+        volumeRendering.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {               
+                doFileCopy();
+                dicomVolumeRendering = new DicomVolumeRendering();
+                dicomVolumeRendering.readDicomDir(seriesDir);
+                dicomVolumeRendering.setLocationRelativeTo(ImageToolbar.this);
+                dicomVolumeRendering.setVisible(true);
+               
+            }
+        });
+
+    }
+
+    public void doFileCopy() {
+        String filePath = ApplicationContext.imgPanel.getDicomFileUrl();
+        studyDir = new File(filePath).getParent();
+        String seriesUID = ApplicationContext.imgPanel.getSeriesUID();
+        String instancePath[] = ApplicationContext.imgPanel.getInstancesFilePath();
+        DestinationFinder finder = new DestinationFinder();
+        for (int i = 0; i < instancePath.length; i++) {
+            try {
+                File sourceFile = new File(finder.getFileDestination(instancePath[i]));
+                FileInputStream fis = new FileInputStream(sourceFile);
+                seriesDir = studyDir + File.separator + seriesUID;
+                File seriesFolder = new File(seriesDir);
+                if (!seriesFolder.exists()) {
+                    seriesFolder.mkdir();
+                }
+                FileOutputStream fout = new FileOutputStream(new File(seriesFolder, sourceFile.getName()));
+                copy(fis, fout);
+            } catch (IOException ex) {
+                Logger.getLogger(ImageToolbar.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception ex) {
+                Logger.getLogger(ImageToolbar.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }
+    }
+    private void copy(InputStream in, OutputStream out)
+            throws IOException {
+        byte[] buffer = new byte[8 * 1024];
+        int read;
+        while ((read = in.read(buffer)) != -1) {
+            if (out != null) {
+                out.write(buffer, 0, read);
+            }
+        }
+        in.close();
+        out.close();
+    }
     public void textOverlayContext() {
 
         JMenuItem currentFrame = new JMenuItem("Selected");
