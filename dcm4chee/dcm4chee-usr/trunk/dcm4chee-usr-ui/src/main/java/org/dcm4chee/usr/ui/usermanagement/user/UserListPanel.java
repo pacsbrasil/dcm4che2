@@ -68,7 +68,6 @@ import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
 import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordLink;
-import org.dcm4chee.usr.ui.usermanagement.UserManagementPanel;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
@@ -89,7 +88,6 @@ public class UserListPanel extends Panel {
     private static final long serialVersionUID = 1L;
     
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    private static final ResourceReference CSS = new CompressedResourceReference(UserManagementPanel.class, "usr-style.css");
 
     private UserAccess userAccess;
     
@@ -108,8 +106,6 @@ public class UserListPanel extends Panel {
         
         if (UserListPanel.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(UserListPanel.BaseCSS));
-        if (UserListPanel.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(UserListPanel.CSS));
 
         userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);
         

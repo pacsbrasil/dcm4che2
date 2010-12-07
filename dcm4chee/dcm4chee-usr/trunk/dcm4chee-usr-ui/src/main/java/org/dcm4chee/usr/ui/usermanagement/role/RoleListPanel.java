@@ -66,7 +66,6 @@ import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.Role;
-import org.dcm4chee.usr.ui.usermanagement.UserManagementPanel;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
@@ -87,7 +86,6 @@ public class RoleListPanel extends Panel {
     private static final long serialVersionUID = 1L;
     
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    private static final ResourceReference CSS = new CompressedResourceReference(UserManagementPanel.class, "usr-style.css");
     
     UserAccess userAccess;
     
@@ -100,8 +98,6 @@ public class RoleListPanel extends Panel {
 
         if (RoleListPanel.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(RoleListPanel.BaseCSS));
-        if (RoleListPanel.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(RoleListPanel.CSS));
 
         userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);        
         setOutputMarkupId(true);

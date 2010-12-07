@@ -94,8 +94,6 @@ public class CreateOrEditRolePage extends SecureWebPage {
         
         private static final long serialVersionUID = 1L;
 
-        String serviceObjectName;
-        
         private Model<String> rolename = new Model<String>();
         private Model<String> type = new Model<String>();
         private Model<String> description= new Model<String>();
@@ -108,7 +106,7 @@ public class CreateOrEditRolePage extends SecureWebPage {
         public CreateOrEditRoleForm(String id, final ListModel<Role> allRolenames, final Role role) {
             super(id);
 
-            serviceObjectName = ((BaseWicketApplication) getApplication()).getInitParameter("UserAccessServiceName");
+            ((BaseWicketApplication) getApplication()).getInitParameter("UserAccessServiceName");
             
             add(rolenameTextField
                     .setRequired(true)

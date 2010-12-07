@@ -63,9 +63,10 @@ public class UserManagementMainPage extends SecureWicketPage {
     }
 
     private void addModules(ModuleSelectorPanel selectorPanel) {
-        selectorPanel.addModule(UserListPanel.class);
-        selectorPanel.addModule(RoleListPanel.class);
 
+        selectorPanel.addModule(RoleListPanel.class);
+        selectorPanel.addModule(UserListPanel.class);
+        
         try {
             Properties properties = new Properties();
             properties.load(((SwarmWebApplication) getApplication()).getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));
