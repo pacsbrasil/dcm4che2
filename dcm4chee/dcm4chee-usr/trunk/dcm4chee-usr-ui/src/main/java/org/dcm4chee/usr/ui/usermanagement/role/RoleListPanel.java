@@ -92,9 +92,7 @@ public class RoleListPanel extends Panel {
     UserAccess userAccess;
     
     private ListModel<Role> allRoles;
-
     private ConfirmationWindow<Role> confirmationWindow;
-
     private ModalWindow modalWindow;
     
     public RoleListPanel(String id) {
@@ -123,7 +121,6 @@ public class RoleListPanel extends Panel {
         });
 
         add(modalWindow = new ModalWindow("modal-window"));
-        
         add(new ModalWindowLink("toggle-role-form-link", modalWindow, 
                 new Integer(new ResourceModel("rolelist.add-role.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
                 new Integer(new ResourceModel("rolelist.add-role.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
