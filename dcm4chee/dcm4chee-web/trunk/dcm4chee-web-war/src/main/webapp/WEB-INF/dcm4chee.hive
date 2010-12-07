@@ -105,12 +105,6 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "A
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:ae:removeAETLink", "render, enable";
 };
 
-grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "UserManagement"
-{
-// DOC: swarm.principal.UserManagement
-	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.UserManagementPanel", "render, enable";
-};
-
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "UserRead"
 {
 // DOC: swarm.principal.UserRead

@@ -67,6 +67,8 @@ public class SecureSession extends WaspSession {
     private List<String> dicomRoles;
     private StudyPermissionRight studyPermissionRight;
 
+    private boolean manageUsers;
+
     public SecureSession(WaspApplication application, Request request) {
         super(application, request);
     }
@@ -130,5 +132,13 @@ public class SecureSession extends WaspSession {
     
     public enum StudyPermissionRight {
         NONE, OWN, ALL 
+    }
+
+    public void setManageUsers(boolean manageUsers) {
+        this.manageUsers = manageUsers;
+    }
+
+    public boolean getManageUsers() {
+        return manageUsers;
     }
 }

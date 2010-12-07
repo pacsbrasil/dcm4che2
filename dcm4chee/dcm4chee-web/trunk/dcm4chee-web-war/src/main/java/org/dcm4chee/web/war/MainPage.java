@@ -41,11 +41,14 @@ package org.dcm4chee.web.war;
 import java.util.Properties;
 
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
-import org.dcm4chee.usr.ui.usermanagement.UserManagementPanel;
+import org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel;
+import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.ModuleSelectorPanel;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecureWicketPage;
 import org.dcm4chee.web.war.ae.AEListPanel;
 import org.dcm4chee.web.war.folder.StudyListPage;
@@ -69,9 +72,11 @@ public class MainPage extends SecureWicketPage {
         selectorPanel.addModule(StudyListPage.class);
         selectorPanel.addModule(TrashListPage.class);
         selectorPanel.addModule(AEListPanel.class);       
-        selectorPanel.addInstance(new UserManagementPanel("panel"));
-        selectorPanel.addModule(DashboardPanel.class);
         selectorPanel.addModule(ModalityWorklistPanel.class);
+        selectorPanel.addModule(DashboardPanel.class);
+        selectorPanel.addModule(RoleListPanel.class, null);
+        if (((SecureSession) RequestCycle.get().getSession()).getManageUsers())
+            selectorPanel.addModule(UserListPanel.class, null);
 
         try {
             Properties properties = new Properties();
