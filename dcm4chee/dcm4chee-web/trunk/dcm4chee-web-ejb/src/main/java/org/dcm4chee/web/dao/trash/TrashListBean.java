@@ -76,7 +76,7 @@ public class TrashListBean implements TrashListLocal {
         this.roles = roles;
         useSecurity = roles != null;
     }
-    
+
     private void appendDicomSecurityFilter(StringBuilder ql) {
         ql.append(" AND s.studyInstanceUID IN (SELECT sp.studyInstanceUID FROM StudyPermission sp WHERE sp.action = 'Q' AND sp.role IN (:roles))");
     }
@@ -213,7 +213,6 @@ public class TrashListBean implements TrashListLocal {
         if (useSecurity)
             query.setParameter("roles", roles);        
         return query.getResultList();
-
     }
 
     @SuppressWarnings("unchecked")

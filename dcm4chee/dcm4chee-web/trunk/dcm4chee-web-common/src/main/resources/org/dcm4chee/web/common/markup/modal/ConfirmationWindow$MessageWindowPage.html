@@ -5,10 +5,9 @@
   xmlns:wicket="http://wicket.apache.org">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<link rel="stylesheet" type="text/css" href="style.css"/>
+		<link rel="stylesheet" type="text/css" href="base-style.css"/>
 	</head>
-	<body>
-	  <wicket:panel>
+	<body style="background-color: #A0D8C4;">
 		<div class="msgWindow">
 			<div class="msgWindow-content">
 				<span wicket:id="remark" class="msgWindow-remark">[remark]</span>
@@ -17,12 +16,11 @@
 				<span wicket:id="msg" class="msgWindow-msg">[message]</span>
 			</div>
 	        <div class="msgWindow-button">
-            	<button type="submit" wicket:id="confirm" ><span wicket:id="confirmLabel">ConfirmBtn</span></button>            	
-            	<button type="submit" wicket:id="decline" ><span wicket:id="declineLabel">DeclineBtn</span></button>            	
-            	<button type="submit" wicket:id="cancel" ><span wicket:id="cancelLabel">CancelBtn</span></button>            	
-            	<button type="submit" wicket:id="ok" ><span wicket:id="okLabel">okBtn</span></button>
+	           	<button type="submit" wicket:id="confirm" ><span wicket:id="confirmLabel">ConfirmBtn</span></button>            	
+	           	<button type="submit" wicket:id="decline" ><span wicket:id="declineLabel">DeclineBtn</span></button>            	
+	           	<button type="submit" wicket:id="cancel" ><span wicket:id="cancelLabel">CancelBtn</span></button>            	
+	           	<button type="submit" wicket:id="ok" ><span wicket:id="okLabel">okBtn</span></button>
 	        </div>
 	    </div>
-      </wicket:panel>
 	</body>
 </html>

@@ -7,6 +7,8 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	</head>
 	<body>
+        <div wicket:id="modal-window" />
+        <div wicket:id="confirmation-window" />
     	<div class="msgWindow">
     		<div class="edit-title">
 				<wicket:message key="folder.studyPermissions.window.title" />
@@ -14,6 +16,10 @@
     		<div class="edit-title">
 				<div wicket:id="for-description" />
 			</div>
+            <button wicket:id="toggle-dicom-role-form-link" style="text-align: left;">
+                <img wicket:id="toggle-dicom-role-form-image" alt="New dicom role" />
+                <span wicket:id="studypermission.add-dicom-role.title" />
+            </button>
 			<table rules="groups" class="content-table" style="clear: both; margin-top: 9px;">
 			  <thead>
 			    <tr>
@@ -23,9 +29,6 @@
 						</wicket:message>
 					</th>
 					<th>
-						<wicket:message key="studypermission.table.type.title">
-							[Type]
-						</wicket:message>
 					</th>
 					<th wicket:id="action-headers" style="text-align: center; padding: 10px;"></th>
 			    </tr>
@@ -35,9 +38,11 @@
 					<td wicket:id="rolename" style="text-align: left;">
 			      		[Rolename]
 			      	</td>
-					<td wicket:id="type" style="text-align: left;">
-			      		[Type]
-			      	</td>
+                    <td>
+                        <a wicket:id="remove-dicom-role-link" href="#">
+                            <img wicket:id="studypermission.table.delete.image" />
+                        </a>
+                    </td>
 		 	  	  	<td wicket:id="action-dividers" style="text-align: center;">
 						<input wicket:id="study-permission-checkbox" type="checkbox" />
 						<span wicket:id="number-of-studies-label" style="font-size: 8px;"/>

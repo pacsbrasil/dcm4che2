@@ -943,7 +943,6 @@ public class StudyListPage extends Panel {
                     .add(new SecurityBehavior(getModuleName() + ":editPatientLink"))
                     .add(tooltip));
             item.add(getStudyPermissionLink(modalWindow, patModel, tooltip)
-                    .add(new SecurityBehavior(getModuleName() + ":studyPermissionsPatientLink"))
                     .add(tooltip));    
             item.add(getAddStudyLink(patModel, tooltip)
                     .add(new SecurityBehavior(getModuleName() + ":addStudyLink"))
@@ -1045,7 +1044,6 @@ public class StudyListPage extends Panel {
                     .add(new SecurityBehavior(getModuleName() + ":editStudyLink"))
             );
             item.add(getStudyPermissionLink(modalWindow, studyModel, tooltip)
-                    .add(new SecurityBehavior(getModuleName() + ":studyPermissionsStudyLink"))
                     .add(tooltip));
             item.add(getAddSeriesLink(studyModel, tooltip)
                     .add(new SecurityBehavior(getModuleName() + ":addSeriesLink"))
@@ -1673,6 +1671,9 @@ public class StudyListPage extends Panel {
     }
 
     private boolean checkEditStudyPermission(AbstractDicomModel model) {
+        
+//  
+        
         SecureSession secureSession = (SecureSession) getSession();
         if (!secureSession.getUseStudyPermissions() || secureSession.isRoot()) return true;
 //        int hasEditPermission = 0;

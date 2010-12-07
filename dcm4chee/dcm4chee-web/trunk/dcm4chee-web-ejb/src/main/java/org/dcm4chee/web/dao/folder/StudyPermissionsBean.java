@@ -38,14 +38,30 @@
 
 package org.dcm4chee.web.dao.folder;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import net.sf.json.JSONObject;
+
 import org.dcm4chee.archive.entity.StudyPermission;
+import org.dcm4chee.web.dao.folder.model.DicomRole;
 import org.jboss.annotation.ejb.LocalBinding;
+import org.jboss.system.server.ServerConfigLocator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -56,9 +72,35 @@ import org.jboss.annotation.ejb.LocalBinding;
 @LocalBinding (jndiBinding=StudyPermissionsLocal.JNDI_NAME)
 public class StudyPermissionsBean implements StudyPermissionsLocal {
     
+    private static Logger log = LoggerFactory.getLogger(StudyPermissionsBean.class);
+    
     @PersistenceContext(unitName="dcm4chee-arc")
     private EntityManager em;
 
+    private File dicomRolesFile;
+
+    @SuppressWarnings("unused")
+    @PostConstruct
+    private void config() {
+        if (this.dicomRolesFile == null) {
+            dicomRolesFile = new File(System.getProperty("dcm4chee-web.cfg.dicom-roles-filename", "conf/dcm4chee-web/dicom-roles.json"));
+            if (!dicomRolesFile.isAbsolute())
+                dicomRolesFile = new File(ServerConfigLocator.locate().getServerHomeDir(), dicomRolesFile.getPath());
+            if (log.isDebugEnabled()) {
+                log.debug("mappingFile:"+dicomRolesFile);
+            }
+            if (!dicomRolesFile.exists()) {
+                try {
+                    if (dicomRolesFile.getParentFile().mkdirs())
+                        log.info("M-WRITE dir:" +dicomRolesFile.getParent());
+                    dicomRolesFile.createNewFile();
+                } catch (IOException e) {
+                    log.error("RoleMapping file doesn't exist and can't be created!", e);
+                }
+            }
+        }  
+    }
+    
     @SuppressWarnings("unchecked")
     public List<StudyPermission> getStudyPermissions(String studyInstanceUID) {
         return (List<StudyPermission>) em.createQuery("SELECT sp FROM StudyPermission sp WHERE sp.studyInstanceUID = :studyInstanceUID")
@@ -113,5 +155,98 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
         em.createQuery("SELECT COUNT(s) FROM Patient p, IN(p.studies) s WHERE p.pk = :pk")
         .setParameter("pk", pk)
         .getSingleResult();
-    }    
+    }
+
+    public List<String> getAllDicomRolenames() {
+        List<String> dicomRolenames = new ArrayList<String>();
+        for (DicomRole dicomRole : getAllDicomRoles())
+            dicomRolenames.add(dicomRole.getRolename());
+        return dicomRolenames;
+    }
+    
+    public List<DicomRole> getAllDicomRoles() {
+        BufferedReader reader = null;
+        try {
+            List<DicomRole> roleList = new ArrayList<DicomRole>();
+            String line;
+
+            reader = new BufferedReader(new FileReader(dicomRolesFile));
+            while ((line = reader.readLine()) != null)
+                roleList.add((DicomRole) JSONObject.toBean(JSONObject.fromObject(line), DicomRole.class));
+            Collections.sort(roleList);
+            return roleList;
+        } catch (Exception e) {
+            log.error("Can't get roles from dicom roles file!", e);
+            return null;
+        } finally {
+            close(reader, "dicom roles file reader");
+        }
+    }
+    
+    // TODO: change this to generic version using JPA 2.0 implementation
+    @SuppressWarnings("unchecked")
+    public void updateDicomRoles() {
+        List<String> dicomRolenames = getAllDicomRolenames();
+        List<String> newRoles = 
+            (dicomRolenames.size() == 0 ) ? em.createQuery("SELECT DISTINCT sp.role FROM StudyPermission sp")
+                                              .getResultList()
+                                          : em.createQuery("SELECT DISTINCT sp.role FROM StudyPermission sp WHERE sp.role NOT IN(:dicomRoles)")
+                                              .setParameter("dicomRoles", dicomRolenames)
+                                              .getResultList();
+        for (String rolename : newRoles)
+            addDicomRole(rolename);
+    }
+    
+    public void addDicomRole(String rolename) {
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(dicomRolesFile, true));
+            JSONObject jsonObject = JSONObject.fromObject(new DicomRole(rolename));
+            writer.write(jsonObject.toString());
+            writer.newLine();
+        } catch (IOException e) {
+            log.error("Can't add dicom role to dicom roles file!", e);
+        } finally {
+            close(writer, "dicom roles file reader");
+        }
+    }
+
+    public void removeDicomRole(DicomRole role) {
+        List<DicomRole> roles = getAllDicomRoles();
+        if (roles.remove(role)) {
+            BufferedWriter writer = null;
+            try {
+                File tmpFile = File.createTempFile(dicomRolesFile.getName(), null, dicomRolesFile.getParentFile());
+                writer = new BufferedWriter(new FileWriter(tmpFile, true));
+                JSONObject jsonObject;
+                for (int i=0,len=roles.size() ; i < len ; i++) {
+                    jsonObject = JSONObject.fromObject(roles.get(i));
+                    writer.write(jsonObject.toString());
+                    writer.newLine();
+                }
+                if (close(writer, "Temporary dicom roles file"))
+                    writer = null;
+                dicomRolesFile.delete();
+                tmpFile.renameTo(dicomRolesFile);
+            } catch (IOException e) {
+                log.error("Can't save roles in dicom roles file!", e);
+            } finally {
+                close(writer, "Temporary dicom roles file (in finally block)");
+            }
+        } else 
+            log.warn("Role "+role+" already removed from roles mapping file!");
+    }
+    
+    private boolean close(Closeable toClose, String desc) {
+        log.debug("Closing ",desc);
+        if (toClose != null) {
+            try {
+                toClose.close();
+                return true;
+            } catch (IOException ignore) {
+                log.warn("Error closing : "+desc, ignore);
+            }
+        }
+        return false;
+    }
 }

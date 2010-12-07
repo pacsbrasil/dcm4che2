@@ -47,6 +47,12 @@
         </dependency>
         <dependency>
             <groupId>jboss</groupId>
+            <artifactId>jboss-system</artifactId>
+            <version>4.0.2</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jboss</groupId>
             <artifactId>jboss-ejb3x</artifactId>
             <version>4.2.3.GA</version>
             <scope>provided</scope>

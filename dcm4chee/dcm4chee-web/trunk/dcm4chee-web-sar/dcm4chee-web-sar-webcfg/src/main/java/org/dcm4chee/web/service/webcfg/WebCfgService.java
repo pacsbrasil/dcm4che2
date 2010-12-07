@@ -69,6 +69,7 @@ import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.webview.link.spi.WebviewerLinkProviderSPI;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
+import org.dcm4chee.web.dao.folder.StudyPermissionsLocal;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
@@ -128,7 +129,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private boolean useFamilyAndGivenNameQueryFields;
     
     private String loginAllowedRolename;
-    private String studyPermissionsRoleType;
     private String studyPermissionsAllRolename;
     private String studyPermissionsOwnRolename;
     
@@ -672,7 +672,11 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             
         }
     }
-    
+
+    public String getRolesMappingFilename() {
+        return System.getProperty("dcm4chee-usr.cfg.role-mapping-filename", NONE);
+    }
+
     public void setRolesMappingFilename(String name) {
         if (NONE.equals(name)) {
             System.getProperties().remove("dcm4chee-usr.cfg.role-mapping-filename");
@@ -685,8 +689,20 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         }
     }
 
-    public String getRolesMappingFilename() {
-        return System.getProperty("dcm4chee-usr.cfg.role-mapping-filename", NONE);
+    public String getDicomRolesFilename() {
+        return System.getProperty("dcm4chee-web.cfg.dicom-roles-filename", NONE);
+    }
+
+    public void setDicomRolesFilename(String name) {
+        if (NONE.equals(name)) {
+            System.getProperties().remove("dcm4chee-web.cfg.dicom-roles-filename");
+        } else {
+            System.setProperty("dcm4chee-web.cfg.dicom-roles-filename", name);
+        }
+    }
+    
+    public void updateDicomRoles() {
+        ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).updateDicomRoles();
     }
 
     public String getUserMgtUserRole() {
@@ -710,14 +726,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         } else {
             System.setProperty("dcm4chee-usr.cfg.adminrole", name);
         }
-    }
-
-    public void setStudyPermissionsRoleType(String studyPermissionsRoleType) {
-        this.studyPermissionsRoleType = studyPermissionsRoleType;
-    }
-
-    public String getStudyPermissionsRoleType() {
-        return studyPermissionsRoleType;
     }
 
     public void setLoginAllowedRolename(String loginAllowedRolename) {

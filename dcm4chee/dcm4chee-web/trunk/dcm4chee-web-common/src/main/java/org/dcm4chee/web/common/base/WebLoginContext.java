@@ -120,6 +120,12 @@ public class WebLoginContext extends UsernamePasswordContext {
             secureSession.setRoot(username.equals(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root")));
             javax.security.auth.Subject dicomSubject = null;
             if (useStudyPermissions) {
+                server.invoke(
+                        new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("WebCfgServiceName")), 
+                        "updateDicomRoles",
+                        new Object[] {},
+                        new String[] {}
+                );
                 dicomSubject = new javax.security.auth.Subject(); //dicomSubject != null -> enable studyPermissions
                 server.invoke(
                         new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("DicomSecurityService")), 
@@ -149,19 +155,6 @@ public class WebLoginContext extends UsernamePasswordContext {
             ((SecureSession) RequestCycle.get().getSession()).invalidate();
             subject = new DefaultSubject();
         }
-        
-        String fn = System.getProperty("dcm4chee-usr.cfg.role-mapping-filename");
-System.out.println("!*!*!*!*!*!*!!* Getting mapping file from: " + fn);
-File mappingFile = new File(fn);
-if (!mappingFile.isAbsolute())
-    mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
-System.out.println("WebLoginContext: *!*!*!*!*!*!*!*!*!*!*!*!*: mappingFile:"+mappingFile.getPath());
-        
-//        System.out.println("R'OEL: ********************************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-//        Iterator<org.apache.wicket.security.hive.authorization.Principal> i = subject.getPrincipals().iterator();
-//        while (i.hasNext())
-//            System.out.println("R'OEL: " + i.next().getName());
-        
         return subject;
     }
 
@@ -301,83 +294,6 @@ System.out.println("WebLoginContext: *!*!*!*!*!*!*!*!*!*!*!*!*: mappingFile:"+ma
             return false ;
         }
     }
-//        DefaultSubject subject = new DefaultSubject();
-//        try {
-//            for (Principal principal : context.getSubject().getPrincipals()) {
-//                if ((principal instanceof Group) && (rolesGroupName.equalsIgnoreCase(principal.getName()))) {
-//                    Enumeration<? extends Principal> members = ((Group) principal).members();
-//                    
-//                    String mappingFilename = 
-//                        ServerConfigLocator.locate().getServerConfigURL().getPath() +
-//                        (String) server.getAttribute(
-//                                new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("WebCfgServiceName")), 
-//                                "rolesMappingFilename"
-//                        );
-//                    File file = new File(mappingFilename);
-//                    if (!file.exists())
-//                        file.createNewFile();
-//                    Map<String, Set<String>> mappings = new HashMap<String, Set<String>>();
-//                    String line;
-//                    BufferedReader reader = new BufferedReader(new FileReader(mappingFilename));
-//                    while ((line = reader.readLine()) != null) {
-//                        JSONObject jsonObject = JSONObject.fromObject(line);
-//                        Set<String> set = new HashSet<String>();
-//                        Iterator<String> i = jsonObject.getJSONArray("swarmPrincipals").iterator();
-//                        while (i.hasNext())
-//                            set.add(i.next());
-//                        mappings.put(jsonObject.getString("rolename"), set);
-//                    }
-//                    
-//                    while (members.hasMoreElements()) {
-//                        Principal member = members.nextElement();
-//                        if (mappings.containsKey(member.getName())) {
-//                            Iterator<String> i = mappings.get(member.getName()).iterator();
-//                            while (i.hasNext()) 
-//                                subject.addPrincipal(new SimplePrincipal(i.next()));
-//                        }
-//                    }
-//                }
-//            }
-
-//            SecureSession secureSession = ((SecureSession) RequestCycle.get().getSession());
-//            if (secureSession.getUseStudyPermissions()) {
-//                secureSession.setStudyPermissionRight(StudyPermissionRight.NONE);
-//                String all = (String) server.getAttribute(
-//                        new ObjectName(((BaseWicketApplication) app).getInitParameter("WebCfgServiceName")),
-//                        "studyPermissionsAllRolename");                
-//                String own = (String) server.getAttribute(
-//                        new ObjectName(((BaseWicketApplication) app).getInitParameter("WebCfgServiceName")),
-//                        "studyPermissionsOwnRolename");
-//                if (all != null || own != null) {
-//                    Iterator<org.apache.wicket.security.hive.authorization.Principal> i = subject.getPrincipals().iterator();
-//                    while (i.hasNext()) {
-//                        String rolename = i.next().getName();    
-//                        if (rolename.equals(all)) {
-//                            secureSession.setStudyPermissionRight(StudyPermissionRight.ALL);
-//                            break;
-//                        } else if (rolename.equals(own))
-//                            secureSession.setStudyPermissionRight(StudyPermissionRight.OWN);
-//                    }
-//                }
-//            }
-            
-//            String loginAllowedRolename = 
-//                (String) server.getAttribute(
-//                    new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("WebCfgServiceName")),  
-//                    "loginAllowedRolename"
-//                );          
-//
-//            if ((!(loginAllowedRolename.equals("") || loginAllowedRolename.equals("NONE"))) && 
-//                (!subject.getPrincipals().contains(new SimplePrincipal(
-//                    loginAllowedRolename
-//            ))))                             
-//              ((SecureSession) RequestCycle.get().getSession()).invalidate();
-//        } catch (Exception e) {
-//            log.error("Exception: ", e);
-//            ((SecureSession) RequestCycle.get().getSession()).invalidate();
-//        }
-//        return subject;
-//    }
 
     private class LoginCallbackHandler implements CallbackHandler {
 
