@@ -39,14 +39,19 @@
 package in.raster.mayam.delegate;
 
 import in.raster.mayam.context.ApplicationContext;
+import in.raster.mayam.exception.CompressedDcmOnMacException;
+import in.raster.mayam.facade.Platform;
 import in.raster.mayam.form.display.Display;
 import in.raster.mayam.form.ImportingProgress;
 import in.raster.mayam.form.MainScreen;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
+import org.dcm4che.dict.Tags;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.io.DicomInputStream;
 
 /**
@@ -63,6 +68,7 @@ public class ImportDelegate extends Thread {
     private boolean isDirectory;
     private MainScreen parent;
     ArrayList<String> absolutePathList = new ArrayList();
+    ImportingProgress importingProgress = null;
 
     public ImportDelegate() {
     }
@@ -75,7 +81,7 @@ public class ImportDelegate extends Thread {
     }
 
     public void run() {
-        ImportingProgress importingProgress = new ImportingProgress();
+        importingProgress = new ImportingProgress();
         Display.alignScreen(importingProgress);
         importingProgress.setVisible(true);
         importingProgress.updateBar(0);
@@ -88,7 +94,7 @@ public class ImportDelegate extends Thread {
             readFileAndUpdateDB();
 
         }
-        importingProgress.updateBar(100);
+        importingProgress.updateBar(importingProgress.getProgressMaximum());
         importingProgress.setVisible(false);
         MainScreen.showLocalDBStorage();
     }
@@ -117,12 +123,22 @@ public class ImportDelegate extends Thread {
 
     public void readAndUpdateDB() {
         getAbsolutePathArray();
-        for (String s : absolutePathList) {
-            readAndImportDicomFile(s);
+        importingProgress.setProgressMaximum(absolutePathList.size());
+        for (int i = 0; i < absolutePathList.size(); i++) {
+            try {
+                String s = absolutePathList.get(i);
+                readAndImportDicomFile(s);
+                importingProgress.updateBar(i + 1);
+            } catch (CompressedDcmOnMacException e) {
+                importingProgress.setVisible(false);
+                JOptionPane.showMessageDialog(ApplicationContext.mainScreen, e.getMessage());
+                break;
+            }
+
         }
     }
 
-    private void readAndImportDicomFile(String dicomFilePath) {
+    private void readAndImportDicomFile(String dicomFilePath) throws CompressedDcmOnMacException {
         DicomInputStream dis = null;
         File parseFile = new File(dicomFilePath);
         try {
@@ -130,17 +146,25 @@ public class ImportDelegate extends Thread {
             DicomObject data = new BasicDicomObject();
             data = dis.readDicomObject();
             if (data != null) {
-                ApplicationContext.databaseRef.importDataToDatabase(data, parseFile,false);
+                if (Platform.getCurrentPlatform().equals(Platform.MAC)) {
+                    if (data.getString(Tags.TransferSyntaxUID).equalsIgnoreCase(TransferSyntax.ExplicitVRLittleEndian.uid()) || data.getString(Tags.TransferSyntaxUID).equalsIgnoreCase(TransferSyntax.ImplicitVRLittleEndian.uid())) {
+                        ApplicationContext.databaseRef.importDataToDatabase(data, parseFile, false);
+                    } else {
+                        throw new CompressedDcmOnMacException();
+                    }
+                } else {
+                    ApplicationContext.databaseRef.importDataToDatabase(data, parseFile, false);
+                }
+
             }
         } catch (IOException ex) {
             ex.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
         } finally {
             if (dis != null) {
                 try {
                     dis.close();
-                } catch (Exception e) {e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                     // ignore
                 }
             }
@@ -156,6 +180,11 @@ public class ImportDelegate extends Thread {
     }
 
     public void readFileAndUpdateDB() {
-        readAndImportDicomFile(importFile.getAbsolutePath());
+        try {
+            readAndImportDicomFile(importFile.getAbsolutePath());
+        } catch (CompressedDcmOnMacException e) {
+            importingProgress.setVisible(false);
+            JOptionPane.showMessageDialog(ApplicationContext.mainScreen, e.getMessage());
+        }
     }
 }

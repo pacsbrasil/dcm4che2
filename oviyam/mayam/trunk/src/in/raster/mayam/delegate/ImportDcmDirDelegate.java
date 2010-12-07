@@ -39,9 +39,10 @@
 package in.raster.mayam.delegate;
 
 import in.raster.mayam.context.ApplicationContext;
+import in.raster.mayam.exception.CompressedDcmOnMacException;
 import in.raster.mayam.facade.ApplicationFacade;
+import in.raster.mayam.facade.Platform;
 import in.raster.mayam.form.MainScreen;
-import in.raster.mayam.util.database.DatabaseHandler;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -50,6 +51,7 @@ import javax.swing.JOptionPane;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.media.DirectoryRecordType;
 import org.dcm4che2.media.DicomDirReader;
@@ -65,7 +67,7 @@ public class ImportDcmDirDelegate {
 
     private DicomDirReader dicomDir;
     private File dcmDirFile;
-    private boolean copyAsLink=false;
+    private boolean copyAsLink = false;
     private DicomObject dataset = new BasicDicomObject();
 
     public ImportDcmDirDelegate() {
@@ -80,15 +82,22 @@ public class ImportDcmDirDelegate {
 
     public void findAndRun() {
         findDcmDirInMedia();
-        run();
+        try {
+            run();
+        } catch (CompressedDcmOnMacException e) {
+            JOptionPane.showMessageDialog(ApplicationContext.mainScreen, e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public void run() {
+    public void run() throws CompressedDcmOnMacException, Exception {
         readDcmDirFile();
         if (dicomDir != null) {
             new DirParser().parseDir();
             MainScreen.showLocalDBStorage();
         }
+
     }
 
     /**
@@ -112,28 +121,21 @@ public class ImportDcmDirDelegate {
      */
     class DirParser {
 
-        private void parseDir() {
-            try {
-                parsePatient();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        private void parseDir() throws CompressedDcmOnMacException, Exception {
+            parsePatient();
         }
 
         /**
          *
          * @throws IOException
          */
-        private void parsePatient() throws Exception {
+        private void parsePatient() throws CompressedDcmOnMacException, Exception {
             DicomObject patient = dicomDir.findFirstRootRecord();
             while (patient != null) {
                 if (DirectoryRecordType.PATIENT.equals(patient.getString(Tag.DirectoryRecordType))) {
-                    try {
-                        new DatasetUpdator().updatePatientInfo(patient);
-                        parseStudy(patient);
-                    } catch (Exception e) {
-                        System.out.println(e.toString());
-                    }
+                    new DatasetUpdator().updatePatientInfo(patient);
+                    parseStudy(patient);
+
                 }
                 patient = dicomDir.findNextSiblingRecord(patient);
             }
@@ -144,7 +146,7 @@ public class ImportDcmDirDelegate {
          * @param patient
          * @throws IOException
          */
-        private void parseStudy(DicomObject patient) throws IOException {
+        private void parseStudy(DicomObject patient) throws IOException, CompressedDcmOnMacException {
             DicomObject study = dicomDir.findFirstChildRecord(patient);
             while (study != null) {
                 if (DirectoryRecordType.STUDY.equals(study.getString(Tag.DirectoryRecordType))) {
@@ -161,7 +163,7 @@ public class ImportDcmDirDelegate {
          * @param study
          * @throws IOException
          */
-        private void parseSeries(DicomObject study) throws IOException {
+        private void parseSeries(DicomObject study) throws IOException, CompressedDcmOnMacException {
             DicomObject series = dicomDir.findFirstChildRecord(study);
             while (series != null) {
                 if (DirectoryRecordType.SERIES.equals(series.getString(Tag.DirectoryRecordType))) {
@@ -178,7 +180,7 @@ public class ImportDcmDirDelegate {
          * @param series-
          * @throws IOException
          */
-        private void parseInstance(DicomObject series) throws IOException {
+        private void parseInstance(DicomObject series) throws IOException, CompressedDcmOnMacException {
             DicomObject instance = dicomDir.findFirstChildRecord(series);
             while (instance != null) {
                 if (DirectoryRecordType.IMAGE.equals(instance.getString(Tag.DirectoryRecordType))) {
@@ -186,7 +188,16 @@ public class ImportDcmDirDelegate {
                     new DatasetUpdator().updateInstanceInfo(instance);
                     File f = dicomDir.toReferencedFile(instance);
                     //import to database
-                    ApplicationContext.databaseRef.importDataToDatabase(dataset, f,copyAsLink);
+                    if (Platform.getCurrentPlatform().equals(Platform.MAC)) {
+                        if (instance.getString(Tag.ReferencedTransferSyntaxUIDInFile).equalsIgnoreCase(TransferSyntax.ExplicitVRLittleEndian.uid()) || instance.getString(Tag.ReferencedTransferSyntaxUIDInFile).equalsIgnoreCase(TransferSyntax.ImplicitVRLittleEndian.uid())) {
+                            ApplicationContext.databaseRef.importDataToDatabase(dataset, f, copyAsLink);
+                        } else {
+                            throw new CompressedDcmOnMacException();
+                            // JOptionPane.showMessageDialog(ApplicationContext.mainScreen, "Compressed image cannot be opened in Mac");
+                        }
+                    } else {
+                        ApplicationContext.databaseRef.importDataToDatabase(dataset, f, copyAsLink);
+                    }
                 }
                 instance = dicomDir.findNextSiblingRecord(instance);
             }//instance loop completed
@@ -303,9 +314,11 @@ public class ImportDcmDirDelegate {
             ImportDcmDirDelegate importDcmDirDelegate = new ImportDcmDirDelegate();
             importDcmDirDelegate.findAndLoadDcmDir();
             if (importDcmDirDelegate.dcmDirFile != null && importDcmDirDelegate.dcmDirFile.getParent().startsWith(ApplicationFacade.binPath)) {
-                importDcmDirDelegate.copyAsLink=true;
+                importDcmDirDelegate.copyAsLink = true;
                 importDcmDirDelegate.run();
             }
+        } catch (CompressedDcmOnMacException e) {
+            JOptionPane.showMessageDialog(ApplicationContext.mainScreen, e.getMessage());
         } catch (Exception ee) {
             ee.printStackTrace();
         }
@@ -338,5 +351,4 @@ public class ImportDcmDirDelegate {
     public void setCopyAsLink(boolean copyAsLink) {
         this.copyAsLink = copyAsLink;
     }
-
 }
