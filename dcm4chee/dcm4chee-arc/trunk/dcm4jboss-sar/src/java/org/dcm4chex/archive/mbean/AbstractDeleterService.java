@@ -184,23 +184,20 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
     private final NotificationListener scheduleStudiesForDeletionListener =
             new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
-            new Thread(new Runnable() {
-                public void run() {
-                    startScheduleStudiesForDeletion();
-                }
-            }).start();
+            startScheduleStudiesForDeletion();
         }
     };
 
     protected void startScheduleStudiesForDeletion() {
-        new Thread(new Runnable(){
+        new Thread(new Runnable() {
             public void run() {
                 try {
                     scheduleStudiesForDeletion();
                 } catch (Exception e) {
                     log.error("Schedule Studies for deletion failed:", e);
                 }
-            }}).start();
+            }
+        }).start();
     }
     
     protected abstract String getFileSystemGroupIDForDeleter();
@@ -473,35 +470,35 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
             }
             isRunningScheduleStudiesForDeletion = true;
         } 
+        String fsGroup = getFileSystemGroupIDForDeleter();
         try {
-            log.info("Check file system group " + getFileSystemGroupIDForDeleter()
+            FileSystemMgt2 fsMgt = fileSystemMgt();
+            FileSystemDTO[] fsDTOs = fsMgt.getFileSystemsOfGroup(fsGroup);
+            if (fsDTOs.length == 0) {
+                log.info("No Filesystem configured in file system group "+fsGroup+"! Ignore check for deletion of studies!");
+                return 0;
+            }
+            log.info("Check file system group " + fsGroup
                     + " for deletion of studies");
             int countStudies = 0;
-            FileSystemMgt2 fsMgt = fileSystemMgt();
             if (maxNotAccessedFor > 0) {
                 countStudies = scheduleStudiesForDeletion(fsMgt,
                         System.currentTimeMillis() - maxNotAccessedFor,
                         Long.MAX_VALUE);
             }
             if (deleterThresholds != null) {
-                FileSystemDTO[] fsDTOs = fsMgt.getFileSystemsOfGroup(
-                        getFileSystemGroupIDForDeleter());
                 long threshold = getCurrentDeleterThreshold(fsMgt, fsDTOs);
                 long usable = calcUsableDiskSpace(fsDTOs);
                 long sizeToDel = threshold - usable;
                 if (sizeToDel > 0) {
-                    log.info("Try to free " + sizeToDel
-                            + " of disk space on file system group "
-                            + getFileSystemGroupIDForDeleter());
+                    log.info("Try to free " + sizeToDel + " of disk space on file system group " + fsGroup);
                     countStudies += scheduleStudiesForDeletion(fsMgt,
                             System.currentTimeMillis() - minNotAccessedFor,
                             sizeToDel);
                 }
             }
             if (countStudies > 0) {
-                log.info("Scheduled " + countStudies
-                        + " studies for deletion on file system group "
-                        + getFileSystemGroupIDForDeleter());
+                log.info("Scheduled " + countStudies + " studies for deletion on file system group " + fsGroup);
             }
             return countStudies;
         } finally {
