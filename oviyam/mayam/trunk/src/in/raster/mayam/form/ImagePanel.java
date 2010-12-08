@@ -786,10 +786,9 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         if (!firstTime) {
             repaint();
         }
-        selectFirstInstance();
-
-        this.tool = "windowing";
+        selectFirstInstance();        
         this.getCanvas().getLayeredCanvas().annotationPanel.resetAnnotaionTools();
+        this.tool = "windowing";
     }
 
     public void resizeHandler() {
@@ -1469,7 +1468,25 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         this.storeAnnotation();
         int notches = e.getWheelRotation();
         if (notches < 0) {
-            if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
+           doPrevious();
+        } else {
+           doNext();
+        }
+    }
+    public void moveToNextInstance()
+    {
+        this.storeAnnotation();
+        doNext();
+    }
+    public void moveToPreviousInstance()
+    {
+        this.storeAnnotation();
+        doPrevious();
+
+    }
+    public void doPrevious()
+    {
+         if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
                 if (instanceArray == null) {
                     previousFrame();
                 } else {
@@ -1482,8 +1499,10 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                     selectPreviousInstance();
                 }
             }
-        } else {
-            if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
+    }
+    public void doNext()
+    {
+        if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
                 if (instanceArray == null) {
                     nextFrame();
                 } else {
@@ -1496,8 +1515,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                     selectNextInstance();
                 }
             }
-        }
     }
+
 
     private void setInstanceArray() {
         for (Study study : MainScreen.studyList) {

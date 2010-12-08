@@ -84,11 +84,11 @@ public class ShowImageViewDelegate extends Thread {
         ApplicationContext.imgView.jTabbedPane1.setTabComponentAt(ApplicationContext.imgView.jTabbedPane1.getTabCount() - 1, tabComp);
         ApplicationContext.imgView.jTabbedPane1.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
         ApplicationContext.imgPanel = ((LayeredCanvas) ((JPanel) container).getComponent(0)).imgpanel;
-        ApplicationContext.imgView.getImageToolbar().setWindowingTool();
         ApplicationContext.annotationPanel = ((LayeredCanvas) ((JPanel) container).getComponent(0)).annotationPanel;
         ApplicationContext.layeredCanvas = ((LayeredCanvas) ((JPanel) container).getComponent(0));
         ((Canvas) ApplicationContext.imgPanel.getCanvas()).setSelection();
-        ApplicationContext.imgView.jTabbedPane1.setSelectedComponent(container);       
+        ApplicationContext.imgView.jTabbedPane1.setSelectedComponent(container);
+        ApplicationContext.imgView.getImageToolbar().setWindowing();
         ApplicationContext.imgView.setVisible(true);
     }
 }
