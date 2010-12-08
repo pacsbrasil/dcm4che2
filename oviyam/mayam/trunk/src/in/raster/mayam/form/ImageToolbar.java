@@ -122,9 +122,19 @@ public class ImageToolbar extends javax.swing.JPanel {
 
     public void addKeyEventDispatcher() {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+
             public boolean dispatchKeyEvent(KeyEvent e) {
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
-                      keyEventProcessor(e);
+                    if (!ApplicationContext.mainScreen.getQueryScreen().isFocused()) {
+                        boolean status = false;
+                        if (ApplicationContext.mainScreen.getPreference() != null) {
+                            status = ApplicationContext.mainScreen.getPreference().isFocused();
+                        }
+                        if (!status) {
+
+                            keyEventProcessor(e);
+                        }
+                    }
                 }
                 boolean discardEvent = false;
                 return discardEvent;

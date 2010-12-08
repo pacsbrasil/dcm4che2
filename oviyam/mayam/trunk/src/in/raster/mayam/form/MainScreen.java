@@ -808,9 +808,13 @@ public class MainScreen extends javax.swing.JFrame {
      * This routine used to show the preference dialogue
      */
     private void showPreference() {
-        SettingsDialog sd = new SettingsDialog(this, true);
-        sd.setLocationRelativeTo(this);
-        sd.setVisible(true);
+        settingsDialog = new SettingsDialog(this, true);
+        settingsDialog.setLocationRelativeTo(this);
+        settingsDialog.setVisible(true);
+    }
+    public SettingsDialog getPreference()
+    {
+        return settingsDialog;
     }
 
     /**
@@ -1111,6 +1115,7 @@ public class MainScreen extends javax.swing.JFrame {
     public static DicomTagsViewer dicomTagsViewer = new DicomTagsViewer();
     public static String selectedStudy = "";
     public static String selectedSeries = "";
+    public SettingsDialog settingsDialog=null;
 
     public static MainScreen getInstance() {
         if (mainScreenObj == null) {
