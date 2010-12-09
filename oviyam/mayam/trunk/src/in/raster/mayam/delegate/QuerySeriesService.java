@@ -85,7 +85,7 @@ public class QuerySeriesService {
 
         // Load configuration properties of the server
         try {
-            cfgCDimseService = new ConfigProperties(StorageService.class.getResource("/resources/series.cfg"));
+            cfgCDimseService = new ConfigProperties(StorageService.class.getResource("/resources/Series.cfg"));
         } catch (IOException e) {
             System.out.println(e.getMessage());
             System.out.println("Unable to create ConfigProperties instance");

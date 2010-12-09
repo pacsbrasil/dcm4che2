@@ -176,7 +176,7 @@ public class WadoRetrieveDelegate extends Thread {
             if (child == null) {
                 struturedDestination.mkdirs();
             }
-            File storeLocation = new File(struturedDestination, wadoParam.getObject());
+            File storeLocation = new File(struturedDestination, wadoParam.getObject());            
             out = new FileOutputStream(storeLocation);
             copy(in, out);
             NetworkQueueUpdateDelegate networkQueueUpdateDelegate = new NetworkQueueUpdateDelegate();
@@ -198,9 +198,9 @@ public class WadoRetrieveDelegate extends Thread {
     public void setDestination() {
         String storageLocation = ApplicationContext.databaseRef.getListenerDetails()[2];
         if (!ApplicationContext.canWrite(System.getProperty("user.dir"))) {
-            destinationPath = System.getProperty("java.io.tmpdir") + File.separator + storageLocation;
+        //    destinationPath = System.getProperty("java.io.tmpdir") + File.separator + storageLocation;
         } else {
-            destinationPath = System.getProperty("user.dir") + File.separator + storageLocation;
+            destinationPath = storageLocation;
         }
     }
 
