@@ -306,6 +306,22 @@ not matching demographic fields.]]>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isStoreOriginalPatientIDInOriginalAttrsSeq"
+      setMethod="setStoreOriginalPatientIDInOriginalAttrsSeq">
+      <description><![CDATA[Specifies, if the original <i>Patient ID</i> and
+<i>Issuer of Patient ID</id> in the received DICOM Composite Object will be
+stored in an item of the <i>Original Attributes Sequence</i>, if they have to be
+replaced by a new generated Patient ID, caused by an already existing Patient
+Record with matching <i>Patient ID</i> and <i>Issuer of Patient ID</i>, but
+not matching demographic fields.]]>
+      </description>
+      <name>StoreOriginalPatientIDInOriginalAttrsSeq</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isStudyDateInFilePath"
       setMethod="setStudyDateInFilePath">
       <description><![CDATA[Use Study Date in received objects to structure directories of the storage file system.

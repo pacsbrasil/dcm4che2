@@ -75,7 +75,10 @@ import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
+import org.dcm4che.data.PersonName;
+import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Status;
+import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
@@ -89,6 +92,9 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4che.util.BufferedOutputStream;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.ParticipantObject;
+import org.dcm4che2.audit.message.PatientRecordMessage;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.codec.CompressCmd;
 import org.dcm4chex.archive.common.Availability;
@@ -107,6 +113,7 @@ import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
 import org.dcm4chex.archive.exceptions.NonUniquePatientIDException;
+import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.perf.PerfCounterEnum;
 import org.dcm4chex.archive.perf.PerfMonDelegate;
 import org.dcm4chex.archive.perf.PerfPropertyEnum;
@@ -721,8 +728,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                }
             }
             appendInstanceToSeriesStored(seriesStored, ds, retrieveAET, availability);
-            ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
             coerced = merge(coerced, coercedElements);
+            logCoercion(ds, coerced);
+            ds.putAll(coercedElements, Dataset.MERGE_ITEMS);
+            
             perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DATASET,
                     ds);
             perfMon.stop(activeAssoc, rq,
@@ -755,7 +764,44 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-    private String[] selectReferencedDirectoryURI(String uri) {
+    private void logCoercion(Dataset ds, Dataset coerced) {
+    	if ( coerced.size() > 0 ) {
+    		TagDictionary tagDictionary = DictionaryFactory.getInstance().getDefaultTagDictionary();
+    		StringBuilder sb = new StringBuilder();
+    		for ( Iterator<DcmElement> i = coerced.iterator(); i.hasNext(); ) {
+    			DcmElement coercedElement = i.next();
+    			DcmElement originalElement = ds.get(coercedElement.tag());
+    			if ( originalElement != null ) {
+	    			String originalValue = StringUtils.promptValue(originalElement.vr(),
+	    					originalElement.getByteBuffer(), 64);
+	    			String coercedValue = StringUtils.promptValue(coercedElement.vr(),
+	    					coercedElement.getByteBuffer(), 64);
+	    			if ( !originalValue.equals(coercedValue) ) {
+	    				if ( sb.length() > 0 ) sb.append("; ");
+	    				sb.append(tagDictionary.toString(originalElement.tag())).append(" [");
+						sb.append(originalValue);
+		    			sb.append("->");
+						sb.append(coercedValue);
+		    			sb.append("]");
+	    			}
+    			}
+    		}
+    		if ( sb.length() > 0 ) {
+    			sb.insert(0, "The following elements were coerced during storage: ");
+		    	HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+		    	PatientRecordMessage msg = new PatientRecordMessage(PatientRecordMessage.UPDATE);
+		    	msg.addUserPerson(userInfo.getUserId(), null, null, userInfo.getHostName(), true);
+		    	PersonName pn = ds.getPersonName(Tags.PatientName);
+		    	String pname = pn != null ? pn.format() : null;
+		    	ParticipantObject patient = msg.addPatient(ds.getString(Tags.PatientID), pname);
+		    	patient.addParticipantObjectDetail("Description", sb.toString());
+		    	msg.validate();
+		    	Logger.getLogger("auditlog").info(msg);
+    		}
+    	}
+	}
+
+	private String[] selectReferencedDirectoryURI(String uri) {
         if ( referencedDirectoryPath == null ) {
             log.debug("ReferencedDirectoryPath is set to ALL! uri:"+uri);
             try {

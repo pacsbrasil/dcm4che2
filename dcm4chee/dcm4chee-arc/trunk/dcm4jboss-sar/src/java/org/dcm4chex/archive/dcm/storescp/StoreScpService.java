@@ -47,6 +47,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +64,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.FileMetaInfo;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.AcceptorPolicy;
@@ -70,7 +72,9 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.InstancesTransferredMessage;
+import org.dcm4che2.audit.message.ParticipantObject;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
+import org.dcm4che2.audit.message.PatientRecordMessage;
 import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -85,10 +89,13 @@ import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.exceptions.UnknownAETException;
 import org.dcm4chex.archive.mbean.FileSystemMgt2Delegate;
+import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.mbean.SchedulerDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
+
+import com.sun.jmx.snmp.tasks.Task;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -226,6 +233,8 @@ public class StoreScpService extends AbstractScpService {
 
     private boolean storeOriginalPatientIDInOtherPatientIDsSeq;
 
+    private boolean storeOriginalPatientIDInOriginalAttrsSeq;
+    
     private StoreScp scp = null;
 
     public StoreScpService() {
@@ -313,6 +322,15 @@ public class StoreScpService extends AbstractScpService {
     public final void setStoreOriginalPatientIDInOtherPatientIDsSeq(
             boolean storeOriginalPatientIDInOtherPatientIDsSeq) {
         this.storeOriginalPatientIDInOtherPatientIDsSeq = storeOriginalPatientIDInOtherPatientIDsSeq;
+    }
+    
+    public final boolean isStoreOriginalPatientIDInOriginalAttrsSeq() {
+    	return storeOriginalPatientIDInOriginalAttrsSeq;
+    }
+    
+    public final void setStoreOriginalPatientIDInOriginalAttrsSeq(
+    		boolean storeOriginalPatientIDInOriginalAttrsSeq) {
+    	this.storeOriginalPatientIDInOriginalAttrsSeq = storeOriginalPatientIDInOriginalAttrsSeq;
     }
 
     public int getMaxValueLength() {
@@ -1000,12 +1018,40 @@ public class StoreScpService extends AbstractScpService {
             opiditem.putLO(Tags.IssuerOfPatientID,
                     ds.getString(Tags.IssuerOfPatientID));
         }
+        if (storeOriginalPatientIDInOriginalAttrsSeq) {
+        	DcmElement originalAttributesSequence = ds.get(Tags.OriginalAttributesSeq);
+        	if (originalAttributesSequence == null)
+        		originalAttributesSequence = ds.putSQ(Tags.OriginalAttributesSeq);
+        	Dataset oaSeqValues = originalAttributesSequence.addNewItem();
+        	oaSeqValues.putLO(Tags.SourceOfPreviousValues);
+            oaSeqValues.putDT(Tags.AttributeModificationDatetime, new Date());
+            oaSeqValues.putLO(Tags.ModifyingSystem, ds.getString(PrivateTags.CalledAET));
+            oaSeqValues.putCS(Tags.ReasonForTheAttributeModification, "CORRECT");
+            DcmElement modifiedAttributesSequence = oaSeqValues.putSQ(Tags.ModifiedAttributesSeq);
+            Dataset maSeqValues = modifiedAttributesSequence.addNewItem();
+            maSeqValues.putLO(Tags.PatientID, ds.getString(Tags.PatientID));
+            maSeqValues.putLO(Tags.IssuerOfPatientID, ds.getString(Tags.IssuerOfPatientID));
+        }
+        String origPatID = ds.getString(Tags.PatientID);
         ds.remove(Tags.PatientID);
         ds.remove(Tags.IssuerOfPatientID);
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
         String calledAET = ds.getString(PrivateTags.CalledAET);
         ds.setPrivateCreatorID(null);
         generatePatientID(ds, ds, calledAET);
+        logPatientIDUpdate(origPatID, ds);
     }
 
+    private void logPatientIDUpdate(String origPatID, Dataset ds) {
+    	HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+    	PatientRecordMessage msg = new PatientRecordMessage(PatientRecordMessage.UPDATE);
+    	msg.addUserPerson(userInfo.getUserId(), null, null, userInfo.getHostName(), true);
+    	PersonName pn = ds.getPersonName(Tags.PatientName);
+    	String pname = pn != null ? pn.format() : null;
+    	ParticipantObject patient = msg.addPatient(origPatID, pname);
+    	patient.addParticipantObjectDetail("Description", "Conflicting patient record found," +
+    			" assigning generated PatientID " + ds.getString(Tags.PatientID));
+    	msg.validate();
+    	Logger.getLogger("auditlog").info(msg);
+    }
 }
