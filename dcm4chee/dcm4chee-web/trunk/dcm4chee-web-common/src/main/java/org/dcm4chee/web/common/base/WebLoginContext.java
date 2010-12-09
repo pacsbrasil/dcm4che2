@@ -118,6 +118,7 @@ public class WebLoginContext extends UsernamePasswordContext {
             secureSession.setUsername(username);
             secureSession.setManageUsers(Boolean.parseBoolean(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("manageUsers")));
             boolean useStudyPermissions = Boolean.parseBoolean(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("useStudyPermissions"));
+            secureSession.setWebStudyPermissions(Boolean.parseBoolean(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("webStudyPermissions")));
             secureSession.setRoot(username.equals(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root")));
             javax.security.auth.Subject dicomSubject = null;
             if (useStudyPermissions) {

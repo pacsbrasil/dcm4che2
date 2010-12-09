@@ -195,7 +195,8 @@ public class StudyListPage extends Panel {
         if (StudyListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
         
-        dao.setDicomSecurityRoles(secureSession.getDicomRoles(), secureSession.isRoot());
+        if (secureSession.isWebStudyPermissions())
+            dao.setDicomSecurityRoles(secureSession.getDicomRoles(), secureSession.isRoot());
 
         add(modalWindow = new ModalWindow("modal-window"));
         modalWindow.setWindowClosedCallback(new WindowClosedCallback() {
@@ -611,7 +612,7 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                boolean hasIgnored = selected.update(secureSession.getUseStudyPermissions() && !secureSession.isRoot(), viewport.getPatients(), StudyPermission.DELETE_ACTION);
+                boolean hasIgnored = selected.update(secureSession.isWebStudyPermissions() && !secureSession.isRoot(), viewport.getPatients(), StudyPermission.DELETE_ACTION);
                 selected.deselectChildsOfSelectedEntities();
                 confirmDelete.setRemark(hasIgnored ? new StringResourceModel("folder.message.deleteNotAllowed",this, null) : null);
                 if (selected.hasPPS()) {
@@ -645,8 +646,8 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                boolean hasIgnored = selected.update(secureSession.getUseStudyPermissions() && !secureSession.isRoot(), viewport.getPatients(), StudyPermission.UPDATE_ACTION, true);
-                if (secureSession.getUseStudyPermissions() && hasIgnored && !secureSession.isRoot()) {
+                boolean hasIgnored = selected.update(secureSession.isWebStudyPermissions() && !secureSession.isRoot(), viewport.getPatients(), StudyPermission.UPDATE_ACTION, true);
+                if (secureSession.isWebStudyPermissions() && hasIgnored && !secureSession.isRoot()) {
                     msgWin.setColor("#FF0000");
                     msgWin.setInfoMessage(getString("folder.message.moveNotAllowed"));
                     msgWin.show(target);
@@ -1672,21 +1673,19 @@ public class StudyListPage extends Panel {
 
     private boolean checkEditStudyPermission(AbstractDicomModel model) {
         
-//  
-        
         SecureSession secureSession = (SecureSession) getSession();
-        if (!secureSession.getUseStudyPermissions() || secureSession.isRoot()) return true;
-//        int hasEditPermission = 0;
-//        if (model instanceof PatientModel) {
-//            for (StudyModel study : ((PatientModel) model).getStudies())
-//                if (study.getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
-//                    hasEditPermission++;
-//            return (hasEditPermission == ((PatientModel) model).getStudies().size())
-//                && model.getDataset() != null;
-//        } else if (model instanceof StudyModel) {
-//            return model.getDataset() != null 
-//                && ((StudyModel) model).getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION);
-//        }
+        if (!secureSession.isWebStudyPermissions() || secureSession.isRoot()) return true;
+        int hasEditPermission = 0;
+        if (model instanceof PatientModel) {
+            for (StudyModel study : ((PatientModel) model).getStudies())
+                if (study.getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
+                    hasEditPermission++;
+            return (hasEditPermission == ((PatientModel) model).getStudies().size())
+                && model.getDataset() != null;
+        } else if (model instanceof StudyModel) {
+            return model.getDataset() != null 
+                && ((StudyModel) model).getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION);
+        }
         return model.getDataset() != null;
     }
     
@@ -1827,6 +1826,6 @@ public class StudyListPage extends Panel {
     }
     
     private boolean ignoreStudyPermissions() {
-        return (!secureSession.getUseStudyPermissions() || secureSession.isRoot());
+        return (!secureSession.isWebStudyPermissions() || secureSession.isRoot());
     }
 }

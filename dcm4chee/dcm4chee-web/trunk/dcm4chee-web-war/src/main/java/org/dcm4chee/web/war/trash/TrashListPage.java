@@ -138,7 +138,8 @@ public class TrashListPage extends Panel {
             add(CSSPackageResource.getHeaderContribution(TrashListPage.CSS));
        
         SecureSession secureSession = ((SecureSession) getSession());
-        dao.setDicomSecurityRoles(secureSession.getDicomRoles());
+        if (secureSession.isWebStudyPermissions())
+            dao.setDicomSecurityRoles(secureSession.getDicomRoles());
 
         final TrashListFilter filter = viewport.getFilter();
         final BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
