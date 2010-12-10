@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.management.Attribute;
 import javax.management.Notification;
@@ -74,11 +73,11 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public abstract class AbstractDeleterService extends ServiceMBeanSupport {
 
+    public static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;
+
     protected static final String NONE = "NONE";
 
     protected static final String AUTO = "AUTO";
-
-    private static final long MIN_FREE_DISK_SPACE = 20 * FileUtils.MEGA;
 
     private final FindScuDelegate findScu = new FindScuDelegate(this);
 
@@ -89,13 +88,7 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
     private long scheduleStudiesForDeletionInterval;
     private boolean isRunningScheduleStudiesForDeletion;
 
-    private long minFreeDiskSpace = MIN_FREE_DISK_SPACE;
-    
     private DeleterThresholds deleterThresholds;
-
-    private long expectedDataVolumePerDay = 100000L;
-
-    private long adjustExpectedDataVolumePerDay = 0;
 
     private long maxNotAccessedFor = 0;
 
@@ -202,22 +195,10 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
     
     protected abstract String getFileSystemGroupIDForDeleter();
 
-    public final String getMinFreeDiskSpace() {
-        return minFreeDiskSpace == 0 ? NONE
-                : FileUtils.formatSize(minFreeDiskSpace);
-    }
-
-    public final long getMinFreeDiskSpaceBytes() {
-        return minFreeDiskSpace;
-    }
-
-    public final void setMinFreeDiskSpace(String str) {
-        this.minFreeDiskSpace = str.equalsIgnoreCase(NONE) ? 0
-                : FileUtils.parseSize(str, MIN_FREE_DISK_SPACE);
-    }
+    public abstract long getMinFreeDiskSpaceBytes();
 
     public long getFreeDiskSpace() throws Exception {
-        if (minFreeDiskSpace == 0) {
+        if (getMinFreeDiskSpaceBytes() == 0) {
             return -1L;
         }
         FileSystemDTO[] fsDTOs =
@@ -241,27 +222,25 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
     }
 
     public long getUsableDiskSpace() throws Exception {
-        if (minFreeDiskSpace == 0) {
+        long minFree = getMinFreeDiskSpaceBytes();
+        if (minFree == 0) {
             return -1L;
         }
-        return calcUsableDiskSpace();
+        return calcUsableDiskSpace(minFree);
     }
     
-    public long calcUsableDiskSpace() throws Exception {
-        return calcUsableDiskSpace(fileSystemMgt().getFileSystemsOfGroup(getFileSystemGroupIDForDeleter()));
+    public long calcUsableDiskSpace(long minFree) throws Exception {
+        return calcUsableDiskSpace(fileSystemMgt().getFileSystemsOfGroup(getFileSystemGroupIDForDeleter()), minFree);
     }
 
-    private long calcUsableDiskSpace(FileSystemDTO[] fsDTOs) throws IOException {
+    private long calcUsableDiskSpace(FileSystemDTO[] fsDTOs, long minFree) throws IOException {
         long free = 0L;
         for (FileSystemDTO fsDTO : fsDTOs) {
             int status = fsDTO.getStatus();
-            if (status == FileSystemStatus.RW
-                    || status == FileSystemStatus.DEF_RW) {
+            if (status == FileSystemStatus.RW || status == FileSystemStatus.DEF_RW) {
                 File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
                 if (dir.isDirectory()) {
-                    free += Math.max(0,
-                            FileSystemUtils.freeSpace(dir.getPath())
-                            - minFreeDiskSpace);
+                    free += Math.max(0, FileSystemUtils.freeSpace(dir.getPath()) - minFree);
                 }
             }
         }
@@ -280,58 +259,8 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
         this.deleterThresholds = s.equalsIgnoreCase(NONE) ? null
                 : new DeleterThresholds(s, true);
     }
-
-    public final String getExpectedDataVolumePerDay() {
-        return FileUtils.formatSize(expectedDataVolumePerDay);
-    }
-
-    public final long getExpectedDataVolumePerDayBytes() {
-        return expectedDataVolumePerDay;
-    }
-
-    public final void setExpectedDataVolumePerDay(String s) {
-        this.expectedDataVolumePerDay = FileUtils.parseSize(s, FileUtils.MEGA);
-    }
-
-    public final boolean isAdjustExpectedDataVolumePerDay() {
-        return adjustExpectedDataVolumePerDay != 0L;
-    }
-
-    public final void setAdjustExpectedDataVolumePerDay(boolean b) {
-        this.adjustExpectedDataVolumePerDay = b ? nextMidnight() : 0L;
-    }
-
-    private long nextMidnight() {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.HOUR_OF_DAY, 23);
-        cal.set(Calendar.MINUTE, 59);
-        cal.set(Calendar.SECOND, 59);
-        cal.set(Calendar.MILLISECOND, 999);
-        return cal.getTimeInMillis();
-    }
-
-    public String adjustExpectedDataVolumePerDay() throws Exception {
-        FileSystemMgt2 fsMgt = fileSystemMgt();
-        return adjustExpectedDataVolumePerDay(fsMgt,
-                fsMgt.getFileSystemsOfGroup(getFileSystemGroupIDForDeleter()));
-    }
-
-    private String adjustExpectedDataVolumePerDay(FileSystemMgt2 fsMgt,
-            FileSystemDTO[] fss) throws Exception {
-        Calendar cal = Calendar.getInstance();
-        cal.roll(Calendar.DAY_OF_MONTH, false);
-        long after = cal.getTimeInMillis();
-        long sum = 0L;
-        for (FileSystemDTO fs : fss) {
-            sum = fsMgt.sizeOfFilesCreatedAfter(fs.getPk(), after);
-        }
-        String size = FileUtils.formatSize(sum);
-        if (sum > expectedDataVolumePerDay) {
-            server.setAttribute(super.serviceName, new Attribute(
-                    "ExpectedDataVolumePerDay", size));
-        }
-        return size;
-    }
+    
+    public abstract long getExpectedDataVolumePerDayBytes() throws Exception;
 
     public long getCurrentDeleterThreshold() throws Exception {
         if (deleterThresholds == null) {
@@ -344,14 +273,8 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
 
     private long getCurrentDeleterThreshold(FileSystemMgt2 fsMgt,
             FileSystemDTO[] fsDTOs) throws Exception {
-        Calendar now = Calendar.getInstance();
-        if (adjustExpectedDataVolumePerDay != 0
-                && now.getTimeInMillis() > adjustExpectedDataVolumePerDay) {
-            adjustExpectedDataVolumePerDay(fsMgt, fsDTOs);
-            adjustExpectedDataVolumePerDay = nextMidnight();
-        }
-        return deleterThresholds.getDeleterThreshold(now)
-                .getFreeSize(expectedDataVolumePerDay);
+        long exp = getExpectedDataVolumePerDayBytes();
+        return exp == -1L ? -1L : deleterThresholds.getDeleterThreshold(Calendar.getInstance()).getFreeSize(exp);
     }
 
     public String getDeleteStudyIfNotAccessedFor() {
@@ -488,7 +411,7 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
             }
             if (deleterThresholds != null) {
                 long threshold = getCurrentDeleterThreshold(fsMgt, fsDTOs);
-                long usable = calcUsableDiskSpace(fsDTOs);
+                long usable = calcUsableDiskSpace(fsDTOs, getMinFreeDiskSpaceBytes());
                 long sizeToDel = threshold - usable;
                 if (sizeToDel > 0) {
                     log.info("Try to free " + sizeToDel + " of disk space on file system group " + fsGroup);

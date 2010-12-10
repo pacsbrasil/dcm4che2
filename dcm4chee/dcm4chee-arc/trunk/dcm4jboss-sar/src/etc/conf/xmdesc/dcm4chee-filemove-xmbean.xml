@@ -3,7 +3,7 @@
     "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" 
     "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 <mbean>
-  <description><![CDATA[ File File Move Service
+  <description><![CDATA[ File Move Service
     Move files from one file system group (RW) to another RW file system group if usable disk space 
     of <i>SourceFileSystemGroup</i> falls below <i>MoveThresholds</i> and configured.
     accessed studies.]]>
@@ -30,56 +30,59 @@
     </descriptors>
   </attribute>
   <attribute access="read-write" getMethod="getDestFsGroup" setMethod="setDestFsGroup">
-    <description><![CDATA[Destination file system group ID.]]>
+    <description><![CDATA[Destination file system group ID.<br/>
+    	One filesystem of the configured group must be RW (selected via selectStorageFileSystem)<br/>
+    	Use &lt;file system path&gt;@&lt;file system group&gt; to specify a concrete file system of a FS group.
+    	In this case the file system can be also RO.]]>
     </description>
     <name>DestinationFileSystemGroupID</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="DEST_FS_GROUP" />
+      <value value="NONE" />
     </descriptors>
   </attribute>
 
-  <attribute access="read-write" getMethod="getMinFreeDiskSpace"
-    setMethod="setMinFreeDiskSpace">
-    <description><![CDATA[Minimum free disk space on one filesystem. Used to calculate usable disk space of the file system group.
-      1MB = 1000000 bytes, 1GB = 1000MB.
-      NONE = disable check for minimal free available disk space.]]>
+  <attribute access="read-only" getMethod="getMinFreeDiskSpace" >
+    <description><![CDATA[Minimum free disk space on source filesystem group. Used to calculate usable disk space of the file system group.
+      1MB = 1000000 bytes, 1GB = 1000MB. Configured in corresponding FilesystemGroup service]]>
     </description>
-    <name>MinimumFreeDiskSpace</name>
+    <name>MinimumFreeDiskSpaceOnSource</name>
     <type>java.lang.String</type>
-    <descriptors>
-      <value value="50MB" />
-    </descriptors>
   </attribute>
 
   <attribute access="read-only" getMethod="getUsableDiskSpace">
-    <description><![CDATA[Get usable free disk space on writable file
-      systems of the file system group managed by this service, considering
-      the configured value for <i>MinimumFreeDiskSpace</i>, in bytes.]]>
+    <description><![CDATA[Usable free disk space on source file
+      system group, considering the configured value for <i>MinimumFreeDiskSpace</i>, in bytes.]]>
     </description>
-    <name>UsableDiskSpace</name>
+    <name>UsableDiskSpaceOnSource</name>
     <type>long</type>
   </attribute>
 
   <attribute access="read-only" getMethod="getUsableDiskSpaceString">
-    <description><![CDATA[Get usable free disk space on writable file
-      systems of the file system group managed by this service, considering
-      the configured value for <i>MinimumFreeDiskSpace</i>, as string.]]>
+    <description><![CDATA[Usable free disk space on source file
+      systems group, considering the configured value for <i>MinimumFreeDiskSpace</i>, as string.]]>
     </description>
-    <name>UsableDiskSpaceString</name>
+    <name>UsableDiskSpaceOnSourceString</name>
+    <type>java.lang.String</type>
+  </attribute>
+
+  <attribute access="read-only" getMethod="getUsableDiskSpaceStringOnDest">
+    <description><![CDATA[Usable free disk space on destination file systems group.]]>
+    </description>
+    <name>UsableDiskSpaceOnDestinationString</name>
     <type>java.lang.String</type>
   </attribute>
 
   <attribute access="read-write" getMethod="getDeleterThresholds"
     setMethod="setDeleterThresholds">
-    <description><![CDATA[Defines thresholds dependent on hour of day, for
+    <description><![CDATA[Defines 'disc free' thresholds dependent on hour of day, for
       moving the most infrequently accessed studies which satisfy the
       configured set of constraints.
       <p>Format: HOUR:##MB or HOUR:##GB or HOUR:##h, multiple thresholds with
-      different (start) hour separated by ';'. NONE = disable deletion of
-      studies on file systems of the file system group managed by this service.
+      different (start) hour separated by ';'. NONE = disable move of
+      studies on file systems of the configured source file system group.
       <p>E.g.: 7:1h;19:24h => free space for expected data volume received in
-      24 hours between  7pm and 7am. Between 7am and 7pm only delete studies if
+      24 hours between  7pm and 7am. Between 7am and 7pm only move studies if
       the usable free space falls below the expected data volume received in
       one hour.]]>
     </description>
@@ -90,49 +93,32 @@
     </descriptors>
   </attribute>
 
-  <attribute access="read-write" getMethod="getExpectedDataVolumePerDay"
-    setMethod="setExpectedDataVolumePerDay">
-    <description><![CDATA[Expected data volume per day. Used to transform
-      time based deleter thresholds (s. DeleterThresholds) into disk space size
+  <attribute access="read-only" getMethod="getExpectedDataVolumePerDay" >
+    <description><![CDATA[Expected data volume per day on source file system group. Used to transform
+      time based move thresholds (s. MoveThresholds) into disk space size
       to free.]]>
     </description>
     <name>ExpectedDataVolumePerDay</name>
     <type>java.lang.String</type>
-    <descriptors>
-      <value value="100MB" />
-    </descriptors>
   </attribute>
 
   <attribute access="read-only" getMethod="getExpectedDataVolumePerDayBytes">
-    <description><![CDATA[Get expected data volume per day
+    <description><![CDATA[Get expected data volume per day on source filesystem group
       in bytes, returned as a long.]]>
     </description>
     <name>ExpectedDataVolumePerDayBytes</name>
     <type>long</type>
   </attribute>
 
-  <attribute access="read-write" getMethod="isAdjustExpectedDataVolumePerDay"
-    setMethod="setAdjustExpectedDataVolumePerDay">
-    <description><![CDATA[Update value of attribute ExpectedDataVolumePerDay
-      at midnight, if data volume received during last 24 hours exceeds its
-      current value.]]>
-    </description>
-    <name>AdjustExpectedDataVolumePerDay</name>
-    <type>boolean</type>
-    <descriptors>
-      <value value="true" />
-    </descriptors>
-  </attribute>
-
   <attribute access="read-only" getMethod="getCurrentDeleterThreshold">
-    <description><![CDATA[Get current effective deleter threshold in bytes
-      according configured <i>DeleterThreshold</i> and
-      <i>ExpectedDataVolumePerDay</i>. If <i>UsableDiskSpace</i> falls below
+    <description><![CDATA[Get current effective move threshold in bytes
+      according configured <i>MoveThreshold</i> and
+      <i>ExpectedDataVolumePerDay</i>. If <i>UsableDiskSpaceOnSource</i> falls below
       this value, most infrequently accessed studies which satisfy the
-      configured set of constraints will be deleted on next invocation of
-      operation <i>scheduleStudiesForDeletion</i>.]]>
+      configured set of constraints will be moved on next invocation of
+      operation <i>scheduleStudiesForMove</i>.]]>
     </description>
-    <name>CurrentDeleterThreshold</name>
+    <name>CurrentMoveThreshold</name>
     <type>long</type>
   </attribute>
 
@@ -143,7 +129,7 @@
       to a file system of destination file system group, if it satisfies the configured set of constraints.
       <p>Format: 
       <br>##h (in hours) | ##d (in days) | ##w (in weeks) | NEVER
-      <br>NEVER = deletion of studies is only triggered by running out of disk
+      <br>NEVER = move of studies is only triggered by running out of disk
       space.
       <br>Example:
       <br>52w = any studies that have not been accessed for 52 weeks or more
@@ -177,7 +163,7 @@
       been accepted for any instances of a study to become a candidate for
       move triggered by running out of disk space or being not accessed
       longer than configured <i>MoveStudiesNotAccessedFor</i>. Typically only
-      activated if no other constraint for study deletion is configured.]]>
+      activated if no other constraint for study move is configured.]]>
     </description>
     <name>MoveStudyOnlyIfStorageNotCommited</name>
     <type>boolean</type>
@@ -192,7 +178,7 @@
     <description><![CDATA[Defines if all instances of a study must be
       retrievable from an external Application Entity to become a candidate
       for move triggered by running out of disk space or being not accessed
-      longer than configured <i>DeleteStudiesNotAccessedFor</i>.]]>
+      longer than configured <i>MoveStudiesNotAccessedFor</i>.]]>
     </description>
     <name>MoveStudyOnlyIfExternalRetrievable</name>
     <type>boolean</type>
@@ -221,7 +207,7 @@
     <description><![CDATA[Defines if all instances of a study must be
       stored on Media to become a candidate for move triggered by running out of
       disk space or being not accessed longer than configured
-      <i>DeleteStudiesNotAccessedFor</i>.]]>
+      <i>MoveStudiesNotAccessedFor</i>.]]>
     </description>
     <name>MoveStudyOnlyIfCopyOnMedia</name>
     <type>boolean</type>
@@ -289,8 +275,8 @@
       infrequently accessed studies which satisfies the configured set of
       constraints from file systems of the source file system group, 
       if they were not accessed longer than configured
-      <i>MoveStudiesNotAccessedFor</i> or if <i>UsableDiskSpace</i>
-      falls below <i>CurrentDeleterThreshold</i>.
+      <i>MoveStudiesNotAccessedFor</i> or if <i>UsableDiskSpaceOnSource</i>
+      falls below <i>CurrentMoveThreshold</i>.
       <p>Format: ##s (in seconds), ##m (in minutes), ##h (in hours).
       <br>NEVER = do not invoke operation <i>scheduleStudiesForMove</i>
       by timer thread automatically. ]]>
@@ -298,7 +284,7 @@
     <name>ScheduleStudiesForMoveInterval</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="5m" />
+      <value value="NEVER" />
     </descriptors>
   </attribute>
    <attribute access="read-only"
@@ -363,7 +349,8 @@
    </attribute>
  
    <attribute access="read-write" getMethod="isKeepMovedFilesOnError" setMethod="setKeepMovedFilesOnError">
-      <description>Keep moved files if one or more files failed. (not supported on tar file systems!)
+      <description>Keep successfully moved files if one or more files failed. (not supported on tar file systems!). 
+	      If disabled the whole Move order is roll backed if one file failed!
       </description>
       <name>KeepMovedFilesOnError</name>
       <type>boolean</type>
@@ -371,6 +358,18 @@
          <value value="false"/>
       </descriptors>
    </attribute>
+
+   <attribute access="read-write" getMethod="getDestFileStatus" setMethod="setDestFileStatus">
+    <description><![CDATA[File status of destination files after move.<br/>
+    	Suitable stati: DEFAULT, TO_ARCHIVE, ARCHIVED <br/>
+    	Use '-' to leave file status unchanged.]]>
+    </description>
+    <name>DestinationFileStatus</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="-" />
+    </descriptors>
+  </attribute>
  
    <attribute access="read-write"
       getMethod="getBufferSize"
@@ -453,21 +452,12 @@
   &defaultOperations;
 
   <operation impact="ACTION">
-    <description><![CDATA[Update value of attribute
-      <i>ExpectedDataVolumePerDay</i>, if data volume received during last
-      24 hours exceeds its current value.]]>
-    </description>
-    <name>adjustExpectedDataVolumePerDay</name>
-    <return-type>java.lang.String</return-type>
-  </operation>
-
-  <operation impact="ACTION">
     <description><![CDATA[Schedules move of most infrequently accessed
       studies which satisfies the configured set of constraints from writeable
       file systems of the source file system group, if they
       were not accessed longer than configured
-      <i>MoveStudiesNotAccessedFor</i> or if  <i>UsableDiskSpace</i> falls
-      below <i>CurrentDeleterThreshold</i>.
+      <i>MoveStudiesNotAccessedFor</i> or if  <i>UsableDiskSpaceOnSource</i> falls
+      below <i>CurrentMoveThreshold</i>.
       Returns the number of studies scheduled for move.]]>
     </description>
     <name>scheduleStudiesForMove</name>
@@ -491,14 +481,8 @@
 
   <operation impact="ACTION">
     <description>Show current Move criteria.</description>
-    <name>showDeleterCriteria</name>
+    <name>showMoveCriteria</name>
     <return-type>java.lang.String</return-type>
   </operation>
-  <operation impact="ACTION">
-    <description>Stop current Move Thread. (finish loop even there is still remaining size to delete)</description>
-    <name>stopCurrentDeleterThread</name>
-    <return-type>void</return-type>
-  </operation>
-
   <!-- Notifications -->
 </mbean>

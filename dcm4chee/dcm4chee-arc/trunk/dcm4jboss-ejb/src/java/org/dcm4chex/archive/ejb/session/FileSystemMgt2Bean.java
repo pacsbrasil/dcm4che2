@@ -814,7 +814,8 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
      * 
      * Move File to another filesystem and/or path
      * @param order
-     * @param files FileDTO with parameter of the destination file (filesystemPk and filePath). Pk is of file to move:
+     * @param dtos FileDTO with parameter of the destination file (filesystemPk and filePath). Pk is of file to move:
+     * @param destFileStatus File status of destination file. Null means: do not change!
      * @param keepSrcFiles 
      * @param keepMovedFilesOnError  If set return a list of failed files instead of rollback and fail the whole order.
      * 
@@ -823,7 +824,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
      *
      * @ejb.interface-method
      */
-    public List<FileDTO> moveFiles(DeleteStudyOrder order, FileDTO[] dtos, boolean keepSrcFiles, boolean keepMovedFilesOnError) throws ConcurrentStudyStorageException {
+    public List<FileDTO> moveFiles(DeleteStudyOrder order, FileDTO[] dtos, Integer destFileStatus, boolean keepSrcFiles, boolean keepMovedFilesOnError) throws ConcurrentStudyStorageException {
         try {
             List<FileDTO> failed = null;
             long fsPk = order.getFsPk();
@@ -842,11 +843,15 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                     if (fSrc != null) {
                         if (keepSrcFiles) { 
                             fileHome.create(dto.getFilePath(), fSrc.getFileTsuid(), 
-                                fSrc.getFileSize(), fSrc.getFileMd5(),fSrc.getFileStatus(), 
+                                fSrc.getFileSize(), fSrc.getFileMd5(), 
+                                destFileStatus == null ? fSrc.getFileStatus() : destFileStatus.intValue(), 
                                 fSrc.getInstance(), fsDest);
                         } else {
                             fSrc.setFilePath(dto.getFilePath());
                             fSrc.setFileSystem(fsDest);
+                            if (destFileStatus != null) {
+                                fSrc.setFileStatus(destFileStatus.intValue());
+                            }
                         }
                     } else {
                         log.error("Missing source file for:"+dto);

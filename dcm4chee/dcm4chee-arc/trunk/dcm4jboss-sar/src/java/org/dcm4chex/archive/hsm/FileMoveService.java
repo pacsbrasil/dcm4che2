@@ -53,6 +53,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.MalformedObjectNameException;
@@ -64,6 +65,7 @@ import org.apache.commons.compress.tar.TarOutputStream;
 import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4che.util.MD5Utils;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
+import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
@@ -72,6 +74,7 @@ import org.dcm4chex.archive.exceptions.ConcurrentStudyStorageException;
 import org.dcm4chex.archive.mbean.AbstractDeleterService;
 import org.dcm4chex.archive.mbean.FileSystemMgt2Delegate;
 import org.dcm4chex.archive.mbean.JMSDelegate;
+import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
 
 /**
@@ -83,8 +86,12 @@ import org.dcm4chex.archive.util.FileUtils;
  */
 public class FileMoveService extends AbstractDeleterService implements MessageListener {
 
+    private static final String ERROR = "ERROR";
+    private static final String NOT_APPLICABLE = "N.A.";
     private String srcFsGroup;
     private String destFsGroup;
+    
+    private Long minFree = null;
  
     private FileSystemMgt2Delegate fsmgt = new FileSystemMgt2Delegate(this);
     
@@ -93,6 +100,8 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
     private RetryIntervalls retryIntervalls = new RetryIntervalls();
     private boolean keepSrcFiles;
     private boolean keepMovedFilesOnError;
+    Integer destFileStatus;
+    
     private int bufferSize;
     private boolean verifyCopy;
     
@@ -109,14 +118,89 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
     }
 
     public String getDestFsGroup() {
-        return destFsGroup;
+        return destFsGroup == null ? NONE : destFsGroup;
     }
 
     public void setDestFsGroup(String destFsGroup) {
-        if (destFsGroup.equals(srcFsGroup)) {
-            throw new IllegalArgumentException("Source and Destination must not be the same!");
+        if (NONE.equals(destFsGroup)) {
+            this.destFsGroup = null;
+        } else {
+            if (destFsGroup.equals(srcFsGroup)) {
+                throw new IllegalArgumentException("Source and Destination must not be the same!");
+            }
+            this.destFsGroup = destFsGroup;
         }
-        this.destFsGroup = destFsGroup;
+    }
+
+    public long getMinFreeDiskSpaceBytes() {
+        try {
+            return srcFsGroup == null ? 0 : minFree != null ? minFree.longValue() : 
+                updateMinFreeDiskSpaceFromSrcFSGroup();
+        } catch (Exception x) {
+            log.error("Can't get MinFreeDiskSpaceFromSrcFS! return MIN_FREE_DISK_SPACE:"+MIN_FREE_DISK_SPACE);
+            return MIN_FREE_DISK_SPACE;
+        } 
+    }
+    
+    public long updateMinFreeDiskSpaceFromSrcFSGroup() throws Exception  {
+        String mfd = (String) server.getAttribute(new ObjectName(getFileSystemMgtServiceNamePrefix()+srcFsGroup), "MinimumFreeDiskSpace");
+        log.info("getMinFreeDiskSpaceFromSrcFS group:"+srcFsGroup+" minFree:"+mfd);
+        minFree = mfd.equalsIgnoreCase(NONE) ? 0 : FileUtils.parseSize(mfd, MIN_FREE_DISK_SPACE);
+        return minFree;
+    }
+    
+    public String getMinFreeDiskSpace() {
+        if(srcFsGroup == null) {
+            return NOT_APPLICABLE;
+        }
+        try {
+            updateMinFreeDiskSpaceFromSrcFSGroup();
+        } catch (Exception x) {
+            log.error("Can't get MinFreeDiskSpaceFromSrcFS! return MIN_FREE_DISK_SPACE:"+MIN_FREE_DISK_SPACE, x);
+            return ERROR;
+        }
+        return minFree == 0 ? NONE : FileUtils.formatSize(minFree);
+    }
+
+    public long getExpectedDataVolumePerDayBytes() {
+        try {
+            return (srcFsGroup == null) ? -1 :
+                (Long) server.getAttribute(new ObjectName(getFileSystemMgtServiceNamePrefix()+srcFsGroup), "ExpectedDataVolumePerDayBytes");
+        } catch (Exception x) {
+            log.error("Failed to get ExpectedDataVolumePerDayBytes!", x);
+            return -1 ;
+        }
+    }
+
+    public final String getExpectedDataVolumePerDay() throws Exception {
+        return  srcFsGroup == null ? NOT_APPLICABLE : FileUtils.formatSize(getExpectedDataVolumePerDayBytes());
+    }
+
+    public String getUsableDiskSpaceStringOnDest() {
+        try {
+            if (destFsGroup == null) 
+                return NOT_APPLICABLE;
+            if (destFsGroup.indexOf('@') == -1)
+                return (String) server.getAttribute(new ObjectName(getFileSystemMgtServiceNamePrefix()+destFsGroup), "UsableDiskSpaceString");
+            FileSystemDTO fsDTO = getDestinationFilesystem(fileSystemMgt());
+            if (fsDTO == null)
+                return "Dest FS not found!";
+            File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
+            return dir.isDirectory() ? FileUtils.formatSize(FileSystemUtils.freeSpace(dir.getPath())-getMinFreeDiskSpaceBytes())
+                                     : "UNKNOWN";
+
+        } catch (Exception x) {
+            log.error("Failed to get UsableDiskSpaceStringOnDest!", x);
+            return ERROR ;
+        }
+    }
+
+    public String getDestFileStatus() {
+        return destFileStatus == null ? "-" : FileStatus.toString(destFileStatus);
+    }
+
+    public void setDestFileStatus(String status) {
+        this.destFileStatus = "-".equals(status) ? null : FileStatus.toInt(status);
     }
 
     public String getFileSystemMgtServiceNamePrefix() {
@@ -203,8 +287,14 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
         super.stopService();
     }
     protected void schedule(DeleteStudyOrder order, long scheduledTime) throws Exception {
-        if (srcFsGroup == null) {
-            log.info("FileMove service is disabled! Set SourceFileSystemGroup to enable it.");
+        if (srcFsGroup == null || destFsGroup == null) {
+            String msg = "FileMove service is disabled! Set SourceFileSystemGroupID and DestinationFileSystemGroupID to enable it.";
+            log.info(msg);
+            throw new RuntimeException(msg);
+        } else if ("ERROR".equals(getUsableDiskSpaceStringOnDest())) {
+            String msg = "UsableDiskSpaceStringOnDest reports an error! Scheduling Move Order cancelled! Please check DestinationFileSystemGroupID configuration!";
+            log.error(msg);
+            throw new RuntimeException(msg);
         } else {
             if (log.isInfoEnabled()) {
                 String scheduledTimeStr = scheduledTime > 0
@@ -233,6 +323,10 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
     @Override
     protected void scheduleDeleteOrder(DeleteStudyOrder order) throws Exception {
         schedule(order, 0L);
+    }
+    
+    public String showMoveCriteria() {
+        return this.showDeleterCriteria();
     }
 
     public void onMessage(Message message) {
@@ -266,11 +360,13 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
 
     private void process(DeleteStudyOrder order) throws Exception {
         try {
-            FileSystemDTO fsDTO = fsmgt.selectStorageFileSystem(destFsGroup);
-            if (fsDTO == null) {
-                throw new RuntimeException("No storage file system with free disk space available!");
-            }
+            if (destFsGroup == null)
+                throw new RuntimeException("No destination file system configured!");
             FileSystemMgt2 mgt = fileSystemMgt();
+            FileSystemDTO fsDTO = getDestinationFilesystem(mgt);
+            if (fsDTO == null) {
+                throw new RuntimeException("No destination file system (with free disk space) available!");
+            }
             FileDTO[] files = mgt.getFilesOfStudy(order);
             File[] srcFiles;
             log.info("Move "+ files.length +" files of study "+order.getStudyIUID()+" to Filesystem:"+fsDTO);
@@ -278,10 +374,10 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
                 String destPath = fsDTO.getDirectoryPath();
                 if (destPath.startsWith("tar:")) {
                     srcFiles = copyTar(files, destPath, fsDTO.getPk());
-                    mgt.moveFiles(order, files, keepSrcFiles, false);
+                    mgt.moveFiles(order, files, destFileStatus, keepSrcFiles, false);
                 } else {
                     srcFiles = copyFiles(files, destPath, fsDTO.getPk());
-                    List<FileDTO> failed = mgt.moveFiles(order, files, keepSrcFiles, keepMovedFilesOnError);
+                    List<FileDTO> failed = mgt.moveFiles(order, files, destFileStatus, keepSrcFiles, keepMovedFilesOnError);
                     log.info("moveFiles done! failed:"+failed);
                     if (failed != null) {
                         if (keepSrcFiles) {
@@ -324,6 +420,15 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
             log.info(x.getMessage());
         }
         
+    }
+    
+    private FileSystemDTO getDestinationFilesystem(FileSystemMgt2 mgt) throws Exception {
+        if (destFsGroup == null) 
+            return null;
+        int pos = destFsGroup.indexOf('@');
+        if (pos == -1)
+            return fsmgt.selectStorageFileSystem(destFsGroup);
+        return mgt.getFileSystemOfGroup(destFsGroup.substring(pos+1), destFsGroup.substring(0, pos));
     }
 
     private void deleteFile(File f) {
@@ -457,7 +562,7 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
         tar.putNextEntry(tarEntry);
         int i = 0;
         for (int j = 0; j < tarEntryNames.length; j++) {
-            MD5Utils.toHexChars(dto[i].getFileMd5(), md5sum, i);
+            MD5Utils.toHexChars(dto[j].getFileMd5(), md5sum, i);
             md5sum[i+32] = ' ';
             md5sum[i+33] = ' ';
             System.arraycopy(
