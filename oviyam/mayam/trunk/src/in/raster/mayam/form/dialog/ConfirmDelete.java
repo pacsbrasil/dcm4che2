@@ -43,6 +43,7 @@ import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.MainScreen;
 import in.raster.mayam.model.Instance;
 import in.raster.mayam.model.Series;
+import in.raster.mayam.model.Study;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -161,13 +162,13 @@ public class ConfirmDelete extends javax.swing.JDialog {
                 ApplicationContext.databaseRef.seriesTableRowDelete(series.getSeriesInstanceUID());
             }
             ApplicationContext.databaseRef.studyTableRowDelete(studyIUID);
+            removeStudyFromList(studyIUID);
         }
-       MainScreen.showLocalDBStorage();
-        
-        
+        MainScreen.showLocalDBStorage();
         doClose(RET_OK);
     }//GEN-LAST:event_okButtonActionPerformed
-        
+
+  
     /** Closes the dialog */
     private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_closeDialog
         doClose(RET_CANCEL);
@@ -176,13 +177,24 @@ public class ConfirmDelete extends javax.swing.JDialog {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         doClose(RET_CANCEL);
     }//GEN-LAST:event_jButton1ActionPerformed
-    
+ 
     private void doClose(int retStatus) {
         returnStatus = retStatus;
         setVisible(false);
         dispose();
     }
-    
+
+    public void removeStudyFromList(String studyUID) {
+        synchronized (MainScreen.studyList) {
+            for (Study study : MainScreen.studyList) {
+                if (study.getStudyInstanceUID().equalsIgnoreCase(studyUID)) {
+                    MainScreen.studyList.remove(study);
+                    break;
+                }
+            }
+        }
+    }
+
     /**
      * @param args the command line arguments
      */
