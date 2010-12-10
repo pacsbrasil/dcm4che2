@@ -38,6 +38,7 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.context;
 
+import in.raster.mayam.facade.Platform;
 import in.raster.mayam.util.database.DatabaseHandler;
 import in.raster.mayam.form.SendingProgress;
 import in.raster.mayam.form.AnnotationPanel;
@@ -165,9 +166,8 @@ public class ApplicationContext {
             return false;
         }
 
-        /* Java lies on Windows */
-        String os=System.getProperty("os.name").toLowerCase();
-        if(os.startsWith("windows"))
+        /* Java lies on Windows */       
+       if(Platform.getCurrentPlatform().equals(Platform.WINDOWS))
         {           
         try {
             File newFile=new File(file,"newfile");

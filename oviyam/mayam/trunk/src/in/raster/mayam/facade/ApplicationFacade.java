@@ -72,7 +72,7 @@ public class ApplicationFacade {
     }
 
     private void setSystemProperties() {
-        if (System.getProperty("os.name").startsWith("Mac")) {
+        if (Platform.getCurrentPlatform().equals(Platform.MAC)) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", applicationName);
             System.setProperty("apple.awt.brushMetalLook", "true");

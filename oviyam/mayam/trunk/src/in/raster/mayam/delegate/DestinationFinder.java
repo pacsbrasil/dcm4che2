@@ -38,6 +38,7 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.delegate;
 
+import in.raster.mayam.facade.Platform;
 import in.raster.mayam.util.core.TranscoderMain;
 import java.io.File;
 
@@ -54,7 +55,7 @@ public class DestinationFinder {
 
     public String getFileDestination(File file) {
         String fileDest = null;
-        if (!System.getProperty("os.name").startsWith("Mac")) {
+        if(!Platform.getCurrentPlatform().equals(Platform.MAC)){
             try {
                 String archiveDir = "archive";
                 if (file.getAbsolutePath().startsWith(archiveDir)) {
