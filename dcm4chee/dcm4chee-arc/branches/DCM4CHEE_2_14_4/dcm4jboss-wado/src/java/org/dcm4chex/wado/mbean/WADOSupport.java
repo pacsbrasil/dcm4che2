@@ -1191,17 +1191,6 @@ public class WADOSupport {
                 }
 
                 DcmImageReadParamImpl dcmParam = (DcmImageReadParamImpl) param;
-                if ((data.get(Tags.WindowCenter) == null)
-                    && (data.get(Tags.WindowCenter) == null)
-                    && (data.get(Tags.SharedFunctionalGroupsSeq) == null)
-                    && (data.get(Tags.RescaleIntercept) == null)
-                    && (data.get(Tags.RescaleSlope) == null)) {
-                    // these result in full white image
-                    // param.setMaskPixelData(false);
-                    log.warn("Possible full white image, investigate!");
-                    dcmParam.setAutoWindowing(false);
-                }
-
                 bi = reader.read(frame, dcmParam);
             } catch (Exception x) {
                 log.error("Can't read image:", x);
