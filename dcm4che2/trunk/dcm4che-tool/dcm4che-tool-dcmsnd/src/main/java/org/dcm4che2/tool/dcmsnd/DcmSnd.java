@@ -1028,6 +1028,10 @@ public class DcmSnd extends StorageCommitmentService {
                 addFile(fs[i]);
             return;
         }
+
+        if(f.isHidden())
+            return;
+        
         FileInfo info = new FileInfo(f);
         DicomObject dcmObj = new BasicDicomObject();
         DicomInputStream in = null;
