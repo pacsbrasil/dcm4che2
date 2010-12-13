@@ -108,6 +108,8 @@ public abstract class CodecCmd {
 
     protected final int dataType;
 
+    protected final int maxVal;
+
     protected CodecCmd(Dataset ds, String tsuid) {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         this.implClassUID = fmi != null ? fmi.getImplementationClassUID()
@@ -139,6 +141,7 @@ public abstract class CodecCmd {
             throw new IllegalArgumentException("bits allocated:"
                     + bitsAllocated);
         }
+        this.maxVal = 2 << (bitsStored - pixelRepresentation - 1);
     }
 
     public static void setMaxConcurrentCodec(int maxConcurrentCodec) {

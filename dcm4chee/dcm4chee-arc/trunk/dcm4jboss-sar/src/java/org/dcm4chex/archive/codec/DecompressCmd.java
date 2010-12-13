@@ -87,6 +87,8 @@ public class DecompressCmd extends CodecCmd {
     private static final String J2KIMAGE_READER =
         "com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageReader";
 
+    private final boolean clampPixelValue;
+
     private final ItemParser itemParser;
 
     private final ImageInputStream iis;
@@ -155,6 +157,10 @@ public class DecompressCmd extends CodecCmd {
     public DecompressCmd(Dataset ds, String tsuid, DcmParser parser)
             throws IOException {
         super(ds, tsuid);
+        this.clampPixelValue = pixelRepresentation == 0 
+                && bitsAllocated == 16
+                && bitsStored < 12
+                && UIDs.JPEGExtended.equals(tsuid);
         this.iis = parser.getImageInputStream();
         this.itemParser = new ItemParser(parser, frames, tsuid);
     }
@@ -297,20 +303,34 @@ public class DecompressCmd extends CodecCmd {
 
     private void writeShortLE(short[] data, int off, int len, OutputStream out)
             throws IOException {
-        for (int i = off, end = off + len; i < end; i++) {
-            final short px = data[i];
-            out.write(px & 0xff);
-            out.write((px >>> 8) & 0xff);
-        }
+        if (clampPixelValue)
+            for (int i = off, end = off + len; i < end; i++) {
+                final int px = Math.max(data[i], maxVal);
+                out.write(px & 0xff);
+                out.write((px >>> 8) & 0xff);
+            }
+        else
+            for (int i = off, end = off + len; i < end; i++) {
+                final short px = data[i];
+                out.write(px & 0xff);
+                out.write((px >>> 8) & 0xff);
+            }
     }
 
     private void writeShortBE(short[] data, int off, int len, OutputStream out)
             throws IOException {
-        for (int i = off, end = off + len; i < end; i++) {
-            final short px = data[i];
-            out.write((px >>> 8) & 0xff);
-            out.write(px & 0xff);
-        }
+        if (clampPixelValue)
+            for (int i = off, end = off + len; i < end; i++) {
+                final int px = Math.max(data[i], maxVal);
+                out.write((px >>> 8) & 0xff);
+                out.write(px & 0xff);
+            }
+        else
+            for (int i = off, end = off + len; i < end; i++) {
+                final short px = data[i];
+                out.write((px >>> 8) & 0xff);
+                out.write(px & 0xff);
+            }
     }
 
     public void setSimpleFrameList(int[] simpleFrameList) {
