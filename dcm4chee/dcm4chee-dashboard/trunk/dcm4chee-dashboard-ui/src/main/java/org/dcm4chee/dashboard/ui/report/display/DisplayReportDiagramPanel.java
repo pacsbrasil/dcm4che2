@@ -265,6 +265,7 @@ public class DisplayReportDiagramPanel extends Panel {
             addOrReplace(new Image("diagram"));
             addOrReplace(new Label("error-message", new ResourceModel("dashboard.report.reportdiagram.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
             addOrReplace(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
+            log.debug(getClass() + ": ", e);
         } finally {
             try {
                 jdbcConnection.close();

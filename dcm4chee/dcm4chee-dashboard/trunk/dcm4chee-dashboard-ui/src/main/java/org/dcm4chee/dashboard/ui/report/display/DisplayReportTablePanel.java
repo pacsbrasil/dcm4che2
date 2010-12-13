@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -59,6 +60,8 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.IRequestTarget;
 import org.apache.wicket.RequestCycle;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
@@ -67,12 +70,15 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
+import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.ui.util.CSSUtils;
 import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,92 +100,22 @@ public class DisplayReportTablePanel extends Panel {
     private static Logger log = LoggerFactory.getLogger(DisplayReportTablePanel.class);
 
     private ReportModel report;
-    private Map<String, String> parameters;
+    private int offset = 0;
+    private int total = 0;
+    private int pagesize = 0;
+    
+    private ArrayList<String> headers;
+    private ArrayList<ArrayList<String>> data;
 
     public DisplayReportTablePanel(String id, ReportModel report, Map<String, String> parameters) {
         super(id);
         this.report = report;
-        this.parameters = parameters;
-    }
-    
-    @Override
-    public void onBeforeRender() {
-        super.onBeforeRender();
-
+        
+        setOutputMarkupId(true);
+        
         Connection jdbcConnection = null;
         try {
-
-            RepeatingView columnHeaders = new RepeatingView("column-headers"); 
-            add(columnHeaders);
-            RepeatingView reportRows = new RepeatingView("report-rows"); 
-            add(reportRows);
-    
-            final Document document = 
-                DocumentBuilderFactory
-                .newInstance()
-                .newDocumentBuilder()
-                .newDocument();
-
-            final List<String[]> csvList = new ArrayList<String[]>();
-            
-            Node node1 = document.createElement("report");
-            Node node2 = document.createElement("header");
-            node1.appendChild(node2);        
-    
-            Node node3 = document.createElement("title");
-            node2.appendChild(node3);
-            node3.appendChild(document.createTextNode(report.getTitle()));
-            
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(report.getCreated());
-            node3 = document.createElement("created");
-            node2.appendChild(node3);
-            node3.appendChild(document.createTextNode(new SimpleDateFormat("dd.MM.yyyy hh:mm").format(calendar.getTime())));
-    
-            node3 = document.createElement("statement");
-            node2.appendChild(node3);
-            node3.appendChild(document.createTextNode(report.getStatement()));
-
-            csvList.add(new String[] {report.getTitle(), new SimpleDateFormat("dd.MM.yyyy hh:mm").format(calendar.getTime()), report.getStatement()});
-            
-            node2 = document.createElement("table");
-            node1.appendChild(node2);
-            document.appendChild(node1);
-
-            jdbcConnection = DatabaseUtils.getDatabaseConnection(report.getDataSource());
-            ResultSet resultSet = DatabaseUtils.getResultSet(jdbcConnection, report.getStatement(), parameters);
-
-            for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++)
-                columnHeaders.add(new Label(columnHeaders.newChildId(), resultSet.getMetaData().getColumnName(i)));
-            
-            resultSet.beforeFirst();
-            while (resultSet.next()) {
-                
-                WebMarkupContainer parent = new WebMarkupContainer(reportRows.newChildId());
-                parent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(resultSet.getRow() - 1))));
-                reportRows.add(parent);
-                RepeatingView columnValues = new RepeatingView("column-values");
-                parent.add(columnValues);
-                
-                Node rowNode = document.createElement("row");
-                
-                List<String> columnList = new ArrayList<String>();
-                
-                for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-                    columnValues.add(new WebMarkupContainer(columnValues.newChildId()).add(new Label("column-value", resultSet.getString(i))));
-                    columnList.add(resultSet.getString(i));
-                    Element columnNode = document.createElement("column");
-                    columnNode.setAttribute("name", resultSet.getMetaData().getColumnName(i));
-                    rowNode.appendChild(columnNode);
-                    columnNode.appendChild(document.createTextNode(resultSet.getString(i)));
-                }
-                node2.appendChild(rowNode);
-
-                csvList.add(columnList.toArray(new String[0]));
-            }
-            resultSet.close();
-
-            addOrReplace(new Link<Object>("table-download-xml") {
+            add(new Link<Object>("table-download-xml") {
                 
                 private static final long serialVersionUID = 1L;
 
@@ -196,7 +132,7 @@ public class DisplayReportTablePanel extends Panel {
                                 TransformerFactory
                                     .newInstance()
                                     .newTransformer()
-                                    .transform(new DOMSource(document), new StreamResult(writer));
+                                    .transform(new DOMSource(generateXMLDocument()), new StreamResult(writer));
                                 
                                 wr = (WebResponse) requestCycle.getResponse();
                                 wr.setContentType("text/xml");
@@ -222,7 +158,7 @@ public class DisplayReportTablePanel extends Panel {
             .add(new TooltipBehaviour("dashboard.report.reporttable.", "xml.downloadlink"))
             );
 
-            addOrReplace(new Link<Object>("table-download-csv") {
+            add(new Link<Object>("table-download-csv") {
                 
                 private static final long serialVersionUID = 1L;
 
@@ -241,7 +177,7 @@ public class DisplayReportTablePanel extends Panel {
                         
                                 OutputStream os = wr.getOutputStream();
                                 CsvWriter csvWriter = new CsvWriter(new BufferedWriter(new OutputStreamWriter(os)), ';');
-                                for (String[] row : csvList)
+                                for (String[] row : generateCSVDocument())
                                     csvWriter.writeRecord(row);
                                 csvWriter.close();
                                 os.close();
@@ -262,24 +198,201 @@ public class DisplayReportTablePanel extends Panel {
             .add(new TooltipBehaviour("dashboard.report.reporttable.", "csv.downloadlink"))
             );
 
-            addOrReplace(new Image("table-print-image", ImageManager.IMAGE_DASHBOARD_REPORT_PRINT)
+            add(new Image("table-print-image", ImageManager.IMAGE_DASHBOARD_REPORT_PRINT)
             .add(new ImageSizeBehaviour())
             .add(new TooltipBehaviour("dashboard.report.reporttable.", "table.printbutton")));
 
-            addOrReplace(new Label("error-message", "").setVisible(false));
-            addOrReplace(new Label("error-reason", "").setVisible(false));
+            add(new AjaxFallbackLink<Object>("prev") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    offset -= pagesize;
+                    renderTable();
+                    target.addComponent(getPanel());
+                }
+                
+                @Override
+                public boolean isVisible() {
+                    return (offset != 0);
+                }
+            }
+            .add(new Image("prevImg", ImageManager.IMAGE_COMMON_BACK)
+            .add(new ImageSizeBehaviour("vertical-align: middle;"))
+            .add(new TooltipBehaviour("dashboard.report.reporttable.", "table.previous")))
+            );
+
+            add(new AjaxFallbackLink<Object>("next") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+
+                    offset += pagesize;
+                    renderTable();
+                    target.addComponent(getPanel());
+                }
+
+                @Override
+                public boolean isVisible() {
+                    return (!(total - offset <= pagesize));
+                }
+            }
+            .add(new Image("nextImg", ImageManager.IMAGE_COMMON_FORWARD)
+            .add(new ImageSizeBehaviour("vertical-align: middle;"))
+            .add(new TooltipBehaviour("dashboard.report.reporttable.", "table.next")))
+            );
+
+            add(new Label("viewport", new StringResourceModel("dashboard.report.reporttable.pagination.text", DisplayReportTablePanel.this, null, 
+                    new Object[]{"dummy"}) {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected Object[] getParameters() {
+                    return new Object[] {Math.min(offset + 1, total),
+                            Math.min(offset + pagesize, total),
+                            total};
+                }
+            }));
+
+            RepeatingView columnHeaders = new RepeatingView("column-headers"); 
+            add(columnHeaders);
+            add(new RepeatingView("report-rows"));
+            
+            pagesize = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).getReportTablePagesize();
+            
+            jdbcConnection = DatabaseUtils.getDatabaseConnection(report.getDataSource());
+            ResultSet resultSet = DatabaseUtils.getResultSet(jdbcConnection, report.getStatement(), parameters);
+            resultSet.last();
+            total = resultSet.getRow();           
+            data = new ArrayList<ArrayList<String>>(total);
+
+            headers = new ArrayList<String>(resultSet.getMetaData().getColumnCount()); 
+            for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+                headers.add(resultSet.getMetaData().getColumnName(i));
+                columnHeaders.add(new Label(columnHeaders.newChildId(), resultSet.getMetaData().getColumnName(i)));
+            }
+            
+            resultSet.first();
+            if (!(total <= 0))
+                while (!resultSet.isAfterLast()) {
+                    ArrayList<String> row = new ArrayList<String>(columnHeaders.size());               
+                    for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++)  
+                        row.add(resultSet.getString(i));
+                    data.add(row);
+                    resultSet.next();
+                }
+            resultSet.close();
+
+            renderTable();
+            
+            add(new Label("error-message", "").setVisible(false));
+            add(new Label("error-reason", "").setVisible(false));
         } catch (Exception e) {
             log.error("Exception: " + e.getMessage());
-            addOrReplace(((DynamicDisplayPage) this.getPage()).new PlaceholderLink("table-download-xml"));
-            addOrReplace(((DynamicDisplayPage) this.getPage()).new PlaceholderLink("table-download-csv"));
-            addOrReplace(new Image("table-print-image"));
-            addOrReplace(new Label("error-message", new ResourceModel("dashboard.report.reporttable.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
-            addOrReplace(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
+            add(new Label("error-message", new ResourceModel("dashboard.report.reporttable.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
+            add(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
+            log.debug(getClass() + ": ", e);
         } finally {
             try {
                 jdbcConnection.close();
             } catch (Exception ignore) {
             }
         }
-    }    
+    }
+    
+    private void renderTable() {
+        RepeatingView reportRows = new RepeatingView("report-rows");
+        addOrReplace(reportRows);
+
+        int rscount = offset;
+        while (rscount <= (offset + pagesize) && (rscount < data.size())) {
+
+            WebMarkupContainer parent = new WebMarkupContainer(reportRows.newChildId());
+            parent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(rscount - 1))));
+            reportRows.add(parent);
+            RepeatingView columnValues = new RepeatingView("column-values");
+            parent.add(columnValues);
+            
+            ArrayList<String> row = data.get(rscount);
+            for (int i = 0; i < row.size(); i++) 
+                columnValues.add(new WebMarkupContainer(columnValues.newChildId()).add(new Label("column-value", row.get(i))));
+            rscount++;
+        }        
+    }
+    
+    private Panel getPanel() {
+        return this;
+    }
+    
+    private Document generateXMLDocument() {
+        
+        Document document;
+        try {
+            document = DocumentBuilderFactory
+            .newInstance()
+            .newDocumentBuilder()
+            .newDocument();
+        } catch (ParserConfigurationException e) {
+            log.error("Exception: " + e.getMessage());
+            log.debug(getClass() + ": ", e);
+            return null;
+        }
+
+        Node node1 = document.createElement("report");
+        Node node2 = document.createElement("header");
+        node1.appendChild(node2);        
+    
+        Node node3 = document.createElement("title");
+        node2.appendChild(node3);
+        node3.appendChild(document.createTextNode(report.getTitle()));
+        
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(report.getCreated());
+        node3 = document.createElement("created");
+        node2.appendChild(node3);
+        node3.appendChild(document.createTextNode(new SimpleDateFormat("dd.MM.yyyy hh:mm").format(calendar.getTime())));
+    
+        node3 = document.createElement("statement");
+        node2.appendChild(node3);
+        node3.appendChild(document.createTextNode(report.getStatement()));
+    
+        node2 = document.createElement("table");
+        node1.appendChild(node2);
+        document.appendChild(node1);
+    
+        for (ArrayList<String> row : data) {       
+            Node rowNode = document.createElement("row");
+            for (int i = 0; i < row.size(); i++) {
+                Element columnNode = document.createElement("column");
+                columnNode.setAttribute("name", headers.get(i));
+                rowNode.appendChild(columnNode);
+                columnNode.appendChild(document.createTextNode(row.get(i)));        
+            }
+            node2.appendChild(rowNode);
+        }
+        return document;
+    }
+
+    private List<String[]> generateCSVDocument() {
+    
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(report.getCreated());
+        final List<String[]> csvList = new ArrayList<String[]>();
+        csvList.add(new String[] {report.getTitle(), new SimpleDateFormat("dd.MM.yyyy hh:mm").format(calendar.getTime()), report.getStatement()});
+
+        if (data.size() > 0) {
+            List<String> columnList = new ArrayList<String>(data.get(0).size());
+            for (ArrayList<String> row : data) {
+                columnList.clear();
+                for (int i = 0; i < row.size(); i++) 
+                    columnList.add(row.get(i));
+                csvList.add(columnList.toArray(new String[0]));
+            }
+        }
+        return csvList;
+    }
 }

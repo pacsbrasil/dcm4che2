@@ -91,6 +91,8 @@ public class DashboardService extends ServiceMBeanSupport {
 
     private String reportFilename = "";
     private String groupFilename = "";
+
+    private int reportTablePagesize;
     
     public void setDomainName(String domainName) {
         this.domainName = domainName;
@@ -148,6 +150,14 @@ public class DashboardService extends ServiceMBeanSupport {
         return groupFilename;
     }
 
+    public int getReportTablePagesize() {
+        return reportTablePagesize;
+    }
+    
+    public void setReportTablePagesize(int reportTablePagesize) {
+        this.reportTablePagesize = reportTablePagesize;
+    }
+    
     public String[] listAllFileSystemGroups() throws MalformedObjectNameException, NullPointerException {
         return this.groupList;
     }

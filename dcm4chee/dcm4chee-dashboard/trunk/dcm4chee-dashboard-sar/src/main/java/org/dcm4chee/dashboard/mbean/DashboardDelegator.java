@@ -185,5 +185,11 @@ public final class DashboardDelegator {
                         "listQueueAttributes", 
                         new Object[] { queueName }, 
                         new String[] { java.lang.String.class.getName() });
-    }  
+    }
+    
+    public int getReportTablePagesize() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
+        return (Integer) server.getAttribute(
+                        this.objectName,
+                        "reportTablePagesize");
+    }
 }

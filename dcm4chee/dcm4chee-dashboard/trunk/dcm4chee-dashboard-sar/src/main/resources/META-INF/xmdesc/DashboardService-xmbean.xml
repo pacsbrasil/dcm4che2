@@ -87,6 +87,16 @@ Java;Version;java.version</value>
         	<value>dashboard.reports</value>
 		</descriptors>
     </attribute>
+    <attribute access="read-write" getMethod="getReportTablePagesize" setMethod="setReportTablePagesize">
+        <description>
+            Size of the table page (number of rows) for the pagination of the report result table
+        </description>
+        <name>reportTablePagesize</name>
+        <type>int</type>
+        <descriptors>
+            <value>20</value>
+        </descriptors>
+    </attribute>   
    <operation>
       <description>MBean Operation.</description>
       <name>listAllFileSystemGroups</name>

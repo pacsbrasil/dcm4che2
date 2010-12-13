@@ -71,7 +71,7 @@ public class DatabaseUtils {
         if (parameters == null)
             resultSet = 
                 jdbcConnection
-                .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
+                .createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)
                 .executeQuery(statement);
         else
             resultSet = 
