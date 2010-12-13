@@ -128,6 +128,12 @@ public class DcmImageReader extends ImageReader {
 
     private String pmi = null;
 
+    private boolean clamp;
+
+    private int mask;
+
+    private int sign;
+
     private boolean ybr2rgb = false;
 
     private ColorModelParam cmParam;
@@ -260,6 +266,9 @@ public class DcmImageReader extends ImageReader {
             throw new IOException("" + alloc + " Bits Allocated not supported!");
         }
         this.stored = theDataset.getInt(Tags.BitsStored, alloc);
+        this.mask = -1 >>> (32 - stored);
+        this.sign = (theDataset.getInt(Tags.PixelRepresentation, 0) != 0)
+                    ? -1 << (stored - 1) : 0;
         this.width = theDataset.getInt(Tags.Columns, 0);
         this.height = theDataset.getInt(Tags.Rows, 0);
         this.samplesPerPixel = theDataset.getInt(Tags.SamplesPerPixel, 1);
@@ -276,6 +285,7 @@ public class DcmImageReader extends ImageReader {
             String ts = getTransferSyntaxUID();
             this.ybr2rgb = ts.equals(UIDs.JPEGBaseline)
                     || ts.equals(UIDs.JPEGExtended);
+            this.clamp = ybr2rgb && sign == 0 && alloc == 16 && stored < 12;
             this.itemParser = new ItemParser(theParser, numberOfFrames, ts);
             return;
         }
@@ -513,25 +523,20 @@ public class DcmImageReader extends ImageReader {
             DcmImageReadParam readParam, final boolean autoWindowing,
             final WritableRaster raster, DataBuffer db) {
         byte[] data = ((DataBufferByte) db).getData();
-        final int mask = -1 >>> (32 - stored);
+        int mask = this.mask;
+        int sign = this.sign;
         if (!autoWindowing) {
             for (int i = 0; i < data.length; i++)
                 data[i] &= mask;
             return bi;
         }
-        final int sign = theDataset.getInt(Tags.PixelRepresentation, 0) == 0 ? 0
-                : ~mask;
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
         int val;
-        int signBit = 1 << (stored - 1);
         if (readParam.isMaskPixelData()) {
             for (int i = 0; i < data.length; i++) {
-                data[i] &= mask;
-                // The extra &= is required because the one above is on SHORT
-                // data type not int.
-                val = (data[i] & mask);
-                if ((val & signBit) != 0)
+                data[i] = (byte) (val = data[i] & mask);
+                if ((val & sign) != 0)
                     val |= sign;
                 if (val < min)
                     min = val;
@@ -540,8 +545,8 @@ public class DcmImageReader extends ImageReader {
             }
         } else {
             for (int i = 0; i < data.length; i++) {
-                val = (data[i] & mask);
-                if ((val & signBit) == signBit)
+                val = data[i] & mask;
+                if ((val & sign) != 0)
                     val |= sign;
                 if (val < min)
                     min = val;
@@ -573,25 +578,34 @@ public class DcmImageReader extends ImageReader {
             DcmImageReadParam readParam, final boolean autoWindowing,
             final WritableRaster raster, DataBuffer db) {
         short[] data = ((DataBufferUShort) db).getData();
-        final int mask = -1 >>> (32 - stored);
+        int mask = this.mask;
+        int sign = this.sign;
         if (!autoWindowing) {
-            for (int i = 0; i < data.length; i++)
-                data[i] &= mask;
+            if (clamp)
+                for (int i = 0; i < data.length; i++)
+                    data[i] = (short) Math.min(data[i] & 0xffff, mask);
+            else
+                for (int i = 0; i < data.length; i++)
+                    data[i] &= mask;
             return bi;
         }
-        final int sign = theDataset.getInt(Tags.PixelRepresentation, 0) == 0 ? 0
-                : ~mask;
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
         int val;
-        int signBit = 1 << (stored - 1);
-        if (readParam.isMaskPixelData()) {
+        if (clamp) {
             for (int i = 0; i < data.length; i++) {
-                data[i] &= mask;
-                // The extra &= is required because the one above is on SHORT
-                // data type not int.
-                val = (data[i] & mask);
-                if ((val & signBit) != 0)
+                data[i] = (short) (val = Math.min(data[i] & 0xffff, mask));
+                if ((val & sign) != 0)
+                    val |= sign;
+                if (val < min)
+                    min = val;
+                if (val > max)
+                    max = val;
+            }
+        } else if (readParam.isMaskPixelData()) {
+            for (int i = 0; i < data.length; i++) {
+                data[i] = (short) (val = data[i] & mask);
+                if ((val & sign) != 0)
                     val |= sign;
                 if (val < min)
                     min = val;
@@ -600,8 +614,8 @@ public class DcmImageReader extends ImageReader {
             }
         } else {
             for (int i = 0; i < data.length; i++) {
-                val = (data[i] & mask);
-                if ((val & signBit) == signBit)
+                val = data[i] & mask;
+                if ((val & sign) != 0)
                     val |= sign;
                 if (val < min)
                     min = val;
