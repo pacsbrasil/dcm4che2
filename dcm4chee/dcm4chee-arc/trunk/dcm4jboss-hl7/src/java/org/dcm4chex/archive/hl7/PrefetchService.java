@@ -92,6 +92,7 @@ import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TemplatesDelegate;
+import org.dcm4chex.archive.util.ContentHandlerAdapter;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;

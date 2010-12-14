@@ -40,13 +40,17 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.rmi.RemoteException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
@@ -61,6 +65,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
@@ -226,7 +231,75 @@ public abstract class ContentManagerBean implements SessionBean {
     public Dataset getStudyByIUID(String studyIUID) throws FinderException {
         return studyHome.findByStudyIuid(studyIUID).getAttributes(true);
     }
+
+    /**
+     * get Dataset objects for 'prior' studies of patient, referenced by current study IUID.
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public Set<Dataset> getPriorInfos(String studyIUID, boolean instanceLevel, int minAvail, Long createdAfter, String[] retrAETs, String[] modalities) throws FinderException {
+        PatientLocal pat = studyHome.findByStudyIuid(studyIUID).getPatient();
+        Dataset dsPat = pat.getAttributes(true);
+        Collection seriess = seriesHome.listPriorOfPatient(pat, studyIUID, 
+                createdAfter == null ? null : new Timestamp(createdAfter), 
+                minAvail, modalities);
+        long studyPk = -1;
+        SeriesLocal series;
+        HashSet<Dataset> infos = new HashSet<Dataset>();
+        Dataset dsStudy = null, dsSeries, info;
+        for (Iterator<SeriesLocal> itSeries = seriess.iterator(); itSeries.hasNext() ; ) {
+            series = itSeries.next();
+            if ( !isRetrieveableFrom(series.getRetrieveAETs(), retrAETs))
+                continue;
+            dsSeries = series.getAttributes(true);
+            if (studyPk != series.getStudy().getPk()) {
+                dsStudy = series.getStudy().getAttributes(true);
+                studyPk = series.getStudy().getPk();
+            }
+            if (instanceLevel) {
+                for (Iterator<InstanceLocal> itInst = series.getInstances().iterator(); itInst.hasNext() ; ) {
+                    info = itInst.next().getAttributes(true);
+                    info.putAll(dsSeries);
+                    info.putAll(dsStudy);
+                    info.putAll(dsPat);
+                    infos.add(info);
+
+                }
+            } else {
+                info = dsSeries;
+                info.putAll(dsStudy);
+                info.putAll(dsPat);
+                infos.add(info);
+            }
+        }
+        return infos;
+    }
+
+    private boolean isRetrieveableFrom(String retrieveAETs, String[] retrAETs) {
+        if (retrAETs == null)
+            return true;
+        if (retrieveAETs == null || retrieveAETs.length() < 1)
+            return false;
+        String[] aets = StringUtils.split(retrieveAETs, '\\');
+        for (int i = 0 ; i < aets.length ; i++) {
+            for (int j = 0 ; j < retrAETs.length ; j++) {
+                if (retrAETs[j].equals(aets[i]))
+                    return true;
+            }
+        }
+        return false;
+    }
     
+    private boolean matchModality(String mod, String[] mods) {
+        if (mods == null)
+            return true;
+        for (int i = 0 ; i < mods.length ; i++) {
+            if (mods[i].equals(mod))
+                return true;
+        }
+        return false;
+    }
+
     /**
      * @ejb.interface-method
      * @ejb.transaction type="Required"
@@ -271,7 +344,7 @@ public abstract class ContentManagerBean implements SessionBean {
         InstanceLocal il = instanceHome.findBySopIuid(iuid);
 		return getInstanceInfo(il, supplement);
     }
-    
+
     /**
      * Get the Info of an instance.
      * <p>

@@ -38,8 +38,17 @@
 
 package org.dcm4chex.archive.dcm.movescu;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -48,23 +57,33 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.util.DTFormat;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DicomPriority;
 import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
+import org.dcm4chex.archive.ejb.interfaces.ContentManager;
+import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.mbean.TemplatesDelegate;
+import org.dcm4chex.archive.util.ContentHandlerAdapter;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.system.server.ServerConfigLocator;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -75,6 +94,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class ForwardService2 extends ServiceMBeanSupport {
 
     private static final String FORWARD_XSL = "forward.xsl";
+    private static final String FORWARD_PRIORS_XSL = "forward_priors.xsl";
 
     private static final String ALL = "ALL";
 
@@ -83,7 +103,7 @@ public class ForwardService2 extends ServiceMBeanSupport {
     private static final String[] EMPTY = {};
 
     private String[] forwardOnInstanceLevelFromAETs = EMPTY;
-
+    
     private final NotificationListener seriesStoredListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             ForwardService2.this.onSeriesStored((SeriesStored) notif.getUserData());
@@ -95,6 +115,9 @@ public class ForwardService2 extends ServiceMBeanSupport {
     private ObjectName moveScuServiceName;
 
     private TemplatesDelegate templates = new TemplatesDelegate(this);
+    private boolean logForwardPriorXML = true;
+
+    public static final SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
 
     public final String getConfigDir() {
         return templates.getConfigDir();
@@ -150,6 +173,14 @@ public class ForwardService2 extends ServiceMBeanSupport {
         return false;
     }
 
+    public boolean isLogForwardPriorXML() {
+        return logForwardPriorXML;
+    }
+
+    public void setLogForwardPriorXML(boolean logForwardPriorXML) {
+        this.logForwardPriorXML = logForwardPriorXML;
+    }
+
     protected void startService() throws Exception {
         server.addNotificationListener(storeScpServiceName,
                 seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
@@ -172,13 +203,14 @@ public class ForwardService2 extends ServiceMBeanSupport {
             try {
                 log.debug("Forward2 transform input:");
                 log.debug(ds);
-                xslt(cal, stored.getSourceAET(), stored.getRetrieveAET(),
+                xslt(cal, stored.getSourceAET(), stored.getRetrieveAET(), null,
                         ds, tpl, new DefaultHandler(){
 
-                    public void startElement(String uri, String localName,
+                   public void startElement(String uri, String localName,
                             String qName, Attributes attrs) {
                         if (qName.equals("destination")) {
-                            scheduleMove(stored.getRetrieveAET(),
+                            if (attrs.getValue("includePrior") == null || !scheduleMoveWithPriors(stored, attrs, cal) ) {   
+                                scheduleMove(stored.getRetrieveAET(),
                                     attrs.getValue("aet"),
                                     toPriority(attrs.getValue("priority")),
                                     null,
@@ -186,14 +218,213 @@ public class ForwardService2 extends ServiceMBeanSupport {
                                     stored.getSeriesInstanceUID(),
                                     sopIUIDsOrNull(stored),
                                     toScheduledTime(cal, attrs.getValue("delay")));
+                            }
                         }
-                    }});
+                    }
+                });
             } catch (Exception e) {
                 log.error("Applying forwarding rules to " + stored + " fails:", e);
             }
         }
     }
 
+    private boolean scheduleMoveWithPriors(final SeriesStored stored, final Attributes attrs, final Calendar cal) {
+        log.info("scheduleMoveWithPriors! attrs:"+attrs);
+        String includePriors = attrs.getValue("includePrior");
+        Templates tpl = templates.getTemplatesForAET(
+                stored.getSourceAET(), FORWARD_PRIORS_XSL);
+        if (tpl == null) {
+            log.warn("Missing forward_priors.xsl! source AET:"+stored.getSourceAET()+" includePriors:"+includePriors);
+            return false;
+        }
+        Properties transformParams = toTransformParams(attrs);
+        long delay = toScheduledTime(cal, attrs.getValue("delay"));
+        try {
+            Set<Dataset> priors = findPriors(stored, attrs);
+            log.debug("priors found:"+priors.size());
+            if (priors.isEmpty()) {
+                log.info("No priors found to forward!");
+                return false;
+            }
+            Map<String, Map<String, Set<String>>> studies = getPriorsToForward(
+                    stored, cal, tpl, transformParams, priors);
+            
+            ensureSeriesStoredInForward(stored, studies);
+            String retrAET = stored.getRetrieveAET();
+            String destAET = attrs.getValue("aet");
+            int priority = toPriority(attrs.getValue("priority"));
+            Map<String, Set<String>> series;
+            String studyIUID;
+            for ( Entry<String, Map<String, Set<String>>> studyEntry : studies.entrySet()) {
+                studyIUID = studyEntry.getKey();
+                series = studyEntry.getValue();
+                if (series == null || series.isEmpty()) {
+                    scheduleMove(retrAET, destAET, priority, null, studyIUID, null, null, delay);
+                } else {
+                    for (Entry<String,Set<String>> seriesEntry : series.entrySet()) {
+                        scheduleMove(retrAET, destAET, priority, null, 
+                                studyIUID, seriesEntry.getKey(), sopIUIDsOrNull(seriesEntry.getValue()), delay);
+                    }
+                }
+            }
+            return true;
+        } catch (Exception x) {
+            log.error("Failed to schedule forward with priors!", x);
+            return false;
+        }
+    }
+
+    private String[] sopIUIDsOrNull(Set<String> instances) {
+        if (instances == null || instances.isEmpty()) {
+            return null;
+        }
+        return instances.toArray(new String[instances.size()]);
+    }
+
+    private Properties toTransformParams(final Attributes attrs) {
+        Properties transformParams = new Properties();
+        for (int i = 0, len=attrs.getLength() ; i < len ; i++) {
+            transformParams.setProperty(attrs.getQName(i), attrs.getValue(i));
+        }
+        return transformParams;
+    }
+
+    private void ensureSeriesStoredInForward(final SeriesStored stored,
+            final Map<String, Map<String, Set<String>>> studies) {
+        Map<String,Set<String>> series = studies.get(stored.getStudyInstanceUID());
+        if (series == null) {
+            log.debug("Study of SeriesStored not in forwardWithPriors! Add studyIUID:"+stored.getStudyInstanceUID());
+            series = new HashMap<String,Set<String>>();
+            studies.put(stored.getStudyInstanceUID(), series);
+            series.put(stored.getSeriesInstanceUID(), new HashSet<String>());
+        }
+        if (series.size() > 0) {
+            Set<String> instances = series.get(stored.getSeriesInstanceUID());
+            if (instances == null || instances.isEmpty()) {
+                String[] iuids = sopIUIDsOrNull(stored);
+                if (iuids != null && iuids.length > 0) {
+                    for (int i = 0 ; i < iuids.length ; i++) {
+                        instances.add(iuids[i]);
+                    }
+                }
+            }
+        } else {
+            log.debug("Study of SeriesStored has no series referenced! -> forward whole study!");
+        }
+    }
+
+    private Map<String, Map<String, Set<String>>> getPriorsToForward(
+            final SeriesStored stored, final Calendar cal, Templates tpl,
+            Properties transformParams, Set<Dataset> priors)
+            throws TransformerFactoryConfigurationError,
+            TransformerConfigurationException, SAXException, IOException {
+        final Map<String,Map<String,Set<String>>> studies = new HashMap<String,Map<String,Set<String>>>();
+
+        if (logForwardPriorXML ) {
+            FileOutputStream fos = null;
+            try {
+                File logFile = new File(ServerConfigLocator.locate().getServerLogDir(), 
+                        "forward_prior/"+new DTFormat().format(new Date())+".xml");
+                logFile.getParentFile().mkdirs();
+                TransformerHandler thLog = tf.newTransformerHandler();
+                fos = new FileOutputStream(logFile);
+                thLog.setResult(new StreamResult(fos));
+                transformPrior(stored, priors, thLog);
+                log.info("ForwardPrior XML logged in "+logFile);
+            } finally {
+                if (fos != null) {
+                    try {
+                        fos.close();
+                    } catch(Exception ignore) {}
+                }
+            }
+        }            
+
+        TransformerHandler th = prepareTransformHandler(cal, stored.getSourceAET(), stored.getRetrieveAET(), 
+                transformParams, tpl, new DefaultHandler() {
+                   public void startElement(String uri, String localName,
+                            String qName, Attributes attrs) {
+                        if (qName.equals("forward")) {
+                            add(studies, attrs);
+                        }
+                    }
+                });
+        transformPrior(stored, priors, th);
+        return studies;
+    }
+
+    private void transformPrior(final SeriesStored stored, Set<Dataset> priors,
+            TransformerHandler th) throws SAXException, IOException {
+        ContentHandlerAdapter cha = new ContentHandlerAdapter(th);
+        cha.forcedStartDocument();
+        cha.startElement("forward");
+        cha.startElement("seriesStored");
+        stored.getIAN().writeDataset2(cha, null, null, 64, null);
+        cha.endElement("seriesStored");
+        cha.startElement("priors");
+        for (Dataset ds : priors) {
+            ds.writeDataset2(cha, null, null, 64, null);
+        }
+        cha.endElement("priors");
+        cha.endElement("forward");
+        cha.forcedEndDocument();
+    }
+    
+    private Set<Dataset> findPriors(SeriesStored stored, Attributes attrs) {
+        boolean instanceLevel = "INSTANCE".equals(attrs.getValue("level"));
+        String avail = attrs.getValue("availability");
+        int minAvail = avail == null ? Availability.NEARLINE : Availability.toInt(avail);
+        String retrAETsVal = attrs.getValue("retrAETs");
+        String[] retrAETs = null;
+        if (retrAETsVal == null) {
+            retrAETs = new String[]{stored.getRetrieveAET()};
+        } else if (retrAETsVal.trim().length() > 0 && !NONE.equals(retrAETsVal)) {
+            retrAETs = StringUtils.split(retrAETsVal, '\\');
+        }
+        String modalities = attrs.getValue("modalities");
+        String notOlderThan = attrs.getValue("notOlderThan");
+        Long createdAfter = null;
+        if (notOlderThan != null) {
+            createdAfter = new Long(System.currentTimeMillis()-RetryIntervalls.parseInterval(notOlderThan));
+        }
+        try {
+            return getContentManager().getPriorInfos(stored.getStudyInstanceUID(), instanceLevel,
+                    minAvail, createdAfter, retrAETs, StringUtils.split(modalities, '\\'));
+        } catch (Exception x) {
+            log.error("Failed to get prior studies for seriesStored:"+stored,x);
+            return null;
+        }
+    }
+
+    private boolean add(Map<String,Map<String,Set<String>>> studies, Attributes attrs) {
+        String studyIUID = attrs.getValue("studyIUID");
+        if (studyIUID == null) {
+            log.warn("Missing studyIUID attribute in destination element of forward_priors.xsl! Ignored!");
+            return false;
+        }
+        Map<String,Set<String>> series = studies.get(studyIUID);
+        if (series == null) {
+            series = new HashMap<String,Set<String>>();
+            studies.put(studyIUID, series);
+        }
+        String seriesIUID = attrs.getValue("seriesIUID");
+        String iuid = attrs.getValue("iuid");
+        if (seriesIUID != null) {
+            Set<String> instances = series.get(seriesIUID);
+            if (instances == null) {
+                instances = new HashSet<String>();
+                series.put(seriesIUID, instances);
+            }
+            if (iuid != null) {
+                instances.add(iuid);
+            }
+        } else if (iuid != null) {
+            log.warn("forward_priors.xsl: Missing seriesIUID attribute (sop iuid:"+iuid+
+                    ")! SOP Instance UID ignored! -> Study Level");
+        }
+        return true;
+    }
+    
     private String[] sopIUIDsOrNull(SeriesStored seriesStored) {
         int numI = seriesStored.getNumberOfInstances();
         if (numI > 1 && !isForwardOnInstanceLevelFromAET(
@@ -228,11 +459,19 @@ public class ForwardService2 extends ServiceMBeanSupport {
         return ForwardingRules.afterBusinessHours(cal, s.substring(index+1));
     }
     
-    private static void xslt(Calendar cal, String sourceAET, String retrieveAET,
+    private static void xslt(Calendar cal, String sourceAET, String retrieveAET, Properties params,
             Dataset ds, Templates tpl, ContentHandler ch)
             throws TransformerConfigurationException, IOException {
-        SAXTransformerFactory tf = (SAXTransformerFactory)
-            TransformerFactory.newInstance();
+        TransformerHandler th = prepareTransformHandler(cal, sourceAET,
+                retrieveAET, params, tpl, ch);
+        ds.writeDataset2(th, null, null, 64, null);
+    }
+
+    private static TransformerHandler prepareTransformHandler(Calendar cal,
+            String sourceAET, String retrieveAET, Properties params,
+            Templates tpl, ContentHandler ch)
+            throws TransformerFactoryConfigurationError,
+            TransformerConfigurationException {
         TransformerHandler th = tf.newTransformerHandler(tpl);
         Transformer t = th.getTransformer();
         t.setParameter("source-aet", sourceAET);
@@ -242,8 +481,13 @@ public class ForwardService2 extends ServiceMBeanSupport {
         t.setParameter("date", new Integer(cal.get(Calendar.DAY_OF_MONTH)));
         t.setParameter("day", new Integer(cal.get(Calendar.DAY_OF_WEEK)-1));
         t.setParameter("hour", new Integer(cal.get(Calendar.HOUR_OF_DAY)));
+        if (params != null) {
+            for (Entry<?, ?> e :params.entrySet()) {
+                t.setParameter((String)e.getKey(), e.getValue());
+            }
+        }
         th.setResult(new SAXResult(ch));
-        ds.writeDataset2(th, null, null, 64, null);
+        return th;
     }
 
     private void scheduleMove(String retrieveAET, String destAET, int priority,
@@ -262,4 +506,12 @@ public class ForwardService2 extends ServiceMBeanSupport {
             log.error("Schedule Move failed:", e);
         }
     }
+    
+    private ContentManager getContentManager() throws Exception {
+        ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
+                .getFactory().lookup(ContentManagerHome.class,
+                        ContentManagerHome.JNDI_NAME);
+        return home.create();
+    }
+
 }

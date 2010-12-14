@@ -53,6 +53,22 @@
         <destination aet="NEURO_SURGERY"/>
       </xsl:if>
       
+      <!-- Forward Series with Requested Procedure Code '12345' to FWD_PRIOR with prior studies/series selected by forward_priors.xsl -->
+      <xsl:if test="attr[tag='00400275']/item/attr[@tag=00321064]='12345'">
+	      <destination aet="FWD_PRIOR" includePrior="true"/> 
+	      <!-- Attributes of destination element are available in forward_priors.xsl as xsl parameters!
+	        Default parameters for including prior studies:
+   				includePrior..Forward also prior studies of patient regarding forward-priors.xsl (can have any value as hint)
+   				level.........Use 'INSTANCE' to get header attributes for each prior instance instead of series.
+   				              (add SOP Instance UID (0008,0018) in forward-priors.xsl to get C-MOVE on instance level)
+   				notOlderThan..Use only studies that are created within given intervall (e.g.: 12m ;d..days, w..weeks, m..months)
+   				availability..Worst availability of studies that are used as priors. (default: NEARLINE)
+   				retrAETs......List of retrieve AETs separated with '\'. (default: retrieveAET of stored Series; NONE will disable this restriction)
+                modalities....List of modalities separated with '\'. Only applicable if includePrior is set. 
+                              (default: Disable restriction of modalities)
+	       -->
+      </xsl:if>
+      
     </destinations>
   </xsl:template>
 

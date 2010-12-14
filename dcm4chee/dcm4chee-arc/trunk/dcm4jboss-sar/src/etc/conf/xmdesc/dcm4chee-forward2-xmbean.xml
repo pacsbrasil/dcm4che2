@@ -60,6 +60,18 @@
          <value value="NONE"/>
       </descriptors>
    </attribute>
+   
+   <attribute access="read-write"
+      getMethod="isLogForwardPriorXML"
+      setMethod="setLogForwardPriorXML">
+      <description><![CDATA[Log XML data for selection of priors as file. (in &lt;log_dir&gt;/forward_prior)]]>
+      </description>
+      <name>LogForwardPriorXML</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getStoreScpServiceName"
       setMethod="setStoreScpServiceName">

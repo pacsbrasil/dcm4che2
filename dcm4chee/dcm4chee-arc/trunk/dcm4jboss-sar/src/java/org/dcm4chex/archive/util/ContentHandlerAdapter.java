@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chex.archive.hl7;
+package org.dcm4chex.archive.util;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -69,6 +69,12 @@ public class ContentHandlerAdapter implements ContentHandler {
     public void forcedEndDocument() throws SAXException {
         handler.endDocument();
     }
+ 
+    public void startDocument() throws SAXException {
+    }
+
+    public void endDocument() throws SAXException {
+    }
     
     public void startElement(String tag) throws SAXException {
         handler.startElement("", tag, tag, EMPTY_ATTR);
@@ -80,9 +86,6 @@ public class ContentHandlerAdapter implements ContentHandler {
     public void characters(char[] ch, int start, int length)
             throws SAXException {
         handler.characters(ch, start, length);
-    }
-
-    public void endDocument() throws SAXException {
     }
 
     public void endElement(String uri, String localName, String name)
@@ -110,9 +113,6 @@ public class ContentHandlerAdapter implements ContentHandler {
 
     public void skippedEntity(String name) throws SAXException {
         handler.skippedEntity(name);
-    }
-
-    public void startDocument() throws SAXException {
     }
 
     public void startElement(String uri, String localName, String name,

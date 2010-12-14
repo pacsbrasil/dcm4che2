@@ -41,8 +41,10 @@ package org.dcm4chex.archive.ejb.entity;
 
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -144,6 +146,9 @@ import org.dcm4chex.archive.util.Convert;
  * @jboss.query signature="int ejbSelectCountSeriesByUpdatedTime(int availability, java.sql.Timestamp updatedAfter, java.sql.Timestamp updatedBefore)"
  *              query="SELECT COUNT(s) FROM Series AS s WHERE s.availability = ?1 AND s.updatedTime BETWEEN ?2 AND ?3"
  * 
+ * @jboss.query signature="java.util.Collection ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"
+ *              dynamic="true" strategy="on-load" page-size="20"
+ *              eager-load-group="*"
  * 
  * @ejb.ejb-ref ejb-name="MPPS" view-type="local" ref-name="ejb/MPPS"
  * @ejb.ejb-ref ejb-name="SeriesRequest" view-type="local" ref-name="ejb/Request"
@@ -712,6 +717,58 @@ public abstract class SeriesBean implements EntityBean {
                                 updatedBefore));
     }
 
+    /**
+     * @ejb.select query="" transaction-type="Supports"
+     */
+    public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args)
+            throws FinderException;
+    
+    /**
+     * @ejb.home-method
+     */
+    public Collection ejbHomeListPriorOfPatient(PatientLocal pat, String ignoreStudyIUID, Timestamp createdAfter, int minAvail, 
+            String[] modalities) throws FinderException {
+        StringBuffer jbossQl = new StringBuffer(
+                "SELECT OBJECT(s) FROM Series s");
+        jbossQl.append(" WHERE s.study.patient = ?1");
+        ArrayList params = new ArrayList();
+        params.add(pat);
+        int idx = 2;
+        if (ignoreStudyIUID != null) {
+            jbossQl.append(" AND s.study.studyIuid <> ?").append(idx++);
+            params.add(ignoreStudyIUID);
+        }
+        if (createdAfter != null) {
+            jbossQl.append(" AND s.study.createdTime > ?").append(idx++);
+            params.add(createdAfter);
+        }
+        if (minAvail < Availability.UNAVAILABLE) {
+            jbossQl.append(" AND s.availability <= ?").append(idx++);
+            params.add(minAvail);
+        }
+        if (modalities != null && modalities.length > 0) {
+            jbossQl.append(" AND s.modality");
+            idx = addIN(jbossQl, params, idx, modalities);
+        }
+        log.debug("Execute JBossQL: " + jbossQl);
+        return ejbSelectGeneric(jbossQl.toString(), params.toArray());
+    }
+
+    private int addIN(StringBuffer jbossQl, List params, int idx, String[] values) {
+        params.add(values[0]);
+        if (values.length > 1) {
+            jbossQl.append(" IN ( ");
+            for (int i = 1; i < values.length; i++) {
+                jbossQl.append("?").append(idx++).append(", ");
+                params.add(values[i]);
+            }
+            jbossQl.append("?").append(idx++).append(")");
+        } else {
+            jbossQl.append(" = ?").append(idx++);
+        }
+        return idx;
+    }
+    
     /**
      * @ejb.interface-method
      */
