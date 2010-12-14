@@ -76,9 +76,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.PersonName;
-import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Status;
-import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
@@ -766,24 +764,21 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private void logCoercion(Dataset ds, Dataset coerced) {
     	if ( coerced.size() > 0 ) {
-    		TagDictionary tagDictionary = DictionaryFactory.getInstance().getDefaultTagDictionary();
     		StringBuilder sb = new StringBuilder();
     		for ( Iterator<DcmElement> i = coerced.iterator(); i.hasNext(); ) {
     			DcmElement coercedElement = i.next();
     			DcmElement originalElement = ds.get(coercedElement.tag());
     			if ( originalElement != null ) {
-	    			String originalValue = StringUtils.promptValue(originalElement.vr(),
-	    					originalElement.getByteBuffer(), 64);
-	    			String coercedValue = StringUtils.promptValue(coercedElement.vr(),
-	    					coercedElement.getByteBuffer(), 64);
-	    			if ( !originalValue.equals(coercedValue) ) {
-	    				if ( sb.length() > 0 ) sb.append("; ");
-	    				sb.append(tagDictionary.toString(originalElement.tag())).append(" [");
+    				String originalValue = originalElement.toString();
+    				String coercedValue = coercedElement.toString();
+    				if ( !originalValue.equals(coercedValue) ) {
+    					if ( sb.length() > 0 ) sb.append(";");
+    					sb.append(" [");
 						sb.append(originalValue);
 		    			sb.append("->");
 						sb.append(coercedValue);
 		    			sb.append("]");
-	    			}
+    				}
     			}
     		}
     		if ( sb.length() > 0 ) {
