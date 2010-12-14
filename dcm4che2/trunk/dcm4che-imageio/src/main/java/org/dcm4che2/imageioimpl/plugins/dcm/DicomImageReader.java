@@ -71,6 +71,7 @@ import javax.imageio.stream.ImageInputStream;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.image.ByteLookupTable;
 import org.dcm4che2.image.ColorModelFactory;
@@ -123,6 +124,8 @@ public class DicomImageReader extends ImageReader {
 
     private int allocated;
 
+    private int stored;
+
     private int dataType;
 
     private int samples;
@@ -142,6 +145,8 @@ public class DicomImageReader extends ImageReader {
     private int pixelDataLen;
 
     protected boolean compressed;
+
+    private boolean clampPixelValues;
 
     private DicomStreamMetaData streamMetaData;
 
@@ -286,6 +291,7 @@ public class DicomImageReader extends ImageReader {
         height = ds.getInt(Tag.Rows);
         frames = ds.getInt(Tag.NumberOfFrames);
         allocated = ds.getInt(Tag.BitsAllocated, 8);
+        stored = ds.getInt(Tag.BitsStored, allocated);
         banded = ds.getInt(Tag.PlanarConfiguration) != 0;
         dataType = allocated <= 8 ? DataBuffer.TYPE_BYTE
                 : DataBuffer.TYPE_USHORT;
@@ -311,6 +317,8 @@ public class DicomImageReader extends ImageReader {
                 log.debug("Transfer syntax for image is " + tsuid
                         + " with image reader class " + f.getClass());
                 f.adjustDatasetForTransferSyntax(ds, tsuid);
+                clampPixelValues = allocated == 16 && stored < 12
+                        && UID.JPEGExtended24.equals(tsuid);
             }
         }
     }
@@ -459,7 +467,10 @@ public class DicomImageReader extends ImageReader {
         if (compressed) {
             ImageReadParam param1 = reader.getDefaultReadParam();
             copyReadParam(param, param1);
-            return decompressRaster(imageIndex, param1);
+            Raster raster = decompressRaster(imageIndex, param1);
+            if (clampPixelValues)
+                clampPixelValues(raster);
+            return raster;
         }
         if( pmi.endsWith("422") || pmi.endsWith("420") ) {
             log.debug("Using a 422/420 partial component image reader.");
@@ -490,6 +501,14 @@ public class DicomImageReader extends ImageReader {
         return raster;
     }
     
+    private void clampPixelValues(Raster raster) {
+        int maxVal = -1 >>> (32 - stored);
+        short[] data = ((DataBufferUShort) raster.getDataBuffer()).getData();
+        for (int i = 0; i < data.length; i++)
+            if (data[i] > maxVal)
+                data[i] = (short) maxVal;
+    }
+
     /**
      * Reads the provided image as a buffered image. It is possible to read
      * image overlays by providing the 0x60000000 number associated with the
@@ -517,6 +536,8 @@ public class DicomImageReader extends ImageReader {
             ImageReadParam param1 = reader.getDefaultReadParam();
             copyReadParam(param, param1);
             bi = reader.read(0, param1);
+            if (clampPixelValues)
+                clampPixelValues(bi.getRaster());
             postDecompress();
             if (paletteColor && bi.getColorModel().getNumComponents() == 1) {
                 bi = new BufferedImage(ColorModelFactory.createColorModel(ds),
