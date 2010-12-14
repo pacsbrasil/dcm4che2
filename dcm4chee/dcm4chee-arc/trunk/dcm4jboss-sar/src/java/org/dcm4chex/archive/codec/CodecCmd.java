@@ -141,7 +141,7 @@ public abstract class CodecCmd {
             throw new IllegalArgumentException("bits allocated:"
                     + bitsAllocated);
         }
-        this.maxVal = 2 << (bitsStored - pixelRepresentation - 1);
+        this.maxVal = -1 >>> (32 - bitsStored + pixelRepresentation);
     }
 
     public static void setMaxConcurrentCodec(int maxConcurrentCodec) {
