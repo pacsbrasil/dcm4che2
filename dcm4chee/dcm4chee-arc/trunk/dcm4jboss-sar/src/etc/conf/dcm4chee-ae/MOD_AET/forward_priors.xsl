@@ -127,8 +127,10 @@
   <xsl:param name="hour"/>
 
   <xsl:template match="/forward">
-	<xsl:apply-templates select="seriesStored"/>
-	<xsl:apply-templates select="priors"/>
+	<forwards>
+		<xsl:apply-templates select="seriesStored"/>
+		<xsl:apply-templates select="priors"/>
+	</forwards>
   </xsl:template>
 
   <xsl:template match="seriesStored">
