@@ -582,8 +582,10 @@ public class DcmImageReader extends ImageReader {
         int sign = this.sign;
         if (!autoWindowing) {
             if (clamp)
-                for (int i = 0; i < data.length; i++)
-                    data[i] = (short) Math.min(data[i] & 0xffff, mask);
+                for (int i = 0; i < data.length; i++) {
+                    if ((data[i] & 0xffff) > mask)
+                        data[i] = (short) mask;
+                }
             else
                 for (int i = 0; i < data.length; i++)
                     data[i] &= mask;
@@ -594,7 +596,9 @@ public class DcmImageReader extends ImageReader {
         int val;
         if (clamp) {
             for (int i = 0; i < data.length; i++) {
-                data[i] = (short) (val = Math.min(data[i] & 0xffff, mask));
+                val = data[i] & 0xffff;
+                if (val > mask)
+                    data[i] = (short) (val = mask);
                 if ((val & sign) != 0)
                     val |= sign;
                 if (val < min)
