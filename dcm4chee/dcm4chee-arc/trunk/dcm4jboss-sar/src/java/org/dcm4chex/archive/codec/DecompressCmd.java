@@ -305,7 +305,7 @@ public class DecompressCmd extends CodecCmd {
             throws IOException {
         if (clampPixelValue)
             for (int i = off, end = off + len; i < end; i++) {
-                final int px = Math.min(data[i], maxVal);
+                final int px = Math.min(data[i] & 0xffff, maxVal);
                 out.write(px & 0xff);
                 out.write((px >>> 8) & 0xff);
             }
@@ -321,7 +321,7 @@ public class DecompressCmd extends CodecCmd {
             throws IOException {
         if (clampPixelValue)
             for (int i = off, end = off + len; i < end; i++) {
-                final int px = Math.min(data[i], maxVal);
+                final int px = Math.min(data[i] & 0xffff, maxVal);
                 out.write((px >>> 8) & 0xff);
                 out.write(px & 0xff);
             }
