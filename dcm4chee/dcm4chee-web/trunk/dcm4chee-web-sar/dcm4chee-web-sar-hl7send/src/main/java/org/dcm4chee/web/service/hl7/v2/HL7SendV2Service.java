@@ -40,11 +40,14 @@ package org.dcm4chee.web.service.hl7.v2;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
@@ -74,6 +77,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
@@ -95,9 +99,12 @@ import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXContentHandler;
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.system.server.ServerConfigLocator;
 import org.regenstrief.xhl7.HL7XMLLiterate;
 import org.regenstrief.xhl7.HL7XMLReader;
+import org.regenstrief.xhl7.HL7XMLWriter;
 import org.regenstrief.xhl7.MLLPDriver;
+import org.regenstrief.xhl7.XMLWriter;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -138,6 +145,9 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
     protected TemplatesDelegate templatesDelegate = new TemplatesDelegate(this);
     private String dcm2To14TplName;
     private Templates dcm2To14Tpl;
+    
+    private boolean logHL7Message;
+    private boolean logXMLHL7Message;
     
     private final NotificationListener mppsLinkedListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -259,6 +269,22 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         this.oneORMperSPS = oneORMperSPS;
     }
     
+    public boolean isLogHL7Message() {
+        return logHL7Message;
+    }
+
+    public void setLogHL7Message(boolean logHL7Message) {
+        this.logHL7Message = logHL7Message;
+    }
+
+    public boolean isLogXMLHL7Message() {
+        return logXMLHL7Message;
+    }
+
+    public void setLogXMLHL7Message(boolean logXMLHL7Message) {
+        this.logXMLHL7Message = logXMLHL7Message;
+    }
+
     public int getAcceptTimeout() {
         return acTimeout;
     }
@@ -305,6 +331,15 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         this.contentEditServiceName = contentEditServiceName;
     }
 
+    public final ObjectName getTemplatesServiceName() {
+        return templatesDelegate.getTemplatesServiceName();
+    }
+
+    public final void setTemplatesServiceName(ObjectName serviceName) {
+        templatesDelegate.setTemplatesServiceName(serviceName);
+    }
+
+    
     public final int getConcurrency() {
         return concurrency;
     }
@@ -321,12 +356,12 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         }
     }
 
-    protected void startService() throws Exception {
+    public void startService() throws Exception {
         jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(contentEditServiceName, mppsLinkedListener, MPPS_LINKED_FILTER, null);
     }
 
-    protected void stopService() throws Exception {
+    public void stopService() throws Exception {
         server.removeNotificationListener(contentEditServiceName, mppsLinkedListener, MPPS_LINKED_FILTER, null);
         jmsDelegate.stopListening(queueName);
     }
@@ -371,23 +406,82 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
     private void writeHL7Message(DicomObject attrs, Templates[] tpls, Map<String,String> parameter,
             String receiver, OutputStream os) 
         throws TransformerConfigurationException, TransformerFactoryConfigurationError, InstanceNotFoundException, MBeanException, ReflectionException, SAXException, IOException {
+        messageControlID++;
+        logHL7(attrs, parameter, receiver, tpls);
+        XMLWriter xmlWriter = new HL7XMLWriter(
+                new OutputStreamWriter(os, charsetName));
+        XSLTUtils.xslt(attrs, initTransformHandler(tpls, parameter, receiver), new SAXResult(xmlWriter.getContentHandler()));
+    }
+
+    private TransformerHandler[] initTransformHandler(Templates[] tpls,
+            Map<String, String> parameter, String receiver)
+            throws TransformerConfigurationException, SAXException, IOException {
         TransformerHandler[] thChain = XSLTUtils.toTransformerHandlerChain(tpls);
+        
         Transformer t = thChain[thChain.length-1].getTransformer();
-        t.setOutputProperty(OutputKeys.METHOD, "text");
+        t.setOutputProperty(OutputKeys.METHOD, "xml");
         t.setOutputProperty(OutputKeys.ENCODING, charsetName);
-        t.setParameter("messageControlID", String.valueOf(++messageControlID) );
-        t.setParameter("messageDateTime", tsFormat.format(new Date()));
+        t.setParameter("MessageControlID", String.valueOf(messageControlID) );
+        t.setParameter("MessageDateTime", tsFormat.format(new Date()));
         int pos = receiver.indexOf('^');
-        t.setParameter("receivingApplication", receiver.substring(0, pos++));
-        t.setParameter("receivingFacility", receiver.substring(pos));
-        t.setParameter("sendingApplication", sendingApplication);
-        t.setParameter("sendingFacility", sendingFacility);
+        t.setParameter("ReceivingApplication", receiver.substring(0, pos++));
+        t.setParameter("ReceivingFacility", receiver.substring(pos));
+        t.setParameter("SendingApplication", sendingApplication);
+        t.setParameter("SendingFacility", sendingFacility);
         if ( parameter != null) {
             for ( Map.Entry<String, String> e : parameter.entrySet()) {
                 t.setParameter(e.getKey(), e.getValue());
             }
         }
-        XSLTUtils.xslt(attrs, thChain, os);
+        return thChain;
+    }
+
+    private void logHL7(DicomObject attrs, Map<String,String> parameter, String receiver, Templates[] tpls) {
+        if (logXMLHL7Message) {
+            OutputStream osXml = null;
+            try {
+                if (tpls.length > 1) {
+                    XSLTUtils.dump(attrs, tpls[0], getLogfile(".dcm14.xml").getAbsolutePath(), false);
+                } else {
+                    XSLTUtils.dump(attrs, null, getLogfile(".dcm.xml").getAbsolutePath(), false);
+                }
+                osXml = new FileOutputStream(getLogfile(".xml"));
+                XSLTUtils.xslt(attrs, initTransformHandler(tpls, parameter, receiver), osXml);
+            } catch (Throwable ignore) {
+                log.warn("failed to log XML HL7 message!", ignore);
+            } finally {
+                close(osXml);
+            }
+        }
+        if (logHL7Message) {
+            OutputStream osHL7 = null;
+            try {
+                osHL7 = new FileOutputStream(getLogfile(".hl7"));
+                XMLWriter logWriter = new HL7XMLWriter(
+                    new OutputStreamWriter(osHL7, charsetName));
+                XSLTUtils.xslt(attrs, initTransformHandler(tpls, parameter, receiver), 
+                        new SAXResult(logWriter.getContentHandler()));
+            } catch (Throwable ignore) {
+                log.warn("failed to log HL7 message!", ignore);
+            } finally {
+                close(osHL7);
+            }
+        }
+    }
+
+    private void close(Closeable closable) {
+        if (closable != null) {
+            try {
+                closable.close();
+            } catch (Exception ignore) {}
+        }
+    }
+
+    private File getLogfile(String suffix) throws IOException {
+        File f = new File(ServerConfigLocator.locate().getServerLogDir(), "hl7send");
+        File logFile = new File(f,"HL7-"+messageControlID+suffix);
+        f.mkdirs();
+        return logFile;
     }
     
     private boolean sendDcmAsHL7Msg(DicomObject attrs, Map<String, String> parameter, String receiver, String msgTypeID) 
@@ -580,6 +674,8 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
 
     private void scheduleMPPS2ORM(MPPS mpps) throws Exception {
         DicomObject mppsAttrs = mpps.getAttributes();
+        DicomObject patAttrs = mpps.getPatient().getAttributes(); 
+        patAttrs.copyTo(mppsAttrs);
         DicomElement ssaSq = mppsAttrs.get(Tag.ScheduledStepAttributesSequence);
         log.info("ScheduledStepAttributesSequence:"+ssaSq);
         if (ssaSq == null || ssaSq.isEmpty()) {
@@ -601,7 +697,7 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
     }
     
     public void scheduleMPPS2ORM(DicomObject mppsAttrs) throws Exception {
-        log.info("schedule MPPS to ORM MEssage. mppsAttrs:"+mppsAttrs);
+        log.info("schedule MPPS to ORM Message. mppsAttrs:"+mppsAttrs);
         scheduleHL7Message(mppsAttrs, null, "mpps2orm");
     }
 

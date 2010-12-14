@@ -16,6 +16,7 @@
     <depends>dcm4chee.web:service=Queue,name=HL7SendV2</depends>
     <depends optional-attribute-name="TlsCfgServiceName">dcm4chee.web:service=TlsConfig</depends>
     <depends optional-attribute-name="ContentEditServiceName">dcm4chee.web:service=ContentEditService</depends>
+    <depends optional-attribute-name="TemplatesServiceName">dcm4chee.archive:service=Templates</depends>
 
   </mbean>
 </server>

@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
+import javax.xml.transform.Result;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -124,6 +125,12 @@ public class XSLTUtils {
         writer.write(attrs);
     }
     
+    public static void xslt(DicomObject attrs, TransformerHandler[] thChain, Result result) throws SAXException, IOException {
+        thChain[thChain.length-1].setResult(result);
+        SAXWriter writer = new SAXWriter(thChain[0],null);
+        writer.write(attrs);
+    }
+    
     public static void xslt(DicomObject attrs, TransformerHandler[] thChain,
             DicomObject out) throws SAXException, IOException {
         ContentHandlerAdapter cha = new ContentHandlerAdapter(out);
@@ -167,6 +174,6 @@ public class XSLTUtils {
             out.close();
         }
         
-    }    
+    }
 }
 

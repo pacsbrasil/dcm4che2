@@ -124,7 +124,30 @@
          <value value="2x1m,2x30m,24x1h,7x1d"/>
       </descriptors>
    </attribute>
-   
+ 
+   <attribute access="read-write"
+      getMethod="isLogHL7Message"
+      setMethod="setLogHL7Message">
+      <description><![CDATA[Log HL7 message as file. (in &lt;log_dir&gt;/hl7send)]]>
+      </description>
+      <name>LogHL7Message</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isLogXMLHL7Message"
+      setMethod="setLogXMLHL7Message">
+      <description><![CDATA[Log HL7 message as file. (in &lt;log_dir&gt;/hl7send)]]>
+      </description>
+      <name>LogXMLHL7Message</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+  
    <attribute access="read-write"
      getMethod="getAcceptTimeout"
      setMethod="setAcceptTimeout">
@@ -187,6 +210,14 @@
       <description>Used internally. Do NOT modify.
       </description>
       <name>ContentEditServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
    
