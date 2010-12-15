@@ -73,7 +73,7 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
     public ModuleSelectorPanel(String id) {
         super(id);
 
-        add(new AjaxFallbackLink<Object>("logout"){
+        add(new AjaxFallbackLink<Object>("logout") {
             
             private static final long serialVersionUID = 1L;
             

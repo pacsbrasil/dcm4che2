@@ -44,6 +44,7 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
+import org.dcm4chee.usr.ui.usermanagement.ChangePasswordPanel;
 import org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel;
 import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
@@ -75,8 +76,10 @@ public class MainPage extends SecureWicketPage {
         selectorPanel.addModule(ModalityWorklistPanel.class);
         selectorPanel.addModule(DashboardPanel.class);
         selectorPanel.addModule(RoleListPanel.class, null);
-        if (((SecureSession) RequestCycle.get().getSession()).getManageUsers())
+        if (((SecureSession) RequestCycle.get().getSession()).getManageUsers()) {
             selectorPanel.addModule(UserListPanel.class, null);
+            selectorPanel.addModule(ChangePasswordPanel.class, null);
+        }
 
         try {
             Properties properties = new Properties();

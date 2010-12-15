@@ -64,5 +64,5 @@ public class AuthenticatedWebSession extends SecureSession {
 
     public org.dcm4chee.web.war.worklist.modality.ViewPort getMwViewPort() {
         return mwViewport;
-    }
+    }    
 }

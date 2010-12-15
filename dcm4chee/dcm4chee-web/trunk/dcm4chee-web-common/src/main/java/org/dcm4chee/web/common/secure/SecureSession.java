@@ -67,9 +67,8 @@ public class SecureSession extends WaspSession {
     private List<String> dicomRoles;
     private boolean webStudyPermissions;
     private StudyPermissionRight studyPermissionRight;
-
     private boolean manageUsers;
-
+    
     public SecureSession(WaspApplication application, Request request) {
         super(application, request);
     }

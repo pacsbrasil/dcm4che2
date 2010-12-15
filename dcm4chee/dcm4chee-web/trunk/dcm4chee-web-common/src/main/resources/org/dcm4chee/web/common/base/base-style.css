@@ -1,5 +1,5 @@
 /*
-	Base CSS
+    Base CSS
 */
 
 body { font-family: Verdana, sans-serif; font-size: 12px; }
@@ -48,19 +48,26 @@ img.hourglass { float: left; margin-left: 20%; }
 div.actions { text-align: right; }
 
 /*
-	table.search-table
+    table.search-table
 */
 table.search-table { border: thin; border-width: 1px; border-style: solid; border-color: #000000; width:100%; white-space: nowrap; background-color: #FFFFFF; }
-table.search-table th.search-table { background-color: #446666; color: white; width: 20px; height: 20px; text-align: left; }
-table.search-table tr.search-table { vertical-align: bottom; }
+table.search-table th { background-color: #446666; color: white; width: 20px; height: 20px; text-align: left; }
+table.search-table tr { vertical-align: bottom; }
 table.search-table tr.search-table-footer { height: 30px; }
-table.search-table tr.search-table-extended { background-color: #A0D8C4; border-style: none; }
+table.search-table tr.search-table-extended { background-color: #A0D8C4; }
 table.search-table span.toggle-text { vertical-align: middle; }
 table.search-table div.search-header { text-decoration: underline; }
-table.search-table .yui-skin-sam .yui-calcontainer.withtitle { width: 14em; }
+
+/* Rounded edges */
+/*
+table.search-table th.lo { background: url("images/lo.gif") #446666 top left; border-width: 0px; border-style: none; }
+table.search-table th.ro { background: url("images/ro.gif") #446666 top right; border-width: 0px; border-style: none; }
+table.search-table td.lu { background: url("images/lu.gif") bottom left; border-width: 0px; border-style: none; }
+table.search-table td.ru { background: url("images/ru.gif") bottom right; border-width: 0px; border-style: none; }
+*/
 
 /*
-	table.content-table
+    table.content-table
 */
 table.content-table { border: thin; border-width: 1px; border-style: solid; border-color: #000000; border-collapse: collapse; empty-cells: show; width:100%; white-space: nowrap; background-color: #FFFFFF; }
 table.content-table th { background-color: #446666; color: #FFFFFF; width: 20px; height: 30px; text-align: left; }
@@ -71,10 +78,10 @@ table.content-table tr td.expand { width: 21px; border: thin; border-left-width:
 table.content-table tr td.action { text-align: center; }
 
 /*
-	table.folded-table
+    table.folded-table
 */
 table.folded-table { border: thin; border-width: 1px; border-style: solid; border-color: #AAAAAA; border-collapse: collapse; empty-cells: show; width:100%; white-space: nowrap; background-color: #FFFFFF; }
-table.folded-table tr {	height: 25px; width: auto; border: thin; border-width: 1px 1px 0px; border-style: solid; border-color: #AAAAAA; }
+table.folded-table tr { height: 25px; width: auto; border: thin; border-width: 1px 1px 0px; border-style: solid; border-color: #AAAAAA; }
 table.folded-table tr.study td.expand, 
 table.folded-table tr.pps td.expand, 
 table.folded-table tr.series td.expand, 
@@ -83,7 +90,7 @@ table.folded-table tr.patient td.expand { width: 21px; border: thin; border-left
 table.folded-table tr.file { background-color: #446666; color: #FFFFFF; }
 table.folded-table tr.instance { background-color: #54B291; }
 table.folded-table tr.series { background-color: #A0D8C4; }
-table.folded-table tr.pps { background-color: #D1FEF6; } 	
+table.folded-table tr.pps { background-color: #D1FEF6; }    
 table.folded-table tr.study { background-color: #E1E0DE; }
 table.folded-table tr.patient { background-color : #FFFFFF; } 
 
@@ -92,15 +99,13 @@ table.dicomobject { background: #FFFFFF; width: 100%; }
 
 .invalid { background: #EEBBAA; }
 
-.msgWindow { background-color: #A0D8C4; width: 100% ; height: 100%; text-align: center; }
-.msgWindow-content { position: absolute; left: 5%; top: 20px; height: 63%; width: 90%; text-align: center; }
-.msgWindow-msg { position: absolute; left: 5%; top: 25%; width: 90%; }
-.msgWindow-hourglass { position: absolute; left: 5%; top: 60%; margin-left: 40%; }
-.msgWindow-remark { position: absolute; left: 5%; top: 60%; width: 90%; color: #FF0000; }
-.msgWindow-button { position: absolute; left: 25%; top: 80%; width: 50%; }
+.msgWindow { background-color: #A0D8C4; width: 100% ; height: 100%; text-align: center;}
+.msgWindow_content {height: 63%; width: 90%;position: absolute; left: 5%; top: 40px;}
+.msgWindow-msg { width:90%; position: absolute; left: 5%; top: 45%;}
+.msgWindow-button { width: 50%; position: absolute; left: 25%; top: 80%; }
 
 /*
-	div.edit-content
+    div.edit-content
 */
 div.edit-title {margin-bottom: 9px;}
 div.edit-content div.edit-table-panel { width: 100%; }
@@ -108,12 +113,3 @@ div.edit-table-panel div.edit-table-row { float: left; width: 100%; background: 
 div.edit-table-panel .edit-desc { border: none; float: left; text-align: right; vertical-align: middle; margin: 2px 6px 0px; width: 50%; }
 div.edit-table-panel .edit-value { border: 1px solid; float: left; text-align: left; vertical-align: middle; margin: 2px 6px 0px; width: auto; }
 div.edit-buttons { background: none #AAAAAA; width: 100%; height: 20px; text-align: center; vertical-align: middle; float: left;}
-div.edit-table-panel .edit-preset { width: 100%; }
-
-/*
-	Patient Field
-*/	
-div.patientTF {width:190px}
-div.patient_fn input.patient_full{width:180px}
-div.patient_fn input.patient_fn{width:90px}
-div.patient_gn input{width:90px}
