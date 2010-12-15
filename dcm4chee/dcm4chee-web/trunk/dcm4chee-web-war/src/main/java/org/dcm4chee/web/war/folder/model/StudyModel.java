@@ -231,6 +231,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
         if (getPk() == -1) {
             s = dao.addStudy(getPatient().getPk(), dicomObject, ((SecureSession) RequestCycle.get().getSession()).getDicomRoles());
             setPk(s.getPk());
+            this.getPatient().getStudies().add(this);
         } else {
             s = dao.updateStudy(getPk(), dicomObject);
         }

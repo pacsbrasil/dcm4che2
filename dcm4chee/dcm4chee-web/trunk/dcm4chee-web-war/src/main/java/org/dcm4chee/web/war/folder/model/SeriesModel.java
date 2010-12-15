@@ -225,6 +225,12 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
         if ( getPk() == -1) {
             s = dao.addSeries(getPPS().getStudy().getPk(), dicomObject);
             setPk(s.getPk());
+            PPSModel ppsm = this.getPPS();
+            if (ppsm != null) {
+                ppsm.getStudy().refresh();
+                ppsm.getStudy().getPPSs().add(ppsm);
+            }
+            
         }  else {
             s = dao.updateSeries(getPk(), dicomObject);
         }
