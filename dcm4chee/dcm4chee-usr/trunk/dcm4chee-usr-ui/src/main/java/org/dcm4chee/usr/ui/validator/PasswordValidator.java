@@ -44,6 +44,7 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.validation.AbstractFormValidator;
 import org.dcm4chee.usr.entity.User;
+import org.dcm4chee.web.common.util.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,11 +75,10 @@ public class PasswordValidator extends AbstractFormValidator {
     public void validate(Form<?> form) {
 
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA");
-            md.update(this.passwordField.getInput().getBytes());
-            if (!user.getPassword().equals(new String(md.digest(), "x-base64"))) error(passwordField);
+            if (!user.getPassword().equals(SecurityUtils.encodePassword(this.passwordField.getInput()))) error(passwordField);
         } catch (Exception e) {
             log.error(this.getClass().toString() + ": " + "validate: " + e.getMessage());
+e.printStackTrace();
             log.debug("Exception: ", e);
         }
     }

@@ -2,6 +2,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "L
 {
 // DOC: swarm.principal.LoginAllowed
     permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.ChangePasswordPanel", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "UserRead"

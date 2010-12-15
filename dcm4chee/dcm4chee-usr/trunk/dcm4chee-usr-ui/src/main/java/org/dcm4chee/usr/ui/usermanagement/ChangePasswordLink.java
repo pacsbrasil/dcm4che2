@@ -38,7 +38,6 @@
 
 package org.dcm4chee.usr.ui.usermanagement;
 
-import org.apache.wicket.Page;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
@@ -47,7 +46,7 @@ import org.dcm4chee.usr.entity.User;
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since 28.09.2009
+ * @since Sept. 28, 2009
  */
 public class ChangePasswordLink extends AjaxFallbackLink<Object> {
     
@@ -68,6 +67,7 @@ public class ChangePasswordLink extends AjaxFallbackLink<Object> {
     @Override
     public void onClick(AjaxRequestTarget target) {
         window
+            .setContent(new ChangePasswordPanel("content", userId, forUser, window))
             .setCloseButtonCallback(
                     new ModalWindow.CloseButtonCallback() {
     
@@ -75,16 +75,6 @@ public class ChangePasswordLink extends AjaxFallbackLink<Object> {
                         
                         public boolean onCloseButtonClicked(AjaxRequestTarget target) {
                             return true;
-                        }
-                    }
-            ).setPageCreator(
-                    new ModalWindow.PageCreator() {
-    
-                        private static final long serialVersionUID = 1L;
-                        
-                        @Override
-                        public Page createPage() {
-                            return new ChangePasswordPage(userId, forUser, window);
                         }
                     }
             ).show(target);

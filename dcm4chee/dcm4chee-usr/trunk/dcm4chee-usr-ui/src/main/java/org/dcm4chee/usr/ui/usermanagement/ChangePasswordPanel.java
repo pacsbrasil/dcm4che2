@@ -38,73 +38,80 @@
 
 package org.dcm4chee.usr.ui.usermanagement;
 
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.validation.EqualPasswordInputValidator;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.ui.validator.PasswordValidator;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.util.SecurityUtils;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since 28.09.2009
+ * @since Sept. 28, 2009
  */
-public class ChangePasswordPage extends WebPage {
+public class ChangePasswordPanel extends Panel {
     
     private static final long serialVersionUID = 1L;
     
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    private static final ResourceReference CSS = new CompressedResourceReference(ChangePasswordPage.class, "usr-style.css");
-    
-    public ChangePasswordPage(String userId, final User forUser, final ModalWindow window) {
-        
-        if (ChangePasswordPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(ChangePasswordPage.BaseCSS));
-        if (ChangePasswordPage.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(ChangePasswordPage.CSS));
+
+    public ChangePasswordPanel(String id) {
+        this(id, ((SecureSession) RequestCycle.get().getSession()).getUsername(), null, null);
+    }
+
+    public ChangePasswordPanel(String id, String userId, final User forUser, final ModalWindow window) {
+        super(id);
+
+        if (ChangePasswordPanel.BaseCSS != null)
+            add(CSSPackageResource.getHeaderContribution(ChangePasswordPanel.BaseCSS));
 
         add(new ChangePasswordForm("change-password-form", userId, forUser, new Model<String>(), new Model<String>(), window));
     }
-        
+
     private final class ChangePasswordForm extends BaseForm {
 
         private static final long serialVersionUID = 1L;
 
-        private User forUser;
+        private User userToChange;
+        private Label resultLabel; 
+            
         public ChangePasswordForm(String id, String userId, final User forUser, Model<String> oldPassword, final Model<String> newPassword, final ModalWindow window) {
             super(id);
             
-            this.forUser = (forUser == null) ? 
+            userToChange = (forUser == null) ? 
                     ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getUser(userId)
                     : forUser;
-
+                    
             WebMarkupContainer oldPasswordLabel = new WebMarkupContainer("old-password-label");
             this.add(oldPasswordLabel);
                     
             final PasswordTextField oldPasswordTf = new PasswordTextField("change_password.old_password.input", oldPassword);
             this.add(oldPasswordTf);
 
-            Label forUserLabel = new Label("for-user-label", this.forUser.getUserID());
+            Label forUserLabel = new Label("for-user-label", userToChange.getUserID());
             this.add(forUserLabel);
             
-            if (this.forUser.getUserID().equals(userId)) {
+            if (userToChange.getUserID().equals(userId)) {
                 forUserLabel.setVisible(false);
-                this.add(new PasswordValidator(this.forUser, oldPasswordTf));
+                this.add(new PasswordValidator(userToChange, oldPasswordTf));
             } else {
                 oldPasswordLabel.setVisible(false);
                 oldPasswordTf.setVisible(false);
@@ -126,16 +133,38 @@ public class ChangePasswordPage extends WebPage {
 
                     UserAccess dao = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);
                     String encodedPassword = SecurityUtils.encodePassword(newPassword.getObject());
-                    dao.updateUser(forUser.getUserID(), encodedPassword);
-                    forUser.setPassword(encodedPassword);
-                    window.close(target);
+                    dao.updateUser(userToChange.getUserID(), encodedPassword);
+                    userToChange.setPassword(encodedPassword);
+                    if (window != null)
+                        window.close(target);
+                    else {
+                        resultLabel.setVisible(true);
+                        target.addComponent(resultLabel);
+                        
+                        oldPasswordTf.removeAll();
+                        newPasswordTf1.removeAll();
+                        newPasswordTf2.removeAll();
+                        target.addComponent(oldPasswordTf);
+                        target.addComponent(newPasswordTf1);
+                        target.addComponent(newPasswordTf2);
+                    }
                 }
-                
+
                 @Override
                 protected void onError(AjaxRequestTarget target, Form<?> form) {
                     target.addComponent(form);
                 }
             });
+            
+            add((resultLabel = new Label("resultLabel", new ResourceModel("change_password.result.success")))
+                .setVisible(false)
+                .setOutputMarkupId(true)
+                .setOutputMarkupPlaceholderTag(true)
+            );
         }
+    }
+    
+    public static String getModuleName() {
+        return "change_password";
     }
 }
