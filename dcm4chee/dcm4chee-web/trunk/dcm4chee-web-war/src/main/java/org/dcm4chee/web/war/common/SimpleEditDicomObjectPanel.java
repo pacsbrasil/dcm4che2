@@ -115,7 +115,7 @@ public class SimpleEditDicomObjectPanel extends Panel {
         });
         
         this.dcmObj = new BasicDicomObject();
-        dcmObj.copyTo((DicomObject) dcmModel.getDataset());
+        dcmModel.getDataset().copyTo(this.dcmObj);
         add(new Label("title", new Model<String>(title)));
         add(form = new BaseForm("form"));
         form.setOutputMarkupId(true);
