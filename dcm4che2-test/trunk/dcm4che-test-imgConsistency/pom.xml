@@ -5,6 +5,9 @@
   <artifactId>dcm4che-test-imgConsistency</artifactId>
   <version>2.6-SNAPSHOT</version>
   <name>Dicom Display Consistency Test Images</name>
+  <scm>
+     <developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4che2-test/trunk/dcm4che-test-imgConsistency</developerConnection>
+  </scm>
 
   <distributionManagement>
    <repository>
@@ -13,4 +16,6 @@
      <url>scp://www.dcm4che.org:443/home/maven2</url>
    </repository>
   </distributionManagement>
+</project>
+
 </project>
