@@ -3,10 +3,10 @@
 
   <groupId>org.dcm4che.test</groupId>
   <artifactId>dcm4che-test-imgConsistency</artifactId>
-  <version>2.6-SNAPSHOT</version>
+  <version>2.6</version>
   <name>Dicom Display Consistency Test Images</name>
   <scm>
-     <developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4che2-test/trunk/dcm4che-test-imgConsistency</developerConnection>
+     <developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4che2-test/tags/dcm4che-test-imgConsistency-2.6</developerConnection>
   </scm>
 
   <distributionManagement>
