@@ -38,6 +38,8 @@
 
 package org.dcm4che2.audit.message;
 
+import org.dcm4che2.audit.message.AuditEvent.TypeCode;
+
 /**
  * This message describes any event for which a node needs to report a 
  * security alert, e.g., a node authentication failure when establishing a 
@@ -69,8 +71,8 @@ public class SecurityAlertMessage extends AuditMessage {
     /**
      * Action Type code for {@link #SecurityAlertMessage}.
      */
-    public static final AuditEvent.TypeCode EMERGENCY_OVERRIDE =
-            AuditEvent.TypeCode.EMERGENCY_OVERRIDE;
+    public static final AuditEvent.TypeCode EMERGENCY_OVERRIDE_STARTED =
+            AuditEvent.TypeCode.EMERGENCY_OVERRIDE_STARTED;
     
     /**
      * Action Type code for {@link #SecurityAlertMessage}.
@@ -132,6 +134,36 @@ public class SecurityAlertMessage extends AuditMessage {
     public static final AuditEvent.TypeCode USER_SECURITY_ATTRIBUTES_CHANGED =
             AuditEvent.TypeCode.USER_SECURITY_ATTRIBUTES_CHANGED;
     
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
+    public static final AuditEvent.TypeCode EMERGENCY_OVERRIDE_STOPPED = 
+            AuditEvent.TypeCode.EMERGENCY_OVERRIDE_STOPPED;
+
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
+    public static final AuditEvent.TypeCode REMOTE_SERVICE_OPERATION_STARTED =
+            AuditEvent.TypeCode.REMOTE_SERVICE_OPERATION_STARTED;
+
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
+    public static final AuditEvent.TypeCode REMOTE_SERVICE_OPERATION_STOPPED =
+            AuditEvent.TypeCode.REMOTE_SERVICE_OPERATION_STOPPED;
+
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
+    public static final AuditEvent.TypeCode LOCAL_SERVICE_OPERATION_STARTED =
+            AuditEvent.TypeCode.LOCAL_SERVICE_OPERATION_STARTED;
+
+    /**
+     * Action Type code for {@link #SecurityAlertMessage}.
+     */
+    public static final AuditEvent.TypeCode LOCAL_SERVICE_OPERATION_STOPPED = 
+            AuditEvent.TypeCode.LOCAL_SERVICE_OPERATION_STOPPED;
+
     /**
      * Constructs an Security Alert message. Use {@link #setOutcomeIndicator}
      * to modify default success indicator to describe failures.

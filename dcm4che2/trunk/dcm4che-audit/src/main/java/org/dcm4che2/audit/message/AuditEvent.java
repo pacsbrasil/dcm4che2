@@ -378,8 +378,8 @@ public class AuditEvent extends BaseElement {
         public static final TypeCode NODE_AUTHENTICATION = 
                 new TypeCode("110126", "DCM", "Node Authentication");
         
-        public static final TypeCode EMERGENCY_OVERRIDE = 
-                new TypeCode("110127", "DCM", "Emergency Override");
+        public static final TypeCode EMERGENCY_OVERRIDE_STARTED = 
+                new TypeCode("110127", "DCM", "Emergency Override Started");
         
         public static final TypeCode NETWORK_CONFIGURATION = 
                 new TypeCode("110128", "DCM", "Network Configuration");
@@ -412,7 +412,26 @@ public class AuditEvent extends BaseElement {
         public static final TypeCode USER_SECURITY_ATTRIBUTES_CHANGED = 
                 new TypeCode("110137", "DCM", 
                         "User security Attributes Changed");
-        
+
+        public static final TypeCode EMERGENCY_OVERRIDE_STOPPED = 
+                new TypeCode("110138", "DCM", "Emergency Override Stopped");
+
+        public static final TypeCode REMOTE_SERVICE_OPERATION_STARTED = 
+                new TypeCode("110139", "DCM",
+                        "Remote Service Operation Started");
+
+        public static final TypeCode REMOTE_SERVICE_OPERATION_STOPPED = 
+                new TypeCode("110140", "DCM",
+                        "Remote Service Operation Stopped");
+
+        public static final TypeCode LOCAL_SERVICE_OPERATION_STARTED = 
+                new TypeCode("110141", "DCM",
+                        "Local Service Operation Started");
+
+        public static final TypeCode LOCAL_SERVICE_OPERATION_STOPPED = 
+                new TypeCode("110142", "DCM",
+                        "Local Service Operation Stopped");
+
         public TypeCode(String code) {
             super("EventTypeCode", code);
         }
