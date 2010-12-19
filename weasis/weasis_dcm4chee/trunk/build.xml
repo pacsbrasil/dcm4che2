@@ -31,10 +31,10 @@
 
 	</target>
 
-	
+
 	<target name="build" depends="configure">
 		<copy todir="${build.classes}">
-				<fileset dir="etc/message" includes="**/*" />
+			<fileset dir="etc/message" includes="**/*" />
 		</copy>
 		<echo message="${ant.project.name}: ${ant.file}" />
 		<javac debug="true" debuglevel="${debuglevel}" destdir="${build.classes}" source="${source}" target="${target}">

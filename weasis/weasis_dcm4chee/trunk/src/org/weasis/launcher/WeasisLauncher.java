@@ -1,10 +1,13 @@
 package org.weasis.launcher;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.infohazard.maverick.flow.ControllerContext;
@@ -47,18 +50,44 @@ public class WeasisLauncher {
 
     private final String serverPort;
 
-    public WeasisLauncher(String scheme, String serverName, String serverPort) {
-        if (scheme == null || serverName == null || serverPort == null) {
+    public WeasisLauncher(ControllerContext controllerContext) {
+        HttpServletRequest request;
+        if (controllerContext == null || (request = controllerContext.getRequest()) == null) {
             throw new IllegalArgumentException("server parameter cannot be null");
         }
-        this.scheme = scheme;
-        this.serverName = serverName;
-        this.serverPort = serverPort;
+
+        this.scheme = request.getScheme();
+        this.serverName = request.getServerName();
+        this.serverPort = "" + request.getServerPort();
         System.setProperty("server.base.url", scheme + "://" + serverName + ":" + serverPort);
         for (Enumeration e = pacsProperties.propertyNames(); e.hasMoreElements();) {
             String name = (String) e.nextElement();
-            pacsProperties.setProperty(name, FileUtil.substVars(pacsProperties.getProperty(name), name, null,
-                pacsProperties));
+            pacsProperties.setProperty(name,
+                FileUtil.substVars(pacsProperties.getProperty(name), name, null, pacsProperties));
+        }
+        FileOutputStream jnlpStream = null;
+        try {
+            // Build extension jnlp file for substance Look and Feel.
+            String jnlpTmpFilePath = pacsProperties.getProperty("jnlp.tmp.path");
+            String fileExt = "/extensions/substance.jnlp";
+            File jnlpTmpFile = new File(controllerContext.getServletContext().getRealPath(fileExt));
+            jnlpTmpFile.getParentFile().mkdirs();
+
+            jnlpStream = new FileOutputStream(jnlpTmpFile);
+            String jnlpContent = pacsProperties.getProperty("jnlp.substance.extension");
+            jnlpStream.write(jnlpContent.getBytes());
+            jnlpStream.flush();
+
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        } finally {
+            try {
+                if (jnlpStream != null) {
+                    jnlpStream.close();
+                }
+            } catch (IOException e) {
+                logger.error(e.getMessage());
+            }
         }
     }
 

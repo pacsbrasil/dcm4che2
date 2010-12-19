@@ -53,6 +53,16 @@ public class Resources {
             }
 
             num = 1;
+            key = "resources.extension." + num;
+            while (jnlpProp.containsKey(key)) {
+                result.append("<extension href=\"");
+                result.append(jnlpProp.getProperty(key));
+                result.append("\" />\n");
+                num++;
+                key = "resources.extension." + num;
+            }
+
+            num = 1;
             key = "resources.param." + num;
             while (jnlpProp.containsKey(key)) {
                 String val = jnlpProp.getProperty(key);

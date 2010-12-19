@@ -150,9 +150,7 @@ public class FolderSubmitCtrl2 extends FolderSubmitCtrl {
             }
         }
         if (weasisLauncher == null) {
-            HttpServletRequest request = getCtx().getRequest();
-            weasisLauncher =
-                new WeasisLauncher(request.getScheme(), request.getServerName(), "" + request.getServerPort());
+            weasisLauncher = new WeasisLauncher(getCtx());
         }
         weasisLauncher.displayImages(patientsToView, getCtx());
         folderForm.removeStickies();
