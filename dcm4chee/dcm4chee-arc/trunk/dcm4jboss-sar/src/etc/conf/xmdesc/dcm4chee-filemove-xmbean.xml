@@ -86,7 +86,7 @@
       the usable free space falls below the expected data volume received in
       one hour.]]>
     </description>
-    <name>MoveThresholds</name>
+    <name>MoveThresholdsOnSource</name>
     <type>java.lang.String</type>
     <descriptors>
       <value value="7:1h;19:24h" />
@@ -98,7 +98,7 @@
       time based move thresholds (s. MoveThresholds) into disk space size
       to free.]]>
     </description>
-    <name>ExpectedDataVolumePerDay</name>
+    <name>ExpectedDataVolumePerDayOnSource</name>
     <type>java.lang.String</type>
   </attribute>
 
@@ -106,7 +106,7 @@
     <description><![CDATA[Get expected data volume per day on source filesystem group
       in bytes, returned as a long.]]>
     </description>
-    <name>ExpectedDataVolumePerDayBytes</name>
+    <name>ExpectedDataVolumePerDayBytesOnSource</name>
     <type>long</type>
   </attribute>
 
@@ -118,7 +118,7 @@
       configured set of constraints will be moved on next invocation of
       operation <i>scheduleStudiesForMove</i>.]]>
     </description>
-    <name>CurrentMoveThreshold</name>
+    <name>CurrentMoveThresholdOnSource</name>
     <type>long</type>
   </attribute>
 
