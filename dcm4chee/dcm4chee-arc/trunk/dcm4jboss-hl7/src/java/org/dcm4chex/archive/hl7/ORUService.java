@@ -182,7 +182,7 @@ public class ORUService extends ORU_MDMService
         keys.putUI(Tags.StudyInstanceUID);
         QueryCmd query = null;
         try {
-            query = QueryCmd.createStudyQuery(keys, false, false, true, false, null);
+            query = QueryCmd.createStudyQuery(keys, null, false, false, true, false, null);
             query.setFetchSize(fetchSize).execute();
             if (!query.next()) {
                 log.warn("No Study with given Accession Number: " 

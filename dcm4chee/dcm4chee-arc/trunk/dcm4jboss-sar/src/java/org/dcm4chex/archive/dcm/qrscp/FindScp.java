@@ -42,8 +42,10 @@ package org.dcm4chex.archive.dcm.qrscp;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
@@ -67,6 +69,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.ExtNegotiation;
 import org.dcm4che.net.PDU;
+import org.dcm4chex.archive.common.PIDWithIssuer;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
 import org.dcm4chex.archive.perf.PerfCounterEnum;
 import org.dcm4chex.archive.perf.PerfMonDelegate;
@@ -154,15 +157,12 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                 service.coerceAttributes(rqData, coerce);
             }
             service.postCoercionProcessing(rqData, Command.C_FIND_RQ, assoc.getAssociation());
+            boolean noIssuerOfPatientID = !rqData.contains(Tags.IssuerOfPatientID);
             service.supplementInstitutionalData(rqData, callingAET);
-            boolean otherPIDinRQ = rqData.contains(Tags.OtherPatientIDSeq);
-            if ( !isUniversalMatching(rqData.getString(Tags.PatientID)) ) {
-                Object forcePixQuery = assoc.getAssociation().getProperty(FORCE_PIX_QUERY_FLAG);
-                if( ( forcePixQuery!=null && forcePixQuery.equals(Boolean.TRUE) )||
-                    service.isPixQueryCallingAET(callingAET) ) {
-                    pixQuery(rqData);
-                }    
-            }
+            Set<PIDWithIssuer> pidWithIssuer = (forcePixQuery(assoc)
+                    || service.isPixQueryCallingAET(callingAET))
+                            ? pixQuery(rqData)
+                            : null;
             boolean hideWithoutIssuerOfPID = 
                     service.isHideWithoutIssuerOfPIDFromAET(callingAET);
             boolean fuzzyMatchingOfPN = fuzzyMatchingOfPN(
@@ -170,13 +170,15 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                             rqCmd.getAffectedSOPClassUID()));
             MultiDimseRsp rsp;
             if (service.hasUnrestrictedQueryPermissions(callingAET)) {
-                rsp = newMultiCFindRsp(rqData, fuzzyMatchingOfPN,
-                        hideWithoutIssuerOfPID, otherPIDinRQ, null);
+                rsp = newMultiCFindRsp(rqData, pidWithIssuer,
+                        noIssuerOfPatientID, fuzzyMatchingOfPN,
+                        hideWithoutIssuerOfPID, null);
             } else {
                 Subject subject = (Subject) a.getProperty("user");
                 if (subject != null) {
-                    rsp = newMultiCFindRsp(rqData, fuzzyMatchingOfPN,
-                            hideWithoutIssuerOfPID, otherPIDinRQ, subject);
+                    rsp = newMultiCFindRsp(rqData, pidWithIssuer,
+                            noIssuerOfPatientID, fuzzyMatchingOfPN,
+                            hideWithoutIssuerOfPID, subject);
                 } else {
                     log
                             .info("Missing user identification -> no records returned");
@@ -191,6 +193,11 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             log.error("Query DB failed:", e);
             throw new DcmServiceException(Status.UnableToProcess, e);
         }
+    }
+
+    private boolean forcePixQuery(ActiveAssociation assoc) {
+        Object flag = assoc.getAssociation().getProperty(FORCE_PIX_QUERY_FLAG);
+        return (flag instanceof Boolean) && ((Boolean) flag).booleanValue();
     }
 
     private boolean fuzzyMatchingOfPN(ExtNegotiation extNeg) {
@@ -217,122 +224,54 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         return key.indexOf('*') != -1 || key.indexOf('?') != -1;
     }
 
-    protected void pixQuery(Dataset rqData) throws DcmServiceException {
-        ArrayList<String[]> result = new ArrayList<String[]>();
-        boolean updateRQ = pixQuery(rqData, result);
+    protected Set<PIDWithIssuer> pixQuery(Dataset rqData) throws DcmServiceException {
+        HashSet<PIDWithIssuer> result = new HashSet<PIDWithIssuer>();
+        pixQuery(rqData, result);
         DcmElement opidsq = rqData.get(Tags.OtherPatientIDSeq);
         if (opidsq != null) {
-            for (int i = 0, n = opidsq.countItems(); i < n; i++) {
-                if (pixQuery(opidsq.getItem(i), result)) {
-                    updateRQ = true;
-                }
-            }
+            for (int i = 0, n = opidsq.countItems(); i < n; i++)
+                pixQuery(opidsq.getItem(i), result);
+            // nullify Other Patient ID Seq to avoid 
+            // queryCmd.isMatchingKeyNotSupported() = true
+            rqData.putSQ(Tags.OtherPatientIDSeq);
         }
-        if (updateRQ && !result.isEmpty()) {
-            Pattern pid0 = toPattern(rqData.getString(Tags.PatientID));
-            Pattern issuer0 = toPattern(rqData.getString(Tags.IssuerOfPatientID));
-            int n = result.size();
-            int matchInx = -1;
-            int pidMatchOnlyInx = -1;
-            for (int i = 0; i < n; i++) {
-                String[] pid = (String[]) result.get(i);
-                if (pid0 == null || pid0.matcher(pid[PID]).matches()) {
-                    if (issuer0 == null
-                            || issuer0.matcher(pid[ISSUER]).matches()) {
-                        matchInx = i;
-                        break;
-                    } else if (pidMatchOnlyInx == -1) {
-                        pidMatchOnlyInx = i;
-                    }
-                }
-            }
-            setPID(rqData, result.remove(matchInx >= 0 ? matchInx
-                    : pidMatchOnlyInx >= 0 ? pidMatchOnlyInx : 0));
-            opidsq = rqData.putSQ(Tags.OtherPatientIDSeq);
-            for (String[] pids:result) setPID(opidsq.addNewItem(), pids);
-        }
-    }
 
-    private static Pattern toPattern(String wc) {
-        if (wc == null) {
-            return null;
-        }
-        if (wc.indexOf('*') == -1 && wc.indexOf('?') == -1) {
-            return Pattern.compile(wc);
-        }
-        StringBuilder sb = new StringBuilder(wc.length() + 16);
-        StringTokenizer tokens = new StringTokenizer(wc, "*?.", true);
-        while (tokens.hasMoreTokens()) {
-            String token = tokens.nextToken();
-            if (token.equals("*")) {
-                token = ".*";
-            } else if (token.equals("?")) {
-                token = ".";
-            } else if (token.equals(".")) {
-                token = "\\.";
-            }
-            sb.append(token);
-        }
-        return Pattern.compile(sb.toString());
-    }
-
-    private void setPID(Dataset rqData, String[] pid) {
-        rqData.putLO(Tags.PatientID, pid[PID]);
-        rqData.putLO(Tags.IssuerOfPatientID, pid[ISSUER]);
+        return result.isEmpty() ? null : result;
     }
 
     protected boolean skipPixQuery(String pid,String issuer) throws DcmServiceException {
-        return (!service.isPixQueryIssuer(issuer) || isWildCardMatching(pid)
-                && !service.isPixQueryLocal());
+        return isUniversalMatching(pid)
+                || !service.isPixQueryIssuer(issuer)
+                || isWildCardMatching(pid) && !service.isPixQueryLocal();
     }
 
-    protected boolean pixQuery(Dataset rqData, ArrayList result)
+    protected void pixQuery(Dataset rqData, Set<PIDWithIssuer> result)
             throws DcmServiceException {
         String pid = rqData.getString(Tags.PatientID);
-        if (isUniversalMatching(pid)) {
-            return false;
-        }
         String issuer = rqData.getString(Tags.IssuerOfPatientID);
-        if ( skipPixQuery(pid, issuer) ) {
-            addNewPidAndIssuerTo(new String[] { pid, issuer }, result);
-            return false;
-        }
-        List l = service.queryCorrespondingPIDs(pid, issuer);
-        if (l == null) {
-            // pid was not known by pix manager.
-            return false;
-        }
-        if (l.isEmpty() && !service.isPixQueryLocal()) {
-            return false;
-        }
-        for (Iterator iter = l.iterator(); iter.hasNext();) {
-            addNewPidAndIssuerTo((String[]) iter.next(), result);
-        }
-        return true;
-    }
+        if (skipPixQuery(pid, issuer) )
+            return;
 
-    private boolean addNewPidAndIssuerTo(String[] pidAndIssuer, List result) {
-        for (Iterator iter = result.iterator(); iter.hasNext();) {
-            String[] e = (String[]) iter.next();
-            if (pidAndIssuer[PID].equals(e[PID])
-                    && pidAndIssuer[ISSUER].equals(e[ISSUER])) {
-                return false;
-            }
-        }
-        result.add(pidAndIssuer);
-        return true;
+        List<String[]> pidAndIssuers =
+                service.queryCorrespondingPIDs(pid, issuer);
+        if (pidAndIssuers == null)
+            // pid was not known by pix manager.
+            return;
+
+        for (String[] pidAndIssuer : pidAndIssuers)
+            result.add(new PIDWithIssuer(pidAndIssuer[0], pidAndIssuer[1]));
     }
 
     protected MultiDimseRsp newMultiCFindRsp(Dataset rqData,
+            Set<PIDWithIssuer> pidWithIssuers, boolean noIssuerInRSP,
             boolean fuzzyMatchingOfPN, boolean hideWithoutIssuerOfPID,
-            boolean otherPIDinRQ, Subject subject) throws SQLException,
-                    DcmServiceException {
-        QueryCmd queryCmd = QueryCmd.create(rqData, filterResult,
-                fuzzyMatchingOfPN, service.isNoMatchForNoValue(),
+            Subject subject) throws SQLException, DcmServiceException {
+        QueryCmd queryCmd = QueryCmd.create(rqData, pidWithIssuers,
+                filterResult, fuzzyMatchingOfPN, service.isNoMatchForNoValue(),
                 hideWithoutIssuerOfPID, subject);
+        if (noIssuerInRSP)
+            rqData.remove(Tags.IssuerOfPatientID);
         queryCmd.setFetchSize(service.getFetchSize()).execute();
-        if (!otherPIDinRQ) // remove OPIDSeq added by pixQuery
-            rqData.remove(Tags.OtherPatientIDSeq);
         return new MultiCFindRsp(queryCmd);
     }
 
@@ -427,8 +366,6 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             try {
                 Association a = assoc.getAssociation();
                 String callingAET = a.getCallingAET();
-                queryCmd.setCoercePatientIds(service
-                        .isCoerceRequestPatientIdsAET(callingAET));
                 if (!queryCmd.next()) {
                     rspCmd.putUS(Tags.Status, Status.Success);
                     return null;

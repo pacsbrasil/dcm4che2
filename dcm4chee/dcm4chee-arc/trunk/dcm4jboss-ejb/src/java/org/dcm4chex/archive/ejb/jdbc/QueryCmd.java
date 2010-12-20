@@ -44,7 +44,8 @@ import java.nio.ByteBuffer;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.security.auth.Subject;
 
@@ -56,6 +57,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.common.PIDWithIssuer;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.common.SecurityUtils;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
@@ -128,16 +130,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.RequestingService,
             Tags.RequestingPhysician };
 
-    private static final int[] MATCHING_OTHER_PAT_ID_SEQ = new int[] {
-            Tags.PatientID, 
-            Tags.IssuerOfPatientID, 
-            Tags.TypeOfPatientID // We cannot match but should add here to avoid warnings.
-    };
-
-    private static final int[] ATTR_IGNORE_DIFF_LOG = new int[] {
-            Tags.PatientID,
-            Tags.IssuerOfPatientID,
-            Tags.OtherPatientIDSeq };
+    private static final int[] PAT_DEMOGRAPHICS_ATTRS = new int[] {
+            Tags.PatientName,
+            Tags.PatientBirthDate,
+            Tags.PatientSex };
 
     private static final String[] AVAILABILITY = { 
             "ONLINE", "NEARLINE", "OFFLINE", "UNAVAILABLE" };
@@ -150,93 +146,97 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     public static boolean lazyFetchSeriesAttrsOnImageLevelQuery = false;
     public static boolean cacheSeriesAttrsOnImageLevelQuery = true;
 
-    private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
+    private final HashMap<String,Dataset> chkPatAttrs = new HashMap<String,Dataset>();
 
-    private boolean otherPatientIDMatchNotSupported = false;
+    protected final Set<PIDWithIssuer> pidWithIssuers;
 
-    private HashMap<String,Dataset> chkPatAttrs;
+    protected final AdjustPatientID adjustPatientID;
 
-    private boolean coercePatientIds = false;
-
-    protected boolean noMatchWithoutIssuerOfPID;
+    protected final boolean noMatchWithoutIssuerOfPID;
 
     protected final boolean fuzzyMatchingOfPN;
 
-    protected Subject subject;
+    protected final Subject subject;
 
-    public void setCoercePatientIds( boolean coercePatientIds ) {
-        this.coercePatientIds = coercePatientIds;
-    }
-
-    public static QueryCmd create(Dataset keys, boolean filterResult,
+    public static QueryCmd create(Dataset keys,
+            Set<PIDWithIssuer> pidWithIssuers,  boolean filterResult,
             boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
             boolean noMatchWithoutIssuerOfPID, Subject subject)
             throws SQLException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         if ("IMAGE".equals(qrLevel))
-            return createInstanceQuery(keys, filterResult, fuzzyMatchingOfPN,
-                    noMatchForNoValue, noMatchWithoutIssuerOfPID, subject);
+            return createInstanceQuery(keys, pidWithIssuers,
+                    filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
+                    noMatchWithoutIssuerOfPID, subject);
         if ("SERIES".equals(qrLevel))
-            return createSeriesQuery(keys, filterResult, fuzzyMatchingOfPN,
-                    noMatchForNoValue, noMatchWithoutIssuerOfPID, subject);
+            return createSeriesQuery(keys, pidWithIssuers,
+                    filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
+                    noMatchWithoutIssuerOfPID, subject);
         if ("STUDY".equals(qrLevel))
-            return createStudyQuery(keys, filterResult, fuzzyMatchingOfPN,
-                    noMatchForNoValue, noMatchWithoutIssuerOfPID, subject);
+            return createStudyQuery(keys, pidWithIssuers,
+                    filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
+                    noMatchWithoutIssuerOfPID, subject);
         if ("PATIENT".equals(qrLevel))
-            return createPatientQuery(keys, filterResult, fuzzyMatchingOfPN,
-                    noMatchForNoValue, noMatchWithoutIssuerOfPID, subject);
+            return createPatientQuery(keys, pidWithIssuers, filterResult,
+                    fuzzyMatchingOfPN, noMatchForNoValue,
+                    noMatchWithoutIssuerOfPID, subject);
         throw new IllegalArgumentException("QueryRetrieveLevel=" + qrLevel);
     }
 
     public static PatientQueryCmd createPatientQuery(Dataset keys,
-            boolean filterResult, boolean fuzzyMatchingOfPN,
-            boolean noMatchForNoValue, boolean noMatchWithoutIssuerOfPID,
-            Subject subject) throws SQLException {
-        final PatientQueryCmd cmd = new PatientQueryCmd(keys, filterResult,
-                fuzzyMatchingOfPN, noMatchForNoValue,
+            Set<PIDWithIssuer> pidWithIssuers, boolean filterResult,
+            boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
+            boolean noMatchWithoutIssuerOfPID, Subject subject)
+            throws SQLException {
+        final PatientQueryCmd cmd = new PatientQueryCmd(keys, pidWithIssuers,
+                filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
         cmd.init();
         return cmd;
     }
 
     public static StudyQueryCmd createStudyQuery(Dataset keys,
-            boolean filterResult, boolean fuzzyMatchingOfPN,
-            boolean noMatchForNoValue, boolean noMatchWithoutIssuerOfPID,
-            Subject subject) throws SQLException {
-        final StudyQueryCmd cmd = new StudyQueryCmd(keys, filterResult,
-                fuzzyMatchingOfPN, noMatchForNoValue,
+            Set<PIDWithIssuer> pidWithIssuers, boolean filterResult,
+            boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
+            boolean noMatchWithoutIssuerOfPID, Subject subject)
+            throws SQLException {
+        final StudyQueryCmd cmd = new StudyQueryCmd(keys, pidWithIssuers,
+                filterResult, fuzzyMatchingOfPN,noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
         cmd.init();
         return cmd;
     }
 
     public static SeriesQueryCmd createSeriesQuery(Dataset keys,
-            boolean filterResult, boolean fuzzyMatchingOfPN,
-            boolean noMatchForNoValue, boolean noMatchWithoutIssuerOfPID,
-            Subject subject) throws SQLException {
-        final SeriesQueryCmd cmd = new SeriesQueryCmd(keys, filterResult,
-                fuzzyMatchingOfPN, noMatchForNoValue,
+            Set<PIDWithIssuer> pidWithIssuers, boolean filterResult,
+            boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
+            boolean noMatchWithoutIssuerOfPID, Subject subject)
+            throws SQLException {
+        final SeriesQueryCmd cmd = new SeriesQueryCmd(keys, pidWithIssuers,
+                filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
         cmd.init();
         return cmd;
     }
 
     public static ImageQueryCmd createInstanceQuery(Dataset keys,
-            boolean filterResult, boolean fuzzyMatchingOfPN,
-            boolean noMatchForNoValue, boolean noMatchWithoutIssuerOfPID,
-            Subject subject) throws SQLException {
-        final ImageQueryCmd cmd = new ImageQueryCmd(keys, filterResult,
-                fuzzyMatchingOfPN, noMatchForNoValue,
+            Set<PIDWithIssuer> pidWithIssuers, boolean filterResult,
+            boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
+            boolean noMatchWithoutIssuerOfPID, Subject subject)
+            throws SQLException {
+        final ImageQueryCmd cmd = new ImageQueryCmd(keys, pidWithIssuers,
+                filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
         cmd.init();
         return cmd;
     }
 
-    protected QueryCmd(Dataset keys, boolean filterResult,
-            boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
-            boolean noMatchWithoutIssuerOfPID, Subject subject)
-            throws SQLException {
+    protected QueryCmd(Dataset keys, Set<PIDWithIssuer> pidWithIssuers,
+            boolean filterResult, boolean fuzzyMatchingOfPN,
+            boolean noMatchForNoValue, boolean noMatchWithoutIssuerOfPID,
+            Subject subject) throws SQLException {
         super(keys, filterResult, noMatchForNoValue, transactionIsolationLevel);
+        this.pidWithIssuers = pidWithIssuers;
         this.fuzzyMatchingOfPN = fuzzyMatchingOfPN;
         this.noMatchWithoutIssuerOfPID = noMatchWithoutIssuerOfPID;
         this.subject = subject;
@@ -244,6 +244,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             keys.putCS(Tags.SpecificCharacterSet);
         }
         matchingKeys.add(Tags.QueryRetrieveLevel);
+        adjustPatientID = new AdjustPatientID(keys, pidWithIssuers);
     }
 
     protected void addAdditionalReturnKeys() {
@@ -280,27 +281,24 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return sqlBuilder.isMatchNotSupported();
     }
 
-    /**
-     * Check if this QueryCmd use an unsupported matching key.
-     * 
-     * @return true if an unsupported matching key is found!
-     */
-    public boolean isMatchingKeyNotSupported() {
-        return otherPatientIDMatchNotSupported
-                || super.isMatchingKeyNotSupported();
-    }
-
     protected void addPatientMatch() {
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
-        DcmElement otherPatIdSQ = keys.get(Tags.OtherPatientIDSeq);
-        if (useOtherPatientIdSequenceForMatch(otherPatIdSQ)) {
-            addListOfPatIdMatch(otherPatIdSQ);
+        if (pidWithIssuers != null) {
+            Node n = sqlBuilder.addNodeMatch("OR", false);
+            for (PIDWithIssuer pwi : pidWithIssuers) {
+                Node n1 = new Match.Node("AND", false);
+                n1.addMatch(new Match.SingleValue(null, "Patient.patientId", type2,
+                        pwi.pid));
+                n1.addMatch(new Match.SingleValue(null, "Patient.issuerOfPatientId",
+                        type2, pwi.issuer));
+                n.addMatch(n1);
+            }
         } else {
             String[] pid = filter.getStrings(keys, Tags.PatientID);
             String issuer = filter.getString(keys, Tags.IssuerOfPatientID);
-            sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2, pid);
-            if (pid != null && pid.length > 0 && issuer != null) {
+            Match matchPID = sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2, pid);
+            if (matchPID != null && issuer != null) {
                 sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
                         type2, issuer);
             } else if (noMatchWithoutIssuerOfPID) {
@@ -334,67 +332,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
         matchingKeys.add(MATCHING_PATIENT_KEYS);
         matchingKeys.add(fieldTags);
-        seqMatchingKeys.put(new Integer(Tags.OtherPatientIDSeq), new IntList()
-                .add(MATCHING_OTHER_PAT_ID_SEQ));
-    }
-
-    private boolean useOtherPatientIdSequenceForMatch(DcmElement otherPatIdSQ) {
-        if (otherPatIdSQ == null || !otherPatIdSQ.hasItems())
-            return false;
-        StringBuilder sb = new StringBuilder();
-        String patId = keys.getString(Tags.PatientID);
-        if (checkMatchValue(patId, "Patient ID", sb)) {
-            String issuer = keys.getString(Tags.IssuerOfPatientID);
-            if (checkMatchValue(issuer, "Issuer of Patient ID", sb)) {
-                if (sb.length() == 0) {
-                    return true;
-                }
-            }
-        }
-        log.warn("Matching of items in OtherPatientIdSequence disabled! Reason: " + sb);
-        otherPatientIDMatchNotSupported = true;
-        return false;
-    }
-
-    private void addListOfPatIdMatch(DcmElement otherPatIdSQ) {
-        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
-        Node n = sqlBuilder.addNodeMatch("OR", false);
-        addIdAndIssuerPair(n, filter.getString(keys, Tags.PatientID),
-                filter.getString(keys, Tags.IssuerOfPatientID));
-        Dataset item;
-        for (int i = 0, len = otherPatIdSQ.countItems(); i < len; i++) {
-            item = otherPatIdSQ.getItem(i);
-            StringBuilder sb = new StringBuilder();
-            String pid = filter.getString(item, Tags.PatientID);
-            String issuer = filter.getString(item, Tags.IssuerOfPatientID);
-            if (!checkMatchValue(pid, "PatientID of item", sb) || !checkMatchValue(issuer, "Issuer of item", sb)) {
-                log.warn("Skipping pid '" + pid + "' and issuer '" + issuer + "' in other patient id sequence because: " + sb);
-            } else {            
-                addIdAndIssuerPair(n, filter.getString(item, Tags.PatientID), item.getString(Tags.IssuerOfPatientID));
-            }
-        }
-    }
-
-    private void addIdAndIssuerPair(Node n, String patId, String issuer) {
-        Node n1 = new Match.Node("AND", false);
-        n1.addMatch(new Match.SingleValue(null, "Patient.patientId", type2,
-                patId));
-        n1.addMatch(new Match.SingleValue(null, "Patient.issuerOfPatientId",
-                type2, issuer));
-        n.addMatch(n1);
-    }
-
-    private boolean checkMatchValue(String value, String chkItem,
-            StringBuilder sb) {
-        if (value == null) {
-            sb.append("Missing attribute ").append(chkItem);
-        } else if (value.indexOf('*') != -1 || value.indexOf('?') != -1) {
-            sb.append("Wildcard ('*','?') not allowed in ").append(chkItem)
-                    .append(" ('").append(value).append("')");
-        } else {
-            return true;
-        }
-        return false;
     }
 
     protected void addStudyMatch() {
@@ -587,67 +524,32 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     }
 
     public Dataset getDataset() throws SQLException {
-        Dataset ds = dof.newDataset();
+        Dataset ds = DcmObjectFactory.getInstance().newDataset();
         fillDataset(ds);
-        if (!otherPatientIDMatchNotSupported)
-            addOtherPatientSeq(ds, keys);
+        checkForDiffPatientDemographics(ds);
+        adjustPatientID.adjust(ds);
         adjustDataset(ds, keys);
         return filterResult ? ds.subSet(keys) : ds;
     }
 
-    private void addOtherPatientSeq(Dataset ds, Dataset keys)
-            throws SQLException {
-        DcmElement sq = keys.get(Tags.OtherPatientIDSeq);
-        if (sq != null) {
-            AttributeFilter patientFilter = AttributeFilter
-                    .getPatientAttributeFilter();
-            Dataset patientAttrs = patientFilter.filter(ds);
-            checkPatAttrs(patientAttrs);
-            if (coercePatientIds) {
-                if (log.isDebugEnabled()) {
-                    log.debug("PatientID in response:"
-                            + keys.getString(Tags.PatientID) + "^"
-                            + keys.getString(Tags.IssuerOfPatientID));
-                    log.debug("PatientID of match:"
-                            + ds.getString(Tags.PatientID) + "^"
-                            + ds.getString(Tags.IssuerOfPatientID));
+    private void checkForDiffPatientDemographics(Dataset ds) {
+        String patId = getPatIdString(ds);
+        if (!chkPatAttrs.containsKey(patId)) {
+            for (Entry<String, Dataset> entry : chkPatAttrs.entrySet()) {
+                String patId2 = entry.getKey();
+                Dataset ds2 = entry.getValue();
+                for (int tag : PAT_DEMOGRAPHICS_ATTRS) {
+                    DcmElement elem = ds.get(tag);
+                    DcmElement elem2 = ds2.get(tag);
+                    if (log.isDebugEnabled())
+                        log.debug("compare:" + elem + " with " + elem2);
+                    if (elem != null && elem2 != null && !checkAttr(elem, elem2)) {
+                        log.warn("Different patient attribute found! " + patId
+                                + elem + " <-> " + patId2 + elem2);
+                    }
                 }
-                ds.putAll(keys.subSet(new int[] { Tags.PatientID,
-                        Tags.IssuerOfPatientID, Tags.OtherPatientIDSeq }));
             }
-        }
-    }
-
-    private void checkPatAttrs(Dataset ds) throws SQLException {
-        String key = getPatIdString(ds);
-        if (chkPatAttrs == null) {
-            chkPatAttrs = new HashMap<String,Dataset>();
-            chkPatAttrs.put(key, ds);
-        } else if (!chkPatAttrs.containsKey(key)) {
-            for (Dataset checkDs : chkPatAttrs.values()) {
-                logDiffs(ds, checkDs, key);
-                
-            }
-            chkPatAttrs.put(key, ds);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void logDiffs(Dataset ds, Dataset ds1, String dsPrefix) {
-        DcmElement elem, elem1;
-        int tag;
-        String ds1Prefix = getPatIdString(ds1);
-        for (Iterator<DcmElement> iter = ds.subSet(ATTR_IGNORE_DIFF_LOG, true, false)
-                .iterator(); iter.hasNext();) {
-            elem = iter.next();
-            tag = elem.tag();
-            elem1 = ds1.get(tag);
-            if (log.isDebugEnabled())
-                log.debug("compare:" + elem + " with " + elem1);
-            if (elem != null && elem1 != null && !checkAttr(elem, elem1)) {
-                log.warn("Different patient attribute found! " + dsPrefix
-                        + elem + " <-> " + ds1Prefix + elem1);
-            }
+            chkPatAttrs.put(patId, ds);
         }
     }
 
@@ -695,12 +597,13 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     public static class PatientQueryCmd extends QueryCmd {
 
-        protected PatientQueryCmd(Dataset keys, boolean filterResult,
+        protected PatientQueryCmd(Dataset keys,
+                Set<PIDWithIssuer> pidWithIssuers,  boolean filterResult,
                 boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
                 boolean noMatchWithoutIssuerOfPID, Subject subject)
-                throws SQLException {
-            super(keys, filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
-                    noMatchWithoutIssuerOfPID, subject);
+        throws SQLException {
+            super(keys, pidWithIssuers, filterResult, fuzzyMatchingOfPN,
+                    noMatchForNoValue, noMatchWithoutIssuerOfPID, subject);
             defineColumnTypes(new int[] { blobAccessType });
         }
 
@@ -727,13 +630,14 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     public static class StudyQueryCmd extends QueryCmd {
 
-        protected StudyQueryCmd(Dataset keys, boolean filterResult,
+        protected StudyQueryCmd(Dataset keys,
+                Set<PIDWithIssuer> pidWithIssuers, boolean filterResult,
                 boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
                 boolean noMatchWithoutIssuerOfPID, Subject subject)
                 throws SQLException {
-            super(keys, filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
-                    noMatchWithoutIssuerOfPID, subject);
-            defineColumnTypes(new int[] {
+             super(keys, pidWithIssuers, filterResult, fuzzyMatchingOfPN,
+                    noMatchForNoValue, noMatchWithoutIssuerOfPID, subject);
+             defineColumnTypes(new int[] {
                     blobAccessType,     // Patient.encodedAttributes
                     blobAccessType,     // Study.encodedAttributes
                     Types.VARCHAR,      // Study.modalitiesInStudy
@@ -804,13 +708,14 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     public static class SeriesQueryCmd extends QueryCmd {
 
-        protected SeriesQueryCmd(Dataset keys, boolean filterResult,
+        protected SeriesQueryCmd(Dataset keys,
+                Set<PIDWithIssuer> pidWithIssuers, boolean filterResult,
                 boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
                 boolean noMatchWithoutIssuerOfPID, Subject subject)
                 throws SQLException {
-            super(keys, filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
-                    noMatchWithoutIssuerOfPID, subject);
-            defineColumnTypes(new int[] {
+             super(keys, pidWithIssuers, filterResult, fuzzyMatchingOfPN,
+                    noMatchForNoValue, noMatchWithoutIssuerOfPID, subject);
+             defineColumnTypes(new int[] {
                     blobAccessType,     // Patient.encodedAttributes
                     blobAccessType,     // Study.encodedAttributes
                     blobAccessType,     // Series.encodedAttributes
@@ -900,13 +805,14 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         HashMap<String,Dataset> seriesAttrsCache =
                 new HashMap<String,Dataset>();
 
-        protected ImageQueryCmd(Dataset keys, boolean filterResult,
+        protected ImageQueryCmd(Dataset keys,
+                Set<PIDWithIssuer> pidWithIssuers, boolean filterResult,
                 boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
                 boolean noMatchWithoutIssuerOfPID, Subject subject)
                 throws SQLException {
-            super(keys, filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
-                    noMatchWithoutIssuerOfPID, subject);
-            defineColumnTypes(lazyFetchSeriesAttrsOnImageLevelQuery
+             super(keys, pidWithIssuers, filterResult, fuzzyMatchingOfPN,
+                    noMatchForNoValue, noMatchWithoutIssuerOfPID, subject);
+             defineColumnTypes(lazyFetchSeriesAttrsOnImageLevelQuery
                     ? new int[] {
                             blobAccessType,     // Instance.encodedAttributes
                             Types.VARCHAR,      // Instance.retrieveAETs

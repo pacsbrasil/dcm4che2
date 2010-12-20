@@ -213,10 +213,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private String[] pixQueryIssuers;
     
     private String pixQueryDefIssuer;
-    
-    private boolean coerceRequestPatientIds;
-
-    private String[] coerceRequestPatientIdsAETs;
 
     private int acTimeout = 5000;
 
@@ -402,30 +398,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.pixQueryDefIssuer = pixQueryDefIssuer;
     }
 
-    public final boolean isCoerceRequestPatientIds() {
-        return coerceRequestPatientIds;
-    }
-
-    public final void setCoerceRequestPatientIds(boolean coerceRequestPatientIds) {
-        this.coerceRequestPatientIds = coerceRequestPatientIds;
-    }
-
-    public String getCoerceRequestPatientIdsAETs() {
-        return coerceRequestPatientIdsAETs == null ? ANY
-                : StringUtils.toString(coerceRequestPatientIdsAETs, '\\');
-    }
-
-    public void setCoerceRequestPatientIdsAETs(String s) {
-        String trim = s.trim();
-        this.coerceRequestPatientIdsAETs = trim.equalsIgnoreCase(ANY) ? null
-                : StringUtils.split(trim, '\\');
-    }
-
-    public final boolean isCoerceRequestPatientIdsAET(String aet) {
-        return isCoerceRequestPatientIds()&&
-                (coerceRequestPatientIdsAETs == null || Arrays.asList(coerceRequestPatientIdsAETs).contains(aet));
-    }
-    
     public final String getUnrestrictedQueryPermissionsToAETitles() {
         return unrestrictedQueryPermissionsToAETitles == null ? ANY
                 : StringUtils.toString(
