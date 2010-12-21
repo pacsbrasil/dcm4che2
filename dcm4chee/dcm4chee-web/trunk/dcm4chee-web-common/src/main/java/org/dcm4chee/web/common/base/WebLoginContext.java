@@ -77,8 +77,8 @@ import org.apache.wicket.security.hive.authentication.DefaultSubject;
 import org.apache.wicket.security.hive.authentication.UsernamePasswordContext;
 import org.apache.wicket.security.hive.authorization.SimplePrincipal;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
+import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.common.secure.SecureSession;
-import org.dcm4chee.web.common.secure.SecureSession.StudyPermissionRight;
 import org.jboss.system.server.ServerConfigLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,9 +99,6 @@ public class WebLoginContext extends UsernamePasswordContext {
     @Override
     protected org.apache.wicket.security.hive.authentication.Subject getSubject(String username, String password) throws LoginException {
 
-        List<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
-        MBeanServerConnection server = servers.get(0);
-
         WebApplication app = (WebApplication) RequestCycle.get().getApplication();
         String webApplicationPolicy = app.getInitParameter("webApplicationPolicy");
         if ( webApplicationPolicy == null) webApplicationPolicy = "dcm4chee";
@@ -109,36 +106,12 @@ public class WebLoginContext extends UsernamePasswordContext {
         if ( rolesGroupName == null) rolesGroupName = "Roles";
         LoginCallbackHandler handler = new LoginCallbackHandler(username, password);
         LoginContext context;
-        
+        SecureSession secureSession = (SecureSession) SecureSession.get();
         try {
             context = new LoginContext(webApplicationPolicy, handler);
             context.login();
-            
-            SecureSession secureSession = ((SecureSession) RequestCycle.get().getSession());
             secureSession.setUsername(username);
             secureSession.setManageUsers(Boolean.parseBoolean(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("manageUsers")));
-            boolean useStudyPermissions = Boolean.parseBoolean(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("useStudyPermissions"));
-            secureSession.setWebStudyPermissions(Boolean.parseBoolean(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("webStudyPermissions")));
-            secureSession.setRoot(username.equals(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root")));
-            javax.security.auth.Subject dicomSubject = null;
-            if (useStudyPermissions) {
-                server.invoke(
-                        new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("WebCfgServiceName")), 
-                        "updateDicomRoles",
-                        new Object[] {},
-                        new String[] {}
-                );
-                dicomSubject = new javax.security.auth.Subject(); //dicomSubject != null -> enable studyPermissions
-                server.invoke(
-                        new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("DicomSecurityService")), 
-                        "isValid",
-                        new Object[] { username, password, dicomSubject },
-                        new String[] { String.class.getName(), 
-                                String.class.getName(), 
-                                javax.security.auth.Subject.class.getName()}
-                );
-            }
-            secureSession.setDicomSubject(dicomSubject);
         } catch (Exception e) {
             log.error("Exception: " + e.getMessage());
             throw new LoginException();
@@ -150,8 +123,8 @@ public class WebLoginContext extends UsernamePasswordContext {
         DefaultSubject subject;
         try {
             subject = toSwarmSubject(rolesGroupName, context.getSubject());
-            checkStudyPermissionRoles(server, subject, app);
-            checkLoginAllowed(server, subject);
+            checkLoginAllowed(subject);
+            secureSession.extendedLogin(username, password, subject);
         } catch (Exception e) {
             log.error("Login failed for user "+username, e);
             ((SecureSession) RequestCycle.get().getSession()).invalidate();
@@ -160,53 +133,8 @@ public class WebLoginContext extends UsernamePasswordContext {
         return subject;
     }
 
-    private void checkStudyPermissionRoles(MBeanServerConnection server, DefaultSubject subject, WebApplication app) {
-        SecureSession secureSession = ((SecureSession) RequestCycle.get().getSession());
-        if (secureSession.getUseStudyPermissions()) {
-            secureSession.setStudyPermissionRight(StudyPermissionRight.NONE);
-            String studyPermissionsAll;
-            try {
-                studyPermissionsAll = (String) server.getAttribute(
-                        new ObjectName(((BaseWicketApplication) app).getInitParameter("WebCfgServiceName")),
-                        "studyPermissionsAllRolename");
-            } catch (Exception e) {
-                studyPermissionsAll = "StudyPermissionsAll";
-                log.warn("Failed to get 'studyPermissionsAllRolename' attribute from Web Config Service! Use default='StudyPermissionsAll'", e);
-            }  
-            String studyPermissionsOwn;
-            try {
-                studyPermissionsOwn = (String) server.getAttribute(
-                        new ObjectName(((BaseWicketApplication) app).getInitParameter("WebCfgServiceName")),
-                        "studyPermissionsOwnRolename");
-            } catch (Exception e) {
-                studyPermissionsOwn = "StudyPermissionsOwn";
-                log.warn("Failed to get 'studyPermissionsOwnRolename' attribute from Web Config Service! Use default='StudyPermissionsOwn'", e);
-            }  
-            if (studyPermissionsAll != null || studyPermissionsOwn != null) {
-                Iterator<org.apache.wicket.security.hive.authorization.Principal> i = subject.getPrincipals().iterator();
-                while (i.hasNext()) {
-                    String rolename = i.next().getName();    
-                    if (rolename.equals(studyPermissionsAll)) {
-                        secureSession.setStudyPermissionRight(StudyPermissionRight.ALL);
-                        break;
-                    } else if (rolename.equals(studyPermissionsOwn))
-                        secureSession.setStudyPermissionRight(StudyPermissionRight.OWN);
-                }
-            }
-        }
-    }
-
-    private void checkLoginAllowed(MBeanServerConnection server,
-            DefaultSubject subject) {
-        String rolename;
-        try {
-            rolename = (String) server.getAttribute(
-                    new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("WebCfgServiceName")),  
-                    "loginAllowedRolename");
-        } catch (Exception x) {
-            rolename = "LoginAllowed";
-            log.warn("Failed to get 'loginAllowedRolename' attribute from Web Config Service! Use default='loginAllowed'", x);
-        }
+    private void checkLoginAllowed(DefaultSubject subject) {
+        String rolename = WebCfgDelegate.getInstance().getString("loginAllowedRolename");
         if (!subject.getPrincipals().contains(new SimplePrincipal(rolename))) {                            
           ((SecureSession) RequestCycle.get().getSession()).invalidate();
           log.warn("Failed to authorize subject for login, denied. See 'LoginAllowed' rolename attribute in Web Config Service.");
