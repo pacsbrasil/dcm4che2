@@ -96,6 +96,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.Modality,
             Tags.ModalitiesInStudy, 
             Tags.InstitutionName,
+            Tags.InstitutionCodeSeq,
             Tags.StationName,
             Tags.SeriesDescription,
             Tags.InstitutionalDepartmentName,
@@ -122,6 +123,11 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     private static final int[] MATCHING_VERIFYING_OBSERVER = new int[] {
             Tags.VerificationDateTime,
             Tags.VerifyingObserverName };
+
+    private static final int[] MATCHING_CODE_ITEM_KEYS= new int[] {
+            Tags.CodeValue,
+            Tags.CodingSchemeDesignator,
+            Tags.CodingSchemeVersion };
 
     private static final int[] MATCHING_REQ_ATTR_KEYS = new int[] {
             Tags.StudyInstanceUID,
@@ -423,14 +429,14 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime", type2, keys
                 .getDateTimeRange(Tags.PPSStartDate, Tags.PPSStartTime));
         sqlBuilder.addListOfStringMatch(null, "Series.sourceAET", type2, getCallingAETs(keys));
-        if (this.isMatchRequestAttributes()) {
-            Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
 
+        if (this.isMatchRequestAttributes()) {
             SqlBuilder subQuery = new SqlBuilder();
             subQuery.setSelect(new String[] { "SeriesRequest.pk" });
             subQuery.setFrom(new String[] { "SeriesRequest" });
             subQuery.addFieldValueMatch(null, "Series.pk", SqlBuilder.TYPE1, null,
                     "SeriesRequest.series_fk");
+            Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
             subQuery.addListOfUidMatch(null, "SeriesRequest.studyIuid", type2,
                     rqAttrs.getStrings(Tags.StudyInstanceUID));
             subQuery.addWildCardMatch(null,
@@ -451,6 +457,25 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             node0.addMatch(new Match.Subquery(subQuery, null, null));
         }
 
+        if (isMatchInstitutionCode()) {
+            SqlBuilder subQuery = new SqlBuilder();
+            subQuery.setSelect(new String[] { "Code.pk" });
+            subQuery.setFrom(new String[] { "Code" });
+            subQuery.addFieldValueMatch(null, "Code.pk", SqlBuilder.TYPE1, null,
+                    "Series.inst_code_fk");
+            Dataset code = keys.getItem(Tags.InstitutionCodeSeq);
+            subQuery.addSingleValueMatch(null, "Code.codeValue", type2,
+                    code.getString(Tags.CodeValue));
+            subQuery.addSingleValueMatch(null,
+                    "Code.codingSchemeDesignator", type2,
+                    code.getString(Tags.CodingSchemeDesignator));
+            subQuery.addSingleValueMatch(null,
+                    "Code.codingSchemeVersion", type2,
+                    code.getString(Tags.CodingSchemeVersion));
+            Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
+            node0.addMatch(new Match.Subquery(subQuery, null, null));
+        }
+
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             sqlBuilder.addWildCardMatch(null,
@@ -463,6 +488,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         matchingKeys.add(fieldTags);
         seqMatchingKeys.put(new Integer(Tags.RequestAttributesSeq),
                 new IntList().add(MATCHING_REQ_ATTR_KEYS));
+        seqMatchingKeys.put(new Integer(Tags.InstitutionCodeSeq),
+                new IntList().add(MATCHING_CODE_ITEM_KEYS));
     }
 
     protected void addInstanceMatch() {
@@ -486,7 +513,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             sqlBuilder.addSingleValueMatch(SR_CODE,
                     "Code.codingSchemeDesignator", type2, code
                             .getString(Tags.CodingSchemeDesignator));
-        }
+            sqlBuilder.addSingleValueMatch(SR_CODE,
+                    "Code.codingSchemeVersion", type2, code
+                            .getString(Tags.CodingSchemeVersion));
+       }
         if (this.isMatchVerifyingObserver()) {
             Dataset voAttrs = keys.getItem(Tags.VerifyingObserverSeq);
 
@@ -517,8 +547,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
         matchingKeys.add(MATCHING_INSTANCE_KEYS);
         matchingKeys.add(fieldTags);
-        seqMatchingKeys.put(new Integer(Tags.ConceptNameCodeSeq), new IntList()
-                .add(Tags.CodeValue).add(Tags.CodingSchemeDesignator));
+        seqMatchingKeys.put(new Integer(Tags.ConceptNameCodeSeq),
+                new IntList().add(MATCHING_CODE_ITEM_KEYS));
         seqMatchingKeys.put(new Integer(Tags.VerifyingObserverSeq),
                 new IntList().add(MATCHING_VERIFYING_OBSERVER));
     }
@@ -999,6 +1029,13 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     
     protected boolean isMatchSrCode() {
         Dataset code = keys.getItem(Tags.ConceptNameCodeSeq);
+        return code != null
+                && (code.containsValue(Tags.CodeValue)
+                        || code.containsValue(Tags.CodingSchemeDesignator));
+    }
+
+    protected boolean isMatchInstitutionCode() {
+        Dataset code = keys.getItem(Tags.InstitutionCodeSeq);
         return code != null
                 && (code.containsValue(Tags.CodeValue)
                         || code.containsValue(Tags.CodingSchemeDesignator));

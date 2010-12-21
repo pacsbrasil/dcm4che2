@@ -46,6 +46,7 @@ ALTER TABLE mpps DROP INDEX mpps_modality;
 ALTER TABLE mpps DROP INDEX mpps_accession_no;
 ALTER TABLE series DROP INDEX study_fk;
 ALTER TABLE series DROP INDEX series_mpps_fk;
+ALTER TABLE series DROP INDEX series_inst_code_fk;
 ALTER TABLE series DROP INDEX series_iuid;
 ALTER TABLE series DROP INDEX series_no;
 ALTER TABLE series DROP INDEX modality;

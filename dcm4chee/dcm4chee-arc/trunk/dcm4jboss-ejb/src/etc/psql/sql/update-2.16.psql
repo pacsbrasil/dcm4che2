@@ -22,8 +22,11 @@ CREATE INDEX ref_phys_fn_sx ON study(ref_phys_fn_sx);
 CREATE INDEX ref_phys_gn_sx ON study(ref_phys_gn_sx);
 
 ALTER TABLE series
+   ADD inst_code_fk INT8,
    ADD perf_phys_fn_sx TEXT,
    ADD perf_phys_gn_sx TEXT;
+ALTER TABLE series ADD FOREIGN KEY (inst_code_fk) REFERENCES code(pk);
+CREATE INDEX series_inst_code_fk ON series(inst_code_fk);
 CREATE INDEX perf_phys_fn_sx ON series(perf_phys_fn_sx);
 CREATE INDEX perf_phys_gn_sx ON series(perf_phys_gn_sx);
 

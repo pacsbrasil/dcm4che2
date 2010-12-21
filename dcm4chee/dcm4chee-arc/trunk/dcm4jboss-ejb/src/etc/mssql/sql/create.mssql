@@ -178,6 +178,7 @@ CREATE TABLE series (
     pk                NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT series_pk PRIMARY KEY,
     study_fk          NUMERIC(19,0) NULL,
     mpps_fk           NUMERIC(19,0) NULL,
+    inst_code_fk      NUMERIC(19,0) NULL,
     series_iuid       VARCHAR(255) NOT NULL,
     series_no         VARCHAR(255) NULL,
     modality          VARCHAR(255) NULL,
@@ -209,10 +210,12 @@ CREATE TABLE series (
     updated_time      DATETIME NULL,
     series_attrs      IMAGE NULL,
 FOREIGN KEY (study_fk) REFERENCES study(pk),
-FOREIGN KEY (mpps_fk) REFERENCES mpps(pk)
+FOREIGN KEY (mpps_fk) REFERENCES mpps(pk),
+FOREIGN KEY (inst_code_fk) REFERENCES code(pk)
 );
 CREATE INDEX study_fk ON series(study_fk);
 CREATE INDEX series_mpps_fk ON series(mpps_fk);
+CREATE INDEX series_inst_code_fk ON series(inst_code_fk);
 CREATE UNIQUE INDEX series_iuid ON series(series_iuid);
 CREATE INDEX series_no ON series(series_no);
 CREATE INDEX modality ON series(modality);

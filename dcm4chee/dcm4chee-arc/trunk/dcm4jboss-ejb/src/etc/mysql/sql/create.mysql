@@ -174,6 +174,7 @@ CREATE TABLE series (
     pk                BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     study_fk          BIGINT,
     mpps_fk           BIGINT,
+    inst_code_fk      BIGINT,
     series_iuid       VARCHAR(250) BINARY NOT NULL,
     series_no         VARCHAR(250) BINARY,
     modality          VARCHAR(250) BINARY,
@@ -206,9 +207,11 @@ CREATE TABLE series (
     series_attrs      LONGBLOB,
 FOREIGN KEY (study_fk) REFERENCES study(pk),
 FOREIGN KEY (mpps_fk) REFERENCES mpps(pk)
+FOREIGN KEY (inst_code_fk) REFERENCES code(pk)
 ) ENGINE=INNODB;
 CREATE INDEX study_fk ON series(study_fk);
 CREATE INDEX series_mpps_fk ON series(mpps_fk);
+CREATE INDEX series_inst_code_fk ON series(inst_code_fk);
 CREATE UNIQUE INDEX series_iuid ON series(series_iuid(64));
 CREATE INDEX series_no ON series(series_no(16));
 CREATE INDEX modality ON series(modality(16));

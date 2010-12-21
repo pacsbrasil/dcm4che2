@@ -68,6 +68,8 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
+import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
@@ -152,7 +154,7 @@ import org.dcm4chex.archive.util.Convert;
  * 
  * @ejb.ejb-ref ejb-name="MPPS" view-type="local" ref-name="ejb/MPPS"
  * @ejb.ejb-ref ejb-name="SeriesRequest" view-type="local" ref-name="ejb/Request"
- * @ejb.ejb-ref ejb-name="FileSystem" view-type="local" ref-name="ejb/FileSystem"
+ * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  * 
  */
 public abstract class SeriesBean implements EntityBean {
@@ -164,7 +166,7 @@ public abstract class SeriesBean implements EntityBean {
     private EntityContext ejbctx;
     private MPPSLocalHome mppsHome;
     private SeriesRequestLocalHome reqHome;
-//    private FileSystemLocalHome fsHome;
+    private CodeLocalHome codeHome;
 
     public void setEntityContext(EntityContext ctx) {
         ejbctx = ctx;
@@ -175,9 +177,9 @@ public abstract class SeriesBean implements EntityBean {
                     jndiCtx.lookup("java:comp/env/ejb/MPPS");
             reqHome = (SeriesRequestLocalHome)
                     jndiCtx.lookup("java:comp/env/ejb/Request");
-//            fsHome = (FileSystemLocalHome)
-//            		jndiCtx.lookup("java:comp/env/ejb/FileSystem");
-        } catch (NamingException e) {
+            codeHome = (CodeLocalHome)
+                    jndiCtx.lookup("java:comp/env/ejb/Code");
+     } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
             if (jndiCtx != null) {
@@ -192,7 +194,7 @@ public abstract class SeriesBean implements EntityBean {
     public void unsetEntityContext() {
         mppsHome = null;
         reqHome = null;
-//        fsHome = null;
+        codeHome = null;
         ejbctx = null;
     }
 
@@ -449,6 +451,16 @@ public abstract class SeriesBean implements EntityBean {
      */
     public abstract void setSeriesStatus(int status);
     
+    
+    /**
+     * @ejb.relation name="series-inst-code" role-name="series-with-inst-code"
+     *               target-ejb="Code" target-role-name="inst-code-of-series"
+     *               target-multiple="yes"
+     * @jboss.relation fk-column="inst_code_fk" related-pk-field="pk"
+     */
+    public abstract CodeLocal getInstitutionCode();
+    public abstract void setInstitutionCode(CodeLocal instCode);
+
     /**
      * @ejb.interface-method
      * @ejb.relation name="study-series" role-name="series-of-study"
@@ -506,6 +518,22 @@ public abstract class SeriesBean implements EntityBean {
         log.info("Created " + prompt());
     }
 
+    private boolean updateInstitutionCode(Dataset oldCode, Dataset newCode) {
+        if (oldCode == null ? newCode == null 
+                : oldCode.equals(newCode)) {
+            return false;
+        }
+        try {
+            setInstitutionCode(newCode == null ? null
+                    : CodeBean.valueOf(codeHome, newCode));
+        } catch (CreateException e) {
+            throw new EJBException(e);
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+        return true;
+    }
+
     /**
      * Update series attributes and SeriesRequest.
      * <p>
@@ -519,10 +547,14 @@ public abstract class SeriesBean implements EntityBean {
     public boolean updateAttributes( Dataset newAttrs, 
             boolean overwriteReqAttrSQ, Dataset modifiedAttrs ) {
         Dataset oldAttrs = getAttributes(false);
-        boolean updated = updateSeriesRequest(oldAttrs, newAttrs, overwriteReqAttrSQ);
+        updateSeriesRequest(oldAttrs, newAttrs, overwriteReqAttrSQ);
         if ( oldAttrs == null ) {
+            updateInstitutionCode(null,
+                    newAttrs.getItem(Tags.InstitutionCodeSeq));
             setAttributes( newAttrs );
         } else {
+            updateInstitutionCode(oldAttrs.getItem(Tags.InstitutionCodeSeq),
+                    newAttrs.getItem(Tags.InstitutionCodeSeq));
             AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
             if (!AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs),
                     modifiedAttrs, log) )
@@ -1051,23 +1083,24 @@ public abstract class SeriesBean implements EntityBean {
     public void coerceAttributes(Dataset ds, Dataset coercedElements)
     throws DcmServiceException {
         AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
+        Dataset attrs = getAttributes(false);
+        Dataset oldInstCode = attrs.getItem(Tags.InstitutionCodeSeq);
         if (filter.isOverwrite()) {
-            Dataset attrs;
             if (filter.isMerge()) {
-                attrs = getAttributes(false);
                 AttrUtils.updateAttributes(attrs, filter.filter(ds), null, log);
             } else {
                 attrs = filter.filter(ds);
             }
             setAttributesInternal(attrs, filter);
         } else {
-            Dataset attrs = getAttributes(false);
             AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
             if (filter.isMerge()
                     && AttrUtils.mergeAttributes(attrs, filter.filter(ds), log)) {
                 setAttributesInternal(attrs, filter);
             }
         }
+        updateInstitutionCode(oldInstCode,
+                attrs.getItem(Tags.InstitutionCodeSeq));
     }
 
     /**

@@ -30,6 +30,7 @@
         <attr tag="00080060"/> <!-- Modality -->
         <attr tag="00080070"/> <!-- Manufacturer -->
         <attr tag="00080080" case-sensitive="false"/> <!-- Institution Name -->
+        <attr tag="00080082"/> <!-- Institution Code Sequence -->
         <attr tag="00081010" case-sensitive="false"/> <!-- Station Name -->
         <attr tag="0008103E" case-sensitive="false"/> <!-- Series Description -->
         <attr tag="00081040" case-sensitive="false"/> <!-- Institutional Department Name -->
