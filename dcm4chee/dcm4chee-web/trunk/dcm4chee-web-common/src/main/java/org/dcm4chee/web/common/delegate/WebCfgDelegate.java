@@ -148,23 +148,11 @@ public class WebCfgDelegate {
         }
     }
     public boolean isQueryAfterPagesizeChange() {
-        if (server == null) return true;
-        try {
-            return (Boolean) server.getAttribute(serviceObjectName, "QueryAfterPagesizeChange"); 
-        } catch (Exception x) {
-            log.warn("Cant get QueryAfterPagesizeChange attribute! return true as default!", x);
-            return true;
-        }
+        return getBoolean("QueryAfterPagesizeChange", true); 
     }
 
     public boolean useFamilyAndGivenNameQueryFields() {
-        if (server == null) return false;
-        try {
-            return getBoolean("useFamilyAndGivenNameQueryFields", false); 
-        } catch (Exception x) {
-            log.warn("Cant get useFamilyAndGivenNameQueryFields attribute! return false as default!", x);
-            return false;
-        }
+        return getBoolean("useFamilyAndGivenNameQueryFields", false); 
     }
 
     public String getMpps2mwlPresetPatientname() {
