@@ -567,7 +567,6 @@ public class MoveEntitiesPage extends SecureWebPage {
                                 studyModel.getPPSs().iterator().next().getSeries().iterator().next().expand();
                             }
                         } else if (seriesModel != null) {
-                            //seriesModel.getPPS().getStudy().getPPSs().add(seriesModel.getPPS());
                             seriesModel.expand();
                         }
                     }
