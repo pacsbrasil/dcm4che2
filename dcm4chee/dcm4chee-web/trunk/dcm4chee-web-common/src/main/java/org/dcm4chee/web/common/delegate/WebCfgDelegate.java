@@ -48,9 +48,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.apache.wicket.Application;
-import org.apache.wicket.RequestCycle;
 import org.apache.wicket.protocol.http.WebApplication;
-import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -162,7 +160,7 @@ public class WebCfgDelegate {
     public boolean useFamilyAndGivenNameQueryFields() {
         if (server == null) return false;
         try {
-            return (Boolean) server.getAttribute(serviceObjectName, "useFamilyAndGivenNameQueryFields"); 
+            return getBoolean("useFamilyAndGivenNameQueryFields", false); 
         } catch (Exception x) {
             log.warn("Cant get useFamilyAndGivenNameQueryFields attribute! return false as default!", x);
             return false;
@@ -190,6 +188,16 @@ public class WebCfgDelegate {
         } catch (Exception x) {
             log.warn("Cant get "+attrName+"! Ignored by return null!", x);
             return null;
+        }
+    }
+    
+    public boolean getBoolean(String attrName, boolean defVal) {
+        if (server == null) return defVal;
+        try {
+            return (Boolean) server.getAttribute(serviceObjectName, attrName);
+        } catch (Exception x) {
+            log.warn("Cant get "+attrName+" attribute! return "+defVal+" as default!", x);
+            return defVal;
         }
     }
 
