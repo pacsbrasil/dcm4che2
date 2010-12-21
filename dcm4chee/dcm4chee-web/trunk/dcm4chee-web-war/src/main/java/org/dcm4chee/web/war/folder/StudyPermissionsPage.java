@@ -87,11 +87,11 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
-import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
-import org.dcm4chee.web.common.secure.SecureSession.StudyPermissionRight;
 import org.dcm4chee.web.dao.folder.StudyPermissionsLocal;
 import org.dcm4chee.web.dao.folder.model.DicomRole;
+import org.dcm4chee.web.war.StudyPermissionHelper;
+import org.dcm4chee.web.war.StudyPermissionHelper.StudyPermissionRight;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
@@ -398,17 +398,13 @@ public class StudyPermissionsPage extends SecureWebPage {
     }
 
     private boolean checkStudyPermissionRights(DicomRole role, boolean permitOnlyGrantAll) {
-        SecureSession secureSession = ((SecureSession) RequestCycle.get().getSession());
-        if (secureSession.getUseStudyPermissions() == false)
-            return true;
-        if (secureSession.isRoot())
-            return true;
-        if (secureSession.getStudyPermissionRight().equals(StudyPermissionRight.ALL))
+        StudyPermissionHelper sph = StudyPermissionHelper.get();
+        if (!sph.useStudyPermissions() || sph.getStudyPermissionRight().equals(StudyPermissionRight.ALL))
             return true;
         if ((permitOnlyGrantAll) || (role == null)) 
             return false;
-        if (secureSession.getStudyPermissionRight().equals(StudyPermissionRight.OWN))
-            return secureSession.getDicomRoles().contains(role.getRolename());
+        if (sph.getStudyPermissionRight().equals(StudyPermissionRight.OWN))
+            return sph.getDicomRoles().contains(role.getRolename());
         return false;
     }
     

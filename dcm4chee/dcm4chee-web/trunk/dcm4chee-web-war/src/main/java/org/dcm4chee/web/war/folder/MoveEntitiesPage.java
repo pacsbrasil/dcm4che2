@@ -41,6 +41,7 @@ package org.dcm4chee.web.war.folder;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -68,15 +69,16 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.PrivateTag;
+import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.exceptions.SelectionException;
-import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.dao.common.DicomEditLocal;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
+import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
@@ -113,6 +115,7 @@ public class MoveEntitiesPage extends SecureWebPage {
     public static final String MSGID_ERR_SELECTION_MOVE_PPS = "move.message.error.movePPS";
     public static final String MSG_ERR_SELECTION_MOVENOT_ONLINE = "Selection for move entities must have ONLINE availability!";
     public static final String MSGID_ERR_SELECTION_MOVE_NOT_ONLINE = "move.message.error.moveNotOnline";
+    public static final String MSGID_ERR_SELECTION_MOVE_NOT_ALLOWED = "folder.message.moveNotAllowed";
     
     private static final int MISSING_NOTHING = 0;
     private static final int MISSING_STUDY = 1;
@@ -137,7 +140,6 @@ public class MoveEntitiesPage extends SecureWebPage {
     private ModalWindow window;
     
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-    SecureSession secureSession = ((SecureSession) getSession());
 
     public MoveEntitiesPage(ModalWindow window, SelectedEntities selectedEntities, List<PatientModel> all) {
         super();
@@ -170,6 +172,8 @@ public class MoveEntitiesPage extends SecureWebPage {
         if (pats > 1) {
             return MSGID_ERR_SELECTION_MOVE_DESTINATION;
         } 
+        if (!checkStudyPermissionOfSelection())
+            return MSGID_ERR_SELECTION_MOVE_NOT_ALLOWED;
         if( pats == 1) {
             PatientModel patModel = selected.getPatients().iterator().next();
             if (selected.getStudies().size() < 1) {
@@ -196,6 +200,7 @@ public class MoveEntitiesPage extends SecureWebPage {
                     return MSGID_ERR_SELECTION_MOVE_NO_SOURCE;
                 }
             } else if (selected.hasSeries() || selected.hasInstances()) {
+
             } else {
                 for ( StudyModel m : selected.getStudies()) {
                     if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE) {
@@ -249,6 +254,28 @@ public class MoveEntitiesPage extends SecureWebPage {
         return MSGID_ERR_SELECTION_MOVE_NO_SELECTION;
     }
     
+    private boolean checkStudyPermissionOfSelection() {
+        StudyPermissionHelper sph = StudyPermissionHelper.get();
+        if (!sph.useStudyPermissions())
+            return true;
+        String action = (selected.getPatients().size() > 0) ? StudyPermission.DELETE_ACTION : StudyPermission.APPEND_ACTION;
+        if (selected.getStudies().size() > 0) {
+            if (!sph.checkPermission(selected.getStudies(), action))
+                return false;
+            action = StudyPermission.DELETE_ACTION;
+        }
+        if (selected.getSeries().size() > 0) {
+            if (!sph.checkPermission(selected.getSeries(), action))
+                return false;
+            action = StudyPermission.DELETE_ACTION;
+        }
+        if (selected.getInstances().size() > 0) {
+            if (!sph.checkPermission(selected.getInstances(), action))
+                return false;
+        }
+        return true;
+    }
+    
     private DicomObject combine(DicomObject instAttrs, DicomObject seriesAttrs, DicomObject studyAttrs) {
         DicomObject attrs = new BasicDicomObject();
         if (instAttrs != null)
@@ -288,7 +315,6 @@ public class MoveEntitiesPage extends SecureWebPage {
                 @Override
                 protected void onSubmit() {
                     studyModel.update(getDicomObject());
-                    pat.getStudies().add(studyModel);
                     selected.getPatients().clear();
                     selected.getStudies().add(studyModel);
                     missingState = missingState & ~MISSING_STUDY;
@@ -541,7 +567,7 @@ public class MoveEntitiesPage extends SecureWebPage {
                                 studyModel.getPPSs().iterator().next().getSeries().iterator().next().expand();
                             }
                         } else if (seriesModel != null) {
-                            seriesModel.getPPS().getStudy().getPPSs().add(seriesModel.getPPS());
+                            //seriesModel.getPPS().getStudy().getPPSs().add(seriesModel.getPPS());
                             seriesModel.expand();
                         }
                     }

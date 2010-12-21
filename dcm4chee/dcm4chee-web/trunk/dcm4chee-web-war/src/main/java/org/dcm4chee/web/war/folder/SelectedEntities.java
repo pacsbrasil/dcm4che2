@@ -44,7 +44,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 import org.dcm4chee.web.war.folder.model.FileModel;
@@ -74,44 +73,53 @@ public class SelectedEntities implements Serializable {
         return update(useStudyPermissions, allPatients, action, false);
     }
     
-    public boolean update(boolean useStudyPermissions, List<PatientModel> allPatients, String action, boolean all) {
+    /**
+     * 
+     * @param useStudyPermissions check StudyPermission
+     * @param allPatients List of all Patient models in view.
+     * @param action StudyPermission action that must be allowed.
+     * @param all Select also childs of selected entities
+     * @param patIsTarget Patient is target: keep selection even when the StudyPermissions are not fulfilled
+     * @return true if one ore more entities are not allowed 
+     */
+    public boolean update(boolean useStudyPermissions, List<PatientModel> allPatients, String action, 
+            boolean allowSrcInTarget) {
         boolean ignoredNotAllowedEntities = false;
         clear();
-        for ( PatientModel patient : allPatients ) {
+        patLoop: for ( PatientModel patient : allPatients ) {
             if (patient.isSelected()) {
-                int allowedStudyCount = 0;
-                for (StudyModel study : patient.getStudies()) {
-                    if (study.getStudyPermissionActions().contains(action) || !useStudyPermissions) {
-                        studies.add(study);
-                        allowedStudyCount++;
+                if (!allowSrcInTarget) {
+                    for (StudyModel study : patient.getStudies()) {
+                        if (useStudyPermissions && !study.getStudyPermissionActions().contains(action)) {
+                            ignoredNotAllowedEntities = true;
+                            continue patLoop;
+                        }
                     }
                 }
-                if (allowedStudyCount == patient.getStudies().size() || !useStudyPermissions)
-                    patients.add(patient);
-                else
-                    ignoredNotAllowedEntities = true;
+                patients.add(patient);
             }
-            if (all || !patient.isSelected()) {
-                for (StudyModel study : patient.getStudies()) {
-                    if (study.isSelected()) {
-                        if  (study.getStudyPermissionActions().contains(action) || !useStudyPermissions) 
-                            studies.add(study);
-                        else 
-                            ignoredNotAllowedEntities = true;
+            if (allowSrcInTarget || !patient.isSelected()) {
+                studyLoop: for (StudyModel study : patient.getStudies()) {
+                    if  (useStudyPermissions && !study.getStudyPermissionActions().contains(action)) {
+                        ignoredNotAllowedEntities = true;
+                        continue studyLoop;
                     }
-                    if (all || !study.isSelected()) {
+                    if (study.isSelected()) {
+                        studies.add(study);
+                    }
+                    if (allowSrcInTarget || !study.isSelected()) {
                         for ( PPSModel pps : study.getPPSs()) {
-                            if (pps.isSelected() && (pps.getStudy().getStudyPermissionActions().contains(action) || !useStudyPermissions)) {
+                            if (pps.isSelected()) {
                                ppss.add(pps);
                             }
-                            if (all || !pps.isSelected()) {
+                            if (allowSrcInTarget || !pps.isSelected()) {
                                 for ( SeriesModel series : pps.getSeries()) {
-                                    if (series.isSelected() && (series.getPPS().getStudy().getStudyPermissionActions().contains(action) || !useStudyPermissions)) {
+                                    if (series.isSelected()) {
                                         seriess.add(series);
                                     }
-                                    if (all || !series.isSelected()) {
+                                    if (allowSrcInTarget || !series.isSelected()) {
                                         for (InstanceModel inst : series.getInstances()) {
-                                            if (inst.isSelected() && (inst.getSeries().getPPS().getStudy().getStudyPermissionActions().contains(action) || !useStudyPermissions)) {
+                                            if (inst.isSelected()) {
                                                 instances.add(inst);
                                             }
                                         }
@@ -234,9 +242,6 @@ public class SelectedEntities implements Serializable {
         }
     }
     
-    public void refreshView(boolean b, SecureSession secureSession) {
-    }
-
     public void refreshView(boolean deselect) {
         for (InstanceModel m : instances) {
             refreshChilds(m.getSeries());

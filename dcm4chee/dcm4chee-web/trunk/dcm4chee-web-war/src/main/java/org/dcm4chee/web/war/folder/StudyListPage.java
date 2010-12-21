@@ -117,7 +117,6 @@ import org.dcm4chee.web.common.markup.PopupLink;
 import org.dcm4chee.web.common.markup.SimpleDateTimeField;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
-import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.validators.UIDValidator;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
@@ -125,6 +124,7 @@ import org.dcm4chee.web.dao.folder.StudyListFilter;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
+import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.common.EditDicomObjectPanel;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
@@ -161,7 +161,7 @@ public class StudyListPage extends Panel {
     private static final String MODULE_NAME = "folder";
     private static final long serialVersionUID = 1L;
     private static Logger log = LoggerFactory.getLogger(StudyListPage.class);
-    private ViewPort viewport = ((AuthenticatedWebSession) Session.get()).getFolderViewPort();
+    private ViewPort viewport = ((AuthenticatedWebSession) AuthenticatedWebSession.get()).getFolderViewPort();
     private StudyListHeader header;
     private SelectedEntities selected = new SelectedEntities();
 
@@ -187,7 +187,8 @@ public class StudyListPage extends Panel {
     private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
      
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-    SecureSession secureSession = ((SecureSession) getSession());
+    
+    StudyPermissionHelper studyPermissionHelper;
     
     public StudyListPage(final String id) {
         super(id);
@@ -195,8 +196,8 @@ public class StudyListPage extends Panel {
         if (StudyListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
         
-        if (secureSession.isWebStudyPermissions())
-            dao.setDicomSecurityRoles(secureSession.getDicomRoles(), secureSession.isRoot());
+        studyPermissionHelper = StudyPermissionHelper.get(); 
+        dao.setDicomSecurityRoles(studyPermissionHelper.getDicomRoles());
 
         add(modalWindow = new ModalWindow("modal-window"));
         modalWindow.setWindowClosedCallback(new WindowClosedCallback() {
@@ -612,7 +613,8 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                boolean hasIgnored = selected.update(secureSession.isWebStudyPermissions() && !secureSession.isRoot(), viewport.getPatients(), StudyPermission.DELETE_ACTION);
+                boolean hasIgnored = selected.update(studyPermissionHelper.useStudyPermissions(), 
+                        viewport.getPatients(), StudyPermission.DELETE_ACTION);
                 selected.deselectChildsOfSelectedEntities();
                 confirmDelete.setRemark(hasIgnored ? new StringResourceModel("folder.message.deleteNotAllowed",this, null) : null);
                 if (selected.hasPPS()) {
@@ -646,14 +648,7 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                boolean hasIgnored = selected.update(secureSession.isWebStudyPermissions() && !secureSession.isRoot(), viewport.getPatients(), StudyPermission.UPDATE_ACTION, true);
-                if (secureSession.isWebStudyPermissions() && hasIgnored && !secureSession.isRoot()) {
-                    msgWin.setColor("#FF0000");
-                    msgWin.setInfoMessage(getString("folder.message.moveNotAllowed"));
-                    msgWin.show(target);
-                    return;
-                } else
-                    msgWin.setColor("");
+                selected.update(false, viewport.getPatients(), StudyPermission.UPDATE_ACTION, true);
                 log.info("Selected Entities:"+selected);
                 if (selected.hasDicomSelection()) {
                     modalWindow
@@ -804,7 +799,7 @@ public class StudyListPage extends Panel {
         for (Object[] patientAndStudy : patientAndStudies) {
             PatientModel patientModel = addPatient((Patient) patientAndStudy[0]);
             if (patientAndStudy[1] != null) 
-                addStudy((Study) patientAndStudy[1], patientModel, dao.findStudyPermissionActions(((Study) patientAndStudy[1]).getStudyInstanceUID(), secureSession.getDicomRoles()));
+                addStudy((Study) patientAndStudy[1], patientModel, dao.findStudyPermissionActions(((Study) patientAndStudy[1]).getStudyInstanceUID()));
         }
         header.setExpandAllLevel(1);
     }
@@ -827,7 +822,7 @@ public class StudyListPage extends Panel {
                 return patientModel;
             }
         }
-        PatientModel patientModel = new PatientModel(patient, latestStudyFirst, secureSession);
+        PatientModel patientModel = new PatientModel(patient, latestStudyFirst);
         viewport.getPatients().add(patientModel);
         return patientModel;
     }
@@ -1061,7 +1056,7 @@ public class StudyListPage extends Panel {
             }
                 .add(new Image("selectImg",ImageManager.IMAGE_COMMON_SEARCH)
                 .add(new ImageSizeBehaviour()))
-                .setVisible(ignoreStudyPermissions() || studyModel.getStudyPermissionActions().contains(StudyPermission.READ_ACTION))
+                .setVisible(studyPermissionHelper.checkPermission(studyModel, StudyPermission.READ_ACTION))
                 .add(new SecurityBehavior(getModuleName() + ":imageSelectionStudyLink"))
             );
             item.add( new AjaxCheckBox("selected") {
@@ -1093,12 +1088,12 @@ public class StudyListPage extends Panel {
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
                 .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
                 .add(tooltip))
-                .setVisible(ignoreStudyPermissions() || studyModel.getStudyPermissionActions().contains(StudyPermission.READ_ACTION))
+                .setVisible(studyPermissionHelper.checkPermission(studyModel, StudyPermission.READ_ACTION))
                 .add(new SecurityBehavior(getModuleName() + ":webviewerStudyLink"))
             );
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", studyModel, false));
-            details.setVisible(ignoreStudyPermissions() || studyModel.getStudyPermissionActions().contains(StudyPermission.QUERY_ACTION));
+            details.setVisible(studyPermissionHelper.checkPermission(studyModel, StudyPermission.QUERY_ACTION));
             item.add(new PPSListView("ppss",
                     studyModel.getPPSs(), patientListItem));
         }
@@ -1173,7 +1168,7 @@ public class StudyListPage extends Panel {
                 .add(tooltip))
             );
             item.add(getEditLink(modalWindow, ppsModel, tooltip)
-                    .setVisible(ignoreStudyPermissions() || ppsModel.getStudy().getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
+                    .setVisible(studyPermissionHelper.checkPermission(ppsModel, StudyPermission.UPDATE_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":editPPSLink"))
             );
             
@@ -1212,7 +1207,7 @@ public class StudyListPage extends Panel {
             .add(new ImageSizeBehaviour())
             .add(tooltip));
             item.add(linkBtn);
-            linkBtn.setVisible(ignoreStudyPermissions() || ppsModel.getStudy().getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION));
+            linkBtn.setVisible(studyPermissionHelper.checkPermission(ppsModel, StudyPermission.UPDATE_ACTION));
             linkBtn.add(new SecurityBehavior(getModuleName() + ":linkPPSLink"));
 
             item.add(new AjaxFallbackLink<Object>("unlinkBtn") {
@@ -1231,7 +1226,7 @@ public class StudyListPage extends Panel {
             }
 		.add(new Image("unlinkImg",ImageManager.IMAGE_FOLDER_UNLINK)
             	.add(new ImageSizeBehaviour()).add(tooltip))
-            	.setVisible(ignoreStudyPermissions() || ppsModel.getStudy().getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
+            	.setVisible(studyPermissionHelper.checkPermission(ppsModel, StudyPermission.UPDATE_ACTION))
             	.add(new SecurityBehavior(getModuleName() + ":unlinkPPSLink"))
             );
             
@@ -1252,7 +1247,7 @@ public class StudyListPage extends Panel {
             }
                 .add(new Image("emulateImg",ImageManager.IMAGE_COMMON_ADD)
                 .add(new ImageSizeBehaviour()).add(tooltip))
-                .setVisible(ignoreStudyPermissions() || ppsModel.getStudy().getStudyPermissionActions().contains(StudyPermission.APPEND_ACTION))
+                .setVisible(studyPermissionHelper.checkPermission(ppsModel, StudyPermission.APPEND_ACTION))
                 .add(new SecurityBehavior(getModuleName() + ":emulatePPSLink"))
             );
              
@@ -1282,7 +1277,7 @@ public class StudyListPage extends Panel {
             };
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", ppsModel, false));
-            details.setVisible(ignoreStudyPermissions() || ppsModel.getStudy().getStudyPermissionActions().contains(StudyPermission.QUERY_ACTION));
+            details.setVisible(studyPermissionHelper.checkPermission(ppsModel, StudyPermission.QUERY_ACTION));
             item.add(new SeriesListView("series",
                     ppsModel.getSeries(), ppsListItem));
         }
@@ -1344,7 +1339,7 @@ public class StudyListPage extends Panel {
                 .add(tooltip))
             );
             item.add(getEditLink(modalWindow, seriesModel, tooltip)
-                    .setVisible(ignoreStudyPermissions() || seriesModel.getPPS().getStudy().getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
+                    .setVisible(studyPermissionHelper.checkPermission(seriesModel.getPPS(), StudyPermission.UPDATE_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":editSeriesLink"))
             );
             item.add(new AjaxCheckBox("selected") {
@@ -1370,7 +1365,7 @@ public class StudyListPage extends Panel {
             }
                 .add(new Image("selectImg",ImageManager.IMAGE_COMMON_SEARCH)
                 .add(new ImageSizeBehaviour()))
-                .setVisible(ignoreStudyPermissions() || seriesModel.getPPS().getStudy().getStudyPermissionActions().contains(StudyPermission.READ_ACTION))
+                .setVisible(studyPermissionHelper.checkPermission(seriesModel, StudyPermission.READ_ACTION))
                 .add(new SecurityBehavior(getModuleName() + ":imageSelectionSeriesLink"))
             );
             final WebMarkupContainer details = new WebMarkupContainer("details") {
@@ -1393,12 +1388,12 @@ public class StudyListPage extends Panel {
                     PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
                     .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
                             .add(tooltip))
-                 .setVisible(ignoreStudyPermissions() || seriesModel.getPPS().getStudy().getStudyPermissionActions().contains(StudyPermission.READ_ACTION))
+                 .setVisible(studyPermissionHelper.checkPermission(seriesModel, StudyPermission.READ_ACTION))
                 .add(new SecurityBehavior(getModuleName() + ":webviewerSeriesLink"))
             );
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", seriesModel, false));
-            details.setVisible(ignoreStudyPermissions() || seriesModel.getPPS().getStudy().getStudyPermissionActions().contains(StudyPermission.QUERY_ACTION));
+            details.setVisible(studyPermissionHelper.checkPermission(seriesModel, StudyPermission.QUERY_ACTION));
             item.add(new InstanceListView("instances",
                     seriesModel.getInstances(), patientListItem));
         }
@@ -1457,7 +1452,7 @@ public class StudyListPage extends Panel {
             .add(new ImageSizeBehaviour())
             .add(tooltip)));
             item.add(getEditLink(modalWindow, instModel, tooltip)
-                    .setVisible(ignoreStudyPermissions() || instModel.getSeries().getPPS().getStudy().getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
+                    .setVisible(studyPermissionHelper.checkPermission(instModel, StudyPermission.UPDATE_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":editInstanceLink"))
             );
             item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForInstance(instModel.getSOPInstanceUID())) {
@@ -1472,7 +1467,7 @@ public class StudyListPage extends Panel {
                 .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
                         .add(tooltip)
                 )
-                .setVisible(ignoreStudyPermissions() || instModel.getSeries().getPPS().getStudy().getStudyPermissionActions().contains(StudyPermission.READ_ACTION))
+                .setVisible(studyPermissionHelper.checkPermission(instModel, StudyPermission.READ_ACTION))
                 .add(new SecurityBehavior(getModuleName() + ":webviewerInstanceLink"))
             );
 
@@ -1498,7 +1493,7 @@ public class StudyListPage extends Panel {
                 .add(new Image("wadoImg",ImageManager.IMAGE_FOLDER_WADO)
                 .add(new ImageSizeBehaviour())
                 .add(tooltip))
-                .setVisible(ignoreStudyPermissions() || instModel.getSeries().getPPS().getStudy().getStudyPermissionActions().contains(StudyPermission.READ_ACTION))
+                .setVisible(studyPermissionHelper.checkPermission(instModel, StudyPermission.READ_ACTION))
                 .add(new SecurityBehavior(getModuleName() + ":wadoImageInstanceLink"))
             );
 
@@ -1522,7 +1517,7 @@ public class StudyListPage extends Panel {
             };
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", instModel, false));
-            details.setVisible(ignoreStudyPermissions() || instModel.getSeries().getPPS().getStudy().getStudyPermissionActions().contains(StudyPermission.QUERY_ACTION));
+            details.setVisible(studyPermissionHelper.checkPermission(instModel, StudyPermission.QUERY_ACTION));
             item.add(new FileListView("files", instModel.getFiles(), patientListItem));
         }
     }
@@ -1659,9 +1654,7 @@ public class StudyListPage extends Panel {
             
             @Override
             public boolean isVisible() {
-                return (checkEditStudyPermission(model)
-                    && secureSession.getUseStudyPermissions())
-                    || secureSession.isRoot();
+                return model.getDataset() != null && checkEditStudyPermission(model);
             }
         };
         Image image = new Image("studyPermissionsImg",ImageManager.IMAGE_FOLDER_STUDY_PERMISSIONS);
@@ -1672,21 +1665,15 @@ public class StudyListPage extends Panel {
     }
 
     private boolean checkEditStudyPermission(AbstractDicomModel model) {
-        
-        SecureSession secureSession = (SecureSession) getSession();
-        if (!secureSession.isWebStudyPermissions() || secureSession.isRoot()) return true;
         int hasEditPermission = 0;
         if (model instanceof PatientModel) {
             for (StudyModel study : ((PatientModel) model).getStudies())
                 if (study.getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION))
                     hasEditPermission++;
-            return (hasEditPermission == ((PatientModel) model).getStudies().size())
-                && model.getDataset() != null;
-        } else if (model instanceof StudyModel) {
-            return model.getDataset() != null 
-                && ((StudyModel) model).getStudyPermissionActions().contains(StudyPermission.UPDATE_ACTION);
+            return (hasEditPermission == ((PatientModel) model).getStudies().size());
+        } else {
+            return studyPermissionHelper.checkPermission(model, StudyPermission.UPDATE_ACTION);
         }
-        return model.getDataset() != null;
     }
     
     private Link<Object> getAddStudyLink(final PatientModel model, TooltipBehaviour tooltip) {
@@ -1775,11 +1762,7 @@ public class StudyListPage extends Panel {
           
           @Override
           public boolean isVisible() {
-              if (ignoreStudyPermissions()) return true;
-              model.setStudyPermissionActions(
-                      dao.findStudyPermissionActions(model.getStudyInstanceUID(), secureSession.getDicomRoles()));
-              return (model.getDataset() != null 
-                      && model.getStudyPermissionActions().contains(StudyPermission.APPEND_ACTION));
+              return model.getDataset() != null && studyPermissionHelper.checkPermission(model, StudyPermission.APPEND_ACTION);
           }
         };
         Image image = new Image("addImg",ImageManager.IMAGE_COMMON_ADD);
@@ -1825,7 +1808,4 @@ public class StudyListPage extends Panel {
         }
     }
     
-    private boolean ignoreStudyPermissions() {
-        return (!secureSession.isWebStudyPermissions() || secureSession.isRoot());
-    }
 }

@@ -49,8 +49,8 @@ import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.PrivatePatient;
 import org.dcm4chee.archive.entity.PrivateStudy;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.dao.trash.TrashListLocal;
+import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
 /**
@@ -131,8 +131,7 @@ public class PrivPatientModel extends AbstractDicomModel implements Serializable
     @Override
     public void expand() {
         this.studies.clear();
-        if (((SecureSession) RequestCycle.get().getSession()).isWebStudyPermissions())
-            dao.setDicomSecurityRoles(((SecureSession) RequestCycle.get().getSession()).getDicomRoles());
+        dao.setDicomSecurityRoles(StudyPermissionHelper.get().getDicomRoles());
         for (PrivateStudy study : dao.findStudiesOfPatient(getPk())) {
             this.studies.add(new PrivStudyModel(study, this));
         }

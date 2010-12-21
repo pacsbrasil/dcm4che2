@@ -38,19 +38,13 @@
 
 package org.dcm4chee.web.common.secure;
 
-import java.security.Principal;
-import java.security.acl.Group;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.security.auth.Subject;
 
 import org.apache.wicket.Request;
 import org.apache.wicket.security.WaspApplication;
 import org.apache.wicket.security.WaspSession;
+import org.apache.wicket.security.hive.authentication.DefaultSubject;
+import org.apache.wicket.security.hive.authentication.Subject;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -62,11 +56,7 @@ public class SecureSession extends WaspSession {
     private static final long serialVersionUID = 1L;
     
     private String username;
-    private boolean isRoot;
     private HashMap<String, String> swarmPrincipals;
-    private List<String> dicomRoles;
-    private boolean webStudyPermissions;
-    private StudyPermissionRight studyPermissionRight;
     private boolean manageUsers;
     
     public SecureSession(WaspApplication application, Request request) {
@@ -80,30 +70,8 @@ public class SecureSession extends WaspSession {
     public void setUsername(String username) {
         this.username = username;
     }
-
-    public void setRoot(boolean isRoot) {
-        this.isRoot = isRoot;
-    }
-
-    public boolean isRoot() {
-        return isRoot;
-    }
-
-    public void setDicomSubject(Subject dicomSubject) {
-        if (dicomSubject == null) {
-            dicomRoles = null;
-        } else {
-            dicomRoles = new ArrayList<String>();
-            Iterator<Principal> i = dicomSubject.getPrincipals().iterator();
-            @SuppressWarnings("unused")
-            String dicomUsername = (i.hasNext() ? i.next().getName() : null);
-            Principal rolesPrincipal = (i.hasNext() ? i.next() : null);
-            if (rolesPrincipal instanceof Group) {
-                Enumeration<? extends Principal> e = ((Group) rolesPrincipal).members();
-                while (e.hasMoreElements()) 
-                    dicomRoles.add(e.nextElement().getName());
-            }
-        }
+    
+    public void extendedLogin(String username, String passwd, Subject subject) {
     }
 
     public void setSwarmPrincipals(HashMap<String, String> principals) {
@@ -112,34 +80,6 @@ public class SecureSession extends WaspSession {
     
     public HashMap<String, String> getSwarmPrincipals() {
         return swarmPrincipals;
-    }
-
-    public List<String> getDicomRoles() {
-        return dicomRoles;
-    }
-    
-    public boolean getUseStudyPermissions() {
-        return dicomRoles != null;
-    }
-
-    public void setWebStudyPermissions(boolean webStudyPermissions) {
-        this.webStudyPermissions = webStudyPermissions;
-    }
-
-    public boolean isWebStudyPermissions() {
-        return webStudyPermissions;
-    }
-
-    public void setStudyPermissionRight(StudyPermissionRight studyPermissionRight) {
-        this.studyPermissionRight = studyPermissionRight;
-    }
-
-    public StudyPermissionRight getStudyPermissionRight() {
-        return studyPermissionRight;
-    }
-    
-    public enum StudyPermissionRight {
-        NONE, OWN, ALL 
     }
 
     public void setManageUsers(boolean manageUsers) {

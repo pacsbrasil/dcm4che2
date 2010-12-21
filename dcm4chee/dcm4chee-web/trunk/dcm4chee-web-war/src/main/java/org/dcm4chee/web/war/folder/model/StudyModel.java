@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.wicket.RequestCycle;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -53,8 +52,8 @@ import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
+import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 
@@ -73,7 +72,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     private String modalities;
     private int numberOfStudyRelatedSeries;
     private int numberOfStudyRelatedInstances;
-    private List<String> studyPermissionActions;
+    private List<String> studyPermissionActions = new ArrayList<String>();
     
     public StudyModel(Study study, PatientModel patModel) {
         if (study == null) {
@@ -89,7 +88,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     
     public StudyModel(Study study, PatientModel patModel, List<String> studyPermissionActions) {
         this(study, patModel);
-        this.studyPermissionActions = studyPermissionActions;
+        setStudyPermissionActions(studyPermissionActions);
     }
 
     private void setPatient(PatientModel patModel) {
@@ -109,7 +108,11 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     }
 
     public void setStudyPermissionActions(List<String> studyPermissionActions) {
-        this.studyPermissionActions = studyPermissionActions;
+        if (studyPermissionActions == null) {
+            this.studyPermissionActions.clear();
+        } else {
+            this.studyPermissionActions = studyPermissionActions;
+        }
     }
     
     public Date getDatetime() {
@@ -229,7 +232,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         Study s = null;
         if (getPk() == -1) {
-            s = dao.addStudy(getPatient().getPk(), dicomObject, ((SecureSession) RequestCycle.get().getSession()).getDicomRoles());
+            s = dao.addStudy(getPatient().getPk(), dicomObject, StudyPermissionHelper.get().getDicomRoles());
             setPk(s.getPk());
             this.getPatient().getStudies().add(this);
         } else {

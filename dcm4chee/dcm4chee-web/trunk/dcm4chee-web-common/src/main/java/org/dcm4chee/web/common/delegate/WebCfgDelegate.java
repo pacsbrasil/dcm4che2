@@ -48,7 +48,9 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.apache.wicket.Application;
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.protocol.http.WebApplication;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -201,6 +203,21 @@ public class WebCfgDelegate {
             return -1;
         }
     }
+    public Object invoke(String opName, Object[] args, Object defVal) {
+        try {
+            if (args == null) {
+                args = new Object[]{};
+            }
+            String[] argTypes = new String[args.length];
+            for (int i = 0 ; i < args.length ; i++) {
+                argTypes[i] = args.getClass().getName();
+            }
+            return server.invoke(serviceObjectName, opName, args, argTypes);
+        } catch (Exception x) {
+            log.warn("Cant invoke "+opName+"! Return defVal:"+defVal, x);
+            return defVal;
+        }
+    }
 
     public ObjectName getObjectName(String attrName, String defaultName) throws MalformedObjectNameException, NullPointerException {
         if (server == null) return defaultName == null ? null : new ObjectName(defaultName);
@@ -243,5 +260,9 @@ public class WebCfgDelegate {
         } catch (Exception e) {
             log.error( "Failed to set ObjectName for WebCfgDelegate! name:"+s, e);
         }
+    }
+
+    public MBeanServerConnection getMBeanServer() {
+        return server;
     }
 }

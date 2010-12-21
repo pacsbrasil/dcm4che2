@@ -142,9 +142,9 @@ public class StudyListBean implements StudyListLocal {
     private boolean useSecurity = false;
     private List<String> roles;
 
-    public void setDicomSecurityRoles(List<String> roles, boolean root) {
+    public void setDicomSecurityRoles(List<String> roles) {
         this.roles = roles;
-        useSecurity = (roles != null) && !root;
+        useSecurity = roles != null;
     }
     
     private void appendDicomSecurityFilter(StringBuilder ql) {
@@ -389,6 +389,7 @@ public class StudyListBean implements StudyListLocal {
 
     @SuppressWarnings("unchecked")
     public List<Study> findStudiesOfPatient(long pk, boolean latestStudyFirst) {
+        if ((useSecurity) && (roles.size() == 0)) return new ArrayList<Study>();
         StringBuilder ql = new StringBuilder(64);
         ql.append("FROM Study s WHERE s.patient.pk=?1");
         if (useSecurity)
@@ -404,7 +405,7 @@ public class StudyListBean implements StudyListLocal {
     }
 
     @SuppressWarnings("unchecked")
-    public List<String> findStudyPermissionActions(String studyInstanceUID, List<String> roles) {
+    public List<String> findStudyPermissionActions(String studyInstanceUID) {
         return ((roles != null) && (roles.size() > 0)) ? 
                 em.createQuery("SELECT DISTINCT sp.action FROM StudyPermission sp WHERE sp.studyInstanceUID = :studyInstanceUID AND role IN (:roles)")
                     .setParameter("studyInstanceUID", studyInstanceUID)
@@ -530,7 +531,9 @@ public class StudyListBean implements StudyListLocal {
         series.setAvailability(Availability.ONLINE);
         series.setNumberOfSeriesRelatedInstances(0);
         series.setStorageStatus(StorageStatus.STORED);
+        study.setNumberOfStudyRelatedSeries(study.getNumberOfStudyRelatedSeries()+1);
         em.persist(series);
+        em.persist(study);
         return series;
     }
 

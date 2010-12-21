@@ -43,15 +43,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.wicket.RequestCycle;
 import org.apache.wicket.model.IModel;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
+import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 
@@ -69,12 +68,8 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     private IModel<Boolean> latestStudyFirst;
 
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-    SecureSession secureSession;
 
-    public PatientModel(Patient patient, IModel<Boolean> latestStudyFirst, SecureSession secureSession) {
-
-        this.secureSession = secureSession;
-        if (RequestCycle.get() != null) this.secureSession = ((SecureSession) RequestCycle.get().getSession());
+    public PatientModel(Patient patient, IModel<Boolean> latestStudyFirst) {
         setPk(patient.getPk());
         this.dataset = patient.getAttributes();
         this.latestStudyFirst = latestStudyFirst;
@@ -146,10 +141,9 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     @Override
     public void expand() {
         studies.clear();
-        if (((SecureSession) RequestCycle.get().getSession()).isWebStudyPermissions())
-            dao.setDicomSecurityRoles(secureSession.getDicomRoles(), secureSession.isRoot());
+        dao.setDicomSecurityRoles(StudyPermissionHelper.get().getDicomRoles());
         for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst.getObject()))            
-            this.studies.add(new StudyModel(study, this, dao.findStudyPermissionActions(study.getStudyInstanceUID(), secureSession.getDicomRoles())));
+            this.studies.add(new StudyModel(study, this, dao.findStudyPermissionActions(study.getStudyInstanceUID())));
     }
 
     @Override

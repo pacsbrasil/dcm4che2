@@ -76,9 +76,9 @@ import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
-import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
+import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
@@ -133,12 +133,13 @@ public class ExportPage extends SecureWebPage {
 
     protected ExportResult r;
     private boolean exportPerformed = false;
-        
+    
     private static Logger log = LoggerFactory.getLogger(ExportPage.class);
     
     public ExportPage(List<PatientModel> list) {
         super();        
         
+        StudyPermissionHelper studyPermissionHelper = StudyPermissionHelper.get(); 
         if (ExportPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(ExportPage.BaseCSS));
         if (ExportPage.CSS != null)
@@ -165,19 +166,19 @@ public class ExportPage extends SecureWebPage {
         form.addLabel("selectedPats");
         form.add( new Label("selectedPatsValue", new PropertyModel<Integer>(exportInfo, "nrOfPatients")));
         form.add( new Label("deniedPatsValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfPatients"))
-            .setVisible(((SecureSession) getSession()).getUseStudyPermissions()));
+            .setVisible(studyPermissionHelper.useStudyPermissions()));
         form.addLabel("selectedStudies");
         form.add( new Label("selectedStudiesValue", new PropertyModel<Integer>(exportInfo, "nrOfStudies")));
         form.add( new Label("deniedStudiesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfStudies"))
-            .setVisible(((SecureSession) getSession()).getUseStudyPermissions()));
+            .setVisible(studyPermissionHelper.useStudyPermissions()));
         form.addLabel("selectedSeries");
         form.add( new Label("selectedSeriesValue", new PropertyModel<Integer>(exportInfo, "nrOfSeries")));
         form.add( new Label("deniedSeriesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfSeries"))
-            .setVisible(((SecureSession) getSession()).getUseStudyPermissions()));
+            .setVisible(studyPermissionHelper.useStudyPermissions()));
         form.addLabel("selectedInstances");
         form.add( new Label("selectedInstancesValue", new PropertyModel<Integer>(exportInfo, "nrOfInstances")));
         form.add( new Label("deniedInstancesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfInstances"))
-            .setVisible(((SecureSession) getSession()).getUseStudyPermissions()));
+            .setVisible(studyPermissionHelper.useStudyPermissions()));
         form.add(new DropDownChoice<AE>("destinationAETs", destinationModel, destinationAETs, new IChoiceRenderer<AE>(){
             private static final long serialVersionUID = 1L;
 
@@ -376,7 +377,7 @@ public class ExportPage extends SecureWebPage {
         
         private ExportInfo(List<PatientModel> patients) {
             dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-            
+            dao.setDicomSecurityRoles(StudyPermissionHelper.get().getDicomRoles());
             this.requests = new ArrayList<MoveRequest>(patients.size());
             for (PatientModel pat : patients) {
                 if (pat.isSelected()) {
@@ -440,9 +441,8 @@ public class ExportPage extends SecureWebPage {
             List<Study> studies = getStudiesOfPatient(pat);
             int allowed = 0;
             for (Study study : studies) {
-                if (dao.findStudyPermissionActions(study.getStudyInstanceUID(), ((SecureSession) getSession()).getDicomRoles()).contains(StudyPermission.EXPORT_ACTION)
-                        || !((SecureSession) getSession()).getUseStudyPermissions()
-                        || ((SecureSession) getSession()).isRoot()) {
+                if (!StudyPermissionHelper.get().useStudyPermissions() ||
+                        dao.findStudyPermissionActions(study.getStudyInstanceUID()).contains(StudyPermission.EXPORT_ACTION)) {
                     uids.add(study.getStudyInstanceUID());
                     allowed++;
                 } else 
@@ -464,9 +464,8 @@ public class ExportPage extends SecureWebPage {
         private void prepareStudyRequests(List<StudyModel> studies) {
             ArrayList<String> uids = new ArrayList<String>();
             for (StudyModel study : studies ) {
-                boolean denied = !dao.findStudyPermissionActions(study.getStudyInstanceUID(), ((SecureSession) getSession()).getDicomRoles()).contains(StudyPermission.EXPORT_ACTION)
-                                && ((SecureSession) getSession()).getUseStudyPermissions()
-                                && !((SecureSession) getSession()).isRoot();
+                boolean denied = StudyPermissionHelper.get().useStudyPermissions() && 
+                        !dao.findStudyPermissionActions(study.getStudyInstanceUID()).contains(StudyPermission.EXPORT_ACTION);
                 if (study.isSelected()) {
                     if (denied) {
                         NOTnrStudy++;
