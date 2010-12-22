@@ -839,50 +839,47 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         return DcmObjectFactory.getInstance().newPersonName(pname).format();
     }
 
-    public void supplementInstitutionalData(Dataset ds, String callingAET) {
-        AEDTO ae = null;
-        
-        if (supplementIssuerOfPatientID
-                && !ds.containsValue(Tags.IssuerOfPatientID)) {
-            String pid = ds.getString(Tags.PatientID);
-            if (pid != null) {
-                try {
-                    if (ae == null) ae = aeMgr().findByAET(callingAET);
-                    String issuer = ae.getIssuerOfPatientID();
-                    if (issuer != null && issuer.length() != 0) {
-                        ds.putLO(Tags.IssuerOfPatientID, issuer);
-                        if (log.isInfoEnabled()) {
-                            log.info("Add missing Issuer Of Patient ID " + issuer
-                                    + " for Patient ID " + pid);
-                        }
-                    } else {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Missing Issuer Of Patient ID in AE configuration for " + callingAET
+    public void supplementIssuerOfPatientID(Dataset ds, String callingAET,
+            boolean onlyIfPID) {
+        if (!supplementIssuerOfPatientID 
+                || ds.containsValue(Tags.IssuerOfPatientID)
+                || onlyIfPID && !ds.containsValue(Tags.PatientID))
+            return;
+
+        try {
+            AEDTO ae = aeMgr().findByAET(callingAET);
+            String issuer = ae.getIssuerOfPatientID();
+            if (issuer != null && issuer.length() != 0) {
+                ds.putLO(Tags.IssuerOfPatientID, issuer);
+                log.info("Supplement Issuer Of Patient ID " + issuer);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log
+                            .debug("Missing Issuer Of Patient ID in AE configuration for "
+                                    + callingAET
                                     + " - no supplement of Issuer Of Patient ID");
-                        }
-                    }
-                } catch (UnknownAETException e) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Missing AE configuration for " + callingAET
-                                + " - no supplement of Issuer Of Patient ID");
-                    }
-                } catch (Exception e) {
-                    log.warn("Failed to supplement Issuer Of Patient ID: ", e);
                 }
             }
+        } catch (UnknownAETException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Missing AE configuration for " + callingAET
+                        + " - no supplement of Issuer Of Patient ID");
+            }
+        } catch (Exception e) {
+            log.warn("Failed to supplement Issuer Of Patient ID: ", e);
         }
+    }
         
+    public void supplementInstitutionalData(Dataset ds, String callingAET) {
+        AEDTO ae = null;
         if (supplementInstitutionName
                 && !ds.containsValue(Tags.InstitutionName)) {
             try {
-                if (ae == null)
-                    ae = aeMgr().findByAET(callingAET);
+                ae = aeMgr().findByAET(callingAET);
                 String institution = ae.getInstitution();
                 if (institution != null && institution.length() != 0) {
                     ds.putLO(Tags.InstitutionName, institution);
-                    if (log.isInfoEnabled()) {
-                        log.info("Add missing Institution Name " + institution);
-                    }
+                    log.info("Add missing Institution Name " + institution);
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("Missing Institution Name in AE configuration for " + callingAET
@@ -907,9 +904,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 String department = ae.getDepartment();
                 if (department != null && department.length() != 0) {
                     ds.putLO(Tags.InstitutionalDepartmentName, department);
-                    if (log.isInfoEnabled()) {
-                        log.info("Add missing Institutional Department Name " + department);
-                    }
+                    log.info("Add missing Institutional Department Name " + department);
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("Missing Institutional Department Name in AE configuration for " + callingAET
