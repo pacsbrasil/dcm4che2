@@ -75,6 +75,7 @@ NotificationListener {
     private long pollInterval = 0L;
     private long delay = 0L;
     private int limit = 2000;
+    private long lastSeriesPk = 0;
     private int fetchSize;
     
     private Integer schedulerID;
@@ -132,6 +133,10 @@ NotificationListener {
         return isRunning;
     }
         
+    public long getLastSeriesPk() {
+        return lastSeriesPk;
+    }
+
     private void checkSQL(String sql) throws SQLException {
         sqlIsValid = false;
         String sqlUC = sql.toUpperCase();
@@ -146,7 +151,7 @@ NotificationListener {
         try {
             QueryFilecopyCmd cmd = QueryFilecopyCmd.getInstance(sql, this.limit > 0 ? 1 : 0, 1);
             cmd.setUpdateDatabaseMaxRetries(1);
-            List<Long> chk = cmd.getSeriesPKs(sql.indexOf('?') != -1 ? System.currentTimeMillis() : null);
+            List<Long> chk = cmd.getSeriesPKs(sql.indexOf('?') != -1 ? System.currentTimeMillis() : null, lastSeriesPk);
             if (log.isDebugEnabled()) 
                 log.debug("CheckSQL: QueryFilecopyCmd.getSeriesIUIDs done with result:"+chk);
         } catch (SQLException x) {
@@ -241,9 +246,10 @@ NotificationListener {
             isRunning = true;
         }
         int nrOfOrders = 0;
+        int notScheduledOrders = 0;
         try {
-            List<Long> seriesPks = sqlCmd.getSeriesPKs(delay < 0 ? null : new Long(System.currentTimeMillis()-delay));
-            log.info("Found "+seriesPks.size()+" Series for FileCopy!");
+            List<Long> seriesPks = sqlCmd.getSeriesPKs(delay < 0 ? null : new Long(System.currentTimeMillis()-delay), lastSeriesPk);
+            log.info("Found "+seriesPks.size()+" Series for FileCopy! lastSeriesPk:"+lastSeriesPk);
             Dataset ian;
             for (int i=0, len=seriesPks.size() ; i < len ; i++) {
                 ian = lookupContentEdit().getStudyMgtDatasetForSeries(new long[]{seriesPks.get(i)});
@@ -253,8 +259,13 @@ NotificationListener {
                 if (ian != null) {
                     if (scheduleFilecopyOrder(ian, 0L))
                         nrOfOrders++;
+                    else
+                        notScheduledOrders++;
                 }
             }
+            if (notScheduledOrders > 0)
+                log.warn(notScheduledOrders+" Order(s) of FileCopyByQuery service not scheduled! Please check configuration in FileCopy service!");
+            lastSeriesPk = seriesPks.size() > 0 ? seriesPks.get(seriesPks.size()-1) : 0L;
             return nrOfOrders;
         } catch (Exception e) {
             log.error("Error while checking series for Filecopy! Already scheduled filecopy orders:"+nrOfOrders, e);

@@ -95,12 +95,20 @@
       </descriptors>
    </attribute>
    
-      <attribute access="read-only"
+   <attribute access="read-only"
       getMethod="isRunning">
       <description>Current state if a FileCopy task is running. Used to avoid concurrency!
       </description>
       <name>isRunning</name>
       <type>boolean</type>
+   </attribute>
+
+   <attribute access="read-only"
+      getMethod="getLastSeriesPk">
+      <description>Last used Series.pk. Used as additional query parameter (SERIES.pk > lastPk) if a Limit > 0 is specified!
+      </description>
+      <name>LastSeriesPk</name>
+      <type>long</type>
    </attribute>
 
    <attribute access="read-write"
