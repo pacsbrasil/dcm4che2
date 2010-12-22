@@ -49,8 +49,10 @@ import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.util.Arrays;
 
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.util.ByteUtils;
 import org.dcm4che2.util.GenericNumericArray;
 import org.slf4j.Logger;
@@ -1312,6 +1314,30 @@ public abstract class LookupTable {
         return createLutForImage(img, mlutObj, voiObj, pLut, center, width,
                 vlutFct, inverse, outBits, pval2out);
     }
+    
+    /** Gets a pixel value from the given field - the field can be a regular integer
+     * or it can be ob data.
+     * @param ds
+     * @param tag
+     * @return
+     */
+    public static Integer getIntPixelValue(DicomObject ds, int tag, boolean signed, int stored) {
+        DicomElement de = ds.get(tag);
+        if( de==null ) return null;
+        VR vr = de.vr();
+        if( vr==VR.OB || vr==VR.OW ) {
+            int ret = ByteUtils.bytesLE2ushort(de.getBytes(),0);
+            if( signed ) {
+                if( (ret & (1 << (stored-1))) !=0 ) {
+                    int andmask = (1 << stored) - 1;
+                    int ormask = ~andmask;
+                    ret |= ormask;
+                }
+            }
+            return ret;
+        }
+        return de.getInt(true);
+    }
 
     /**
      * Creates a LUT based on a set of provided objects.  These can come from different places within images, so providing them separately is important, even thought
@@ -1338,10 +1364,8 @@ public abstract class LookupTable {
         float slope = mlutObj.getFloat(Tag.RescaleSlope, 1.f);
         float intercept = mlutObj.getFloat(Tag.RescaleIntercept, 0.f);
 
-        Integer pixelPaddingValue = img.contains(Tag.PixelPaddingValue) ? 
-                img.getInt(Tag.PixelPaddingValue) : null;
-        Integer pixelPaddingRange = img.contains(Tag.PixelPaddingRangeLimit) ? 
-                img.getInt(Tag.PixelPaddingRangeLimit) : null;
+        Integer pixelPaddingValue = getIntPixelValue(img, Tag.PixelPaddingValue,signed,stored);
+        Integer pixelPaddingRange = getIntPixelValue(img, Tag.PixelPaddingRangeLimit,signed,stored);
 
         DicomObject mLut = VOIUtils.getLUT(mlutObj, Tag.ModalityLUTSequence);
         DicomObject voiLut = (voiObj != null && vlutFct == null) ? VOIUtils
@@ -1397,6 +1421,8 @@ public abstract class LookupTable {
         if (minPad - offset < 0){
             log.error("Error in calculation of offset wrt pixel padding data. pixel padding range from " +
                     minPad + " to "+ maxPad + ", offset=" + offset);
+            minPad = offset;
+            if(maxPad-offset+1<0 ) return;
         }
         
         array.fillRange(minPad-offset, maxPad-offset+1, padValue);

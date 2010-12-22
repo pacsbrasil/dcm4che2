@@ -322,10 +322,8 @@ public class VOIUtils {
         int scanlineStride = ((ComponentSampleModel) raster.getSampleModel())
                 .getScanlineStride();
 
-        Integer pixelPaddingValue = img.contains(Tag.PixelPaddingValue) ? 
-                img.getInt(Tag.PixelPaddingValue) : null;
-        Integer pixelPaddingRangeLimit = img.contains(Tag.PixelPaddingRangeLimit) ? 
-                img.getInt(Tag.PixelPaddingRangeLimit) : null;
+        Integer pixelPaddingValue = LookupTable.getIntPixelValue(img,Tag.PixelPaddingValue,signed,stored); 
+        Integer pixelPaddingRangeLimit = LookupTable.getIntPixelValue(img,Tag.PixelPaddingRangeLimit,signed,stored); 
                 
         int paddingMin = Integer.MIN_VALUE;
         int paddingMax = Integer.MIN_VALUE;
