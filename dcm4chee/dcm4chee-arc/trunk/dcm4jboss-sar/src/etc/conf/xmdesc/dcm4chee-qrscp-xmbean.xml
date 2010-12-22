@@ -77,34 +77,6 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isSupplementInstitutionName"
-      setMethod="setSupplementInstitutionName">
-      <description><![CDATA[If the C-FIND SCU AE has a value configured for 
-          <i>Institution</i> within the database AE Configuration, use this value to
-          supplement C-FIND RQ identifiers received from the AE which do not contain an
-          <i>Institution Name</i> (DICOM tag (0008,0080)).]]>
-      </description>
-      <name>SupplementInstitutionName</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isSupplementInstitutionalDepartmentName"
-      setMethod="setSupplementInstitutionalDepartmentName">
-      <description><![CDATA[If the C-FIND SCU AE has a value configured for 
-          <i>Department</i> within the database AE Configuration, use this value to
-          supplement C-FIND RQ identifiers received from the AE which do not contain an
-          <i>Institutional Department Name</i> (DICOM tag (0008,1040)).]]>
-      </description>
-      <name>SupplementInstitutionalDepartmentName</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getDoNotDecompressTransferSyntaxes"
       setMethod="setDoNotDecompressTransferSyntaxes">
       <description><![CDATA[List of Transfer Syntaxes for (lossy) Image

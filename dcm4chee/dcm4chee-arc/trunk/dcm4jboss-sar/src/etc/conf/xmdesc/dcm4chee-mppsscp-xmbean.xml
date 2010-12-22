@@ -95,34 +95,6 @@ MPPS SCP (=Called) AE by its AE Configuration entry.]]>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isSupplementInstitutionName"
-      setMethod="setSupplementInstitutionName">
-      <description><![CDATA[If the MPPS SCU AE has a value configured for 
-          <i>Institution</i> within the database AE Configuration, use this value to
-          supplement MPPS N-CREATE messages received from the AE which do not contain an
-          <i>Institution Name</i> (DICOM tag (0008,0080)).]]>
-      </description>
-      <name>SupplementInstitutionName</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isSupplementInstitutionalDepartmentName"
-      setMethod="setSupplementInstitutionalDepartmentName">
-      <description><![CDATA[If the MPPS SCU AE has a value configured for 
-          <i>Department</i> within the database AE Configuration, use this value to
-          supplement MPPS N-CREATE messages received from the AE which do not contain an
-          <i>Institutional Department Name</i> (DICOM tag (0008,1040)).]]>
-      </description>
-      <name>SupplementInstitutionalDepartmentName</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getGeneratePatientIDForUnscheduledFromAETs"
       setMethod="setGeneratePatientIDForUnscheduledFromAETs">
       <description><![CDATA[List of AE titles of MPPS SCUs for which the
