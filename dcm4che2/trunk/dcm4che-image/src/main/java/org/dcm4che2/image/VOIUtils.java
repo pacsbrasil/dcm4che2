@@ -306,7 +306,7 @@ public class VOIUtils {
         }
         return new float[] {
                 ((minMax[1] + minMax[0]) / 2.f) * slope + intercept + 0.5f,
-                (minMax[1] - minMax[0]) * slope + 1 };
+                Math.abs((minMax[1] - minMax[0]) * slope) + 1 };
     }
 
     /** Gets the min/max value from a data buffer, in the raw pixel data */
