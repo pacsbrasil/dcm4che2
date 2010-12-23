@@ -40,8 +40,6 @@
 package org.dcm4chex.archive.dcm.movescu;
 
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -50,11 +48,9 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.dcm4chex.archive.config.DicomPriority;
-import org.dcm4chex.archive.config.ForwardingRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.jdbc.QueryForwardCmd;
 import org.dcm4chex.archive.mbean.SchedulerDelegate;
-
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -74,6 +70,7 @@ NotificationListener {
     private long pollInterval = 0L;
     private long delay = 0L;
     private int limit = 2000;
+    private long lastSeriesPk = 0;
     private int fetchSize;
     
     private String calledAET;
@@ -141,6 +138,10 @@ NotificationListener {
         return isRunning;
     }
         
+    public long getLastSeriesPk() {
+        return lastSeriesPk;
+    }
+
     private void checkSQL(String sql) throws SQLException {
         sqlIsValid = false;
         String sqlUC = sql.toUpperCase();
@@ -155,7 +156,7 @@ NotificationListener {
         try {
             QueryForwardCmd cmd = QueryForwardCmd.getInstance(sql, this.limit > 0 ? 1 : 0, 1);
             cmd.setUpdateDatabaseMaxRetries(1);
-            Map<String, List<String>> chk = cmd.getSeriesIUIDs(sql.indexOf('?') != -1 ? System.currentTimeMillis() : null);
+            Map<String, List<String>> chk = cmd.getSeriesIUIDs(sql.indexOf('?') != -1 ? System.currentTimeMillis() : null, 0l);
             log.debug("CheckSQL: QueryForwardCmd.getSeriesIUIDs done with result:"+chk);
             if ( chk != null && !chk.isEmpty()) {
                 if ( chk.keySet().iterator().next().indexOf('.') != -1 ) {
@@ -270,8 +271,9 @@ NotificationListener {
         int nrOfSeries = 0;
         try {
             long scheduledTime = 0L;
-            Map<String,List<String>> orders = sqlCmd.getSeriesIUIDs(delay < 0 ? null : new Long(System.currentTimeMillis()-delay));
-            log.info("Found "+orders.size()+" MoveOrder!");
+            Map<String,List<String>> orders = sqlCmd.getSeriesIUIDs(delay < 0 ? null : new Long(System.currentTimeMillis()-delay), lastSeriesPk);
+            log.info("Found "+orders.size()+" MoveOrder! lastSeriesPk:"+lastSeriesPk);
+            lastSeriesPk = orders.isEmpty() ? 0 : sqlCmd.getLastSeriesPk();
             MoveOrder order;
             List<String> series;
             for ( Map.Entry<String, List<String>> entry : orders.entrySet() ) {
@@ -291,7 +293,7 @@ NotificationListener {
     }
     
     public String showSQL() {
-        return sqlCmd == null ? "QueryForwardCmd not set!" : sqlCmd.getSQL();
+        return sqlCmd == null ? "QueryForwardCmd not set!" : sqlCmd.formatSql();
     }
 
     protected void scheduleMove(MoveOrder order,

@@ -52,7 +52,12 @@
       	SELECT DISTINCT series.series_iuid, series.retrieve_aets, series.pk 
          	FROM series INNER JOIN series_req ON series.pk = series_req.series_fk 
          	WHERE series.series_status = 0 AND series.ext_retr_aet IS NULL 
-         		AND series.updated_time &lt; ? ORDER BY series.pk]]>  
+         		AND series.updated_time &lt; ? ORDER BY series.pk<br />
+        Mote: The first three columns in the SELECT statement must be: series_iuid, retrieve_aets and pk (Series table)!<br />
+        If limit > 0 the SQL statement is extended with: <br />
+        1) a database specific LIMIT <br /> 
+        2) a 'series.pk > ?' as first criteria in WHERE clause (if sql hasn't already a 'pk > ?')<br />
+        3) an 'ORDER BY series.pk' (if sql hasn't already a 'ORDER BY')]]>  
       </description>
       <name>Query</name>
       <type>java.lang.String</type>
@@ -100,6 +105,14 @@
       </description>
       <name>isRunning</name>
       <type>boolean</type>
+   </attribute>
+
+   <attribute access="read-only"
+      getMethod="getLastSeriesPk">
+      <description>Last used Series.pk. Used as additional query parameter (SERIES.pk > lastPk) if a Limit > 0 is specified!
+      </description>
+      <name>LastSeriesPk</name>
+      <type>long</type>
    </attribute>
 
    <attribute access="read-write" getMethod="getForwardPriority" setMethod="setForwardPriority">

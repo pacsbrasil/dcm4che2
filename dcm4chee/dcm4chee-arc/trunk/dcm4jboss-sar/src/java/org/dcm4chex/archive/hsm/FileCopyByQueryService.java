@@ -64,8 +64,7 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since Oct 4, 2010
  */
 
-public class FileCopyByQueryService extends ServiceMBeanSupport implements
-NotificationListener {
+public class FileCopyByQueryService extends ServiceMBeanSupport implements NotificationListener {
 
     private static final String NONE = "NONE";
     private static final String LF = System.getProperty("line.separator", "\n");
@@ -276,7 +275,7 @@ NotificationListener {
     }
     
     public String showSQL() {
-        return sqlCmd == null ? "QueryFilecopyCmd not set!" : sqlCmd.getSQL();
+        return sqlCmd == null ? "QueryFilecopyCmd not set!" : sqlCmd.formatSql();
     }
 
     protected boolean scheduleFilecopyOrder(Dataset ian, long scheduledTime) {
