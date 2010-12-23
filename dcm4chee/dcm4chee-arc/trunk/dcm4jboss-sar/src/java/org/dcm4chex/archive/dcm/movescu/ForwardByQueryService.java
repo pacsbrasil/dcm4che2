@@ -86,6 +86,7 @@ NotificationListener {
     private QueryForwardCmd sqlCmd;
     private boolean sqlIsValid = false;
     String lastCheckResult = null;
+    private boolean oneMoveOrderForEachSeries = true;
     
     
     public final String getCalledAET() {
@@ -140,6 +141,14 @@ NotificationListener {
         
     public long getLastSeriesPk() {
         return lastSeriesPk;
+    }
+
+    public boolean isOneMoveOrderForEachSeries() {
+        return oneMoveOrderForEachSeries;
+    }
+
+    public void setOneMoveOrderForEachSeries(boolean oneMoveOrderForEachSeries) {
+        this.oneMoveOrderForEachSeries = oneMoveOrderForEachSeries;
     }
 
     private void checkSQL(String sql) throws SQLException {
@@ -279,9 +288,15 @@ NotificationListener {
             for ( Map.Entry<String, List<String>> entry : orders.entrySet() ) {
                 series = entry.getValue();
                 nrOfSeries += series.size();
-                order = new MoveOrder(entry.getKey(), calledAET, forwardPriority, null, null, series.toArray(new String[series.size()]));
-                log.info("Schedule MoveOrder:"+order);
-                this.scheduleMove(order, scheduledTime);
+                if (oneMoveOrderForEachSeries) {
+                    for (int i = 0, len = series.size() ; i < len ; i++) {
+                        order = new MoveOrder(entry.getKey(), calledAET, forwardPriority, null, null, series.get(i), null);
+                        this.scheduleMove(order, scheduledTime);
+                    }
+                } else {
+                    order = new MoveOrder(entry.getKey(), calledAET, forwardPriority, null, null, series.toArray(new String[series.size()]));
+                    this.scheduleMove(order, scheduledTime);
+                }
             }
             return nrOfSeries;
         } catch (Exception e) {
@@ -296,8 +311,7 @@ NotificationListener {
         return sqlCmd == null ? "QueryForwardCmd not set!" : sqlCmd.formatSql();
     }
 
-    protected void scheduleMove(MoveOrder order,
-            long scheduledTime) {
+    protected void scheduleMove(MoveOrder order, long scheduledTime) {
         try {
            server.invoke(moveScuServiceName, "scheduleMoveOrder", new Object[] {
                     order, new Long(scheduledTime) },

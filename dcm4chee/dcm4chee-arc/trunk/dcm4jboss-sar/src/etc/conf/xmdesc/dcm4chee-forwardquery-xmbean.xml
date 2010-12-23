@@ -99,7 +99,7 @@
       </descriptors>
    </attribute>
    
-      <attribute access="read-only"
+   <attribute access="read-only"
       getMethod="isRunning">
       <description>Current state if a forward task is running. Used to avoid concurrency!
       </description>
@@ -113,6 +113,17 @@
       </description>
       <name>LastSeriesPk</name>
       <type>long</type>
+   </attribute>
+
+   <attribute access="read-write" setMethod="setOneMoveOrderForEachSeries"
+      getMethod="isOneMoveOrderForEachSeries">
+      <description>Schedule one Move Order for each Series!
+      </description>
+      <name>OneMoveOrderForEachSeries</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
    </attribute>
 
    <attribute access="read-write" getMethod="getForwardPriority" setMethod="setForwardPriority">
