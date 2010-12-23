@@ -174,12 +174,11 @@ public class AnnotationDelegate {
     private void writeToFile(String studyDir, StudyAnnotation studyAnnotation) {
         ObjectOutputStream oos = null;
         try {
-            File storeFile = new File(studyDir, "info.ser");
-            if (ApplicationContext.canWrite(storeFile.getAbsolutePath())) {
+            File storeFile = new File(studyDir, "info.ser");           
                 FileOutputStream fos = new FileOutputStream(storeFile);
                 oos = new ObjectOutputStream(fos);
                 oos.writeObject(studyAnnotation);
-            }
+            
         } catch (IOException ex) {
             Logger.getLogger(AnnotationDelegate.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception ex) {
