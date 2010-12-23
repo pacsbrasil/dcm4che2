@@ -39,14 +39,11 @@
 
 package org.dcm4chex.archive.ejb.jdbc;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -55,7 +52,6 @@ import java.util.StringTokenizer;
  */
 public final class QueryForwardCmd extends BaseSQLCmd {
 
-    private static final int SELECT_LEN = 7;
     public static int transactionIsolationLevel = 0;
     
     private long lastSeriesPk = 0;
