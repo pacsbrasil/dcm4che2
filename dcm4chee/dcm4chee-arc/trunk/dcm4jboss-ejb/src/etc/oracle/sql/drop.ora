@@ -48,12 +48,14 @@ DROP TABLE study;
 DROP TABLE rel_pat_other_pid;
 DROP TABLE other_pid;
 DROP TABLE patient;
+DROP TABLE issuer;
 DROP TABLE code;
 DROP TABLE ae;
 
 
 DROP SEQUENCE ae_pk_seq;
 DROP SEQUENCE code_pk_seq;
+DROP SEQUENCE issuer_pk_seq;
 DROP SEQUENCE patient_pk_seq;
 DROP SEQUENCE other_pid_pk_seq;
 DROP SEQUENCE study_pk_seq;

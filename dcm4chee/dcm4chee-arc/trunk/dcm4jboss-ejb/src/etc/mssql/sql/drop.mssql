@@ -48,5 +48,6 @@ DROP TABLE study;
 DROP TABLE rel_pat_other_pid;
 DROP TABLE other_pid;
 DROP TABLE patient;
+DROP TABLE issuer;
 DROP TABLE code;
 DROP TABLE ae;

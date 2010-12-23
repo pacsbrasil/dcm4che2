@@ -40,14 +40,22 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
+import javax.ejb.EntityContext;
+import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+import org.dcm4chex.archive.ejb.interfaces.IssuerLocal;
+import org.dcm4chex.archive.ejb.interfaces.IssuerLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 
 /**
@@ -65,11 +73,35 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
  * @ejb.finder signature="Collection findAll()"
  *             query="SELECT OBJECT(r) FROM SeriesRequest AS r"
  *             transaction-type="Supports"
+ * @ejb.ejb-ref ejb-name="Issuer" view-type="local" ref-name="ejb/Issuer"
  */
 
 public abstract class SeriesRequestBean implements EntityBean {
 
     private static final Logger log = Logger.getLogger(SeriesRequestBean.class);
+
+    private IssuerLocalHome issuerHome;
+
+    public void setEntityContext(EntityContext ctx) {
+        Context jndiCtx = null;
+        try {
+            jndiCtx = new InitialContext();
+            issuerHome = (IssuerLocalHome) jndiCtx.lookup("java:comp/env/ejb/Issuer");
+       } catch (NamingException e) {
+            throw new EJBException(e);
+        } finally {
+            if (jndiCtx != null) {
+                try {
+                    jndiCtx.close();
+                } catch (NamingException ignore) {
+                }
+            }
+        }
+    }
+
+    public void unsetEntityContext() {
+        issuerHome = null;
+    }
 
     /**
      * @ejb.create-method
@@ -77,6 +109,13 @@ public abstract class SeriesRequestBean implements EntityBean {
     public Long ejbCreate(Dataset ds, SeriesLocal series)
             throws CreateException {
         AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
+        setAccessionNumber(ds.getString(Tags.AccessionNumber));
+        try {
+            setIssuerOfAccessionNumber(
+                    IssuerBean.valueOf(issuerHome, ds.getItem(Tags.IssuerOfAccessionNumberSeq)));
+        } catch (FinderException e) {
+            throw new CreateException(e.getMessage());
+        }
         setStudyIuid(ds.getString(Tags.StudyInstanceUID));
         setRequestedProcedureId(filter.getString(ds, Tags.RequestedProcedureID));
         setSpsId(filter.getString(ds, Tags.SPSID));
@@ -129,6 +168,15 @@ public abstract class SeriesRequestBean implements EntityBean {
 
     public abstract void setPk(Long pk);
     
+    /**
+     * Accession Number
+     *
+     * @ejb.interface-method
+     * @ejb.persistence column-name="accession_no"
+     */
+    public abstract String getAccessionNumber();
+    public abstract void setAccessionNumber(String no);
+
     /**
      * @ejb.persistence column-name="study_iuid"
      */
@@ -207,12 +255,22 @@ public abstract class SeriesRequestBean implements EntityBean {
     public abstract void setSeries(SeriesLocal series);
 
     /**
+     * @ejb.relation name="series-request-issuer-of-accno" role-name="series-request-with-issuer-of-accno"
+     *               target-ejb="Issuer" target-role-name="issuer-of-series-request-accno"
+     *               target-multiple="yes"
+     * @jboss.relation fk-column="accno_issuer_fk" related-pk-field="pk"
+     */
+    public abstract IssuerLocal getIssuerOfAccessionNumber();
+    public abstract void setIssuerOfAccessionNumber(IssuerLocal issuer);
+
+    /**
      * @ejb.interface-method
      */
     public abstract SeriesLocal getSeries();
 
     private String prompt() {
         return "SeriesRequestAttribute[pk=" + getPk() 
+                + ", accno=" + getAccessionNumber()
                 + ", rpid=" + getRequestedProcedureId()
                 + ", spsid=" + getSpsId()
                 + ", service=" + getRequestingService()
