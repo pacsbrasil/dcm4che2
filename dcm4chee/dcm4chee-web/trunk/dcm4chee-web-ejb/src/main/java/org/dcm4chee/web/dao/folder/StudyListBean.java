@@ -541,7 +541,6 @@ public class StudyListBean implements StudyListLocal {
         return em.find(Instance.class, pk);
     }
     
-
     public Instance updateInstance(long pk, DicomObject attrs) {
         Instance inst = em.find(Instance.class, pk);
         inst.setAttributes(attrs);

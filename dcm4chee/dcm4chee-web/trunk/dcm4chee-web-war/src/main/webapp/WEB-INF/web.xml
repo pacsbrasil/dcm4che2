@@ -23,22 +23,6 @@
 			<param-name>applicationClassName</param-name>
 			<param-value>org.dcm4chee.web.war.WicketApplication</param-value>
  		</init-param>
-        <init-param>
-            <param-name>manageUsers</param-name>
-            <param-value>true</param-value>
-        </init-param>
-        <init-param>
-			<param-name>useStudyPermissions</param-name>
-			<param-value>true</param-value>
- 		</init-param>
-        <init-param>
-            <param-name>webStudyPermissions</param-name>
-            <param-value>true</param-value>
-        </init-param>
-		<init-param>
-			<param-name>root</param-name>
-			<param-value>admin</param-value>
- 		</init-param>
 		<init-param>
 			<param-name>configuration</param-name>
 			<param-value>deployment</param-value>

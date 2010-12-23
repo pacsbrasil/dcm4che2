@@ -196,7 +196,7 @@ public class StudyListPage extends Panel {
         if (StudyListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
         
-        studyPermissionHelper = StudyPermissionHelper.get(); 
+        studyPermissionHelper = StudyPermissionHelper.get();
         dao.setDicomSecurityRoles(studyPermissionHelper.getDicomRoles());
 
         add(modalWindow = new ModalWindow("modal-window"));
@@ -379,7 +379,7 @@ public class StudyListPage extends Panel {
             }
         })))
         .add(new ImageSizeBehaviour()));
-        form.addComponent(link);
+        form.addComponent(link);        
     }
 
     private void addQueryOptions(BaseForm form) {

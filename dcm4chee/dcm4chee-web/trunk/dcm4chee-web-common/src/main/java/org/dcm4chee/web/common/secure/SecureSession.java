@@ -43,8 +43,6 @@ import java.util.HashMap;
 import org.apache.wicket.Request;
 import org.apache.wicket.security.WaspApplication;
 import org.apache.wicket.security.WaspSession;
-import org.apache.wicket.security.hive.authentication.DefaultSubject;
-import org.apache.wicket.security.hive.authentication.Subject;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -58,6 +56,8 @@ public class SecureSession extends WaspSession {
     private String username;
     private HashMap<String, String> swarmPrincipals;
     private boolean manageUsers;
+
+    private boolean root;
     
     public SecureSession(WaspApplication application, Request request) {
         super(application, request);
@@ -71,7 +71,7 @@ public class SecureSession extends WaspSession {
         this.username = username;
     }
     
-    public void extendedLogin(String username, String passwd, Subject subject) {
+    public void extendedLogin(String username, String passwd, org.apache.wicket.security.hive.authentication.Subject subject) {
     }
 
     public void setSwarmPrincipals(HashMap<String, String> principals) {
@@ -88,5 +88,13 @@ public class SecureSession extends WaspSession {
 
     public boolean getManageUsers() {
         return manageUsers;
+    }
+
+    public void setRoot(boolean root) {
+        this.root = root;
+    }
+    
+    public boolean isRoot() {
+        return root;
     }
 }

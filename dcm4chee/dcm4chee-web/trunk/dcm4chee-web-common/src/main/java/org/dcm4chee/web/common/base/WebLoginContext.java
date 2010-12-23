@@ -52,14 +52,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.management.MBeanServer;
-import javax.management.MBeanServerConnection;
-import javax.management.MBeanServerFactory;
-import javax.management.ObjectName;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -86,7 +81,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since 31.08.2010
+ * @since Aug. 31, 2010
  */
 public class WebLoginContext extends UsernamePasswordContext {
 
@@ -101,25 +96,27 @@ public class WebLoginContext extends UsernamePasswordContext {
 
         WebApplication app = (WebApplication) RequestCycle.get().getApplication();
         String webApplicationPolicy = app.getInitParameter("webApplicationPolicy");
-        if ( webApplicationPolicy == null) webApplicationPolicy = "dcm4chee";
+        if (webApplicationPolicy == null) webApplicationPolicy = "dcm4chee";
         String rolesGroupName = app.getInitParameter("rolesGroupName");
-        if ( rolesGroupName == null) rolesGroupName = "Roles";
+        if (rolesGroupName == null) rolesGroupName = "Roles";
         LoginCallbackHandler handler = new LoginCallbackHandler(username, password);
         LoginContext context;
-        SecureSession secureSession = (SecureSession) SecureSession.get();
+        SecureSession secureSession;
         try {
+            secureSession = ((SecureSession) RequestCycle.get().getSession());
+            secureSession.setManageUsers(WebCfgDelegate.getInstance().getManageUsers());
+            secureSession.setRoot(username.equals(WebCfgDelegate.getInstance().getRoot()));
             context = new LoginContext(webApplicationPolicy, handler);
             context.login();
             secureSession.setUsername(username);
-            secureSession.setManageUsers(Boolean.parseBoolean(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("manageUsers")));
         } catch (Exception e) {
-            log.error("Exception: " + e.getMessage());
+            log.warn("Login failed. Reason: " + e.getMessage());
             throw new LoginException();
         }
 
         if (!readHiveFile())
             return null;
-        
+
         DefaultSubject subject;
         try {
             subject = toSwarmSubject(rolesGroupName, context.getSubject());
@@ -133,11 +130,29 @@ public class WebLoginContext extends UsernamePasswordContext {
         return subject;
     }
 
-    private void checkLoginAllowed(DefaultSubject subject) {
-        String rolename = WebCfgDelegate.getInstance().getString("loginAllowedRolename");
-        if (!subject.getPrincipals().contains(new SimplePrincipal(rolename))) {                            
-          ((SecureSession) RequestCycle.get().getSession()).invalidate();
-          log.warn("Failed to authorize subject for login, denied. See 'LoginAllowed' rolename attribute in Web Config Service.");
+    private boolean readHiveFile() {
+        try {
+            InputStream in = ((WebApplication) RequestCycle.get().getApplication()).getServletContext().getResource("/WEB-INF/dcm4chee.hive").openStream();
+            BufferedReader dis = new BufferedReader (new InputStreamReader (in));
+
+            HashMap<String, String> principals = new LinkedHashMap<String, String>();
+            String line;
+            String principal = null;
+            while ((line = dis.readLine()) != null) 
+                if (line.startsWith("grant principal ")) {
+                    principal = line.substring(line.indexOf("\"") + 1, line.lastIndexOf("\""));
+                    principals.put(principal, null);
+                } else if ((principal != null) && (line.trim().startsWith("// DOC:"))) { 
+                    principals.put(principal, line.substring(line.indexOf("// DOC:") + 7).trim());
+                    principal = null;
+                }
+            in.close();
+            ((SecureSession) RequestCycle.get().getSession()).setSwarmPrincipals(principals);
+            return true;
+        } catch (Exception e) {
+            log.error("Exception (error processing hive file): " + e.getMessage());
+            ((SecureSession) RequestCycle.get().getSession()).invalidate();
+            return false ;
         }
     }
 
@@ -199,29 +214,11 @@ public class WebLoginContext extends UsernamePasswordContext {
         }
     }
 
-    private boolean readHiveFile() {
-        try {
-            InputStream in = ((WebApplication) RequestCycle.get().getApplication()).getServletContext().getResource("/WEB-INF/dcm4chee.hive").openStream();
-            BufferedReader dis = new BufferedReader (new InputStreamReader (in));
-
-            HashMap<String, String> principals = new LinkedHashMap<String, String>();
-            String line;
-            String principal = null;
-            while ((line = dis.readLine()) != null) 
-                if (line.startsWith("grant principal ")) {
-                    principal = line.substring(line.indexOf("\"") + 1, line.lastIndexOf("\""));
-                    principals.put(principal, null);
-                } else if ((principal != null) && (line.trim().startsWith("// DOC:"))) { 
-                    principals.put(principal, line.substring(line.indexOf("// DOC:") + 7).trim());
-                    principal = null;
-                }
-            in.close();
-            ((SecureSession) RequestCycle.get().getSession()).setSwarmPrincipals(principals);
-            return true;
-        } catch (Exception e) {
-            log.error("Exception (error processing hive file): " + e.getMessage());
-            ((SecureSession) RequestCycle.get().getSession()).invalidate();
-            return false ;
+    private void checkLoginAllowed(DefaultSubject subject) {
+        String rolename = WebCfgDelegate.getInstance().getLoginAllowedRolename();
+        if (!subject.getPrincipals().contains(new SimplePrincipal(rolename))) {                            
+          ((SecureSession) RequestCycle.get().getSession()).invalidate();
+          log.warn("Failed to authorize subject for login, denied. See 'LoginAllowed' rolename attribute in Web Config Service.");
         }
     }
 

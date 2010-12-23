@@ -132,6 +132,11 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private String studyPermissionsAllRolename;
     private String studyPermissionsOwnRolename;
     
+    private boolean manageUsers;
+    private boolean useStudyPermissions;
+    private boolean webStudyPermissions;
+    private String root;
+    
     private static final String NONE = "NONE";
     private static final String NEWLINE = System.getProperty("line.separator", "\n");
     
@@ -788,6 +793,38 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
                 log.debug("Error closing : "+toClose.getClass().getName(), ignore);
             }
         }
+    }
+
+    public void setManageUsers(boolean manageUsers) {
+        this.manageUsers = manageUsers;
+    }
+
+    public boolean isManageUsers() {
+        return manageUsers;
+    }
+
+    public void setUseStudyPermissions(boolean useStudyPermissions) {
+        this.useStudyPermissions = useStudyPermissions;
+    }
+
+    public boolean isUseStudyPermissions() {
+        return useStudyPermissions;
+    }
+
+    public void setWebStudyPermissions(boolean webStudyPermissions) {
+        this.webStudyPermissions = webStudyPermissions;
+    }
+
+    public boolean isWebStudyPermissions() {
+        return webStudyPermissions;
+    }
+
+    public void setRoot(String root) {
+        this.root = root;
+    }
+
+    public String getRoot() {
+        return root;
     }
 }
 

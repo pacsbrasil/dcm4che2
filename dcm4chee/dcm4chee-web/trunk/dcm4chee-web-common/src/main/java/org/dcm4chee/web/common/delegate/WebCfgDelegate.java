@@ -79,6 +79,34 @@ public class WebCfgDelegate {
         return getString("WebConfigPath");
     }
     
+    public String getLoginAllowedRolename() {
+        return getString("loginAllowedRolename");
+    }
+
+    public String getStudyPermissionsAllRolename() {
+        return getString("studyPermissionsAllRolename");
+    }
+
+    public String getStudyPermissionsOwnRolename() {
+        return getString("studyPermissionsOwnRolename");
+    }
+
+    public boolean getManageUsers() {
+        return getBoolean("manageUsers", true);
+    }
+
+    public boolean getUseStudyPermissions() {
+        return getBoolean("useStudyPermissions", true);
+    }
+
+    public boolean getWebStudyPermissions() {
+        return getBoolean("webStudyPermissions", true);
+    }
+
+    public String getRoot() {
+        return getString("root");
+    }
+
     public String getWadoBaseURL() {
         return noneAsNull(getString("WadoBaseURL"));
     }
@@ -165,30 +193,6 @@ public class WebCfgDelegate {
         return getString("Mpps2mwlPresetModality");
     }
 
-    private String noneAsNull(String s) {
-        return "NONE".equals(s) ? null : s;
-    }
-
-    public String getString(String attrName) {
-        if (server == null) return null;
-        try {
-            return (String) server.getAttribute(serviceObjectName, attrName);
-        } catch (Exception x) {
-            log.warn("Cant get "+attrName+"! Ignored by return null!", x);
-            return null;
-        }
-    }
-    
-    public boolean getBoolean(String attrName, boolean defVal) {
-        if (server == null) return defVal;
-        try {
-            return (Boolean) server.getAttribute(serviceObjectName, attrName);
-        } catch (Exception x) {
-            log.warn("Cant get "+attrName+" attribute! return "+defVal+" as default!", x);
-            return defVal;
-        }
-    }
-
     public int checkCUID(String cuid) {
         if (server == null) return -1;
         try {
@@ -199,6 +203,31 @@ public class WebCfgDelegate {
             return -1;
         }
     }
+
+    private String noneAsNull(String s) {
+        return "NONE".equals(s) ? null : s;
+    }
+
+    private String getString(String attrName) {
+        if (server == null) return null;
+        try {
+            return (String) server.getAttribute(serviceObjectName, attrName);
+        } catch (Exception x) {
+            log.warn("Cant get "+attrName+"! Ignored by return null!", x);
+            return null;
+        }
+    }
+    
+    private boolean getBoolean(String attrName, boolean defVal) {
+        if (server == null) return defVal;
+        try {
+            return (Boolean) server.getAttribute(serviceObjectName, attrName);
+        } catch (Exception x) {
+            log.warn("Cant get "+attrName+" attribute! return "+defVal+" as default!", x);
+            return defVal;
+        }
+    }
+    
     public Object invoke(String opName, Object[] args, Object defVal) {
         try {
             if (args == null) {
@@ -247,7 +276,7 @@ public class WebCfgDelegate {
             log.error("Failed to get MBeanServerConnection! MbeanDelegate class:"+getClass().getName());
             return;
         }
-        String s = ((WebApplication)Application.get()).getInitParameter("webCfgServiceName");
+        String s = ((WebApplication)Application.get()).getInitParameter("WebCfgServiceName");
         if (s == null)
             s = "dcm4chee.web:service=WebConfig";
         try {

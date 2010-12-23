@@ -38,25 +38,8 @@
 
 package org.dcm4chee.web.war;
 
-import java.io.IOException;
-import java.util.Iterator;
-
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
-import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
-
 import org.apache.wicket.Request;
-import org.apache.wicket.RequestCycle;
-import org.apache.wicket.protocol.http.WebApplication;
-import org.apache.wicket.security.hive.authentication.DefaultSubject;
-import org.apache.wicket.security.hive.authentication.Subject;
-import org.apache.wicket.security.hive.authorization.Principal;
-import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.secure.SecureSession;
-import org.dcm4chee.web.war.StudyPermissionHelper.StudyPermissionRight;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,29 +53,29 @@ public class AuthenticatedWebSession extends SecureSession {
 
     private static final long serialVersionUID = 1L;
     
+    protected static Logger log = LoggerFactory.getLogger(AuthenticatedWebSession.class);
+
     private org.dcm4chee.web.war.folder.ViewPort folderViewport = new org.dcm4chee.web.war.folder.ViewPort();
     private org.dcm4chee.web.war.worklist.modality.ViewPort mwViewport = new org.dcm4chee.web.war.worklist.modality.ViewPort();
     private StudyPermissionHelper studyPermissionHelper;
-    
-    protected static Logger log = LoggerFactory.getLogger(AuthenticatedWebSession.class);
     
     public AuthenticatedWebSession(WicketApplication wicketApplication, Request request) {
         super(wicketApplication, request);
     }
 
     @Override
-    public void extendedLogin(String username, String passwd, Subject subject) {
-        if ("true".equals(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("useStudyPermissions"))) {
-            try {
-                studyPermissionHelper = new StudyPermissionHelper(username, passwd, subject);
-            } catch (Exception x) {
-                throw new RuntimeException("Extended Login Failed!", x);
-            }
-        } else {
-            studyPermissionHelper = new StudyPermissionHelper();
+    public void extendedLogin(String username, String passwd, org.apache.wicket.security.hive.authentication.Subject webSubject) {
+        try {
+            studyPermissionHelper = new StudyPermissionHelper(username, passwd, webSubject);
+        } catch (Exception x) {
+            throw new RuntimeException("Extended Login Failed!", x);
         }
     }
-    
+
+    public StudyPermissionHelper getStudyPermissionHelper() {
+        return studyPermissionHelper;
+    }
+
     public org.dcm4chee.web.war.folder.ViewPort getFolderViewPort() {
         return folderViewport;
     }
@@ -100,9 +83,4 @@ public class AuthenticatedWebSession extends SecureSession {
     public org.dcm4chee.web.war.worklist.modality.ViewPort getMwViewPort() {
         return mwViewport;
     }
-
-    public StudyPermissionHelper getStudyPermissionHelper() {
-        return studyPermissionHelper;
-    }   
-    
 }

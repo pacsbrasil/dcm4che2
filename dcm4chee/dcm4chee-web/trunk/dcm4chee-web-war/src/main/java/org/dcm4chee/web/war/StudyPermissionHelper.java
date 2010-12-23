@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.MalformedObjectNameException;
@@ -58,6 +59,7 @@ import javax.security.auth.Subject;
 import org.apache.wicket.RequestCycle;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.delegate.WebCfgDelegate;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.slf4j.Logger;
@@ -71,8 +73,9 @@ import org.slf4j.LoggerFactory;
 public class StudyPermissionHelper implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private boolean isRootUser;
+    
     private List<String> dicomRoles;
+    private boolean useStudyPermissions;
     private boolean webStudyPermissions;
     private StudyPermissionRight studyPermissionRight;
     
@@ -81,34 +84,34 @@ public class StudyPermissionHelper implements Serializable {
     public static StudyPermissionHelper get() {
         return ((AuthenticatedWebSession) AuthenticatedWebSession.get()).getStudyPermissionHelper();
     }
-    
-    public StudyPermissionHelper() {
-    }
-    
-    public StudyPermissionHelper(String username, String password, org.apache.wicket.security.hive.authentication.Subject webSubject) throws InstanceNotFoundException, MalformedObjectNameException, MBeanException, ReflectionException, IOException  {
-        webStudyPermissions = Boolean.parseBoolean(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("webStudyPermissions"));
-        isRootUser = username.equals(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("root"));
-        if (isRootUser) {
-            studyPermissionRight = StudyPermissionRight.ALL;
-        } else {
-            javax.security.auth.Subject dicomSubject = null;
-            WebCfgDelegate.getInstance().invoke("updateDicomRoles", null, null);
-            dicomSubject = new javax.security.auth.Subject(); //dicomSubject != null -> enable studyPermissions
-            WebCfgDelegate.getInstance().getMBeanServer().invoke(
-                    new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("DicomSecurityService")), 
-                    "isValid",
-                    new Object[] { username, password, dicomSubject },
-                    new String[] { String.class.getName(), 
-                            String.class.getName(), 
-                            javax.security.auth.Subject.class.getName()}
-            );
-            setDicomSubject(dicomSubject);
-            checkStudyPermissionRoles(webSubject);
+
+    public StudyPermissionHelper(String username, String password, org.apache.wicket.security.hive.authentication.Subject webSubject) throws AttributeNotFoundException, InstanceNotFoundException, MalformedObjectNameException, MBeanException, ReflectionException, NullPointerException, IOException {
+
+        studyPermissionRight = StudyPermissionRight.NONE;
+        useStudyPermissions = WebCfgDelegate.getInstance().getUseStudyPermissions();
+        webStudyPermissions = WebCfgDelegate.getInstance().getWebStudyPermissions();
+
+        try {
+            if (((SecureSession) RequestCycle.get().getSession()).isRoot()) {
+                studyPermissionRight = StudyPermissionRight.ALL;
+            } else {
+                javax.security.auth.Subject dicomSubject = null;
+                WebCfgDelegate.getInstance().invoke("updateDicomRoles", null, null);
+                dicomSubject = new javax.security.auth.Subject(); //dicomSubject != null -> enable studyPermissions
+                WebCfgDelegate.getInstance().getMBeanServer().invoke(
+                        new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("DicomSecurityService")), 
+                        "isValid",
+                        new Object[] { username, password, dicomSubject },
+                        new String[] { String.class.getName(), 
+                                String.class.getName(), 
+                                javax.security.auth.Subject.class.getName()}
+                );
+                setDicomSubject(dicomSubject);
+                setStudyPermissionRight(webSubject);
+            }
+        } catch (Exception e) {
+            log.error("Error creating StudyPermissionHelper: revoked rights: ", e);
         }
-    }
-    
-    public boolean isRootUser() {
-        return isRootUser;
     }
 
     public void setDicomSubject(Subject dicomSubject) {
@@ -133,7 +136,7 @@ public class StudyPermissionHelper implements Serializable {
     }
     
     public boolean useStudyPermissions() {
-        return dicomRoles != null;
+        return useStudyPermissions && (dicomRoles != null);
     }
 
     public void setWebStudyPermissions(boolean webStudyPermissions) {
@@ -183,10 +186,10 @@ public class StudyPermissionHelper implements Serializable {
     }
 
     
-    private void checkStudyPermissionRoles(org.apache.wicket.security.hive.authentication.Subject webSubject) {
+    private void setStudyPermissionRight(org.apache.wicket.security.hive.authentication.Subject webSubject) {
         studyPermissionRight = StudyPermissionRight.NONE;
-        String studyPermissionsAll = WebCfgDelegate.getInstance().getString("studyPermissionsAllRolename");
-        String studyPermissionsOwn = WebCfgDelegate.getInstance().getString("studyPermissionsOwnRolename");
+        String studyPermissionsAll = WebCfgDelegate.getInstance().getStudyPermissionsAllRolename();
+        String studyPermissionsOwn = WebCfgDelegate.getInstance().getStudyPermissionsOwnRolename();
         if (studyPermissionsAll != null || studyPermissionsOwn != null) {
             Iterator<org.apache.wicket.security.hive.authorization.Principal> i = webSubject.getPrincipals().iterator();
             while (i.hasNext()) {
