@@ -271,7 +271,14 @@ public class FolderMoveDelegate {
             desc = AUTO_GENERATED_BY_MOVE_TEXT;
         } else {
             desc = srcSeries.getSeriesDescription();
-            desc = desc == null ? AUTO_GENERATED_BY_MOVE_TEXT:desc+" ("+AUTO_GENERATED_BY_MOVE_TEXT+")";
+            if (desc == null)
+                desc = AUTO_GENERATED_BY_MOVE_TEXT;
+            else if (desc.indexOf(AUTO_GENERATED_BY_MOVE_TEXT) == -1) {
+                desc = desc+" ("+AUTO_GENERATED_BY_MOVE_TEXT+")";
+                if (desc.length() > 64) {
+                    desc = desc.substring(0, 65);
+                }
+            }
             Dataset dsSrc = srcSeries.toDataset();
             ds.putDA(Tags.SeriesDate, dsSrc.getDate(Tags.SeriesDate) );
             ds.putTM(Tags.SeriesTime, dsSrc.getDate(Tags.SeriesTime) );
