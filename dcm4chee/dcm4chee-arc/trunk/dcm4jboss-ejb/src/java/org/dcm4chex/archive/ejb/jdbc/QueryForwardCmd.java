@@ -98,7 +98,7 @@ public final class QueryForwardCmd extends BaseSQLCmd {
                         lastAet = retrAet;
                     }
                 } 
-                l.add(rs.getString(1));
+                l.add(uid);
                 this.lastSeriesPk = rs.getLong(3);
             }
         } catch (Exception x) {
