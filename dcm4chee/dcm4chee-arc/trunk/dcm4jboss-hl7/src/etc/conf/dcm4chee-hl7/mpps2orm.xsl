@@ -72,7 +72,7 @@
             <field><xsl:value-of select="$accno"/></field>
             <field>
                 <xsl:call-template name="code2ce">
-                    <xsl:with-param name="code" select="attr[@tag='00081032']/item"/>
+                    <xsl:with-param name="code" select="../../attr[@tag='00081032']/item"/>
                 </xsl:call-template>                
             </field>
         </OBR>
