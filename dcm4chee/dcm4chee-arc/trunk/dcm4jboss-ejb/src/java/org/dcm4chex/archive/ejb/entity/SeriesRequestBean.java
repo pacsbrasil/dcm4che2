@@ -110,12 +110,6 @@ public abstract class SeriesRequestBean implements EntityBean {
             throws CreateException {
         AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
-        try {
-            setIssuerOfAccessionNumber(
-                    IssuerBean.valueOf(issuerHome, ds.getItem(Tags.IssuerOfAccessionNumberSeq)));
-        } catch (FinderException e) {
-            throw new CreateException(e.getMessage());
-        }
         setStudyIuid(ds.getString(Tags.StudyInstanceUID));
         setRequestedProcedureId(filter.getString(ds, Tags.RequestedProcedureID));
         setSpsId(filter.getString(ds, Tags.SPSID));
@@ -148,6 +142,12 @@ public abstract class SeriesRequestBean implements EntityBean {
     public void ejbPostCreate(Dataset ds, SeriesLocal series)
             throws CreateException {
         setSeries(series);
+        try {
+            setIssuerOfAccessionNumber(
+                    IssuerBean.valueOf(issuerHome, ds.getItem(Tags.IssuerOfAccessionNumberSeq)));
+        } catch (FinderException e) {
+            throw new CreateException(e.getMessage());
+        }
         log.info("Created " + prompt());
     }
 
