@@ -63,7 +63,7 @@ public class ShowComparisonViewerDelegate extends Thread {
     private int numberOfStudies;
     private String[] studies;
     public ShowComparisonViewerDelegate(int numberOfStudies,String[] studies,ArrayList studyURLs) {
-        numberOfStudies=numberOfStudies;
+        this.numberOfStudies=numberOfStudies;
         if((numberOfStudies>=3) && (numberOfStudies<=4))
         {
             gridColCount=2;
