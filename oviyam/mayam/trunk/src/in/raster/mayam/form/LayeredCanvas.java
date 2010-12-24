@@ -76,6 +76,7 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
     public boolean focusGained = false;
     public boolean fileIsNull = false;
     private String studyUID = "";
+    private String[] comparedWithStudies;
 
     public LayeredCanvas() {
         this.addFocusListener(this);
@@ -311,4 +312,13 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
 
     public void componentHidden(ComponentEvent e) {
     }
+
+    public String[] getComparedWithStudies() {
+        return comparedWithStudies;
+    }
+
+    public void setComparedWithStudies(String[] comparedWithStudies) {
+        this.comparedWithStudies = comparedWithStudies;
+    }
+
 }

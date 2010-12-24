@@ -120,9 +120,7 @@ public class DatabaseHandler {
         try {
             if (!ApplicationContext.canWrite(System.getProperty("user.dir"))) {
                 System.setProperty("derby.system.home", System.getProperty("java.io.tmpdir"));
-            }
-            else
-            {
+            } else {
                 System.setProperty("derby.system.home", System.getProperty("user.dir"));
             }
             try {
@@ -349,7 +347,7 @@ public class DatabaseHandler {
             statement.executeUpdate(sql);
 
             //creating study table if it is not exist already
-            sql = "create table " + studyTable + "(StudyInstanceUID varchar(255)  NOT NULL CONSTRAINT StudyInstanceUID_pk PRIMARY KEY ," + "StudyDate varchar(30), " + "AccessionNo varchar(50), " + "ReferringPhysicianName varchar(255), " + "StudyDescription  varchar(80), " + "ModalityInStudy varchar(10), " + "NoOfSeries integer," + "NoOfInstances integer," + "RecdImgCnt Integer," + "SendImgCnt integer," + "RetrieveAET varchar(50),"+"StudyType varchar(75)," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId))";
+            sql = "create table " + studyTable + "(StudyInstanceUID varchar(255)  NOT NULL CONSTRAINT StudyInstanceUID_pk PRIMARY KEY ," + "StudyDate varchar(30), " + "AccessionNo varchar(50), " + "ReferringPhysicianName varchar(255), " + "StudyDescription  varchar(80), " + "ModalityInStudy varchar(10), " + "NoOfSeries integer," + "NoOfInstances integer," + "RecdImgCnt Integer," + "SendImgCnt integer," + "RetrieveAET varchar(50)," + "StudyType varchar(75)," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId))";
             statement.executeUpdate(sql);
 
             //creating series table if it is not exist already
@@ -567,7 +565,7 @@ public class DatabaseHandler {
 
     public void insertDefaultListenerDetail() {
         try {
-            boolean insertStatus = conn.createStatement().execute("insert into" + " listener(aetitle,port,storagelocation) values('MAYAM',1025,'"+System.getProperty("user.dir")+File.separator+"archive')");
+            boolean insertStatus = conn.createStatement().execute("insert into" + " listener(aetitle,port,storagelocation) values('MAYAM',1025,'" + System.getProperty("user.dir") + File.separator + "archive')");
             conn.commit();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -670,7 +668,7 @@ public class DatabaseHandler {
 
     public void updateServerListValues(ServerModel serverModel) {
         try {
-            int n = conn.createStatement().executeUpdate("update ae set logicalname='" + serverModel.getServerName() + "',hostname='" + serverModel.getHostName() + "',aetitle='" + serverModel.getAeTitle() + "',port=" + serverModel.getPort()+",retrievetype='"+serverModel.getRetrieveType() + "',wadocontext='"+serverModel.getWadoContextPath()+"',wadoport="+serverModel.getWadoPort()+",wadoprotocol='"+serverModel.getWadoProtocol()+"',retrievets='"+serverModel.getRetrieveTransferSyntax()+"' where pk=" + serverModel.getPk());
+            int n = conn.createStatement().executeUpdate("update ae set logicalname='" + serverModel.getServerName() + "',hostname='" + serverModel.getHostName() + "',aetitle='" + serverModel.getAeTitle() + "',port=" + serverModel.getPort() + ",retrievetype='" + serverModel.getRetrieveType() + "',wadocontext='" + serverModel.getWadoContextPath() + "',wadoport=" + serverModel.getWadoPort() + ",wadoprotocol='" + serverModel.getWadoProtocol() + "',retrievets='" + serverModel.getRetrieveTransferSyntax() + "' where pk=" + serverModel.getPk());
             conn.commit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -689,7 +687,7 @@ public class DatabaseHandler {
 
     public void insertServer(ServerModel serverModel) {
         try {
-            boolean insertStatus = conn.createStatement().execute("insert into" + " ae(logicalname,hostname,aetitle,port,retrievetype,wadocontext,wadoport,wadoprotocol,retrievets) values('" + serverModel.getServerName() + "','" + serverModel.getHostName() + "','" + serverModel.getAeTitle() + "'," + serverModel.getPort() +",'"+serverModel.getRetrieveType()+ "','"+serverModel.getWadoContextPath()+"',"+serverModel.getWadoPort()+",'"+serverModel.getWadoProtocol()+"','"+serverModel.getRetrieveTransferSyntax()+"')");
+            boolean insertStatus = conn.createStatement().execute("insert into" + " ae(logicalname,hostname,aetitle,port,retrievetype,wadocontext,wadoport,wadoprotocol,retrievets) values('" + serverModel.getServerName() + "','" + serverModel.getHostName() + "','" + serverModel.getAeTitle() + "'," + serverModel.getPort() + ",'" + serverModel.getRetrieveType() + "','" + serverModel.getWadoContextPath() + "'," + serverModel.getWadoPort() + ",'" + serverModel.getWadoProtocol() + "','" + serverModel.getRetrieveTransferSyntax() + "')");
             conn.commit();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -709,7 +707,7 @@ public class DatabaseHandler {
                 serverModel.setAeTitle(rs1.getString("aetitle"));
                 serverModel.setPort(rs1.getInt("port"));
                 serverModel.setRetrieveType(rs1.getString("retrievetype"));
-                serverModel.setWadoContextPath(rs1.getString("wadocontext")!=null?rs1.getString("wadocontext"):"");
+                serverModel.setWadoContextPath(rs1.getString("wadocontext") != null ? rs1.getString("wadocontext") : "");
                 serverModel.setWadoPort(rs1.getInt("wadoport"));
                 serverModel.setWadoProtocol(rs1.getString("wadoprotocol"));
                 serverModel.setRetrieveTransferSyntax(rs1.getString("retrievets"));
@@ -801,14 +799,14 @@ public class DatabaseHandler {
 
     public void writeDataToDatabase(DicomObject dataset) {
         insertPatientData(dataset);
-        insertStudyData(dataset,false);
+        insertStudyData(dataset, false);
         insertSeriesData(dataset);
         insertImageData(dataset);
     }
 
-    public void importDataToDatabase(DicomObject dataset, File dicomFile,boolean saveAsLink) {
+    public void importDataToDatabase(DicomObject dataset, File dicomFile, boolean saveAsLink) {
         insertPatientData(dataset);
-        insertStudyData(dataset,saveAsLink);
+        insertStudyData(dataset, saveAsLink);
         insertSeriesData(dataset);
         insertImageData(dataset, dicomFile);
     }
@@ -833,7 +831,8 @@ public class DatabaseHandler {
             }
         }
     }
-     public void insertStudyData(DicomObject dataset,boolean saveAslink) {
+
+    public void insertStudyData(DicomObject dataset, boolean saveAslink) {
         if (checkRecordExists(studyTable, "StudyInstanceUID", dataset.getString(Tag.StudyInstanceUID))) {
         } else {
             try {
@@ -862,17 +861,19 @@ public class DatabaseHandler {
                 if (dataset.getString(Tag.StudyDescription) != null && dataset.getString(Tag.StudyDescription).length() > 0) {
                     studyDescription = dataset.getString(Tag.StudyDescription);
                 }
-                String studyType="local";
-                if(saveAslink)
-                    studyType="link";
-                conn.createStatement().execute("insert into " + studyTable + " values('" + dataset.getString(Tag.StudyInstanceUID) + "'," + dat + ",'" + accessionno + "','" + refName + "','" + studyDescription.replace('\'', ' ') + "','" + dataset.getString(Tag.Modality) + "'," + noSeries + "," + noInstance + "," + 0 + "," + 1 + ",'" + retAe + "','"+studyType+"','" + dataset.getString(Tag.PatientID) + "')");
+                String studyType = "local";
+                if (saveAslink) {
+                    studyType = "link";
+                }
+                conn.createStatement().execute("insert into " + studyTable + " values('" + dataset.getString(Tag.StudyInstanceUID) + "'," + dat + ",'" + accessionno + "','" + refName + "','" + studyDescription.replace('\'', ' ') + "','" + dataset.getString(Tag.Modality) + "'," + noSeries + "," + noInstance + "," + 0 + "," + 1 + ",'" + retAe + "','" + studyType + "','" + dataset.getString(Tag.PatientID) + "')");
                 conn.commit();
             } catch (SQLException ex) {
                 Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
-     public void deleteCopyAsLinkStudies() {
+
+    public void deleteCopyAsLinkStudies() {
         try {
             String sql = "Select StudyInstanceUID from " + studyTable + " where studytype='link'";
             ResultSet rs = conn.createStatement().executeQuery(sql);
@@ -890,12 +891,12 @@ public class DatabaseHandler {
                 }
                 studyTableRowDelete(studyUID);
             }
-                SwingUtilities.invokeLater(new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
 
-            public void run() {
-                MainScreen.refreshLocalDBStorage();
-            }
-        });
+                public void run() {
+                    MainScreen.refreshLocalDBStorage();
+                }
+            });
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -953,7 +954,7 @@ public class DatabaseHandler {
         } else {
             try {
                 Calendar today = Calendar.getInstance();
-                String struturedDestination = System.getProperty("user.dir")+File.separator+"archive" + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + dataset.getString(Tag.StudyInstanceUID) + File.separator + dataset.getString(Tag.SOPInstanceUID);
+                String struturedDestination = System.getProperty("user.dir") + File.separator + "archive" + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + dataset.getString(Tag.StudyInstanceUID) + File.separator + dataset.getString(Tag.SOPInstanceUID);
                 String multiframe = "false";
                 int totalFrame = 0;
                 if (dataset.getString(Tags.NumberOfFrames) != null && Integer.parseInt(dataset.getString(Tags.NumberOfFrames)) > 1) {
@@ -1035,7 +1036,7 @@ public class DatabaseHandler {
             String sql = "Select * from AE where logicalname='" + serverName + "'";
             ResultSet rs = conn.createStatement().executeQuery(sql);
             while (rs.next()) {
-                ae = new AEModel(rs.getString("logicalname"), rs.getString("hostname"), rs.getString("aetitle"), rs.getInt("port"),rs.getString("retrievetype"));
+                ae = new AEModel(rs.getString("logicalname"), rs.getString("hostname"), rs.getString("aetitle"), rs.getInt("port"), rs.getString("retrievetype"));
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1068,13 +1069,14 @@ public class DatabaseHandler {
         presetModel.setPresetName("Default");
         return presetModel;
     }
+
     public ServerModel getServerModel(String serverName) {
         ServerModel serverModel = null;
         try {
             String sql = "Select * from AE where logicalname='" + serverName + "'";
             ResultSet rs = conn.createStatement().executeQuery(sql);
             while (rs.next()) {
-                serverModel = new ServerModel(rs.getString("logicalname"), rs.getString("hostname"), rs.getString("aetitle"), rs.getInt("port"),rs.getString("retrievetype"),rs.getString("wadocontext"),rs.getInt("wadoport"),rs.getString("wadoprotocol"),rs.getString("retrievets"));
+                serverModel = new ServerModel(rs.getString("logicalname"), rs.getString("hostname"), rs.getString("aetitle"), rs.getInt("port"), rs.getString("retrievetype"), rs.getString("wadocontext"), rs.getInt("wadoport"), rs.getString("wadoprotocol"), rs.getString("retrievets"));
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1082,6 +1084,7 @@ public class DatabaseHandler {
         return serverModel;
 
     }
+
     public PresetModel getPreset(String presetName) {
         PresetModel presetModel = null;
         try {
@@ -1097,6 +1100,15 @@ public class DatabaseHandler {
             e.printStackTrace();
         }
         return presetModel;
+    }
+
+    public ArrayList getFirstInstanceListFromMultipleStudies(String[] studies) {
+        ArrayList fileArray = new ArrayList();
+        for (int i = 0; i < studies.length; i++) {
+            fileArray.add(((ArrayList) this.getUrlBasedOnStudyIUID(studies[i])).get(0));
+        }
+        return fileArray;
+
     }
 
     public ArrayList getUrlBasedOnStudyIUID(String siuid) {
@@ -1248,9 +1260,9 @@ public class DatabaseHandler {
                 ResultSet rs1 = null;
                 String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" + "AND multiframe='false'" + " order by InstanceNo asc";
                 rs1 = conn.createStatement().executeQuery(sql1);
-                boolean allInstanceAreMultiframe=true;
+                boolean allInstanceAreMultiframe = true;
                 while (rs1.next()) {
-                    allInstanceAreMultiframe=false;
+                    allInstanceAreMultiframe = false;
                     Instance img = new Instance();
                     img.setFilepath(rs1.getString("FileStoreUrl"));
                     img.setSop_iuid(rs1.getString("SopUID"));
@@ -1259,8 +1271,9 @@ public class DatabaseHandler {
                     series.setMultiframe(false);
                     series.getImageList().add(img);
                 }
-                if(!allInstanceAreMultiframe)
-                arr.add(series);
+                if (!allInstanceAreMultiframe) {
+                    arr.add(series);
+                }
                 arr.addAll(getMultiframeSeriesList(siuid, series.getSeriesInstanceUID()));
             }
         } catch (SQLException ex) {

@@ -117,7 +117,8 @@ public class LocalizerDelegate {
                 ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(0)).imgpanel.setDisplayScout(true);
                 for (int j = 0; j < ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponentCount(); j++) {
                     try {
-                        if (ApplicationContext.imgPanel.getReferencedSOPInstanceUID() != null && ApplicationContext.imgPanel.getReferencedSOPInstanceUID().equalsIgnoreCase(((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getInstanceUID())) {
+                        JPanel container=((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent());
+                        if (ApplicationContext.imgPanel.getReferencedSOPInstanceUID() != null &&((LayeredCanvas) container.getComponent(j)).imgpanel!=null && ApplicationContext.imgPanel.getReferencedSOPInstanceUID().equalsIgnoreCase(((LayeredCanvas) container.getComponent(j)).imgpanel.getInstanceUID())) {
                             //   if (ApplicationContext.imgPanel.getFrameOfReferenceUID().equalsIgnoreCase(((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getFrameOfReferenceUID())) {
                             String scoutPos = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getImagePosition();
                             String scoutOrientation = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(j)).imgpanel.getImageOrientation();

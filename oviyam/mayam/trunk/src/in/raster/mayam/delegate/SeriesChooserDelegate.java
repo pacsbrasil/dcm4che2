@@ -128,7 +128,8 @@ public class SeriesChooserDelegate extends Thread {
                         stillImageProcess(series);
                     }
                 }//for loop series closed.
-            }    
+            }
+            if(canvas.getCanvas()!=null)
             canvas.getCanvas().setSelection();
         }
     }

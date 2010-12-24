@@ -45,6 +45,7 @@ import in.raster.mayam.delegate.ImportDcmDirDelegate;
 import in.raster.mayam.delegate.ReceiveDelegate;
 import in.raster.mayam.delegate.SendingDelegate;
 import in.raster.mayam.delegate.SeriesThumbUpdator;
+import in.raster.mayam.delegate.ShowComparisonViewerDelegate;
 import in.raster.mayam.delegate.ShowViewerDelegate;
 import in.raster.mayam.delegate.StudyListUpdator;
 import in.raster.mayam.form.dialog.About;
@@ -286,7 +287,7 @@ public class MainScreen extends javax.swing.JFrame {
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
         studyListTable.setModel(new StudyListModel());
-        studyListTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        studyListTable.setShowGrid(true);
         studyListTable.setDefaultRenderer(Object.class, new CellRenderer());
         studyListTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -767,14 +768,44 @@ public class MainScreen extends javax.swing.JFrame {
             forwardHost = ae.getHostName();
             forwardPort = ae.getPort();
             if (studyListTable.getSelectedRow() != -1) {
-                int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
-                String studyIUID = (String) studyListTable.getModel().getValueAt(selection, 8);
-                SendingDelegate sendingDelegate = new SendingDelegate(studyIUID, ae);
+                int index[] = studyListTable.getSelectedRows();
+                for (int j = 0; j < index.length; j++) {
+                    index[j] = studyListTable.convertRowIndexToModel(index[j]);
+                }
+                for (int tempI = 0; tempI < index.length; tempI++) {
+                    String studyIUID = (String) studyListTable.getModel().getValueAt(index[tempI], 8);
+                    SendingDelegate sendingDelegate = new SendingDelegate(studyIUID, ae);
+                }
             }
         }
     }//GEN-LAST:event_sendButtonActionPerformed
     private void viewerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewerButtonActionPerformed
         if (studyListTable.getSelectedRow() != -1) {
+
+            int index[] = studyListTable.getSelectedRows();
+            if(index.length>1)
+            {
+            String[] studies=new String[index.length];
+                for (int j = 0; j < index.length; j++) {
+                    index[j] = studyListTable.convertRowIndexToModel(index[j]);
+                }
+                for (int tempI = 0; tempI < index.length; tempI++) {
+                  studies[tempI]=((StudyListModel) studyListTable.getModel()).getValueAt(index[tempI], 8);
+                }
+            ArrayList tempRef1 = ApplicationContext.databaseRef.getFirstInstanceListFromMultipleStudies(studies);
+
+            openComparisonView(index.length,studies,tempRef1);
+            for(String studyUID:studies)
+            {
+                StudyListUpdator studyListUpdator = new StudyListUpdator();
+            studyListUpdator.addStudyToStudyList(studyUID, studyList, ((File) tempRef1.get(0)).getAbsolutePath());
+            }
+
+            }
+            else
+            {
+
+
             int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
             String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
             int rowColumnArray[] = new int[2];
@@ -788,6 +819,7 @@ public class MainScreen extends javax.swing.JFrame {
             openImageView(siuid, tempRef, rowColumnArray[0], rowColumnArray[1]);
             StudyListUpdator studyListUpdator = new StudyListUpdator();
             studyListUpdator.addStudyToStudyList(siuid, studyList, ((File) tempRef.get(0)).getAbsolutePath());
+            }
         }
     }//GEN-LAST:event_viewerButtonActionPerformed
     /**
@@ -812,8 +844,8 @@ public class MainScreen extends javax.swing.JFrame {
         settingsDialog.setLocationRelativeTo(this);
         settingsDialog.setVisible(true);
     }
-    public SettingsDialog getPreference()
-    {
+
+    public SettingsDialog getPreference() {
         return settingsDialog;
     }
 
@@ -1002,6 +1034,14 @@ public class MainScreen extends javax.swing.JFrame {
         }
         ShowViewerDelegate showViewer = new ShowViewerDelegate(studyUID, tempRef, gridRowCount, gridColCount);
     }
+    public void openComparisonView(int numberOfStudies,String[] studies,ArrayList tempRef)
+    {
+        if (!ApplicationContext.imageViewExist()) {
+            ApplicationContext.createImageView();
+        }
+        ShowComparisonViewerDelegate showComparisonViewerDelegate=new ShowComparisonViewerDelegate(numberOfStudies,studies, tempRef);
+    }
+
 
     private void removeThumbnailComponents() {
         for (int i = thumbnailDisplay.getComponentCount() - 1; i >= 0; i--) {
@@ -1115,7 +1155,7 @@ public class MainScreen extends javax.swing.JFrame {
     public static DicomTagsViewer dicomTagsViewer = new DicomTagsViewer();
     public static String selectedStudy = "";
     public static String selectedSeries = "";
-    public SettingsDialog settingsDialog=null;
+    public SettingsDialog settingsDialog = null;
 
     public static MainScreen getInstance() {
         if (mainScreenObj == null) {

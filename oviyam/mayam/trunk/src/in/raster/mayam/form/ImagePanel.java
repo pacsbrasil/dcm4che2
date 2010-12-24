@@ -85,6 +85,7 @@ import javax.media.jai.PlanarImage;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4che2.data.Tag;
@@ -250,7 +251,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         retrieveScoutParam();
         setTotalInstacne();
         retriveTextOverlayParam();
-        designContext();
+       // designContext();
     }
 
     /**
@@ -841,8 +842,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
 
     public void setWindowingToolsAsDefault() {
         if (!(tool.equalsIgnoreCase("windowing"))) {
-            tool = "windowing";
-            System.out.println(" tool has been set as windowing");
+            tool = "windowing";           
         }
     }
 
@@ -1671,6 +1671,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         mouseLocY1 = e.getY();
         mousePressed = true;
         if (e.isPopupTrigger()) {
+            designContext();
             jPopupMenu1.show(this, e.getX(), e.getY());
         }
     }
@@ -2091,10 +2092,63 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 }
             });
         }
+        jPopupMenu1.removeAll();
         jPopupMenu1.add(menu);
+       
+        createOtherPatientStudiesMenu(jPopupMenu1);
         this.setComponentPopupMenu(jPopupMenu1);
     }
 
+      JMenu studyMenu = null;
+    public void createOtherPatientStudiesMenu(JPopupMenu mainMenu) {
+
+        if(canvas.getLayeredCanvas().getComparedWithStudies()!=null){
+        //Other Studies
+        mainMenu.addSeparator();
+        for (String s : canvas.getLayeredCanvas().getComparedWithStudies()) {
+            if (!s.equalsIgnoreCase(this.studyUID)) {
+                    studyMenu = new JMenu(ApplicationContext.databaseRef.getPatientNameBasedonStudyUID(s));
+                   ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList(s);
+                  JMenu menu1 = new JMenu("Multiframe(s)");
+        for (final Series series : seriesList) {
+            JMenuItem menuitem = null;
+            if (series.isMultiframe()) {
+                if (Integer.parseInt(series.getImageList().get(0).getInstance_no()) < 10) {
+                    menuitem = new JMenuItem(series.getImageList().get(0).getInstance_no() + "   - Frames  " + series.getImageList().get(0).getTotalNumFrames());
+                } else {
+                    menuitem = new JMenuItem(series.getImageList().get(0).getInstance_no() + " - Frames  " + series.getImageList().get(0).getTotalNumFrames());
+                }
+                menu1.add(menuitem);
+            } else if (!series.getSeriesDesc().equalsIgnoreCase("null")) {
+                menuitem = new JMenuItem(series.getSeriesDesc());
+            } else if (!series.getBodyPartExamined().equalsIgnoreCase("null")) {
+                menuitem = new JMenuItem(series.getBodyPartExamined());
+            } else {
+                menuitem = new JMenuItem(series.getSeriesInstanceUID());
+            }
+            if (!series.isMultiframe()) {
+                studyMenu.add(menuitem);
+            } else {
+                studyMenu.add(menu1);
+            }
+            menuitem.addActionListener(new java.awt.event.ActionListener() {
+
+                public void actionPerformed(ActionEvent arg0) {
+                    if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+                        changeSeries(arg0, series.getStudyInstanceUID(), series.getSeriesInstanceUID(), series.isMultiframe(), series.getInstanceUID());
+                    } else {
+                        changeSeries(arg0, series.getStudyInstanceUID(), series.getSeriesInstanceUID());
+                    }
+                }
+            });
+        }
+
+            mainMenu.add(studyMenu);
+            }
+        }
+
+    }
+    }
     public boolean isInstanceArray() {
         if (this.instanceArray != null) {
             return true;

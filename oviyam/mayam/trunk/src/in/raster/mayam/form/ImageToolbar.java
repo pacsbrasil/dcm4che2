@@ -798,15 +798,22 @@ public class ImageToolbar extends javax.swing.JPanel {
     }
 
     public void refreshToolsDisplay() {
-        if (!layoutButton.isEnabled()) {
+        if (!windowing.isEnabled()) {
             enableAllTools();
         } else {
             setAnnotationToolsStatus();
+            layoutToolStatus();           
         }
     }
-
+    private void layoutToolStatus() {
+        if (ApplicationContext.imgPanel.getCanvas().getLayeredCanvas().getComparedWithStudies() != null) {
+            layoutButton.setEnabled(false);
+        } else {
+            layoutButton.setEnabled(true);
+        }
+    }
     private void enableAllTools() {
-        layoutButton.setEnabled(true);
+        layoutToolStatus();
         windowing.setEnabled(true);
         presetButton.setEnabled(true);
         probeButton.setEnabled(true);
@@ -825,6 +832,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         metaDataButton.setEnabled(true);
         stackButton.setEnabled(true);
         scoutButton.setEnabled(true);
+        cube3DButton.setEnabled(true);
         setAnnotationToolsStatus();
     }
 
@@ -854,6 +862,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         metaDataButton.setEnabled(false);
         stackButton.setEnabled(false);
         scoutButton.setEnabled(false);
+        cube3DButton.setEnabled(false);
     }
     private void stackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stackButtonActionPerformed
         doStack();

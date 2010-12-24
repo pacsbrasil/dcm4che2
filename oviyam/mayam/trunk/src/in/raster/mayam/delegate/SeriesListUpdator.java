@@ -262,7 +262,7 @@ public class SeriesListUpdator extends Thread {
                                 if (tempCanvas.imgpanel.getSeriesUID().equalsIgnoreCase(seriesUID) && tempCanvas.imgpanel.getInstanceUID().equalsIgnoreCase(instance.getSop_iuid())) {
                                     SeriesAnnotation seriesAnnotation = (SeriesAnnotation) studyAnnotation.getSeriesAnnotation().get(seriesUID);
                                     InstanceAnnotation instanceAnnotation = null;
-                                    if (seriesAnnotation.getInstanceArray() != null) {
+                                    if (seriesAnnotation!=null && seriesAnnotation.getInstanceArray() != null) {
                                         instanceAnnotation = ((InstanceAnnotation) seriesAnnotation.getInstanceArray().get(tempCanvas.imgpanel.getInstanceUID()));
                                     }
                                     if (instance.isMultiframe()) {
