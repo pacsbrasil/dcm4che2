@@ -67,6 +67,11 @@ public class TextOverlayParam {
     private String totalInstance = "";
     private int currentInstance = 1;
     private String zoomLevel = "";
+
+    //added variables for MAYAM-61
+    private String instanceNumber="";
+    private String studyDescription="";
+    private String seriesDescription="";
     SimpleDateFormat sourceDateFormat = new SimpleDateFormat("yyyyMMdd");
     SimpleDateFormat destinationDateFormat = new SimpleDateFormat("yyyy/MM/dd");
     private String framePosition = "";
@@ -234,4 +239,29 @@ public class TextOverlayParam {
     public void setFramePosition(String framePosition) {
         this.framePosition = framePosition;
     }
+
+    public String getInstanceNumber() {
+        return instanceNumber;
+    }
+
+    public void setInstanceNumber(String instanceNumber) {
+        this.instanceNumber = instanceNumber;
+    }
+
+    public String getSeriesDescription() {
+        return seriesDescription;
+    }
+
+    public void setSeriesDescription(String seriesDescription) {
+        this.seriesDescription = seriesDescription;
+    }
+
+    public String getStudyDescription() {
+        return studyDescription;
+    }
+
+    public void setStudyDescription(String studyDescription) {
+        this.studyDescription = studyDescription;
+    }
+
 }

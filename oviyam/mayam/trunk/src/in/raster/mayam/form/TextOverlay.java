@@ -110,7 +110,7 @@ public class TextOverlay extends javax.swing.JPanel {
         patientSexLabel = new javax.swing.JLabel();
         patientIDLabel = new javax.swing.JLabel();
         huLabel = new javax.swing.JLabel();
-        studyTimeLabel = new javax.swing.JLabel();
+        studyDescLabel = new javax.swing.JLabel();
         studyDateLabel = new javax.swing.JLabel();
         institutionLabel = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
@@ -121,9 +121,11 @@ public class TextOverlay extends javax.swing.JPanel {
         zoomLabel = new javax.swing.JLabel();
         multiframeStatusText = new javax.swing.JLabel();
         frameNumberText = new javax.swing.JLabel();
+        seriesDescLabel = new javax.swing.JLabel();
+        instanceNum = new javax.swing.JLabel();
 
         patientNameLabel.setBackground(new java.awt.Color(0, 0, 0));
-        patientNameLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        patientNameLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
         patientNameLabel.setForeground(new java.awt.Color(255, 255, 255));
         patientNameLabel.setText("Name");
 
@@ -142,11 +144,11 @@ public class TextOverlay extends javax.swing.JPanel {
         huLabel.setForeground(new java.awt.Color(255, 255, 255));
         huLabel.setText("hu");
 
-        studyTimeLabel.setBackground(new java.awt.Color(0, 0, 0));
-        studyTimeLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
-        studyTimeLabel.setForeground(new java.awt.Color(255, 255, 255));
-        studyTimeLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        studyTimeLabel.setText("Study Time");
+        studyDescLabel.setBackground(new java.awt.Color(0, 0, 0));
+        studyDescLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
+        studyDescLabel.setForeground(new java.awt.Color(255, 255, 255));
+        studyDescLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        studyDescLabel.setText("Study Desc");
 
         studyDateLabel.setBackground(new java.awt.Color(0, 0, 0));
         studyDateLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
@@ -155,7 +157,7 @@ public class TextOverlay extends javax.swing.JPanel {
         studyDateLabel.setText("Study Date");
 
         institutionLabel.setBackground(new java.awt.Color(0, 0, 0));
-        institutionLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        institutionLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
         institutionLabel.setForeground(new java.awt.Color(255, 255, 255));
         institutionLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         institutionLabel.setText("Institution");
@@ -200,6 +202,18 @@ public class TextOverlay extends javax.swing.JPanel {
         frameNumberText.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         frameNumberText.setText("Frame");
 
+        seriesDescLabel.setBackground(new java.awt.Color(0, 0, 0));
+        seriesDescLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
+        seriesDescLabel.setForeground(new java.awt.Color(255, 255, 255));
+        seriesDescLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        seriesDescLabel.setText("Series Desc");
+
+        instanceNum.setBackground(new java.awt.Color(0, 0, 0));
+        instanceNum.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
+        instanceNum.setForeground(new java.awt.Color(255, 255, 255));
+        instanceNum.setHorizontalAlignment(4);
+        instanceNum.setText("Instance Number");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -208,9 +222,7 @@ public class TextOverlay extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, instanceNoLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 178, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(patientNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 67, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, patientNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, patientIDLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 152, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, huLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 187, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, windowingLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 234, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -221,9 +233,6 @@ public class TextOverlay extends javax.swing.JPanel {
                     .add(jLabel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(studyDateLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 118, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(studyTimeLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 90, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(multiframeStatusText)
@@ -239,7 +248,16 @@ public class TextOverlay extends javax.swing.JPanel {
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(institutionLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 237, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                        .addContainerGap())
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(seriesDescLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
+                        .add(20, 20, 20))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(studyDescLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(instanceNum, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
+                        .add(20, 20, 20))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -255,8 +273,10 @@ public class TextOverlay extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(patientSexLabel)
-                    .add(studyTimeLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 72, Short.MAX_VALUE)
+                    .add(studyDescLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(seriesDescLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(layout.createSequentialGroup()
                         .add(huLabel)
@@ -267,7 +287,10 @@ public class TextOverlay extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(slicePositionLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(16, 16, 16)
                         .add(jLabel8)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(instanceNum)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .add(multiframeStatusText)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -292,8 +315,10 @@ public class TextOverlay extends javax.swing.JPanel {
         patientPositionLabel.setText(textOverlayParam.getPatientPosition() != null ? "Position: " + textOverlayParam.getPatientPosition() : "" + " ");
         studyDateLabel.setText("Study Date: " + textOverlayParam.getStudyDate() != null ? textOverlayParam.getStudyDate() : "" + " ");
         // studyTimeLabel.setText("Study Time: " + textOverlayParam.getStudyTime() != null ? textOverlayParam.getStudyTime() : "" + " ");
+        studyDescLabel.setText("Study Desc: "+textOverlayParam.getStudyDescription()!=null ? textOverlayParam.getStudyDescription(): "");
+        seriesDescLabel.setText("Series Desc: "+textOverlayParam.getSeriesDescription()!=null ? textOverlayParam.getSeriesDescription(): "");
         slicePositionLabel.setText(textOverlayParam.getSlicePosition() != null ? " Slice pos: " + textOverlayParam.getSlicePosition() : "");
-
+        instanceNum.setText(textOverlayParam.getInstanceNumber()!=null ? "Instance Number : "+textOverlayParam.getInstanceNumber() :"");
         if (ImagePanel.isProbeFlag()) {
             huLabel.setText(" " + "X:  " + textOverlayParam.getXPosition() + "  Y:  " + textOverlayParam.getYPosition() + "  Px:  " + textOverlayParam.getPxValue());
         } else {
@@ -323,7 +348,7 @@ public class TextOverlay extends javax.swing.JPanel {
         patientSexLabel.setText("");
         patientPositionLabel.setText("");
         studyDateLabel.setText("");
-        studyTimeLabel.setText("");
+        studyDescLabel.setText("");
         slicePositionLabel.setText("");
         huLabel.setText("");
         instanceNoLabel.setText("");
@@ -362,6 +387,7 @@ public class TextOverlay extends javax.swing.JPanel {
     private javax.swing.JLabel frameNumberText;
     private javax.swing.JLabel huLabel;
     private javax.swing.JLabel instanceNoLabel;
+    private javax.swing.JLabel instanceNum;
     private javax.swing.JLabel institutionLabel;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel multiframeStatusText;
@@ -369,9 +395,10 @@ public class TextOverlay extends javax.swing.JPanel {
     private javax.swing.JLabel patientNameLabel;
     private javax.swing.JLabel patientPositionLabel;
     private javax.swing.JLabel patientSexLabel;
+    private javax.swing.JLabel seriesDescLabel;
     private javax.swing.JLabel slicePositionLabel;
     private javax.swing.JLabel studyDateLabel;
-    private javax.swing.JLabel studyTimeLabel;
+    private javax.swing.JLabel studyDescLabel;
     private javax.swing.JLabel windowingLabel;
     private javax.swing.JLabel zoomLabel;
     // End of variables declaration//GEN-END:variables

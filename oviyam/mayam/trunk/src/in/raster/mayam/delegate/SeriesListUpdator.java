@@ -334,6 +334,7 @@ public class SeriesListUpdator extends Thread {
         String pixelSpacing = dataset.getString(Tags.PixelSpacing) != null ? dataset.getString(Tags.PixelSpacing, 0) + "\\" + dataset.getString(Tags.PixelSpacing, 1) : null;
         int row = dataset.getString(Tags.Rows) != null ? Integer.parseInt(dataset.getString(Tags.Rows)) : 0;
         int column = dataset.getString(Tags.Columns) != null ? Integer.parseInt(dataset.getString(Tags.Columns)) : 0;
+        int instanceNumber=dataset.getString(Tags.InstanceNumber) !=null ? Integer.parseInt(dataset.getString(Tags.InstanceNumber)): 1;
         String referencedSOPInstanceUID = "";
         Dataset referencedImageSequence = dataset.getItem(Tag.ReferencedImageSequence);
         if (referencedImageSequence != null) {
@@ -347,6 +348,7 @@ public class SeriesListUpdator extends Thread {
         img.setColumn(column);
         img.setReferenceSOPInstanceUID(referencedSOPInstanceUID);
         img.setFrameOfReferenceUID(frameOfReferenceUID);
+        img.setInstanceNumber(instanceNumber);
     }
 
     public StudyAnnotation getStudyAnnotation() {

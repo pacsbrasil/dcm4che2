@@ -69,6 +69,7 @@ public class Instance implements Serializable {
     private int currentFrameNum;
     private int totalNumFrames;
     private int seriesLevelIndex;
+    private int instanceNumber;
 
     private HashMap<Integer,Annotation> annotations=null;
 
@@ -273,4 +274,13 @@ public class Instance implements Serializable {
     {
         this.seriesLevelIndex=seriesLevelIndex;
     }
+
+    public int getInstanceNumber() {
+        return instanceNumber;
+    }
+
+    public void setInstanceNumber(int instanceNumber) {
+        this.instanceNumber = instanceNumber;
+    }
+
 }

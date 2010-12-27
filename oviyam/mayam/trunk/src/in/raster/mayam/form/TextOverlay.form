@@ -16,14 +16,11 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+          <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                   <Component id="instanceNoLabel" alignment="0" min="-2" pref="178" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="patientNameLabel" min="-2" pref="167" max="-2" attributes="0"/>
-                      <EmptySpace pref="67" max="32767" attributes="1"/>
-                  </Group>
+                  <Component id="patientNameLabel" alignment="0" min="-2" pref="167" max="-2" attributes="0"/>
                   <Component id="patientIDLabel" alignment="0" min="-2" pref="152" max="-2" attributes="0"/>
                   <Component id="huLabel" alignment="0" min="-2" pref="187" max="-2" attributes="0"/>
                   <Component id="windowingLabel" alignment="0" min="-2" pref="234" max="-2" attributes="0"/>
@@ -35,10 +32,6 @@
                   <Component id="jLabel8" pref="257" max="32767" attributes="1"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="studyDateLabel" min="-2" pref="118" max="-2" attributes="1"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Component id="studyTimeLabel" min="-2" pref="90" max="-2" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
@@ -61,6 +54,18 @@
                       <Component id="institutionLabel" min="-2" pref="237" max="-2" attributes="2"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
+                  <Group type="102" alignment="0" attributes="1">
+                      <Component id="seriesDescLabel" pref="237" max="32767" attributes="0"/>
+                      <EmptySpace min="20" pref="20" max="20" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="studyDescLabel" pref="237" max="32767" attributes="1"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="instanceNum" pref="237" max="32767" attributes="0"/>
+                      <EmptySpace min="20" pref="20" max="20" attributes="0"/>
+                  </Group>
               </Group>
           </Group>
       </Group>
@@ -81,9 +86,11 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="patientSexLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="studyTimeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="studyDescLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="72" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="seriesDescLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                   <Group type="102" attributes="0">
                       <Component id="huLabel" min="-2" max="-2" attributes="0"/>
@@ -95,7 +102,10 @@
                       <Component id="slicePositionLabel" min="-2" pref="17" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="1">
+                      <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
                       <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="instanceNum" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="multiframeStatusText" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -169,7 +179,7 @@
         <Property name="text" type="java.lang.String" value="hu"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="studyTimeLabel">
+    <Component class="javax.swing.JLabel" name="studyDescLabel">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="0" green="0" red="0" type="rgb"/>
@@ -181,7 +191,7 @@
           <Color blue="ff" green="ff" red="ff" type="rgb"/>
         </Property>
         <Property name="horizontalAlignment" type="int" value="4"/>
-        <Property name="text" type="java.lang.String" value="Study Time"/>
+        <Property name="text" type="java.lang.String" value="Study Desc"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="studyDateLabel">
@@ -314,6 +324,36 @@
         </Property>
         <Property name="horizontalAlignment" type="int" value="4"/>
         <Property name="text" type="java.lang.String" value="Frame"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="seriesDescLabel">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="0" green="0" red="0" type="rgb"/>
+        </Property>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Lucida Grande" size="14" style="0"/>
+        </Property>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        </Property>
+        <Property name="horizontalAlignment" type="int" value="4"/>
+        <Property name="text" type="java.lang.String" value="Series Desc"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="instanceNum">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="0" green="0" red="0" type="rgb"/>
+        </Property>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Lucida Grande" size="14" style="0"/>
+        </Property>
+        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        </Property>
+        <Property name="horizontalAlignment" type="int" value="4"/>
+        <Property name="text" type="java.lang.String" value="Instance Number"/>
       </Properties>
     </Component>
   </SubComponents>
