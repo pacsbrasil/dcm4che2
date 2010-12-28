@@ -547,6 +547,8 @@ public abstract class StudyBean implements EntityBean {
                             "Procedure Code Sequence (0008,1032)", proceCodeSq)) {
                 CodeBean.addCodesTo(codeHome, proceCodeSq, getProcedureCodes());
             }
+            updateIssuerOfAccessionNumber(null,
+                    ds.getItem(Tags.IssuerOfAccessionNumberSeq));
         } catch (Exception e) {
             // ensure to rollback transaction
             throw new EJBException(e);

@@ -125,7 +125,7 @@ public abstract class IssuerBean implements EntityBean {
                         issuerHome.findByLocalNamespaceEntityID(id);
                 if (uid != null && type != null) {
                     String euid = issuer.getUniversalEntityID();
-                    String etype = issuer.getUniversalEntityID();
+                    String etype = issuer.getUniversalEntityIDType();
                     if (euid == null) {
                         issuer.setUniversalEntityID(uid);
                         issuer.setUniversalEntityIDType(type);
