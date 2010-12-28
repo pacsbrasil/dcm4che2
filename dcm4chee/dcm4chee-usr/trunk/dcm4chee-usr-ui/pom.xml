@@ -5,13 +5,13 @@
     <parent>
         <groupId>dcm4che.dcm4chee</groupId>
         <artifactId>dcm4chee-usr</artifactId>
-        <version>0.0.1</version>
+        <version>3.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-usr-ui</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.1</version>
+    <version>3.0.0-SNAPSHOT</version>
     <name>Jar with the wicket components</name>
     <description></description>
     <dependencies>
@@ -30,14 +30,14 @@
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-usr-entity</artifactId>
-            <version>0.0.1</version>
+            <version>3.0.0-SNAPSHOT</version>
             <classifier>${db}</classifier>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-usr-dao</artifactId>
-            <version>0.0.1</version>
+            <version>3.0.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

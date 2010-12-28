@@ -41,14 +41,12 @@ package org.dcm4chee.usr.war.pages;
 import java.util.Properties;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.RequestCycle;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.security.swarm.SwarmWebApplication;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordPanel;
 import org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel;
 import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
 import org.dcm4chee.web.common.base.ModuleSelectorPanel;
-import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecureWicketPage;
 
 /**
@@ -68,10 +66,8 @@ public class UserManagementMainPage extends SecureWicketPage {
     private void addModules(ModuleSelectorPanel selectorPanel) {
 
         selectorPanel.addModule(RoleListPanel.class);
-        if (((SecureSession) RequestCycle.get().getSession()).getManageUsers()) {
-            selectorPanel.addModule(UserListPanel.class, null);
-            selectorPanel.addModule(ChangePasswordPanel.class, null);
-        }
+        selectorPanel.addModule(UserListPanel.class, null);
+        selectorPanel.addModule(ChangePasswordPanel.class, null);
         
         try {
             Properties properties = new Properties();
