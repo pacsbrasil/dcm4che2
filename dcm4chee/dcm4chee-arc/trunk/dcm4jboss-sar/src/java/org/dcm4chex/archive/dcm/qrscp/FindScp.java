@@ -41,13 +41,9 @@ package org.dcm4chex.archive.dcm.qrscp;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.regex.Pattern;
 
 import javax.management.ObjectName;
 import javax.security.auth.Subject;
