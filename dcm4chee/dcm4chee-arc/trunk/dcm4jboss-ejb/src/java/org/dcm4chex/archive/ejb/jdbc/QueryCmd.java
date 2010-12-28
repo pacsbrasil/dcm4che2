@@ -85,6 +85,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.StudyDate,
             Tags.StudyTime, 
             Tags.AccessionNumber, 
+            Tags.IssuerOfAccessionNumberSeq, 
             Tags.ReferringPhysicianName,
             Tags.StudyDescription,
             Tags.StudyStatusID,
@@ -130,6 +131,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.CodingSchemeVersion };
 
     private static final int[] MATCHING_REQ_ATTR_KEYS = new int[] {
+            Tags.AccessionNumber,
+            Tags.IssuerOfAccessionNumberSeq,
             Tags.StudyInstanceUID,
             Tags.RequestedProcedureID,
             Tags.SPSID, 
@@ -348,8 +351,25 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 filter.getStrings(keys, Tags.StudyID));
         sqlBuilder.addRangeMatch(null, "Study.studyDateTime", type2, keys
                 .getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
-        sqlBuilder.addWildCardMatch(null, "Study.accessionNumber", type2,
-                filter.getStrings(keys, Tags.AccessionNumber));
+        if (sqlBuilder.addWildCardMatch(null, "Study.accessionNumber", type2,
+                filter.getStrings(keys, Tags.AccessionNumber)) != null) {
+            Dataset issuer = keys.getItem(Tags.IssuerOfAccessionNumberSeq);
+            if (issuer != null && !issuer.isEmpty()) {
+                SqlBuilder subQuery = new SqlBuilder();
+                subQuery.setSelect(new String[] { "Issuer.pk" });
+                subQuery.setFrom(new String[] { "Issuer" });
+                subQuery.addFieldValueMatch(null, "Issuer.pk", SqlBuilder.TYPE1, null,
+                        "Study.accno_issuer_fk");
+                subQuery.addSingleValueMatch(null, "Issuer.localNamespaceEntityID", type2,
+                        issuer.getString(Tags.LocalNamespaceEntityID));
+                subQuery.addSingleValueMatch(null, "Issuer.universalEntityID", type2,
+                        issuer.getString(Tags.UniversalEntityID));
+                subQuery.addSingleValueMatch(null, "Issuer.universalEntityIDType", type2,
+                        issuer.getString(Tags.UniversalEntityIDType));
+                Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
+                node0.addMatch(new Match.Subquery(subQuery, null, null));
+            }
+        }
         sqlBuilder.addPNMatch(new String[] { "Study.referringPhysicianName",
                 "Study.referringPhysicianIdeographicName",
                 "Study.referringPhysicianPhoneticName" }, type2,
