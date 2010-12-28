@@ -45,7 +45,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.protocol.http.WebRequestCycle;
-import org.dcm4chee.web.common.delegate.WebCfgDelegate;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.slf4j.Logger;

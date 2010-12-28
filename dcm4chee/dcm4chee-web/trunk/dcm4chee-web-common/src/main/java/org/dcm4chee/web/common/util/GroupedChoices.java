@@ -48,13 +48,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.wicket.Application;
 import org.apache.wicket.Session;
 import org.apache.wicket.authentication.AuthenticatedWebSession;
 import org.apache.wicket.authorization.strategies.role.Roles;
-import org.apache.wicket.protocol.http.WebApplication;
 import org.dcm4che2.util.StringUtils;
-import org.dcm4chee.web.common.delegate.WebCfgDelegate;
+import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,9 +62,6 @@ import org.slf4j.LoggerFactory;
  * @since 26.05.2010
  */
 public class GroupedChoices implements Serializable {
-
-
-    private static final String WEB_CONFIG_PATH = "webConfigPath";
 
     private static final long serialVersionUID = 1L;
     
@@ -83,7 +78,7 @@ public class GroupedChoices implements Serializable {
     private static Logger log = LoggerFactory.getLogger(GroupedChoices.class);
     
     private GroupedChoices(String configFilename) {
-        String webConfigPath = WebCfgDelegate.getInstance().getWebConfigPath();
+        String webConfigPath = BaseCfgDelegate.getInstance().getWebConfigPath();
         configFile = FileUtils.resolve(new File(webConfigPath, configFilename));
         init();
     }

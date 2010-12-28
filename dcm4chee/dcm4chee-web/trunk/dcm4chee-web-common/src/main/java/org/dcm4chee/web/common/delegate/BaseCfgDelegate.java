@@ -54,34 +54,55 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since Aug 5, 2010
  */
-public class WebCfgDelegate {
+public class BaseCfgDelegate {
 
-    private static WebCfgDelegate singleton;
+    protected static BaseCfgDelegate singleton;
     protected ObjectName serviceObjectName;
     protected MBeanServerConnection server;
       
-    protected static Logger log = LoggerFactory.getLogger(WebCfgDelegate.class);
+    protected static Logger log = LoggerFactory.getLogger(BaseCfgDelegate.class);
     
-    private WebCfgDelegate() {
+    protected BaseCfgDelegate() {
         init();
     }
     
-    public static WebCfgDelegate getInstance() {
+    public static BaseCfgDelegate getInstance() {
         if (singleton == null)
-            singleton = new WebCfgDelegate();
+            singleton = new BaseCfgDelegate();
         return singleton;
+    }
+
+    public ObjectName getObjectName(String attrName, String defaultName) throws MalformedObjectNameException, NullPointerException {
+        if (server == null) return defaultName == null ? null : new ObjectName(defaultName);
+        try {
+            return (ObjectName) server.getAttribute(serviceObjectName, attrName);
+        } catch (Throwable t) {
+            log.error("Can't get ObjectName for "+attrName+" ! use default:"+defaultName, t);
+            return defaultName == null ? null : new ObjectName(defaultName);
+        }
     }
 
     public String getWebConfigPath() {
         return getString("WebConfigPath");
     }
-    
+
+    public boolean getManageUsers() {
+        return getBoolean("manageUsers", true);
+    }
+
+    public String getRoot() {
+        return getString("root");
+    }
+
     public String getLoginAllowedRolename() {
         return getString("loginAllowedRolename");
     }
+
+// ************************************************************
 
     public String getStudyPermissionsAllRolename() {
         return getString("studyPermissionsAllRolename");
@@ -91,20 +112,12 @@ public class WebCfgDelegate {
         return getString("studyPermissionsOwnRolename");
     }
 
-    public boolean getManageUsers() {
-        return getBoolean("manageUsers", true);
-    }
-
     public boolean getUseStudyPermissions() {
         return getBoolean("useStudyPermissions", true);
     }
 
     public boolean getWebStudyPermissions() {
         return getBoolean("webStudyPermissions", true);
-    }
-
-    public String getRoot() {
-        return getString("root");
     }
 
     public String getWadoBaseURL() {
@@ -244,16 +257,6 @@ public class WebCfgDelegate {
         }
     }
 
-    public ObjectName getObjectName(String attrName, String defaultName) throws MalformedObjectNameException, NullPointerException {
-        if (server == null) return defaultName == null ? null : new ObjectName(defaultName);
-        try {
-            return (ObjectName) server.getAttribute(serviceObjectName, attrName);
-        } catch (Throwable t) {
-            log.error("Can't get ObjectName for "+attrName+" ! use default:"+defaultName, t);
-            return defaultName == null ? null : new ObjectName(defaultName);
-        }
-    }
-
     @SuppressWarnings("unchecked")
     private List<String> getStringList(String name) {
         if (server == null) return new ArrayList<String>();
@@ -267,7 +270,7 @@ public class WebCfgDelegate {
     }
 
     protected void init() {
-        log.info("Init WebCfgDelegate!");
+        log.info("Init BaseCfgDelegate!");
         List<?> servers = MBeanServerFactory.findMBeanServer(null);
         if (servers != null && !servers.isEmpty()) {
             server = (MBeanServerConnection) servers.get(0);
@@ -281,9 +284,9 @@ public class WebCfgDelegate {
             s = "dcm4chee.web:service=WebConfig";
         try {
             serviceObjectName = new ObjectName(s);
-            log.info("WebCfgDelegate initialized! WebConfig serviceName:"+serviceObjectName);
+            log.info("BaseCfgDelegate initialized! WebConfig serviceName:"+serviceObjectName);
         } catch (Exception e) {
-            log.error( "Failed to set ObjectName for WebCfgDelegate! name:"+s, e);
+            log.error( "Failed to set ObjectName for BaseCfgDelegate! name:"+s, e);
         }
     }
 

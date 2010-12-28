@@ -71,8 +71,8 @@ import org.apache.wicket.security.authentication.LoginException;
 import org.apache.wicket.security.hive.authentication.DefaultSubject;
 import org.apache.wicket.security.hive.authentication.UsernamePasswordContext;
 import org.apache.wicket.security.hive.authorization.SimplePrincipal;
+import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
-import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.jboss.system.server.ServerConfigLocator;
 import org.slf4j.Logger;
@@ -104,8 +104,8 @@ public class WebLoginContext extends UsernamePasswordContext {
         SecureSession secureSession;
         try {
             secureSession = ((SecureSession) RequestCycle.get().getSession());
-            secureSession.setManageUsers(WebCfgDelegate.getInstance().getManageUsers());
-            secureSession.setRoot(username.equals(WebCfgDelegate.getInstance().getRoot()));
+            secureSession.setManageUsers(BaseCfgDelegate.getInstance().getManageUsers());
+            secureSession.setRoot(username.equals(BaseCfgDelegate.getInstance().getRoot()));
             context = new LoginContext(webApplicationPolicy, handler);
             context.login();
             secureSession.setUsername(username);
@@ -215,7 +215,7 @@ public class WebLoginContext extends UsernamePasswordContext {
     }
 
     private void checkLoginAllowed(DefaultSubject subject) {
-        String rolename = WebCfgDelegate.getInstance().getLoginAllowedRolename();
+        String rolename = BaseCfgDelegate.getInstance().getLoginAllowedRolename();
         if (!subject.getPrincipals().contains(new SimplePrincipal(rolename))) {                            
           ((SecureSession) RequestCycle.get().getSession()).invalidate();
           log.warn("Failed to authorize subject for login, denied. See 'LoginAllowed' rolename attribute in Web Config Service.");

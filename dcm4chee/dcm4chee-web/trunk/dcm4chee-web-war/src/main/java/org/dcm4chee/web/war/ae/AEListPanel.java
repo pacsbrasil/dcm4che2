@@ -66,11 +66,11 @@ import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
-import org.dcm4chee.web.common.delegate.WebCfgDelegate;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>

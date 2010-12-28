@@ -44,8 +44,6 @@ import javax.management.MBeanServerConnection;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
 
-import org.apache.wicket.Application;
-import org.apache.wicket.protocol.http.WebApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +77,7 @@ public abstract class BaseMBeanDelegate {
         }
         if (serviceObjectName == null) {
             try {
-                serviceObjectName = WebCfgDelegate.getInstance().getObjectName(getServiceNameCfgAttribute(), getDefaultServiceObjectName());
+                serviceObjectName = BaseCfgDelegate.getInstance().getObjectName(getServiceNameCfgAttribute(), getDefaultServiceObjectName());
                 log.info("MBeanDelegate initialized! serviceName:"+serviceObjectName);
             } catch (Exception e) {
                 log.error( "Failed to set ObjectName for MBeanService! serviceNameCfgAttribute:"+getServiceNameCfgAttribute(),e );
