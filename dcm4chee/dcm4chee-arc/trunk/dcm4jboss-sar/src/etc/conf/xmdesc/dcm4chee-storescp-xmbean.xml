@@ -181,6 +181,22 @@ Storage SCP (=Called) AE by its AE Configuration entry.]]>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isSupplementIssuerOfAccessionNumber"
+      setMethod="setSupplementIssuerOfAccessionNumber">
+      <description><![CDATA[Supplement received objects containing an
+          <i>Accession Number</i>, but no <i>Issuer of Accession Number
+          Sequence</i>, with such Sequence containing one item with
+          <i>Local Namespace Enitity ID</i>, <i>Universial Enitity ID</i> and
+          <i>Universial Enitity ID Type</i>, if such is associated with the
+          Storage SCU AE by its AE Configuration entry.]]>
+      </description>
+      <name>SupplementIssuerOfAccessionNumber</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isSupplementInstitutionName"
       setMethod="setSupplementInstitutionName">
       <description><![CDATA[If the Storage SCU AE has a value configured for 

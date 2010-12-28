@@ -10,6 +10,8 @@ CREATE INDEX mark_to_delete ON study_on_fs(mark_to_delete);
 UPDATE study_on_fs
    SET mark_to_delete=0;
 
+ALTER TABLE ae ADD acc_no_issuer VARCHAR(255);
+
 CREATE TABLE issuer (
     pk              NUMERIC(18,0) NOT NULL CONSTRAINT issuer_pk PRIMARY KEY,
     entity_id       VARCHAR(255),

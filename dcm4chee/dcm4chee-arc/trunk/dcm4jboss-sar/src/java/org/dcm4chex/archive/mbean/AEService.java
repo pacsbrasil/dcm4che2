@@ -384,7 +384,8 @@ public class AEService extends ServiceMBeanSupport {
      * @throws RemoteException
      */
     public void updateAE(long pk, String title, String host, int port,
-            String cipher, String issuer, String user, String passwd,
+            String cipher, String issuerOfPatientID,
+            String issuerOfAccessionNumber, String user, String passwd,
             String fsGroupID, String desc, String wadoUrl, String stationName,
             String institution, String department, boolean installed,
             boolean checkHost)
@@ -404,7 +405,8 @@ public class AEService extends ServiceMBeanSupport {
         newAE.setHostName(host);
         newAE.setPort(port);
         newAE.setCipherSuitesAsString(cipher);
-        newAE.setIssuerOfPatientID(issuer);
+        newAE.setIssuerOfPatientID(issuerOfPatientID);
+        newAE.setIssuerOfAccessionNumberAsString(issuerOfAccessionNumber);
         newAE.setUserID(user);
         newAE.setPassword(passwd);
         newAE.setFileSystemGroupID(fsGroupID);
@@ -442,11 +444,13 @@ public class AEService extends ServiceMBeanSupport {
     }
 
     public void addAE(String title, String host, int port, String cipher,
-            String issuer, String user, String passwd, String fsGroupID,
+            String issuerOfPatientID, String issuerOfAccessionNumber,
+            String user, String passwd, String fsGroupID,
             String desc, String wadoUrl, String stationName,
             String institution, String department, boolean installed,
             boolean checkHost) throws Exception {
-        updateAE(-1, title, host, port, cipher, issuer, user, passwd,
+        updateAE(-1, title, host, port, cipher, issuerOfPatientID,
+                issuerOfAccessionNumber, user, passwd,
                 fsGroupID, desc, wadoUrl, stationName, institution, department,
                 installed, checkHost);
     }

@@ -155,6 +155,17 @@ public abstract class AEBean implements EntityBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.persistence column-name="acc_no_issuer"
+     */
+    public abstract String getIssuerOfAccessionNumber();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setIssuerOfAccessionNumber(String issuer);
+
+    /**
+     * @ejb.interface-method
      * @ejb.persistence column-name="station_name"
      */
     public abstract String getStationName();
@@ -286,6 +297,7 @@ public abstract class AEBean implements EntityBean {
         setPort(dto.getPort());
         setCipherSuites(dto.getCipherSuitesAsString());
         setIssuerOfPatientID(dto.getIssuerOfPatientID());
+        setIssuerOfAccessionNumber(dto.getIssuerOfAccessionNumberAsString());
         setUserID(dto.getUserID());
         setPassword(dto.getPassword());
         setFileSystemGroupID(dto.getFileSystemGroupID());
@@ -310,6 +322,7 @@ public abstract class AEBean implements EntityBean {
         dto.setPort(getPort());
         dto.setCipherSuitesAsString(getCipherSuites());
         dto.setIssuerOfPatientID(getIssuerOfPatientID());
+        dto.setIssuerOfAccessionNumberAsString(getIssuerOfAccessionNumber());
         dto.setUserID(getUserID());
         dto.setPassword(getPassword());
         dto.setFileSystemGroupID(getFileSystemGroupID());

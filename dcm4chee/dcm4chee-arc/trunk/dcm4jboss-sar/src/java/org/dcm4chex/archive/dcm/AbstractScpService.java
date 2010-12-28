@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.dcm;
 
 import java.io.File;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -49,6 +50,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.StringTokenizer;
 
+import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 import javax.management.Attribute;
 import javax.management.InstanceNotFoundException;
@@ -62,6 +64,7 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObject;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
@@ -136,6 +139,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected String issuerOfGeneratedPatientID;
 
     protected boolean supplementIssuerOfPatientID;
+
+    protected boolean supplementIssuerOfAccessionNumber;
     
     protected boolean supplementInstitutionName;
     
@@ -350,7 +355,15 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             boolean supplementIssuerOfPatientID) {
         this.supplementIssuerOfPatientID = supplementIssuerOfPatientID;
     }
-    
+
+    public final boolean isSupplementIssuerOfAccessionNumber() {
+        return supplementIssuerOfAccessionNumber;
+    }
+
+    public final void setSupplementIssuerOfAccessionNumber(boolean enable) {
+        this.supplementIssuerOfAccessionNumber = enable;
+    }
+
     public final boolean isSupplementInstitutionName() {
         return supplementInstitutionName;
     }
@@ -870,6 +883,77 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
     }
         
+    public void supplementIssuerOfAccessionNumber(Dataset ds,
+            String callingAET, boolean onlyIfAccessionNumber) {
+
+        if (!supplementIssuerOfAccessionNumber)
+            return;
+
+        String[] issuer = null;
+        if (shallSupplementIssuerOfAccessionNumber(ds,
+                onlyIfAccessionNumber)) {
+            issuer = getIssuerOfAccessionNumber(callingAET);
+            if (issuer == null)
+                return;
+            supplementIssuerOfAccessionNumber(ds, issuer);
+        }
+        DcmElement reqAttrSeq = ds.get(Tags.RequestAttributesSeq);
+        if (reqAttrSeq != null && reqAttrSeq.hasItems()) {
+            for (int i = 0, n = reqAttrSeq.countItems(); i < n; i++) {
+                Dataset item = reqAttrSeq.getItem(i);
+                if (shallSupplementIssuerOfAccessionNumber(item, 
+                        onlyIfAccessionNumber)) {
+                    if (issuer == null)
+                        issuer = getIssuerOfAccessionNumber(callingAET);
+                    if (issuer == null)
+                        return;
+                    supplementIssuerOfAccessionNumber(item, issuer);
+                }
+            }
+        }
+    }
+
+    private boolean shallSupplementIssuerOfAccessionNumber(Dataset ds,
+            boolean onlyIfAccessionNumber) {
+        return !(ds.contains(Tags.IssuerOfAccessionNumberSeq)
+                || onlyIfAccessionNumber 
+                        && !ds.containsValue(Tags.AccessionNumber));
+    }
+
+    private String[] getIssuerOfAccessionNumber(String callingAET) {
+        try {
+            AEDTO ae = aeMgr().findByAET(callingAET);
+            String issuer[] = ae.getIssuerOfAccessionNumber();
+            if (issuer != null && issuer.length != 0)
+                return issuer;
+            if (log.isDebugEnabled()) {
+                log.debug("Missing Issuer Of Accession Number in AE configuration for "
+                        + callingAET
+                        + " - no supplement of Issuer Of Accession Number");
+            }
+        } catch (UnknownAETException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Missing AE configuration for " + callingAET
+                        + " - no supplement of Issuer Of Accession Number");
+            }
+        } catch (Exception e) {
+            log.warn("Failed to supplement Issuer Of Accession Number: ", e);
+        }
+        return null;
+    }
+
+    private void supplementIssuerOfAccessionNumber(Dataset ds, String[] issuer) {
+        DcmObject item = ds.putSQ(Tags.IssuerOfAccessionNumberSeq).addNewItem();
+        if (issuer[0].length() > 0)
+            item .putUT(Tags.LocalNamespaceEntityID, issuer[0]);
+        if (issuer.length > 2) {
+            item.putUT(Tags.UniversalEntityID, issuer[1]);
+            item.putCS(Tags.UniversalEntityIDType, issuer[2]);
+        }
+        log.info("Supplement Issuer Of Accession Number "
+                + StringUtils.toString(issuer, '^'));
+    }
+
     public void supplementInstitutionalData(Dataset ds, String callingAET) {
         AEDTO ae = null;
         if (supplementInstitutionName

@@ -62,6 +62,9 @@ public class AEModel extends BasicFormModel {
     private String cipher2;
     private String cipher3;
     private String issuerOfPatientID;
+    private String issuerOfAccessionNumberID;
+    private String issuerOfAccessionNumberUID;
+    private String issuerOfAccessionNumberUIDType;
     private String userID;
     private String passwd;
     private String fileSystemGroupID;
@@ -145,6 +148,20 @@ public class AEModel extends BasicFormModel {
         this.issuerOfPatientID = issuerOfPatientID;
     }
     
+    public final void setIssuerOfAccessionNumberID(String issuerOfAccessionNumberID) {
+        this.issuerOfAccessionNumberID = issuerOfAccessionNumberID;
+    }
+
+    public final void setIssuerOfAccessionNumberUID(
+            String issuerOfAccessionNumberUID) {
+        this.issuerOfAccessionNumberUID = issuerOfAccessionNumberUID;
+    }
+
+    public final void setIssuerOfAccessionNumberUIDType(
+            String issuerOfAccessionNumberUIDType) {
+        this.issuerOfAccessionNumberUIDType = issuerOfAccessionNumberUIDType;
+    }
+
     public final void setUserID(String userID) {
         this.userID = userID;
     }
@@ -203,6 +220,7 @@ public class AEModel extends BasicFormModel {
         dto.setPort(port);
         dto.setCipherSuitesAsString(cipherSuites);
         dto.setIssuerOfPatientID(issuerOfPatientID);
+        dto.setIssuerOfAccessionNumberAsString(issuerOfAccessionNumber());
         dto.setUserID(userID);
         dto.setPassword(passwd);
         dto.setFileSystemGroupID(fileSystemGroupID);
@@ -213,6 +231,27 @@ public class AEModel extends BasicFormModel {
         dto.setDepartment(department);
         dto.setInstalled(installed);
         return dto;
+    }
+
+    private String issuerOfAccessionNumber() {
+        String id = trim(issuerOfAccessionNumberID);
+        String uid = trim(issuerOfAccessionNumberUID);
+        String uidType = trim(issuerOfAccessionNumberUIDType);
+        int len = id.length() + uid.length() + uidType.length();
+        if (len == 0)
+            return null;
+        
+        return new StringBuilder(len+2)
+                .append(id)
+                .append('^')
+                .append(uid)
+                .append('^')
+                .append(uidType)
+                .toString();
+    }
+
+    private String trim(String s) {
+        return s != null ? s.trim() : "";
     }
 
     public void setAE(AEDTO ae) {

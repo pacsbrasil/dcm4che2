@@ -17,11 +17,12 @@
 					<td width="10%"><h2>AE Title</h2></td>
 					<td width="10%"><h2>Hostname</h2></td>
 					<td width="5%"><h2>Port</h2></td>	
-					<td width="15%"><h2>Cipher</h2></td>
-					<td width="10%"><h2>Issuer</h2></td>
+					<td width="10%"><h2>Cipher</h2></td>
+					<td width="10%"><h2>Issuer Of Patient ID</h2></td>
+                    <td width="10%"><h2>Issuer Of Accession Number</h2></td>
 					<td width="10%"><h2>User ID</h2></td>
 					<td width="10%"><h2>FS Group ID</h2></td>
-					<td width="20%"><h2>Description</h2></td>
+					<td width="15%"><h2>Description</h2></td>
 					<xsl:if test="$ae_mgr.edit='true'">	
 						<td colspan="3" width="10%" align="center"><a href="aenew.m"><img src="images/add_aet.gif" alt="add new AET" border="0"/></a></td>
 					</xsl:if>
@@ -52,9 +53,12 @@
 	        		<xsl:value-of select="."/><br/>
 				</xsl:for-each>&#160;
 	        </td>
-	        <td title="Issuer of patient ID" valign="top" >
+	        <td title="Issuer of Patient ID" valign="top" >
 					<xsl:value-of select="issuerOfPatientID"/>&#160;
 	        </td>
+            <td title="Issuer of Accession Number" valign="top" >
+                    <xsl:value-of select="issuerOfAccessionNumberAsString"/>&#160;
+            </td>
 	        <td title="User ID" valign="top" >
 					<xsl:value-of select="userID"/>&#160;
 	        </td>

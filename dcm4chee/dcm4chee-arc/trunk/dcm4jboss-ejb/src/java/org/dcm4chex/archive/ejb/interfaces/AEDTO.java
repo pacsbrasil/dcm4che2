@@ -74,7 +74,8 @@ public class AEDTO implements Serializable {
     private String hostName;
     private int port = -1;
     private String cipherSuites;
-    private String issuer;
+    private String issuerOfPatientID;
+    private String issuerOfAccessionNumber;
     private String userID;
     private String passwd;
     private String fsGroupID;
@@ -136,11 +137,23 @@ public class AEDTO implements Serializable {
     }
     
     public final String getIssuerOfPatientID() {
-        return issuer;        
+        return issuerOfPatientID;
     }
     
     public final void setIssuerOfPatientID(String issuer) {
-        this.issuer = issuer;
+        this.issuerOfPatientID = issuer;
+    }
+
+    public String[] getIssuerOfAccessionNumber() {
+        return StringUtils.split(issuerOfAccessionNumber, '^');
+    }
+
+    public final String getIssuerOfAccessionNumberAsString() {
+        return issuerOfAccessionNumber;
+    }
+
+    public final void setIssuerOfAccessionNumberAsString(String issuerOfAccessionNumber) {
+        this.issuerOfAccessionNumber = issuerOfAccessionNumber;
     }
 
     public final String getUserID() {

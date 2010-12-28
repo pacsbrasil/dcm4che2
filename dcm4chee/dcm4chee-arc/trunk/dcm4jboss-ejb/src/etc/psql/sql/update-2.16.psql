@@ -9,6 +9,8 @@ ALTER TABLE study_on_fs ALTER mark_to_delete SET NOT NULL;
 
 CREATE INDEX mark_to_delete ON study_on_fs(mark_to_delete);
 
+ALTER TABLE ae ADD acc_no_issuer TEXT;
+
 CREATE TABLE issuer (
     pk                SERIAL8 NOT NULL CONSTRAINT issuer_pk PRIMARY KEY,
     entity_id         TEXT,

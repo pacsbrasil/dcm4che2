@@ -6,6 +6,7 @@ CREATE TABLE ae (
     port              NUMBER(38,0) NOT NULL,
     cipher_suites     VARCHAR2(255),
     pat_id_issuer     VARCHAR2(255),
+    acc_no_issuer     VARCHAR2(255),
     user_id           VARCHAR2(255),
     passwd            VARCHAR2(255),
     fs_group_id       VARCHAR2(255),

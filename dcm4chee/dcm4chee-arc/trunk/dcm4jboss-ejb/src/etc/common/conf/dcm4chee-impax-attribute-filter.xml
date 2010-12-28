@@ -32,6 +32,7 @@
     <attr tag="00080020"/> <!-- Study Date -->
     <attr tag="00080030"/> <!-- Study Time -->
     <attr tag="00080050"/> <!-- Accession Number -->
+    <attr tag="00080051"/> <!-- Issuer of Accession Number Sequence -->
     <attr tag="00080090" case-sensitive="false"/> <!-- Referring Physician Name -->
     <attr tag="00080096"/> <!-- Referring Physician Identification Seq -->
     <attr tag="00081030" case-sensitive="false"/> <!-- Study Description -->

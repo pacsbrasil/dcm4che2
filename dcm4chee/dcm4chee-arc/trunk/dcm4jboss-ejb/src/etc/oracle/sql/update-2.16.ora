@@ -9,6 +9,8 @@ ALTER TABLE study_on_fs MODIFY mark_to_delete NOT NULL;
 
 CREATE INDEX mark_to_delete ON study_on_fs(mark_to_delete);
 
+ALTER TABLE ae ADD acc_no_issuer VARCHAR2(255);
+
 CREATE SEQUENCE issuer_pk_seq;
 CREATE TABLE issuer (
     pk                NUMBER(38,0) NOT NULL CONSTRAINT issuer_pk PRIMARY KEY,

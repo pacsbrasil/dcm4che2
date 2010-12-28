@@ -275,7 +275,12 @@
      </parameter>
      <parameter>
        <description>Default Issuer of Patient ID associated with this AE</description>
-       <name>issuer</name>
+       <name>issuerOfPatientID</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Default Issuer of Accession Number associated with this AE</description>
+       <name>issuerOfAccessionNumber</name>
        <type>java.lang.String</type>
      </parameter>
      <parameter>
@@ -356,7 +361,12 @@
      </parameter>
      <parameter>
        <description>Default Issuer of Patient ID associated with this AE</description>
-       <name>issuer</name>
+       <name>issuerOfPatientID</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Default Issuer of Accession Number associated with this AE</description>
+       <name>issuerOfAccessionNumber</name>
        <type>java.lang.String</type>
      </parameter>
      <parameter>

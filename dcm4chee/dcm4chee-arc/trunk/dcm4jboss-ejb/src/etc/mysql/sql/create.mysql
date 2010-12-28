@@ -5,6 +5,7 @@ CREATE TABLE ae (
     port              INTEGER NOT NULL,
     cipher_suites     VARCHAR(250) BINARY,
     pat_id_issuer     VARCHAR(250) BINARY,
+    acc_no_issuer     VARCHAR(250) BINARY,
     user_id           VARCHAR(250) BINARY,
     passwd            VARCHAR(250) BINARY,
     fs_group_id       VARCHAR(250) BINARY,

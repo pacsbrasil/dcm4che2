@@ -67,11 +67,29 @@
 				        </td>
 					</tr>
 					<tr>				        
-						<td width="50">Issuer</td>														
-				        <td title="Issuer of patient ID">
+						<td width="50">Issuer of Patient ID</td>														
+				        <td title="Issuer of Patient ID">
 			                <input size="25" name="issuerOfPatientID" type="text" value=""/>
 				        </td>
 					</tr>
+                    <tr>                        
+                        <td width="50">Issuer of Accession Number ID</td>                                                      
+                        <td title="Issuer of Accession Number Local Namespace ID">
+                            <input size="25" name="issuerOfAccessionNumberID" type="text" value=""/>
+                        </td>
+                    </tr>
+                    <tr>                        
+                        <td width="50">Issuer of Accession Number UID</td>                                                      
+                        <td title="Issuer of Accession Number Universal Entity ID">
+                            <input size="25" name="issuerOfAccessionNumberUID" type="text" value=""/>
+                        </td>
+                    </tr>
+                    <tr>                        
+                        <td width="50">Issuer of Accession Number UID Type</td>                                                      
+                        <td title="Issuer of Accession Number Universal Entity ID Type">
+                            <input size="25" name="issuerOfAccessionNumberUIDType" type="text" value=""/>
+                        </td>
+                    </tr>
 					<tr>				        
 						<td width="50">User ID</td>														
 				        <td title="User ID">
