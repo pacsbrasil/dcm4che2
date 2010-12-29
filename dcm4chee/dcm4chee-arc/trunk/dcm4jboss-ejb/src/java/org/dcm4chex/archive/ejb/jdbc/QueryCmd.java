@@ -159,6 +159,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     protected final Set<PIDWithIssuer> pidWithIssuers;
 
+    protected final Dataset requestedIssuerOfAccessionNumber;
+
     protected final AdjustPatientID adjustPatientID;
 
     protected final boolean noMatchWithoutIssuerOfPID;
@@ -254,6 +256,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
         matchingKeys.add(Tags.QueryRetrieveLevel);
         adjustPatientID = new AdjustPatientID(keys, pidWithIssuers);
+        requestedIssuerOfAccessionNumber =
+                keys.getItem(Tags.IssuerOfAccessionNumberSeq);
     }
 
     protected void addAdditionalReturnKeys() {
@@ -597,8 +601,24 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         if (pidWithIssuers != null)
             checkForDiffPatientDemographics(ds);
         adjustPatientID.adjust(ds);
+        adjustAccessionNumber(ds);
         adjustDataset(ds, keys);
         return filterResult ? ds.subSet(keys) : ds;
+    }
+
+    private void adjustAccessionNumber(Dataset ds) {
+        if (requestedIssuerOfAccessionNumber == null)
+            return;
+
+        Dataset issuer = ds.getItem(Tags.IssuerOfAccessionNumberSeq); 
+        if (issuer == null 
+                || issuer.match(requestedIssuerOfAccessionNumber, false, true))
+            return;
+
+        ds.putSQ(Tags.IssuerOfAccessionNumberSeq)
+                .addItem(requestedIssuerOfAccessionNumber);
+        if (ds.contains(Tags.AccessionNumber))
+            ds.putSH(Tags.AccessionNumber);
     }
 
     private void checkForDiffPatientDemographics(Dataset ds) {
