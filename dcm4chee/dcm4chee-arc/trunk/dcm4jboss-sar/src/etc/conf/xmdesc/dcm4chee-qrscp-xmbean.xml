@@ -65,12 +65,28 @@ QueryRetrieveScp service.</description>
    <attribute access="read-write"
       getMethod="isSupplementIssuerOfPatientID"
       setMethod="setSupplementIssuerOfPatientID">
-      <description><![CDATA[Supplement received C-FIND RQ identifier containing
-          a <i>Patient ID</i>, but no <i>Issuer Of Patient ID</i>, with a value
-          for <i>Issuer Of Patient ID</i>, if such is associated with the
-          C-FIND SCU AE by its AE Configuration entry.]]>
+      <description><![CDATA[Supplement received C-FIND RQ identifier with no
+          <i>Issuer Of Patient ID</i>, with a <i>Issuer Of Patient ID</i>,
+          if such is associated with the C-FIND SCU AE by its AE Configuration
+          entry.]]>
       </description>
       <name>SupplementIssuerOfPatientID</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isSupplementIssuerOfAccessionNumber"
+      setMethod="setSupplementIssuerOfAccessionNumber">
+      <description><![CDATA[Supplement received C-FIND RQ identifier with no
+          <i>Issuer of Accession Number Sequence</i>, with such Sequence
+          containing one item with <i>Local Namespace Enitity ID</i>,
+          <i>Universial Enitity ID</i> and <i>Universial Enitity ID Type</i>,
+          if such is associated with the C-FIND SCU AE by its AE Configuration
+          entry.]]>
+      </description>
+      <name>SupplementIssuerOfAccessionNumber</name>
       <type>boolean</type>
       <descriptors>
          <value value="false"/>
