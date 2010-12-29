@@ -127,8 +127,7 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
                 return true;
             }
             if ( el.vr() == VRs.SQ ) {
-                IntList il = matchingKeys.contains(tag) ? //is matching of this sequence allowed?
-                        seqMatchingKeys.get(new Integer(tag)) : null;
+                IntList il = seqMatchingKeys.get(new Integer(tag));
                 for ( int i=0; i<el.countItems() ; i++ ) {
                     if( findUnsupportedMatchingKey(el.getItem(i),il) ) {
                         log.warn("QueryCmd: Unsupported matching key found in SQ "+el);
