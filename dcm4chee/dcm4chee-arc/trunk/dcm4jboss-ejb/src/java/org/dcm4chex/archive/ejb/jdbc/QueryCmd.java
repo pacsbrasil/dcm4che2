@@ -472,7 +472,25 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     "SeriesRequest.requestingPhysicianPhoneticName" }, type2,
                     filter.isICase(Tags.RequestingPhysician),
                     rqAttrs.getString(Tags.RequestingPhysician));
-
+            if (subQuery.addWildCardMatch(null, "SeriesRequest.accessionNumber", type2,
+                    filter.getStrings(rqAttrs, Tags.AccessionNumber)) != null) {
+                Dataset issuer = rqAttrs.getItem(Tags.IssuerOfAccessionNumberSeq);
+                if (issuer != null && !issuer.isEmpty()) {
+                    SqlBuilder subQuery2 = new SqlBuilder();
+                    subQuery2.setSelect(new String[] { "Issuer.pk" });
+                    subQuery2.setFrom(new String[] { "Issuer" });
+                    subQuery2.addFieldValueMatch(null, "Issuer.pk", SqlBuilder.TYPE1, null,
+                            "SeriesRequest.accno_issuer_fk");
+                    subQuery2.addSingleValueMatch(null, "Issuer.localNamespaceEntityID", type2,
+                            issuer.getString(Tags.LocalNamespaceEntityID));
+                    subQuery2.addSingleValueMatch(null, "Issuer.universalEntityID", type2,
+                            issuer.getString(Tags.UniversalEntityID));
+                    subQuery2.addSingleValueMatch(null, "Issuer.universalEntityIDType", type2,
+                            issuer.getString(Tags.UniversalEntityIDType));
+                    subQuery.addNodeMatch("OR", false)
+                            .addMatch(new Match.Subquery(subQuery2, null, null));
+                }
+            }
             Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
             node0.addMatch(new Match.Subquery(subQuery, null, null));
         }
@@ -1068,7 +1086,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                         || rqAttrs.containsValue(Tags.SPSID)
                         || rqAttrs.containsValue(Tags.RequestingService)
                         || rqAttrs.containsValue(Tags.RequestingPhysician)
-                        || rqAttrs.containsValue(Tags.StudyInstanceUID));
+                        || rqAttrs.containsValue(Tags.StudyInstanceUID)
+                        || rqAttrs.containsValue(Tags.AccessionNumber));
     }
 
     protected boolean isMatchVerifyingObserver() {
