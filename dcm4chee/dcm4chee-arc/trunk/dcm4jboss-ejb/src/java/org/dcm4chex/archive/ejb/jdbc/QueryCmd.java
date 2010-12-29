@@ -594,7 +594,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
         fillDataset(ds);
-        checkForDiffPatientDemographics(ds);
+        if (pidWithIssuers != null)
+            checkForDiffPatientDemographics(ds);
         adjustPatientID.adjust(ds);
         adjustDataset(ds, keys);
         return filterResult ? ds.subSet(keys) : ds;
