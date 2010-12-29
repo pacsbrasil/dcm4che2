@@ -261,6 +261,10 @@ public class AEModel extends BasicFormModel {
         port = ae.getPort();
         cipherSuites = ae.getCipherSuitesAsString();
         issuerOfPatientID = ae.getIssuerOfPatientID();
+        String[] a = ae.getIssuerOfAccessionNumber();
+        issuerOfAccessionNumberID = a != null && a.length > 0 ? a[0] : null;
+        issuerOfAccessionNumberUID = a != null && a.length > 1 ? a[1] : null;
+        issuerOfAccessionNumberUIDType = a != null && a.length > 2 ? a[2] : null;
         userID = ae.getUserID();
         passwd = ae.getPassword();
         fileSystemGroupID = ae.getFileSystemGroupID();
