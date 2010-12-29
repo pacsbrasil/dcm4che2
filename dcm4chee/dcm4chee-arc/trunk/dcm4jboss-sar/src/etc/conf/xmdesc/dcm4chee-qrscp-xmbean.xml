@@ -66,7 +66,7 @@ QueryRetrieveScp service.</description>
       getMethod="isSupplementIssuerOfPatientID"
       setMethod="setSupplementIssuerOfPatientID">
       <description><![CDATA[Supplement received C-FIND RQ identifier with no
-          <i>Issuer Of Patient ID</i>, with a <i>Issuer Of Patient ID</i>,
+          <i>Issuer Of Patient ID</i>, with an <i>Issuer Of Patient ID</i>,
           if such is associated with the C-FIND SCU AE by its AE Configuration
           entry.]]>
       </description>
