@@ -182,10 +182,6 @@ public class HPQueryCmd extends BaseDSQueryCmd {
                 .size()]));
     }
 
-    public void execute() throws SQLException {
-        execute(sqlBuilder.getSql());
-    }
-
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
         DatasetUtils.fromByteArray(rs.getBytes(1), ds);

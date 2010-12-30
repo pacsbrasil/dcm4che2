@@ -80,7 +80,12 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
 
 
     public void execute() throws SQLException {
-        execute(sqlBuilder.getSql());
+        try {
+            execute(sqlBuilder.getSql());
+        } catch (RuntimeException re) {
+            close(); // prevent leaking DB Connection
+            throw re;
+        }
     }
     
     public boolean isMatchNotSupported() {

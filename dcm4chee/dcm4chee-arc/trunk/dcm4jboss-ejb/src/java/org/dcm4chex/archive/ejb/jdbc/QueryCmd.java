@@ -286,10 +286,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return null;
     }
 
-    public void execute() throws SQLException {
-        execute(sqlBuilder.getSql());
-    }
-
     public boolean isMatchNotSupported() {
         return sqlBuilder.isMatchNotSupported();
     }

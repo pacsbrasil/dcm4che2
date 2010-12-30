@@ -173,10 +173,6 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
         
     }
 
-    public void execute() throws SQLException {
-        execute(sqlBuilder.getSql());
-    }
-
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();    
         Dataset dsPat = DcmObjectFactory.getInstance().newDataset(); //It seems that Oracle has problems to read 1st BLOB after 2nd! 
