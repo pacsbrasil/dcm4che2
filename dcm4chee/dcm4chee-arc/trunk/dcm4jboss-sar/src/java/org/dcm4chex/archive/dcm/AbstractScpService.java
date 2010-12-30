@@ -48,6 +48,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.ejb.FinderException;
@@ -649,11 +650,23 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected void updateAcceptedTransferSyntax(Map<String, String> tsuidMap,
             String newval) {
         Map<String, String> tmp = parseUIDs(newval);
-        if (tsuidMap.keySet().equals(tmp.keySet()))
+        if (equals(tsuidMap, tmp))
             return;
         tsuidMap.clear();
         tsuidMap.putAll(tmp);
         enableService();
+    }
+
+    private static boolean equals(Map<String, String> tsuidMap1,
+            Map<String, String> tsuidMap2) {
+        if (tsuidMap1.size() != tsuidMap2.size())
+            return false;
+        Iterator<String> iter1 = tsuidMap1.keySet().iterator();
+        Iterator<String> iter2 = tsuidMap2.keySet().iterator();
+        while (iter1.hasNext())
+            if (!iter1.next().equals(iter2.next()))
+                return false;
+        return true;
     }
 
     protected String toString(Map<String, String> uids) {
