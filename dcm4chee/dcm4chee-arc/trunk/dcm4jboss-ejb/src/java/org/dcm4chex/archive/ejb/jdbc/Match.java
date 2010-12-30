@@ -46,7 +46,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.dcm4che.data.PersonName;
-import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 
 /**
