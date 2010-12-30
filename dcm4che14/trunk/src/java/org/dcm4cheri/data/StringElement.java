@@ -1133,7 +1133,7 @@ abstract class StringElement extends ValueElement {
 
     private static Date[] parseDateRange(DateFormat f, String s,
             long resolution) throws ParseException {
-        if (s == null) {
+        if (s == null || s.equals("*") ||  s.equals("-")) {
             return null;
         }
         Date[] range = new Date[2];

@@ -581,17 +581,17 @@ abstract class DcmObjectImpl implements DcmObject {
     }
 
     public Date[] getDateTimeRange(int dateTag, int timeTag) {
-        DcmElement time = get(timeTag);
-        if (time == null || time.isEmpty()) {
+        String tm = getString(timeTag);
+        if (tm == null || tm.equals("*") || tm.equals("-")) {
             return getDateRange(dateTag);
         }
-        DcmElement date = get(dateTag);
-        if (date == null || date.isEmpty()) {
+        String da = getString(dateTag);
+        if (da == null || da.equals("*") || da.equals("-")) {
             return null;
         }
         try {
-            String[] dateRange = splitRange(date.getString(null));
-            String[] timeRange = splitRange(time.getString(null));
+            String[] dateRange = splitRange(da);
+            String[] timeRange = splitRange(tm);
             Date[] result = new Date[2];
             DTFormat f = new DTFormat();
             if (dateRange[0] != null) {
@@ -604,8 +604,6 @@ abstract class DcmObjectImpl implements DcmObject {
             }
             return result;
         } catch (ParseException e) {
-            return null;
-        } catch (DcmValueException e) {
             return null;
         }
     }
