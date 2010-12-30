@@ -122,14 +122,12 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
                     || Tags.isPrivate(tag)) {
                 continue;
             }
-            if ( el.vr() != VRs.SQ ) {
-                if (matchingKeys == null || !matchingKeys.contains(tag)) {
-                    log.warn("QueryCmd: Unsupported matching key found! key:"+el);
-                    return true;
-                }
-            } else {
-                IntList il = matchingKeys.contains(tag) ? //is matching of this sequence allowed?
-                        seqMatchingKeys.get(new Integer(tag)) : null;
+            if (matchingKeys == null || !matchingKeys.contains(tag)) {
+                log.warn("QueryCmd: Unsupported matching key found! key:"+el);
+                return true;
+            }
+            if ( el.vr() == VRs.SQ ) {
+                IntList il = seqMatchingKeys.get(new Integer(tag));
                 for ( int i=0; i<el.countItems() ; i++ ) {
                     if( findUnsupportedMatchingKey(el.getItem(i),il) ) {
                         log.warn("QueryCmd: Unsupported matching key found in SQ "+el);
