@@ -38,6 +38,7 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.facade;
 
+import in.raster.mayam.delegate.InputArgumentsParser;
 import in.raster.mayam.form.display.Display;
 import in.raster.mayam.form.MainScreen;
 import in.raster.mayam.form.SplashScreen;
@@ -96,6 +97,7 @@ public class ApplicationFacade {
 
     public static void main(String[] args) {
         try {
+            InputArgumentsParser.parse(args);
             ApplicationFacade facade = new ApplicationFacade();
             facade.setSystemProperties();
             facade.createSplash();

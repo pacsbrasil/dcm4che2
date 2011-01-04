@@ -42,12 +42,14 @@ import com.nilo.plaf.nimrod.NimRODLookAndFeel;
 import com.sun.java.swing.plaf.motif.MotifLookAndFeel;
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegate.ImportDcmDirDelegate;
+import in.raster.mayam.delegate.InputArgumentsParser;
 import in.raster.mayam.delegate.ReceiveDelegate;
 import in.raster.mayam.delegate.SendingDelegate;
 import in.raster.mayam.delegate.SeriesThumbUpdator;
 import in.raster.mayam.delegate.ShowComparisonViewerDelegate;
 import in.raster.mayam.delegate.ShowViewerDelegate;
 import in.raster.mayam.delegate.StudyListUpdator;
+import in.raster.mayam.delegate.WadoRetrieveDelegate;
 import in.raster.mayam.form.dialog.About;
 import in.raster.mayam.form.dialog.ConfirmDelete;
 import in.raster.mayam.form.dialog.FileChooserDialog;
@@ -57,6 +59,8 @@ import in.raster.mayam.form.dialog.SettingsDialog;
 import in.raster.mayam.util.DicomTags;
 import in.raster.mayam.util.DicomTagsReader;
 import in.raster.mayam.model.AEModel;
+import in.raster.mayam.model.InputArgumentValues;
+import in.raster.mayam.model.ServerModel;
 import in.raster.mayam.model.Study;
 import in.raster.mayam.model.table.StudyListModel;
 import in.raster.mayam.model.table.renderer.CellRenderer;
@@ -102,6 +106,7 @@ public class MainScreen extends javax.swing.JFrame {
         initSendingProgress();
         setTheme();
         ImportDcmDirDelegate.findAndLoadDcmDirFiles();
+        loadStudiesBasedOnInputParameter();
 
     }
 
@@ -114,6 +119,22 @@ public class MainScreen extends javax.swing.JFrame {
             setMotifTheme();
         } else if (activeTheme.equalsIgnoreCase("System")) {
             setSystemTheme();
+        }
+    }
+    public void loadStudiesBasedOnInputParameter()
+    {       
+        InputArgumentValues inputArgumentValues=InputArgumentsParser.inputArgumentValues;                
+        if(inputArgumentValues.getAeTitle()!=null&&inputArgumentValues.getPort()!=0&&inputArgumentValues.getHostName()!=null&&inputArgumentValues.getWadoContext()!=null&&inputArgumentValues.getWadoPort()!=0 && inputArgumentValues.getWadoProtocol()!=null)
+        {
+            ServerModel serverModel =new ServerModel();
+            serverModel.setAeTitle(inputArgumentValues.getAeTitle());
+            serverModel.setHostName(inputArgumentValues.getHostName());
+            serverModel.setPort(inputArgumentValues.getPort());
+            serverModel.setWadoContextPath(inputArgumentValues.getWadoContext());
+            serverModel.setWadoPort(inputArgumentValues.getWadoPort());
+            serverModel.setWadoProtocol(inputArgumentValues.getWadoProtocol());
+            WadoRetrieveDelegate wadoRetrieveDelegate = new WadoRetrieveDelegate();
+            wadoRetrieveDelegate.retrieveStudy(serverModel);
         }
     }
 

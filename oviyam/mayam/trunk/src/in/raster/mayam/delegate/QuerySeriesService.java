@@ -96,7 +96,9 @@ public class QuerySeriesService {
          * Setting filter values for query such as patientId, patientName etc.
          */
         try {
+            if(patientID!=null)
             cfgCDimseService.put("key.PatientID", patientID);
+            if(studyInstanceUID!=null)
             cfgCDimseService.put("key.StudyInstanceUID", studyInstanceUID);
         } catch (Exception e) {
             System.out.println("Unable to set Key values for query");

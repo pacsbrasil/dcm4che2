@@ -77,7 +77,7 @@ public class QueryService {
     @SuppressWarnings("unchecked")
     public void callFindWithQuery(String searchPatientID,
             String SearchPatientName, String searchDob, String searchtoday,
-            String searchModality,String searchAccNo, DcmURL url) {
+            String searchModality,String searchAccNo,String studyUID, DcmURL url) {
 
         ConfigProperties cfgCDimseService;
         boolean isOpen;
@@ -98,29 +98,30 @@ public class QueryService {
          * Setting filter values for query such as patientId, patientName etc.
          */
         try {
-
+            if(searchPatientID!=null)
             cfgCDimseService.put("key.PatientID", searchPatientID);
 
+            if(SearchPatientName!=null)
             cfgCDimseService.put("key.PatientName", SearchPatientName + "*");
 
-            if ((searchtoday.length() > 0)) {
+            if (searchtoday!=null && searchtoday.length() > 0) {
                 cfgCDimseService.put("key.StudyDate", searchtoday);
             }
 
-            if ((searchDob.length() > 0)) {
+            if (searchDob!=null && searchDob.length() > 0) {
                 cfgCDimseService.put("key.PatientBirthDate", searchDob);
             }
-             if ((searchAccNo.length() > 0)) {
+             if (searchAccNo!=null && searchAccNo.length() > 0) {
                 cfgCDimseService.put("key.AccessionNumber", searchAccNo);
             }
-            searchModality = searchModality.toUpperCase();
-
-            if (searchModality.equalsIgnoreCase("ALL")) {
-                // cfgCDimseService.put("key.ModalitiesInStudy", "*");
-            } else {
+            if (searchModality!=null ) {
+                searchModality = searchModality.toUpperCase();            
                 cfgCDimseService.put("key.ModalitiesInStudy", searchModality);
             }
-        } catch (Exception e) {
+              if(studyUID!=null)
+            cfgCDimseService.put("key.StudyInstanceUID", studyUID);
+
+        } catch (Exception e) {           
             System.out.println("Unable to set Key values for query");
         }
 

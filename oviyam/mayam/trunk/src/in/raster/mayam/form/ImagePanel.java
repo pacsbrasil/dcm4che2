@@ -831,7 +831,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             }
         }
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
-         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setInstanceNumber(""+this.instanceNumber);
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setInstanceNumber(""+this.instanceNumber);
     }
 
     /**
