@@ -705,7 +705,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
                 .format(new Date());
         long msgCtrlid = ++this.msgCtrlid;
         long queryTag = ++this.queryTag;
-        StringBuffer sb = makeMSH(timestamp, "QBP^Q23", null, pixManager, msgCtrlid, "2.5");
+        StringBuffer sb = makeMSH(timestamp, "QBP^Q23^QBP_Q21", null, pixManager, msgCtrlid, "2.5");
         String qpd = makeQPD(pixQueryName, queryTag, patientID, issuer, domains);
         sb.append('\r').append(qpd).append("\rRCP|I||||||\r");
         String s = sb.toString();
@@ -1063,4 +1063,5 @@ public class HL7SendService extends ServiceMBeanSupport implements
         }
         return th;
     }
+
 }
