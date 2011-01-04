@@ -1422,8 +1422,9 @@ public abstract class LookupTable {
             log.error("Error in calculation of offset wrt pixel padding data. pixel padding range from " +
                     minPad + " to "+ maxPad + ", offset=" + offset);
             minPad = offset;
-            if(maxPad-offset+1<0 ) return;
         }
+        if(maxPad-offset+1<0 ) return;
+        if( minPad-offset > array.length() ) return;
         
         array.fillRange(minPad-offset, maxPad-offset+1, padValue);
     }
