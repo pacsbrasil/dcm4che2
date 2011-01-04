@@ -279,11 +279,12 @@ public class VOIUtils {
         } else {
             slope = mObj.getFloat(Tag.RescaleSlope, 1.f);
             intercept = mObj.getFloat(Tag.RescaleIntercept, 0.f);
+            int samples = img.getInt(Tag.SamplesPerPixel,1);
             if (img.containsValue(Tag.SmallestImagePixelValue)
                     && img.containsValue(Tag.LargestImagePixelValue)) {
                 minMax = new int[] { img.getInt(Tag.SmallestImagePixelValue),
                         img.getInt(Tag.LargestImagePixelValue) };
-            } else if (raster == null) {
+            } else if (raster == null || samples!=1 ) {
                 log.debug("Using min/max possible values to compute WL range, as we don't have data buffer to use.");
                 int stored = img.getInt(Tag.BitsStored);
                 boolean signed = img.getInt(Tag.PixelRepresentation) == 1;
