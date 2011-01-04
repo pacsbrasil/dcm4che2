@@ -73,6 +73,8 @@ import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
+import org.dcm4chex.archive.ejb.interfaces.ContentItemLocal;
+import org.dcm4chex.archive.ejb.interfaces.ContentItemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.VerifyingObserverLocal;
 import org.dcm4chex.archive.ejb.interfaces.VerifyingObserverLocalHome;
@@ -146,6 +148,8 @@ import org.dcm4chex.archive.util.Convert;
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
  * @ejb.ejb-ref ejb-name="VerifyingObserver" view-type="local"
  *              ref-name="ejb/VerifyingObserver"
+ * @ejb.ejb-ref ejb-name="ContentItem" view-type="local"
+ *              ref-name="ejb/ContentItem"
  */
 public abstract class InstanceBean implements EntityBean {
 
@@ -157,6 +161,7 @@ public abstract class InstanceBean implements EntityBean {
 
     private CodeLocalHome codeHome;
     private VerifyingObserverLocalHome observerHome;
+    private ContentItemLocalHome contentItemHome;
 
     public void setEntityContext(EntityContext ctx) {
         Context jndiCtx = null;
@@ -165,6 +170,8 @@ public abstract class InstanceBean implements EntityBean {
             codeHome = (CodeLocalHome) jndiCtx.lookup("java:comp/env/ejb/Code");
             observerHome = (VerifyingObserverLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/VerifyingObserver");
+            contentItemHome = (ContentItemLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/ContentItem");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -180,6 +187,7 @@ public abstract class InstanceBean implements EntityBean {
     public void unsetEntityContext() {
         codeHome = null;
         observerHome = null;
+        contentItemHome = null;
     }
 
     /**
@@ -447,9 +455,20 @@ public abstract class InstanceBean implements EntityBean {
      *               target-ejb="VerifyingObserver" target-cascade-delete="yes"
      * @jboss.target-relation fk-column="instance_fk" related-pk-field="pk"
      */
-    public abstract java.util.Collection getVerifyingObservers();
+    public abstract Collection<VerifyingObserverLocal> getVerifyingObservers();
 
-    public abstract void setVerifyingObservers(java.util.Collection observers);
+    public abstract void setVerifyingObservers(Collection<VerifyingObserverLocal> observers);
+
+    /**
+     * @ejb.relation name="instance-sr-content-item"
+     *               role-name="instance-with-sr-content-items"
+     *               target-role-name="content-item-of-sr"
+     *               target-ejb="ContentItem" target-cascade-delete="yes"
+     * @jboss.target-relation fk-column="instance_fk" related-pk-field="pk"
+     */
+    public abstract Collection<ContentItemLocal> getContentItems();
+
+    public abstract void setContentItems(Collection<ContentItemLocal> items);
 
     /**
      * @ejb.create-method
@@ -464,6 +483,7 @@ public abstract class InstanceBean implements EntityBean {
             throws CreateException {
         updateSrCode(null, ds.getItem(Tags.ConceptNameCodeSeq));
         updateVerifyingObservers(null, ds.get(Tags.VerifyingObserverSeq));
+        updateContentItems(ds.get(Tags.ContentSeq));
         setSeries(series);
         log.info("Created " + prompt());
     }
@@ -492,12 +512,10 @@ public abstract class InstanceBean implements EntityBean {
             return false;
         }
         try {
-            for (Iterator iter = new ArrayList(getVerifyingObservers()).iterator(); iter.hasNext();) {
-                VerifyingObserverLocal verifier = 
-                        (VerifyingObserverLocal) iter.next();
-                verifier.remove();
-            }
-            Collection c = getVerifyingObservers();
+            for (Iterator<VerifyingObserverLocal> iter = new ArrayList<VerifyingObserverLocal>(
+                    getVerifyingObservers()).iterator(); iter.hasNext();)
+                iter.next().remove();
+            Collection<VerifyingObserverLocal> c = getVerifyingObservers();
             if (newObservers != null) {
                 for (int i = 0, n = newObservers.countItems(); i < n; i++) {
                     c.add(observerHome.create(newObservers.getItem(i)));
@@ -511,6 +529,32 @@ public abstract class InstanceBean implements EntityBean {
         return true;
     }
 
+    private void updateContentItems(DcmElement items) {
+        Collection<ContentItemLocal> c = getContentItems();
+        if (!c.isEmpty()) {
+             for (ContentItemLocal item : new ArrayList<ContentItemLocal>(c))
+                try {
+                    item.remove();
+                } catch (RemoveException e) {
+                    throw new EJBException(e);
+                }
+             c = getContentItems();
+        }
+
+        if (items == null)
+            return;
+
+        for (int i = 0, n = items.countItems(); i < n; i++) {
+            Dataset item = items.getItem(i);
+            String valueType = item.getString(Tags.ValueType);
+            if ("CODE".equals(valueType) || "TEXT".equals(valueType))
+                try {
+                    c.add(contentItemHome.create(item));
+                } catch (CreateException e) {
+                    throw new EJBException(e);
+                }
+        }
+    }
 
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
@@ -616,6 +660,7 @@ public abstract class InstanceBean implements EntityBean {
        updateVerifyingObservers(
                oldAttrs.get(Tags.VerifyingObserverSeq),
                newAttrs.get(Tags.VerifyingObserverSeq));
+       updateContentItems(newAttrs.get(Tags.ContentSeq));
        AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(
                newAttrs.getString(Tags.SOPClassUID,
                        oldAttrs.getString(Tags.SOPClassUID)));
@@ -743,6 +788,7 @@ public abstract class InstanceBean implements EntityBean {
         updateSrCode(oldSrCode, attrs.getItem(Tags.ConceptNameCodeSeq));
         updateVerifyingObservers(oldObservers,
                 attrs.get(Tags.VerifyingObserverSeq));
+        updateContentItems(attrs.get(Tags.ContentSeq));
     }
 
     /**

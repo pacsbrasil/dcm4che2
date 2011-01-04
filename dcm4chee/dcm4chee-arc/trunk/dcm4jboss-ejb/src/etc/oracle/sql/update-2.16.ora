@@ -73,3 +73,21 @@ ALTER TABLE gpsps_perf ADD (
    hum_perf_gn_sx VARCHAR(255));
 CREATE INDEX gpsps_perf_fn_sx ON gpsps_perf(hum_perf_fn_sx);
 CREATE INDEX gpsps_perf_gn_sx ON gpsps_perf(hum_perf_gn_sx);
+
+CREATE SEQUENCE content_item_pk_seq;
+CREATE TABLE content_item (
+    pk                NUMBER(38,0) NOT NULL CONSTRAINT content_item_pk PRIMARY KEY,
+    instance_fk       NUMBER(38,0),
+    name_fk           NUMBER(38,0),
+    code_fk           NUMBER(38,0),
+    rel_type          VARCHAR2(255),
+    text_value        VARCHAR2(255),
+FOREIGN KEY (instance_fk) REFERENCES instance(pk),
+FOREIGN KEY (name_fk) REFERENCES code(pk),
+FOREIGN KEY (code_fk) REFERENCES code(pk)
+);
+CREATE INDEX content_item_inst_fk ON content_item(instance_fk);
+CREATE INDEX content_item_name_fk ON content_item(name_fk);
+CREATE INDEX content_item_code_fk ON content_item(code_fk);
+CREATE INDEX content_item_rel_type ON content_item(rel_type);
+CREATE INDEX content_item_text_value ON content_item(text_value);

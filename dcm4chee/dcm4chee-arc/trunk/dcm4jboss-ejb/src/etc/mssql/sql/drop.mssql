@@ -36,6 +36,7 @@ DROP TABLE mwl_item;
 DROP TABLE study_on_fs;
 DROP TABLE files;
 DROP TABLE filesystem;
+DROP TABLE content_item;
 DROP TABLE verify_observer;
 DROP TABLE instance;
 DROP TABLE media;
