@@ -183,7 +183,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
         keys.setPrivateCreatorID(null);
         this.hideMissingStudies = hideMissingStudies;	
         if ( this.hideMissingStudies ) {
-            sqlBuilder.addNULLValueMatch(null,"Study.encodedAttributes", true);
+            sqlBuilder.addNULLValueMatch(null,"Study.pk", true);
         }
         if ( checkPermissions ) {
             String[] roles = SecurityUtils.rolesOf(subject);
@@ -197,7 +197,7 @@ public class QueryStudiesCmd extends BaseReadCmd {
     private void addStudyPermissionMatch(Subject subject) {
         if (subject != null) {
             sqlBuilder.addQueryPermissionNestedMatch(false,
-                    SecurityUtils.rolesOf(subject));
+                    !hideMissingStudies, SecurityUtils.rolesOf(subject));
         }
     }
     

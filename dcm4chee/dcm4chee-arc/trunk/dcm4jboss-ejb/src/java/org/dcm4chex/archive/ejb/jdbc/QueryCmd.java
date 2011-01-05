@@ -402,7 +402,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     protected void addStudyPermissionMatch(boolean patientLevel) {
         if (subject != null) {
-            sqlBuilder.addQueryPermissionNestedMatch(patientLevel,
+            sqlBuilder.addQueryPermissionNestedMatch(patientLevel, false,
                     SecurityUtils.rolesOf(subject));
         }
     }

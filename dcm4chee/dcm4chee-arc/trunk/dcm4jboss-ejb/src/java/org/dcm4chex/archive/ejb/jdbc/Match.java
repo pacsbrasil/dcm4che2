@@ -523,11 +523,14 @@ abstract class Match {
     static class QueryPermissionNestedMatch extends Match {
         private final String[] roles;
         private final boolean patientLevel;
+        private final boolean checkForNoStudy;
 
-        public QueryPermissionNestedMatch(boolean patientLevel, String[] roles) {
+        public QueryPermissionNestedMatch(boolean patientLevel,
+                boolean checkForNoStudy, String[] roles) {
             super(null, "StudyPermission.role", false);
             this.roles = roles;
             this.patientLevel = patientLevel;
+            this.checkForNoStudy = checkForNoStudy;
         }
 
         public boolean isUniveralMatch() {
@@ -536,6 +539,11 @@ abstract class Match {
 
         protected void appendBodyTo(StringBuffer sb) {
             JdbcProperties jp = JdbcProperties.getInstance();
+            if (checkForNoStudy) {
+                sb.append('(');
+                sb.append(jp.getProperty("Study.pk"));
+                sb.append(" IS NULL OR ");
+            }
             sb.append("EXISTS (SELECT 1 FROM ");
             if (patientLevel) {
                 sb.append(jp.getProperty("Study"));
@@ -566,6 +574,8 @@ abstract class Match {
                 sb.append("\')");
             }
             sb.append(')');
+            if (checkForNoStudy)
+                sb.append(')');
         }
     }
 
