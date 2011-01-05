@@ -54,6 +54,7 @@ import java.util.Calendar;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.util.DcmURL;
@@ -95,8 +96,11 @@ public class WadoRetrieveDelegate extends Thread {
         InputArgumentValues inputArgumentValues = null;
         if (serverModel.getAeTitle() != null) {
             inputArgumentValues = InputArgumentsParser.inputArgumentValues;             
-            QueryService queryService = new QueryService();
+            EchoService echoService=new EchoService();
             DcmURL dcmurl = new DcmURL("dicom://" + inputArgumentValues.getAeTitle() + "@" + inputArgumentValues.getHostName() + ":" + inputArgumentValues.getPort());
+            echoService.checkEcho(dcmurl);
+            if(echoService.getStatus().equalsIgnoreCase("EchoSuccess")){
+            QueryService queryService = new QueryService();
             queryService.callFindWithQuery(inputArgumentValues.getPatientID(), inputArgumentValues.getPatientName(), null, inputArgumentValues.getStudyDate(), inputArgumentValues.getModality(), inputArgumentValues.getAccessionNumber(),inputArgumentValues.getStudyUID(), dcmurl);
             for (int dataSetCount = 0; dataSetCount < queryService.getDatasetVector().size(); dataSetCount++) {
                 try {
@@ -106,8 +110,9 @@ public class WadoRetrieveDelegate extends Thread {
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
-            }           
-           this.start();
+            }
+            this.start();
+        }
         }
     }
 
