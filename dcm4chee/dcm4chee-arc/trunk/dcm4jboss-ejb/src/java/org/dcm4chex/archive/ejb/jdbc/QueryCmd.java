@@ -146,6 +146,11 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.RequestingService,
             Tags.RequestingPhysician };
 
+    private static final int[] MATCHING_ENTITY_ID_KEYS = new int[] {
+            Tags.LocalNamespaceEntityID,
+            Tags.UniversalEntityID,
+            Tags.UniversalEntityIDType };
+
     private static final int[] PAT_DEMOGRAPHICS_ATTRS = new int[] {
             Tags.PatientName,
             Tags.PatientBirthDate,
@@ -397,6 +402,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
         matchingKeys.add(MATCHING_STUDY_KEYS);
         matchingKeys.add(fieldTags);
+        seqMatchingKeys.put(Tags.IssuerOfAccessionNumberSeq,
+                new IntList().add(MATCHING_ENTITY_ID_KEYS));
     }
 
 
