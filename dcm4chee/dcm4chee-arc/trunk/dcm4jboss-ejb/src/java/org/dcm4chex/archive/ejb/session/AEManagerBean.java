@@ -89,14 +89,14 @@ public abstract class AEManagerBean implements SessionBean {
     private static Map aeCache = Collections.synchronizedMap(
             new LinkedHashMap(32, 0.75f, true) {
 
-                private static final long serialVersionUID = -5477659896294241869L;
+        private static final long serialVersionUID = -5477659896294241869L;
 
-                @Override
-				protected boolean removeEldestEntry(Map.Entry eldest) {
-                    return size() > maxCacheSize;
-                }
-            });
-    
+        @Override
+        protected boolean removeEldestEntry(Map.Entry eldest) {
+            return size() > maxCacheSize;
+        }
+    });
+
     public void setSessionContext(SessionContext ctx) throws EJBException,
             RemoteException {
         Context jndiCtx = null;
@@ -172,19 +172,19 @@ public abstract class AEManagerBean implements SessionBean {
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
-    public AEDTO findByAET(String aet)
-            throws FinderException, UnknownAETException {
-    	aet = aet.trim();
-    	AEDTO ae = (AEDTO) AEManagerBean.aeCache.get(aet);
-    	if (ae == null) {
-	        try {
-	            ae = aeHome.findByAET(aet).toDTO();
-	            AEManagerBean.aeCache.put(aet, ae);
-	        } catch (ObjectNotFoundException e) {
-	            throw new UnknownAETException(aet);
-	        }
-    	}
-    	return ae;
+    public AEDTO findByAET(String aet) throws FinderException,
+            UnknownAETException {
+        aet = aet.trim();
+        AEDTO ae = (AEDTO) AEManagerBean.aeCache.get(aet);
+        if (ae == null) {
+            try {
+                ae = aeHome.findByAET(aet).toDTO();
+                AEManagerBean.aeCache.put(aet, ae);
+            } catch (ObjectNotFoundException e) {
+                throw new UnknownAETException(aet);
+            }
+        }
+        return ae;
     }
 
     /**
