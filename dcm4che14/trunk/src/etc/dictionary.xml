@@ -1095,6 +1095,23 @@
   <element tag="(0022,0020)" name="Stereo Pairs Sequence" vr="SQ" vm="1" key="StereoPairsSeq" />
   <element tag="(0022,0021)" name="Left Image Sequence" vr="SQ" vm="1" key="LeftImageSeq" />
   <element tag="(0022,0022)" name="Right Image Sequence" vr="SQ" vm="1" key="RightImageSeq" />
+  <element tag="(0022,0030)" name="Axial Length of the Eye" vr="FL" vm="1" key="AxialLengthOfTheEye" />
+  <element tag="(0022,0031)" name="Ophthalmic Frame Location Sequence" vr="SQ" vm="1" key="OphthalmicFrameLocationSeq" />
+  <element tag="(0022,0032)" name="Reference Coordinates" vr="FL" vm="2-2n" key="ReferenceCoordinates" />
+  <element tag="(0022,0035)" name="Depth Spatial Resolution" vr="FL" vm="1" key="DepthSpatialResolution" />
+  <element tag="(0022,0036)" name="Maximum Depth Distortion" vr="FL" vm="1" key="MaximumDepthDistortion" />
+  <element tag="(0022,0037)" name="Along-scan Spatial Resolution" vr="FL" vm="1" key="AlongScanSpatialResolution" />
+  <element tag="(0022,0038)" name="Maximum Along-scan Distortion" vr="FL" vm="1" key="MaximumAlongScanDistortion" />
+  <element tag="(0022,0039)" name="Ophthalmic Image Orientation" vr="CS" vm="1" key="OphthalmicImageOrientation" />
+  <element tag="(0022,0041)" name="Depth of Transverse Image" vr="FL" vm="1" key="DepthOfTransverseImage" />
+  <element tag="(0022,0042)" name="Mydriatic Agent Concentration Units Sequence" vr="SQ" vm="1" key="MydriaticAgentConcentrationUnitsSeq" />
+  <element tag="(0022,0048)" name="Across-scan Spatial Resolution" vr="FL" vm="1" key="AcrossScanSpatialResolution" />
+  <element tag="(0022,0049)" name="Maximum Across-scan Distortion" vr="FL" vm="1" key="MaximumAcrossScanDistortion" />
+  <element tag="(0022,004E)" name="Mydriatic Agent Concentration" vr="DS" vm="1" key="MydriaticAgentConcentration" />
+  <element tag="(0022,0055)" name="Illumination Wave Length" vr="FL" vm="1" key="IlluminationWaveLength" />
+  <element tag="(0022,0056)" name="Illumination Power" vr="FL" vm="1" key="IlluminationPower" />
+  <element tag="(0022,0057)" name="Illumination Bandwidth" vr="FL" vm="1" key="IlluminationBandwidth" />
+  <element tag="(0022,0058)" name="Name Mydriatic Agent Sequence" vr="SQ" vm="1" key="NameMydriaticAgentSeq" />
 
   <element tag="(0028,0002)" name="Samples per Pixel" vr="US" vm="1" key="SamplesPerPixel" />
   <element tag="(0028,0003)" name="Samples per Pixel Used" vr="US" vm="1" key="SamplesPerPixelUsed" />
@@ -2778,6 +2795,7 @@
   <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.1" name="Ophthalmic Photography 8 Bit Image Storage" key="OphthalmicPhotography8BitImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.2" name="Ophthalmic Photography 16 Bit Image Storage" key="OphthalmicPhotography16BitImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.3" name="Stereometric Relationship Storage" key="StereometricRelationshipStorage" dirrecord="STEREOMETRIC" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.4" name="Ophthalmic Tomography Image Storage" key="OphthalmicTomographyImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.1" name="Structured Report Text Storage (Retired)" key="StructuredReportTextStorageRetired" dirrecord="SR DOCUMENT" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.2" name="Structured Report Audio Storage (Retired)" key="StructuredReportAudioStorageRetired" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.3" name="Structured Report Detail Storage (Retired)" key="StructuredReportDetailStorageRetired" dirrecord="SR DOCUMENT" />
