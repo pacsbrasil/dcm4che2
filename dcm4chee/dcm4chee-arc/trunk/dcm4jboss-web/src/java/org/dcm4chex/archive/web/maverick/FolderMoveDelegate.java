@@ -350,7 +350,7 @@ public class FolderMoveDelegate {
      * <p>
      * This method checks if only one destination, one ore more sources and no other stickies are set.
      * <p>
-     * If one of the following rules are not fullfilled, a corresponding error code is set in FolderForms.
+     * If one of the following rules are not fulfilled, a corresponding error code is set in FolderForms.
      * <DL>
      * <DT>Rule:</DT>
      * <DD>  iDest must be 1</DD>
