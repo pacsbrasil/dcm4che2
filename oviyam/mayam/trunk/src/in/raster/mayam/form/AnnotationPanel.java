@@ -909,7 +909,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             if ((mouseLocX1 != -1 && mouseLocX2 != -1 && mouseLocY1 != -1 && mouseLocY2 != -1) && addLine) {
                 g.drawString("Length:" + calculateDiff((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocX2 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY2 / this.layeredCanvas.imgpanel.getScaleFactor())), (int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) ((mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()) - 20));
                 g.drawLine((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocX2 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY2 / this.layeredCanvas.imgpanel.getScaleFactor()));
-
+                g.fill(new Ellipse2D.Double(mouseLocX1 - 3.0, mouseLocY1 - 3.0, 6.0, 6.0));
+                g.fill(new Ellipse2D.Double(mouseLocX2- 3.0, mouseLocY2- 3.0, 6.0, 6.0));
             }
             // As per the lineObj present in the tile it will display the lines
             Iterator<AnnotationObj> ite = lineObj.iterator();
@@ -917,7 +918,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                 AnnotationObj t = ite.next();
                 g.drawString("Length:" + t.getLength(), t.getX1(), t.getY1() - 20);
                 g.drawLine(t.getX1(), t.getY1(), t.getX2(), t.getY2());
-
+                g.fill(new Ellipse2D.Double(t.getX1() - 3.0, t.getY1() - 3.0, 6.0, 6.0));
+                g.fill(new Ellipse2D.Double(t.getX2()- 3.0, t.getY2()- 3.0, 6.0, 6.0));
             }
             //Condition used to check the coordinate position and rectangle flag
             if ((mouseLocX1 != -1 && mouseLocX2 != -1 && mouseLocY1 != -1 && mouseLocY2 != -1) && addRect) {
