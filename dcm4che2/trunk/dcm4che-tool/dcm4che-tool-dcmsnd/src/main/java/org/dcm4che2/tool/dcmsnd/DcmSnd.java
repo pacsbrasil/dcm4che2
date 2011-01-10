@@ -948,7 +948,7 @@ public class DcmSnd extends StorageCommitmentService {
         this.suffixUID = suffix.length > 0 ? suffix.clone() : null;
     }
 
-    private static void promptStgCmt(DicomObject cmtrslt, float seconds) {
+    protected static void promptStgCmt(DicomObject cmtrslt, float seconds) {
         System.out.println("Received Storage Commitment Result after "
                 + seconds + "s:");
         DicomElement refSOPSq = cmtrslt.get(Tag.ReferencedSOPSequence);
@@ -961,12 +961,12 @@ public class DcmSnd extends StorageCommitmentService {
         }
     }
 
-    private synchronized DicomObject waitForStgCmtResult() throws InterruptedException {
+    protected synchronized DicomObject waitForStgCmtResult() throws InterruptedException {
         while (stgCmtResult == null) wait();
         return stgCmtResult;
     }
 
-    private static void prompt(DcmSnd dcmsnd, float seconds) {
+    protected static void prompt(DcmSnd dcmsnd, float seconds) {
         System.out.print("\nSent ");
         System.out.print(dcmsnd.getNumberOfFilesSent());
         System.out.print(" objects (=");
