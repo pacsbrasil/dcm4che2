@@ -720,6 +720,7 @@ Notifications for one Series.]]>
            VLPhotographicImageStorage
            OphthalmicPhotography8BitImageStorage
            OphthalmicPhotography16BitImageStorage
+           OphthalmicTomographyImageStorage
            PositronEmissionTomographyImageStorage
            EnhancedPETImageStorage
            RTImageStorage
