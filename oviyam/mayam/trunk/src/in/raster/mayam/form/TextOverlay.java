@@ -349,7 +349,9 @@ public class TextOverlay extends javax.swing.JPanel {
         patientPositionLabel.setText("");
         studyDateLabel.setText("");
         studyDescLabel.setText("");
+        seriesDescLabel.setText("");
         slicePositionLabel.setText("");
+        instanceNum.setText("");
         huLabel.setText("");
         instanceNoLabel.setText("");
         institutionLabel.setText("");
