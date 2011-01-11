@@ -105,6 +105,10 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
         serverTableModel.setData(ApplicationContext.databaseRef.getServerList());
         serverListTable.setModel(serverTableModel);
         setServerRetrieveComboEditor();
+        serverListTable.getColumnModel().getColumn(0).setMinWidth(80);
+        serverListTable.getColumnModel().getColumn(1).setMinWidth(80);
+        serverListTable.getColumnModel().getColumn(2).setMinWidth(110);
+        serverListTable.getColumnModel().getColumn(3).setMaxWidth(55);
         if (serverChangeListener != null) {
             addListenerToModel();
         }
