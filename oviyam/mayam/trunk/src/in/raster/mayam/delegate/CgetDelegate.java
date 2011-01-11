@@ -38,57 +38,35 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.delegate;
 
-import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.util.core.DcmRcv;
-import in.raster.mayam.util.core.MoveScu;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import in.raster.mayam.util.core.DcmQR;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  *
  * @author  BabuHussain
- * @version 0.5
+ * @version 0.9
  *
  */
-public class ReceiveDelegate {
+public class CgetDelegate extends Thread {
 
-    private DcmRcv dcmrcv = null;
-    private int port;
-
-    public ReceiveDelegate() {
+    String getArg[];
+    public CgetDelegate(String getArg[]) {
+        this.getArg = getArg;
+        this.start();
+    }
+    /**
+     * This routine used to perform CGet
+     * @param moveArg
+     */
+    public void get() {
         try {
-            InetAddress thisIp = InetAddress.getLocalHost();
-            String[] s = ApplicationContext.databaseRef.getListenerDetails();
-            dcmrcv = new DcmRcv();
-            dcmrcv.setAEtitle(s[0]);
-            dcmrcv.setHostname("0.0.0.0");
-            dcmrcv.setPort(Integer.parseInt(s[1]));
-            this.port = Integer.parseInt(s[1]);
-            dcmrcv.setDestination(s[2]);
-            dcmrcv.setPackPDV(false);
-            dcmrcv.setTcpNoDelay(false);
-            dcmrcv.initTransferCapability();
-            dcmrcv.setTlsNeedClientAuth(false);
-            MoveScu.maskNull(s[0]);
-        } catch (UnknownHostException ex) {
-            Logger.getLogger(ReceiveDelegate.class.getName()).log(Level.SEVERE, null, ex);
+            DcmQR.main(getArg);
+        } catch (Exception ex) {
+            Logger.getLogger(MoveDelegate.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
-    public void start() throws Exception {
-        dcmrcv.start();
-    }
-
-    public void stop() {
-        if (dcmrcv != null) {
-            dcmrcv.stop();
-            dcmrcv = null;
-        }
-    }
-
-    public int getPort() {
-        return port;
+    public void run() {
+        get();
     }
 }

@@ -1063,20 +1063,13 @@ public class DcmRcv {
     }
 
     public void start() throws IOException {
-        device.startListening(executor);
-        System.out.println("Start Server listening on port " + nc.getPort());
+        device.startListening(executor);       
     }
 
     public void stop() {
         if (device != null) {
             device.stopListening();
-        }
-
-        if (nc != null) {
-            System.out.println("Stop Server listening on port " + nc.getPort());
-        } else {
-            System.out.println("Stop Server");
-        }
+        }      
     }
 
     private static String[] split(String s, char delim, int defPos) {

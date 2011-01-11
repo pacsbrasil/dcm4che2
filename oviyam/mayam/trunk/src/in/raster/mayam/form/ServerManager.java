@@ -1,41 +1,41 @@
 /* ***** BEGIN LICENSE BLOCK *****
-* Version: MPL 1.1/GPL 2.0/LGPL 2.1
-*
-* The contents of this file are subject to the Mozilla Public License Version
-* 1.1 (the "License"); you may not use this file except in compliance with
-* the License. You may obtain a copy of the License at
-* http://www.mozilla.org/MPL/
-*
-* Software distributed under the License is distributed on an "AS IS" basis,
-* WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-* for the specific language governing rights and limitations under the
-* License.
-*
-*
-* The Initial Developer of the Original Code is
-* Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2009-2010
-* the Initial Developer. All Rights Reserved.
-*
-* Contributor(s):
-* Babu Hussain A
-* Meer Asgar Hussain B
-* Prakash J
-* Suresh V
-*
-* Alternatively, the contents of this file may be used under the terms of
-* either the GNU General Public License Version 2 or later (the "GPL"), or
-* the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
-* in which case the provisions of the GPL or the LGPL are applicable instead
-* of those above. If you wish to allow use of your version of this file only
-* under the terms of either the GPL or the LGPL, and not to allow others to
-* use your version of this file under the terms of the MPL, indicate your
-* decision by deleting the provisions above and replace them with the notice
-* and other provisions required by the GPL or the LGPL. If you do not delete
-* the provisions above, a recipient may use your version of this file under
-* the terms of any one of the MPL, the GPL or the LGPL.
-*
-* ***** END LICENSE BLOCK ***** */
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ *
+ * The Initial Developer of the Original Code is
+ * Raster Images
+ * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ * Babu Hussain A
+ * Meer Asgar Hussain B
+ * Prakash J
+ * Suresh V
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
@@ -60,8 +60,6 @@ import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.table.TableCellEditor;
 import org.dcm4che.util.DcmURL;
-import org.dcm4che2.data.TransferSyntax;
-
 
 /**
  *
@@ -69,58 +67,62 @@ import org.dcm4che2.data.TransferSyntax;
  * @version 0.5
  *
  */
-public class ServerManager extends javax.swing.JPanel implements KeyListener{
-    
-    /** Creates new form WindowingManagerPanel */  
+public class ServerManager extends javax.swing.JPanel implements KeyListener {
+
+    /** Creates new form WindowingManagerPanel */
     private JFrame outerContainer;
     private ServerChangeListener serverChangeListener;
+
     public ServerManager(JFrame outerContainer) {
-        this.outerContainer=outerContainer;
+        this.outerContainer = outerContainer;
         initComponents();
         initializeDefault();
     }
-      public ServerManager() {       
+
+    public ServerManager() {
         initComponents();
         initializeDefault();
     }
-    public void initializeDefault()
-   {        
+
+    public void initializeDefault() {
         setServerTableModel();
         serverListTable.addKeyListener(this);
-        changeTabActionForTable(serverListTable);   
+        changeTabActionForTable(serverListTable);
 
-   }
-    public void addServerChangeListener(ServerChangeListener serverChangeListener)
-    {
-        this.serverChangeListener=serverChangeListener;
-        ((ServerTableModel)serverListTable.getModel()).addChangeListener(serverChangeListener);
     }
-    public void addListenerToModel()
-    {
-        ((ServerTableModel)serverListTable.getModel()).addChangeListener(serverChangeListener);
+
+    public void addServerChangeListener(ServerChangeListener serverChangeListener) {
+        this.serverChangeListener = serverChangeListener;
+        ((ServerTableModel) serverListTable.getModel()).addChangeListener(serverChangeListener);
     }
-    private void setServerTableModel()
-    {
-        ServerTableModel serverTableModel=new ServerTableModel();
+
+    public void addListenerToModel() {
+        ((ServerTableModel) serverListTable.getModel()).addChangeListener(serverChangeListener);
+    }
+
+    private void setServerTableModel() {
+        ServerTableModel serverTableModel = new ServerTableModel();
         serverTableModel.setData(ApplicationContext.databaseRef.getServerList());
         serverListTable.setModel(serverTableModel);
         setServerRetrieveComboEditor();
-        if(serverChangeListener!=null)
+        if (serverChangeListener != null) {
             addListenerToModel();
-     
+        }
+
     }
-    private void setServerRetrieveComboEditor()
-    {
-        String[] retrieveTypeArray={"C-MOVE","WADO"};
+
+    private void setServerRetrieveComboEditor() {
+        String[] retrieveTypeArray = {"C-MOVE", "C-GET", "WADO"};
         JComboBox comboBox = new JComboBox(retrieveTypeArray);
         comboBox.setMaximumRowCount(4);
         TableCellEditor editor = new DefaultCellEditor(comboBox);
         serverListTable.getColumnModel().getColumn(4).setCellEditor(editor);
     }
-    private void addOrDeleteServerNotification()
-    {
+
+    private void addOrDeleteServerNotification() {
         serverChangeListener.onServerChange();
     }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -208,16 +210,14 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener{
         );
     }// </editor-fold>//GEN-END:initComponents
 
-   
-    public void changeTabActionForTable(JTable table)
-    {
+    public void changeTabActionForTable(JTable table) {
         InputMap im = table.getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         //  Have the enter key work the same as the tab key
 
         KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
-      //  KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-       // im.put(enter, im.get(tab));
+        //  KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        // im.put(enter, im.get(tab));
 
         //  Disable the right arrow key
 
@@ -228,65 +228,60 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener{
         //  Tab to the next editable cell. When no editable cells goto next cell.
 
         final Action oldTabAction = table.getActionMap().get(im.get(tab));
-        Action tabAction = new AbstractAction()
-        {
-            public  void actionPerformed(ActionEvent e)
-            {
-                oldTabAction.actionPerformed( e );
-                JTable table = (JTable)e.getSource();
+        Action tabAction = new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+                oldTabAction.actionPerformed(e);
+                JTable table = (JTable) e.getSource();
                 int rowCount = table.getRowCount();
                 int columnCount = table.getColumnCount();
                 int row = table.getSelectedRow();
                 int column = table.getSelectedColumn();
 
-                while (! table.isCellEditable(row, column) )
-                {
+                while (!table.isCellEditable(row, column)) {
                     column += 1;
 
-                    if (column == columnCount)
-                    {
+                    if (column == columnCount) {
                         column = 0;
-                        row +=1;
+                        row += 1;
                     }
 
-                    if (row == rowCount)
-                    {
+                    if (row == rowCount) {
                         row = 0;
                     }
 
                     //  Back to where we started, get out.
 
                     if (row == table.getSelectedRow()
-                    &&  column == table.getSelectedColumn())
-                    {
+                            && column == table.getSelectedColumn()) {
                         break;
                     }
                 }
-                table.changeSelection(row, column, true, false);                
+                table.changeSelection(row, column, true, false);
             }
         };
         table.getActionMap().put(im.get(tab), tabAction);
     }
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        ServerModel serverModel=new ServerModel();
+        ServerModel serverModel = new ServerModel();
         serverModel.setServerName("Description");
         serverModel.setAeTitle("AETITLE");
         serverModel.setHostName("localhost");
-        serverModel.setPort(104);       
+        serverModel.setPort(104);
         serverModel.setRetrieveType("C-MOVE");
         serverModel.setWadoContextPath("wado");
         serverModel.setWadoPort(0);
-        serverModel.setWadoProtocol("http");        
+        serverModel.setWadoProtocol("http");
         serverModel.setRetrieveTransferSyntax("");
         ApplicationContext.databaseRef.insertServer(serverModel);
-        setServerTableModel();     
+        setServerTableModel();
         addOrDeleteServerNotification();
 
 }//GEN-LAST:event_addButtonActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-         try {
+        try {
             String serverName = ((ServerTableModel) serverListTable.getModel()).getValueAt(serverListTable.getSelectedRow(), 0);
             AEModel ae = ApplicationContext.databaseRef.getServerDetail(serverName);
             DcmURL url = new DcmURL("dicom://" + ae.getAeTitle() + "@" + ae.getHostName() + ":" + ae.getPort());
@@ -307,21 +302,18 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener{
                 e.printStackTrace();
             }
         } catch (Exception e) {
-           e.printStackTrace();
+            e.printStackTrace();
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void DeleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DeleteButtonActionPerformed
-        if(serverListTable.getSelectedRow()!=-1)
-            {
-               ServerModel serverModel=((ServerTableModel)serverListTable.getModel()).getRow(serverListTable.getSelectedRow());
-               ApplicationContext.databaseRef.deleteServer(serverModel);
-               setServerTableModel();
-               addOrDeleteServerNotification();
-            }
+        if (serverListTable.getSelectedRow() != -1) {
+            ServerModel serverModel = ((ServerTableModel) serverListTable.getModel()).getRow(serverListTable.getSelectedRow());
+            ApplicationContext.databaseRef.deleteServer(serverModel);
+            setServerTableModel();
+            addOrDeleteServerNotification();
+        }
     }//GEN-LAST:event_DeleteButtonActionPerformed
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton DeleteButton;
     private javax.swing.JButton addButton;
@@ -332,24 +324,19 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener{
     // End of variables declaration//GEN-END:variables
 
     public void keyTyped(KeyEvent e) {
-
     }
 
-    public void keyPressed(KeyEvent e) {       
-        if(e.getKeyCode()==KeyEvent.VK_DELETE)
-        {            
-            if(serverListTable.getSelectedRow()!=-1)
-            {               
-               ServerModel serverModel=((ServerTableModel)serverListTable.getModel()).getRow(serverListTable.getSelectedRow());
-               ApplicationContext.databaseRef.deleteServer(serverModel);
-               setServerTableModel();
-               addOrDeleteServerNotification();
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+            if (serverListTable.getSelectedRow() != -1) {
+                ServerModel serverModel = ((ServerTableModel) serverListTable.getModel()).getRow(serverListTable.getSelectedRow());
+                ApplicationContext.databaseRef.deleteServer(serverModel);
+                setServerTableModel();
+                addOrDeleteServerNotification();
             }
         }
     }
 
     public void keyReleased(KeyEvent e) {
-
     }
-    
 }

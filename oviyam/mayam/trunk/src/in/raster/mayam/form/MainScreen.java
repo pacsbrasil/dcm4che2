@@ -121,12 +121,11 @@ public class MainScreen extends javax.swing.JFrame {
             setSystemTheme();
         }
     }
-    public void loadStudiesBasedOnInputParameter()
-    {       
-        InputArgumentValues inputArgumentValues=InputArgumentsParser.inputArgumentValues;                
-        if(inputArgumentValues.getAeTitle()!=null&&inputArgumentValues.getPort()!=0&&inputArgumentValues.getHostName()!=null&&inputArgumentValues.getWadoContext()!=null&&inputArgumentValues.getWadoPort()!=0 && inputArgumentValues.getWadoProtocol()!=null)
-        {
-            ServerModel serverModel =new ServerModel();
+
+    public void loadStudiesBasedOnInputParameter() {
+        InputArgumentValues inputArgumentValues = InputArgumentsParser.inputArgumentValues;
+        if (inputArgumentValues.getAeTitle() != null && inputArgumentValues.getPort() != 0 && inputArgumentValues.getHostName() != null && inputArgumentValues.getWadoContext() != null && inputArgumentValues.getWadoPort() != 0 && inputArgumentValues.getWadoProtocol() != null) {
+            ServerModel serverModel = new ServerModel();
             serverModel.setAeTitle(inputArgumentValues.getAeTitle());
             serverModel.setHostName(inputArgumentValues.getHostName());
             serverModel.setPort(inputArgumentValues.getPort());
@@ -183,7 +182,9 @@ public class MainScreen extends javax.swing.JFrame {
     private void startListening() {
         try {
             startReceiver();
+            System.out.println("Start Server listening on port " + receiveDelegate.getPort());
         } catch (Exception e) {
+            ApplicationContext.writeLog(e.toString());
             e.printStackTrace();
         }
     }
@@ -191,7 +192,7 @@ public class MainScreen extends javax.swing.JFrame {
     /**
      * This routine used to start the receiver
      */
-    public void startReceiver() {
+    public void startReceiver() throws Exception {
         receiveDelegate = new ReceiveDelegate();
         receiveDelegate.start();
     }
@@ -207,8 +208,14 @@ public class MainScreen extends javax.swing.JFrame {
      * This routine is used to restart the receiver
      */
     public void restartReceiver() {
-        stopReceiver();
-        startReceiver();
+        try {
+            stopReceiver();
+            System.out.println("Stop Server listening on port " + receiveDelegate.getPort());
+            startReceiver();
+            System.out.println("Start Server listening on port " + receiveDelegate.getPort());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -804,42 +811,38 @@ public class MainScreen extends javax.swing.JFrame {
         if (studyListTable.getSelectedRow() != -1) {
 
             int index[] = studyListTable.getSelectedRows();
-            if(index.length>1)
-            {
-            String[] studies=new String[index.length];
+            if (index.length > 1) {
+                String[] studies = new String[index.length];
                 for (int j = 0; j < index.length; j++) {
                     index[j] = studyListTable.convertRowIndexToModel(index[j]);
                 }
                 for (int tempI = 0; tempI < index.length; tempI++) {
-                  studies[tempI]=((StudyListModel) studyListTable.getModel()).getValueAt(index[tempI], 8);
+                    studies[tempI] = ((StudyListModel) studyListTable.getModel()).getValueAt(index[tempI], 8);
                 }
-            ArrayList tempRef1 = ApplicationContext.databaseRef.getFirstInstanceListFromMultipleStudies(studies);
+                ArrayList tempRef1 = ApplicationContext.databaseRef.getFirstInstanceListFromMultipleStudies(studies);
 
-            openComparisonView(index.length,studies,tempRef1);
-            for(String studyUID:studies)
-            {
+                openComparisonView(index.length, studies, tempRef1);
+                for (String studyUID : studies) {
+                    StudyListUpdator studyListUpdator = new StudyListUpdator();
+                    studyListUpdator.addStudyToStudyList(studyUID, studyList, ((File) tempRef1.get(0)).getAbsolutePath());
+                }
+
+            } else {
+
+
+                int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
+                String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
+                int rowColumnArray[] = new int[2];
+                try {
+                    rowColumnArray = ApplicationContext.databaseRef.getRowColumnBasedStudyUID(siuid);
+                } catch (Exception e) {
+                    rowColumnArray[0] = 1;
+                    rowColumnArray[1] = 1;
+                }
+                ArrayList tempRef = ApplicationContext.databaseRef.getUrlBasedOnStudyIUID(siuid);
+                openImageView(siuid, tempRef, rowColumnArray[0], rowColumnArray[1]);
                 StudyListUpdator studyListUpdator = new StudyListUpdator();
-            studyListUpdator.addStudyToStudyList(studyUID, studyList, ((File) tempRef1.get(0)).getAbsolutePath());
-            }
-
-            }
-            else
-            {
-
-
-            int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
-            String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
-            int rowColumnArray[] = new int[2];
-            try {
-                rowColumnArray = ApplicationContext.databaseRef.getRowColumnBasedStudyUID(siuid);
-            } catch (Exception e) {
-                rowColumnArray[0] = 1;
-                rowColumnArray[1] = 1;
-            }
-            ArrayList tempRef = ApplicationContext.databaseRef.getUrlBasedOnStudyIUID(siuid);
-            openImageView(siuid, tempRef, rowColumnArray[0], rowColumnArray[1]);
-            StudyListUpdator studyListUpdator = new StudyListUpdator();
-            studyListUpdator.addStudyToStudyList(siuid, studyList, ((File) tempRef.get(0)).getAbsolutePath());
+                studyListUpdator.addStudyToStudyList(siuid, studyList, ((File) tempRef.get(0)).getAbsolutePath());
             }
         }
     }//GEN-LAST:event_viewerButtonActionPerformed
@@ -1055,14 +1058,13 @@ public class MainScreen extends javax.swing.JFrame {
         }
         ShowViewerDelegate showViewer = new ShowViewerDelegate(studyUID, tempRef, gridRowCount, gridColCount);
     }
-    public void openComparisonView(int numberOfStudies,String[] studies,ArrayList tempRef)
-    {
+
+    public void openComparisonView(int numberOfStudies, String[] studies, ArrayList tempRef) {
         if (!ApplicationContext.imageViewExist()) {
             ApplicationContext.createImageView();
         }
-        ShowComparisonViewerDelegate showComparisonViewerDelegate=new ShowComparisonViewerDelegate(numberOfStudies,studies, tempRef);
+        ShowComparisonViewerDelegate showComparisonViewerDelegate = new ShowComparisonViewerDelegate(numberOfStudies, studies, tempRef);
     }
-
 
     private void removeThumbnailComponents() {
         for (int i = thumbnailDisplay.getComponentCount() - 1; i >= 0; i--) {

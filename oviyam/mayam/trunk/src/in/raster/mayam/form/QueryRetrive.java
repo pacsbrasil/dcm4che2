@@ -39,6 +39,7 @@
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
+import in.raster.mayam.delegate.CgetDelegate;
 import in.raster.mayam.delegate.DicomServerDelegate;
 import in.raster.mayam.delegate.EchoService;
 import in.raster.mayam.delegate.QueryService;
@@ -628,7 +629,7 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
                 noFilterQuery = JOptionPane.showConfirmDialog(this, "No filters have been selected. It will take long time to query and display result...!", "Confirm Dialog", JOptionPane.YES_NO_OPTION);
             }
             if (noFilterQuery == 0) {
-                qs.callFindWithQuery(queryParam.getPatientId(), queryParam.getPatientName(), "", queryParam.getSearchDate(), modalityText.getText(), queryParam.getAccessionNo(),null, url);
+                qs.callFindWithQuery(queryParam.getPatientId(), queryParam.getPatientName(), "", queryParam.getSearchDate(), modalityText.getText(), queryParam.getAccessionNo(), null, url);
                 Vector studyList = new Vector();
                 for (int dataSetCount = 0; dataSetCount < qs.getDatasetVector().size(); dataSetCount++) {
                     try {
@@ -683,20 +684,26 @@ public class QueryRetrive extends javax.swing.JFrame implements ServerChangeList
                     }
                     for (int tempI = 0; tempI < index.length; tempI++) {
 
-                        String tem[] = new String[]{
+                        String cmoveParam[] = new String[]{
                             "dicom" + "://" + dicomServerArray.get(i).getAe().getAeTitle() + "@" + dicomServerArray.get(i).getAe().getHostName() + ":" + dicomServerArray.get(i).getAe().getPort(),
                             "--dest", s[0], "--pid", dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), "--suid",
                             dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8)};
 
+                        String cgetParam[] = new String[]{"-L", s[0] + ":" + s[1], dicomServerArray.get(i).getAe().getAeTitle() + "@" + dicomServerArray.get(i).getAe().getHostName() + ":" + dicomServerArray.get(i).getAe().getPort(),
+                            "-cget", "-qModalitiesInStudy=" + dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 6), "-qStudyInstanceUID=" + dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8),
+                            "-qPatientID=" + dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), "-rel"};
                         try {
                             if (!ApplicationContext.databaseRef.checkRecordExists("study", "StudyInstanceUID", dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8))) {
                                 MainScreen.sndRcvFrm.setVisible(true);
                                 MoveDelegate moveDelegate = null;
+                                CgetDelegate cgetDelegate = null;
                                 if (dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("C-MOVE")) {
-                                    moveDelegate = new MoveDelegate(tem);
+                                    moveDelegate = new MoveDelegate(cmoveParam);
                                 } else if (dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("WADO")) {
                                     WadoRetrieveDelegate wadoRetrieveDelegate = new WadoRetrieveDelegate();
                                     wadoRetrieveDelegate.retrieveStudy(serverName, dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8));
+                                } else if (dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("C-GET")) {
+                                    cgetDelegate = new CgetDelegate(cgetParam);
                                 }
                             } else {
                                 MainScreen.sndRcvFrm.setVisible(true);
