@@ -289,7 +289,6 @@ public class MoveEntitiesPage extends SecureWebPage {
     
     private void needNewStudy(DicomObject presetDS, final PatientModel pat) {
         missingState = missingState | MISSING_STUDY;
-// TODO: studyPermissionActions
         studyModel = new StudyModel(null, pat, null);
         newStudyPanel = 
             new SimpleEditDicomObjectPanel(

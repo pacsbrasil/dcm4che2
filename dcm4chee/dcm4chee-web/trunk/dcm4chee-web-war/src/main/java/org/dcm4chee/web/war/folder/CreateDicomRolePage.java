@@ -52,12 +52,12 @@ import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.security.components.SecureWebPage;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.validator.AbstractValidator;
+import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.ui.validator.RoleValidator;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.dao.folder.StudyPermissionsLocal;
-import org.dcm4chee.web.dao.folder.model.DicomRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +74,7 @@ public class CreateDicomRolePage extends SecureWebPage {
     
     private static Logger log = LoggerFactory.getLogger(CreateDicomRolePage.class);
 
-    public CreateDicomRolePage(final ModalWindow window, ListModel<DicomRole> allDicomRolenames) {
+    public CreateDicomRolePage(final ModalWindow window, ListModel<Role> allDicomRolenames) {
         super();
         
         if (CreateDicomRolePage.BaseCSS != null)
@@ -91,7 +91,7 @@ public class CreateDicomRolePage extends SecureWebPage {
         private Model<String> rolename = new Model<String>();       
         private TextField<String> rolenameTextField= new TextField<String>("studypermission.add-dicom-role-form.rolename.input", rolename);
         
-        public CreateDicomRoleForm(String id, final ModalWindow window, final ListModel<DicomRole> allDicomRolenames) {
+        public CreateDicomRoleForm(String id, final ModalWindow window, final ListModel<Role> allDicomRolenames) {
             super(id);
 
             add(rolenameTextField
@@ -131,16 +131,16 @@ public class CreateDicomRolePage extends SecureWebPage {
 
         private final Logger log = LoggerFactory.getLogger(RoleValidator.class);
         
-        private ListModel<DicomRole> allDicomRoles;
+        private ListModel<Role> allDicomRoles;
         
-        public DicomRoleValidator(ListModel<DicomRole> allDicomRoles) {
+        public DicomRoleValidator(ListModel<Role> allDicomRoles) {
             this.allDicomRoles = allDicomRoles;
         }
 
         @Override
         protected void onValidate(IValidatable<String> validatable) {
             try {
-                for (DicomRole aDicomRole : this.allDicomRoles.getObject()) {
+                for (Role aDicomRole : this.allDicomRoles.getObject()) {
                     if (aDicomRole.getRolename().equals(validatable.getValue())) 
                         error(validatable, "studypermission.add-dicom-role-form.rolename.input.RoleValidator");
                 }

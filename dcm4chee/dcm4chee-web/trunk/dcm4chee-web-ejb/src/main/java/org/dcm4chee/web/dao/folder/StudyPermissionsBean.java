@@ -57,7 +57,7 @@ import javax.persistence.PersistenceContext;
 import net.sf.json.JSONObject;
 
 import org.dcm4chee.archive.entity.StudyPermission;
-import org.dcm4chee.web.dao.folder.model.DicomRole;
+import org.dcm4chee.usr.model.Role;
 import org.jboss.annotation.ejb.LocalBinding;
 import org.jboss.system.server.ServerConfigLocator;
 import org.slf4j.Logger;
@@ -83,7 +83,7 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
     @PostConstruct
     private void config() {
         if (this.dicomRolesFile == null) {
-            dicomRolesFile = new File(System.getProperty("dcm4chee-web.cfg.dicom-roles-filename", "conf/dcm4chee-web/dicom-roles.json"));
+            dicomRolesFile = new File(System.getProperty("dcm4chee-usr.cfg.roles-filename", "conf/dcm4chee-web3/roles.json"));
             if (!dicomRolesFile.isAbsolute())
                 dicomRolesFile = new File(ServerConfigLocator.locate().getServerHomeDir(), dicomRolesFile.getPath());
             if (log.isDebugEnabled()) {
@@ -95,7 +95,7 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
                         log.info("M-WRITE dir:" +dicomRolesFile.getParent());
                     dicomRolesFile.createNewFile();
                 } catch (IOException e) {
-                    log.error("RoleMapping file doesn't exist and can't be created!", e);
+                    log.error("Roles file doesn't exist and can't be created!", e);
                 }
             }
         }  
@@ -159,24 +159,26 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
 
     public List<String> getAllDicomRolenames() {
         List<String> dicomRolenames = new ArrayList<String>();
-        for (DicomRole dicomRole : getAllDicomRoles())
+        for (Role dicomRole : getAllDicomRoles())
             dicomRolenames.add(dicomRole.getRolename());
         return dicomRolenames;
     }
     
-    public List<DicomRole> getAllDicomRoles() {
+    public List<Role> getAllDicomRoles() {
         BufferedReader reader = null;
         try {
-            List<DicomRole> roleList = new ArrayList<DicomRole>();
+            List<Role> roleList = new ArrayList<Role>();
             String line;
-
             reader = new BufferedReader(new FileReader(dicomRolesFile));
-            while ((line = reader.readLine()) != null)
-                roleList.add((DicomRole) JSONObject.toBean(JSONObject.fromObject(line), DicomRole.class));
+            while ((line = reader.readLine()) != null) {
+                Role role = (Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class);
+                if (role.isDicomRole())
+                    roleList.add(role);
+            }
             Collections.sort(roleList);
             return roleList;
         } catch (Exception e) {
-            log.error("Can't get roles from dicom roles file!", e);
+            log.error("Can't get dicom roles from roles file!", e);
             return null;
         } finally {
             close(reader, "dicom roles file reader");
@@ -201,18 +203,33 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(dicomRolesFile, true));
-            JSONObject jsonObject = JSONObject.fromObject(new DicomRole(rolename));
+            Role role = new Role(rolename);
+            role.setDicomRole(true);
+            JSONObject jsonObject = JSONObject.fromObject(role);
             writer.write(jsonObject.toString());
             writer.newLine();
         } catch (IOException e) {
-            log.error("Can't add dicom role to dicom roles file!", e);
+            log.error("Can't add dicom role to roles file!", e);
         } finally {
-            close(writer, "dicom roles file reader");
+            close(writer, "roles file reader");
         }
     }
 
-    public void removeDicomRole(DicomRole role) {
-        List<DicomRole> roles = getAllDicomRoles();
+    public void removeDicomRole(Role role) {
+        List<Role> roles = new ArrayList<Role>();
+        BufferedReader reader = null;
+        try {
+            String line;
+            reader = new BufferedReader(new FileReader(dicomRolesFile));
+            while ((line = reader.readLine()) != null) 
+                roles.add((Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class));
+            Collections.sort(roles);
+        } catch (Exception e) {
+            log.error("Can't get roles from roles file!", e);
+            return;
+        } finally {
+            close(reader, "roles file reader");
+        }
         if (roles.remove(role)) {
             BufferedWriter writer = null;
             try {
@@ -224,17 +241,17 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
                     writer.write(jsonObject.toString());
                     writer.newLine();
                 }
-                if (close(writer, "Temporary dicom roles file"))
+                if (close(writer, "Temporary roles file"))
                     writer = null;
                 dicomRolesFile.delete();
                 tmpFile.renameTo(dicomRolesFile);
             } catch (IOException e) {
-                log.error("Can't save roles in dicom roles file!", e);
+                log.error("Can't save roles in roles file!", e);
             } finally {
-                close(writer, "Temporary dicom roles file (in finally block)");
+                close(writer, "Temporary roles file (in finally block)");
             }
         } else 
-            log.warn("Role "+role+" already removed from roles mapping file!");
+            log.warn("Role "+role+" already removed from roles file!");
     }
     
     private boolean close(Closeable toClose, String desc) {

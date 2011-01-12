@@ -164,7 +164,7 @@ public class WebLoginContext extends UsernamePasswordContext {
             if ((principal instanceof Group) && (rolesGroupName.equalsIgnoreCase(principal.getName()))) {
                 Enumeration<? extends Principal> members = ((Group) principal).members();                    
                 if (mappings == null) {
-                    mappings = readRoleMappingFile();
+                    mappings = readRolesFile();
                 }
                 Set<String> set;
                 while (members.hasMoreElements()) {
@@ -183,10 +183,10 @@ public class WebLoginContext extends UsernamePasswordContext {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Set<String>> readRoleMappingFile() throws IOException {
-        String fn = System.getProperty("dcm4chee-usr.cfg.role-mapping-filename");
+    private Map<String, Set<String>> readRolesFile() throws IOException {
+        String fn = System.getProperty("dcm4chee-usr.cfg.roles-filename");
         if (fn == null) {
-            throw new FileNotFoundException("RoleMappingFile not found! Not specified with System property 'dcm4chee-usr.cfg.role-mapping-filename'");
+            throw new FileNotFoundException("Roles file not found! Not specified with System property 'dcm4chee-usr.cfg.roles-filename'");
         }
         File mappingFile = new File(fn);
         if (!mappingFile.isAbsolute())
@@ -199,6 +199,7 @@ public class WebLoginContext extends UsernamePasswordContext {
             while ((line = reader.readLine()) != null) {
                 JSONObject jsonObject = JSONObject.fromObject(line);
                 Set<String> set = new HashSet<String>();
+System.out.println("JSON CHECK, from file " + fn + ": " + line);
                 Iterator<String> i = jsonObject.getJSONArray("swarmPrincipals").iterator();
                 while (i.hasNext())
                     set.add(i.next());

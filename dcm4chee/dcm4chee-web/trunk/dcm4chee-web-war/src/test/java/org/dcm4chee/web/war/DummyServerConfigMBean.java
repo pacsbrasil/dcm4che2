@@ -71,7 +71,7 @@ public class DummyServerConfigMBean extends ServiceMBeanSupport implements Dynam
     }
     
     public URL getServerConfigURL() throws MalformedURLException {
-        return new File(getServerHomeDir(), "conf").toURL();
+        return new File(getServerHomeDir(), "conf").toURI().toURL();
     }
 
     public File getServerHomeDir() {

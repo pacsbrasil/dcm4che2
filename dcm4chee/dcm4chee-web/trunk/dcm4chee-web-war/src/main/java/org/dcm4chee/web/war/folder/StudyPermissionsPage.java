@@ -49,21 +49,16 @@ import javax.management.MBeanServerFactory;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
-import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
-import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.CloseButtonCallback;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.IHeaderContributor;
-import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
@@ -76,20 +71,14 @@ import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
-import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.Role;
-import org.dcm4chee.usr.ui.usermanagement.role.CreateOrEditRolePage;
-import org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
-import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
-import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.dao.folder.StudyPermissionsLocal;
-import org.dcm4chee.web.dao.folder.model.DicomRole;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.StudyPermissionHelper.StudyPermissionRight;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
@@ -114,13 +103,13 @@ public class StudyPermissionsPage extends SecureWebPage {
     private long studyCountForPatient = -1;
    
     List<StudyPermission> currentStudyPermissions;
-    ListModel<DicomRole> allDicomRoles;
+    ListModel<Role> allDicomRoles;
     
     long pk;
     String studyInstanceUID;
     
     Set<String> studyPermissionActions = new LinkedHashSet<String>();
-    private ConfirmationWindow<DicomRole> confirmationWindow;
+    private ConfirmationWindow<Role> confirmationWindow;
     
     public StudyPermissionsPage(final ModalWindow modalWindow, AbstractEditableDicomModel model) {
         super();
@@ -130,14 +119,14 @@ public class StudyPermissionsPage extends SecureWebPage {
 
         setOutputMarkupId(true);
 
-        this.allDicomRoles = new ListModel<DicomRole>(getAllDicomRoles());
+        this.allDicomRoles = new ListModel<Role>(getAllDicomRoles());
         
-        add(confirmationWindow = new ConfirmationWindow<DicomRole>("confirmation-window") {
+        add(confirmationWindow = new ConfirmationWindow<Role>("confirmation-window") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onConfirmation(AjaxRequestTarget target, DicomRole role) {
+            public void onConfirmation(AjaxRequestTarget target, Role role) {
                 ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME))
                     .removeDicomRole(role);
                 refreshDicomRoles();
@@ -149,7 +138,7 @@ public class StudyPermissionsPage extends SecureWebPage {
             }
 
             @Override
-            public void onDecline(AjaxRequestTarget target, DicomRole role) {
+            public void onDecline(AjaxRequestTarget target, Role role) {
             }
         });
         confirmationWindow
@@ -272,7 +261,7 @@ public class StudyPermissionsPage extends SecureWebPage {
         addOrReplace(roleRows);
 
         int i = 0;
-        for (final DicomRole role : getAllDicomRoles()) {
+        for (final Role role : getAllDicomRoles()) {
             WebMarkupContainer rowParent;
             roleRows.add((rowParent = new WebMarkupContainer(roleRows.newChildId()))
                     .add(new Label("rolename", role.getRolename()))
@@ -339,7 +328,7 @@ public class StudyPermissionsPage extends SecureWebPage {
         }
     }
 
-    private int countStudies(DicomRole role, String action) {
+    private int countStudies(Role role, String action) {
         int count = 0;
         for (StudyPermission sp : currentStudyPermissions) 
             if (sp.getRole().equals(role.getRolename()) && sp.getAction().equals(action)) 
@@ -351,10 +340,10 @@ public class StudyPermissionsPage extends SecureWebPage {
         
         private static final long serialVersionUID = 1L;
 
-        private DicomRole role;
+        private Role role;
         private String action;
         
-        public HasStudyPermissionModel(DicomRole role, String action) {
+        public HasStudyPermissionModel(Role role, String action) {
             this.role = role;
             this.action = action;
         }
@@ -397,7 +386,7 @@ public class StudyPermissionsPage extends SecureWebPage {
         }
     }
 
-    private boolean checkStudyPermissionRights(DicomRole role, boolean permitOnlyGrantAll) {
+    private boolean checkStudyPermissionRights(Role role, boolean permitOnlyGrantAll) {
         StudyPermissionHelper sph = StudyPermissionHelper.get();
         if (!sph.useStudyPermissions() || sph.getStudyPermissionRight().equals(StudyPermissionRight.ALL))
             return true;
@@ -408,8 +397,8 @@ public class StudyPermissionsPage extends SecureWebPage {
         return false;
     }
     
-    private ArrayList<DicomRole> getAllDicomRoles() {
-        ArrayList<DicomRole> allDicomRoles = new ArrayList<DicomRole>();
+    private ArrayList<Role> getAllDicomRoles() {
+        ArrayList<Role> allDicomRoles = new ArrayList<Role>();
         allDicomRoles.addAll(((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).getAllDicomRoles());
         return allDicomRoles;
     }

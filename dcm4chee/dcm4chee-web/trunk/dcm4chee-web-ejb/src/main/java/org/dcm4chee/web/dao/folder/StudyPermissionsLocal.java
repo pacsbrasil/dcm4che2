@@ -43,7 +43,7 @@ import java.util.List;
 import javax.ejb.Local;
 
 import org.dcm4chee.archive.entity.StudyPermission;
-import org.dcm4chee.web.dao.folder.model.DicomRole;
+import org.dcm4chee.usr.model.Role;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -64,8 +64,8 @@ public interface StudyPermissionsLocal {
     public long countStudiesOfPatient(long pk);
     
     public List<String> getAllDicomRolenames();
-    public List<DicomRole> getAllDicomRoles();
+    public List<Role> getAllDicomRoles();
     public void updateDicomRoles();
     public void addDicomRole(String rolename);
-    public void removeDicomRole(DicomRole role);
+    public void removeDicomRole(Role role);
 }

@@ -45,7 +45,7 @@ import org.apache.wicket.RequestCycle;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordPanel;
-import org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel;
+import org.dcm4chee.usr.ui.usermanagement.role.RolePanel;
 import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.ModuleSelectorPanel;
@@ -75,7 +75,7 @@ public class MainPage extends SecureWicketPage {
         selectorPanel.addModule(AEListPanel.class);       
         selectorPanel.addModule(ModalityWorklistPanel.class);
         selectorPanel.addModule(DashboardPanel.class);
-        selectorPanel.addModule(RoleListPanel.class, null);
+        selectorPanel.addModule(RolePanel.class, null);
         if (((SecureSession) RequestCycle.get().getSession()).getManageUsers()) {
             selectorPanel.addModule(UserListPanel.class, null);
             selectorPanel.addModule(ChangePasswordPanel.class, null);

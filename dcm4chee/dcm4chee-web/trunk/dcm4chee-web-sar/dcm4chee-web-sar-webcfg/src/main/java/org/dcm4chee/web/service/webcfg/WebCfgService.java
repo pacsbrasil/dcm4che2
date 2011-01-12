@@ -674,38 +674,25 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             } catch (Exception e) {
                 log.error("operation failed", e);
             }
-            
         }
     }
 
-    public String getRolesMappingFilename() {
-        return System.getProperty("dcm4chee-usr.cfg.role-mapping-filename", NONE);
+    public String getRolesFilename() {
+        return System.getProperty("dcm4chee-usr.cfg.roles-filename", NONE);
     }
 
-    public void setRolesMappingFilename(String name) {
+    public void setRolesFilename(String name) {
         if (NONE.equals(name)) {
-            System.getProperties().remove("dcm4chee-usr.cfg.role-mapping-filename");
+            System.getProperties().remove("dcm4chee-usr.cfg.roles-filename");
         } else {
-            String old = System.getProperty("dcm4chee-usr.cfg.role-mapping-filename");
-            System.setProperty("dcm4chee-usr.cfg.role-mapping-filename", name);
+            String old = System.getProperty("dcm4chee-usr.cfg.roles-filename");
+            System.setProperty("dcm4chee-usr.cfg.roles-filename", name);
             if (old == null) {
-                initDefaultMappingFile();
+                initDefaultFile();
             }
         }
     }
 
-    public String getDicomRolesFilename() {
-        return System.getProperty("dcm4chee-web.cfg.dicom-roles-filename", NONE);
-    }
-
-    public void setDicomRolesFilename(String name) {
-        if (NONE.equals(name)) {
-            System.getProperties().remove("dcm4chee-web.cfg.dicom-roles-filename");
-        } else {
-            System.setProperty("dcm4chee-web.cfg.dicom-roles-filename", name);
-        }
-    }
-    
     public void updateDicomRoles() {
         ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).updateDicomRoles();
     }
@@ -759,18 +746,18 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         return studyPermissionsOwnRolename;
     }
     
-    private void initDefaultMappingFile() {
-        File mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.role-mapping-filename", "conf/dcm4chee-web3/rolesMapping-roles.json"));
+    private void initDefaultFile() {
+        File mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.roles-filename", "conf/dcm4chee-web3/roles.json"));
         if (!mappingFile.isAbsolute())
             mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
-        log.info("Init default Role Mapping file! mappingFile:"+mappingFile);
+        log.info("Init default Roles file: "+mappingFile);
         if (mappingFile.getParentFile().mkdirs())
             log.info("M-WRITE dir:" +mappingFile.getParent());
         FileChannel fos = null;
         InputStream is = null;
         try {
-            URL url = getClass().getResource("/META-INF/rolesMapping-default.json");
-            log.info("Use default Mapping File content of url:"+url);
+            URL url = getClass().getResource("/META-INF/roles-default.json");
+            log.info("Use default File content of url: "+url);
             is = url.openStream();
             ReadableByteChannel inCh = Channels.newChannel(is);
             fos = new FileOutputStream(mappingFile).getChannel();
@@ -778,7 +765,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             while (is.available() > 0)
                 pos += fos.transferFrom(inCh, pos, is.available());
         } catch (Exception e) {
-            log.error("RoleMapping file doesn't exist and the default can't be created!", e);
+            log.error("Roles file doesn't exist and the default can't be created!", e);
         } finally {
             close(is);
             close(fos);

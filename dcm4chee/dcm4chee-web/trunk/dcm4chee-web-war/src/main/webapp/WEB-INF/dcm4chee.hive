@@ -126,7 +126,9 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "U
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "RoleRead"
 {
 // DOC: swarm.principal.RoleRead
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.RolePanel", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.group.GroupListPanel", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:rolelist:changePrincipalAssignmentCheckbox", "render";
 };
 
@@ -134,10 +136,15 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
 {
 // DOC: swarm.principal.RoleWrite
 	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.CreateOrEditRolePage", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.WebPermissionsPage", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:rolelist:newRoleLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:rolelist:editRoleLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:rolelist:removeRoleLink", "render, enable";
-	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:rolelist:changePrincipalAssignmentCheckbox", "enable";
+	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.WebPermissionsPage:webpermissions:changePrincipalAssignmentCheckbox", "enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.group.CreateOrEditGroupPage", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:grouplist:newGroupLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:grouplist:editGroupLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:grouplist:removeGroupLink", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "Dashboard"

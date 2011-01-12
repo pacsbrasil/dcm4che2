@@ -177,6 +177,7 @@ public class DicomEditBeanTest extends BaseSessionBeanFixture<DicomEditBean>
         em.getTransaction().commit();
         assertEquals(em.createQuery("SELECT OBJECT(p) FROM Patient p").getResultList().size(), 1);
     }
+    @SuppressWarnings("unchecked")
     private void deletePatient(Patient p) throws NamingException {
         EntityManager em = getEntityManager();
         InitialContext jndiCtx = new InitialContext();
