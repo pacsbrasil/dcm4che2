@@ -626,7 +626,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     }
                 }
             } else {
-                String fsgrpid = service.selectFileSystemGroup(callingAET, ds);
+                String fsgrpid = service.selectFileSystemGroup(callingAET, calledAET, ds);
                 fsDTO = service.selectStorageFileSystem(fsgrpid);
                 retrieveAET = fsDTO.getRetrieveAET();
                 availability = Availability.toString(fsDTO.getAvailability());

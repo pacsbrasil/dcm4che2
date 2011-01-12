@@ -83,6 +83,7 @@ import org.dcm4chex.archive.config.CompressionRules;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
+import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
@@ -989,11 +990,19 @@ public class StoreScpService extends AbstractScpService {
         // Extension Point for customized StoreScpService
     }
 
-    String selectFileSystemGroup(String callingAET, Dataset ds)
+    String selectFileSystemGroup(String callingAET, String calledAET, Dataset ds)
             throws Exception {
+        AEManager mgr = aeMgr();
+        String fsgrid;
         try {
-            AEDTO aeDTO = aeMgr().findByAET(callingAET);
-            String fsgrid = aeDTO.getFileSystemGroupID();
+            fsgrid = mgr.findByAET(callingAET).getFileSystemGroupID();
+            if (fsgrid != null && fsgrid.length() != 0) {
+                return fsgrid;
+            }
+        } catch (UnknownAETException e) {
+        }
+        try {
+            fsgrid = mgr.findByAET(calledAET).getFileSystemGroupID();
             if (fsgrid != null && fsgrid.length() != 0) {
                 return fsgrid;
             }
