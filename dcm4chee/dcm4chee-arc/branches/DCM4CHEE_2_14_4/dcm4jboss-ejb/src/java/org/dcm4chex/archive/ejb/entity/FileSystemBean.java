@@ -124,6 +124,9 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
  *
  * @jboss.query signature="java.util.Collection ejbSelectAllRetrieveAETs()"
  *              query="SELECT DISTINCT f.retrieveAET FROM FileSystem f"
+ *             
+ * @jboss.query signature="java.sql.Timestamp ejbSelectMinCreatedTimeOnFsWithFileStatus(java.lang.String dirPath, int status)"
+ *              query="SELECT MIN(f.createdTime) FROM File f WHERE f.fileSystem.directoryPath = ?1 AND f.fileStatus = ?2"
  */
 public abstract class FileSystemBean implements EntityBean {
 
@@ -217,6 +220,25 @@ public abstract class FileSystemBean implements EntityBean {
      */
     public int countPrivateFiles() throws FinderException {
         return ejbSelectNumberOfPrivateFiles(getPk());
+    }
+    
+
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract Timestamp ejbSelectMinCreatedTimeOnFsWithFileStatus(java.lang.String dirPath, int status) throws FinderException;
+
+    /**
+     * @ejb.home-method
+     */
+    public Timestamp ejbHomeMinCreatedTimeOnFsWithFileStatus(java.lang.String dirPath, int status)
+    throws FinderException {
+        try {
+            return ejbSelectMinCreatedTimeOnFsWithFileStatus(dirPath, status);
+        } catch (Exception e) {
+            log.info("Failed - assume no matching file records");
+            return null;
+        }
     }
     
     /**

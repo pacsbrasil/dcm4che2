@@ -484,6 +484,12 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         return fileSystemHome
                 .sizeOfFilesCreatedAfter(new Long(pk), new Timestamp(after));
     }
+    /**
+     * @ejb.interface-method
+     */
+    public Timestamp minCreatedTimeOnFsWithFileStatus(java.lang.String dirPath, int status) throws FinderException {
+        return fileSystemHome.minCreatedTimeOnFsWithFileStatus(dirPath, status);
+    }
 
     private static FileSystemDTO toDTO(FileSystemLocal fs) {
         return fs != null ? fs.toDTO() : null;
@@ -902,13 +908,12 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public FileDTO[] findFilesByStatusAndFileSystem(String dirPath, int status,
+    public FileDTO[] findFilesByStatusAndFileSystem(String dirPath, int status, Timestamp notBefore,
             Timestamp before, int limit) throws FinderException {
         if (log.isDebugEnabled())
             log.debug("Querying for files with status " + status + " in "
                     + dirPath);
-        Collection c = fileHome.findByStatusAndFileSystem(dirPath, status,
-                before, limit);
+        Collection c = fileHome.findByStatusAndFileSystem(dirPath, status, notBefore, before, limit);
         if (log.isDebugEnabled())
             log.debug("Found " + c.size() + " files with status " + status
                     + " in " + dirPath);
