@@ -40,8 +40,13 @@ package org.dcm4chee.usr.ui.usermanagement.role;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+
+import net.sf.json.JSONNull;
+import net.sf.json.JSONObject;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
@@ -55,6 +60,7 @@ import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
@@ -66,6 +72,7 @@ import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.Role;
+import org.dcm4chee.usr.model.Group;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
@@ -79,7 +86,7 @@ import org.dcm4chee.web.common.secure.SecurityBehavior;
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since 01.07.2010
+ * @since Jul. 01, 2010
  */
 public class RoleListPanel extends Panel {
 
@@ -90,8 +97,10 @@ public class RoleListPanel extends Panel {
     UserAccess userAccess;
     
     private ListModel<Role> allRoles;
+    private Map<String,Group> types;
     private ConfirmationWindow<Role> confirmationWindow;
     private ModalWindow modalWindow;
+    private ModalWindow webroleWindow;
     
     public RoleListPanel(String id) {
         super(id);
@@ -103,6 +112,7 @@ public class RoleListPanel extends Panel {
         setOutputMarkupId(true);
 
         this.allRoles = new ListModel<Role>(getAllRoles());
+        this.types = getAllTypes();
 
         add(this.confirmationWindow = new ConfirmationWindow<Role>("confirmation-window") {
 
@@ -117,6 +127,7 @@ public class RoleListPanel extends Panel {
         });
 
         add(modalWindow = new ModalWindow("modal-window"));
+        add(webroleWindow = new ModalWindow("webrole-window"));
         add(new ModalWindowLink("toggle-role-form-link", modalWindow, 
                 new Integer(new ResourceModel("rolelist.add-role.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
                 new Integer(new ResourceModel("rolelist.add-role.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
@@ -132,7 +143,7 @@ public class RoleListPanel extends Panel {
                       
                     @Override
                     public Page createPage() {
-                        return new CreateOrEditRolePage(modalWindow, allRoles, null);
+                        return new CreateOrEditRolePage(modalWindow, allRoles, null, types);
                     }
                 });
                 super.onClick(target);
@@ -149,21 +160,10 @@ public class RoleListPanel extends Panel {
     @Override
     protected void onBeforeRender() {
         super.onBeforeRender();
-        
-        RepeatingView principalHeaders = new RepeatingView("principal-headers");
-        HashMap<String, String> principalsAndComments = ((SecureSession) getSession()).getSwarmPrincipals();
-        Iterator<String> principals = principalsAndComments.keySet().iterator();
-        while(principals.hasNext()) {
-            String principal = principals.next();
-            String comment;
-            principalHeaders.add(new Label(principalHeaders.newChildId(), principal)
-                .add(new AttributeModifier("title", true, 
-                        (comment = principalsAndComments.get(principal)) != null ? 
-                                new ResourceModel(comment) :
-                                    new Model<String>(principal))));
-        }
-        addOrReplace(principalHeaders);
 
+        this.allRoles.setObject(getAllRoles());
+        this.types = getAllTypes();
+        
         RepeatingView roleRows = new RepeatingView("role-rows");
         addOrReplace(roleRows);
         
@@ -175,9 +175,16 @@ public class RoleListPanel extends Panel {
                     .add(new Label("rolename", role.getRolename())
                     .add(new AttributeModifier("title", true, new Model<String>(role.getDescription()))))
             );
-            rowParent.add(new Label("type", role.getType()));
-            rowParent.add(new AttributeModifier("style", true, new Model<String>("background-color: " + role.getColor())));
 
+            if (role.getGroupUuid() != null && 
+                    !role.getGroupUuid().equals("") && 
+                    types.get(role.getGroupUuid()) != null) {
+                Group type = types.get(role.getGroupUuid());
+                rowParent.add(new Label("type", type.getGroupname()));
+                rowParent.add(new AttributeModifier("style", true, new Model<String>("background-color: " + type.getColor())));
+            } else
+                rowParent.add(new Label("type", ""));
+            
             rowParent.add((new ModalWindowLink("edit-role-link", modalWindow,
                     new Integer(new ResourceModel("rolelist.add-role.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
                     new Integer(new ResourceModel("rolelist.add-role.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
@@ -193,7 +200,7 @@ public class RoleListPanel extends Panel {
                           
                         @Override
                         public Page createPage() {
-                            return new CreateOrEditRolePage(modalWindow, allRoles, role);
+                            return new CreateOrEditRolePage(modalWindow, allRoles, role, types);
                         }
                     });
                     super.onClick(target);
@@ -222,66 +229,50 @@ public class RoleListPanel extends Panel {
             .add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))))
             .add(new SecurityBehavior(getModuleName() + ":removeRoleLink")));
 
-            RepeatingView principalDividers = new RepeatingView("principal-dividers");
-            rowParent.add(principalDividers);
-            principals = principalsAndComments.keySet().iterator();
-            
-            while(principals.hasNext()) {
-                String principal = principals.next(); 
-                AjaxCheckBox roleCheckbox = new AjaxCheckBox("principal-checkbox", new HasPrincipalModel(role, principal)) {
+            rowParent.add((new ModalWindowLink("webrole-link", webroleWindow, 
+                    new Integer(new ResourceModel("rolelist.webrole-link.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
+                    new Integer(new ResourceModel("rolelist.webrole-link.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
+            ) {
+                private static final long serialVersionUID = 1L;
 
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    protected void onUpdate(AjaxRequestTarget target) {
-                        target.addComponent(this);
-                    }
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    webroleWindow
+                        .setPageCreator(new ModalWindow.PageCreator() {
                       
-                    @Override
-                    protected void onComponentTag(ComponentTag tag) {
-                        super.onComponentTag(tag);
-                        tag.put("title", new ResourceModel(((HasPrincipalModel) this.getModel()).getObject().booleanValue() ? "rolelist.has-principal-checkbox.remove.tooltip" : "rolelist.has-principal-checkbox.add.tooltip").wrapOnAssignment(this).getObject());
-                    }
-                };
-                principalDividers.add(
-                        new WebMarkupContainer(roleRows.newChildId())
-                        .add(roleCheckbox)              
-                );
-                roleCheckbox.add(new SecurityBehavior(getModuleName() + ":changePrincipalAssignmentCheckbox"));
-            }
-        }
-    }
+                            private static final long serialVersionUID = 1L;
+                        
+                                @Override
+                                public Page createPage() {
+                                    return new WebPermissionsPage(
+                                            modalWindow, 
+                                            role
+                                    );
+                                }
+                        });
+                    super.onClick(target);
+                }
+            }).add(new Image("rolelist.webrole.image", ImageManager.IMAGE_USER_WEB_PERMISSIONS))
+                .setVisible(role.isWebRole())
+            );
+                    
+            rowParent.add((new AjaxCheckBox("dicomrole-checkbox", new Model<Boolean>(role.isDicomRole())) {
 
-    private final class HasPrincipalModel implements IModel<Boolean> {
-        
-        private static final long serialVersionUID = 1L;
-        
-        private Role role;
-        private String principalname;
-        
-        public HasPrincipalModel(Role role, String principal) {
-            this.role = role;
-            this.principalname = principal;
-        }
-        
-        @Override
-        public Boolean getObject() {
-            return role.getSwarmPrincipals().contains(principalname);
-        }
-        
-        @Override
-        public void setObject(Boolean hasPrincipal) {
-            Set<String> swarmPrincipals = role.getSwarmPrincipals();
-            if (hasPrincipal) 
-                swarmPrincipals.add(principalname);
-            else 
-                swarmPrincipals.remove(principalname);
-            role.setSwarmPrincipals(swarmPrincipals);
-            userAccess.updateRole(role);
-        }
-        
-        @Override
-        public void detach() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                }}.setEnabled(false))
+            );
+
+            rowParent.add((new AjaxCheckBox("clientrole-checkbox", new Model<Boolean>(role.isClientRole())) {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                }}.setEnabled(false))
+            );
         }
     }
 
@@ -289,6 +280,13 @@ public class RoleListPanel extends Panel {
         ArrayList<Role> allRoles = new ArrayList<Role>(2);
         allRoles.addAll(userAccess.getAllRoles());
         return allRoles;
+    }
+    
+    private Map<String, Group> getAllTypes() {
+        Map<String, Group> types = new HashMap<String,Group>();
+        for (Group type : userAccess.getAllGroups())
+            types.put(type.getUuid(), type);
+        return types;
     }
     
     public static String getModuleName() {

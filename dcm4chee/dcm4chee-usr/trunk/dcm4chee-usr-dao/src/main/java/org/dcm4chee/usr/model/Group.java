@@ -36,49 +36,89 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.dao;
+package org.dcm4chee.usr.model;
 
-import java.util.List;
-
-import javax.ejb.Local;
-
-import org.dcm4chee.usr.entity.User;
-import org.dcm4chee.usr.entity.UserRoleAssignment;
-import org.dcm4chee.usr.model.Role;
-import org.dcm4chee.usr.model.Group;
+import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since 19.08.2009
+ * @since Dec 29, 2010
  */
-@Local
-public interface UserAccess {
-    String JNDI_NAME = "dcm4chee-usr-dao/UserAccess/local";
+public class Group implements Serializable, Comparable<Group> {
 
-    public String getUserRoleName();
-    public String getAdminRoleName();
+    private static final long serialVersionUID = 1L;
+
+    private String uuid;
+    private String groupname;
+    private String description;
+    private String color;
+
+    public Group() {
+        this.uuid = UUID.randomUUID().toString();
+        this.color = "white";
+    }
     
-    public List<User> getAllUsers();
-    public User getUser(String userId);
-    public void createUser(User user);
-    public void updateUser(String userId, String password);
-    public void deleteUser(String userId);
-    public Boolean userExists(String username);
-    public Boolean hasPassword(String username, String password);
+    public Group(String groupname) {
+        this();
+        this.groupname = groupname;
+    }
 
-    public void assignRole(UserRoleAssignment ura);
-    public void unassignRole(UserRoleAssignment ura);
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
-    public List<String> getAllRolenames();
-    public List<Role> getAllRoles();
-    public void addRole(Role role);
-    public void updateRole(Role role);
-    public void removeRole(Role role);
-    public Boolean roleExists(String rolename);
+    public String getUuid() {
+        return uuid;
+    }
+
+    public String getGroupname() {
+        return groupname;     
+    }
     
-    public List<Group> getAllGroups();
-    public void addGroup(Group group);
-    public void updateGroup(Group group);
-    public void removeGroup(Group group);
+    public void setGroupname(String groupname) {
+        this.groupname = groupname;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    @Override
+    public String toString() {
+        return getGroupname();   
+    }
+
+    public int compareTo(Group type) {
+        int i = groupname.toUpperCase().compareTo(type.getGroupname().toUpperCase());
+        return i == 0 ? groupname.compareTo(type.getGroupname()) : i;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Group) {
+            String rn = ((Group)o).groupname;
+            return groupname == null ? rn == null : groupname.equals(rn);
+        } else {
+            return false;
+        }
+    }
+    
+    @Override
+    public int hashCode() {
+        return groupname.hashCode();
+    }
 }

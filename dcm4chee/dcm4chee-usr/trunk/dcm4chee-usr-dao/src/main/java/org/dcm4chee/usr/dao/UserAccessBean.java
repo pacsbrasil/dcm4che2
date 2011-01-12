@@ -60,6 +60,7 @@ import net.sf.json.JSONObject;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
 import org.dcm4chee.usr.model.Role;
+import org.dcm4chee.usr.model.Group;
 import org.jboss.annotation.ejb.LocalBinding;
 import org.jboss.system.server.ServerConfigLocator;
 import org.slf4j.Logger;
@@ -79,7 +80,8 @@ public class UserAccessBean implements UserAccess {
     @PersistenceContext(unitName="dcm4chee-usr")
     private EntityManager em;
 
-    private File mappingFile;
+    private File rolesMappingFile;
+    private File groupsFile;
     private String userRoleName;
     private String adminRoleName;
     private boolean ensureUserAndAdminRole;
@@ -87,28 +89,45 @@ public class UserAccessBean implements UserAccess {
     @SuppressWarnings("unused")
     @PostConstruct
     private void config() {
-        if (this.mappingFile == null) {
+        if (this.rolesMappingFile == null) {
             userRoleName = System.getProperty("dcm4chee-usr.cfg.userrole", "+WebUser");
             adminRoleName = System.getProperty("dcm4chee-usr.cfg.adminrole", "+WebAdmin");
-            mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.role-mapping-filename", "conf/dcm4chee-usr/rolesMapping-roles.json"));
-            if (!mappingFile.isAbsolute())
-                mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
+            rolesMappingFile = new File(System.getProperty("dcm4chee-usr.cfg.roles-filename", "conf/dcm4chee-web3/roles.json"));
+            if (!rolesMappingFile.isAbsolute())
+                rolesMappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), rolesMappingFile.getPath());
             if (log.isDebugEnabled()) {
                 log.debug("UserAccess configuration:\nuserRoleName:"+userRoleName);
                 log.debug("adminRoleName:"+adminRoleName);
                 log.debug("ensureUserAndAdminRole:"+ensureUserAndAdminRole);
-                log.debug("mappingFile:"+mappingFile);
+                log.debug("mappingFile:"+rolesMappingFile);
             }
-            if (!mappingFile.exists()) {
+            if (!rolesMappingFile.exists()) {
                 try {
-                    if (mappingFile.getParentFile().mkdirs())
-                        log.info("M-WRITE dir:" +mappingFile.getParent());
-                    mappingFile.createNewFile();
+                    if (rolesMappingFile.getParentFile().mkdirs())
+                        log.info("M-WRITE dir:" +rolesMappingFile.getParent());
+                    rolesMappingFile.createNewFile();
                 } catch (IOException e) {
-                    log.error("RoleMapping file doesn't exist and can't be created!", e);
+                    log.error("RolesMapping file doesn't exist and can't be created!", e);
                 }
             }
-        }  
+        }
+        if (this.groupsFile == null) {
+            groupsFile = new File(System.getProperty("dcm4chee-usr.cfg.groups-filename", "conf/dcm4chee-web3/groups.json"));
+            if (!groupsFile.isAbsolute())
+                groupsFile = new File(ServerConfigLocator.locate().getServerHomeDir(), groupsFile.getPath());
+            if (log.isDebugEnabled()) {
+                log.debug("groupsFile:"+groupsFile);
+            }
+            if (!groupsFile.exists()) {
+                try {
+                    if (groupsFile.getParentFile().mkdirs())
+                        log.info("M-WRITE dir:" + groupsFile.getParent());
+                    groupsFile.createNewFile();
+                } catch (IOException e) {
+                    log.error("Groups file doesn't exist and can't be created!", e);
+                }
+            }
+        }
         List<Role> roles = null;
         if (userRoleName.charAt(0)=='+') {
             userRoleName = userRoleName.substring(1);
@@ -214,7 +233,7 @@ public class UserAccessBean implements UserAccess {
         try {
             List<Role> roleList = new ArrayList<Role>();
             String line;
-            reader = new BufferedReader(new FileReader(mappingFile));
+            reader = new BufferedReader(new FileReader(rolesMappingFile));
             while ((line = reader.readLine()) != null)
                 roleList.add((Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class));
             Collections.sort(roleList);
@@ -230,7 +249,7 @@ public class UserAccessBean implements UserAccess {
     public void addRole(Role role) {
         BufferedWriter writer = null;
         try {
-            writer = new BufferedWriter(new FileWriter(mappingFile, true));
+            writer = new BufferedWriter(new FileWriter(rolesMappingFile, true));
             JSONObject jsonObject = JSONObject.fromObject(role);
             writer.write(jsonObject.toString());
             writer.newLine();
@@ -279,7 +298,7 @@ public class UserAccessBean implements UserAccess {
     private void saveRoles(List<Role> roles) {
         BufferedWriter writer = null;
         try {
-            File tmpFile = File.createTempFile(mappingFile.getName(), null, mappingFile.getParentFile());
+            File tmpFile = File.createTempFile(rolesMappingFile.getName(), null, rolesMappingFile.getParentFile());
             writer = new BufferedWriter(new FileWriter(tmpFile, true));
             JSONObject jsonObject;
             for (int i=0,len=roles.size() ; i < len ; i++) {
@@ -289,12 +308,97 @@ public class UserAccessBean implements UserAccess {
             }
             if (close(writer, "Temporary mapping file"))
                 writer = null;
-            mappingFile.delete();
-            tmpFile.renameTo(mappingFile);
+            rolesMappingFile.delete();
+            tmpFile.renameTo(rolesMappingFile);
         } catch (IOException e) {
             log.error("Can't save roles in roles mapping file!", e);
         } finally {
             close(writer, "Temporary mapping file (in finally block)");
+        }
+    }
+
+    public Boolean roleExists(String rolename) {
+        return getAllRoles().contains(new Role(rolename));
+    }
+    
+    public List<Group> getAllGroups() {
+        BufferedReader reader = null;
+        try {
+            List<Group> groupList = new ArrayList<Group>();
+            String line;
+            reader = new BufferedReader(new FileReader(groupsFile));
+            while ((line = reader.readLine()) != null)
+                groupList.add((Group) JSONObject.toBean(JSONObject.fromObject(line), Group.class));
+            Collections.sort(groupList);
+            return groupList;
+        } catch (Exception e) {
+            log.error("Can't get groups from groups file!", e);
+            return null;
+        } finally {
+            close(reader, "groups file reader");
+        }
+    }
+
+    public void addGroup(Group group) {
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(groupsFile, true));
+            JSONObject jsonObject = JSONObject.fromObject(group);
+            writer.write(jsonObject.toString());
+            writer.newLine();
+        } catch (IOException e) {
+            log.error("Can't add group to groups file!", e);
+        } finally {
+            close(writer, "groups file reader");
+        }
+    }
+
+    public void updateGroup(Group group) {
+        Group oldGroup = null;
+        List<Group> groups = getAllGroups();
+        for(Group current : groups)
+            if (group.getUuid().equals(current.getUuid()))
+                oldGroup = current;
+        if (oldGroup != null) {
+            groups.set(groups.indexOf(oldGroup), group);
+            saveGroups(groups);
+        } else {
+            log.warn("Update Group "+group+" failed! Removed from groups file!");
+        }
+    }
+
+    public void removeGroup(Group group) {
+        List<Role> roles = getAllRoles();
+        for (Role role : roles)
+            if (role.getGroupUuid().equals(group.getUuid())) 
+                role.setGroupUuid(null);
+        List<Group> groups = getAllGroups();
+        if (groups.remove(group)) {
+            saveGroups(groups);
+        } else {
+            log.warn("Group "+group+" already removed from groups file!");
+        }
+    }
+    
+    private void saveGroups(List<Group> groups) {
+        BufferedWriter writer = null;
+        try {
+            File tmpFile = File.createTempFile(groupsFile.getName(), null, groupsFile.getParentFile());
+            writer = new BufferedWriter(new FileWriter(tmpFile, true));
+            JSONObject jsonObject;
+            for (int i=0,len=groups.size() ; i < len ; i++) {
+                jsonObject = JSONObject.fromObject(groups.get(i));
+                writer.write(jsonObject.toString());
+                writer.newLine();
+            }
+            if (close(writer, "Temporary groups file"))
+                writer = null;
+            groupsFile.delete();
+            tmpFile.renameTo(groupsFile);
+        } catch (IOException e) {
+            log.error("Can't save groups in groups file!", e);
+        } finally {
+            close(writer, "Temporary types file (in finally block)");
         }
     }
 
@@ -310,8 +414,4 @@ public class UserAccessBean implements UserAccess {
         }
         return false;
     }
-
-    public Boolean roleExists(String rolename) {
-        return getAllRoles().contains(new Role(rolename));
-    }    
 }

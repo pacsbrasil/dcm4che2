@@ -25,7 +25,9 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "U
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "RoleRead"
 {
 // DOC: swarm.principal.RoleRead
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.RolePanel", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.group.GroupListPanel", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:rolelist:changePrincipalAssignmentCheckbox", "render";
 };
 
@@ -33,8 +35,13 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
 {
 // DOC: swarm.principal.RoleWrite
 	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.CreateOrEditRolePage", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.WebPermissionsPage", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:rolelist:newRoleLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:rolelist:editRoleLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:rolelist:removeRoleLink", "render, enable";
-	permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:rolelist:changePrincipalAssignmentCheckbox", "enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.WebPermissionsPage:webpermissions:changePrincipalAssignmentCheckbox", "enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.group.CreateOrEditGroupPage", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:grouplist:newGroupLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:grouplist:editGroupLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:vlist:removeGroupLink", "render, enable";
 };

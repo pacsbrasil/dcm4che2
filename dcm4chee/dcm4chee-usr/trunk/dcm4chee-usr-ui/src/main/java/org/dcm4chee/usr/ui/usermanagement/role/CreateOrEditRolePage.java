@@ -38,34 +38,39 @@
 
 package org.dcm4chee.usr.ui.usermanagement.role;
 
+import java.util.ArrayList;
+import java.util.Map;
+
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.usr.dao.UserAccess;
+import org.dcm4chee.usr.model.Group;
 import org.dcm4chee.usr.model.Role;
-import org.dcm4chee.usr.ui.usermanagement.markup.ColorPicker;
 import org.dcm4chee.usr.ui.validator.RoleValidator;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since 21.07.2010
+ * @since Jul. 21, 2010
  */
 public class CreateOrEditRolePage extends SecureWebPage {
     
@@ -77,14 +82,14 @@ public class CreateOrEditRolePage extends SecureWebPage {
 
     protected ModalWindow window;
    
-    public CreateOrEditRolePage(final ModalWindow window, ListModel<Role> allRolenames, Role role) {
+    public CreateOrEditRolePage(final ModalWindow window, ListModel<Role> allRolenames, Role role, Map<String,Group> types) {
         super();
         
         if (CreateOrEditRolePage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(CreateOrEditRolePage.BaseCSS));
 
         this.window = window;
-        add(new CreateOrEditRoleForm("add-role-form", allRolenames, role));
+        add(new CreateOrEditRoleForm("add-role-form", allRolenames, role, types));
         
         add(new WebMarkupContainer("create-role-title").setVisible(role == null));
         add(new WebMarkupContainer("edit-role-title").setVisible(role != null));
@@ -95,15 +100,18 @@ public class CreateOrEditRolePage extends SecureWebPage {
         private static final long serialVersionUID = 1L;
 
         private Model<String> rolename = new Model<String>();
-        private Model<String> type = new Model<String>();
         private Model<String> description= new Model<String>();
-        private Model<String> colorPickerModel = new Model<String>();
+        private Model<String> type= new Model<String>();
         
         private TextField<String> rolenameTextField= new TextField<String>("rolelist.add-role-form.rolename.input", rolename);
-        private TextField<String> typeTextField= new TextField<String>("rolelist.add-role-form.type.input", type);
         private TextField<String> descriptionTextField= new TextField<String>("rolelist.add-role-form.description.input", description);
+        private DropDownChoice<String> groupDropDown;
+        private AjaxCheckBox webroleCheckbox;
+        private AjaxCheckBox dicomroleCheckbox;
+        private AjaxCheckBox clientroleCheckbox;
         
-        public CreateOrEditRoleForm(String id, final ListModel<Role> allRolenames, final Role role) {
+
+        public CreateOrEditRoleForm(String id, final ListModel<Role> allRolenames, final Role role, final Map<String,Group> types) {
             super(id);
 
             ((BaseWicketApplication) getApplication()).getInitParameter("UserAccessServiceName");
@@ -112,18 +120,59 @@ public class CreateOrEditRolePage extends SecureWebPage {
                     .setRequired(true)
                     .add(new RoleValidator(allRolenames, (role == null ? null : role.getRolename())))
             );
-            add(typeTextField);
             add(descriptionTextField);
-            final ColorPicker colorPicker;
-            add(colorPicker = new ColorPicker("color-picker", colorPickerModel));
+            
+            add((groupDropDown = new DropDownChoice<String>("rolelist.add-role-form.group.input", 
+                    type, 
+                    new ArrayList<String>(types.keySet()), 
+                    new IChoiceRenderer<String>() {
 
+                        private static final long serialVersionUID = 1L;
+
+                        public Object getDisplayValue(String object) {
+                            return types.get(object);
+                        }
+
+                        public String getIdValue(String object, int index) {
+                            return String.valueOf(index);
+                        }
+                    }
+            )).setNullValid(true));
+            
             if (role != null) {
                 rolenameTextField.setModelObject(role.getRolename());
-                typeTextField.setModelObject(role.getType());
                 descriptionTextField.setModelObject(role.getDescription());
-                colorPicker.setColorValue(role.getColor());
+                if (role.getGroupUuid() != null)
+                    groupDropDown.setModelObject(role.getGroupUuid());
             }
             
+            add((webroleCheckbox = new AjaxCheckBox("webrole-checkbox", new Model<Boolean>(role == null ? false : role.isWebRole())) {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                }
+            }));
+            
+            add((dicomroleCheckbox = new AjaxCheckBox("dicomrole-checkbox", new Model<Boolean>(role == null ? false : role.isDicomRole())) {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                }
+            }));
+
+            add((clientroleCheckbox = new AjaxCheckBox("clientrole-checkbox", new Model<Boolean>(role == null ? false : role.isClientRole())) {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                }
+            }));
+
             add(new AjaxFallbackButton("add-role-submit", CreateOrEditRoleForm.this) {
                 
                 private static final long serialVersionUID = 1L;
@@ -134,16 +183,20 @@ public class CreateOrEditRolePage extends SecureWebPage {
                         UserAccess userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);
                         if (role == null) {
                             Role newRole = new Role(rolename.getObject());
-                            newRole.setType(type.getObject());
                             newRole.setDescription(description.getObject());
-                            newRole.setColor(colorPicker.getColorValue());
+                            newRole.setGroupUuid(type.getObject());
+                            newRole.setWebRole(webroleCheckbox.getModelObject());
+                            newRole.setDicomRole(dicomroleCheckbox.getModelObject());
+                            newRole.setClientRole(clientroleCheckbox.getModelObject());
                             userAccess.addRole(newRole);
                             
                         } else {
                             role.setRolename(rolename.getObject());
-                            role.setType(type.getObject());
+                            role.setGroupUuid(type.getObject());
                             role.setDescription(description.getObject());
-                            role.setColor(colorPicker.getColorValue());
+                            role.setWebRole(webroleCheckbox.getModelObject());
+                            role.setDicomRole(dicomroleCheckbox.getModelObject());
+                            role.setClientRole(clientroleCheckbox.getModelObject());
                             userAccess.updateRole(role);
                         }
                         allRolenames.setObject(userAccess.getAllRoles());

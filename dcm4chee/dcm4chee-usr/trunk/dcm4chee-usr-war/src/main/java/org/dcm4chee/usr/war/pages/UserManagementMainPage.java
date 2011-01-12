@@ -44,7 +44,7 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.security.swarm.SwarmWebApplication;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordPanel;
-import org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel;
+import org.dcm4chee.usr.ui.usermanagement.role.RolePanel;
 import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
 import org.dcm4chee.web.common.base.ModuleSelectorPanel;
 import org.dcm4chee.web.common.secure.SecureWicketPage;
@@ -65,7 +65,7 @@ public class UserManagementMainPage extends SecureWicketPage {
 
     private void addModules(ModuleSelectorPanel selectorPanel) {
 
-        selectorPanel.addModule(RoleListPanel.class);
+        selectorPanel.addModule(RolePanel.class);
         selectorPanel.addModule(UserListPanel.class, null);
         selectorPanel.addModule(ChangePasswordPanel.class, null);
         

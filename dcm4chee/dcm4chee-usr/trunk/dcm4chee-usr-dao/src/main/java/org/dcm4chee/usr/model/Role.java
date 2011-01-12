@@ -53,14 +53,15 @@ public class Role implements Serializable, Comparable<Role> {
 
     private String uuid;
     private String rolename;
-    private String type;
     private String description;
-    private String color;
+    private String groupUuid;
+    private boolean isWebRole;
+    private boolean isDicomRole;
+    private boolean isClientRole;
     private Set<String> swarmPrincipals;
 
     public Role() {
         this.uuid = UUID.randomUUID().toString();
-        this.color = "white";
     }
     
     public Role(String rolename) {
@@ -68,9 +69,9 @@ public class Role implements Serializable, Comparable<Role> {
         this.rolename = rolename;
     }
 
-    public Role(String rolename, String type) {
+    public Role(String rolename, String groupUuid) {
         this(rolename);
-        this.type = type;
+        this.groupUuid = groupUuid;
     }
 
     public void setUuid(String uuid) {
@@ -89,14 +90,6 @@ public class Role implements Serializable, Comparable<Role> {
         this.rolename = rolename;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getType() {
-        return type;
-    }
-
     public void setDescription(String description) {
         this.description = description;
     }
@@ -105,12 +98,36 @@ public class Role implements Serializable, Comparable<Role> {
         return description;
     }
 
-    public void setColor(String color) {
-        this.color = color;
+    public void setGroupUuid(String groupUuid) {
+        this.groupUuid = groupUuid;
     }
 
-    public String getColor() {
-        return color;
+    public String getGroupUuid() {
+        return groupUuid;
+    }
+
+    public void setWebRole(boolean isWebRole) {
+        this.isWebRole = isWebRole;
+    }
+
+    public boolean isWebRole() {
+        return isWebRole;
+    }
+
+    public void setDicomRole(boolean isDicomRole) {
+        this.isDicomRole = isDicomRole;
+    }
+
+    public boolean isDicomRole() {
+        return isDicomRole;
+    }
+
+    public void setClientRole(boolean isClientRole) {
+        this.isClientRole = isClientRole;
+    }
+
+    public boolean isClientRole() {
+        return isClientRole;
     }
 
     public void setSwarmPrincipals(Set<String> swarmPrincipals) {

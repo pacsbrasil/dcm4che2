@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa-Gevaert AG.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,49 +36,45 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.dao;
+package org.dcm4chee.usr.ui.validator;
 
-import java.util.List;
-
-import javax.ejb.Local;
-
-import org.dcm4chee.usr.entity.User;
-import org.dcm4chee.usr.entity.UserRoleAssignment;
-import org.dcm4chee.usr.model.Role;
+import org.apache.wicket.model.util.ListModel;
+import org.apache.wicket.validation.IValidatable;
+import org.apache.wicket.validation.validator.AbstractValidator;
 import org.dcm4chee.usr.model.Group;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * @author Robert David <robert.david@agfa.com>
- * @version $Revision$ $Date$
- * @since 19.08.2009
- */
-@Local
-public interface UserAccess {
-    String JNDI_NAME = "dcm4chee-usr-dao/UserAccess/local";
+* @author Robert David <robert.david@agfa.com>
+* @version $Revision$ $Date$
+* @since 28.09.2009
+*/
+public class GroupValidator extends AbstractValidator<String> {
 
-    public String getUserRoleName();
-    public String getAdminRoleName();
+    private static final long serialVersionUID = 1L;
+
+    private static Logger log = LoggerFactory.getLogger(GroupValidator.class);
     
-    public List<User> getAllUsers();
-    public User getUser(String userId);
-    public void createUser(User user);
-    public void updateUser(String userId, String password);
-    public void deleteUser(String userId);
-    public Boolean userExists(String username);
-    public Boolean hasPassword(String username, String password);
-
-    public void assignRole(UserRoleAssignment ura);
-    public void unassignRole(UserRoleAssignment ura);
-
-    public List<String> getAllRolenames();
-    public List<Role> getAllRoles();
-    public void addRole(Role role);
-    public void updateRole(Role role);
-    public void removeRole(Role role);
-    public Boolean roleExists(String rolename);
+    private ListModel<Group> allGroups;
+    private String ignoreName;
     
-    public List<Group> getAllGroups();
-    public void addGroup(Group group);
-    public void updateGroup(Group group);
-    public void removeGroup(Group group);
+    public GroupValidator(ListModel<Group> allGroups, String ignoreName) {
+        this.allGroups = allGroups;
+        this.ignoreName = ignoreName;
+    }
+
+    @Override
+    protected void onValidate(IValidatable<String> validatable) {
+        try {
+            for (Group aGroup : this.allGroups.getObject()) {
+                if (aGroup.getGroupname().equals(validatable.getValue())) 
+                    if (!validatable.getValue().equals(ignoreName))
+                        error(validatable);
+            }
+        } catch (Exception e) {
+            log.error(this.getClass().toString() + ": " + "onValidate: " + e.getMessage());
+            log.debug("Exception: ", e);
+        }
+    }
 }
