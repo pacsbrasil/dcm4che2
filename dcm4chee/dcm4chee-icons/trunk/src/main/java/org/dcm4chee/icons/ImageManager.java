@@ -105,9 +105,13 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "user/change_password.png");
     public static final ResourceReference IMAGE_USER_ROLE_ADD = 
         new ResourceReference(ImageManager.class, "user/role_add.png");
+    public static final ResourceReference IMAGE_USER_ROLE_GROUP_ADD = 
+        new ResourceReference(ImageManager.class, "user/group_add.png");
     public static final ResourceReference IMAGE_USER_ADD = 
         new ResourceReference(ImageManager.class, "user/user_add.png");
-
+    public static ResourceReference IMAGE_USER_WEB_PERMISSIONS = 
+        new ResourceReference(ImageManager.class, "user/web_permissions.png");
+    
     public static final ResourceReference IMAGE_DASHBOARD_FILESYSTEM_GROUP = 
         new ResourceReference(ImageManager.class, "dashboard/filesystem/filesystem_group.png");
     public static final ResourceReference IMAGE_DASHBOARD_FILESYSTEM = 
