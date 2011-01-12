@@ -43,15 +43,15 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getRolesMappingFilename"
-      setMethod="setRolesMappingFilename">
-      <description><![CDATA[Filename path for the roles mapping file (JSON format).<br/>
+      getMethod="getRolesFilename"
+      setMethod="setRolesFilename">
+      <description><![CDATA[Filename path for the roles file (JSON format).<br/>
             A relative path name is resolved relative to <i>archive-install-directory</i>/server/default/.
       ]]></description>
-      <name>rolesMappingFilename</name>
+      <name>rolesFilename</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4chee-web3/rolesMapping-roles.json"/>
+         <value value="conf/dcm4chee-web3/roles.json"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
