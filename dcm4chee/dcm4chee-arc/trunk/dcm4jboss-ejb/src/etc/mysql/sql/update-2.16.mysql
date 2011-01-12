@@ -44,6 +44,12 @@ CREATE INDEX series_inst_code_fk ON series(inst_code_fk);
 CREATE INDEX perf_phys_fn_sx ON series(perf_phys_fn_sx(16));
 CREATE INDEX perf_phys_gn_sx ON series(perf_phys_gn_sx(16));
 
+ALTER TABLE instance 
+   ADD archived BIT;
+UPDATE instance SET archived=0;
+ALTER TABLE instance MODIFY archived BIT NOT NULL;   
+CREATE INDEX inst_archived ON instance(archived);
+
 ALTER TABLE series_req ADD (
    accno_issuer_fk BIGINT,
    accession_no VARCHAR(250) BINARY,

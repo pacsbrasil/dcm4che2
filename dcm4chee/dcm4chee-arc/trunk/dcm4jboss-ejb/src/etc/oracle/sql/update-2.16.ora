@@ -45,6 +45,12 @@ CREATE INDEX series_inst_code_fk ON series(inst_code_fk);
 CREATE INDEX perf_phys_fn_sx ON series(perf_phys_fn_sx);
 CREATE INDEX perf_phys_gn_sx ON series(perf_phys_gn_sx);
 
+ALTER TABLE instance 
+   ADD archived NUMBER(1);
+UPDATE instance SET archived=0;
+ALTER TABLE instance MODIFY archived NOT NULL;
+CREATE INDEX inst_archived ON instance(archived);
+
 ALTER TABLE series_req ADD (
    accno_issuer_fk NUMBER(38,0),
    accession_no VARCHAR2(255),

@@ -44,6 +44,12 @@ CREATE INDEX series_inst_code_fk ON series(inst_code_fk);
 CREATE INDEX perf_phys_fn_sx ON series(perf_phys_fn_sx);
 CREATE INDEX perf_phys_gn_sx ON series(perf_phys_gn_sx);
 
+ALTER TABLE instance 
+   ADD archived BOOLEAN;
+UPDATE instance SET archived=false;
+ALTER TABLE instance ALTER archived SET NOT NULL;
+CREATE INDEX inst_archived ON instance(archived);
+
 ALTER TABLE series_req
    ADD accno_issuer_fk INT8,
    ADD accession_no TEXT,

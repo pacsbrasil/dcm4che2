@@ -316,6 +316,7 @@ CREATE TABLE instance (
     availability      INTEGER NOT NULL,
     inst_status       INTEGER NOT NULL,
     commitment        BIT NOT NULL,
+    archived          BIT NOT NULL,
     created_time      DATETIME NULL,
     updated_time      DATETIME NULL,
     inst_attrs        IMAGE NULL,
@@ -340,6 +341,7 @@ CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
 CREATE INDEX commitment ON instance(commitment);
 CREATE INDEX inst_status ON instance(inst_status);
 CREATE INDEX inst_created ON instance(created_time);
+CREATE INDEX inst_archived ON instance(archived);
 
 CREATE TABLE verify_observer (
     pk              NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT verify_observer_pk PRIMARY KEY,

@@ -45,6 +45,13 @@ CREATE INDEX series_inst_code_fk ON series(inst_code_fk);
 CREATE INDEX perf_phys_fn_sx ON series(perf_phys_fn_sx);
 CREATE INDEX perf_phys_gn_sx ON series(perf_phys_gn_sx);
 
+ALTER TABLE instance 
+   ADD archived SMALLINT NOT NULL DEFAULT 0;
+CREATE INDEX inst_archived ON instance(archived);
+ALTER TABLE instance
+   ALTER COLUMN archived DROP DEFAULT;
+
+
 ALTER TABLE series_req
    ADD accno_issuer_fk BIGINT
    ADD accession_no VARCHAR(254)
