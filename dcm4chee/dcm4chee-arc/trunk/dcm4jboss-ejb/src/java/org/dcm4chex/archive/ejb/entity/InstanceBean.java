@@ -356,6 +356,18 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setInstanceStatus(int status);
 
     /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="archived"
+     * @jboss.load-group name="most"
+     */
+    public abstract boolean getArchived();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setArchived(boolean b);
+    
+    /**
      * @ejb.persistence column-name="all_attrs"
      */
     public abstract boolean getAllAttributes();
@@ -485,6 +497,7 @@ public abstract class InstanceBean implements EntityBean {
         updateVerifyingObservers(null, ds.get(Tags.VerifyingObserverSeq));
         updateContentItems(ds.get(Tags.ContentSeq));
         setSeries(series);
+        setArchived(false);
         log.info("Created " + prompt());
     }
 

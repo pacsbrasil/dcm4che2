@@ -66,6 +66,7 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.common.DeleteStudyOrdersAndMaxAccessTime;
+import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.IANAndPatientID;
 import org.dcm4chex.archive.common.SeriesStored;
@@ -1087,7 +1088,17 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
      * @ejb.interface-method
      */
     public void setFileStatus(long pk, int status) throws FinderException {
-        fileHome.findByPrimaryKey(pk).setFileStatus(status);
+        FileLocal f = fileHome.findByPrimaryKey(pk);
+        f.setFileStatus(status);
+        if (status == FileStatus.ARCHIVED) {
+            InstanceLocal il = f.getInstance();
+            if (il.getArchived()) {
+                log.debug("Instance "+il.getSopIuid()+" is already marked as ARCHIVED!");
+            } else {
+                il.setArchived(true);
+                log.info("Instance "+il.getSopIuid()+" marked as ARCHIVED! File:"+f.asString());
+            }
+        }
     }
 
     private FileDTO[] toFileDTOs(Collection c) {
