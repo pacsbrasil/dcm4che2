@@ -60,7 +60,7 @@ public class WASPTestUtil {
     private static String actionKey;
     private static String hiveKey;
     
-    private static final String ROLE_MAPPING_FILENAME = "conf/rolesMapping-test.json";
+    private static final String ROLE_MAPPING_FILENAME = "conf/roles-test.json";
 
     public static WicketTester getWicketTester(WebApplication testApplicaton) throws URISyntaxException {
         if (actionKey != null) {
@@ -94,7 +94,7 @@ public class WASPTestUtil {
         FileChannel fos = null;
         InputStream is = null;
         try {
-            URL url = WASPTestUtil.class.getResource("/rolesMapping-test.json");
+            URL url = WASPTestUtil.class.getResource("/roles-test.json");
             is = url.openStream();
             ReadableByteChannel inCh = Channels.newChannel(is);
             fos = new FileOutputStream(f).getChannel();
