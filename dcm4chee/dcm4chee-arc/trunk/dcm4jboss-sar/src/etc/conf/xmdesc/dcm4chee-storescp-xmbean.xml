@@ -225,6 +225,54 @@ Storage SCP (=Called) AE by its AE Configuration entry.]]>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isSupplementByHostName"
+      setMethod="setSupplementByHostName">
+      <description><![CDATA[If there is no <i>Issuer of Patient ID</i>,
+          <i>Issuer of Accession Number Sequence</i> item, <i>Institution Name</i>,
+          <i>Institutional Department Name</i> associated to the Storage SCU AE
+          by an AE configuration entry with matching AE Title, AE configuration
+          entries which host name is equals to the <b>host name</b> of the
+          Storage SCU AE will be considered to determine the associated
+          <i>Issuer of Patient ID</i>, <i>Issuer of Accession Number Sequence</i>
+          item, <i>Institution Name</i> or <i>Institutional Department Name</i>.
+          If there are several AE configuration entries with matching host name
+          with different non-zero values for <i>Issuer of Patient ID</i>,
+          <i>Issuer of Accession Number Sequence</i> item, <i>Institution Name</i>
+          or <i>Institutional Department Name</i>, no  <i>Issuer of Patient ID</i>,
+          <i>Issuer of Accession Number Sequence</i> item, <i>Institution Name</i>
+          or <i>Institutional Department Name</i> will be supplemented.]]>
+      </description>
+      <name>SupplementByHostName</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isSupplementByHostAddress"
+      setMethod="setSupplementByHostAddress">
+      <description><![CDATA[If there is no <i>Issuer of Patient ID</i>,
+          <i>Issuer of Accession Number Sequence</i> item, <i>Institution Name</i>,
+          <i>Institutional Department Name</i> associated to the Storage SCU AE
+          by an AE configuration entry with matching AE Title, AE configuration
+          entries which host name is equals to the <b>IP address</b> of the
+          Storage SCU AE will be considered to determine the associated
+          <i>Issuer of Patient ID</i>, <i>Issuer of Accession Number Sequence</i>
+          item, <i>Institution Name</i> or <i>Institutional Department Name</i>.
+          If there are several AE configuration entries with matching host name
+          with different non-zero values for <i>Issuer of Patient ID</i>,
+          <i>Issuer of Accession Number Sequence</i> item, <i>Institution Name</i>
+          or <i>Institutional Department Name</i>, no  <i>Issuer of Patient ID</i>,
+          <i>Issuer of Accession Number Sequence</i> item, <i>Institution Name</i>
+          or <i>Institutional Department Name</i> will be supplemented.]]>
+      </description>
+      <name>SupplementByHostAddress</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getGeneratePatientIDForUnscheduledFromAETs"
       setMethod="setGeneratePatientIDForUnscheduledFromAETs">
       <description><![CDATA[List of AE titles of Storage SCUs for which the

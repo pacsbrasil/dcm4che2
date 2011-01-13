@@ -18,6 +18,7 @@ CREATE TABLE ae (
     vendor_data       BYTEA
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
+CREATE INDEX hostname ON ae(hostname);
 
 CREATE TABLE code (
     pk                SERIAL8 NOT NULL CONSTRAINT code_pk PRIMARY KEY,

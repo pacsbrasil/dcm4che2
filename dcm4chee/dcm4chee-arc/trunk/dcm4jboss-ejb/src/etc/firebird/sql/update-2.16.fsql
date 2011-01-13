@@ -6,6 +6,7 @@ ALTER TABLE study_on_fs
    ADD mark_to_delete NUMERIC(1) NOT NULL;
 
 CREATE INDEX mark_to_delete ON study_on_fs(mark_to_delete);
+CREATE INDEX hostname ON ae(hostname);
 
 UPDATE study_on_fs
    SET mark_to_delete=0;

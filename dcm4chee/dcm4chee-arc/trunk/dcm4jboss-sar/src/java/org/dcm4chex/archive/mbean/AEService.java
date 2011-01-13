@@ -44,7 +44,6 @@ import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.management.Attribute;
@@ -241,7 +240,7 @@ public class AEService extends ServiceMBeanSupport {
         return sb.toString();
     }
 
-    public List listAEs() throws Exception {
+    public Collection listAEs() throws Exception {
         return aeMgr().findAll();
     }
 

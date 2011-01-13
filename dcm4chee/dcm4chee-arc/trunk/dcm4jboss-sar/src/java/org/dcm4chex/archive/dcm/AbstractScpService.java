@@ -40,18 +40,18 @@
 package org.dcm4chex.archive.dcm;
 
 import java.io.File;
-import java.rmi.RemoteException;
+import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 import javax.management.Attribute;
 import javax.management.InstanceNotFoundException;
@@ -112,9 +112,12 @@ import org.jboss.system.server.ServerConfigLocator;
  */
 public abstract class AbstractScpService extends ServiceMBeanSupport {
 
+    protected static final String ASSOC_ISSUER_OF_PAT_ID = "ISSUER_OF_PAT_ID";
+    protected static final String ASSOC_ISSUER_OF_ACC_NO = "ISSUER_OF_ACC_NO";
+    protected static final String ASSOC_INST_NAME = "ASSOC_INST_NAME";
+    protected static final String ASSOC_DEPT_NAME = "ASSOC_DEPT_NAME";
     protected static final String ANY = "ANY";
     protected static final String CONFIGURED_AETS = "CONFIGURED_AETS";
-
     protected static final String NONE = "NONE";
 
     private static int sequenceInt = new Random().nextInt();
@@ -146,6 +149,10 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected boolean supplementInstitutionName;
     
     protected boolean supplementInstitutionalDepartmentName;
+
+    protected boolean supplementByHostName;
+
+    protected boolean supplementByHostAddress;
 
     protected String[] generatePatientIDForUnscheduledFromAETs;
 
@@ -383,6 +390,22 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         this.supplementInstitutionalDepartmentName = supplementInstitutionalDepartmentName;
     }
 
+    public final boolean isSupplementByHostName() {
+        return supplementByHostName;
+    }
+
+    public final void setSupplementByHostName(boolean supplementByHostName) {
+        this.supplementByHostName = supplementByHostName;
+    }
+
+    public final boolean isSupplementByHostAddress() {
+        return supplementByHostAddress;
+    }
+
+    public final void setSupplementByHostAddress(boolean supplementByHostAddress) {
+        this.supplementByHostAddress = supplementByHostAddress;
+    }
+
     public final String getGeneratePatientIDForUnscheduledFromAETs() {
         return invertGeneratePatientIDForUnscheduledFromAETs ? "!\\" : ""
             + (generatePatientIDForUnscheduledFromAETs == null ? "NONE"
@@ -515,7 +538,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             return callingAETs;
         log.debug("Use 'CONFIGURED_AETS' for list of calling AETs");
         try {
-            List<AEDTO> l = aeMgr().findAll();
+            Collection<AEDTO> l = aeMgr().findAll();
             if (l.size() == 0) {
                 log.warn("No AETs configured! No calling AET is allowed!");
                 return callingAETs;
@@ -612,10 +635,6 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             bindAll(valuesToStringArray(cuidMap), scp);
         enableService();
     }
-
-    // protected String[] getTransferSyntaxUIDs() {
-    // return valuesToStringArray(tsuids);
-    // }
 
     protected static String[] valuesToStringArray(Map<String, String> tsuid) {
         return tsuid.values().toArray(new String[tsuid.size()]);
@@ -865,39 +884,256 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         return DcmObjectFactory.getInstance().newPersonName(pname).format();
     }
 
-    public void supplementIssuerOfPatientID(Dataset ds, String callingAET,
+    public void supplementIssuerOfPatientID(Dataset ds, Association as,
             boolean onlyIfPID) {
-        if (!supplementIssuerOfPatientID 
-                || ds.contains(Tags.IssuerOfPatientID)
-                || onlyIfPID && !ds.containsValue(Tags.PatientID))
-            return;
-
-        try {
-            AEDTO ae = aeMgr().findByAET(callingAET);
-            String issuer = ae.getIssuerOfPatientID();
-            if (issuer != null && issuer.length() != 0) {
+        if (supplementIssuerOfPatientID 
+                && !ds.contains(Tags.IssuerOfPatientID)
+                && (!onlyIfPID || ds.containsValue(Tags.PatientID))) {
+            String issuer = getAssociatedIssuerOfPatientID(as);
+            if (issuer.length() != 0) {
                 ds.putLO(Tags.IssuerOfPatientID, issuer);
                 log.info("Supplement Issuer Of Patient ID " + issuer);
             } else {
                 if (log.isDebugEnabled()) {
-                    log
-                            .debug("Missing Issuer Of Patient ID in AE configuration for "
-                                    + callingAET
-                                    + " - no supplement of Issuer Of Patient ID");
+                    log.debug("No Issuer Of Patient ID associated to " + as
+                            + " - no supplement of Issuer Of Patient ID");
                 }
             }
-        } catch (UnknownAETException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Missing AE configuration for " + callingAET
-                        + " - no supplement of Issuer Of Patient ID");
-            }
-        } catch (Exception e) {
-            log.warn("Failed to supplement Issuer Of Patient ID: ", e);
         }
     }
-        
-    public void supplementIssuerOfAccessionNumber(Dataset ds,
-            String callingAET, boolean onlyIfAccessionNumber) {
+
+    private String getAssociatedIssuerOfPatientID(Association as) {
+        String issuer = (String) as.getProperty(ASSOC_ISSUER_OF_PAT_ID);
+        if (issuer == null) {
+            try {
+                AEManager aeMgr = aeMgr();
+                try {
+                    issuer = aeMgr.findByAET(as.getCallingAET())
+                            .getIssuerOfPatientID();
+                } catch (UnknownAETException e) { }
+                InetAddress addr = null;
+                if ((issuer == null || issuer.length() == 0)
+                        && supplementByHostName) {
+                    addr = as.getSocket().getInetAddress();
+                    String hostName = addr.getHostName();
+                    issuer = issuerOfPatientID(
+                            aeMgr.findByHostName(hostName), hostName);
+                }
+                if ((issuer == null || issuer.length() == 0)
+                        && supplementByHostAddress) {
+                    if (addr == null)
+                        addr = as.getSocket().getInetAddress();
+                    String hostAddress = addr.getHostAddress();
+                    issuer = issuerOfPatientID(
+                            aeMgr.findByHostName(hostAddress), hostAddress);
+                }
+            } catch (Exception e) {
+                log.error("Failed to access AE configuration:", e);
+            } finally {
+                if (issuer == null)
+                    issuer = "";
+                as.putProperty(ASSOC_ISSUER_OF_PAT_ID, issuer);
+            }
+        }
+        return issuer;
+    }
+
+    private String getAssociatedInstitutionName(Association as) {
+        String instName = (String) as.getProperty(ASSOC_INST_NAME);
+        if (instName == null) {
+            String deptName = null;
+            try {
+                AEManager aeMgr = aeMgr();
+                AEDTO ae = null;
+                try {
+                    ae = aeMgr.findByAET(as.getCallingAET());
+                    instName = ae.getInstitution();
+                    deptName = ae.getDepartment();
+                } catch (UnknownAETException e) { }
+                InetAddress addr = null;
+                if ((instName == null || instName.length() == 0)
+                        && supplementByHostName) {
+                    addr = as.getSocket().getInetAddress();
+                    String hostName = addr.getHostName();
+                    String[] tmp = institutionalData(
+                            aeMgr.findByHostName(hostName), hostName);
+                    if (tmp != null) {
+                        instName = tmp[0];
+                        deptName = tmp[1];
+                    }
+                }
+                if ((instName == null || instName.length() == 0)
+                        && supplementByHostAddress) {
+                    if (addr == null)
+                        addr = as.getSocket().getInetAddress();
+                    String hostAddress = addr.getHostAddress();
+                    String[] tmp = institutionalData(
+                            aeMgr.findByHostName(hostAddress), hostAddress);
+                    if (tmp != null) {
+                        instName = tmp[0];
+                        deptName = tmp[1];
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Failed to access AE configuration:", e);
+            } finally {
+                if (instName == null)
+                    instName = "";
+                if (deptName == null)
+                    deptName = "";
+                as.putProperty(ASSOC_INST_NAME, instName);
+                as.putProperty(ASSOC_DEPT_NAME, deptName);
+            }
+        }
+        return instName;
+    }
+
+    private String[] getAssociatedIssuerOfAccessionNumber(Association as) {
+        String[] issuer = (String[]) as.getProperty(ASSOC_ISSUER_OF_ACC_NO);
+        if (issuer == null) {
+            try {
+                AEManager aeMgr = aeMgr();
+                try {
+                    issuer = aeMgr.findByAET(as.getCallingAET())
+                            .getIssuerOfAccessionNumber();
+                } catch (UnknownAETException e) { }
+                InetAddress addr = null;
+                if ((issuer == null || issuer.length == 0)
+                        && supplementByHostName) {
+                    addr = as.getSocket().getInetAddress();
+                    String hostName = addr.getHostName();
+                    issuer = issuerOfAccessionNumber(
+                            aeMgr.findByHostName(hostName), hostName);
+                }
+                if ((issuer == null || issuer.length == 0)
+                        && supplementByHostAddress) {
+                    if (addr == null)
+                        addr = as.getSocket().getInetAddress();
+                    String hostAddress = addr.getHostAddress();
+                    issuer = issuerOfAccessionNumber(
+                            aeMgr.findByHostName(hostAddress), hostAddress);
+                }
+            } catch (Exception e) {
+                log.error("Failed to access AE configuration:", e);
+            } finally {
+                if (issuer == null)
+                    issuer = new String[0];
+                as.putProperty(ASSOC_ISSUER_OF_ACC_NO, issuer);
+            }
+        }
+        return issuer;
+    }
+
+    private String getAssociatedInstitutionalDepartmentName(Association as) {
+        String deptName = (String) as.getProperty(ASSOC_DEPT_NAME);
+        if (deptName == null) {
+            String instName = null;
+            try {
+                AEManager aeMgr = aeMgr();
+                AEDTO ae = null;
+                try {
+                    ae = aeMgr.findByAET(as.getCallingAET());
+                    instName = ae.getInstitution();
+                    deptName = ae.getDepartment();
+                } catch (UnknownAETException e) { }
+                InetAddress addr = null;
+                if ((deptName == null || deptName.length() == 0)
+                        && supplementByHostName) {
+                    addr = as.getSocket().getInetAddress();
+                    String hostName = addr.getHostName();
+                    String[] tmp = institutionalData(
+                            aeMgr.findByHostName(hostName), hostName);
+                    if (tmp != null) {
+                        instName = tmp[0];
+                        deptName = tmp[1];
+                    }
+                }
+                if ((deptName == null || deptName.length() == 0)
+                        && supplementByHostAddress) {
+                    if (addr == null)
+                        addr = as.getSocket().getInetAddress();
+                    String hostAddress = addr.getHostAddress();
+                    String[] tmp = institutionalData(
+                            aeMgr.findByHostName(hostAddress), hostAddress);
+                    if (tmp != null) {
+                        instName = tmp[0];
+                        deptName = tmp[1];
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Failed to access AE configuration:", e);
+            } finally {
+                if (instName == null)
+                    instName = "";
+                if (deptName == null)
+                    deptName = "";
+                as.putProperty(ASSOC_INST_NAME, instName);
+                as.putProperty(ASSOC_DEPT_NAME, deptName);
+            }
+        }
+        return deptName;
+    }
+
+    private String issuerOfPatientID(Collection<AEDTO> aes, String host) {
+        String issuer = null;
+        for (AEDTO ae : aes) {
+            String tmp = ae.getIssuerOfPatientID();
+            if (tmp != null && tmp.length() != 0) {
+                if (issuer == null)
+                    issuer = tmp;
+                else if (!issuer.equals(tmp)) {
+                    log.warn("Different Issuer of Patient IDs associated to "
+                            + host);
+                    return null;
+                }
+            }
+        }
+        return issuer;
+    }
+
+    private String[] issuerOfAccessionNumber(Collection<AEDTO> aes, String host) {
+        String[] issuer = null;
+        for (AEDTO ae : aes) {
+            String[] tmp = ae.getIssuerOfAccessionNumber();
+            if (tmp != null && tmp.length != 0) {
+                if (issuer == null)
+                    issuer = tmp;
+                else if (!Arrays.equals(issuer, tmp)) {
+                    log.warn("Different Issuer of Accession Number associated to "
+                            + host);
+                    return null;
+                }
+            }
+        }
+        return issuer;
+    }
+
+    private String[] institutionalData(Collection<AEDTO> aes, String host) {
+        String[] instData = null;
+        for (AEDTO ae : aes) {
+            String inst = ae.getInstitution();
+            if (inst == null)
+                inst = "";
+            String dep = ae.getDepartment();
+            if (dep == null)
+                dep = "";
+            if (inst.length() != 0 || dep.length() != 0) {
+                String[] tmp = { inst, dep };
+                if (instData == null)
+                    instData = new String[] { inst,  dep };
+                else if (!instData[0].equals(inst)
+                        || !instData[1].equals(dep)) {
+                    log.warn("Different Institution and/or Department Name associated to "
+                            + host);
+                    return null;
+                }
+            }
+        }
+        return instData;
+    }
+
+    public void supplementIssuerOfAccessionNumber(Dataset ds, Association as,
+            boolean onlyIfAccessionNumber) {
 
         if (!supplementIssuerOfAccessionNumber)
             return;
@@ -905,8 +1141,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         String[] issuer = null;
         if (shallSupplementIssuerOfAccessionNumber(ds,
                 onlyIfAccessionNumber)) {
-            issuer = getIssuerOfAccessionNumber(callingAET);
-            if (issuer == null)
+            issuer = getAssociatedIssuerOfAccessionNumber(as);
+            if (issuer.length == 0)
                 return;
             supplementIssuerOfAccessionNumber(ds, issuer);
         }
@@ -917,8 +1153,8 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 if (shallSupplementIssuerOfAccessionNumber(item, 
                         onlyIfAccessionNumber)) {
                     if (issuer == null)
-                        issuer = getIssuerOfAccessionNumber(callingAET);
-                    if (issuer == null)
+                        issuer = getAssociatedIssuerOfAccessionNumber(as);
+                    if (issuer.length == 0)
                         return;
                     supplementIssuerOfAccessionNumber(item, issuer);
                 }
@@ -933,28 +1169,6 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                         && !ds.containsValue(Tags.AccessionNumber));
     }
 
-    private String[] getIssuerOfAccessionNumber(String callingAET) {
-        try {
-            AEDTO ae = aeMgr().findByAET(callingAET);
-            String issuer[] = ae.getIssuerOfAccessionNumber();
-            if (issuer != null && issuer.length != 0)
-                return issuer;
-            if (log.isDebugEnabled()) {
-                log.debug("Missing Issuer Of Accession Number in AE configuration for "
-                        + callingAET
-                        + " - no supplement of Issuer Of Accession Number");
-            }
-        } catch (UnknownAETException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Missing AE configuration for " + callingAET
-                        + " - no supplement of Issuer Of Accession Number");
-            }
-        } catch (Exception e) {
-            log.warn("Failed to supplement Issuer Of Accession Number: ", e);
-        }
-        return null;
-    }
-
     private void supplementIssuerOfAccessionNumber(Dataset ds, String[] issuer) {
         DcmObject item = ds.putSQ(Tags.IssuerOfAccessionNumberSeq).addNewItem();
         if (issuer[0].length() > 0)
@@ -967,56 +1181,33 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 + StringUtils.toString(issuer, '^'));
     }
 
-    public void supplementInstitutionalData(Dataset ds, String callingAET) {
-        AEDTO ae = null;
+    public void supplementInstitutionalData(Dataset ds, Association as) {
         if (supplementInstitutionName
                 && !ds.containsValue(Tags.InstitutionName)) {
-            try {
-                ae = aeMgr().findByAET(callingAET);
-                String institution = ae.getInstitution();
-                if (institution != null && institution.length() != 0) {
-                    ds.putLO(Tags.InstitutionName, institution);
-                    log.info("Add missing Institution Name " + institution);
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Missing Institution Name in AE configuration for " + callingAET
-                                + " - no supplement of Institution Name");
-                    }
-                }
-            } catch (UnknownAETException e) {
+            String name = getAssociatedInstitutionName(as);
+            if (name.length() != 0) {
+                ds.putLO(Tags.InstitutionName, name);
+                log.info("Supplement Institution Name " + name);
+            } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("Missing AE configuration for " + callingAET
+                    log.debug("No Institution Name associated to " + as
                             + " - no supplement of Institution Name");
                 }
-            } catch (Exception e) {
-                log.warn("Failed to supplement Institution Name: ", e);
             }
         }
-        
         if (supplementInstitutionalDepartmentName
                 && !ds.containsValue(Tags.InstitutionalDepartmentName)) {
-            try {
-                if (ae == null)
-                    ae = aeMgr().findByAET(callingAET);
-                String department = ae.getDepartment();
-                if (department != null && department.length() != 0) {
-                    ds.putLO(Tags.InstitutionalDepartmentName, department);
-                    log.info("Add missing Institutional Department Name " + department);
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Missing Institutional Department Name in AE configuration for " + callingAET
-                                + " - no supplement of Institutional Department Name");
-                    }
-                }
-            } catch (UnknownAETException e) {
+            String name = getAssociatedInstitutionalDepartmentName(as);
+            if (name.length() != 0) {
+                ds.putLO(Tags.InstitutionalDepartmentName, name);
+                log.info("Supplement Institutional Department Name " + name);
+            } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("Missing AE configuration for " + callingAET
+                    log.debug("No Institutional Department associated to " + as
                             + " - no supplement of Institutional Department Name");
                 }
-            } catch (Exception e) {
-                log.warn("Failed to supplement Institutional Department Name: ", e);
             }
-        }
+       }
     }
 
     public void generatePatientID(Dataset pat, Dataset sty, String calledAET)

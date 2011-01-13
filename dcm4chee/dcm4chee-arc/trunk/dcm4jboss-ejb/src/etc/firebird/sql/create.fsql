@@ -19,6 +19,7 @@ CREATE TABLE ae (
     vendor_data     BLOB
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
+CREATE INDEX hostname ON ae(hostname);
 
 CREATE SEQUENCE code_pk_seq;
 CREATE TABLE code (

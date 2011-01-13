@@ -88,6 +88,42 @@ GP-PPS SCP (=Called) AE by its AE Configuration entry.]]>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isSupplementByHostName"
+      setMethod="setSupplementByHostName">
+      <description><![CDATA[If there is no <i>Issuer of Patient ID</i>
+          associated to the GP-PPS SCU AE by an AE configuration entry with
+          matching AE Title, AE configuration entries which host name is equals
+          to the host name of the GP-PPS SCU AE will be considered to determine
+          the associated <i>Issuer of Patient ID</i>. If there are several
+          AE configuration entries with matching host name with different
+          non-zero values for <i>Issuer of Patient ID</i>, no 
+          <i>Issuer of Patient ID</i> will be supplemented.]]>
+      </description>
+      <name>SupplementByHostName</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isSupplementByHostAddress"
+      setMethod="setSupplementByHostAddress">
+      <description><![CDATA[If there is no <i>Issuer of Patient ID</i>
+          associated to the GP-PPS SCU AE by an AE configuration entry with
+          matching AE Title, AE configuration entries which host name is equals
+          to the IP address of the GP-PPS SCU AE will be considered to determine
+          the associated <i>Issuer of Patient ID</i>. If there are several
+          AE configuration entries with matching host name with different
+          non-zero values for <i>Issuer of Patient ID</i>, no 
+          <i>Issuer of Patient ID</i> will be supplemented.]]>
+      </description>
+      <name>SupplementByHostAddress</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getPatientMatching"
       setMethod="setPatientMatching">
        <description><![CDATA[Defines which Patient Attributes in received 

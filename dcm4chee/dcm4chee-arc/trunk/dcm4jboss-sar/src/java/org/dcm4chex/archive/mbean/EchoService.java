@@ -43,9 +43,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.rmi.RemoteException;
-import java.util.List;
-
-import javax.ejb.FinderException;
+import java.util.Collection;
 
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.UIDs;
@@ -53,7 +51,6 @@ import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
-import org.dcm4chex.archive.exceptions.UnknownAETException;
 
 /**
  * <description>
@@ -68,16 +65,16 @@ public class EchoService extends AbstractScuService {
 
 
     public String[] echoAll() throws RemoteException, Exception {
-        List l = aeMgt().findAll();
-        String[] sa = new String[l.size()];
-        AEDTO remoteAE;
-        for (int i = 0, len = sa.length; i < len; i++) {
-            remoteAE = (AEDTO) l.get(i);
+        Collection<AEDTO> aes = aeMgt().findAll();
+        String[] sa = new String[aes.size()];
+        int i = 0;
+        for (AEDTO ae : aes) {
             try {
-                sa[i] = remoteAE + " : " + echo(remoteAE, new Integer(3));
+                sa[i] = ae + " : " + echo(ae, new Integer(3));
             } catch (Exception x) {
-                sa[i] = remoteAE + " failed:" + x.getMessage();
+                sa[i] = ae + " failed:" + x.getMessage();
             }
+            i++;
         }
         return sa;
     }

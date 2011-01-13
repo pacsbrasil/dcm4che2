@@ -22,6 +22,7 @@ CREATE TABLE ae (
     vendor_data     IMAGE NULL
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
+CREATE INDEX hostname ON ae(hostname);
 
 CREATE TABLE code (
     pk              NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT code_pk PRIMARY KEY,

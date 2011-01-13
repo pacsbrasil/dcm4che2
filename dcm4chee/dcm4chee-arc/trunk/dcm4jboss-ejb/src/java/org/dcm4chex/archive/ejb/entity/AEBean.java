@@ -61,10 +61,10 @@ import org.dcm4chex.archive.ejb.interfaces.AEDTO;
  * @jboss.entity-command name="hsqldb-fetch-key"
  * 
  * @ejb.finder 
- *      signature="Collection findAll()"
+ *      signature="java.util.Collection findAll()"
  *      query="SELECT OBJECT(a) FROM AE AS a" transaction-type="Supports"
  * @jboss.query
- *      signature="Collection findAll()"
+ *      signature="java.util.Collection findAll()"
  *      strategy="on-find"
  *      eager-load-group="*"
  * 
@@ -74,6 +74,14 @@ import org.dcm4chex.archive.ejb.interfaces.AEDTO;
  *      transaction-type="Supports"
  * @jboss.query
  *      signature="org.dcm4chex.archive.ejb.interfaces.AELocal findByAET(java.lang.String aet)"
+ *      strategy="on-find"
+ *      eager-load-group="*"
+ * @ejb.finder
+ *      signature="java.util.Collection findByHostName(java.lang.String hostName)"
+ *      query="SELECT OBJECT(a) FROM AE AS a WHERE a.hostName = ?1"
+ *      transaction-type="Supports"
+ * @jboss.query
+ *      signature="org.dcm4chex.archive.ejb.interfaces.AELocal findByHostName(java.lang.String hostName)"
  *      strategy="on-find"
  *      eager-load-group="*"
  *             

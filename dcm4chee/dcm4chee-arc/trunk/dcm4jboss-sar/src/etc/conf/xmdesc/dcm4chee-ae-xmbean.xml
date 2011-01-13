@@ -202,7 +202,7 @@
    <operation impact="INFO">
      <description>Get list of AE Configurations</description>
      <name>listAEs</name>
-     <return-type>java.util.List</return-type>
+     <return-type>java.util.Collection</return-type>
    </operation>
    <operation impact="ACTION">
      <description>Get AE Configuration</description>

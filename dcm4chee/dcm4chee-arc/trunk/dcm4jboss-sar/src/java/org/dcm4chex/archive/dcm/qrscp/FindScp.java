@@ -155,9 +155,9 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             service.postCoercionProcessing(rqData, Command.C_FIND_RQ, assoc.getAssociation());
             boolean noIssuerOfPatientID = !rqData.contains(Tags.IssuerOfPatientID);
             boolean noIssuerOfAccessionNumber = !rqData.contains(Tags.IssuerOfAccessionNumberSeq);
-            service.supplementIssuerOfPatientID(rqData, callingAET, false);
+            service.supplementIssuerOfPatientID(rqData, a, false);
             if (!"PATIENT".equals(rqData.getString(Tags.QueryRetrieveLevel)))
-                service.supplementIssuerOfAccessionNumber(rqData, callingAET, false);
+                service.supplementIssuerOfAccessionNumber(rqData, a, false);
             Set<PIDWithIssuer> pidWithIssuer = (forcePixQuery(assoc)
                     || service.isPixQueryCallingAET(callingAET))
                             ? pixQuery(rqData)

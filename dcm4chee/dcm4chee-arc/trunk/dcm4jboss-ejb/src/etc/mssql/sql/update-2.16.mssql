@@ -1,6 +1,7 @@
 -- Update DB from dcm4chee-2.15.x to dcm4chee-2.16.x
 
 CREATE INDEX inst_created ON instance(created_time);
+CREATE INDEX hostname ON ae(hostname);
 
 ALTER TABLE study_on_fs ADD mark_to_delete BIT NULL;
 GO

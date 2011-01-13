@@ -41,6 +41,7 @@ package org.dcm4chex.archive.ejb.session;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -188,16 +189,28 @@ public abstract class AEManagerBean implements SessionBean {
     }
 
     /**
+     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
+     */
+    public Collection<AEDTO> findByHostName(String hostName)
+            throws FinderException {
+        return toDTOs(aeHome.findByHostName(hostName));
+    }
+
+    private Collection<AEDTO> toDTOs(Collection<AELocal> aes) {
+        Collection<AEDTO> dtos = new ArrayList<AEDTO>(aes.size());
+        for (AELocal ae : aes)
+            dtos.add(ae.toDTO());
+        return dtos;
+    }
+
+    /**
      * @throws FinderException 
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
-    public List findAll() throws FinderException {
-        ArrayList ret = new ArrayList();
-        for (Iterator i = aeHome.findAll().iterator(); i.hasNext();) {
-            ret.add(((AELocal) i.next()).toDTO());
-        }
-        return ret;
+    public Collection<AEDTO> findAll() throws FinderException {
+        return toDTOs(aeHome.findAll());
     }
 
     /**
