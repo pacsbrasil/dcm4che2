@@ -1024,6 +1024,8 @@ public class DcmSnd extends StorageCommitmentService {
     public void addFile(File f) {
         if (f.isDirectory()) {
             File[] fs = f.listFiles();
+            if (fs == null || fs.length == 0)
+            	return;
             for (int i = 0; i < fs.length; i++)
                 addFile(fs[i]);
             return;
