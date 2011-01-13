@@ -198,7 +198,7 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
         for (String rolename : newRoles)
             addDicomRole(rolename);
     }
-    
+
     public void addDicomRole(String rolename) {
         BufferedWriter writer = null;
         try {

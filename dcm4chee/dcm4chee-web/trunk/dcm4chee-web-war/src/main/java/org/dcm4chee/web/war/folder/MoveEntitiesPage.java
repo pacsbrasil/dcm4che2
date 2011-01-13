@@ -41,7 +41,6 @@ package org.dcm4chee.web.war.folder;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 

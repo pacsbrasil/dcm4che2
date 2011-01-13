@@ -85,7 +85,7 @@ public class WASPTestUtil {
     }
     
     public static void initRolesMappingFile() throws IOException {
-        System.setProperty("dcm4chee-usr.cfg.role-mapping-filename", ROLE_MAPPING_FILENAME);
+        System.setProperty("dcm4chee-usr.cfg.roles-filename", ROLE_MAPPING_FILENAME);
         File f = new File(ROLE_MAPPING_FILENAME);
         if (!f.isAbsolute())
             f = new File(ServerConfigLocator.locate().getServerHomeDir(), f.getPath());

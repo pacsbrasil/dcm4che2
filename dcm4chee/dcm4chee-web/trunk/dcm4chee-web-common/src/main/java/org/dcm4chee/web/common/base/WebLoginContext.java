@@ -199,7 +199,6 @@ public class WebLoginContext extends UsernamePasswordContext {
             while ((line = reader.readLine()) != null) {
                 JSONObject jsonObject = JSONObject.fromObject(line);
                 Set<String> set = new HashSet<String>();
-System.out.println("JSON CHECK, from file " + fn + ": " + line);
                 Iterator<String> i = jsonObject.getJSONArray("swarmPrincipals").iterator();
                 while (i.hasNext())
                     set.add(i.next());
