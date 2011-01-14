@@ -885,11 +885,11 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public void supplementIssuerOfPatientID(Dataset ds, Association as,
-            boolean onlyIfPID) {
+            String aet, boolean onlyIfPID) {
         if (supplementIssuerOfPatientID 
                 && !ds.contains(Tags.IssuerOfPatientID)
                 && (!onlyIfPID || ds.containsValue(Tags.PatientID))) {
-            String issuer = getAssociatedIssuerOfPatientID(as);
+            String issuer = getAssociatedIssuerOfPatientID(as, aet);
             if (issuer.length() != 0) {
                 ds.putLO(Tags.IssuerOfPatientID, issuer);
                 log.info("Supplement Issuer Of Patient ID " + issuer);
@@ -902,13 +902,13 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
     }
 
-    private String getAssociatedIssuerOfPatientID(Association as) {
+    protected String getAssociatedIssuerOfPatientID(Association as, String aet) {
         String issuer = (String) as.getProperty(ASSOC_ISSUER_OF_PAT_ID);
         if (issuer == null) {
             try {
                 AEManager aeMgr = aeMgr();
                 try {
-                    issuer = aeMgr.findByAET(as.getCallingAET())
+                    issuer = aeMgr.findByAET(aet)
                             .getIssuerOfPatientID();
                 } catch (UnknownAETException e) { }
                 InetAddress addr = null;
@@ -938,7 +938,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         return issuer;
     }
 
-    private String getAssociatedInstitutionName(Association as) {
+    private String getAssociatedInstitutionName(Association as, String aet) {
         String instName = (String) as.getProperty(ASSOC_INST_NAME);
         if (instName == null) {
             String deptName = null;
@@ -946,7 +946,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 AEManager aeMgr = aeMgr();
                 AEDTO ae = null;
                 try {
-                    ae = aeMgr.findByAET(as.getCallingAET());
+                    ae = aeMgr.findByAET(aet);
                     instName = ae.getInstitution();
                     deptName = ae.getDepartment();
                 } catch (UnknownAETException e) { }
@@ -988,13 +988,13 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         return instName;
     }
 
-    private String[] getAssociatedIssuerOfAccessionNumber(Association as) {
+    protected String[] getAssociatedIssuerOfAccessionNumber(Association as, String aet) {
         String[] issuer = (String[]) as.getProperty(ASSOC_ISSUER_OF_ACC_NO);
         if (issuer == null) {
             try {
                 AEManager aeMgr = aeMgr();
                 try {
-                    issuer = aeMgr.findByAET(as.getCallingAET())
+                    issuer = aeMgr.findByAET(aet)
                             .getIssuerOfAccessionNumber();
                 } catch (UnknownAETException e) { }
                 InetAddress addr = null;
@@ -1024,7 +1024,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         return issuer;
     }
 
-    private String getAssociatedInstitutionalDepartmentName(Association as) {
+    private String getAssociatedInstitutionalDepartmentName(Association as, String aet) {
         String deptName = (String) as.getProperty(ASSOC_DEPT_NAME);
         if (deptName == null) {
             String instName = null;
@@ -1032,7 +1032,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 AEManager aeMgr = aeMgr();
                 AEDTO ae = null;
                 try {
-                    ae = aeMgr.findByAET(as.getCallingAET());
+                    ae = aeMgr.findByAET(aet);
                     instName = ae.getInstitution();
                     deptName = ae.getDepartment();
                 } catch (UnknownAETException e) { }
@@ -1133,7 +1133,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public void supplementIssuerOfAccessionNumber(Dataset ds, Association as,
-            boolean onlyIfAccessionNumber) {
+            String aet, boolean onlyIfAccessionNumber) {
 
         if (!supplementIssuerOfAccessionNumber)
             return;
@@ -1141,7 +1141,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         String[] issuer = null;
         if (shallSupplementIssuerOfAccessionNumber(ds,
                 onlyIfAccessionNumber)) {
-            issuer = getAssociatedIssuerOfAccessionNumber(as);
+            issuer = getAssociatedIssuerOfAccessionNumber(as, aet);
             if (issuer.length == 0)
                 return;
             supplementIssuerOfAccessionNumber(ds, issuer);
@@ -1153,7 +1153,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 if (shallSupplementIssuerOfAccessionNumber(item, 
                         onlyIfAccessionNumber)) {
                     if (issuer == null)
-                        issuer = getAssociatedIssuerOfAccessionNumber(as);
+                        issuer = getAssociatedIssuerOfAccessionNumber(as, aet);
                     if (issuer.length == 0)
                         return;
                     supplementIssuerOfAccessionNumber(item, issuer);
@@ -1181,10 +1181,11 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 + StringUtils.toString(issuer, '^'));
     }
 
-    public void supplementInstitutionalData(Dataset ds, Association as) {
+    public void supplementInstitutionalData(Dataset ds, Association as,
+            String aet) {
         if (supplementInstitutionName
                 && !ds.containsValue(Tags.InstitutionName)) {
-            String name = getAssociatedInstitutionName(as);
+            String name = getAssociatedInstitutionName(as, aet);
             if (name.length() != 0) {
                 ds.putLO(Tags.InstitutionName, name);
                 log.info("Supplement Institution Name " + name);
@@ -1197,7 +1198,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
         if (supplementInstitutionalDepartmentName
                 && !ds.containsValue(Tags.InstitutionalDepartmentName)) {
-            String name = getAssociatedInstitutionalDepartmentName(as);
+            String name = getAssociatedInstitutionalDepartmentName(as, aet);
             if (name.length() != 0) {
                 ds.putLO(Tags.InstitutionalDepartmentName, name);
                 log.info("Supplement Institutional Department Name " + name);

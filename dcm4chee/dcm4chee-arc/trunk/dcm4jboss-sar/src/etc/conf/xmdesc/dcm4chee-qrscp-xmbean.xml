@@ -135,6 +135,34 @@ QueryRetrieveScp service.</description>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isAdjustPatientIDOnRetrieval"
+      setMethod="setAdjustPatientIDOnRetrieval">
+      <description><![CDATA[Nullify <i>Patient ID</i> in retrieved objects, if
+      its <i>Issuer of Patient ID</i> does not match the
+      <i>Issuer of Patient ID</i> associated to the retrieve destination
+      by a corresponding AE configuration entry.]]>
+      </description>
+      <name>AdjustPatientIDOnRetrieval</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isAdjustAccessionNumberOnRetrieval"
+      setMethod="setAdjustAccessionNumberOnRetrieval">
+      <description><![CDATA[Nullify <i>Accession Number</i> in retrieved objects,
+      if its <i>Issuer of Accession Number</i> does not match the
+      <i>Issuer of Accession Number</i> associated to the retrieve destination
+      by a corresponding AE configuration entry.]]>
+      </description>
+      <name>AdjustAccessionNumberOnRetrieval</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getDoNotDecompressTransferSyntaxes"
       setMethod="setDoNotDecompressTransferSyntaxes">
       <description><![CDATA[List of Transfer Syntaxes for (lossy) Image

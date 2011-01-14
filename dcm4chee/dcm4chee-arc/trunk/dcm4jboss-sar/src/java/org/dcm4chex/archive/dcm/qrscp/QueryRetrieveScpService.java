@@ -70,6 +70,7 @@ import javax.xml.transform.Templates;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.Status;
@@ -213,6 +214,10 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private String[] pixQueryIssuers;
     
     private String pixQueryDefIssuer;
+
+    private boolean adjustPatientIDOnRetrieval;
+
+    private boolean adjustAccessionNumberOnRetrieval;
 
     private int acTimeout = 5000;
 
@@ -396,6 +401,24 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setPixQueryDefIssuer(String pixQueryDefIssuer) {
         this.pixQueryDefIssuer = pixQueryDefIssuer;
+    }
+
+    public final boolean isAdjustPatientIDOnRetrieval() {
+        return adjustPatientIDOnRetrieval;
+    }
+
+    public final void setAdjustPatientIDOnRetrieval(
+            boolean adjustPatientIDOnRetrieval) {
+        this.adjustPatientIDOnRetrieval = adjustPatientIDOnRetrieval;
+    }
+
+    public final boolean isAdjustAccessionNumberOnRetrieval() {
+        return adjustAccessionNumberOnRetrieval;
+    }
+
+    public final void setAdjustAccessionNumberOnRetrieval(
+            boolean adjustAccessionNumberOnRetrieval) {
+        this.adjustAccessionNumberOnRetrieval = adjustAccessionNumberOnRetrieval;
     }
 
     public final String getUnrestrictedQueryPermissionsToAETitles() {
@@ -1387,6 +1410,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
                         .fromByteArray(info.seriesAttrs, DatasetUtils
                                 .fromByteArray(info.instAttrs))));
         }
+        adjustPatientIDOnRetrieval(mergeAttrs, assoc, dest);
+        adjustAccessionNumberOnRetrieval(mergeAttrs, assoc, dest);
         coerceOutboundCStoreRQ(mergeAttrs, aeData, assoc);
         byte[] buf = (byte[]) assoc.getProperty(SEND_BUFFER);
         if (buf == null) {
@@ -1441,7 +1466,81 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
         postCoercionProcessing(ds, Command.C_STORE_RQ,assoc);
     }
-    
+
+    private void adjustPatientIDOnRetrieval(Dataset ds, Association as,
+            String dest) {
+        String pid;
+        String issuer;
+        if (adjustPatientIDOnRetrieval 
+                && (pid = ds.getString(Tags.PatientID)) != null
+                && (issuer = ds.getString(Tags.IssuerOfPatientID)) != null
+                && !equals(issuer, getAssociatedIssuerOfPatientID(as, dest))) {
+            log.info("Move Patient ID with issuer " + issuer
+                    + " to Other Patient ID Sequence");
+            ds.putLO(Tags.PatientID);
+            ds.remove(Tags.IssuerOfPatientID);
+            Dataset opid = ds.putSQ(Tags.OtherPatientIDSeq).addNewItem();
+            opid.putLO(Tags.PatientID, pid);
+            opid.putLO(Tags.IssuerOfPatientID, issuer);
+        }
+    }
+
+    private void adjustAccessionNumberOnRetrieval(Dataset ds,
+            Association as, String dest) {
+        if (adjustAccessionNumberOnRetrieval) {
+            doAdjustAccessionNumberOnRetrieval(ds, as, dest);
+            doAdjustAccessionNumberOnRetrieval(
+                    ds.get(Tags.RequestAttributesSeq), as, dest);
+            doAdjustAccessionNumberOnRetrieval(
+                    ds.get(Tags.RefRequestSeq), as, dest);
+        }
+    }
+
+    private void doAdjustAccessionNumberOnRetrieval(
+            DcmElement sq, Association as, String dest) {
+        if (sq != null)
+            for (int i = 0, n = sq.countItems(); i < n; i++)
+                doAdjustAccessionNumberOnRetrieval(sq.getItem(i), as, dest);
+    }
+
+    private void doAdjustAccessionNumberOnRetrieval(Dataset ds,
+            Association as, String dest) {
+        Dataset issuer;
+        if (ds.containsValue(Tags.AccessionNumber)
+                && (issuer = ds.getItem(Tags.IssuerOfAccessionNumberSeq))
+                        != null
+                && !equalsIssuer(issuer,
+                        getAssociatedIssuerOfAccessionNumber(as, dest))) {
+            log.info("Nullify Accession Number with issuer "
+                    + issuer.getString(Tags.LocalNamespaceEntityID)
+                    + '&'
+                    + issuer.getString(Tags.UniversalEntityID)
+                    + '&'
+                    + issuer.getString(Tags.UniversalEntityIDType)
+                    );
+            ds.putSH(Tags.AccessionNumber);
+            ds.remove(Tags.IssuerOfAccessionNumberSeq);
+        }
+    }
+
+    private boolean equalsIssuer(Dataset item, String[] assocIssuer) {
+        return assocIssuer.length == 0
+                || equals(item.getString(Tags.LocalNamespaceEntityID),
+                        assocIssuer[0])
+                && (assocIssuer.length == 1
+                || equals(item.getString(Tags.UniversalEntityID),
+                        assocIssuer[1])
+                && (assocIssuer.length == 2
+                || equals(item.getString(Tags.UniversalEntityIDType),
+                                assocIssuer[2])));
+    }
+
+    private boolean equals(String s1, String s2) {
+        return s1 == null || s1.length() == 0 
+                || s2 == null || s2.length() == 0
+                || s1.equals(s2);
+    }
+
     private PresContext selectAcceptedPresContext(Association a, FileInfo info) {
         String[] tsuids = { UIDs.NoPixelDataDeflate, UIDs.NoPixelData,
                 info.tsUID, UIDs.ExplicitVRLittleEndian,
