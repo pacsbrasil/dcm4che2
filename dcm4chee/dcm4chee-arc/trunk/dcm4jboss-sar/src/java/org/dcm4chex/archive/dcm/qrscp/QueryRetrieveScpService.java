@@ -1412,7 +1412,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
         adjustPatientIDOnRetrieval(mergeAttrs, assoc, dest);
         adjustAccessionNumberOnRetrieval(mergeAttrs, assoc, dest);
-        coerceOutboundCStoreRQ(mergeAttrs, aeData, assoc);
+        coerceOutboundCStoreRQ(mergeAttrs, aeData, assoc, dest);
         byte[] buf = (byte[]) assoc.getProperty(SEND_BUFFER);
         if (buf == null) {
             buf = new byte[bufferSize];
@@ -1444,14 +1444,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
      *            the active association
      */
     protected void coerceOutboundCStoreRQ(Dataset ds, AEDTO aeData,
-            Association assoc) throws Exception {
+            Association assoc, String dest) throws Exception {
         /*
          * Apply outbound CStore sytlesheet
          */
         Templates coerceTpl = (Templates) assoc.getProperty(COERCE_TPL);
         if (coerceTpl == null) {
-            coerceTpl = getCoercionTemplates(assoc.getCalledAET(),
-                    CSTORE_OUT_XSL);
+            coerceTpl = getCoercionTemplates(dest, CSTORE_OUT_XSL);
             assoc.putProperty(COERCE_TPL, coerceTpl);
         }
         Dataset coerce = getCoercionAttributesFor(assoc, CSTORE_OUT_XSL, ds,
