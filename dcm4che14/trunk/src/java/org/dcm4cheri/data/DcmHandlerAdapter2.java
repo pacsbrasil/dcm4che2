@@ -431,7 +431,8 @@ class DcmHandlerAdapter2 implements DcmHandler {
         String s = cs == null ? new String(data, start, length)
                               : cs.decode(data, start, length);
         if (tag == Tags.SpecificCharacterSet) {
-            this.cs = SpecificCharacterSet.valueOf(StringUtils.split(s, '\\'));
+            this.cs = SpecificCharacterSet.valueOf(
+                    StringUtils.split(s.trim(), '\\'));
         }
         for (int pos = 0; pos < s.length();) {
             int end = Math.min(s.length(), pos + cbuf.length);
