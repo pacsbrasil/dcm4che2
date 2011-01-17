@@ -345,7 +345,12 @@ will be replace by a new Patient ID generated according configured
 If <b>StoreOriginalPatientIDInOtherPatientIDsSequence</b> = <code>true</code>,
 the original <i>Patient ID</i> and <i>Issuer of Patient ID</i> in the received
 DICOM Composite Object will be stored in an item of the <i>Other Patient IDs
-Sequence</i>.]]>
+Sequence</i>.
+<p><b>Attention:</b>
+<br/>Only change the default value of
+<code>pid,issuer?[familyname,givenname,middlename?,birthdate]</code>
+if you know, what you are doing!
+]]>
       </description>
       <name>PatientMatching</name>
       <type>java.lang.String</type>
