@@ -43,7 +43,7 @@ dcm4chee-2.16.0 archive also make use of
 - dcm4chee-docstore : Generic Document Storage (used by RID - Retrieve Information for Display) 
 
 which sources are not included by dcm4chee-2.16.0-src.zip, but provided in a
-separate ZIP archive: dcm4chee-docstore-1.0.0-src.zip at
+separate ZIP archive: dcm4chee-docstore-1.0.2-src.zip at
 http://sourceforge.net/projects/dcm4che. Follow the build instructions include
 in dcm4chee-docstore, to build and install these artifacts in your local Maven
 Repository (default: ~/.m2/repository) for usage by following build task for 
@@ -54,7 +54,7 @@ dcm4chee-2.16.0 archive has compile dependency to
 - dcm4chee-xds-infoset : XDS Infoset classes (XDS Query for Consumer and Document Lifecycle)
 
 which sources are not included by dcm4chee-2.16.0-src.zip, but provided in a
-separate ZIP archive: dcm4chee-xds-infoset-1.0.0-src.zip at
+separate ZIP archive: dcm4chee-xds-infoset-1.0.2-src.zip at
 http://sourceforge.net/projects/dcm4che. Follow the build instructions include
 in dcm4chee-xds-infoset, to build and install these artifacts in your local Maven
 Repository (default: ~/.m2/repository) for usage by following build task for 

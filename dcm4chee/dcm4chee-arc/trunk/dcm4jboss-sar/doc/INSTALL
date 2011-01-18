@@ -265,15 +265,15 @@ system, with the path of the dcm4chee-cdw-2.16.0 installation directory as
 parameter.
 
 
-DEPLOY DCM4CHEE XDS REPOSITORY 1.0.0 with DCM4CHEE ARCHIVE:
+DEPLOY DCM4CHEE XDS REPOSITORY 1.0.2 with DCM4CHEE ARCHIVE:
 ==========================================================
 There is a separate binary distribution packages for dcm4chee XDS Repository
-1.0.0 (dcm4chee-xds-1.0.0) available at
+1.0.2 (dcm4chee-xds-1.0.2) available at
 http://sourceforge.net/projects/dcm4che .
-You may deploy dcm4chee-xds-1.0.0 in the same JBoss instance as dcm4che
+You may deploy dcm4chee-xds-1.0.2 in the same JBoss instance as dcm4che
 archive:
 
-1. Download and extract the binary distribution package of dcm4chee-xds-1.0.0.
+1. Download and extract the binary distribution package of dcm4chee-xds-1.0.2.
 
 2. Download the binary distribution package of JBoss Web Service
 jbossws-3.0.1-native-2.0.4.GA from http://www.jboss.org/jbossws/downloads
@@ -281,11 +281,11 @@ and extract it into a different directory.
 
 3. Move to the dcm4chee-2.16.0-xxx/bin directory and execute the
 install_xds.bat or install_xds.sh script, as appropriate for your operating
-system, with the path of the dcm4chee-xds-1.0.0 installation directory as
+system, with the path of the dcm4chee-xds-1.0.2 installation directory as
 parameter.
 
 4. Execute the patch_jbossws.bat or patch_jbossws.sh script, as appropriate
-for your operating system, with the path of the dcm4chee-xds-1.0.0 installation
+for your operating system, with the path of the dcm4chee-xds-1.0.2 installation
 installation directory as parameter. Necessary to accept faulty
 (AttachmentPart Id mismatch) SwA (SOAP with Attachment) requests from Axis2
 based Web Service clients and to disable schema validation during deployment,
