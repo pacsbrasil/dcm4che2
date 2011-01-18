@@ -4,7 +4,7 @@
   <property file="../build.properties"/>
 
   <property name="version" value="2.16.0"/>
-  <property name="audit-version" value="2.15.0"/>
+  <property name="audit-version" value="2.16.0"/>
   <property name="docstore-version" value="1.0.0"/>
   <property name="target.dir" value="${basedir}/target"/>
 
@@ -113,7 +113,7 @@
         <include name="lib/dcm4che.jar"/>
       </zipfileset>
       <zipfileset dir="${dcm4che14.home}" prefix="${dist.db.config}">
-        <include name="lib/dcm4che-imageio-rle-2.0.21.jar"/>
+        <include name="lib/dcm4che-imageio-rle-2.0.25.jar"/>
         <include name="lib/slf4j-api-1.6.1.jar"/>
         <include name="lib/slf4j-log4j12-1.6.1.jar"/>
         <include name="lib/jai_imageio.jar"/>
@@ -172,7 +172,7 @@
       </zipfileset>
       <zipfileset dir="../dcm4jboss-sar" prefix="${dist.db.config}">
         <include name="lib/commons-compress-20050911.jar"/>
-        <include name="lib/dcm4che-audit-2.0.21.jar"/>
+        <include name="lib/dcm4che-audit-2.0.25.jar"/>
       </zipfileset>
       <zipfileset dir="../dcm4jboss-sar/src/etc" prefix="${dist.db.config}">
         <include name="conf/**"/>
