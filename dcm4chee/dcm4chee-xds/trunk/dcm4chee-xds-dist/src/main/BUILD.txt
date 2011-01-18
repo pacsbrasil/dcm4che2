@@ -12,22 +12,22 @@ dcm4chee-xds also make use of
 
 - dcm4chee-docstore : Generic Document Storage (used by RID - Retrieve Information for Display) 
 
-which sources are not included by dcm4chee-xds-1.0.2-src.zip, but provided in a
-separate ZIP archive: dcm4chee-docstore-1.0.2-src.zip at
+which sources are not included by dcm4chee-xds-1.0.3-src.zip, but provided in a
+separate ZIP archive: dcm4chee-docstore-1.0.3-src.zip at
 http://sourceforge.net/projects/dcm4che.
 
-$ cd dcm4chee-docstore-1.0.2
+$ cd dcm4chee-docstore-1.0.3
 $ mvn install
 
 dcm4chee-xds also make use of
 
 - dcm4chee-xds-infoset : XDS Infoset classes (XDS Query for Consumer and Document Lifecycle)
 
-which sources are not included by dcm4chee-xds-1.0.2-src.zip, but provided in a
-separate ZIP archive: dcm4chee-xds-infoset-1.0.2-src.zip at
+which sources are not included by dcm4chee-xds-1.0.3-src.zip, but provided in a
+separate ZIP archive: dcm4chee-xds-infoset-1.0.3-src.zip at
 http://sourceforge.net/projects/dcm4che. 
 
-$ cd dcm4chee-xds-infoset-1.0.2
+$ cd dcm4chee-xds-infoset-1.0.3
 $ mvn install
 
 Build dcm4chee-xds modules:
@@ -43,6 +43,6 @@ Afterwards
 $ cd dcm4chee-xds-dist
 $ mvn assembly:assembly
 
-will assembly the binary distribution package dcm4chee-xds-1.0.2.zip,
+will assembly the binary distribution package dcm4chee-xds-1.0.3.zip,
 including the jar and war and sar along with MBean configuration files 
 and third-party libraries. (dcm4che-core-2.0.21.jar)
