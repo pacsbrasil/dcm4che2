@@ -109,8 +109,8 @@ public class MWLScuDelegate {
         List resp = new ArrayList();
         try {
             server.invoke(mwlScuServiceName, "findMWLEntries",
-                    new Object[] { ds, resp },
-                    new String[] { Dataset.class.getName(), List.class.getName() });
+                    new Object[] { ds, Boolean.FALSE, resp },
+                    new String[] { Dataset.class.getName(), boolean.class.getName(), List.class.getName() });
         } catch (Exception x) {
             log.error("Exception occured in findMWLEntries: " + x.getMessage(),
                     x);
