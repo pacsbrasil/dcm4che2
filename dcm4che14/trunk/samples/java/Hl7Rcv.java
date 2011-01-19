@@ -86,7 +86,8 @@ public class Hl7Rcv implements HL7Service
             new LongOpt("tls-cacerts-passwd", LongOpt.REQUIRED_ARGUMENT, null, 2),
             new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
             new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'v'),
-            new LongOpt("dest", LongOpt.REQUIRED_ARGUMENT, null, 2)
+            new LongOpt("dest", LongOpt.REQUIRED_ARGUMENT, null, 2),
+            new LongOpt("msg-types", LongOpt.REQUIRED_ARGUMENT, null, 2)
             };
 
     private static ResourceBundle messages = ResourceBundle.getBundle(
@@ -154,6 +155,13 @@ public class Hl7Rcv implements HL7Service
         handler.putService("ADT", this);
         handler.putService("ORM", this);
         handler.putService("ORU", this);       
+        String[] msgTypes = cfg.tokenize(cfg.getProperty("msg-types", "", "<none>", ""));
+        if (msgTypes != null) {
+            log.info("Additional msg-types="+msgTypes);
+            for (int i = 0 ; i < msgTypes.length ; i++) {
+                handler.putService(msgTypes[i], this);
+            }
+        }
     }
 
 
