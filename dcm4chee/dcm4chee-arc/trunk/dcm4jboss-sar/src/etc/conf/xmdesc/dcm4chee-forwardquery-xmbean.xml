@@ -115,17 +115,6 @@
       <type>long</type>
    </attribute>
 
-   <attribute access="read-write" setMethod="setOneMoveOrderForEachSeries"
-      getMethod="isOneMoveOrderForEachSeries">
-      <description>Schedule one Move Order for each Series!
-      </description>
-      <name>OneMoveOrderForEachSeries</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-
    <attribute access="read-write" getMethod="getForwardPriority" setMethod="setForwardPriority">
       <description>Forwarding priority. Enumerated Values: LOW, MEDIUM, HIGH.
       </description>
