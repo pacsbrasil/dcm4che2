@@ -85,9 +85,7 @@ NotificationListener {
     private String sql;
     private QueryForwardCmd sqlCmd;
     private boolean sqlIsValid = false;
-    String lastCheckResult = null;
-    private boolean oneMoveOrderForEachSeries = true;
-    
+    String lastCheckResult = null;    
     
     public final String getCalledAET() {
         return calledAET;
@@ -141,14 +139,6 @@ NotificationListener {
         
     public long getLastSeriesPk() {
         return lastSeriesPk;
-    }
-
-    public boolean isOneMoveOrderForEachSeries() {
-        return oneMoveOrderForEachSeries;
-    }
-
-    public void setOneMoveOrderForEachSeries(boolean oneMoveOrderForEachSeries) {
-        this.oneMoveOrderForEachSeries = oneMoveOrderForEachSeries;
     }
 
     private void checkSQL(String sql) throws SQLException {
@@ -288,13 +278,8 @@ NotificationListener {
             for ( Map.Entry<String, List<String>> entry : orders.entrySet() ) {
                 series = entry.getValue();
                 nrOfSeries += series.size();
-                if (oneMoveOrderForEachSeries) {
-                    for (int i = 0, len = series.size() ; i < len ; i++) {
-                        order = new MoveOrder(entry.getKey(), calledAET, forwardPriority, null, null, series.get(i), null);
-                        this.scheduleMove(order, scheduledTime);
-                    }
-                } else {
-                    order = new MoveOrder(entry.getKey(), calledAET, forwardPriority, null, null, series.toArray(new String[series.size()]));
+                for (int i = 0, len = series.size() ; i < len ; i++) {
+                    order = new MoveOrder(entry.getKey(), calledAET, forwardPriority, null, null, series.get(i), null);
                     this.scheduleMove(order, scheduledTime);
                 }
             }
