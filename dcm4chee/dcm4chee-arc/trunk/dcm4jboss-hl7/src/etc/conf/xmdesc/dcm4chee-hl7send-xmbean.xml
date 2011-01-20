@@ -94,6 +94,23 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getForwardTemplateDir"
+      setMethod="setForwardTemplateDir">
+      <description><![CDATA[Directory where template file(s) are located
+      to change the original HL7 message before forwarding it.<br />
+      A stylesheet can be message type specific ("hl7forward_&lt;MSG Type&gt;^&lt;Event Type&gt;.xsl" or "hl7forward_&lt;MSG Type&gt;.xsl")
+      or generic "hl7forward.xsl" 
+      and placed in this directory or in a sub-directory equal to '&lt;Sending Application&gt;^&lt;Sending Facility&gt;'.<br />
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>
+      </description>
+      <name>ForwardTemplateDir</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-hl7"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getAcTimeout"
       setMethod="setAcTimeout">
       <description>Acknowledge timeout in ms. 0 = no timeout.
@@ -160,6 +177,14 @@
       <name>JMSServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>         
+   <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->

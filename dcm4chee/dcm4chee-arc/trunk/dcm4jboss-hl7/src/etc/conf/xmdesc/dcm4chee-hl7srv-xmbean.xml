@@ -301,6 +301,23 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTemplateDir"
+      setMethod="setTemplateDir">
+      <description><![CDATA[Directory where template file(s) are located
+      to preprocess the received HL7 message.<br />
+      A stylesheet can be message type specific ("hl7forward_&lt;MSG Type&gt;^&lt;Event Type&gt;.xsl" or "hl7forward_&lt;MSG Type&gt;.xsl")
+      or generic "hl7forward.xsl" 
+      and placed in this directory or in a sub-directory equal to '&lt;Sending Application&gt;^&lt;Sending Facility&gt;'.<br />
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>
+      </description>
+      <name>PreprocessTemplateDir</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-hl7"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getTLSConfigName"
       setMethod="setTLSConfigName">
       <description>Used internally - do NOT modify.

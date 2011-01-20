@@ -26,5 +26,7 @@
       >dcm4chee.archive:service=TLSConfig</depends>
     <depends optional-attribute-name="JMSServiceName"
       >dcm4chee.archive:service=JMS</depends>
+    <depends optional-attribute-name="TemplatesServiceName"
+      >dcm4chee.archive:service=Templates</depends>
   </mbean>
 </server>

@@ -61,9 +61,12 @@ import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 
 import org.dcm4che.server.Server;
@@ -74,6 +77,7 @@ import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dom4j.Document;
+import org.dom4j.io.DocumentResult;
 import org.dom4j.io.DocumentSource;
 import org.dom4j.io.SAXContentHandler;
 import org.jboss.system.ServiceMBeanSupport;
@@ -108,6 +112,8 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         }
     };
 
+    private static final String PREPROCESS_XSL = "preprocess";
+    private static final String XSL_EXT = ".xsl";
     private String charsetName = "ISO-8859-1";
 
     private String ackXslPath;
@@ -169,6 +175,14 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         this.logXslPath = path;
     }
 
+    public final String getTemplateDir() {
+        return templates.getConfigDir();
+    }
+
+    public final void setTemplateDir(String path) {
+        templates.setConfigDir(path);
+    }
+
     public final ObjectName getTemplatesServiceName() {
         return templates.getTemplatesServiceName();
     }
@@ -176,7 +190,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
     public final void setTemplatesServiceName(ObjectName serviceName) {
         templates.setTemplatesServiceName(serviceName);
     }
-    
+        
     public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
     }
@@ -437,6 +451,26 @@ public class HL7ServerService extends ServiceMBeanSupport implements
                         fileReceivedHL7AsXML(msg, new File(logDir, 
                                 new DecimalFormat("'hl7-'000000'.xml'").format(msgNo)));
                     }
+                    Document newMsg = preprocessHL7(msg);
+                    if (newMsg != null) {
+                        msg = newMsg;
+                        if (fileReceivedHL7AsXML) {
+                            fileReceivedHL7AsXML(msg, new File(logDir, 
+                                    new DecimalFormat("'hl7-'000000'.preprocessed.xml'").format(msgNo)));
+                        }
+                        ByteArrayOutputStream bos = new ByteArrayOutputStream(msglen);
+                        XMLWriter xmlWriter1 = new HL7XMLWriter(
+                                new OutputStreamWriter(bos, getCharsetName()));
+                        SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
+                        try {
+                            Transformer t = tf.newTransformer();
+                            t.transform(new DocumentSource(msg), new SAXResult(xmlWriter1.getContentHandler()));
+                            bb = bos.toByteArray();
+                            msglen = bb.length;
+                        } catch (Exception x) {
+                            log.error("Failed to preprocess HL7 message!", x);
+                        }
+                    }
                     MSH msh = new MSH(msg);
                     HL7Service service = getService(msh);
                     if (service == null || service.process(msh, msg, hl7out)) {
@@ -470,6 +504,37 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         }
     }
 
+    private Document preprocessHL7(Document msg) {
+        MSH msh = new MSH(msg);
+        String sending = msh.sendingApplication + '^' + msh.sendingFacility;
+        String xslFile = PREPROCESS_XSL+"_"+msh.messageType+"^"+msh.triggerEvent+XSL_EXT;
+        Templates xslt = templates.getTemplatesForAET(sending, xslFile);
+        if (xslt == null) {
+            log.info("No "+xslFile+" for "+sending+" found. Try to find hl7 preprocess stylesheet with message type.");
+            xslFile = PREPROCESS_XSL+"_"+msh.messageType+XSL_EXT;
+            xslt = templates.getTemplatesForAET(sending, xslFile);
+            if (xslt == null) {
+                log.info("No "+xslFile+" for "+sending+" found. Try to find generic hl7 preprocess stylesheet.");
+                xslFile = PREPROCESS_XSL+XSL_EXT;
+                xslt = templates.getTemplatesForAET(sending, xslFile);
+            }
+        }
+        if (xslt != null) {
+            log.info("Preprocess HL7 message with stylesheet "+xslFile+ " for "+sending);
+            try {
+                Transformer t;
+                t = xslt.newTransformer();
+                DocumentResult result =new DocumentResult();
+                t.transform(new DocumentSource(msg), result);
+                return result.getDocument();
+            } catch (Exception x) {
+                log.error("Can not apply preprocess stylesheet!", x);
+            }
+            
+        }
+        return null;
+    }
+    
     private void fileReceivedHL7(byte[] bb, int msglen, File logfile) {
         if (logfile.getParentFile().mkdirs()) {
             log.info("M-WRITE " + logfile.getParentFile());
