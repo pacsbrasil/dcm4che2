@@ -195,10 +195,27 @@ attributes by HL7 ADT messages! => Only change the default value of
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTemplateDir"
+      setMethod="setTemplateDir">
+      <description><![CDATA[Directory where template file(s) are located.<br />
+      Base dir: <code>TemplateDir</code><br/>
+      If this name contains a '/' the configured <code>TemplateDir</code> will be NOT applied! 
+      In this case the name is the full path of the stylesheet and a relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>
+      </description>
+      <name>TemplateDir</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-hl7"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getPidStylesheet"
       setMethod="setPidStylesheet">
-      <description><![CDATA[Stylesheet for HL7 PID to DICOM Patient Module
-      mapping. A relative path name is resolved relative to
+      <description><![CDATA[Stylesheet for HL7 PID to DICOM Patient Module mapping. <br />
+      Base dir: <code>TemplateDir</code><br/>
+      If this name contains a '/' the configured <code>TemplateDir</code> will be NOT applied! 
+      In this case the name is the full path of the stylesheet and a relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>
       <name>PidStylesheet</name>
@@ -210,8 +227,10 @@ attributes by HL7 ADT messages! => Only change the default value of
    <attribute access="read-write"
       getMethod="getMrgStylesheet"
       setMethod="setMrgStylesheet">
-      <description><![CDATA[Stylesheet for HL7 MRG to DICOM Patient Module
-      mapping. A relative path name is resolved relative to
+      <description><![CDATA[Stylesheet for HL7 MRG to DICOM Patient Module mapping.<br />
+      Base dir: <code>TemplateDir</code><br/>
+      If this name contains a '/' the configured <code>TemplateDir</code> will be NOT applied! 
+      In this case the name is the full path of the stylesheet and a relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>
       <name>MrgStylesheet</name>

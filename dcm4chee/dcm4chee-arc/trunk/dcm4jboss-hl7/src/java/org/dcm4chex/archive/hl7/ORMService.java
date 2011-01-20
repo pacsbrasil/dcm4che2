@@ -66,6 +66,7 @@ import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.exceptions.DuplicateMWLItemException;
 import org.dcm4chex.archive.exceptions.PatientMergedException;
 import org.dcm4chex.archive.exceptions.PatientMismatchException;
+import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.XSLTUtils;
 import org.dom4j.Document;
@@ -80,7 +81,7 @@ import org.xml.sax.ContentHandler;
  */
 
 public class ORMService extends AbstractHL7Service {
-    
+    private TemplatesDelegate aeTemplates = new TemplatesDelegate(this);
     private static final String MWL2STORE_XSL = "mwl-cfindrsp2cstorerq.xsl";
 
     private static final String[] OP_CODES = { "NW", "XO", "CA", "NOOP",
@@ -200,11 +201,11 @@ public class ORMService extends AbstractHL7Service {
     }
 
     public final String getMWL2StoreConfigDir() {
-        return templates.getConfigDir();
+        return aeTemplates.getConfigDir();
     }
 
     public final void setMWL2StoreConfigDir(String path) {
-        templates.setConfigDir(path);
+        aeTemplates.setConfigDir(path);
     }
 
     public boolean process(MSH msh, Document msg, ContentHandler hl7out)
@@ -333,7 +334,7 @@ public class ORMService extends AbstractHL7Service {
             List<Dataset> mppsList, MPPSManager mppsManager) throws Exception {
         for (Dataset mpps : mppsList) {
             String aet = mpps.getString(Tags.PerformedStationAET);
-            Templates xslt = templates.getTemplatesForAET(aet, MWL2STORE_XSL);
+            Templates xslt = aeTemplates.getTemplatesForAET(aet, MWL2STORE_XSL);
             if (xslt == null) {
                 log.warn("Failed to find or load stylesheet "
                             + MWL2STORE_XSL

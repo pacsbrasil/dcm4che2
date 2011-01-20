@@ -111,10 +111,24 @@ public abstract class AbstractHL7Service extends ServiceMBeanSupport implements
         }
     }
 
+    public final String getTemplateDir() {
+        return templates.getConfigDir();
+    }
+
+    public final void setTemplateDir(String path) {
+        templates.setConfigDir(path);
+    }
+    
     protected Dataset xslt(Document msg, String xslPath) throws Exception {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
-        File pidXslFile = FileUtils.toExistingFile(xslPath);
-        Transformer t = templates.getTemplates(pidXslFile).newTransformer();
+        Transformer t;
+        if (xslPath.indexOf('/') != -1) {
+            File pidXslFile = FileUtils.toExistingFile(xslPath);
+            t = templates.getTemplates(pidXslFile).newTransformer();
+        } else {
+            MSH msh = new MSH(msg);
+            t = templates.getTemplatesForAET(msh.sendingApplication+"^"+msh.sendingFacility, xslPath).newTransformer();
+        }
         t.transform(new DocumentSource(msg), new SAXResult(ds
                 .getSAXHandler2(null)));
         return ds;
