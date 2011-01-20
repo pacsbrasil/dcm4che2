@@ -39,9 +39,16 @@
 
 package org.dcm4chex.archive.dcm.ianscu;
 
+import java.io.File;
 import java.io.IOException;
+import java.rmi.RemoteException;
+import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import javax.ejb.CreateException;
+import javax.ejb.FinderException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -51,6 +58,11 @@ import javax.management.NotificationFilter;
 import javax.management.NotificationFilterSupport;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
 
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
@@ -78,9 +90,13 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManager;
 import org.dcm4chex.archive.ejb.interfaces.MPPSManagerHome;
 import org.dcm4chex.archive.mbean.JMSDelegate;
+import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.notif.StudyDeleted;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
+import org.xml.sax.Attributes;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -174,8 +190,11 @@ public class IANScuService extends AbstractScuService implements
     private int concurrency = 1;
 
     private boolean onMppsLinkedEnabled;
+    
+    private String xslPath;
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
+    private TemplatesDelegate templates = new TemplatesDelegate(this);
 
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
@@ -210,6 +229,10 @@ public class IANScuService extends AbstractScuService implements
     public final void setNotifiedAETs(String notifiedAETs) {
         this.notifiedAETs = NONE.equalsIgnoreCase(notifiedAETs) ? EMPTY
                 : StringUtils.split(notifiedAETs, '\\');
+    }
+    
+    public boolean isEnabled() {
+        return notifiedAETs.length != 0 || this.xslPath != null;
     }
 
     public final void setNotifyOtherServices(boolean notifyOtherServices) {
@@ -272,6 +295,22 @@ public class IANScuService extends AbstractScuService implements
         this.scnPriority = DicomPriority.toCode(scnPriority);
     }
 
+    public final String getStylesheet() {
+        return xslPath == null ? NONE : xslPath;
+    }
+
+    public void setStylesheet(String path) {
+        this.xslPath = NONE.equals(path) ? null : path;
+    }
+
+    public final ObjectName getTemplatesServiceName() {
+        return templates.getTemplatesServiceName();
+    }
+
+    public final void setTemplatesServiceName(ObjectName serviceName) {
+        templates.setTemplatesServiceName(serviceName);
+    }
+    
     public final ObjectName getStoreScpServiceName() {
         return storeScpServiceName;
     }
@@ -338,7 +377,7 @@ public class IANScuService extends AbstractScuService implements
     }
 
     private void onSeriesStored(SeriesStored stored) {
-        if (!notifyOtherServices && notifiedAETs.length == 0)
+        if (!notifyOtherServices && !isEnabled())
             return;
         Dataset ian = stored.getIAN();
         if (!sendOneIANforEachMPPS) {
@@ -347,7 +386,7 @@ public class IANScuService extends AbstractScuService implements
         }
         Dataset pps = ian.getItem(Tags.RefPPSSeq);
         if (pps != null
-                && (notifyOtherServices || (sendOneIANforEachMPPS && notifiedAETs.length > 0))) {
+                && (notifyOtherServices || (sendOneIANforEachMPPS && isEnabled()))) {
             notifyIfRefInstancesAvailable(pps.getString(Tags.RefSOPInstanceUID),
                     stored.getSeriesInstanceUID());
         }
@@ -391,7 +430,7 @@ public class IANScuService extends AbstractScuService implements
 
     private boolean isIgnoreMPPS(Dataset mpps) {
         if (!notifyOtherServices
-                && (notifiedAETs.length == 0 || !sendOneIANforEachMPPS)) {
+                && (!isEnabled() || !sendOneIANforEachMPPS)) {
             return true;
         }
         if (mpps.get(Tags.PerformedSeriesSeq) == null) {
@@ -415,7 +454,7 @@ public class IANScuService extends AbstractScuService implements
     }
 
     private void onStudyDeleted(StudyDeleted deleted) {
-        if (notifiedAETs.length == 0)
+        if (!isEnabled())
             return;
         schedule(null, null, null,
                 deleted.getInstanceAvailabilityNotification());
@@ -427,8 +466,19 @@ public class IANScuService extends AbstractScuService implements
             log.debug("IAN Dataset:");
             log.debug(ian);
         }
-        for (int i = 0; i < notifiedAETs.length; ++i) {
-            IANOrder order = new IANOrder(notifiedAETs[i], patid, patname, studyid, ian);
+        Dataset mpps = null;
+        if ( xslPath != null) {
+            Dataset refpps = ian.getItem(Tags.RefPPSSeq);
+            if (refpps != null) {
+                try {
+                    mpps = getMPPSManagerHome().create().getMPPS(refpps.getString(Tags.RefSOPInstanceUID));
+                } catch (Exception x) {
+                    log.error("Failed to get referenced MPPS of IAN!", x);
+                }
+            }
+        }
+        for (String dest : getDestinations(mpps)) {
+            IANOrder order = new IANOrder(dest, patid, patname, studyid, ian);
             order.processOrderProperties();
             
             try {
@@ -439,6 +489,36 @@ public class IANScuService extends AbstractScuService implements
                 log.error("Failed to schedule " + order, e);
             }
         }
+    }
+
+    private Set<String> getDestinations(Dataset mpps) {
+        final Set<String> destinations = new HashSet<String>();
+        if (mpps != null && xslPath != null) {
+            try {
+                File xslFile = FileUtils.toExistingFile(xslPath);
+                Templates tpl = templates.getTemplates(xslFile);
+                log.debug("IAN SCU transform mpps:");
+                log.debug(mpps);
+                TransformerHandler th = ((SAXTransformerFactory)TransformerFactory.newInstance()).newTransformerHandler(tpl);
+                th.setResult(new SAXResult(new DefaultHandler(){
+
+                    public void startElement(String uri, String localName,
+                             String qName, Attributes attrs) {
+                         if (qName.equals("destination")) {
+                             destinations.add(attrs.getValue("aet"));
+                         }
+                     }
+                 }));
+                mpps.writeDataset2(th, null, null, 64, null);
+            } catch (Exception e) {
+                log.error("Applying IAN destination rules to MPPS fails:", e);
+            }
+
+        }
+        for (int i = 0; i < notifiedAETs.length; ++i) {
+            destinations.add(notifiedAETs[i]);
+        }
+        return destinations;
     }
 
     public void onMessage(Message message) {

@@ -29,6 +29,11 @@
          <value value="NONE"/>
       </descriptors>
    </attribute>
+   <attribute access="read-only" getMethod="isEnabled" >
+      <description>IAN Enabled? IAN SCU is enabled if NotifiedAETitles and/or Mpps2IanDestinationStylesheet not NONE</description>
+      <name>isEnabled</name>
+      <type>boolean</type>
+   </attribute>
    <attribute access="read-write"
       getMethod="isNotifyOtherServices"
       setMethod="setNotifyOtherServices">
@@ -124,6 +129,21 @@
          <value value="1"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getStylesheet"
+      setMethod="setStylesheet">
+      <description><![CDATA[Stylesheet to get (additional) destinations from MPPS informations. <br />
+      The output must contain a &lt;destination aet="DEST" &gt; element for each destination.
+      Use NONE to disable this feature.<br />
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>
+      </description>
+      <name>Mpps2IanDestinationStylesheet</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getScnPriority" setMethod="setScnPriority">
       <description>Priority used in Basic Study Content Notification Requests.
       Enumerated Values: LOW, MEDIUM, HIGH.
@@ -180,6 +200,14 @@
       <description>Used internally. Do not modify.
       </description>
       <name>ContentEditServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
 
