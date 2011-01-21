@@ -1552,6 +1552,7 @@
   <element tag="(0040,E004)" name="HL7 Document Effective Time" vr="DT" vm="1" key="HL7DocumentEffectiveTime" />
   <element tag="(0040,E006)" name="HL7 Document Type Code Sequence" vr="SQ" vm="1" key="HL7DocumentTypeCodeSeq" />
   <element tag="(0040,E010)" name="Retrieve URI" vr="UT" vm="1" key="RetrieveURI" />
+  <element tag="(0040,E011)" name="Retrieve Location UID" vr="UI" vm="1" key="RetrieveLocationUID" />
 
   <element tag="(0042,0010)" name="Document Title" vr="ST" vm="1" key="DocumentTitle" />
   <element tag="(0042,0011)" name="Encapsulated Document" vr="OB" vm="1" key="EncapsulatedDocument" />
