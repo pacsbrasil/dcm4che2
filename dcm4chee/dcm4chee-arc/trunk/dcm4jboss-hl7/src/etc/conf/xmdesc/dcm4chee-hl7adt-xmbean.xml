@@ -220,7 +220,7 @@ attributes by HL7 ADT messages! => Only change the default value of
       <name>PidStylesheet</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4chee-hl7/pid2dcm.xsl" />
+         <value value="pid2dcm.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -235,7 +235,7 @@ attributes by HL7 ADT messages! => Only change the default value of
       <name>MrgStylesheet</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4chee-hl7/mrg2dcm.xsl" />
+         <value value="mrg2dcm.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write"

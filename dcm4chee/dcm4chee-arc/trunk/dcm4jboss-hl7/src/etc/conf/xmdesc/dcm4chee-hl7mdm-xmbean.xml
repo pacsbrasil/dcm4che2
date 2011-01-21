@@ -38,9 +38,8 @@
       getMethod="getTemplateDir"
       setMethod="setTemplateDir">
       <description><![CDATA[Directory where template file(s) are located.<br />
-      Base dir: <code>TemplateDir</code><br/>
-      If this name contains a '/' or '\' the configured <code>TemplateDir</code> will be NOT applied! 
-      In this case the name is the full path of the stylesheet and a relative path name is resolved relative to
+      A stylesheet can be placed in this directory or in a sub-directory equal to '&lt;Sending Application&gt;^&lt;Sending Facility&gt;'.<br />
+      A relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>
       <name>TemplateDir</name>
@@ -53,13 +52,16 @@
       getMethod="getStylesheet"
       setMethod="setStylesheet">
       <description><![CDATA[Stylesheet for HL7 MDM^T02/T10 to DICOM Encapsulated
-      PDF mapping. A relative path name is resolved relative to
+      PDF mapping. <br/>
+      Base dir: <code>TemplateDir</code><br/>
+      If this name contains a '/' or '\' the configured <code>TemplateDir</code> will be NOT applied! 
+      In this case the name is the full path of the stylesheet and a relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>
       <name>Stylesheet</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4chee-hl7/mdm2pdf.xsl" />
+         <value value="mdm2pdf.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write" 
