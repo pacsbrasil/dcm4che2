@@ -287,6 +287,8 @@
   <element tag="(0010,0032)" name="Patient's Birth Time" vr="TM" vm="1" key="PatientBirthTime" />
   <element tag="(0010,0040)" name="Patient's Sex" vr="CS" vm="1" key="PatientSex" />
   <element tag="(0010,0050)" name="Patient's Insurance Plan Code Sequence" vr="SQ" vm="1" key="PatientInsurancePlanCodeSeq" />
+  <element tag="(0010,0101)" name="Patient’s Primary Language Code Sequence" vr="SQ" vm="1" key="PatientPrimaryLanguageCodeSeq" />
+  <element tag="(0010,0102)" name="Patient’s Primary Language Code Modifier Sequence" vr="SQ" vm="1" key="PatientPrimaryLanguageModifierCodeSeq" />
   <element tag="(0010,1000)" name="Other Patient IDs" vr="LO" vm="1-n" key="OtherPatientIDs" />    
   <element tag="(0010,1001)" name="Other Patient Names" vr="PN" vm="1-n" key="OtherPatientNames" />
   <element tag="(0010,1002)" name="Other Patient ID Sequence" vr="SQ" vm="1" key="OtherPatientIDSeq" />
