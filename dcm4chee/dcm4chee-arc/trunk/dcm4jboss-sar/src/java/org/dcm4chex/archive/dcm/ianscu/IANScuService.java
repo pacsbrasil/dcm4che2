@@ -41,14 +41,10 @@ package org.dcm4chex.archive.dcm.ianscu;
 
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
-import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.CreateException;
-import javax.ejb.FinderException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -666,12 +662,14 @@ public class IANScuService extends AbstractScuService implements
 
     public void scheduleIANforStudy(String uid) throws Exception {
         IANAndPatientID ian = fileSystemMgt().createIANforStudy(uid);
-        schedule(ian.patid, ian.patname, ian.studyid, ian.ian);
+        for (Dataset ds : ian.ians) {
+            schedule(ian.patid, ian.patname, ian.studyid, ds);
+        }
     }
 
     public void scheduleIANforSeries(String uid) throws Exception {
         IANAndPatientID ian = fileSystemMgt().createIANforSeries(uid);
-        schedule(ian.patid, ian.patname, ian.studyid, ian.ian);
+        schedule(ian.patid, ian.patname, ian.studyid, ian.ians.iterator().next());
    }
 
     static FileSystemMgt2 fileSystemMgt() throws Exception {

@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -622,10 +623,10 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Dataset createIANforStudy(Long studyPk)
+    public Collection<Dataset> createIANforStudy(Long studyPk)
             throws FinderException, NoSuchStudyException {
         try {
-            return createIAN(studyHome.findByPrimaryKey(studyPk));
+            return createIANs(studyHome.findByPrimaryKey(studyPk));
         } catch (ObjectNotFoundException e) {
             throw new NoSuchStudyException(e);
         }
@@ -640,32 +641,39 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             StudyLocal study = studyHome.findByStudyIuid(uid);
             Dataset styAttrs = study.getAttributes(false);
             Dataset patAttrs = study.getPatient().getAttributes(false);
-            Dataset ian = createIAN(study);
+            Collection<Dataset> ians = createIANs(study);
             return new IANAndPatientID(patAttrs.getString(Tags.PatientID),
                     patAttrs.getString(Tags.PatientName),
-                    styAttrs.getString(Tags.StudyID), ian);
+                    styAttrs.getString(Tags.StudyID), ians);
         } catch (ObjectNotFoundException e) {
             throw new NoSuchStudyException(e);
         }
     }
 
-    private Dataset createIAN(StudyLocal study) {
+    private Collection<Dataset> createIANs(StudyLocal study) {
         PatientLocal pat = study.getPatient();
-        Dataset ian = DcmObjectFactory.getInstance().newDataset();
-        ian.putAll(pat.getAttributes(false).subSet(IAN_PAT_TAGS));
-        ian.putSH(Tags.StudyID, study.getStudyId());
-        ian.putUI(Tags.StudyInstanceUID, study.getStudyIuid());
-        DcmElement refPPSSeq = ian.putSQ(Tags.RefPPSSeq);
-        HashSet ppsuids = new HashSet();
-        DcmElement refSerSeq = ian.putSQ(Tags.RefSeriesSeq);
-        Collection seriess = study.getSeries();
-        for (Iterator siter = seriess.iterator(); siter.hasNext();) {
+        Dataset ian;
+        DcmElement refSerSeq;
+        HashMap<String, Dataset> ianMap = new HashMap<String, Dataset>();
+        String refPPSIuid;
+        for (Iterator siter = study.getSeries().iterator(); siter.hasNext();) {
             SeriesLocal series = (SeriesLocal) siter.next();
             Dataset serAttrs = series.getAttributes(false);
             Dataset refPPS = serAttrs.getItem(Tags.RefPPSSeq);
-            if (refPPS != null
-                    && ppsuids.add(refPPS.getString(Tags.RefSOPInstanceUID))) {
-                refPPSSeq.addItem(refPPS);
+            refPPSIuid = refPPS == null ? null : refPPS.getString(Tags.RefSOPInstanceUID);
+            ian = ianMap.get(refPPSIuid);
+            if (ian == null) {
+                ian = DcmObjectFactory.getInstance().newDataset();
+                ian.putAll(pat.getAttributes(false).subSet(IAN_PAT_TAGS));
+                ian.putSH(Tags.StudyID, study.getStudyId());
+                ian.putUI(Tags.StudyInstanceUID, study.getStudyIuid());
+                DcmElement refPPSSeq = ian.putSQ(Tags.RefPPSSeq);
+                refSerSeq = ian.putSQ(Tags.RefSeriesSeq);
+                if (refPPSIuid != null)
+                    refPPSSeq.addItem(refPPS);
+                ianMap.put(refPPSIuid, ian);
+            } else {
+                refSerSeq = ian.get(Tags.RefSeriesSeq);
             }
             Dataset refSer = refSerSeq.addNewItem();
             refSer.putUI(Tags.SeriesInstanceUID, series.getSeriesIuid());
@@ -682,7 +690,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                         Availability.toString(inst.getAvailabilitySafe()));
              }
         }
-        return ian;
+        return ianMap.values();
     }
 
     /**
@@ -707,10 +715,11 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             StudyLocal study = series.getStudy();
             Dataset styAttrs = study.getAttributes(false);
             Dataset patAttrs = study.getPatient().getAttributes(false);
-            Dataset ian = createIAN(series);
+            ArrayList<Dataset> ians = new ArrayList<Dataset>(1);
+            ians.add(createIAN(series));
             return new IANAndPatientID(patAttrs.getString(Tags.PatientID),
                     patAttrs.getString(Tags.PatientName),
-                    styAttrs.getString(Tags.StudyID), ian);
+                    styAttrs.getString(Tags.StudyID), ians);
         } catch (ObjectNotFoundException e) {
             throw new NoSuchSeriesException(e);
         }
@@ -728,8 +737,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         DcmElement refSerSeq = ian.putSQ(Tags.RefSeriesSeq);
         Dataset serAttrs = series.getAttributes(false);
         Dataset refPPS = serAttrs.getItem(Tags.RefPPSSeq);
-        if (refPPS != null
-                && ppsuids.add(refPPS.getString(Tags.RefSOPInstanceUID))) {
+        if (refPPS != null) {
             refPPSSeq.addItem(refPPS);
         }
         Dataset refSer = refSerSeq.addNewItem();

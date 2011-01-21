@@ -253,10 +253,10 @@ public class DeleteStudyService extends ServiceMBeanSupport
 
     private void deleteStudy(DeleteStudyOrder order) throws Exception {
         FileSystemMgt2 fsMgt = fileSystemMgt();
-        Dataset ian = null;
+        Collection<Dataset> ians = null;
         // prepare IAN if study may be deleted from DB by fsMgt.deleteStudy()
         if (createIANonStudyDelete && deleteStudyFromDB) {
-            ian = fsMgt.createIANforStudy(order.getStudyPk());
+            ians = fsMgt.createIANforStudy(order.getStudyPk());
         }
         String[] filePaths = fsMgt.deleteStudy(order,
                 deleteStudyFromDB, deletePatientWithoutObjects);
@@ -272,16 +272,22 @@ public class DeleteStudyService extends ServiceMBeanSupport
         if (createIANonStudyDelete) {
             try {
                 try {
-                    ian = fsMgt.createIANforStudy(order.getStudyPk());
-                    updateRetrieveAET(ian, fsMgt.getFileSystem(order.getFsPk()).getRetrieveAET());
+                    ians = fsMgt.createIANforStudy(order.getStudyPk());
+                    for (Dataset ian : ians) {
+                        updateRetrieveAET(ian, fsMgt.getFileSystem(order.getFsPk()).getRetrieveAET());
+                    }
                 } catch (NoSuchStudyException e) {
                     // OK, in case of study was deleted from DB
-                    if (ian == null) {
+                    if (ians == null) {
                         throw e;
                     }
-                    updateAvailability(ian, "UNAVAILABLE");
+                    for (Dataset ian : ians) {
+                        updateAvailability(ian, "UNAVAILABLE");
+                    }
                 }
-                sendJMXNotification(new StudyDeleted(ian));
+                for (Dataset ian : ians) {
+                    sendJMXNotification(new StudyDeleted(ian));
+                }
             } catch (Exception e) {
                 log.error("Failed to create IAN on Study Delete:", e);
             }
