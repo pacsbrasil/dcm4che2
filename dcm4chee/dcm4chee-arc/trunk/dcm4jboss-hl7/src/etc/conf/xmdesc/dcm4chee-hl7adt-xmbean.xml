@@ -198,9 +198,8 @@ attributes by HL7 ADT messages! => Only change the default value of
       getMethod="getTemplateDir"
       setMethod="setTemplateDir">
       <description><![CDATA[Directory where template file(s) are located.<br />
-      Base dir: <code>TemplateDir</code><br/>
-      If this name contains a '/' the configured <code>TemplateDir</code> will be NOT applied! 
-      In this case the name is the full path of the stylesheet and a relative path name is resolved relative to
+      A stylesheet can be placed in this directory or in a sub-directory equal to '&lt;Sending Application&gt;^&lt;Sending Facility&gt;'.<br />
+      A relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>
       <name>TemplateDir</name>
@@ -214,7 +213,7 @@ attributes by HL7 ADT messages! => Only change the default value of
       setMethod="setPidStylesheet">
       <description><![CDATA[Stylesheet for HL7 PID to DICOM Patient Module mapping. <br />
       Base dir: <code>TemplateDir</code><br/>
-      If this name contains a '/' the configured <code>TemplateDir</code> will be NOT applied! 
+      If this name contains a '/' or '\' the configured <code>TemplateDir</code> will be NOT applied! 
       In this case the name is the full path of the stylesheet and a relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>
@@ -229,7 +228,7 @@ attributes by HL7 ADT messages! => Only change the default value of
       setMethod="setMrgStylesheet">
       <description><![CDATA[Stylesheet for HL7 MRG to DICOM Patient Module mapping.<br />
       Base dir: <code>TemplateDir</code><br/>
-      If this name contains a '/' the configured <code>TemplateDir</code> will be NOT applied! 
+      If this name contains a '/' or '\' the configured <code>TemplateDir</code> will be NOT applied! 
       In this case the name is the full path of the stylesheet and a relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>

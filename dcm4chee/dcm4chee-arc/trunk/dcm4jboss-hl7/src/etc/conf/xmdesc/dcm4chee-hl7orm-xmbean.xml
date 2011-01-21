@@ -192,7 +192,7 @@ attributes by HL7 ORM messages! => Only change the default value of
       setMethod="setStylesheet">
       <description><![CDATA[Name of stylesheet for HL7 ORM^O01 to DICOM MWL mapping.<br />
       Base dir: <code>TemplateDir</code><br/>
-      If this name contains a '/' the configured <code>TemplateDir</code> will be NOT applied! 
+      If this name contains a '/' or '\' the configured <code>TemplateDir</code> will be NOT applied! 
       In this case the name is the full path of the stylesheet and a relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>

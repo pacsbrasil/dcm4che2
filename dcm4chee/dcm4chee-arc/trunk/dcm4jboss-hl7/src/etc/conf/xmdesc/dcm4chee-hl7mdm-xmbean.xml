@@ -39,7 +39,7 @@
       setMethod="setTemplateDir">
       <description><![CDATA[Directory where template file(s) are located.<br />
       Base dir: <code>TemplateDir</code><br/>
-      If this name contains a '/' the configured <code>TemplateDir</code> will be NOT applied! 
+      If this name contains a '/' or '\' the configured <code>TemplateDir</code> will be NOT applied! 
       In this case the name is the full path of the stylesheet and a relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>

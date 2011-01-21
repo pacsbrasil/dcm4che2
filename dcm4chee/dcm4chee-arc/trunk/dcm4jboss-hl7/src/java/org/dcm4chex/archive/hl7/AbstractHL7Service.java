@@ -122,7 +122,7 @@ public abstract class AbstractHL7Service extends ServiceMBeanSupport implements
     protected Dataset xslt(Document msg, String xslPath) throws Exception {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
         Transformer t;
-        if (xslPath.indexOf('/') != -1) {
+        if (xslPath.indexOf('/') != -1 || xslPath.indexOf('\\') != -1) {
             File pidXslFile = FileUtils.toExistingFile(xslPath);
             t = templates.getTemplates(pidXslFile).newTransformer();
         } else {
