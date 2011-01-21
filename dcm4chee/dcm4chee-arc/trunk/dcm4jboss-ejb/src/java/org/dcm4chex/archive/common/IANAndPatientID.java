@@ -39,6 +39,7 @@
 package org.dcm4chex.archive.common;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import org.dcm4che.data.Dataset;
 
@@ -54,13 +55,13 @@ public class IANAndPatientID implements Serializable {
     public final String patid;
     public final String patname;
     public final String studyid;
-    public final Dataset ian;
+    public final Collection<Dataset> ians;
 
-    public IANAndPatientID(String patid, String patname, String studyid, Dataset ian) {
+    public IANAndPatientID(String patid, String patname, String studyid, Collection<Dataset> ians) {
         this.patid = patid;
         this.patname = patname;
         this.studyid = studyid;
-        this.ian = ian;
+        this.ians = ians;
     }
 
 }
