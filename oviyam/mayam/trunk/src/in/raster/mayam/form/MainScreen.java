@@ -149,7 +149,7 @@ public class MainScreen extends javax.swing.JFrame {
      * This routine used to initialize the query
      */
     private void initQR() {
-        queryRetrieve = new QueryRetrive();
+        queryRetrieve = new QueryRetrieve();
         queryRetrieve.setLocationRelativeTo(this);
     }
 
@@ -877,7 +877,7 @@ public class MainScreen extends javax.swing.JFrame {
      * This routine used to get the query screen
      * @return
      */
-    public QueryRetrive getQueryScreen() {
+    public QueryRetrieve getQueryScreen() {
         return this.queryRetrieve;
     }
 
@@ -1171,7 +1171,7 @@ public class MainScreen extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
     private ReceiveDelegate receiveDelegate = null;
     public static ArrayList<Study> studyList = new ArrayList<Study>();
-    private QueryRetrive queryRetrieve = null;
+    private QueryRetrieve queryRetrieve = null;
     public static SendReceiveFrame sndRcvFrm;
     private WindowingLayeredCanvas canvas = null;
     public static MainScreen mainScreenObj;
