@@ -103,12 +103,6 @@ public abstract class MPPSManagerBean implements SessionBean {
     private static final String NO_LONGER_BE_UPDATED_ERR_MSG = "Performed Procedure Step Object may no longer be updated";
     private static final int NO_LONGER_BE_UPDATED_ERR_ID = 0xA710;
     private static final int DELETED = 1;
-    private static final int[] PATIENT_ATTRS_EXC = { Tags.RefPatientSeq,
-            Tags.PatientName, Tags.PatientID, Tags.IssuerOfPatientID,
-            Tags.PatientBirthDate, Tags.PatientSex, };
-    private static final int[] PATIENT_ATTRS_INC = { Tags.PatientName,
-            Tags.PatientID, Tags.IssuerOfPatientID, Tags.PatientBirthDate,
-            Tags.PatientSex, };
     private PatientLocalHome patHome;
     private SeriesLocalHome seriesHome;
     private MPPSLocalHome mppsHome;
@@ -154,8 +148,7 @@ public abstract class MPPSManagerBean implements SessionBean {
             throws DcmServiceException {
         checkDuplicate(ds.getString(Tags.SOPInstanceUID));
         try {
-            mppsHome.create(ds.subSet(PATIENT_ATTRS_EXC, true, true),
-                    findOrCreatePatient(ds, matching));
+            mppsHome.create(ds, findOrCreatePatient(ds, matching));
         } catch (CreateException e) {
             log.error("Creation of MPPS(iuid="
                     + ds.getString(Tags.SOPInstanceUID) + ") failed: ", e);
@@ -180,9 +173,9 @@ public abstract class MPPSManagerBean implements SessionBean {
             try {
                 return patHome.selectPatient(ds, matching, true);
             } catch (ObjectNotFoundException enfe) {
-                return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
+                return patHome.create(ds);
             } catch (NonUniquePatientException onfe) {
-                return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
+                return patHome.create(ds);
             }
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);

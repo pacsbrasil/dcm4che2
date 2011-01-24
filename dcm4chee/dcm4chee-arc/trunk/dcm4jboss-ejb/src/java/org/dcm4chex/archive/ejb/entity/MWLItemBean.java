@@ -56,7 +56,6 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
-import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.SPSStatus;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
@@ -328,8 +327,9 @@ public abstract class MWLItemBean implements EntityBean {
         setRequestedProcedureId(ds.getString(Tags.RequestedProcedureID));
         setAccessionNumber(ds.getString(Tags.AccessionNumber));
         setStudyIuid(ds.getString(Tags.StudyInstanceUID));
+        AttributeFilter filter = AttributeFilter.getExcludePatientAttributeFilter();
         byte[] b = DatasetUtils.toByteArray(ds,
-                UIDs.DeflatedExplicitVRLittleEndian);
+                filter.getTransferSyntaxUID());
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");
         }

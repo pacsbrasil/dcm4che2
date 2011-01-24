@@ -94,8 +94,6 @@ public abstract class GPWLManagerBean implements SessionBean {
     private static final int MAY_NO_LONGER_BE_UPDATED = 0xA501;
     private static final int WRONG_TRANSACTION_UID = 0xA502;
     private static final int ALREADY_IN_PROGRESS = 0xA503;
-	private static final int[] PATIENT_ATTRS = { Tags.PatientName,
-            Tags.PatientID, Tags.PatientBirthDate, Tags.PatientSex, };
     private static final int[] OUTPUT_INFO_TAGS = {
         Tags.RequestedSubsequentWorkitemCodeSeq,
         Tags.NonDICOMOutputCodeSeq, Tags.OutputInformationSeq };
@@ -185,8 +183,7 @@ public abstract class GPWLManagerBean implements SessionBean {
         if (!ds.containsValue(Tags.SPSModificationDateandTime))
             ds.putDT(Tags.SPSModificationDateandTime, new Date ());
         try {          
-            gpspsHome.create(ds.subSet(PATIENT_ATTRS, true, true),
-                    findOrCreatePatient(ds));
+            gpspsHome.create(ds, findOrCreatePatient(ds));
         } catch (Exception e) {
             throw new EJBException(e);
         }
@@ -198,7 +195,7 @@ public abstract class GPWLManagerBean implements SessionBean {
         try {
             return patHome.selectPatient(ds, patientMatching , true);
         } catch (ObjectNotFoundException onfe) {
-            return patHome.create(ds.subSet(PATIENT_ATTRS));
+            return patHome.create(ds);
         }
     }
 
@@ -210,7 +207,7 @@ public abstract class GPWLManagerBean implements SessionBean {
             final String iuid = ds.getString(Tags.SOPInstanceUID);
             GPSPSLocal gpsps = gpspsHome.findBySopIuid(iuid);
             Dataset attrs = gpsps.getAttributes();
-            attrs.putAll(ds.subSet(PATIENT_ATTRS, true, true));
+            attrs.putAll(ds);
             attrs.putDT(Tags.SPSModificationDateandTime, new Date ());
             gpsps.setAttributes(attrs);
         } catch (Exception e) {

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE dcm4chee-attribute-filter SYSTEM "dcm4chee-attribute-filter.dtd">
 <dcm4chee-attribute-filter>
+  <soundex class="org.dcm4che2.soundex.Soundex" />
   <patient>
     <attr tag="00080005"/> <!-- Specific Character Set -->
     <attr tag="00081120"/> <!-- Referenced Patient Sequence -->
@@ -27,6 +28,31 @@
     <attr tag="0040050A"/> <!-- Specimen Accession Number -->        
     <attr tag="00400550"/> <!-- Specimen Seq --> 
   </patient>
+  <exclude-patient exclude="true" tsuid="1.2.840.10008.1.2.1.99">
+    <attr tag="00081120"/> <!-- Referenced Patient Sequence -->
+    <attr tag="00100010"/> <!-- Patient's Name -->
+    <attr tag="00100020"/> <!-- Patient ID -->
+    <attr tag="00100021"/> <!-- Issuer of Patient ID -->
+    <attr tag="00100040"/> <!-- Patient's Sex -->
+    <attr tag="00100030"/> <!-- Patient's Birth Date -->
+    <attr tag="00100032"/> <!-- Patient's Birth Time -->
+    <attr tag="00101000"/> <!-- Other Patient IDs -->
+    <attr tag="00101001"/> <!-- Other Patient Names -->
+    <attr tag="00101060"/> <!-- Patient Mothers Maiden Names -->
+    <attr tag="00102160"/> <!-- Ethic Group -->
+    <attr tag="00101002"/> <!-- Other Patient IDs Sequence -->
+    <attr tag="00104000"/> <!-- Patient Comments -->
+    <attr tag="00120010"/> <!-- Clinical Trial Sponsor Name -->
+    <attr tag="00120020"/> <!-- Clinical Trial Protocol ID -->
+    <attr tag="00120021"/> <!-- Clinical Trial Protocol Name -->
+    <attr tag="00120030"/> <!-- Clinical Trial Site ID -->
+    <attr tag="00120031"/> <!-- Clinical Trial Site Name -->
+    <attr tag="00120040"/> <!-- Clinical Trial Subject ID -->
+    <attr tag="00120042"/> <!-- Clinical Trial Subject Reading ID -->
+    <attr tag="00380500"/> <!-- Patient State -->
+    <attr tag="0040050A"/> <!-- Specimen Accession Number -->
+    <attr tag="00400550"/> <!-- Specimen Seq -->
+  </exclude-patient>
   <study>
     <attr tag="00080005"/> <!-- Specific Character Set -->
     <attr tag="00080020"/> <!-- Study Date -->

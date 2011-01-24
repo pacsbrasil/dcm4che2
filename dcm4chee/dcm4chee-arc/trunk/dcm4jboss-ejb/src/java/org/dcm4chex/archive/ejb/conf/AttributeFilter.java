@@ -58,6 +58,7 @@ import org.dcm4chex.archive.exceptions.ConfigurationException;
 public final class AttributeFilter {
     private static final String CONFIG_URL = "resource:dcm4chee-attribute-filter.xml";
     static FuzzyStr soundex = null;
+    static AttributeFilter excludePatientFilter;
     static AttributeFilter patientFilter;
     static AttributeFilter studyFilter;
     static AttributeFilter seriesFilter;
@@ -87,6 +88,7 @@ public final class AttributeFilter {
 
     public static void reload() {
         AttributeFilter.soundex = null;
+        AttributeFilter.excludePatientFilter = null;
         AttributeFilter.patientFilter = null;
         AttributeFilter.studyFilter = null;
         AttributeFilter.seriesFilter = null;
@@ -104,6 +106,10 @@ public final class AttributeFilter {
         return conn.getLastModified();
     }
     
+    public static AttributeFilter getExcludePatientAttributeFilter()  {
+        return excludePatientFilter;
+    }
+
     public static AttributeFilter getPatientAttributeFilter()  {
         return patientFilter;
     }

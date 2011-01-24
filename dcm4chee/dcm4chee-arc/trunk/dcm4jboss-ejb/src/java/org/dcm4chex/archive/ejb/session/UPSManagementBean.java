@@ -93,18 +93,7 @@ public abstract class UPSManagementBean implements SessionBean {
     private static final int ALREADY_IN_PROGRESS = 0xC302;
     private static final int NOT_MET_FINAL_STATE_REQUIREMENTS = 0xC304; 
     private static final int NO_SUCH_UPS = 0xC307;
-
     private static final int NOT_IN_PROGRESS = 0xC310;
-
-    private static final int[] PATIENT_ATTRS = {
-        Tags.PatientName,
-        Tags.PatientID,
-        Tags.IssuerOfPatientID,
-        Tags.TypeOfPatientID,
-        Tags.PatientBirthDate,
-        Tags.PatientSex,
-        Tags.OtherPatientIDSeq
-    };
 
     private PatientLocalHome patHome;
     private UPSLocalHome upsHome;
@@ -152,7 +141,7 @@ public abstract class UPSManagementBean implements SessionBean {
             throws DcmServiceException {
         checkDuplicate(ds.getString(Tags.SOPInstanceUID));
         try {
-            UPSLocal ups = upsHome.create(ds.subSet(PATIENT_ATTRS, true, true),
+            UPSLocal ups = upsHome.create(ds,
                     ds.containsValue(Tags.PatientID)
                         ? findOrCreatePatient(ds, matching)
                         : null);
@@ -188,9 +177,9 @@ public abstract class UPSManagementBean implements SessionBean {
             try {
                 return patHome.selectPatient(ds, matching, true);
             } catch (ObjectNotFoundException enfe) {
-                return patHome.create(ds.subSet(PATIENT_ATTRS));
+                return patHome.create(ds);
             } catch (NonUniquePatientException onfe) {
-                return patHome.create(ds.subSet(PATIENT_ATTRS));
+                return patHome.create(ds);
             }
         } catch (Exception e) {
             sessionCtx.setRollbackOnly();

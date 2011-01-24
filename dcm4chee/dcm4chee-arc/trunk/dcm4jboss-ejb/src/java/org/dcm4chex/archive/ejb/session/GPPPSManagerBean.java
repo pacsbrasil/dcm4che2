@@ -86,19 +86,6 @@ public abstract class GPPPSManagerBean implements SessionBean {
     private static final int GPSPS_NOT_IN_PROGRESS = 0xA504;
     private static final int GPSPS_DIFF_TRANS_UID = 0xA505;
     private static final int GPPPS_NOT_IN_PROGRESS = 0xA506;
-    private static final int[] PATIENT_ATTRS_EXC = {
-            Tags.RefPatientSeq,         
-            Tags.PatientName,
-            Tags.PatientID,
-            Tags.PatientBirthDate,
-            Tags.PatientSex,
-    };
-    private static final int[] PATIENT_ATTRS_INC = {
-            Tags.PatientName,
-            Tags.PatientID,
-            Tags.PatientBirthDate,
-            Tags.PatientSex,
-    };
     private PatientLocalHome patHome;
     private GPSPSLocalHome spsHome;
     private GPPPSLocalHome ppsHome;
@@ -148,9 +135,9 @@ public abstract class GPPPSManagerBean implements SessionBean {
             try {
                 return patHome.selectPatient(ds, matching, true);
             } catch (ObjectNotFoundException enfe) {
-                return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
+                return patHome.create(ds);
             } catch (NonUniquePatientException onfe) {
-                return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
+                return patHome.create(ds);
             }
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
@@ -160,8 +147,7 @@ public abstract class GPPPSManagerBean implements SessionBean {
     private GPPPSLocal doCreate(Dataset ds, PatientLocal pat)
     throws DcmServiceException {
         try {
-            return ppsHome.create(ds.subSet(PATIENT_ATTRS_EXC, true, true), 
-                    pat);
+            return ppsHome.create(ds, pat);
         } catch (CreateException e) {
             log.error("Creation of GP-PPS(iuid=" 
                     + ds.getString(Tags.SOPInstanceUID) + ") failed: ", e);

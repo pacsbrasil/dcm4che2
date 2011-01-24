@@ -66,7 +66,6 @@ class AttributeFilterLoader extends DefaultHandler {
     private final ArrayList<String> iCaseList = new ArrayList<String>();
     private final ArrayList<String> fieldTagList = new ArrayList<String>();
     private final ArrayList<String> fieldList = new ArrayList<String>();
-    // private String cuid;
     private AttributeFilter filter;
 
     public static void loadFrom(String url) throws ConfigurationException {
@@ -125,6 +124,11 @@ class AttributeFilterLoader extends DefaultHandler {
                 throw new SAXException("more than one patient element");
             }
             AttributeFilter.patientFilter = filter = makeFilter(attributes);
+        } else if (qName.equals("exclude-patient")) {
+            if (AttributeFilter.excludePatientFilter != null) {
+                throw new SAXException("more than one exclude-patient element");
+            }
+            AttributeFilter.excludePatientFilter = filter = makeFilter(attributes);
         } else if (qName.equals("soundex")) {
             String clazz = attributes.getValue("class");
             try {
@@ -224,6 +228,9 @@ class AttributeFilterLoader extends DefaultHandler {
     }
 
     public void endDocument() throws SAXException {
+        if (AttributeFilter.excludePatientFilter == null) {
+            throw new SAXException("missing exclude-patient element");
+        }
         if (AttributeFilter.patientFilter == null) {
             throw new SAXException("missing patient element");
         }

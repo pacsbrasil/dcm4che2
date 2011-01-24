@@ -78,26 +78,6 @@ import org.dcm4chex.archive.exceptions.PatientMismatchException;
  * @ejb.ejb-ref ejb-name="MWLItem" view-type="local" ref-name="ejb/MWLItem"
  */
 public abstract class MWLManagerBean implements SessionBean {
-    private static final int[] PATIENT_ATTRS_WITH_CHARSET = {
-        Tags.SpecificCharacterSet,
-        Tags.PatientName,
-        Tags.PatientID,
-        Tags.IssuerOfPatientID,
-        Tags.PatientBirthDate, 
-        Tags.PatientSex,
-        Tags.OtherPatientIDSeq,
-        Tags.PatientMotherBirthName
-    };
-
-    private static final int[] PATIENT_ATTRS = {
-        Tags.PatientName,
-        Tags.PatientID,
-        Tags.IssuerOfPatientID,
-        Tags.PatientBirthDate, 
-        Tags.PatientSex,
-        Tags.OtherPatientIDSeq,
-        Tags.PatientMotherBirthName
-    };
 
     private static Logger log = Logger.getLogger(MWLManagerBean.class);
 
@@ -178,7 +158,7 @@ public abstract class MWLManagerBean implements SessionBean {
         try {
             if (patHome.selectPatient(ds, matching, false).isIdentical(pat)) {
                 if (updatePatient) {
-                    pat.updateAttributes(ds.subSet(PATIENT_ATTRS_WITH_CHARSET));
+                    pat.updateAttributes(ds);
                 }
                 return mwlItem;
             }
@@ -231,8 +211,7 @@ public abstract class MWLManagerBean implements SessionBean {
 
     private PatientLocal updateOrCreatePatient(Dataset ds,
             PatientMatching matching) throws FinderException, CreateException  {
-        return patUpdateHome.create().updateOrCreate(
-                ds.subSet(PATIENT_ATTRS_WITH_CHARSET), matching);
+        return patUpdateHome.create().updateOrCreate(ds, matching);
     }
     
     /**
@@ -241,8 +220,8 @@ public abstract class MWLManagerBean implements SessionBean {
     public Dataset addWorklistItem(Dataset ds, PatientMatching matching)
             throws CreateException, FinderException {
         checkDuplicate(ds);
-        MWLItemLocal mwlItem = mwlItemHome.create(ds.subSet(PATIENT_ATTRS,
-                true, true), updateOrCreatePatient(ds, matching));
+        MWLItemLocal mwlItem = mwlItemHome.create(ds, 
+                updateOrCreatePatient(ds, matching));
         return toAttributes(mwlItem);
     }
 
@@ -279,8 +258,7 @@ public abstract class MWLManagerBean implements SessionBean {
             throw new EJBException(e);
         } 
         Dataset attrs = mwlItem.getAttributes();
-        attrs.putAll(ds.subSet(PATIENT_ATTRS, true, true),
-                DcmObject.MERGE_ITEMS);
+        attrs.putAll(ds, DcmObject.MERGE_ITEMS);
         mwlItem.setAttributes(attrs);
         return true;
     }

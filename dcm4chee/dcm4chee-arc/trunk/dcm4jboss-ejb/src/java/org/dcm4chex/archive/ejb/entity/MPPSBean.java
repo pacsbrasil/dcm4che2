@@ -54,9 +54,9 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PPSStatus;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -358,8 +358,9 @@ public abstract class MPPSBean implements EntityBean {
         } catch (FinderException e) {
             throw new EJBException(e);
         }
-        byte[] b = DatasetUtils.toByteArray(ds,
-                UIDs.DeflatedExplicitVRLittleEndian);
+        AttributeFilter filter = AttributeFilter.getExcludePatientAttributeFilter();
+        byte[] b = DatasetUtils.toByteArray(filter.filter(ds),
+                filter.getTransferSyntaxUID());
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");
         }

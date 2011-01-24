@@ -45,7 +45,6 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
-import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -57,9 +56,10 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.DatasetUtils;
-import org.dcm4chex.archive.common.Priority;
 import org.dcm4chex.archive.common.GPSPSStatus;
 import org.dcm4chex.archive.common.InputAvailabilityFlag;
+import org.dcm4chex.archive.common.Priority;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
@@ -455,8 +455,9 @@ public abstract class GPSPSBean implements EntityBean {
         setSpsStartDateTime(toTimestamp(ds.getDate(Tags.SPSStartDateAndTime)));
         setExpectedCompletionDateTime(
                 toTimestamp(ds.getDate(Tags.ExpectedCompletionDateAndTime)));
-        setEncodedAttributes(DatasetUtils.toByteArray(ds,
-                UIDs.DeflatedExplicitVRLittleEndian));
+        AttributeFilter filter = AttributeFilter.getExcludePatientAttributeFilter();
+        setEncodedAttributes(DatasetUtils.toByteArray(filter.filter(ds),
+                filter.getTransferSyntaxUID()));
     }
 
     /**

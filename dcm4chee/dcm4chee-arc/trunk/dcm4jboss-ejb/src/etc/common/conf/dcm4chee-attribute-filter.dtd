@@ -5,35 +5,38 @@ This is the XML DTD for the dcm4chee attribute filter descriptor.
 
 Minimal descriptor for DICOM Standard Conformance of Query/Retrieve Service:
   <dcm4chee-attribute-filter>
+    <soundex class="org.dcm4che2.soundex.Soundex" />
     <patient>
-      <attr tag="00080005"/>
-      <attr tag="00100010"/>
-      <attr tag="00100020"/>
+        <attr tag="00080005"/> <!-- Specific Character Set -->
+        <attr tag="00100010" case-sensitive="false"/> <!--  Patient's Name -->
+        <attr tag="00100020"/> <!--  Patient ID -->
     </patient>
-
+    <exclude-patient exclude="true" tsuid="1.2.840.10008.1.2.1.99">
+        <attr tag="00081120"/> <!-- Referenced Patient Sequence -->
+        <attr tag="00100010"/> <!--  Patient's Name -->
+        <attr tag="00100020"/> <!--  Patient ID -->
+    </exclude-patient>
     <study>
-      <attr tag="00080005"/>
-      <attr tag="00080020"/>
-      <attr tag="00080030"/>
-      <attr tag="00080050"/>
-      <attr tag="0020000D"/>
-      <attr tag="00200010"/>
+        <attr tag="00080005"/> <!-- Specific Character Set -->
+        <attr tag="00080020"/> <!-- Study Date -->
+        <attr tag="00080030"/> <!-- Study Time -->
+        <attr tag="00080050"/> <!-- Accession Number -->
+        <attr tag="0020000D" coerce="false"/> <!-- Study Instance UID -->
+        <attr tag="00200010"/> <!-- Study ID -->
     </study>
-
     <series>
-      <attr tag="00080060"/>
-      <attr tag="0020000E"/>
-      <attr tag="00200011"/>
+        <attr tag="00080060"/> <!-- Modality -->
+        <attr tag="0020000E" coerce="false"/> <!-- Series Instance UID -->
+        <attr tag="00200011"/> <!-- Series Number -->
     </series>
-
     <instance>
-      <attr tag="00080018"/>
-      <attr tag="00200013"/>
+        <attr tag="00080018"/> <!-- SOP Instance UID -->
+        <attr tag="00200013"/> <!-- Instance Number -->
     </instance>
   </dcm4chee-attribute-filter>
 -->
 
-<!ELEMENT dcm4chee-attribute-filter (soundex?,patient+,study+,series+,instance+)>
+<!ELEMENT dcm4chee-attribute-filter (soundex?,patient,exclude-patient,study,series,instance+)>
 
 <!ELEMENT soundex EMPTY>
 <!ATTLIST soundex class CDATA #REQUIRED>
@@ -43,6 +46,12 @@ Minimal descriptor for DICOM Standard Conformance of Query/Retrieve Service:
 <!ATTLIST patient exclude (false) "false">
 <!ATTLIST patient exclude-private (false) "false">
 <!ATTLIST patient update-strategy (coerce-merge) "coerce-merge">
+
+<!ELEMENT exclude-patient (attr)*>
+<!ATTLIST exclude-patient tsuid CDATA #IMPLIED>
+<!ATTLIST exclude-patient exclude (true) "true">
+<!ATTLIST exclude-patient exclude-private (false) "false">
+<!ATTLIST exclude-patient update-strategy (coerce-merge) "coerce-merge">
 
 <!ELEMENT study (attr)*>
 <!ATTLIST study tsuid CDATA #IMPLIED>
