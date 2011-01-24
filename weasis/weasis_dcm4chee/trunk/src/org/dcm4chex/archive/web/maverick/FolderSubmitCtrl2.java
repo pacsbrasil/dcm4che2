@@ -100,9 +100,12 @@ public class FolderSubmitCtrl2 extends FolderSubmitCtrl {
         if (patients != null) {
             for (int i = 0; i < patients.size(); i++) {
                 PatientModel pat = (PatientModel) patients.get(i);
-                Patient patient = new Patient(pat.getPatientID());
-                patient.setPatientName(pat.getPatientName());
-                patient.setPatientBirthDate(pat.getPatientBirthDate());
+                Dataset pdata = pat.toDataset();
+                Patient patient = new Patient(pdata.getString(Tags.PatientID));
+                patient.setPatientName(pdata.getString(Tags.PatientName));
+                patient.setPatientBirthDate(pdata.getString(Tags.PatientBirthDate));
+                patient.setPatientBirthTime(pdata.getString(Tags.PatientBirthTime));
+                patient.setPatientSex(pdata.getString(Tags.PatientSex));
                 if (folderForm.isSticky(pat)) {
                     addStudiesOfPatientForView(patient, pat.getPk());
                 } else {
