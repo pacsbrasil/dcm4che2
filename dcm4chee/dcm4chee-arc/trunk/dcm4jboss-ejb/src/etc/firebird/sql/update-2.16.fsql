@@ -52,7 +52,7 @@ ALTER TABLE instance
 UPDATE instance
    SET archived=0;
 UPDATE instance SET archived=1 WHERE EXISTS (SELECT 1 FROM files 
-	WHERE instance.pk = files.instance_fk AND files.file_status = 2);
+   WHERE instance.pk = files.instance_fk AND files.file_status = 2);
    
 CREATE INDEX inst_archived ON instance(archived);   
 

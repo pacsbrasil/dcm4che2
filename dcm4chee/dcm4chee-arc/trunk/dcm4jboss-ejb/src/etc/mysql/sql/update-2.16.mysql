@@ -51,7 +51,7 @@ UPDATE instance SET archived=0;
 ALTER TABLE instance MODIFY archived BIT NOT NULL;   
 CREATE INDEX inst_archived ON instance(archived);
 UPDATE instance SET archived=1 WHERE EXISTS (SELECT 1 FROM files 
-	WHERE instance.pk = files.instance_fk AND files.file_status = 2);
+   WHERE instance.pk = files.instance_fk AND files.file_status = 2);
 
 ALTER TABLE series_req ADD (
    accno_issuer_fk BIGINT,
