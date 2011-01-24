@@ -1007,26 +1007,6 @@ public abstract class SeriesBean implements EntityBean {
      */
     public void setAttributes(Dataset ds) {
         AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
-        setAttributesInternal(filter.filter(ds), filter);
-        if ( getSourceAET() == null ) {
-            ds.setPrivateCreatorID(PrivateTags.CreatorID);
-            setSourceAET(ds.getString(PrivateTags.CallingAET));
-            ds.setPrivateCreatorID(null);
-        }
-}
-
-    private void setField(String field, String value ) {
-        try {
-            Method m = SeriesBean.class.getMethod("set" 
-                    + Character.toUpperCase(field.charAt(0))
-                    + field.substring(1), STRING_PARAM);
-            m.invoke(this, new Object[] { value });
-        } catch (Exception e) {
-            throw new ConfigurationException(e);
-        }       
-    }
-
-    private void setAttributesInternal(Dataset ds, AttributeFilter filter) {
         setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
         setSeriesNumber(filter.getString(ds, Tags.SeriesNumber));
         setModality(filter.getString(ds, Tags.Modality));
@@ -1065,7 +1045,8 @@ public abstract class SeriesBean implements EntityBean {
         }
         Dataset refPPS = ds.getItem(Tags.RefPPSSeq);
         setPpsIuid(refPPS == null ? null : refPPS.getString(Tags.RefSOPInstanceUID));
-        byte[] b = DatasetUtils.toByteArray(ds, filter.getTransferSyntaxUID());
+        byte[] b = DatasetUtils.toByteArray(filter.filter(ds),
+                filter.getTransferSyntaxUID());
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");
         }
@@ -1074,6 +1055,22 @@ public abstract class SeriesBean implements EntityBean {
         for (int i = 0; i < fieldTags.length; i++) {
             setField(filter.getField(fieldTags[i]), filter.getString(ds, fieldTags[i]));
         }
+        if ( getSourceAET() == null ) {
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            setSourceAET(ds.getString(PrivateTags.CallingAET));
+            ds.setPrivateCreatorID(null);
+        }
+    }
+
+    private void setField(String field, String value ) {
+        try {
+            Method m = SeriesBean.class.getMethod("set" 
+                    + Character.toUpperCase(field.charAt(0))
+                    + field.substring(1), STRING_PARAM);
+            m.invoke(this, new Object[] { value });
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }       
     }
 
     /**
@@ -1089,14 +1086,14 @@ public abstract class SeriesBean implements EntityBean {
             if (filter.isMerge()) {
                 AttrUtils.updateAttributes(attrs, filter.filter(ds), null, log);
             } else {
-                attrs = filter.filter(ds);
+                attrs = ds;
             }
-            setAttributesInternal(attrs, filter);
+            setAttributes(attrs);
         } else {
             AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
             if (filter.isMerge()
                     && AttrUtils.mergeAttributes(attrs, filter.filter(ds), log)) {
-                setAttributesInternal(attrs, filter);
+                setAttributes(attrs);
             }
         }
         updateInstitutionCode(oldInstCode,

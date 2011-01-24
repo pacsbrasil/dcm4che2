@@ -735,21 +735,6 @@ public abstract class InstanceBean implements EntityBean {
         AttributeFilter filter = AttributeFilter
                 .getInstanceAttributeFilter(cuid);
         setAllAttributes(filter.isNoFilter());
-        setAttributesInternal(filter.filter(ds), filter);
-    }
-
-    private void setField(String field, String value) {
-        try {
-            Method m = InstanceBean.class.getMethod("set"
-                    + Character.toUpperCase(field.charAt(0))
-                    + field.substring(1), STRING_PARAM);
-            m.invoke(this, new Object[] { value });
-        } catch (Exception e) {
-            throw new ConfigurationException(e);
-        }
-    }
-
-    private void setAttributesInternal(Dataset ds, AttributeFilter filter) {
         setSopIuid(ds.getString(Tags.SOPInstanceUID));
         setSopCuid(ds.getString(Tags.SOPClassUID));
         setInstanceNumber(filter.getString(ds, Tags.InstanceNumber));
@@ -772,6 +757,18 @@ public abstract class InstanceBean implements EntityBean {
         }
     }
 
+    private void setField(String field, String value) {
+        try {
+            Method m = InstanceBean.class.getMethod("set"
+                    + Character.toUpperCase(field.charAt(0))
+                    + field.substring(1), STRING_PARAM);
+            m.invoke(this, new Object[] { value });
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+
     /**
      * @throws DcmServiceException
      * @ejb.interface-method
@@ -788,7 +785,7 @@ public abstract class InstanceBean implements EntityBean {
             if (filter.isMerge()) {
                 AttrUtils.updateAttributes(attrs, filter.filter(ds), null, log);
             } else {
-                attrs = filter.filter(ds);
+                attrs = ds;
             }
         } else {
             AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
@@ -797,7 +794,7 @@ public abstract class InstanceBean implements EntityBean {
                 return;
             }
         }
-        setAttributesInternal(attrs, filter);
+        setAttributes(attrs);
         updateSrCode(oldSrCode, attrs.getItem(Tags.ConceptNameCodeSeq));
         updateVerifyingObservers(oldObservers,
                 attrs.get(Tags.VerifyingObserverSeq));

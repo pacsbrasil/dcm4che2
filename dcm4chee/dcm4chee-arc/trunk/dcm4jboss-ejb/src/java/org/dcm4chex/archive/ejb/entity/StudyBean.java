@@ -938,21 +938,6 @@ public abstract class StudyBean implements EntityBean {
      */
     public void setAttributes(Dataset ds) {
         AttributeFilter filter = AttributeFilter.getStudyAttributeFilter();
-        setAttributesInternal(filter.filter(ds), filter);
-    }
-
-    private void setField(String field, String value ) {
-        try {
-            Method m = StudyBean.class.getMethod("set" 
-                    + Character.toUpperCase(field.charAt(0))
-                    + field.substring(1), STRING_PARAM);
-            m.invoke(this, new Object[] { value });
-        } catch (Exception e) {
-            throw new ConfigurationException(e);
-        }       
-    }
-    
-    private void setAttributesInternal(Dataset ds, AttributeFilter filter) {
         setStudyIuid(ds.getString(Tags.StudyInstanceUID));
         setStudyId(filter.getString(ds, Tags.StudyID));
         setStudyStatusId(filter.getString(ds, Tags.StudyStatusID));
@@ -985,7 +970,8 @@ public abstract class StudyBean implements EntityBean {
         }
         setStudyDescription(filter.getString(ds, Tags.StudyDescription));
         
-        byte[] b = DatasetUtils.toByteArray(ds, filter.getTransferSyntaxUID());
+        byte[] b = DatasetUtils.toByteArray(filter.filter(ds),
+                filter.getTransferSyntaxUID());
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");
         }
@@ -996,6 +982,17 @@ public abstract class StudyBean implements EntityBean {
         }
     }
 
+    private void setField(String field, String value ) {
+        try {
+            Method m = StudyBean.class.getMethod("set" 
+                    + Character.toUpperCase(field.charAt(0))
+                    + field.substring(1), STRING_PARAM);
+            m.invoke(this, new Object[] { value });
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }       
+    }
+    
     private boolean updateIssuerOfAccessionNumber(Dataset oldIssuer, Dataset newIssuer) {
         if (oldIssuer == null ? newIssuer == null 
                 : oldIssuer.equals(newIssuer)) {
@@ -1046,15 +1043,15 @@ public abstract class StudyBean implements EntityBean {
                 attrs = getAttributes(false);
                 AttrUtils.updateAttributes(attrs, filter.filter(ds), null, log);
             } else {
-                attrs = filter.filter(ds);
+                attrs = ds;
             }
-            setAttributesInternal(attrs, filter);
+            setAttributes(attrs);
         } else {
             Dataset attrs = getAttributes(false);
             AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
             if (filter.isMerge()
                     && AttrUtils.mergeAttributes(attrs, filter.filter(ds), log)) {
-                setAttributesInternal(attrs, filter);
+                setAttributes(attrs);
             }
         }
     }

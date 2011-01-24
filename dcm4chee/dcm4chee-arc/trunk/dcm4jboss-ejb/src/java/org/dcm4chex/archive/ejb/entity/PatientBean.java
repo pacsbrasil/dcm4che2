@@ -62,7 +62,6 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
-import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -753,21 +752,6 @@ public abstract class PatientBean implements EntityBean {
      */
     public void setAttributes(Dataset ds) {
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
-        setAttributesInternal(filter.filter(ds), filter);
-    }
-
-    private void setField(String field, String value ) {
-        try {
-            Method m = PatientBean.class.getMethod("set" 
-                    + Character.toUpperCase(field.charAt(0))
-                    + field.substring(1), STRING_PARAM);
-            m.invoke(this, new Object[] { value });
-        } catch (Exception e) {
-            throw new ConfigurationException(e);
-        }       
-    }
-
-    private void setAttributesInternal(Dataset ds, AttributeFilter filter) {
         setPatientId(filter.getString(ds, Tags.PatientID));
         setIssuerOfPatientId(filter.getString(ds, Tags.IssuerOfPatientID));
         PersonName pn = ds.getPersonName(Tags.PatientName);
@@ -792,7 +776,8 @@ public abstract class PatientBean implements EntityBean {
         }
         setPatientBirthDate(normalizeDA(ds.getString(Tags.PatientBirthDate)));
         setPatientSex(filter.getString(ds, Tags.PatientSex));
-        byte[] b = DatasetUtils.toByteArray(ds, filter.getTransferSyntaxUID());
+        byte[] b = DatasetUtils.toByteArray(filter.filter(ds),
+                filter.getTransferSyntaxUID());
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");
         }
@@ -801,6 +786,17 @@ public abstract class PatientBean implements EntityBean {
         for (int i = 0; i < fieldTags.length; i++) {
             setField(filter.getField(fieldTags[i]), filter.getString(ds, fieldTags[i]));
         }
+    }
+
+    private void setField(String field, String value ) {
+        try {
+            Method m = PatientBean.class.getMethod("set" 
+                    + Character.toUpperCase(field.charAt(0))
+                    + field.substring(1), STRING_PARAM);
+            m.invoke(this, new Object[] { value });
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }       
     }
 
     /**
@@ -820,9 +816,9 @@ public abstract class PatientBean implements EntityBean {
                         filter.filter(ds).exclude(OTHER_PID_SQ), null, log);
             } else {
                 log.debug("-merge update-strategy not specified.  Not synchronizing other patient ids!");
-                attrs = filter.filter(ds);
+                attrs = ds;
             }
-            setAttributesInternal(attrs, filter);
+            setAttributes(attrs);
         } else {
             Dataset attrs = getAttributes(false);
             boolean b = false;
@@ -834,7 +830,7 @@ public abstract class PatientBean implements EntityBean {
             AttrUtils.coerceAttributes(attrs, ds, coercedElements, filter, log);
             if (filter.isMerge()
                     && (AttrUtils.mergeAttributes(attrs, filter.filter(ds), log) || b)) {
-                setAttributesInternal(attrs, filter);
+                setAttributes(attrs);
             }
         }
     }
@@ -849,15 +845,16 @@ public abstract class PatientBean implements EntityBean {
     /**
      * @ejb.interface-method
      */
-    public boolean updateAttributes(Dataset newAttrs, Dataset modifiedAttrs) {
+    public boolean updateAttributes(Dataset attrs, Dataset modifiedAttrs) {
         Dataset oldAttrs = getAttributes(false);
-        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(); 
+        AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
+        Dataset newAttrs = filter.filter(attrs);
         boolean b = appendOtherPatientIds(oldAttrs, newAttrs, modifiedAttrs, filter);
         if( oldAttrs==null ) {
             setAttributes( newAttrs );
-        } 
-        else { 
-            if (!AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs).exclude(OTHER_PID_SQ), modifiedAttrs, log) && ! b) 
+        } else { 
+            if (!AttrUtils.updateAttributes(oldAttrs,
+                    newAttrs.exclude(OTHER_PID_SQ), modifiedAttrs, log) && ! b) 
                  return false;
             setAttributes(oldAttrs);
         }
