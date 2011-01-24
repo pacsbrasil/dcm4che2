@@ -71,6 +71,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
     protected static final String GROUP = "group";
 
     private long minFreeDiskSpace = MIN_FREE_DISK_SPACE;
+    private float minFreeDiskSpaceRatio = -1f;
         
     private final DeleteStudyDelegate deleteStudy =
             new DeleteStudyDelegate(this);
@@ -122,8 +123,10 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
 
     private ObjectName storeScpServiceName;
 
+    
     public String getMinFreeDiskSpace() {
-        return minFreeDiskSpace == 0 ? NONE
+        return minFreeDiskSpaceRatio > 0 ? minFreeDiskSpaceRatio+"%" :
+                minFreeDiskSpace == 0 ? NONE
                 : FileUtils.formatSize(minFreeDiskSpace);
     }
 
@@ -132,10 +135,29 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
     }
 
     public void setMinFreeDiskSpace(String str) {
-        this.minFreeDiskSpace = str.equalsIgnoreCase(NONE) ? 0
+        if (str.endsWith("%")) {
+            minFreeDiskSpaceRatio = Float.parseFloat(str.substring(0,str.length()-1));
+            minFreeDiskSpace = calcFreeDiskSpace(this.storageFileSystem);
+        } else {
+            minFreeDiskSpaceRatio = -1;
+            minFreeDiskSpace = str.equalsIgnoreCase(NONE) ? 0
                 : FileUtils.parseSize(str, MIN_FREE_DISK_SPACE);
+        }
     }
     
+    private long calcFreeDiskSpace(FileSystemDTO fs) {
+        if (fs==null) {
+            return -1;
+        }
+        File dir = checkFS(fs, " - can not calculate minimum free disc space!");
+        if (dir == null) {
+            return -1;
+        }
+        long total = FileSystemUtils.totalSpace(dir.getAbsolutePath());
+        log.info("Total space of "+fs.getDirectoryPath()+" :"+FileUtils.formatSize(total));
+        return (long) (total * minFreeDiskSpaceRatio / 100);
+    }
+
     public final String getExpectedDataVolumePerDay() {
         return FileUtils.formatSize(expectedDataVolumePerDay);
     }
@@ -496,6 +518,9 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         if (storageFileSystem != null
                 && storageFileSystem.getPk() == fsDTO.getPk()) {
             storageFileSystem = null;
+            if (minFreeDiskSpaceRatio > 0) {
+                minFreeDiskSpace = -1;
+            }
         }
         return fsDTO;
     }
@@ -568,6 +593,9 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         while ((next = tmp.getNext()) != null &&
                 next != storageFileSystem.getDirectoryPath()) {
             tmp = fsMgt.getFileSystemOfGroup(getFileSystemGroupID(), next);
+            if (minFreeDiskSpaceRatio > 0) {
+                minFreeDiskSpace = calcFreeDiskSpace(tmp);
+            }
             if (tmp.getStatus() == FileSystemStatus.RW
                     && checkFreeDiskSpace(tmp)) {
                 storageFileSystem = fsMgt.updateFileSystemStatus(
@@ -591,26 +619,9 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
     }
 
     private boolean checkFreeDiskSpace(FileSystemDTO fsDTO) throws IOException {
-        File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
-        if (!dir.exists()) {
-            if (!makeStorageDirectory) {
-                log.warn("No such directory " + dir
-                        + " - try to switch to next configured storage directory");
-                return false;
-            }
-            log.info("M-WRITE " + dir);
-            if (!dir.mkdirs()) {
-                log.warn("Failed to create directory " + dir
-                        + " - try to switch to next configured storage directory");
-                return false;
-            }
-        }
-        File nomount = new File(dir, mountFailedCheckFile);
-        if (nomount.exists()) {
-            log.warn("Mount on " + dir
-                    + " seems broken - try to switch to next configured storage directory");
+        File dir = checkFS(fsDTO, " - try to switch to next configured storage directory");
+        if (dir == null)
             return false;
-        }
         if (getMinFreeDiskSpaceBytes() == 0) {
             return true;
         }
@@ -627,6 +638,27 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
                 freeSpace * checkFreeDiskSpaceMinInterval / getMinFreeDiskSpaceBytes(),
                 checkFreeDiskSpaceMaxInterval);
         return true;
+    }
+
+    private File checkFS(FileSystemDTO fsDTO, String msgPostfix) {
+        File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
+        if (!dir.exists()) {
+            if (!makeStorageDirectory) {
+                log.warn("No such directory " + dir + msgPostfix);
+                return null;
+            }
+            log.info("M-WRITE " + dir);
+            if (!dir.mkdirs()) {
+                log.warn("Failed to create directory " + dir + msgPostfix);
+                return null;
+            }
+        }
+        File nomount = new File(dir, mountFailedCheckFile);
+        if (nomount.exists()) {
+            log.warn("Mount on " + dir + " seems broken" + msgPostfix);
+            return null;
+        }
+        return dir;
     }
 
     private void checkStorageFileSystemStatus(FileSystemMgt2 fsMgt)
@@ -647,6 +679,9 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         if (storageFileSystem != null) {
             log.info("New storage file system: " + storageFileSystem);
         }
+        if (minFreeDiskSpaceRatio > 0) {
+            minFreeDiskSpace = calcFreeDiskSpace(storageFileSystem);
+        }
         checkFreeDiskSpaceTime = 0;
     }
 
@@ -664,6 +699,9 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
             }
         }
         checkFreeDiskSpaceTime = 0;
+        if (minFreeDiskSpaceRatio > 0) {
+            minFreeDiskSpace = calcFreeDiskSpace(storageFileSystem);
+        }
     }
 
 

@@ -98,9 +98,11 @@ public class FileSystemUtils {
     
     /** JDK6 File.getUsableSpace(), if available. */
     private static Method jdk6getUsableSpace;
+    private static Method jdk6getTotalSpace;
     static {
         try {
             jdk6getUsableSpace = File.class.getMethod("getUsableSpace", (Class[]) null);
+            jdk6getTotalSpace = File.class.getMethod("getTotalSpace", (Class[]) null);
         } catch (Exception e) {
             jdk6getUsableSpace = null;
         }        
@@ -164,6 +166,20 @@ public class FileSystemUtils {
             }
         }
         return INSTANCE.freeSpaceOS(path, OS);
+    }
+    
+    public static long totalSpace(String path) {
+        if (jdk6getTotalSpace == null)
+            throw new RuntimeException("Get total space of partition not supportet prior JDK6!");
+        try {
+            Long l = (Long) jdk6getTotalSpace.invoke(
+                            new File(path), (Object[]) null);
+            if (l != 0) 
+                return l;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        throw new RuntimeException("Failed to get total space of "+path);
     }
 
     /**

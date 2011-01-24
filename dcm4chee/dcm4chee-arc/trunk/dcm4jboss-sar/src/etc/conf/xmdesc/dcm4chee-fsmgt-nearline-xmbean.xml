@@ -129,7 +129,10 @@
     <description><![CDATA[Minimum free disk space. If the free available disk
       space on the current storage file system falls below this value, the next
       configured file system becomes the current storage system.
-      1MB = 1000000 bytes, 1GB = 1000MB.
+      1MB = 1000000 bytes, 1GB = 1000MB.<br />
+      It is also possible to configure a relative value in %.<br /> 
+      In this case the MinimumFreeDiskSpace is calculated for current storage file system.
+      Note: This feature is not supported on java environments prior JDK 6!
       NONE = disable check for minimal free available disk space. ]]>
     </description>
     <name>MinimumFreeDiskSpace</name>
@@ -140,8 +143,8 @@
   </attribute>
 
   <attribute access="read-only" getMethod="getMinFreeDiskSpaceBytes">
-    <description><![CDATA[Get free available disk space on the current storage
-      file system in bytes, returned as a long.]]>
+    <description><![CDATA[Get minimum free available disk space on the current storage
+      file system in bytes, returned as a long. <br/> -1 means UNKNOWN]]>
     </description>
     <name>MinimumFreeDiskSpaceBytes</name>
     <type>long</type>
