@@ -156,12 +156,12 @@ public class UPSQueryCmd extends BaseDSQueryCmd {
                     type2,
                     issuer.getString(Tags.UniversalEntityID));
         }
-        sqlBuilder.addWildCardMatch(null, "Patient.patientId",
+        if (sqlBuilder.addWildCardMatch(null, "Patient.patientId",
                 type2,
-                patAttrFilter.getStrings(keys, Tags.PatientID));
-        sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
-                type2,
-                patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
+                patAttrFilter.getStrings(keys, Tags.PatientID)) != null)
+            sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
+                    type2,
+                    patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
         if (fuzzyMatchingOfPN)
             sqlBuilder.addPNFuzzyMatch(
                     new String[] {

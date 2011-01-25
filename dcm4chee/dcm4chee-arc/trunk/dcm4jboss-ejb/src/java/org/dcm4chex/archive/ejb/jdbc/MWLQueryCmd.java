@@ -147,12 +147,12 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
         sqlBuilder.addListOfStringMatch(null, "MWLItem.studyIuid",
                 SqlBuilder.TYPE1,
                 keys.getStrings(Tags.StudyInstanceUID));
-        sqlBuilder.addWildCardMatch(null, "Patient.patientId",
+        if (sqlBuilder.addWildCardMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
-                patAttrFilter.getStrings(keys, Tags.PatientID));
-        sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
-                type2,
-                patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
+                patAttrFilter.getStrings(keys, Tags.PatientID)) != null)
+            sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
+                    type2,
+                    patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
         if (fuzzyMatchingOfPN)
             sqlBuilder.addPNFuzzyMatch(
                     new String[] {

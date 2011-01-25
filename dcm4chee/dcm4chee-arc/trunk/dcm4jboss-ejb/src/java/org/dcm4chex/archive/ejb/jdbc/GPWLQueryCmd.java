@@ -151,12 +151,12 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
                     SqlBuilder.TYPE2,
                     item.getStrings(Tags.AccessionNumber));
         }        
-        sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
+        if (sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
                 SqlBuilder.TYPE1,
-                patAttrFilter.getStrings(keys, Tags.PatientID));
-        sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
-                SqlBuilder.TYPE2,
-                patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
+                patAttrFilter.getStrings(keys, Tags.PatientID)) != null)
+            sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
+                    SqlBuilder.TYPE2,
+                    patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
         if (fuzzyMatchingOfPN)
             sqlBuilder.addPNFuzzyMatch(
                     new String[] {
