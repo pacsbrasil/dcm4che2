@@ -188,9 +188,6 @@ public class StudyListPage extends Panel {
             add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
         
         studyPermissionHelper = StudyPermissionHelper.get();
-        dao.setDicomSecurityRoles(
-                StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
-                        null : StudyPermissionHelper.get().getDicomRoles());
 
         add(modalWindow = new ModalWindow("modal-window"));
         modalWindow.setWindowClosedCallback(new WindowClosedCallback() {
@@ -626,7 +623,9 @@ public class StudyListPage extends Panel {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 if (studyPermissionHelper.useStudyPermissions())
                     updateStudyPermissions();
-                updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset()));
+                updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset(), 
+                        studyPermissionHelper.getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                                null : studyPermissionHelper.getDicomRoles()));
                 boolean hasIgnored = selected.update(studyPermissionHelper.useStudyPermissions(), 
                         viewport.getPatients(), StudyPermission.DELETE_ACTION);
                 selected.deselectChildsOfSelectedEntities();
@@ -806,15 +805,21 @@ public class StudyListPage extends Panel {
     }
 
     private void queryStudies() {
-        viewport.setTotal(dao.count(viewport.getFilter()));
-        updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset()));
+        List<String> dicomSecurityRoles = 
+            studyPermissionHelper.getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                    null : studyPermissionHelper.getDicomRoles();
+        viewport.setTotal(dao.count(viewport.getFilter(), dicomSecurityRoles));
+        updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset(), dicomSecurityRoles));
         notSearched = false;
     }
 
     private void updateStudyPermissions() {
         for (PatientModel patient : viewport.getPatients()) {
             for (StudyModel study : patient.getStudies())
-                study.setStudyPermissionActions(dao.findStudyPermissionActions((study).getStudyInstanceUID()));
+                study.setStudyPermissionActions(dao.findStudyPermissionActions((study).getStudyInstanceUID(), 
+                        studyPermissionHelper.getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                                null : studyPermissionHelper.getDicomRoles()
+                ));
         }
     }
     
@@ -822,16 +827,16 @@ public class StudyListPage extends Panel {
         retainSelectedPatients();
         for (Patient patient : patients) {
             PatientModel patientModel = addPatient(patient);
-            dao.setDicomSecurityRoles(
-                    StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
-                            null : StudyPermissionHelper.get().getDicomRoles());
+            List<String> dicomSecurityRoles = 
+                studyPermissionHelper.getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                        null : studyPermissionHelper.getDicomRoles();
             if (viewport.getFilter().isPatientsWithoutStudies()) {
-                patientModel.setExpandable(dao.countStudiesOfPatient(patient.getPk()) > 0);
+                patientModel.setExpandable(dao.countStudiesOfPatient(patient.getPk(), dicomSecurityRoles) > 0);
             } else {
                 for (Study study : patient.getStudies()) {
-                    List<String> actions = dao.findStudyPermissionActions((study).getStudyInstanceUID());
+                    List<String> actions = dao.findStudyPermissionActions((study).getStudyInstanceUID(), dicomSecurityRoles);
                     if (actions.contains("Q")
-                            || StudyPermissionHelper.get().getStudyPermissionRight()
+                            || studyPermissionHelper.getStudyPermissionRight()
                             .equals(StudyPermissionHelper.StudyPermissionRight.ALL)) {  
                         addStudy(study, patientModel, actions);
                         patientModel.setExpandable(true);

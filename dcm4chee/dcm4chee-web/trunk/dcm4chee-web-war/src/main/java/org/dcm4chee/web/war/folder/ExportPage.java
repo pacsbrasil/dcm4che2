@@ -357,7 +357,9 @@ public class ExportPage extends SecureWebPage {
     private List<Study> getStudiesOfPatient(PatientModel pat) {
         StudyListLocal dao = (StudyListLocal)
             JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        return dao.findStudiesOfPatient(pat.getPk(), true);
+        return dao.findStudiesOfPatient(pat.getPk(), true, 
+                StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                        null : StudyPermissionHelper.get().getDicomRoles());
     }
 
     private boolean isExportInactive() {
@@ -377,9 +379,6 @@ public class ExportPage extends SecureWebPage {
         
         private ExportInfo(List<PatientModel> patients) {
             dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-            dao.setDicomSecurityRoles(
-                    StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
-                            null : StudyPermissionHelper.get().getDicomRoles());
             this.requests = new ArrayList<MoveRequest>(patients.size());
             for (PatientModel pat : patients) {
                 if (pat.isSelected()) {
@@ -444,7 +443,10 @@ public class ExportPage extends SecureWebPage {
             int allowed = 0;
             for (Study study : studies) {
                 if (!StudyPermissionHelper.get().useStudyPermissions() ||
-                        dao.findStudyPermissionActions(study.getStudyInstanceUID()).contains(StudyPermission.EXPORT_ACTION)) {
+                        dao.findStudyPermissionActions(study.getStudyInstanceUID(), 
+                                StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                                        null : StudyPermissionHelper.get().getDicomRoles())
+                                        .contains(StudyPermission.EXPORT_ACTION)) {
                     uids.add(study.getStudyInstanceUID());
                     allowed++;
                 } else 
@@ -467,7 +469,10 @@ public class ExportPage extends SecureWebPage {
             ArrayList<String> uids = new ArrayList<String>();
             for (StudyModel study : studies ) {
                 boolean denied = StudyPermissionHelper.get().useStudyPermissions() && 
-                        !dao.findStudyPermissionActions(study.getStudyInstanceUID()).contains(StudyPermission.EXPORT_ACTION);
+                        !dao.findStudyPermissionActions(study.getStudyInstanceUID(), 
+                                StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                                        null : StudyPermissionHelper.get().getDicomRoles())
+                                        .contains(StudyPermission.EXPORT_ACTION);
                 if (study.isSelected()) {
                     if (denied) {
                         NOTnrStudy++;

@@ -69,6 +69,7 @@ import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
+import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
@@ -203,7 +204,9 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                                 List<StudyModel> studies = patModel.getStudies();
                                 for (Study s : result.getStudiesToMove()) {
                                     sm = new StudyModel(s, patModel, 
-                                            dao.findStudyPermissionActions(s.getStudyInstanceUID()));
+                                            dao.findStudyPermissionActions(s.getStudyInstanceUID(), 
+                                                    StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                                                            null : StudyPermissionHelper.get().getDicomRoles()));
                                     sm.refresh().expand();
                                     studies.add(sm);
                                 }

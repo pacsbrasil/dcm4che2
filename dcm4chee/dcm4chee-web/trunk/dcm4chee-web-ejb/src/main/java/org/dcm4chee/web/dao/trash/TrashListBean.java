@@ -41,7 +41,7 @@ package org.dcm4chee.web.dao.trash;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ejb.Stateful;
+import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -63,52 +63,44 @@ import org.jboss.annotation.ejb.LocalBinding;
  * @version $Revision$ $Date$
  * @since June 07, 2010
  */
-@Stateful
+@Stateless
 @LocalBinding (jndiBinding=TrashListLocal.JNDI_NAME)
 public class TrashListBean implements TrashListLocal {
 
     @PersistenceContext(unitName="dcm4chee-arc")
     private EntityManager em;
 
-    private boolean useSecurity = false;
-    private List<String> roles;
-
-    public void setDicomSecurityRoles(List<String> roles) {
-        this.roles = roles;
-        useSecurity = roles != null;
-    }
-
     private void appendDicomSecurityFilter(StringBuilder ql) {
         ql.append(" AND (s.studyInstanceUID IN (SELECT sp.studyInstanceUID FROM StudyPermission sp WHERE sp.action = 'Q' AND sp.role IN (:roles)))");
     }
 
-    public int countStudies(TrashListFilter filter) {
-        if ((useSecurity) && (roles.size() == 0)) return 0;
+    public int count(TrashListFilter filter, List<String> roles) {
+        if ((roles != null) && (roles.size() == 0)) return 0;
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT COUNT(*)");
         appendFromClause(ql, filter, false);
         appendWhereClause(ql, filter);
-        if (useSecurity && !filter.isPatientsWithoutStudies()) 
+        if ((roles != null) && !filter.isPatientsWithoutStudies()) 
             appendDicomSecurityFilter(ql);
         Query query = em.createQuery(ql.toString());
-        if (useSecurity && !filter.isPatientsWithoutStudies())
+        if ((roles != null) && !filter.isPatientsWithoutStudies())
             query.setParameter("roles", roles);        
         setQueryParameters(query, filter);
         return ((Number) query.getSingleResult()).intValue();
     }
 
     @SuppressWarnings("unchecked")
-    public List<PrivatePatient> findStudies(TrashListFilter filter, int pagesize, int offset) {
-        if ((useSecurity) && (roles.size() == 0)) return new ArrayList<PrivatePatient>();
+    public List<PrivatePatient> findPatients(TrashListFilter filter, int pagesize, int offset, List<String> roles) {
+        if ((roles != null) && (roles.size() == 0)) return new ArrayList<PrivatePatient>();
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT DISTINCT p");
         appendFromClause(ql, filter, true);
         appendWhereClause(ql, filter);
-        if (useSecurity && !filter.isPatientsWithoutStudies())
+        if ((roles != null) && !filter.isPatientsWithoutStudies())
             appendDicomSecurityFilter(ql);
         ql.append(" ORDER BY p.patientName");
         Query query = em.createQuery(ql.toString());
-        if (useSecurity && !filter.isPatientsWithoutStudies())
+        if ((roles != null) && !filter.isPatientsWithoutStudies())
             query.setParameter("roles", roles);
         setQueryParameters(query, filter);
         return query.setMaxResults(pagesize).setFirstResult(offset).getResultList();
@@ -203,25 +195,25 @@ public class TrashListBean implements TrashListLocal {
         }
     }
 
-    public int countStudiesOfPatient(long pk) {
-        if ((useSecurity) && (roles.size() == 0)) return 0;
-        return ((Number) getStudiesOfPatientQuery(true, pk).getSingleResult()).intValue();
+    public int countStudiesOfPatient(long pk, List<String> roles) {
+        if ((roles != null) && (roles.size() == 0)) return 0;
+        return ((Number) getStudiesOfPatientQuery(true, pk, roles).getSingleResult()).intValue();
     }
     
     @SuppressWarnings("unchecked")
-    public List<PrivateStudy> findStudiesOfPatient(long pk) {
-        if ((useSecurity) && (roles.size() == 0)) return new ArrayList<PrivateStudy>();
-        return getStudiesOfPatientQuery(false, pk).getResultList();
+    public List<PrivateStudy> findStudiesOfPatient(long pk, List<String> roles) {
+        if ((roles != null) && (roles.size() == 0)) return new ArrayList<PrivateStudy>();
+        return getStudiesOfPatientQuery(false, pk, roles).getResultList();
     }
         
-    private Query getStudiesOfPatientQuery(boolean isCount, long pk) {
+    private Query getStudiesOfPatientQuery(boolean isCount, long pk, List<String> roles) {
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT DISTINCT " + (isCount ? "COUNT(s)" : "s") + " FROM PrivatePatient p, PrivateStudy s WHERE s.patient.pk=?1");
-        if (useSecurity)
+        if (roles != null)
             appendDicomSecurityFilter(ql);
         Query query = em.createQuery(ql.toString());
         query.setParameter(1, pk);
-        if (useSecurity)
+        if (roles != null)
             query.setParameter("roles", roles);
         return query;
     }

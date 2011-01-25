@@ -60,17 +60,15 @@ public interface StudyListLocal {
 
     String JNDI_NAME = "dcm4chee-web-ear/StudyListBean/local";
 
-    void setDicomSecurityRoles(List<String> roles);
+    int count(StudyListFilter filter, List<String> roles);
+
+    List<Patient> findPatients(StudyListFilter filter, int offset, int limit, List<String> roles);
+
+    public int countStudiesOfPatient(long pk, List<String> roles);
     
-    int count(StudyListFilter filter);
+    List<Study> findStudiesOfPatient(long pk, boolean latestStudyFirst, List<String> roles);
 
-    List<Patient> findPatients(StudyListFilter filter, int offset, int limit);
-
-    public int countStudiesOfPatient(long pk);
-    
-    List<Study> findStudiesOfPatient(long pk, boolean latestStudyFirst);
-
-    List<String> findStudyPermissionActions(String studyInstanceUID);
+    List<String> findStudyPermissionActions(String studyInstanceUID, List<String> roles);
     
     List<Series> findSeriesOfStudy(long pk);
 

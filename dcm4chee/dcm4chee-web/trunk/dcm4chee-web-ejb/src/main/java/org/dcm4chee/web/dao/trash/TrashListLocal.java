@@ -60,13 +60,11 @@ public interface TrashListLocal {
 
     String JNDI_NAME = "dcm4chee-web-ear/TrashListBean/local";
 
-    void setDicomSecurityRoles(List<String> roles);
+    int count(TrashListFilter filter, List<String> roles);
 
-    int countStudies(TrashListFilter filter);
-
-    List<PrivatePatient> findStudies(TrashListFilter filter, int pagesize, int offset);
-    public int countStudiesOfPatient(long pk);
-    List<PrivateStudy> findStudiesOfPatient(long pk);
+    List<PrivatePatient> findPatients(TrashListFilter filter, int pagesize, int offset, List<String> roles);
+    public int countStudiesOfPatient(long pk, List<String> roles);
+    List<PrivateStudy> findStudiesOfPatient(long pk, List<String> roles);
     List<PrivateSeries> findSeriesOfStudy(long pk);
     List<PrivateInstance> findInstancesOfSeries(long pk);
 

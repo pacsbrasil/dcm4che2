@@ -45,7 +45,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import javax.ejb.Stateful;
+import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -71,7 +71,7 @@ import org.jboss.annotation.ejb.LocalBinding;
  * @version $Revision$ $Date$
  * @since Dec 17, 2008
  */
-@Stateful
+@Stateless
 @LocalBinding(jndiBinding=StudyListLocal.JNDI_NAME)
 public class StudyListBean implements StudyListLocal {
 
@@ -138,48 +138,40 @@ public class StudyListBean implements StudyListLocal {
 
     @PersistenceContext(unitName="dcm4chee-arc")
     private EntityManager em;
-
-    private boolean useSecurity = false;
-    private List<String> roles;
-
-    public void setDicomSecurityRoles(List<String> roles) {
-        this.roles = roles;
-        useSecurity = roles != null;
-    }
     
     private void appendDicomSecurityFilter(StringBuilder ql) {
         ql.append(" AND (s.studyInstanceUID IN (SELECT sp.studyInstanceUID FROM StudyPermission sp WHERE sp.action = 'Q' AND sp.role IN (:roles)))");
     }
 
-    public int count(StudyListFilter filter) {
-        if ((useSecurity) && (roles.size() == 0)) return 0;
+    public int count(StudyListFilter filter, List<String> roles) {
+        if ((roles != null) && (roles.size() == 0)) return 0;
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT COUNT(*)");
         appendFromClause(ql, filter, false);
         appendWhereClause(ql, filter);
-        if (useSecurity && !filter.isPatientsWithoutStudies()) 
+        if ((roles != null) && !filter.isPatientsWithoutStudies()) 
             appendDicomSecurityFilter(ql);
         Query query = em.createQuery(ql.toString());
-        if (useSecurity && !filter.isPatientsWithoutStudies())
+        if ((roles != null) && !filter.isPatientsWithoutStudies())
             query.setParameter("roles", roles);        
         setQueryParameters(query, filter);
         return ((Number) query.getSingleResult()).intValue();
     }
 
     @SuppressWarnings("unchecked")
-    public List<Patient> findPatients(StudyListFilter filter, int max, int index) {
-        if ((useSecurity) && (roles.size() == 0)) return new ArrayList<Patient>();
+    public List<Patient> findPatients(StudyListFilter filter, int max, int index, List<String> roles) {
+        if ((roles != null) && (roles.size() == 0)) return new ArrayList<Patient>();
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT DISTINCT p");
         appendFromClause(ql, filter, true);
         appendWhereClause(ql, filter);
-        if (useSecurity && !filter.isPatientsWithoutStudies())
+        if ((roles != null) && !filter.isPatientsWithoutStudies())
             appendDicomSecurityFilter(ql);
         ql.append(" ORDER BY p.patientName" + (filter.isPatientsWithoutStudies() ? "" : ", s.studyDateTime"));
         if (filter.isLatestStudiesFirst()) 
             ql.append(" DESC");
         Query query = em.createQuery(ql.toString());
-        if (useSecurity && !filter.isPatientsWithoutStudies())
+        if ((roles != null) && !filter.isPatientsWithoutStudies())
             query.setParameter("roles", roles);
         setQueryParameters(query, filter);
         return query.setMaxResults(max).setFirstResult(index).getResultList();
@@ -384,21 +376,21 @@ public class StudyListBean implements StudyListLocal {
         }
     }
 
-    public int countStudiesOfPatient(long pk) {
-        if ((useSecurity) && (roles.size() == 0)) return 0;
-        return ((Number) getStudiesOfPatientQuery(true, pk, false).getSingleResult()).intValue();
+    public int countStudiesOfPatient(long pk, List<String> roles) {
+        if ((roles != null) && (roles.size() == 0)) return 0;
+        return ((Number) getStudiesOfPatientQuery(true, pk, false, roles).getSingleResult()).intValue();
     }
     
     @SuppressWarnings("unchecked")
-    public List<Study> findStudiesOfPatient(long pk, boolean latestStudyFirst) {
-        if ((useSecurity) && (roles.size() == 0)) return new ArrayList<Study>();
-        return getStudiesOfPatientQuery(false, pk, latestStudyFirst).getResultList();
+    public List<Study> findStudiesOfPatient(long pk, boolean latestStudyFirst, List<String> roles) {
+        if ((roles != null) && (roles.size() == 0)) return new ArrayList<Study>();
+        return getStudiesOfPatientQuery(false, pk, latestStudyFirst, roles).getResultList();
     }
         
-    private Query getStudiesOfPatientQuery(boolean isCount, long pk, boolean latestStudyFirst) {
+    private Query getStudiesOfPatientQuery(boolean isCount, long pk, boolean latestStudyFirst, List<String> roles) {
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT DISTINCT " + (isCount ? "COUNT(s)" : "s") + " FROM Patient p, Study s WHERE s.patient.pk=?1");
-        if (useSecurity)
+        if (roles != null)
             appendDicomSecurityFilter(ql);
         if (!isCount)
             ql.append(latestStudyFirst
@@ -406,13 +398,13 @@ public class StudyListBean implements StudyListLocal {
                   : " ORDER BY s.studyDateTime");
         Query query = em.createQuery(ql.toString());
         query.setParameter(1, pk);
-        if (useSecurity)
+        if (roles != null)
             query.setParameter("roles", roles);
         return query;
     }
 
     @SuppressWarnings("unchecked")
-    public List<String> findStudyPermissionActions(String studyInstanceUID) {
+    public List<String> findStudyPermissionActions(String studyInstanceUID, List<String> roles) {
         return ((roles != null) && (roles.size() > 0)) ? 
                 em.createQuery("SELECT DISTINCT sp.action FROM StudyPermission sp WHERE sp.studyInstanceUID = :studyInstanceUID AND role IN (:roles)")
                     .setParameter("studyInstanceUID", studyInstanceUID)

@@ -132,10 +132,9 @@ public class PrivPatientModel extends AbstractDicomModel implements Serializable
     @Override
     public void expand() {
         this.studies.clear();
-        dao.setDicomSecurityRoles(
+        for (PrivateStudy study : dao.findStudiesOfPatient(getPk(), 
                 StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
-                        null : StudyPermissionHelper.get().getDicomRoles());
-        for (PrivateStudy study : dao.findStudiesOfPatient(getPk())) {
+                        null : StudyPermissionHelper.get().getDicomRoles())) {
             this.studies.add(new PrivStudyModel(study, this));
         }
     }

@@ -139,10 +139,6 @@ public class TrashListPage extends Panel {
         if (TrashListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(TrashListPage.CSS));
        
-        dao.setDicomSecurityRoles(
-                StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
-                        null : StudyPermissionHelper.get().getDicomRoles());
-
         final TrashListFilter filter = viewport.getFilter();
         final BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
         form.setResourceIdPrefix("trash.");
@@ -566,8 +562,11 @@ public class TrashListPage extends Panel {
     }
 
     private void queryStudies() {
-        viewport.setTotal(dao.countStudies(viewport.getFilter()));
-        updatePatients(dao.findStudies(viewport.getFilter(), pagesize.getObject(), viewport.getOffset()));
+        List<String> dicomSecurityRoles = 
+            StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                    null : StudyPermissionHelper.get().getDicomRoles();
+        viewport.setTotal(dao.count(viewport.getFilter(), dicomSecurityRoles));
+        updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset(), dicomSecurityRoles));
         notSearched = false;
     }
 
@@ -575,18 +574,17 @@ public class TrashListPage extends Panel {
         retainSelectedPatients();
         for (PrivatePatient patient : patients) {
             PrivPatientModel patientModel = addPatient(patient);
-            dao.setDicomSecurityRoles(
-                    StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
-                            null : StudyPermissionHelper.get().getDicomRoles());
             if (viewport.getFilter().isPatientsWithoutStudies()) {
-                patientModel.setExpandable(dao.countStudiesOfPatient(patient.getPk()) > 0);
+                patientModel.setExpandable(dao.countStudiesOfPatient(patient.getPk(), 
+                        StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                                null : StudyPermissionHelper.get().getDicomRoles()) > 0);
             } else {
                 StudyListLocal folderDao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-                folderDao.setDicomSecurityRoles(
-                        StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
-                                null : StudyPermissionHelper.get().getDicomRoles());
                 for (PrivateStudy study : patient.getStudies()) {               
-                    if (folderDao.findStudyPermissionActions((study).getStudyInstanceUID()).contains("Q")
+                    if (folderDao.findStudyPermissionActions((study).getStudyInstanceUID(), 
+                            StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                                    null : StudyPermissionHelper.get().getDicomRoles())
+                                    .contains("Q")
                             || StudyPermissionHelper.get().getStudyPermissionRight()
                             .equals(StudyPermissionHelper.StudyPermissionRight.ALL)) {  
                         addStudy(study, patientModel);
