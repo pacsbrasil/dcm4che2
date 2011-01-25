@@ -155,8 +155,8 @@
       <return-type>void</return-type>
    </operation>
    <operation impact="ACTION">
-      <description><![CDATA[Update OldestCreatedTimeOfCheckFileStatus. 
-      This will be done automatically every day after midnight if this service is enabled.
+      <description><![CDATA[Set ARCHIVED flag of Instances where files on given file system has file_status=2 (ARCHIVED).<br /> 
+      This can be used to update instances that are already copied with a version prior to 2.16.0.
       ]]></description>
       <name>syncArchivedStatusOfInstances</name>
     <parameter>
