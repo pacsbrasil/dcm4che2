@@ -64,7 +64,8 @@ public interface TrashListLocal {
 
     int countStudies(TrashListFilter filter);
 
-    List<Object[]> findStudies(TrashListFilter filter, int offset, int limit);
+    List<PrivatePatient> findStudies(TrashListFilter filter, int pagesize, int offset);
+    public int countStudiesOfPatient(long pk);
     List<PrivateStudy> findStudiesOfPatient(long pk);
     List<PrivateSeries> findSeriesOfStudy(long pk);
     List<PrivateInstance> findInstancesOfSeries(long pk);

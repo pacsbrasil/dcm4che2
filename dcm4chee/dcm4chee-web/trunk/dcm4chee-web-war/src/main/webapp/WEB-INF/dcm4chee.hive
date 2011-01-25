@@ -28,11 +28,9 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:wadoImageWindow", "render, enable";
 // Permissions for edit patient
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:editPatientLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:addStudyLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerPatientLink", "render, enable";
 // Permissions for edit study
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:editStudyLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:addSeriesLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:imageSelectionStudyLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerStudyLink", "render, enable";
 // Permissions for edit pps

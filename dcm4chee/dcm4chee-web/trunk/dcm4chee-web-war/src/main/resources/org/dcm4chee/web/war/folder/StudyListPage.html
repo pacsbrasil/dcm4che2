@@ -121,8 +121,6 @@
 					</a>
 				</td>
 				<td>
-					<input type="checkbox" id="patientsWithoutStudies" wicket:id="patientsWithoutStudies" />
-		  			<label for="patientsWithoutStudies" wicket:id="patientsWithoutStudies.label">patients w/o studies</label>
 				</td>
 				<td>
 					<input type="checkbox" id="latestStudiesFirst" wicket:id="latestStudiesFirst" />
@@ -132,7 +130,11 @@
 					<input type="checkbox" id="ppsWithoutMwl" wicket:id="ppsWithoutMwl" />
 					<label for="ppsWithoutMwl" wicket:id="ppsWithoutMwl.label">Studies with unlinked PPS</label>
 				</td>
-				<td style="text-align: right;" colspan="2">
+                <td>
+                    <label for="patientsWithoutStudies" wicket:id="patientsWithoutStudies.label">search for</label>
+                    <select id="patientsWithoutStudies" wicket:id="patientsWithoutStudies" />
+                </td>
+				<td style="text-align: right;">
 					<button wicket:id="resetBtn">
 						<img wicket:id="resetImg" alt="Search" />
 						<span wicket:id="resetText" />
@@ -296,7 +298,6 @@
 		        <a wicket:id="studyPermissions" href="#"><img wicket:id="studyPermissionsImg" alt="P" /></a>
 		      </td>
 		      <td>
-		        <a wicket:id="add" href="#"><img wicket:id="addImg" alt="+" /></a>
 		      </td>
 		      <td>
 		      	<a wicket:id="webview" href="#"><img wicket:id="webviewImg" alt="V" /></a>
@@ -336,7 +337,6 @@
 		        <a wicket:id="studyPermissions" href="#"><img wicket:id="studyPermissionsImg" alt="P" /></a>
 		      </td>
 		      <td>
-		        <a wicket:id="add" href="#"><img wicket:id="addImg" alt="+" /></a>
 		      </td>
 		      <td>
 		      	<a wicket:id="webview" href="#"><img wicket:id="webviewImg" alt="V" /></a>

@@ -175,6 +175,7 @@ public class StudyPermissionsPage extends SecureWebPage {
             public boolean isEnabled() {
                 return checkStudyPermissionRights(null, true);
             }
+            
             @Override
             public void onClick(AjaxRequestTarget target) {
                 addRoleModalWindow

@@ -94,10 +94,6 @@ public class BaseCfgDelegate {
         return getBoolean("manageUsers", true);
     }
 
-    public String getRoot() {
-        return getString("root");
-    }
-
     public String getLoginAllowedRolename() {
         return getString("loginAllowedRolename");
     }

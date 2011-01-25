@@ -86,25 +86,28 @@ public class SelectedEntities implements Serializable {
             boolean allowSrcInTarget) {
         boolean ignoredNotAllowedEntities = false;
         clear();
-        patLoop: for ( PatientModel patient : allPatients ) {
+        for ( PatientModel patient : allPatients ) {
             if (patient.isSelected()) {
                 if (!allowSrcInTarget) {
                     for (StudyModel study : patient.getStudies()) {
-                        if (useStudyPermissions && !study.getStudyPermissionActions().contains(action)) {
+                        if (useStudyPermissions && !study.getStudyPermissionActions().contains(action)) 
                             ignoredNotAllowedEntities = true;
-                            continue patLoop;
-                        }
+                        else 
+                            studies.add(study);
                     }
                 }
-                patients.add(patient);
+                if (patient.getStudies().size() == studies.size()) {
+                    patients.add(patient);
+                    studies.clear();
+                }
             }
             if (allowSrcInTarget || !patient.isSelected()) {
                 studyLoop: for (StudyModel study : patient.getStudies()) {
-                    if  (useStudyPermissions && !study.getStudyPermissionActions().contains(action)) {
-                        ignoredNotAllowedEntities = true;
-                        continue studyLoop;
-                    }
                     if (study.isSelected()) {
+                        if  (useStudyPermissions && !study.getStudyPermissionActions().contains(action)) {
+                            ignoredNotAllowedEntities = true;
+                            continue studyLoop;
+                        }
                         studies.add(study);
                     }
                     if (allowSrcInTarget || !study.isSelected()) {

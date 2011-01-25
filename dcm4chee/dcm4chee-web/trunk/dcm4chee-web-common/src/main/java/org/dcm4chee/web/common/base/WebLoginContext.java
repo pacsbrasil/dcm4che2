@@ -105,7 +105,6 @@ public class WebLoginContext extends UsernamePasswordContext {
         try {
             secureSession = ((SecureSession) RequestCycle.get().getSession());
             secureSession.setManageUsers(BaseCfgDelegate.getInstance().getManageUsers());
-            secureSession.setRoot(username.equals(BaseCfgDelegate.getInstance().getRoot()));
             context = new LoginContext(webApplicationPolicy, handler);
             context.login();
             secureSession.setUsername(username);
@@ -119,7 +118,7 @@ public class WebLoginContext extends UsernamePasswordContext {
 
         DefaultSubject subject;
         try {
-            subject = toSwarmSubject(rolesGroupName, context.getSubject());
+            subject = secureSession.isRoot() ? toRootSwarmSubject() : toSwarmSubject(rolesGroupName, context.getSubject());
             checkLoginAllowed(subject);
             secureSession.extendedLogin(username, password, subject);
         } catch (Exception e) {
@@ -156,6 +155,13 @@ public class WebLoginContext extends UsernamePasswordContext {
         }
     }
 
+    private DefaultSubject toRootSwarmSubject() {
+        DefaultSubject subject = new DefaultSubject();
+        for (String appRole : ((SecureSession) RequestCycle.get().getSession()).getSwarmPrincipals().keySet()) 
+            subject.addPrincipal(new SimplePrincipal(appRole));
+        return subject;
+    }
+    
     private DefaultSubject toSwarmSubject(String rolesGroupName, Subject jaasSubject) throws IOException {
         DefaultSubject subject = new DefaultSubject();
         Map<String, Set<String>> mappings = null;

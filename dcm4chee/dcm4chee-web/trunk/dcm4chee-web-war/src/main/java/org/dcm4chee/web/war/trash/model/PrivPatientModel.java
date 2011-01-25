@@ -44,7 +44,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.wicket.RequestCycle;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.PrivatePatient;
 import org.dcm4chee.archive.entity.PrivateStudy;
@@ -65,6 +64,8 @@ public class PrivPatientModel extends AbstractDicomModel implements Serializable
     private List<PrivStudyModel> studies = new ArrayList<PrivStudyModel>();
 
     TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
+
+    private boolean expandable;
 
     public PrivPatientModel(PrivatePatient patient) {
         setPk(patient.getPk());
@@ -131,7 +132,9 @@ public class PrivPatientModel extends AbstractDicomModel implements Serializable
     @Override
     public void expand() {
         this.studies.clear();
-        dao.setDicomSecurityRoles(StudyPermissionHelper.get().getDicomRoles());
+        dao.setDicomSecurityRoles(
+                StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                        null : StudyPermissionHelper.get().getDicomRoles());
         for (PrivateStudy study : dao.findStudiesOfPatient(getPk())) {
             this.studies.add(new PrivStudyModel(study, this));
         }
@@ -145,5 +148,12 @@ public class PrivPatientModel extends AbstractDicomModel implements Serializable
     @Override
     public List<? extends AbstractDicomModel> getDicomModelsOfNextLevel() {
         return studies;
+    }
+
+    public boolean isExpandable() {
+        return expandable;
+    }
+    public void setExpandable(boolean expandable) {
+        this.expandable = expandable;
     }
 }

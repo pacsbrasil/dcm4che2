@@ -377,7 +377,9 @@ public class ExportPage extends SecureWebPage {
         
         private ExportInfo(List<PatientModel> patients) {
             dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-            dao.setDicomSecurityRoles(StudyPermissionHelper.get().getDicomRoles());
+            dao.setDicomSecurityRoles(
+                    StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                            null : StudyPermissionHelper.get().getDicomRoles());
             this.requests = new ArrayList<MoveRequest>(patients.size());
             for (PatientModel pat : patients) {
                 if (pat.isSelected()) {

@@ -52,6 +52,7 @@ import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.security.components.SecureWebPage;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.validator.AbstractValidator;
+import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.ui.validator.RoleValidator;
 import org.dcm4chee.usr.util.JNDIUtils;
@@ -89,14 +90,16 @@ public class CreateDicomRolePage extends SecureWebPage {
         private static final long serialVersionUID = 1L;
 
         private Model<String> rolename = new Model<String>();       
-        private TextField<String> rolenameTextField= new TextField<String>("studypermission.add-dicom-role-form.rolename.input", rolename);
+        private TextField<String> rolenameTextField = new TextField<String>("studypermission.add-dicom-role-form.rolename.input", rolename);
         
         public CreateDicomRoleForm(String id, final ModalWindow window, final ListModel<Role> allDicomRolenames) {
             super(id);
 
+            ListModel<Role> r = new ListModel<Role>();
+            r.setObject(((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getAllRoles());
             add(rolenameTextField
                     .setRequired(true)
-                    .add(new DicomRoleValidator(allDicomRolenames))
+                    .add(new DicomRoleValidator(r))
             );
             
             add(new AjaxFallbackButton("add-dicom-role-submit", CreateDicomRoleForm.this) {

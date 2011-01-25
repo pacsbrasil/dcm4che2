@@ -58,7 +58,6 @@ import javax.security.auth.Subject;
 
 import org.apache.wicket.RequestCycle;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
-import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.model.StudyModel;
@@ -92,30 +91,24 @@ public class StudyPermissionHelper implements Serializable {
         webStudyPermissions = WebCfgDelegate.getInstance().getWebStudyPermissions();
 
         try {
-            if (((SecureSession) RequestCycle.get().getSession()).isRoot()) {
-                studyPermissionRight = StudyPermissionRight.ALL;
-            } else {
-                javax.security.auth.Subject dicomSubject = null;
-                WebCfgDelegate.getInstance().invoke("updateDicomRoles", null, null);
-                dicomSubject = new javax.security.auth.Subject(); //dicomSubject != null -> enable studyPermissions
-                WebCfgDelegate.getInstance().getMBeanServer().invoke(
-                        new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("DicomSecurityService")), 
-                        "isValid",
-                        new Object[] { username, password, dicomSubject },
-                        new String[] { String.class.getName(), 
-                                String.class.getName(), 
-                                javax.security.auth.Subject.class.getName()}
-                );
-                setDicomSubject(dicomSubject);
-                setStudyPermissionRight(webSubject);
-            }
+            javax.security.auth.Subject dicomSubject = new javax.security.auth.Subject();
+            WebCfgDelegate.getInstance().getMBeanServer().invoke(
+                    new ObjectName(((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("DicomSecurityService")), 
+                    "isValid",
+                    new Object[] { username, password, dicomSubject },
+                    new String[] { String.class.getName(), 
+                            String.class.getName(), 
+                            javax.security.auth.Subject.class.getName()}
+            );
+            setDicomSubject(dicomSubject);
+            setStudyPermissionRight(webSubject);
         } catch (Exception e) {
             log.error("Error creating StudyPermissionHelper: revoked rights: ", e);
         }
     }
 
-    public void setDicomSubject(Subject dicomSubject) {
-        if (dicomSubject == null) {
+    private void setDicomSubject(Subject dicomSubject) {
+        if (!webStudyPermissions) {
             dicomRoles = null;
         } else {
             dicomRoles = new ArrayList<String>();
@@ -136,7 +129,7 @@ public class StudyPermissionHelper implements Serializable {
     }
     
     public boolean useStudyPermissions() {
-        return useStudyPermissions && (dicomRoles != null);
+        return useStudyPermissions;
     }
 
     public void setWebStudyPermissions(boolean webStudyPermissions) {

@@ -46,6 +46,7 @@ import java.util.List;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
@@ -87,6 +88,7 @@ import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.trash.TrashListFilter;
 import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
@@ -137,7 +139,9 @@ public class TrashListPage extends Panel {
         if (TrashListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(TrashListPage.CSS));
        
-        dao.setDicomSecurityRoles(StudyPermissionHelper.get().getDicomRoles());
+        dao.setDicomSecurityRoles(
+                StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                        null : StudyPermissionHelper.get().getDicomRoles());
 
         final TrashListFilter filter = viewport.getFilter();
         final BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
@@ -220,7 +224,20 @@ public class TrashListPage extends Panel {
     }
 
     private void addQueryOptions(BaseForm form) {
-        form.addLabeledCheckBox("patientsWithoutStudies", null);
+        final List<String> searchOptions = new ArrayList<String>(2);
+        searchOptions.add(new ResourceModel("trash.searchOptions.patient").wrapOnAssignment(this).getObject());
+        searchOptions.add(new ResourceModel("trash.searchOptions.study").wrapOnAssignment(this).getObject());
+        final Model<String> searchOptionSelected = new Model<String>(searchOptions.get(1));
+        form.addDropDownChoice("patientsWithoutStudies", searchOptionSelected, searchOptions, 
+                new Model<Boolean>(true), true)
+                .add(new AjaxFormComponentUpdatingBehavior("onchange") {
+                    
+                    private static final long serialVersionUID = 1L;
+
+                        protected void onUpdate(AjaxRequestTarget target) {
+                            viewport.getFilter().setPatientsWithoutStudies(searchOptionSelected.getObject().equals(searchOptions.get(0)));
+                        }
+                });
     }
 
     private void addNavigation(final BaseForm form) {
@@ -359,9 +376,12 @@ public class TrashListPage extends Panel {
 
             @Override
             public Serializable getObject() {
-                return notSearched ? "trash.search.notSearched" :
-                        viewport.getTotal() == 0 ? "trash.search.noMatchingStudiesFound" : 
-                            "trash.search.studiesFound";
+                return notSearched ? "trash.search.notSearched" : 
+                    viewport.getFilter().isPatientsWithoutStudies() ? 
+                            (viewport.getTotal() == 0 ? "trash.search.noMatchingPatientsFound" : 
+                            "trash.search.patientsFound")
+                            : (viewport.getTotal() == 0 ? "trash.search.noMatchingStudiesFound" : 
+                                "trash.search.studiesFound");
             }
         };
         form.add(new Label("viewport", new StringResourceModel("${}", TrashListPage.this, keySelectModel,new Object[]{"dummy"}){
@@ -551,15 +571,30 @@ public class TrashListPage extends Panel {
         notSearched = false;
     }
 
-    private void updatePatients(List<Object[]> patientAndStudies) {
+    private void updatePatients(List<PrivatePatient> patients) {
         retainSelectedPatients();
-        for (Object[] patientAndStudy : patientAndStudies) {
-            PrivPatientModel patientModel = addPatient((PrivatePatient) patientAndStudy[0]);
-            if (patientAndStudy[1] != null) {
-                addStudy((PrivateStudy) patientAndStudy[1], patientModel);
+        for (PrivatePatient patient : patients) {
+            PrivPatientModel patientModel = addPatient(patient);
+            dao.setDicomSecurityRoles(
+                    StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                            null : StudyPermissionHelper.get().getDicomRoles());
+            if (viewport.getFilter().isPatientsWithoutStudies()) {
+                patientModel.setExpandable(dao.countStudiesOfPatient(patient.getPk()) > 0);
+            } else {
+                StudyListLocal folderDao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+                folderDao.setDicomSecurityRoles(
+                        StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                                null : StudyPermissionHelper.get().getDicomRoles());
+                for (PrivateStudy study : patient.getStudies()) {               
+                    if (folderDao.findStudyPermissionActions((study).getStudyInstanceUID()).contains("Q")
+                            || StudyPermissionHelper.get().getStudyPermissionRight()
+                            .equals(StudyPermissionHelper.StudyPermissionRight.ALL)) {  
+                        addStudy(study, patientModel);
+                        patientModel.setExpandable(true);
+                    }
+                }
             }
         }
-        header.setExpandAllLevel(1);
     }
 
     private boolean addStudy(PrivateStudy study, PrivPatientModel patient) {
@@ -650,7 +685,8 @@ public class TrashListPage extends Panel {
                    tag.put("rowspan", patModel.getRowspan());
                 }
             };
-            cell.add(new ExpandCollapseLink("expand", patModel, item));
+            cell.add(new ExpandCollapseLink("expand", patModel, item)
+                .setVisible(patModel.isExpandable()));
             item.add(cell);
             
             TooltipBehaviour tooltip = new TooltipBehaviour("trash.content.data.patient.");

@@ -616,17 +616,6 @@
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getRoot"
-      setMethod="setRoot">
-      <description><![CDATA[Name of the root user.
-      ]]></description>
-      <name>root</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="admin"/>
-      </descriptors>
-    </attribute>
    
    &defaultAttributes;
    

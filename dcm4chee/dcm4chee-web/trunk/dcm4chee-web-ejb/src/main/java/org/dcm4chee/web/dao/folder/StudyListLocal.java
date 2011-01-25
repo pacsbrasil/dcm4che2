@@ -64,8 +64,10 @@ public interface StudyListLocal {
     
     int countStudies(StudyListFilter filter);
 
-    List<Object[]> findStudies(StudyListFilter filter, int offset, int limit);
+    List<Patient> findStudies(StudyListFilter filter, int offset, int limit);
 
+    public int countStudiesOfPatient(long pk);
+    
     List<Study> findStudiesOfPatient(long pk, boolean latestStudyFirst);
 
     List<String> findStudyPermissionActions(String studyInstanceUID);

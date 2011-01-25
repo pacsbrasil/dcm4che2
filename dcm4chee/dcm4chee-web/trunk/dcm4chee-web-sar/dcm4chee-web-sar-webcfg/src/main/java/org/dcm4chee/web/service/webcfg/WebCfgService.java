@@ -135,7 +135,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private boolean manageUsers;
     private boolean useStudyPermissions;
     private boolean webStudyPermissions;
-    private String root;
     
     private static final String NONE = "NONE";
     private static final String NEWLINE = System.getProperty("line.separator", "\n");
@@ -750,6 +749,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         File mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.roles-filename", "conf/dcm4chee-web3/roles.json"));
         if (!mappingFile.isAbsolute())
             mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
+        if (mappingFile.exists()) return;
         log.info("Init default Roles file: "+mappingFile);
         if (mappingFile.getParentFile().mkdirs())
             log.info("M-WRITE dir:" +mappingFile.getParent());
@@ -804,14 +804,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public boolean isWebStudyPermissions() {
         return webStudyPermissions;
-    }
-
-    public void setRoot(String root) {
-        this.root = root;
-    }
-
-    public String getRoot() {
-        return root;
     }
 }
 
