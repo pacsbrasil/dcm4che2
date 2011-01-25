@@ -327,5 +327,11 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     public void setTimerIDCheckSyncFileStatus(String timerIDCheckSyncFileStatus) {
         this.timerIDCheckSyncFileStatus = timerIDCheckSyncFileStatus;
     }
-    
+ 
+    public int syncArchivedStatusOfInstances(String fsID, String limitStr) throws Exception {
+        if (fsID == null || fsID.trim().length() < 1)
+            return 0;
+        int limit = (limitStr == null || limitStr.trim().length() < 1) ? 1000 : Integer.parseInt(limitStr);
+        return newFileSystemMgt().syncArchivedFlag(fsID, limit < 1 ? 1000 : limit);
+    }
 }

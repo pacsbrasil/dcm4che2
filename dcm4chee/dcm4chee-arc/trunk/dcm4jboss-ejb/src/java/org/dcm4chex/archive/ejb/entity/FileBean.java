@@ -111,6 +111,12 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  * @jboss.query signature="java.util.Collection findFilesToLossyCompressWithCopyOnOtherFileSystemGroup(java.lang.String fsGroupId, java.lang.String otherFSGroupId, java.lang.String cuid, java.lang.String bodyPart, java.lang.String sourceAET, java.sql.Timestamp before, int limit)"
  *             query="SELECT DISTINCT OBJECT(f) FROM File AS f, IN (f.instance.files) AS f2 WHERE f.fileStatus = 0 AND f.fileTsuid NOT IN ('1.2.840.10008.1.2.4.50','1.2.840.10008.1.2.4.51','1.2.840.10008.1.2.4.81','1.2.840.10008.1.2.4.91') AND f.fileSystem.status IN (0,1) AND f.fileSystem.groupID = ?1 AND f2.fileSystem.groupID = ?2 AND f.instance.sopCuid = ?3 AND f.instance.series.bodyPartExamined = ?4 AND f.instance.series.sourceAET = ?5 AND f.createdTime < ?6 LIMIT ?7"
  *             strategy="on-find" eager-load-group="*"
+ * @ejb.finder signature="java.util.Collection findToSyncArchived(java.lang.String fsPath, int limit)"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findToSyncArchived(java.lang.String fsPath, int limit)"
+ *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileStatus = 2 AND f.instance.archived = false AND f.fileSystem.directoryPath = ?1 LIMIT ?2"
+ *             strategy="on-find" eager-load-group="*"
+ *
  */
 public abstract class FileBean implements EntityBean {
 

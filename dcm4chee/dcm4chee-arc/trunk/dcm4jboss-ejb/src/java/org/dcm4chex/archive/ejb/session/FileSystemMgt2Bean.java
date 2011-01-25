@@ -1282,6 +1282,18 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                         fsGroupID, otherFSGroupID, cuid, bodyPart, srcAET, before, limit));
     }
 
+    /**
+     * @ejb.interface-method
+     */
+    public int syncArchivedFlag(String fsPath, int limit) throws FinderException {
+        Collection<FileLocal> c = fileHome.findToSyncArchived(fsPath, limit);
+        log.info("Found files to sync archived flag on instance:"+c.size());
+        for (FileLocal f : c) {
+            f.getInstance().setArchived(true);
+        }
+        return c.size();
+    }
+
     private void logOrderInfoMsg(DeleteStudyOrder order, String msg) {
        log.info( "Study "+order.getStudyIUID()+" [pk=" + order.getStudyPk() + 
            "] on FileSystem[pk="+ order.getFsPk()+ "] "+msg);

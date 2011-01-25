@@ -154,6 +154,25 @@
       <name>updateOldestCreatedTimeOfCheckFileStatus</name>
       <return-type>void</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[Update OldestCreatedTimeOfCheckFileStatus. 
+      This will be done automatically every day after midnight if this service is enabled.
+      ]]></description>
+      <name>syncArchivedStatusOfInstances</name>
+    <parameter>
+      <description>File System ID where files must have file status ARCHIVED.
+      </description>
+      <name>fsID</name>
+      <type>java.lang.String</type>
+    </parameter>
+    <parameter>
+      <description><![CDATA[Limit number of files that are processed. (values &lt; 1 --&gt; default of 1000)
+      ]]></description>
+      <name>limit</name>
+      <type>java.lang.String</type>
+    </parameter>
+    <return-type>int</return-type>
+   </operation>
 
 </mbean>
     
