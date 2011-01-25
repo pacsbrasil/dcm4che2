@@ -59,6 +59,7 @@ import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.CloseButtonCallback;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
@@ -623,6 +624,9 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                if (studyPermissionHelper.useStudyPermissions())
+                    updateStudyPermissions();
+                updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset()));
                 boolean hasIgnored = selected.update(studyPermissionHelper.useStudyPermissions(), 
                         viewport.getPatients(), StudyPermission.DELETE_ACTION);
                 selected.deselectChildsOfSelectedEntities();
@@ -658,6 +662,8 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                if (studyPermissionHelper.useStudyPermissions())
+                    updateStudyPermissions();
                 selected.update(false, viewport.getPatients(), StudyPermission.UPDATE_ACTION, true);
                 log.info("Selected Entities:"+selected);
                 if (selected.hasDicomSelection()) {
@@ -697,6 +703,8 @@ public class StudyListPage extends Panel {
 
             @Override
             public void onClick() {
+                if (studyPermissionHelper.useStudyPermissions())
+                    updateStudyPermissions();
                 this.setResponsePage(new ExportPage(viewport.getPatients()));
             }
         };
@@ -798,11 +806,18 @@ public class StudyListPage extends Panel {
     }
 
     private void queryStudies() {
-        viewport.setTotal(dao.countStudies(viewport.getFilter()));
-        updatePatients(dao.findStudies(viewport.getFilter(), pagesize.getObject(), viewport.getOffset()));
+        viewport.setTotal(dao.count(viewport.getFilter()));
+        updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset()));
         notSearched = false;
     }
 
+    private void updateStudyPermissions() {
+        for (PatientModel patient : viewport.getPatients()) {
+            for (StudyModel study : patient.getStudies())
+                study.setStudyPermissionActions(dao.findStudyPermissionActions((study).getStudyInstanceUID()));
+        }
+    }
+    
     private void updatePatients(List<Patient> patients) {
         retainSelectedPatients();
         for (Patient patient : patients) {

@@ -68,7 +68,9 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
 
     private T userObject;
     private String focusElementId;
-    private IModel<?> msg, remark, confirm, decline, cancel;
+    public IModel<?> msg;
+
+    protected IModel<?> remark, confirm, decline, cancel;
     
     protected boolean hasStatus;
     private boolean showCancel = false;
@@ -105,7 +107,6 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                 target.addComponent(getPage());
             }
         });
-
     }
 
     public ConfirmationWindow(String id, IModel<?> confirm, IModel<?> decline, IModel<?> cancel) {

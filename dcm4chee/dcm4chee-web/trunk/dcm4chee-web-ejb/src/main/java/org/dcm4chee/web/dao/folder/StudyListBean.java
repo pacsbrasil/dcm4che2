@@ -151,7 +151,7 @@ public class StudyListBean implements StudyListLocal {
         ql.append(" AND (s.studyInstanceUID IN (SELECT sp.studyInstanceUID FROM StudyPermission sp WHERE sp.action = 'Q' AND sp.role IN (:roles)))");
     }
 
-    public int countStudies(StudyListFilter filter) {
+    public int count(StudyListFilter filter) {
         if ((useSecurity) && (roles.size() == 0)) return 0;
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT COUNT(*)");
@@ -167,7 +167,7 @@ public class StudyListBean implements StudyListLocal {
     }
 
     @SuppressWarnings("unchecked")
-    public List<Patient> findStudies(StudyListFilter filter, int max, int index) {
+    public List<Patient> findPatients(StudyListFilter filter, int max, int index) {
         if ((useSecurity) && (roles.size() == 0)) return new ArrayList<Patient>();
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT DISTINCT p");

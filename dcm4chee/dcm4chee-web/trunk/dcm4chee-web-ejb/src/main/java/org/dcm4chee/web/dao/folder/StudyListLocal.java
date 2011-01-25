@@ -62,9 +62,9 @@ public interface StudyListLocal {
 
     void setDicomSecurityRoles(List<String> roles);
     
-    int countStudies(StudyListFilter filter);
+    int count(StudyListFilter filter);
 
-    List<Patient> findStudies(StudyListFilter filter, int offset, int limit);
+    List<Patient> findPatients(StudyListFilter filter, int offset, int limit);
 
     public int countStudiesOfPatient(long pk);
     
