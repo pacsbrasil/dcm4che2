@@ -39,25 +39,24 @@
 
 package org.dcm4chex.archive.hsm;
 
-import java.io.DataInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.compress.tar.TarEntry;
 import org.apache.commons.compress.tar.TarInputStream;
-import org.dcm4cheri.util.StringUtils;
-import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,25 +74,26 @@ public class VerifyTar {
             + "          file name prompted to stdout.";
 
 
-    public static void verify(File file, byte[] buf)
+    public static Set<String> verify(File file, byte[] buf)
             throws IOException, VerifyTarException {
         FileInputStream in = new FileInputStream(file);
         try {
-            verify(in, file.toString(), buf);
+            return verify(in, file.toString(), buf);
         } finally {
             in.close();
         }
     }
     
-    public static void verify(InputStream in, String tarname, byte[] buf)
+    public static Set<String> verify(InputStream in, String tarname, byte[] buf)
     throws IOException, VerifyTarException {
-        verify(in, tarname, buf, null);
+        return verify(in, tarname, buf, null);
     }
 
-    public static void verify(InputStream in, String tarname, byte[] buf, ArrayList objectNames)
+    public static Set<String> verify(InputStream in, String tarname, byte[] buf, ArrayList<String> objectNames)
     throws IOException, VerifyTarException {
         TarInputStream tar = new TarInputStream(in);
         try {
+            log.debug("Verify tar file: {}",tarname);
             TarEntry entry = tar.getNextEntry();
             if (entry == null)
                 throw new VerifyTarException("No entries in " + tarname);
@@ -101,9 +101,9 @@ public class VerifyTar {
             if (!"MD5SUM".equals(entryName))
                 throw new VerifyTarException("Missing MD5SUM entry in "
                         + tarname);
-            DataInputStream dis = new DataInputStream(tar);
+            BufferedReader dis = new BufferedReader(new InputStreamReader(tar));
             
-            HashMap md5sums = new HashMap();
+            HashMap<String, byte[]> md5sums = new HashMap<String, byte[]>();
             String line;
             while ((line = dis.readLine()) != null) {
                 char[] c = line.toCharArray();
@@ -114,6 +114,8 @@ public class VerifyTar {
                 }
                 md5sums.put(line.substring(34), md5sum);
             }
+            Set<String> entries = new HashSet<String>(md5sums.size());
+            entries.addAll(md5sums.keySet());
             MessageDigest digest;
             try {
                 digest = MessageDigest.getInstance("MD5");
@@ -122,6 +124,7 @@ public class VerifyTar {
             }
             while ((entry = tar.getNextEntry()) != null) {
                 entryName = entry.getName();
+                log.debug("START: Check MD5 of entry: {}",entryName);
                 if(objectNames != null && !objectNames.remove(entryName))
                     throw new VerifyTarException( "TAR " + tarname + " contains entry: "
                             + entryName + " not in file list");
@@ -138,6 +141,7 @@ public class VerifyTar {
                             "Failed MD5 check of TAR entry: " + entryName
                             + " in " + tarname);
                 }
+                log.debug("DONE: Check MD5 of entry: {}",entryName);
             }
             if (!md5sums.isEmpty())
                 throw new VerifyTarException("Missing TAR entries: "
@@ -145,6 +149,7 @@ public class VerifyTar {
             if (objectNames != null && !objectNames.isEmpty())
                 throw new VerifyTarException("Missing TAR entries from object list: "
                         + objectNames.toString() + " in " + tarname);
+            return entries;
         } finally {
             tar.close();
         }

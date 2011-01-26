@@ -232,10 +232,12 @@ public class TarRetrieverService extends ServiceMBeanSupport {
 
     private void fetchAndExtractTar(String fsID, String tarPath, File cacheDir) throws IOException,
             VerifyTarException {
-        File tarFile = hsmModuleServicename == null ? 
-                FileUtils.toFile(fsID.substring(4), tarPath) :
-                fetchHSMFile(fsID, tarPath);
-        extractTar(tarFile, cacheDir);
+        extractTar(fetchTarFile(fsID, tarPath), cacheDir);
+    }
+    
+    public File fetchTarFile(String fsID, String tarPath) throws IOException {
+        return hsmModuleServicename == null ? 
+                FileUtils.toFile(fsID.substring(4), tarPath) : fetchHSMFile(fsID, tarPath);
     }
     
     private File fetchHSMFile(String fsID, String tarPath) throws IOException {

@@ -66,6 +66,49 @@
          <value value="TO_ARCHIVE"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isVerifyTar"
+      setMethod="setVerifyTar">
+      <description><![CDATA[Enables verification of tar files.<br />
+         If enabled the tar file is verified by <br />
+         1) checking MD5 sums of the tar content.<br />
+         2) check if tar file contains the file.<br />
+         Only applicable if filesystem is a tar filesystem!
+      ]]></description>
+      <name>VerifyTar</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getInvalidTarStatus"
+      setMethod="setInvalidTarStatus">
+      <description><![CDATA[New file status or DELETE if verification of tar failed.<br />
+      Enumerated values: DELETE or DEFAULT, TO_ARCHIVE, ARCHIVED, QUERY_HSM_FAILED, MD5_CHECK_FAILED<br />
+      DELETE..Delete all file entities related to this invalid tar file.<br /> 
+      Only applicable if VerifyTar is enabled.
+      ]]></description>
+      <name>InvalidTarStatus</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DEFAULT"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getNotInTarStatus"
+      setMethod="setNotInTarStatus">
+      <description><![CDATA[New file status or DELETE if file is not found in related tar file.<br />
+      Enumerated values: DELETE or DEFAULT, TO_ARCHIVE, ARCHIVED, QUERY_HSM_FAILED<br />
+      DELETE..Delete such invalid file entities. 
+      Only applicable if VerifyTar is enabled.
+      ]]></description>
+      <name>NotInTarStatus</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DEFAULT"/>
+      </descriptors>
+   </attribute>
    
    <attribute access="read-write"
       getMethod="getTaskInterval"
@@ -126,6 +169,14 @@
       <type>java.lang.String</type>
    </attribute>
    
+   <attribute access="read-write"
+      getMethod="getTarRetrieverName"
+      setMethod="setTarRetrieverName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TarRetrieverName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
    <attribute access="read-write"
       getMethod="getSchedulerServiceName"
       setMethod="setSchedulerServiceName">

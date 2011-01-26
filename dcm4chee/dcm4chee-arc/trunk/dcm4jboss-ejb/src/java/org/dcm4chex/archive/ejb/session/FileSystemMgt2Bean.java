@@ -1293,7 +1293,39 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         }
         return c.size();
     }
-
+    /**
+     * @ejb.interface-method
+     */
+    public int deleteFilesOfInvalidTarFile(String fsId, String tarFilename) throws FinderException, RemoveException {
+        if (fsId.startsWith("tar:") && tarFilename.length() > 10) {
+            Collection<FileLocal> c = fileHome.findFilesOfTarFile(fsId, tarFilename+"%");
+            log.info("Found "+c.size()+" files of invalid tar file "+tarFilename);
+            for (FileLocal f : c) {
+                f.remove();
+            }
+            return c.size();
+        } else {
+            log.warn("Given arguments probably not a tar file! Delete request denied!");
+            return -1;
+        }
+    }
+    /**
+     * @ejb.interface-method
+     */
+    public boolean deleteFileOnTarFs(String fsId, long filePk) {
+        if (fsId.startsWith("tar:")) {
+            try {
+                fileHome.findByPrimaryKey(filePk).remove();
+                return true;
+            } catch (Exception x) {
+                log.error("Failed to remove file entity (pk="+filePk+")", x);
+            }
+        } else {
+            log.warn("Given Filesystem ID is not a tar file system! Delete request denied!");
+        }
+        return false;
+    }
+    
     private void logOrderInfoMsg(DeleteStudyOrder order, String msg) {
        log.info( "Study "+order.getStudyIUID()+" [pk=" + order.getStudyPk() + 
            "] on FileSystem[pk="+ order.getFsPk()+ "] "+msg);

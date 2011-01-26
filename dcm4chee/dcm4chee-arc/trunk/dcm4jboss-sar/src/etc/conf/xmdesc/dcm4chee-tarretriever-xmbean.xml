@@ -157,6 +157,24 @@
       </parameter>
       <return-type>java.io.File</return-type>
    </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[Fetch TAR file by File System ID and TAR path. 
+      ]]></description>
+      <name>fetchTarFile</name>
+      <parameter>
+        <description>File System ID</description>
+        <name>fsID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description><![CDATA[TAR Path (File ID without file reference (!&ltFilePath in tar file&gt;))]]></description>
+        <name>tarPath</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.io.File</return-type>
+   </operation>
+
    <operation impact="ACTION">
       <description>Delete oldest directories to free specified amount of disk space. 
       </description>

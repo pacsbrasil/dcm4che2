@@ -116,6 +116,9 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  * @jboss.query signature="java.util.Collection findToSyncArchived(java.lang.String fsPath, int limit)"
  *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileStatus = 2 AND f.instance.archived = false AND f.fileSystem.directoryPath = ?1 LIMIT ?2"
  *             strategy="on-find" eager-load-group="*"
+ * @ejb.finder signature="java.util.Collection findFilesOfTarFile(java.lang.String fsId, java.lang.String tarFilename)"
+ *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileSystem.directoryPath = ?1 AND f.filePath LIKE ?2" 
+ *             transaction-type="Supports"
  *
  */
 public abstract class FileBean implements EntityBean {

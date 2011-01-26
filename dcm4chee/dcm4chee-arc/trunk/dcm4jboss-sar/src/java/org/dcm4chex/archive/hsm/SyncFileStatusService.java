@@ -9,27 +9,36 @@
 
 package org.dcm4chex.archive.hsm;
 
+import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 import javax.ejb.FinderException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
+import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.mbean.SchedulerDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -38,6 +47,8 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since Nov 22, 2005
  */
 public class SyncFileStatusService extends ServiceMBeanSupport {
+
+    private static final String DELETE = "DELETE";
 
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
@@ -64,9 +75,15 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     private Integer listenerID;
 
     private ObjectName hsmModuleServicename = null;
+    private ObjectName tarRetrieverName;
     
     private Timestamp oldestCreatedTimeOfCheckFileStatus;
     private long nextUpdate;
+    
+    private boolean verifyTar;
+    private int notInTarStatus;
+    private int invalidTarStatus;
+    private byte[] buf = new byte[8192];
     
     private final NotificationListener timerListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -98,6 +115,14 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
 
     };
 
+    public final ObjectName getTarRetrieverName() {
+        return tarRetrieverName;
+    }
+
+    public final void setTarRetrieverName(ObjectName tarRetrieverName) {
+        this.tarRetrieverName = tarRetrieverName;
+    }
+    
     public ObjectName getSchedulerServiceName() {
         return scheduler.getSchedulerServiceName();
     }
@@ -121,6 +146,27 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
 
     public final void setCheckFileStatus(String status) {
         this.checkFileStatus = FileStatus.toInt(status);
+    }
+
+    public boolean isVerifyTar() {
+        return verifyTar;
+    }
+
+    public void setVerifyTar(boolean verifyTar) {
+        this.verifyTar = verifyTar;
+    }
+
+    public String getInvalidTarStatus() {
+        return invalidTarStatus == Integer.MIN_VALUE ? DELETE : FileStatus.toString(invalidTarStatus);
+    }
+    public void setInvalidTarStatus(String status) {
+        this.invalidTarStatus = DELETE.equals(status) ? Integer.MIN_VALUE : FileStatus.toInt(status);
+    }
+    public String getNotInTarStatus() {
+        return notInTarStatus == Integer.MIN_VALUE ? DELETE : FileStatus.toString(notInTarStatus);
+    }
+    public void setNotInTarStatus(String status) {
+        this.notInTarStatus = DELETE.equals(status) ? Integer.MIN_VALUE : FileStatus.toInt(status);
     }
 
     public final String getTaskInterval() {
@@ -254,9 +300,10 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
                 return 0;
             }
             int count = 0;
-            HashMap<String, Integer> checkedTars = new HashMap<String, Integer>();
+            HashMap<String, Integer> checkedTarsStatus = new HashMap<String, Integer>();
+            HashMap<String, Set<String>> checkedTarsMD5 = verifyTar ? new HashMap<String, Set<String>>() : null;
             for (int i = 0; i < c.length; i++) {
-                if (check(fsmgt, c[i], checkedTars))
+                if (check(fsmgt, c[i], checkedTarsStatus, checkedTarsMD5))
                     ++count;
             }
             return count;
@@ -266,25 +313,90 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     }
 
     private boolean check(FileSystemMgt2 fsmgt, FileDTO fileDTO,
-            HashMap<String, Integer> checkedTars) throws IOException {
-        String dirpath = fileDTO.getDirectoryPath();
+            HashMap<String, Integer> checkedTarsStatus, HashMap<String, Set<String>> checkedTarsMD5) throws IOException, VerifyTarException {
+        String fsId = fileDTO.getDirectoryPath();
         String filePath = fileDTO.getFilePath();
-        String tarPath = null;
-        if (dirpath.startsWith("tar:")) {
-            filePath = filePath.substring(0, filePath.indexOf('!'));
-            tarPath = dirpath.substring(4) + '/' + filePath;
-            Integer status = (Integer) checkedTars.get(tarPath);
-            if (status != null) {
-                return updateFileStatus(fsmgt, fileDTO, status.intValue());
+        String tarPathKey = null;
+        Integer status;
+        if (fsId.startsWith("tar:")) {
+            String tarfilePath = filePath.substring(0, filePath.indexOf('!'));
+            tarPathKey = fsId.substring(4) + '/' + tarfilePath;
+            if (!checkedTarsStatus.containsKey(tarPathKey)) {
+                status = queryHSM(fsId, tarfilePath, fileDTO.getUserInfo());
+                checkedTarsStatus.put(tarPathKey, status);
             }
-            if (checkedTars.containsKey(tarPath))
-                return false;
+            status = verifyTar(fileDTO, tarPathKey, checkedTarsMD5);
+            if (status == null) {
+                status = (Integer) checkedTarsStatus.get(tarPathKey);
+            }
+        } else {
+            status = queryHSM(fsId, filePath, fileDTO.getUserInfo());
         }
-        Integer status = queryHSM(dirpath, filePath, fileDTO.getUserInfo());
-        if (tarPath != null) {
-            checkedTars.put(tarPath, status);
+        return (status == null || status == Integer.MIN_VALUE) ? 
+                false : updateFileStatus(fsmgt, fileDTO, status);
+    }
+
+    private Integer verifyTar(FileDTO dto, String tarPathKey, HashMap<String, Set<String>> checkedTarsMD5) {
+        if (verifyTar) {
+            log.info("Verify tar file "+tarPathKey);
+            String filePath = dto.getFilePath();
+            String filepathInTar = filePath.substring(filePath.indexOf('!')+1);
+            String tarfilePath = filePath.substring(0, filePath.indexOf('!'));
+            Set<String> entries = null;
+            if (checkedTarsMD5.containsKey(tarPathKey)) {
+                entries = checkedTarsMD5.get(tarPathKey);
+                if (log.isDebugEnabled()) log.debug("entries of checked tar file "+tarPathKey+" :"+entries);
+            } else {
+                try {
+                    File tarFile = fetchTarFile(dto.getDirectoryPath(), tarfilePath);
+                    entries = VerifyTar.verify(tarFile, buf);
+                } catch (Exception x) {
+                    log.error("Verification of tar file "+tarPathKey+" failed! Reason:"+x.getMessage());
+                    if (invalidTarStatus == Integer.MIN_VALUE) {
+                        try {
+                            log.error("Delete file entities of invalid tar file :"+tarfilePath);
+                            newFileSystemMgt().deleteFilesOfInvalidTarFile(dto.getDirectoryPath(), tarfilePath);
+                        } catch (Exception e) {
+                            log.error("Failed to delete files of invalid tar file! tarFile:"+tarfilePath);
+                        }
+                    }
+                }
+                checkedTarsMD5.put(tarPathKey, entries);
+            }
+            if (entries == null) {
+                log.error("TAR file "+tarPathKey+" not valid -> " + (invalidTarStatus == Integer.MIN_VALUE ?
+                        "File is deleted!" : "set status to "+FileStatus.toString(invalidTarStatus)));
+                return invalidTarStatus;
+            } else if (!entries.contains(filepathInTar)) {
+                log.error("Tar File "+tarPathKey+" does NOT contain File "+filepathInTar);
+                if (notInTarStatus == Integer.MIN_VALUE) {
+                    log.error("Delete file entity that is missing in tar file:"+filePath);
+                    try {
+                        newFileSystemMgt().deleteFileOnTarFs(dto.getDirectoryPath(), dto.getPk());
+                    } catch (Exception e) {
+                        log.error("Failed to delete file entity! filePath:"+filePath);
+                    }
+                } else {
+                    log.error("Set file status to "+FileStatus.toString(notInTarStatus));
+                }
+                return notInTarStatus;
+            }
         }
-        return status == null ? false : updateFileStatus(fsmgt, fileDTO, status);
+        return null;
+    }
+    
+    private File fetchTarFile(String fsID, String tarPath) throws Exception {
+        try {
+            return (File) server.invoke(tarRetrieverName, "fetchTarFile",
+                    new Object[] { fsID, tarPath }, new String[] {
+                            String.class.getName(), String.class.getName() });
+        } catch (InstanceNotFoundException e) {
+            throw new ConfigurationException(e.getMessage(), e);
+        } catch (MBeanException e) {
+            throw e.getTargetException();
+        } catch (ReflectionException e) {
+            throw new ConfigurationException(e.getMessage(), e);
+        }
     }
 
     private boolean updateFileStatus(FileSystemMgt2 fsmgt, FileDTO fileDTO,
