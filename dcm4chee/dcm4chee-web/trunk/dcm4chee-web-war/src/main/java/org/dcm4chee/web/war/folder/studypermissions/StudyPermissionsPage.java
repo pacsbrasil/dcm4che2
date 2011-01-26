@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.folder;
+package org.dcm4chee.web.war.folder.studypermissions;
 
 import java.util.ArrayList;
 import java.util.Iterator;

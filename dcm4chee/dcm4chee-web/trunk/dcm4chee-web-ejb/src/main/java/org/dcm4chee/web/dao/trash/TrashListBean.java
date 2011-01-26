@@ -93,7 +93,7 @@ public class TrashListBean implements TrashListLocal {
     public List<PrivatePatient> findPatients(TrashListFilter filter, int pagesize, int offset, List<String> roles) {
         if ((roles != null) && (roles.size() == 0)) return new ArrayList<PrivatePatient>();
         StringBuilder ql = new StringBuilder(64);
-        ql.append("SELECT DISTINCT p");
+        ql.append("SELECT p");
         appendFromClause(ql, filter, true);
         appendWhereClause(ql, filter);
         if ((roles != null) && !filter.isPatientsWithoutStudies())
@@ -208,7 +208,7 @@ public class TrashListBean implements TrashListLocal {
         
     private Query getStudiesOfPatientQuery(boolean isCount, long pk, List<String> roles) {
         StringBuilder ql = new StringBuilder(64);
-        ql.append("SELECT DISTINCT " + (isCount ? "COUNT(s)" : "s") + " FROM PrivatePatient p, PrivateStudy s WHERE s.patient.pk=?1");
+        ql.append("SELECT " + (isCount ? "COUNT(s)" : "s") + " FROM PrivateStudy s WHERE s.patient.pk=?1");
         if (roles != null)
             appendDicomSecurityFilter(ql);
         Query query = em.createQuery(ql.toString());

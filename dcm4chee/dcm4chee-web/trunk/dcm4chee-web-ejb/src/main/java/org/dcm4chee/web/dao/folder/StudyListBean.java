@@ -162,7 +162,7 @@ public class StudyListBean implements StudyListLocal {
     public List<Patient> findPatients(StudyListFilter filter, int max, int index, List<String> roles) {
         if ((roles != null) && (roles.size() == 0)) return new ArrayList<Patient>();
         StringBuilder ql = new StringBuilder(64);
-        ql.append("SELECT DISTINCT p");
+        ql.append("SELECT p");
         appendFromClause(ql, filter, true);
         appendWhereClause(ql, filter);
         if ((roles != null) && !filter.isPatientsWithoutStudies())
@@ -389,7 +389,7 @@ public class StudyListBean implements StudyListLocal {
         
     private Query getStudiesOfPatientQuery(boolean isCount, long pk, boolean latestStudyFirst, List<String> roles) {
         StringBuilder ql = new StringBuilder(64);
-        ql.append("SELECT DISTINCT " + (isCount ? "COUNT(s)" : "s") + " FROM Patient p, Study s WHERE s.patient.pk=?1");
+        ql.append("SELECT " + (isCount ? "COUNT(s)" : "s") + " FROM Study s WHERE s.patient.pk=?1");
         if (roles != null)
             appendDicomSecurityFilter(ql);
         if (!isCount)

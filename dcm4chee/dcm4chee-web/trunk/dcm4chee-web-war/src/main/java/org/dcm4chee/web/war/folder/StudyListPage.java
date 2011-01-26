@@ -127,6 +127,7 @@ import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
+import org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
