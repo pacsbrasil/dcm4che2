@@ -93,6 +93,7 @@ import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
+import org.dcm4chex.archive.common.PIDWithIssuer;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
@@ -1148,10 +1149,35 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
    
-    List queryCorrespondingPIDs(String pid, String issuer)
+    Set<PIDWithIssuer> queryCorrespondingPIDs(String pid, String issuer,
+            Map<PIDWithIssuer, Set<PIDWithIssuer>> map) {
+        PIDWithIssuer key = new PIDWithIssuer(pid, issuer);
+        Set<PIDWithIssuer> pidWithIssuers = map.get(key);
+        if (pidWithIssuers == null) {
+            List<String[]> results = null;
+            try {
+                results = queryCorrespondingPIDs(pid, issuer);
+            } catch (DcmServiceException e) {}
+            if (results == null || results.isEmpty()) {
+                pidWithIssuers = new HashSet<PIDWithIssuer>(2);
+                map.put(key, pidWithIssuers);
+                return pidWithIssuers;
+            }
+            pidWithIssuers = new HashSet<PIDWithIssuer>();
+            for (String[] result : results) {
+                PIDWithIssuer pidWithIssuer = 
+                    new PIDWithIssuer(result[0], result[1]);
+                pidWithIssuers.add(pidWithIssuer);
+                map.put(pidWithIssuer, pidWithIssuers);
+            }
+        }
+        return pidWithIssuers;
+    }
+
+    List<String[]> queryCorrespondingPIDs(String pid, String issuer)
     throws DcmServiceException {
         try {
-            return (List) server.invoke(this.pixQueryServiceName,
+            return (List<String[]>) server.invoke(this.pixQueryServiceName,
                     "queryCorrespondingPIDs",
                     new Object[] { pid, 
                             issuer != null ? issuer : pixQueryDefIssuer,
@@ -1378,7 +1404,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     Dimse makeCStoreRQ(ActiveAssociation activeAssoc, FileInfo info, AEDTO aeData,
             int priority, String moveOriginatorAET, int moveRqMsgID,
-            PerfMonDelegate perfMon) throws Exception {
+            PerfMonDelegate perfMon, 
+            Map<PIDWithIssuer, Set<PIDWithIssuer>> pixQueryResults)
+    throws Exception {
         Association assoc = activeAssoc.getAssociation();
         String dest = assoc.isRequestor() ? assoc.getCalledAET() 
                 : assoc.getCallingAET();
@@ -1410,7 +1438,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                         .fromByteArray(info.seriesAttrs, DatasetUtils
                                 .fromByteArray(info.instAttrs))));
         }
-        adjustPatientIDOnRetrieval(mergeAttrs, assoc, dest);
+        adjustPatientIDOnRetrieval(mergeAttrs, assoc, dest, pixQueryResults);
         adjustAccessionNumberOnRetrieval(mergeAttrs, assoc, dest);
         coerceOutboundCStoreRQ(mergeAttrs, aeData, assoc, dest);
         byte[] buf = (byte[]) assoc.getProperty(SEND_BUFFER);
@@ -1467,20 +1495,34 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     private void adjustPatientIDOnRetrieval(Dataset ds, Association as,
-            String dest) {
-        String pid;
-        String issuer;
+            String dest,
+            Map<PIDWithIssuer, Set<PIDWithIssuer>> pixQueryResults) {
+        String pid, issuer, assocIssuer;
         if (adjustPatientIDOnRetrieval 
                 && (pid = ds.getString(Tags.PatientID)) != null
                 && (issuer = ds.getString(Tags.IssuerOfPatientID)) != null
-                && !equals(issuer, getAssociatedIssuerOfPatientID(as, dest))) {
-            log.info("Move Patient ID with issuer " + issuer
-                    + " to Other Patient ID Sequence");
+                && (assocIssuer = getAssociatedIssuerOfPatientID(as, dest))
+                        .length() != 0) {
+            Set<PIDWithIssuer> correspondingPIDs =
+                    queryCorrespondingPIDs(pid, issuer, pixQueryResults);
             ds.putLO(Tags.PatientID);
             ds.remove(Tags.IssuerOfPatientID);
-            Dataset opid = ds.putSQ(Tags.OtherPatientIDSeq).addNewItem();
-            opid.putLO(Tags.PatientID, pid);
-            opid.putLO(Tags.IssuerOfPatientID, issuer);
+            DcmElement opids = ds.get(Tags.OtherPatientIDSeq);
+            if (opids != null)
+                for (int i = 0, n = opids.countItems(); i < n; i++) {
+                    Dataset opid = opids.getItem(i);
+                    correspondingPIDs.add(new PIDWithIssuer(
+                            opid.getString(Tags.PatientID),
+                            opid.getString(Tags.IssuerOfPatientID)));
+                }
+            opids = ds.putSQ(Tags.OtherPatientIDSeq);
+            for (PIDWithIssuer pidWithIssuer : correspondingPIDs) {
+                Dataset opid = pidWithIssuer.issuer.equals(assocIssuer)
+                        ? ds 
+                        : opids.addNewItem();
+                opid.putLO(Tags.PatientID, pidWithIssuer.pid);
+                opid.putLO(Tags.IssuerOfPatientID, pidWithIssuer.issuer);
+            }
         }
     }
 

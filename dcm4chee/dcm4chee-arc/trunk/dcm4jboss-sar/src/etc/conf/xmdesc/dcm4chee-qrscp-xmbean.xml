@@ -137,10 +137,16 @@ QueryRetrieveScp service.</description>
    <attribute access="read-write"
       getMethod="isAdjustPatientIDOnRetrieval"
       setMethod="setAdjustPatientIDOnRetrieval">
-      <description><![CDATA[Nullify <i>Patient ID</i> in retrieved objects, if
-      its <i>Issuer of Patient ID</i> does not match the
+      <description><![CDATA[Perform PIX Query also on retrieval to determine
+      the <i>Patient ID</i> which <i>Issuer of Patient ID</i> match the
       <i>Issuer of Patient ID</i> associated to the retrieve destination
-      by a corresponding AE configuration entry.]]>
+      by a corresponding AE configuration entry, and replace the original
+      <i>Patient ID</i> and <i>Issuer of Patient ID</i> in retrieved objects by
+      this value. If there is no such <i>Patient ID</i>, nullify the 
+      <i>Patient ID</i> and remove the <i>Issuer of Patient ID</i> in retrieved
+      objects. Return <i>Patient IDs</i> which <i>Issuer of Patient ID</i> does
+      not match the <i>Issuer of Patient ID</i> associated to the retrieve
+      destination in items of the <i>Other Patient ID Sequence</i>.]]>
       </description>
       <name>AdjustPatientIDOnRetrieval</name>
       <type>boolean</type>

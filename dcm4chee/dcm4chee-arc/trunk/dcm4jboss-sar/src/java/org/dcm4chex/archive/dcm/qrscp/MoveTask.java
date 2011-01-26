@@ -42,9 +42,11 @@ package org.dcm4chex.archive.dcm.qrscp;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
 
@@ -66,6 +68,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.PIDWithIssuer;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
@@ -108,6 +111,8 @@ public class MoveTask implements Runnable {
     private final Set<String> remainingIUIDs;
 
     private final Set<String> failedIUIDs;
+
+    private final Map<PIDWithIssuer, Set<PIDWithIssuer>> pixQueryResults;
 
     private final int total;
 
@@ -187,6 +192,9 @@ public class MoveTask implements Runnable {
         this.remainingIUIDs = retrieveInfo.getAvailableIUIDs();
         this.failedIUIDs = retrieveInfo.getNotAvailableIUIDs();
         moveAssoc.addCancelListener(msgID, cancelListener);
+        this.pixQueryResults = service.isAdjustPatientIDOnRetrieval()
+                ? new HashMap<PIDWithIssuer, Set<PIDWithIssuer>>()
+                : null;
         
         if (service.getRetrieveRspStatusForNoMatchingInstanceToRetrieve() != Status.Success)
         	findInvalidUIDsInRequest(moveRqData, fileInfo);
@@ -399,8 +407,9 @@ public class MoveTask implements Runnable {
             
             Dimse rq;
             try {
-                rq = service.makeCStoreRQ(storeAssoc,
-                        fileInfo, aeData, priority, moveOriginatorAET, msgID, perfMon);
+                rq = service.makeCStoreRQ(storeAssoc, fileInfo, aeData, 
+                        priority, moveOriginatorAET, msgID, perfMon,
+                        pixQueryResults);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 failedIUIDs.add(iuid);

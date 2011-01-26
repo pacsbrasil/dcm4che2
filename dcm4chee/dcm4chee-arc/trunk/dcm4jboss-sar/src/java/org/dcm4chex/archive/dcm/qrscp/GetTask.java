@@ -39,9 +39,11 @@ package org.dcm4chex.archive.dcm.qrscp;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
 
@@ -57,6 +59,7 @@ import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.PIDWithIssuer;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.NoPresContextException;
@@ -82,6 +85,7 @@ class GetTask implements Runnable {
     private final ArrayList<FileInfo> transferred = new ArrayList<FileInfo>();
     private final Set<String> remainingIUIDs;
     private final Set<String> failedIUIDs;
+    private final Map<PIDWithIssuer, Set<PIDWithIssuer>> pixQueryResults;
 
     private int total;
 
@@ -111,7 +115,7 @@ class GetTask implements Runnable {
                 sendGetRsp(Status.Pending, null);
             }
         }};
-
+ 
     public GetTask(QueryRetrieveScpService service, ActiveAssociation assoc,
             int pcid, Command rqCmd, Dataset rqData, FileInfo[][] fileInfos) {
         this.service = service;
@@ -129,6 +133,9 @@ class GetTask implements Runnable {
         this.remainingIUIDs = retrieveInfo.getAvailableIUIDs();
         this.failedIUIDs = retrieveInfo.getNotAvailableIUIDs();
         assoc.addCancelListener(msgID, cancelListener);
+        this.pixQueryResults = service.isAdjustPatientIDOnRetrieval()
+                ? new HashMap<PIDWithIssuer, Set<PIDWithIssuer>>()
+                : null;
     }
 
     private void removeInstancesOfUnsupportedStorageSOPClasses() {
@@ -275,8 +282,8 @@ class GetTask implements Runnable {
             };
             Dimse rq;
             try {
-                rq = service.makeCStoreRQ(assoc,
-                        fileInfo, null, priority, null, 0, null);
+                rq = service.makeCStoreRQ(assoc, fileInfo, null, priority, 
+                        null, 0, null, pixQueryResults);
             } catch (NoPresContextException e) {
                 if (!service.isIgnorableSOPClass(fileInfo.sopCUID, 
                         a.getCallingAET())) {
