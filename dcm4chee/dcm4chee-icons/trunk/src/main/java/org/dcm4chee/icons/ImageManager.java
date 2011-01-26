@@ -95,7 +95,9 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "folder/wado.png");
     public static ResourceReference IMAGE_FOLDER_STUDY_PERMISSIONS = 
         new ResourceReference(ImageManager.class, "folder/study_permissions.png");
-
+    public static ResourceReference IMAGE_FOLDER_MPPS = 
+        new ResourceReference(ImageManager.class, "folder/mpps.png");
+    
     public static final ResourceReference IMAGE_AE_ECHO = 
         new ResourceReference(ImageManager.class, "ae/echo.png");
     public static final ResourceReference IMAGE_AE_EDIT = 
