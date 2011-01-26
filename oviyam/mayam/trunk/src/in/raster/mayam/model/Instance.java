@@ -71,6 +71,8 @@ public class Instance implements Serializable {
     private int seriesLevelIndex;
     private int instanceNumber;
 
+    private String sliceLocation;
+
     private HashMap<Integer,Annotation> annotations=null;
 
 
@@ -281,6 +283,14 @@ public class Instance implements Serializable {
 
     public void setInstanceNumber(int instanceNumber) {
         this.instanceNumber = instanceNumber;
+    }
+
+    public String getSliceLocation() {
+        return sliceLocation;
+    }
+
+    public void setSliceLocation(String sliceLocation) {
+        this.sliceLocation = sliceLocation;
     }
 
 }

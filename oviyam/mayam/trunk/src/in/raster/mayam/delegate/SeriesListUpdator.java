@@ -340,6 +340,7 @@ public class SeriesListUpdator extends Thread {
         if (referencedImageSequence != null) {
             referencedSOPInstanceUID = referencedImageSequence.getString(Tag.ReferencedSOPInstanceUID);
         }
+         String sliceLocation=(dataset.getString(Tags.SliceLocation)!=null)?dataset.getString(Tags.SliceLocation):"";
         img.setImagePosition(imagePosition);
         img.setImageOrientation(imageOrientation);
         img.setImageType(imageType);
@@ -348,7 +349,8 @@ public class SeriesListUpdator extends Thread {
         img.setColumn(column);
         img.setReferenceSOPInstanceUID(referencedSOPInstanceUID);
         img.setFrameOfReferenceUID(frameOfReferenceUID);
-        img.setInstanceNumber(instanceNumber);
+        img.setInstanceNumber(instanceNumber);        
+        img.setSliceLocation(sliceLocation);
     }
 
     public StudyAnnotation getStudyAnnotation() {

@@ -42,6 +42,7 @@ import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegate.ImageOrientation;
 import in.raster.mayam.delegate.LocalizerDelegate;
 import in.raster.mayam.delegate.SeriesChooserDelegate;
+import in.raster.mayam.delegate.SynchronizationDelegate;
 import in.raster.mayam.model.Instance;
 import in.raster.mayam.model.ScoutLineInfoModel;
 import in.raster.mayam.model.Series;
@@ -89,6 +90,7 @@ import javax.swing.JPopupMenu;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4che2.data.Tag;
+import sun.tools.tree.ThisExpression;
 
 /**
  *
@@ -231,6 +233,9 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     private int axisTopX;
     private int axisTopY;
     private int instanceNumber;
+    private String sliceLocation;
+    public static boolean synchornizeTiles = false;
+    public int syncStartInstance;
 
     public ImagePanel() {
         initComponents();
@@ -252,7 +257,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         retrieveScoutParam();
         setTotalInstacne();
         retriveTextOverlayParam();
-       // designContext();
+        // designContext();
     }
 
     /**
@@ -280,9 +285,9 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         textOverlayParam.setPatientID(dataset.getString(Tags.PatientID));
         textOverlayParam.setSex(dataset.getString(Tags.PatientSex));
         textOverlayParam.setStudyDate(dataset.getString(Tags.StudyDate));
-        textOverlayParam.setStudyDescription(dataset.getString(Tags.StudyDescription) !=null ?dataset.getString(Tags.StudyDescription):"");
-        textOverlayParam.setSeriesDescription(dataset.getString(Tags.SeriesDescription) !=null ?dataset.getString(Tags.SeriesDescription) :"");
-        textOverlayParam.setInstanceNumber(dataset.getString(Tags.InstanceNumber) !=null ? dataset.getString(Tags.InstanceNumber): "");
+        textOverlayParam.setStudyDescription(dataset.getString(Tags.StudyDescription) != null ? dataset.getString(Tags.StudyDescription) : "");
+        textOverlayParam.setSeriesDescription(dataset.getString(Tags.SeriesDescription) != null ? dataset.getString(Tags.SeriesDescription) : "");
+        textOverlayParam.setInstanceNumber(dataset.getString(Tags.InstanceNumber) != null ? dataset.getString(Tags.InstanceNumber) : "");
         textOverlayParam.setBodyPartExamined(dataset.getString(Tags.BodyPartExamined));
         textOverlayParam.setSlicePosition(dataset.getString(Tags.SliceLocation));
         textOverlayParam.setPatientPosition(dataset.getString(Tags.PatientPosition));
@@ -307,6 +312,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         rescaleSlope = dataset.getString(Tags.RescaleSlope);
         rescaleIntercept = dataset.getString(Tags.RescaleIntercept);
         aspectRatio = dataset.getStrings(Tags.PixelAspectRatio);
+        sliceLocation = (dataset.getString(Tag.SliceLocation) != null) ? dataset.getString(Tag.SliceLocation) : "";
         try {
             currentInstanceNo = Integer.parseInt(dataset.getString(Tags.InstanceNumber));
         } catch (NumberFormatException e) {
@@ -790,7 +796,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         if (!firstTime) {
             repaint();
         }
-        selectFirstInstance();        
+        selectFirstInstance();
         this.getCanvas().getLayeredCanvas().annotationPanel.resetAnnotaionTools();
         this.tool = "windowing";
     }
@@ -831,7 +837,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             }
         }
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
-        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setInstanceNumber(""+this.instanceNumber);
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setInstanceNumber("" + this.instanceNumber);
     }
 
     /**
@@ -847,7 +853,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
 
     public void setWindowingToolsAsDefault() {
         if (!(tool.equalsIgnoreCase("windowing"))) {
-            tool = "windowing";           
+            tool = "windowing";
         }
     }
 
@@ -1473,55 +1479,54 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         this.storeAnnotation();
         int notches = e.getWheelRotation();
         if (notches < 0) {
-           doPrevious();
+            doPrevious();
         } else {
-           doNext();
+            doNext();
         }
     }
-    public void moveToNextInstance()
-    {
+
+    public void moveToNextInstance() {
         this.storeAnnotation();
         doNext();
     }
-    public void moveToPreviousInstance()
-    {
+
+    public void moveToPreviousInstance() {
         this.storeAnnotation();
         doPrevious();
 
     }
-    public void doPrevious()
-    {
-         if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
-                if (instanceArray == null) {
-                    previousFrame();
-                } else {
-                    showPreviousFrame();
-                }
-            } else {
-                if (instanceArray == null) {
-                    previousInstance();
-                } else {
-                    selectPreviousInstance();
-                }
-            }
-    }
-    public void doNext()
-    {
+
+    public void doPrevious() {
         if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
-                if (instanceArray == null) {
-                    nextFrame();
-                } else {
-                    showNextFrame();
-                }
+            if (instanceArray == null) {
+                previousFrame();
             } else {
-                if (instanceArray == null) {
-                    nextInstance();
-                } else {
-                    selectNextInstance();
-                }
+                showPreviousFrame();
             }
+        } else {
+            if (instanceArray == null) {
+                previousInstance();
+            } else {
+                selectPreviousInstance();
+            }
+        }
     }
 
+    public void doNext() {
+        if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
+            if (instanceArray == null) {
+                nextFrame();
+            } else {
+                showNextFrame();
+            }
+        } else {
+            if (instanceArray == null) {
+                nextInstance();
+            } else {
+                selectNextInstance();
+            }
+        }
+    }
 
     private void setInstanceArray() {
         for (Study study : MainScreen.studyList) {
@@ -1788,7 +1793,12 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         } else {
             this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
         }
-         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setInstanceNumber(""+this.instanceNumber);
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setInstanceNumber("" + this.instanceNumber);
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setSlicePosition(sliceLocation);
+        if (synchornizeTiles && !isMulitiFrame() && modality.startsWith("CT")) {
+            SynchronizationDelegate synchronizationDelegate = new SynchronizationDelegate();
+            synchronizationDelegate.doTileSync();
+        }
     }
 
     public void selectNextInstance() {
@@ -1813,14 +1823,86 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 localizer.drawScoutLineWithBorder();
             }
         }
-        this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getAnnotation());
+        this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getAnnotation());     
         //this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
         if (!ApplicationContext.databaseRef.getMultiframeStatus()) {
             this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(instance.getSeriesLevelIndex());
         } else {
             this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
         }
-         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setInstanceNumber(""+this.instanceNumber);
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setInstanceNumber("" + this.instanceNumber);
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setSlicePosition(sliceLocation);
+           if (synchornizeTiles && !isMulitiFrame() && modality.startsWith("CT")) {
+            SynchronizationDelegate synchronizationDelegate = new SynchronizationDelegate();
+            synchronizationDelegate.doTileSync();
+        }
+    }
+
+    public void setImage(String sliceLocation) {
+       /**
+          * This mehtod has been added for synchronized scroll it will not support for multiframe sync scroll. so that
+          * instance number can be set directly to instanceNumber and currentInstanceNo variable.
+          */
+        int instanceNo = ApplicationContext.databaseRef.getInstaneNumberBasedOnSliceLocation(studyUID, seriesUID, instanceUID, sliceLocation);
+        instanceNo--;      
+        if (instanceNumber != -1) {
+            if(instanceNo>-1 && instanceNo<instanceArray.size())
+            {
+            setImage(instanceArray.get(instanceNo).getPixelData());
+            setInstanceInfo(instanceArray.get(instanceNo));
+            this.instanceNumber = instanceNo;
+            currentInstanceNo=instanceNo-1;
+            updateTextoverlay();
+            }
+        }
+    }
+
+    public void setImage(int instanceNo) {
+         /**
+          * This mehtod has been added for synchronized scroll it will not support for multiframe sync scroll. so that
+          * instance number can be set directly to instanceNumber and currentInstanceNo variable.
+          */
+        if(instanceNo>-1 && instanceNo<instanceArray.size())
+            {
+        setImage(instanceArray.get(instanceNo).getPixelData());
+        setInstanceInfo(instanceArray.get(instanceNo));
+        this.instanceNumber = instanceNo+1;
+        currentInstanceNo=instanceNo;
+        updateTextoverlay();
+        }
+    }
+
+    public void updateTextoverlay() {  
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setInstanceNumber("" + this.instanceNumber);
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setSlicePosition(sliceLocation);
+    }
+
+    public void setInstanceArryFromList() {
+        if (instanceArray == null) {
+            for (Study study : MainScreen.studyList) {
+                if (study.getStudyInstanceUID().equalsIgnoreCase(this.studyUID)) {
+                    for (Series series : study.getSeriesList()) {
+                        if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+                            if (!series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
+                                totalInstance = series.getImageList().size();
+                                instanceArray = (ArrayList<Instance>) series.getImageList();
+                            }
+                        } else {
+                            if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
+                                totalInstance = series.getImageList().size();
+                                instanceArray = (ArrayList<Instance>) series.getImageList();
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    public String getSliceLocation() {
+        return sliceLocation;
     }
 
     private void setInstanceInfo(Instance img) {
@@ -1834,7 +1916,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             this.column = img.getColumn();
             this.frameOfReferenceUID = img.getFrameOfReferenceUID().equalsIgnoreCase("") ? "" : img.getFrameOfReferenceUID();
             this.referencedSOPInstanceUID = img.getReferenceSOPInstanceUID().equalsIgnoreCase("") ? "" : img.getReferenceSOPInstanceUID();
-            this.instanceNumber=img.getInstanceNumber();
+            this.instanceNumber = img.getInstanceNumber();
+            this.sliceLocation = img.getSliceLocation();
         } catch (Exception e) {
             System.out.println("[ImagePanel]" + e.getMessage());
         }
@@ -2102,61 +2185,62 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
         jPopupMenu1.removeAll();
         jPopupMenu1.add(menu);
-       
+
         createOtherPatientStudiesMenu(jPopupMenu1);
         this.setComponentPopupMenu(jPopupMenu1);
     }
+    JMenu studyMenu = null;
 
-      JMenu studyMenu = null;
     public void createOtherPatientStudiesMenu(JPopupMenu mainMenu) {
 
-        if(canvas.getLayeredCanvas().getComparedWithStudies()!=null){
-        //Other Studies
-        mainMenu.addSeparator();
-        for (String s : canvas.getLayeredCanvas().getComparedWithStudies()) {
-            if (!s.equalsIgnoreCase(this.studyUID)) {
+        if (canvas.getLayeredCanvas().getComparedWithStudies() != null) {
+            //Other Studies
+            mainMenu.addSeparator();
+            for (String s : canvas.getLayeredCanvas().getComparedWithStudies()) {
+                if (!s.equalsIgnoreCase(this.studyUID)) {
                     studyMenu = new JMenu(ApplicationContext.databaseRef.getPatientNameBasedonStudyUID(s));
-                   ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList(s);
-                  JMenu menu1 = new JMenu("Multiframe(s)");
-        for (final Series series : seriesList) {
-            JMenuItem menuitem = null;
-            if (series.isMultiframe()) {
-                if (Integer.parseInt(series.getImageList().get(0).getInstance_no()) < 10) {
-                    menuitem = new JMenuItem(series.getImageList().get(0).getInstance_no() + "   - Frames  " + series.getImageList().get(0).getTotalNumFrames());
-                } else {
-                    menuitem = new JMenuItem(series.getImageList().get(0).getInstance_no() + " - Frames  " + series.getImageList().get(0).getTotalNumFrames());
-                }
-                menu1.add(menuitem);
-            } else if (!series.getSeriesDesc().equalsIgnoreCase("null")) {
-                menuitem = new JMenuItem(series.getSeriesDesc());
-            } else if (!series.getBodyPartExamined().equalsIgnoreCase("null")) {
-                menuitem = new JMenuItem(series.getBodyPartExamined());
-            } else {
-                menuitem = new JMenuItem(series.getSeriesInstanceUID());
-            }
-            if (!series.isMultiframe()) {
-                studyMenu.add(menuitem);
-            } else {
-                studyMenu.add(menu1);
-            }
-            menuitem.addActionListener(new java.awt.event.ActionListener() {
+                    ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList(s);
+                    JMenu menu1 = new JMenu("Multiframe(s)");
+                    for (final Series series : seriesList) {
+                        JMenuItem menuitem = null;
+                        if (series.isMultiframe()) {
+                            if (Integer.parseInt(series.getImageList().get(0).getInstance_no()) < 10) {
+                                menuitem = new JMenuItem(series.getImageList().get(0).getInstance_no() + "   - Frames  " + series.getImageList().get(0).getTotalNumFrames());
+                            } else {
+                                menuitem = new JMenuItem(series.getImageList().get(0).getInstance_no() + " - Frames  " + series.getImageList().get(0).getTotalNumFrames());
+                            }
+                            menu1.add(menuitem);
+                        } else if (!series.getSeriesDesc().equalsIgnoreCase("null")) {
+                            menuitem = new JMenuItem(series.getSeriesDesc());
+                        } else if (!series.getBodyPartExamined().equalsIgnoreCase("null")) {
+                            menuitem = new JMenuItem(series.getBodyPartExamined());
+                        } else {
+                            menuitem = new JMenuItem(series.getSeriesInstanceUID());
+                        }
+                        if (!series.isMultiframe()) {
+                            studyMenu.add(menuitem);
+                        } else {
+                            studyMenu.add(menu1);
+                        }
+                        menuitem.addActionListener(new java.awt.event.ActionListener() {
 
-                public void actionPerformed(ActionEvent arg0) {
-                    if (ApplicationContext.databaseRef.getMultiframeStatus()) {
-                        changeSeries(arg0, series.getStudyInstanceUID(), series.getSeriesInstanceUID(), series.isMultiframe(), series.getInstanceUID());
-                    } else {
-                        changeSeries(arg0, series.getStudyInstanceUID(), series.getSeriesInstanceUID());
+                            public void actionPerformed(ActionEvent arg0) {
+                                if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+                                    changeSeries(arg0, series.getStudyInstanceUID(), series.getSeriesInstanceUID(), series.isMultiframe(), series.getInstanceUID());
+                                } else {
+                                    changeSeries(arg0, series.getStudyInstanceUID(), series.getSeriesInstanceUID());
+                                }
+                            }
+                        });
                     }
+
+                    mainMenu.add(studyMenu);
                 }
-            });
-        }
-
-            mainMenu.add(studyMenu);
             }
-        }
 
+        }
     }
-    }
+
     public boolean isInstanceArray() {
         if (this.instanceArray != null) {
             return true;
@@ -2164,6 +2248,42 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             return false;
         }
     }
+
+    public static boolean isSynchornizeTiles() {
+        return synchornizeTiles;
+    }
+
+    public void doSynchronize() {
+        if (synchornizeTiles) {
+            synchornizeTiles = false;
+        } else {
+            synchornizeTiles = true;
+            syncStartInstance=this.currentInstanceNo;
+            SynchronizationDelegate.setSyncStartInstanceInAllTiles();
+        }
+    }
+    public boolean canBeProcessed()
+    {
+        boolean temp=false;
+        if(modality.startsWith("CT"))
+        {
+            temp=true;
+           // System.out.println("temp value set as true");
+        }
+        return temp;
+    }
+    public int getSyncDifference()
+    {
+        return currentInstanceNo-syncStartInstance;
+    }
+    public void updateSyncStartInstance()
+    {
+        syncStartInstance=this.currentInstanceNo;
+    }
+    public int getSyncStartInstance() {
+        return syncStartInstance;
+    }
+
 
     private void changeSeries(ActionEvent e, String studyUID, String seriesUID) {
         SeriesChooserDelegate seriesChooser = new SeriesChooserDelegate(studyUID, seriesUID, this.getCanvas().getLayeredCanvas());

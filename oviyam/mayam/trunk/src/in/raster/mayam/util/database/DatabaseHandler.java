@@ -355,7 +355,7 @@ public class DatabaseHandler {
             statement.executeUpdate(sql);
 
             //creating is instance table if it is not exist already
-            sql = "create table " + instanceTable + " (SopUID varchar(255) NOT NULL CONSTRAINT SopUID_pk PRIMARY KEY ," + "InstanceNo integer," + "multiframe varchar(50)," + "totalframe varchar(50)," + "SendStatus varchar(50)," + "ForwardDateTime varchar(30)," + "ReceivedDateTime varchar(30)," + "ReceiveStatus varchar(50)," + "FileStoreUrl varchar(750)," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255), foreign key (StudyInstanceUID) references Study(StudyInstanceUID)," + "SeriesInstanceUID varchar(255), foreign key (SeriesInstanceUID) references Series(SeriesInstanceUID))";
+            sql = "create table " + instanceTable + " (SopUID varchar(255) NOT NULL CONSTRAINT SopUID_pk PRIMARY KEY ," + "InstanceNo integer," + "multiframe varchar(50)," + "totalframe varchar(50)," + "SendStatus varchar(50)," + "ForwardDateTime varchar(30)," + "ReceivedDateTime varchar(30)," + "ReceiveStatus varchar(50)," + "FileStoreUrl varchar(750)," + "SliceLocation integer," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255), foreign key (StudyInstanceUID) references Study(StudyInstanceUID)," + "SeriesInstanceUID varchar(255), foreign key (SeriesInstanceUID) references Series(SeriesInstanceUID))";
             statement.executeUpdate(sql);
 
             sql = "create table ae(pk integer primary key GENERATED ALWAYS AS IDENTITY,logicalname varchar(255),hostname varchar(255),aetitle varchar(255),port integer,retrievetype varchar(100),wadocontext varchar(100),wadoport integer,wadoprotocol varchar(100),retrievets varchar(255))";
@@ -961,7 +961,8 @@ public class DatabaseHandler {
                     multiframe = "true";
                     totalFrame = Integer.parseInt(dataset.getString(Tags.NumberOfFrames));
                 }
-                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber) + ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "','" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
+                String sliceLocation = (dataset.getString(Tags.SliceLocation) != null) ? dataset.getString(Tags.SliceLocation) : "100000";
+                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber) + ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "'," + sliceLocation + ",'" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
                 conn.commit();
                 int receivedCount = this.getReceiveCount(dataset.getString(Tag.StudyInstanceUID));
                 receivedCount = receivedCount + 1;
@@ -984,7 +985,8 @@ public class DatabaseHandler {
                     multiframe = "true";
                     totalFrame = Integer.parseInt(dataset.getString(Tags.NumberOfFrames));
                 }
-                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber) + ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "','" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
+                String sliceLocation = (dataset.getString(Tags.SliceLocation) != null) ? dataset.getString(Tags.SliceLocation) : "";
+                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber) + ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "'," + sliceLocation + ",'" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
                 conn.commit();
                 int receivedCount = this.getReceiveCount(dataset.getString(Tag.StudyInstanceUID));
                 receivedCount = receivedCount + 1;
@@ -1694,6 +1696,24 @@ public class DatabaseHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public int getInstaneNumberBasedOnSliceLocation(String studyUID, String seriesUID, String instanceUID, String sliceLocation) {
+        int instanceNumber = -1;
+        try {
+            double sliceLocTemp = 0;
+            if (sliceLocation != null && !sliceLocation.equalsIgnoreCase("")) {
+                sliceLocTemp = Double.parseDouble(sliceLocation);
+            }
+            String sql = "select instanceNo from image where StudyInstanceUID='" + studyUID + "' and SeriesInstanceUID='" + seriesUID + "' and SliceLocation between " + (sliceLocTemp - 0.5) + " and " + (sliceLocTemp + 0.5);
+            ResultSet rs = conn.createStatement().executeQuery(sql);
+            while (rs.next()) {
+                instanceNumber = rs.getInt("instanceNo");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return instanceNumber;
     }
 
     public ArrayList getStudyUIDBasedOnPatientName(String patientName) {

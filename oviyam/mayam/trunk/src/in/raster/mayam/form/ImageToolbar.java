@@ -218,6 +218,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         stackButton = new javax.swing.JButton();
         scoutButton = new javax.swing.JButton();
         cube3DButton = new javax.swing.JButton();
+        synchronizeButton = new javax.swing.JButton();
         loopCheckbox = new javax.swing.JCheckBox();
         loopSlider = new javax.swing.JSlider();
 
@@ -609,19 +610,33 @@ public class ImageToolbar extends javax.swing.JPanel {
         });
         jToolBar3.add(cube3DButton);
 
-        loopCheckbox.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
+        synchronizeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/Link.png"))); // NOI18N
+        synchronizeButton.setToolTipText("Synchronize");
+        toolsButtonGroup.add(synchronizeButton);
+        synchronizeButton.setFocusable(false);
+        synchronizeButton.setHorizontalTextPosition(0);
+        synchronizeButton.setPreferredSize(new java.awt.Dimension(45, 45));
+        synchronizeButton.setVerticalTextPosition(3);
+        synchronizeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                synchronizeButtonActionPerformed(evt);
+            }
+        });
+        jToolBar3.add(synchronizeButton);
+
+        loopCheckbox.setFont(new java.awt.Font("Lucida Grande", 1, 12));
         loopCheckbox.setText("Loop");
         loopCheckbox.setFocusable(false);
         loopCheckbox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         loopCheckbox.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        loopCheckbox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loopCheckboxActionPerformed(evt);
-            }
-        });
         loopCheckbox.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 loopCheckboxStateChanged(evt);
+            }
+        });
+        loopCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loopCheckboxActionPerformed(evt);
             }
         });
         jToolBar3.add(loopCheckbox);
@@ -1178,6 +1193,10 @@ public class ImageToolbar extends javax.swing.JPanel {
 
     private void cube3DButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cube3DButtonActionPerformed
 }//GEN-LAST:event_cube3DButtonActionPerformed
+
+    private void synchronizeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_synchronizeButtonActionPerformed
+      ApplicationContext.imgPanel.doSynchronize();
+    }//GEN-LAST:event_synchronizeButtonActionPerformed
     private void designPresetContext() {
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ArrayList presetList = ApplicationContext.databaseRef.getPresetValueForModality(ApplicationContext.imgPanel.getModality());
@@ -1243,6 +1262,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     private javax.swing.JButton rulerButton;
     private javax.swing.JButton scoutButton;
     private javax.swing.JButton stackButton;
+    private javax.swing.JButton synchronizeButton;
     private javax.swing.JButton textOverlay;
     private javax.swing.ButtonGroup toolsButtonGroup;
     private javax.swing.JButton verticalFlip;
