@@ -7,31 +7,31 @@ Minimal descriptor for DICOM Standard Conformance of Query/Retrieve Service:
   <dcm4chee-attribute-filter>
     <soundex class="org.dcm4che2.soundex.Soundex" />
     <patient>
-        <attr tag="00080005"/> <!-- Specific Character Set -->
-        <attr tag="00100010" case-sensitive="false"/> <!--  Patient's Name -->
-        <attr tag="00100020"/> <!--  Patient ID -->
+        <attr tag="00080005"/>
+        <attr tag="00100010" case-sensitive="false"/>
+        <attr tag="00100020"/>
     </patient>
     <exclude-patient exclude="true" tsuid="1.2.840.10008.1.2.1.99">
-        <attr tag="00081120"/> <!-- Referenced Patient Sequence -->
-        <attr tag="00100010"/> <!--  Patient's Name -->
-        <attr tag="00100020"/> <!--  Patient ID -->
+        <attr tag="00081120"/>
+        <attr tag="00100010"/>
+        <attr tag="00100020"/>
     </exclude-patient>
     <study>
-        <attr tag="00080005"/> <!-- Specific Character Set -->
-        <attr tag="00080020"/> <!-- Study Date -->
-        <attr tag="00080030"/> <!-- Study Time -->
-        <attr tag="00080050"/> <!-- Accession Number -->
-        <attr tag="0020000D" coerce="false"/> <!-- Study Instance UID -->
-        <attr tag="00200010"/> <!-- Study ID -->
+        <attr tag="00080005"/>
+        <attr tag="00080020"/>
+        <attr tag="00080030"/>
+        <attr tag="00080050"/>
+        <attr tag="0020000D" coerce="false"/>
+        <attr tag="00200010"/>
     </study>
     <series>
-        <attr tag="00080060"/> <!-- Modality -->
-        <attr tag="0020000E" coerce="false"/> <!-- Series Instance UID -->
-        <attr tag="00200011"/> <!-- Series Number -->
+        <attr tag="00080060"/>
+        <attr tag="0020000E" coerce="false"/>
+        <attr tag="00200011"/>
     </series>
     <instance>
-        <attr tag="00080018"/> <!-- SOP Instance UID -->
-        <attr tag="00200013"/> <!-- Instance Number -->
+        <attr tag="00080018"/>
+        <attr tag="00200013"/>
     </instance>
   </dcm4chee-attribute-filter>
 -->
