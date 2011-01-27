@@ -12,3 +12,8 @@ overwritten by AE specific coercion configuration, located in sub-directories
 matching the Calling AE Title. E.g.:
 
 MOD_AET/mwl-cfindrq.xsl
+
+ianforward.xsl   - Example of a style sheet to get destinations for IAN-SCU 
+                   depending on MPPS attributes. 
+                   This style sheet must be activated by configuring 
+                   'Mpps2IanDestinationStylesheet' of IANSCU service.
