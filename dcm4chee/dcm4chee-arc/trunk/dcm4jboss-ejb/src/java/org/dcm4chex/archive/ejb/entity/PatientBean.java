@@ -672,6 +672,9 @@ public abstract class PatientBean implements EntityBean {
                     merged = pat.getMergedWith();
                 }
             } else {
+                if (pat.getIssuerOfPatientId() == null && issuer != null) {
+                    throw new ObjectNotFoundException("Select patient with issuer but found only merged patient without issuer!");
+                }
                 String prompt = "Patient ID[id="
                     + pat.getPatientId() + ",issuer="
                     + pat.getIssuerOfPatientId()
