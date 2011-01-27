@@ -67,7 +67,6 @@ public class WebCfgService extends ServiceMBeanSupport {
     
     private boolean manageUsers;
     private boolean webStudyPermissions;
-    private String root;
     
     private static final String NONE = "NONE";
     
@@ -115,14 +114,6 @@ public class WebCfgService extends ServiceMBeanSupport {
         return webStudyPermissions;
     }
 
-    public void setRoot(String root) {
-        this.root = root;
-    }
-
-    public String getRoot() {
-        return root;
-    }
-    
     public String getRolesFilename() {
         return System.getProperty("dcm4chee-usr.cfg.roles-filename", NONE);
     }

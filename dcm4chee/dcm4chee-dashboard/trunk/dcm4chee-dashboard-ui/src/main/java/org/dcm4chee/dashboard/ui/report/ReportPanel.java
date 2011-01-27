@@ -50,6 +50,7 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.tree.table.AbstractColumn;
+import org.apache.wicket.extensions.markup.html.tree.table.AbstractRenderableColumn;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
 import org.apache.wicket.extensions.markup.html.tree.table.IColumn;
 import org.apache.wicket.extensions.markup.html.tree.table.IRenderable;
@@ -145,7 +146,7 @@ public class ReportPanel extends Panel {
 
             ReportTreeTable reportTreeTable = new ReportTreeTable("report-tree-table", 
                     new DefaultTreeModel(rootNode), new IColumn[] {
-                        new PropertyTreeColumn(new ColumnLocation(Alignment.LEFT, 25, Unit.PERCENT), 
+                        new PropertyTreeColumn(new ColumnLocation(Alignment.LEFT, 45, Unit.PERCENT), 
                                 new ResourceModel("dashboard.report.table.title_title").wrapOnAssignment(this).getObject(),  
                                 "userObject.title")
                         ,
