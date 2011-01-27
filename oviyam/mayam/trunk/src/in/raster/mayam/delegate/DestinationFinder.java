@@ -38,6 +38,7 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.delegate;
 
+import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.facade.Platform;
 import in.raster.mayam.util.core.TranscoderMain;
 import java.io.File;
@@ -77,7 +78,7 @@ public class DestinationFinder {
         try {
             String archiveDir = "archive";
             if (filePath.startsWith(archiveDir)) {
-                fileDest = System.getProperty("user.dir") + File.separator + filePath;
+                fileDest = ApplicationContext.getAppDirectory() + File.separator + filePath;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -109,7 +110,7 @@ public class DestinationFinder {
      * @return
      */
     private String importFileTranscodedDestination(File file) throws Exception {
-        String userDir = System.getProperty("user.dir");
+        String userDir = ApplicationContext.getAppDirectory();
         String archiveDir = userDir + File.separator + "archive";
         //In order to avoid duplication it has been changed.
         //Calendar today = Calendar.getInstance();

@@ -38,6 +38,7 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.facade;
 
+import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegate.InputArgumentsParser;
 import in.raster.mayam.form.display.Display;
 import in.raster.mayam.form.MainScreen;
@@ -56,7 +57,7 @@ public class ApplicationFacade {
 
     public static SplashScreen splash;
     public static MainScreen mainScreen;
-    public String applicationName="Mayam";
+    //public String applicationName="Mayam";
     public static String binPath="";
 
     public ApplicationFacade() {
@@ -75,17 +76,15 @@ public class ApplicationFacade {
     private void setSystemProperties() {
         if (Platform.getCurrentPlatform().equals(Platform.MAC)) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
-            System.setProperty("com.apple.mrj.application.apple.menu.about.name", applicationName);
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", ApplicationContext.applicationName);
             System.setProperty("apple.awt.brushMetalLook", "true");
             System.setProperty("com.sun.media.jai.disableMediaLib", "true");
             System.setProperty("apple.awt.graphics.EnableLazyPixelConversion.TYPE_3BYTE_BGR", "false");
             System.setProperty("apple.awt.graphics.EnableLazyDrawing", "false");
             System.setProperty("apple.awt.rendering", "speed");
-        }
-        binPath=System.getProperty("user.dir");
-        System.setProperty("user.dir",Platform.getAppDirectory(applicationName).getAbsolutePath());
+        }   
 
-    }
+    }    
 
     public static void exitApp(String exitString) {
         if (splash != null) {
@@ -96,7 +95,7 @@ public class ApplicationFacade {
     }
 
     public static void main(String[] args) {
-        try {
+        try {           
             InputArgumentsParser.parse(args);
             ApplicationFacade facade = new ApplicationFacade();
             facade.setSystemProperties();
@@ -108,5 +107,6 @@ public class ApplicationFacade {
             Logger.getLogger(ApplicationFacade.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
 }
 

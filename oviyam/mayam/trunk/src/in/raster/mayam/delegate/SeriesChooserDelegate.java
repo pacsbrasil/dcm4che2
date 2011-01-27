@@ -99,9 +99,9 @@ public class SeriesChooserDelegate extends Thread {
                 for (Series series : study.getSeriesList()) {
                     if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
                         for (Instance instance : series.getImageList()) {
-                            File file = new File(System.getProperty("user.dir") + File.separator + instance.getFilepath());
+                            File file = new File(ApplicationContext.getAppDirectory() + File.separator + instance.getFilepath());
                             if (file.exists()) {
-                                canvas.createSubComponents(System.getProperty("user.dir") + File.separator + instance.getFilepath());
+                                canvas.createSubComponents(ApplicationContext.getAppDirectory() + File.separator + instance.getFilepath());
                                 canvas.annotationPanel.setAnnotation(instance.getAnnotation());
                             } else {
                                 canvas.createSubComponents(instance.getFilepath());
@@ -141,9 +141,9 @@ public class SeriesChooserDelegate extends Thread {
     private void multiframeProcess(Series series) {
         if (!series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
             for (Instance instance : series.getImageList()) {
-                File file = new File(System.getProperty("user.dir") + File.separator + instance.getFilepath());
+                File file = new File(ApplicationContext.getAppDirectory() + File.separator + instance.getFilepath());
                 if (file.exists()) {
-                    canvas.createSubComponents(System.getProperty("user.dir") + File.separator + instance.getFilepath());
+                    canvas.createSubComponents(ApplicationContext.getAppDirectory() + File.separator + instance.getFilepath());
                     canvas.annotationPanel.setAnnotation(instance.getAnnotation());
                 } else {
                     canvas.createSubComponents(instance.getFilepath());
@@ -157,9 +157,9 @@ public class SeriesChooserDelegate extends Thread {
     private void stillImageProcess(Series series) {
         if (series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID) && series.getInstanceUID().equalsIgnoreCase(instanceUID)) {
             for (Instance instance : series.getImageList()) {
-                File file = new File(System.getProperty("user.dir") + File.separator + instance.getFilepath());
+                File file = new File(ApplicationContext.getAppDirectory()+ File.separator + instance.getFilepath());
                 if (file.exists()) {
-                    canvas.createSubComponents(System.getProperty("user.dir") + File.separator + instance.getFilepath());
+                    canvas.createSubComponents(ApplicationContext.getAppDirectory() + File.separator + instance.getFilepath());
                     if(instance.getAnnotations()!=null&&instance.getAnnotations().get(0)!=null)
                     canvas.annotationPanel.setAnnotation(instance.getAnnotations().get(0));
                 } else {

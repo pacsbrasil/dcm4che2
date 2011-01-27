@@ -297,7 +297,7 @@ public class SeriesListUpdator extends Thread {
         ImageInputStream iis = null;
         Dataset dataset;
         try {
-            File selFile = new File(System.getProperty("user.dir") + File.separator + img.getFilepath());
+            File selFile = new File(ApplicationContext.getAppDirectory() + File.separator + img.getFilepath());
             if (!selFile.isFile()) {
                 selFile = new File(img.getFilepath());
             }

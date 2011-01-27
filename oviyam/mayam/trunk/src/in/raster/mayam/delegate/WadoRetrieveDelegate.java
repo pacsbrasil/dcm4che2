@@ -228,7 +228,7 @@ public class WadoRetrieveDelegate extends Thread {
 
     public void setDestination() {
         String storageLocation = ApplicationContext.databaseRef.getListenerDetails()[2];
-        if (!ApplicationContext.canWrite(System.getProperty("user.dir"))) {
+        if (!ApplicationContext.canWrite(ApplicationContext.getAppDirectory())) {
             //    destinationPath = System.getProperty("java.io.tmpdir") + File.separator + storageLocation;
         } else {
             destinationPath = storageLocation;

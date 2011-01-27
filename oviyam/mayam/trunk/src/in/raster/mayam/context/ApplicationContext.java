@@ -85,6 +85,8 @@ public class ApplicationContext {
     //Context reference for SendingProgress
     public static SendingProgress sendingProgress;
 
+    public static String applicationName="Mayam";
+
     public ApplicationContext() {
     }
 
@@ -108,7 +110,7 @@ public class ApplicationContext {
      * This routine used to create log file if does not exist
      */
     public static void createLogFile() {
-        logFile = new File(System.getProperty("user.dir") + File.separator, "log.txt");
+        logFile = new File(getAppDirectory() + File.separator, "log.txt");
         if (!logFile.exists()) {
             try {
                 logFile.createNewFile();
@@ -137,6 +139,10 @@ public class ApplicationContext {
         }
     }
 
+    public static String getAppDirectory()
+    {
+        return Platform.getAppDirectory(applicationName).getAbsolutePath();
+    }
     /**
      * This routine used to write a log message
      * @param logMsg

@@ -92,7 +92,7 @@ public class SendingDelegate extends Thread {
             Iterator<Instance> imgitr = series.getImageList().iterator();
             while (imgitr.hasNext()) {
                 Instance img = imgitr.next();
-                File temp = new File(System.getProperty("user.dir") + File.separator + img.getFilepath());
+                File temp = new File(ApplicationContext.getAppDirectory() + File.separator + img.getFilepath());
                 String forwardParam[];
                 if (temp.isFile()) {
                     forwardParam = new String[]{forwardAET + "@" + forwardHost + ":" + forwardPort, temp.getAbsolutePath()};
