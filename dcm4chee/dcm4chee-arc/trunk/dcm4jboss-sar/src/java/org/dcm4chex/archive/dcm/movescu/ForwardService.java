@@ -80,18 +80,17 @@ public class ForwardService extends ServiceMBeanSupport {
             String[] destAETs = forwardingRules
                     .getForwardDestinationsFor(param);
             for (int i = 0; i < destAETs.length; i++) {
-                final String destAET = ForwardingRules.toAET(destAETs[i]);
-                final long scheduledTime = ForwardingRules
-                        .toScheduledTime(destAETs[i]);
-                scheduleMove(seriesStored.getRetrieveAET(), destAET,
-                        forwardPriority, null,
+                String destAET = destAETs[i];
+                scheduleMove(seriesStored.getRetrieveAET(),
+                        ForwardingRules.toAET(destAET),
+                        ForwardingRules.toPriority(destAET, forwardPriority),
+                        null,
                         seriesStored.getStudyInstanceUID(),
                         seriesStored.getSeriesInstanceUID(),
                         sopIUIDsOrNull(seriesStored),
-                        scheduledTime);
+                        ForwardingRules.toScheduledTime(destAET));
             }
         }
-
     };
 
     private String[] sopIUIDsOrNull(SeriesStored seriesStored) {

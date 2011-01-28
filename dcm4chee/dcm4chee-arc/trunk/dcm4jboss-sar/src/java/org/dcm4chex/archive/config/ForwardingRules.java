@@ -97,6 +97,7 @@ public class ForwardingRules {
     }
 
     private static void checkAET(String s) {
+        s = withoutPriority(s);
         int delim = s.lastIndexOf('!');
         if (delim == -1) return;
         int hypen = s.lastIndexOf('-');
@@ -106,12 +107,29 @@ public class ForwardingRules {
             throw new IllegalArgumentException();
     }
 
+    private static String withoutPriority(String s) {
+        return s.endsWith("{LOW}") ? s.substring(0, s.length() - 5)
+                : s.endsWith("{HIGH}") ? s.substring(0, s.length() - 6)
+                : s.endsWith("{MEDIUM}") ? s.substring(0, s.length() - 8)
+                : s;
+    }
+
+    public static int toPriority(String s, int defPriority) {
+        return s.endsWith("{LOW}") ? 2
+                : s.endsWith("{HIGH}") ? 1
+                : s.endsWith("{MEDIUM}") ? 0
+                : defPriority;
+    }
+
     public static String toAET(String s) {
-        int delim = s.lastIndexOf('!');
-        return delim == -1 ? s : s.substring(0,delim);
+        int delim;
+        return (delim = s.lastIndexOf('!')) > 0
+            || (delim = s.lastIndexOf('{')) > 0
+            ? s.substring(0,delim) : s;
     }
 
     public static long toScheduledTime(String s) {
+        s = withoutPriority(s);
         int delim = s.lastIndexOf('!');
         return (delim == -1) ? 0L : afterBusinessHours(
                 Calendar.getInstance(), s.substring(delim+1));

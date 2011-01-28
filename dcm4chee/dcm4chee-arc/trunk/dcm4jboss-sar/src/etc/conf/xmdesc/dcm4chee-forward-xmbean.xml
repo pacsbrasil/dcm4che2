@@ -27,23 +27,32 @@
 
    <!-- Attributes -->
    <attribute access="read-write" getMethod="getForwardingRules" setMethod="setForwardingRules">
-      <description><![CDATA[List of forwarding rules, dependent upon which application 
-- identified by the Calling AE title - sent the objects.
-The comma separated list of AE titles after the (optional) condition 
-defines the forwarding destination (the other Storage SCP) by its Called
-AE Title. Each AE title can be suffixed by !<from>-<to> to defer forwarding to
-that destination outside a particular time interval.
-      <br>Format:
-      <br>[calling[!]=<i>aeTitleFrom</i>]<i>aeTitleTo</i>!<i>from</i>-<i>to</i> | NONE 
-      <br>where
-      <br><i>aeTitleFrom</i> = the calling AE titles separated by '|' (pipe)
-      <br><i>aeTitleTo</i> = the AE titles that objects are forwarded to, in a comma-separated list
-      <br><i>!from</i>-<i>to</i> = start and end hour (0-23) when no forwarding should be performed for the aeTitleTo (Storage SCP) value (optional)
-      <br>NONE = do not use any forwarding rules.
-<br>Example:      
-<br>[calling=SCU1|SCU2]SCP3,SCP4!8-16
-<br>Forwards objects received from AE Title SCU1 or SCU2 to Storage SCPs, SCP3 and SCP4. Forwarding of objects received between 8am and
-4pm to SCP4 is delayed until 4 pm.]]>
+      <description><![CDATA[List of forwarding rules, dependent upon which 
+application - identified by the Calling AE title - sent the objects.
+<p>
+The comma separated list of AE titles after the (optional) condition defines
+the forwarding destination (the other Storage SCP) by its Called AE Title.
+<p>
+Each AE title can be suffixed by !&lt;from>-&lt;to> to defer forwarding to that
+destination outside a particular time interval , and by {&lt;priority>} to
+overwrite the forwarding priority specified by attribute <b>ForwardPriority</b>
+for this destination .
+<p>
+<b>Syntax:</b>
+<br>&lt;forwarding rules> := (&lt;forwarding rule> &lt;EOL>)+ | 'NONE'
+<br>&lt;forwarding rule> := [&lt;condition>] &lt;aeTitleTo> ['!'&lt;from>'-'&lt;to>] ['{'&lt;priority>'}']
+<br>&lt;condition> := '[calling' ['!'] '=' &lt;aeTitleFrom>']'
+<br>&lt;priority> := 'MEDIUM' | 'HIGH' | 'LOW'
+<br>where
+<br>&lt;aeTitleFrom> = calling AE titles separated by pipes ('|')
+<br>&lt;aeTitleTo> = comma separated list of AE titles that objects are forwarded to
+<br>'!'&lt;from>'-'&lt;to> = start and end hour (0-23) when no forwarding should be
+performed to that destination
+<p>
+<b>Example:</b> [calling=SCU1|SCU2]SCP3 {HIGH} ,SCP4!8-16 {LOW}
+Forwards objects received from AE Title SCU1 or SCU2 to Storage SCPs, SCP3 with
+high priority and to SCP4 with low priority. Forwarding of objects received
+between 8am and 4pm to SCP4 is delayed until 4 pm.]]>
       </description>
       <name>ForwardingRules</name>
       <type>java.lang.String</type>
