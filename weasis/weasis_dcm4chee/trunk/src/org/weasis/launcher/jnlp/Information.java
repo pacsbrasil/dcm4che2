@@ -63,11 +63,11 @@ public class Information {
                 result.append(splash);
                 result.append("\" kind=\"splash\" />\n");
             }
-            if (Boolean.valueOf(jnlpProp.getProperty("information.shortcut.online"))) {
+            if (Boolean.valueOf(jnlpProp.getProperty("information.offline.allowed"))) {
                 result.append("<offline-allowed/>\n");
             }
             result.append("<shortcut online=\"");
-            result.append(jnlpProp.getProperty("information.shortcut.desktop"));
+            result.append(jnlpProp.getProperty("information.shortcut.online"));
             result.append("\">\n");
             result.append("<desktop/>\n");
             result.append("<menu submenu=\"");
