@@ -222,7 +222,8 @@ public class UserListPanel extends Panel {
                         });
                     super.onClick(target);
                 }
-            }).add(new Image("img-roles", ImageManager.IMAGE_USER_ROLE_ADD))
+            }).add(new Image("img-roles", ImageManager.IMAGE_USER_ROLE_ADD)
+                .add(new TooltipBehaviour("userlist.", "manage-roles-link")))
                 .add(new SecurityBehavior(getModuleName() + ":manageRolesLink"))
             );
             
