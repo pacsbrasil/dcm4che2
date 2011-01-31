@@ -1134,14 +1134,14 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public void supplementIssuerOfAccessionNumber(Dataset ds, Association as,
-            String aet, boolean onlyIfAccessionNumber) {
+            String aet, boolean forQuery) {
 
         if (!supplementIssuerOfAccessionNumber)
             return;
 
         String[] issuer = null;
         if (shallSupplementIssuerOfAccessionNumber(ds,
-                onlyIfAccessionNumber)) {
+                forQuery)) {
             issuer = getAssociatedIssuerOfAccessionNumber(as, aet);
             if (issuer.length == 0)
                 return;
@@ -1152,7 +1152,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
             for (int i = 0, n = reqAttrSeq.countItems(); i < n; i++) {
                 Dataset item = reqAttrSeq.getItem(i);
                 if (shallSupplementIssuerOfAccessionNumber(item, 
-                        onlyIfAccessionNumber)) {
+                        forQuery)) {
                     if (issuer == null)
                         issuer = getAssociatedIssuerOfAccessionNumber(as, aet);
                     if (issuer.length == 0)
@@ -1163,11 +1163,18 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
         }
     }
 
-    private boolean shallSupplementIssuerOfAccessionNumber(Dataset ds,
-            boolean onlyIfAccessionNumber) {
-        return !(ds.contains(Tags.IssuerOfAccessionNumberSeq)
-                || onlyIfAccessionNumber 
-                        && !ds.containsValue(Tags.AccessionNumber));
+    private static boolean shallSupplementIssuerOfAccessionNumber(Dataset ds,
+            boolean forQuery) {
+        return !containsIssuerOfAccessionNumber(ds)
+                && (ds.containsValue(Tags.AccessionNumber)
+                || forQuery && !ds.contains(Tags.IssuerOfAccessionNumberSeq));
+    }
+
+    private static boolean containsIssuerOfAccessionNumber(Dataset ds) {
+        Dataset item = ds.getItem(Tags.IssuerOfAccessionNumberSeq);
+        return item != null
+                && (item.containsValue(Tags.LocalNamespaceEntityID)
+                || item.containsValue(Tags.UniversalEntityID));
     }
 
     private void supplementIssuerOfAccessionNumber(Dataset ds, String[] issuer) {

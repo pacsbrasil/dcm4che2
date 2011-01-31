@@ -159,8 +159,9 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             int[] excludeFromRSP = excludeFromRSP(rqData);
             service.supplementIssuerOfPatientID(rqData, a, callingAET, true);
 
+            Dataset issuerOfAccessionNumberInRQ = rqData.getItem(Tags.IssuerOfAccessionNumberSeq);
             if (!"PATIENT".equals(rqData.getString(Tags.QueryRetrieveLevel)))
-                service.supplementIssuerOfAccessionNumber(rqData, a, callingAET, false);
+                service.supplementIssuerOfAccessionNumber(rqData, a, callingAET, true);
 
             boolean pixQuery = forcePixQuery(assoc)
                     || service.isPixQueryCallingAET(callingAET);
@@ -176,14 +177,14 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                             rqCmd.getAffectedSOPClassUID()));
             MultiDimseRsp rsp;
             if (service.hasUnrestrictedQueryPermissions(callingAET)) {
-                rsp = newMultiCFindRsp(rqData, pidWithIssuer,
-                        adjustPatientID, excludeFromRSP,
+                rsp = newMultiCFindRsp(rqData, pidWithIssuer, adjustPatientID,
+                        excludeFromRSP, issuerOfAccessionNumberInRQ,
                         fuzzyMatchingOfPN, hideWithoutIssuerOfPID, null);
             } else {
                 Subject subject = (Subject) a.getProperty("user");
                 if (subject != null) {
-                    rsp = newMultiCFindRsp(rqData, pidWithIssuer,
-                            adjustPatientID, excludeFromRSP,
+                    rsp = newMultiCFindRsp(rqData, pidWithIssuer, adjustPatientID,
+                            excludeFromRSP, issuerOfAccessionNumberInRQ,
                             fuzzyMatchingOfPN, hideWithoutIssuerOfPID, subject);
                 } else {
                     log
@@ -288,13 +289,18 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
 
     protected MultiDimseRsp newMultiCFindRsp(Dataset rqData,
             Set<PIDWithIssuer> pidWithIssuers, boolean adjustPatientIDs,
-            int[] excludeFromRSP,
+            int[] excludeFromRSP, Dataset issuerOfAccessionNumberInRQ,
             boolean fuzzyMatchingOfPN, boolean hideWithoutIssuerOfPID,
             Subject subject)
             throws SQLException, DcmServiceException {
         QueryCmd queryCmd = QueryCmd.create(rqData, pidWithIssuers,
                 filterResult, fuzzyMatchingOfPN, service.isNoMatchForNoValue(),
                 hideWithoutIssuerOfPID, subject);
+        if (filterResult && issuerOfAccessionNumberInRQ != null)
+            // restore Issuer of Accession Number Sequence to value in request
+            // to return only requested item attributes 
+            rqData.putSQ(Tags.IssuerOfAccessionNumberSeq)
+                    .addItem(issuerOfAccessionNumberInRQ);
         queryCmd.setFetchSize(service.getFetchSize()).execute();
         return new MultiCFindRsp(queryCmd, adjustPatientIDs,
                 rqData.getString(Tags.IssuerOfPatientID), excludeFromRSP);
