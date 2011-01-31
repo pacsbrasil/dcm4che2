@@ -885,10 +885,11 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     public void supplementIssuerOfPatientID(Dataset ds, Association as,
-            String aet, boolean onlyIfPID) {
-        if (supplementIssuerOfPatientID 
+            String aet, boolean forQuery) {
+        if (supplementIssuerOfPatientID
                 && !ds.containsValue(Tags.IssuerOfPatientID)
-                && (!onlyIfPID || ds.containsValue(Tags.PatientID))) {
+                && (ds.containsValue(Tags.PatientID)
+                        || forQuery && !ds.contains(Tags.IssuerOfPatientID))) {
             String issuer = getAssociatedIssuerOfPatientID(as, aet);
             if (issuer.length() != 0) {
                 ds.putLO(Tags.IssuerOfPatientID, issuer);

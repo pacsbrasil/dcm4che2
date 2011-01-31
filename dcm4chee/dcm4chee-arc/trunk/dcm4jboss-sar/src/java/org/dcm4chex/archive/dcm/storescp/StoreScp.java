@@ -698,9 +698,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     service.ignorePatientIDForUnscheduled(ds,
                             Tags.RequestAttributesSeq, callingAET);
                     service.supplementIssuerOfPatientID(ds, assoc, 
-                            callingAET, true);
+                            callingAET, false);
                     service.supplementIssuerOfAccessionNumber(ds, assoc,
-                            callingAET, true);
+                            callingAET, false);
                     service.supplementInstitutionalData(ds, assoc, callingAET);
                     service.generatePatientID(ds, ds, calledAET);
                 }
