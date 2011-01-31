@@ -160,7 +160,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             boolean anyIssuerOfPatientID = 
                     !rqData.containsValue(Tags.PatientID)
                     && rqData.contains(Tags.IssuerOfPatientID)
-                    && !rqData.contains(Tags.IssuerOfPatientID);
+                    && !rqData.containsValue(Tags.IssuerOfPatientID);
             service.supplementIssuerOfPatientID(rqData, a, callingAET, false);
             String requestedIssuer = anyIssuerOfPatientID
                     ? null 
