@@ -1707,8 +1707,7 @@ public class StudyListPage extends Panel {
     }
 
     private boolean checkEditStudyPermission(AbstractDicomModel model) {
-        if ((((SecureSession) RequestCycle.get().getSession()).isRoot()) 
-            || !studyPermissionHelper.isWebStudyPermissions()) 
+        if (!studyPermissionHelper.isWebStudyPermissions()) 
             return true;
         int hasEditPermission = 0;
         if (model instanceof PatientModel) {

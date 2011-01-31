@@ -118,7 +118,7 @@ public class WebLoginContext extends UsernamePasswordContext {
 
         DefaultSubject subject;
         try {
-            subject = secureSession.isRoot() ? toRootSwarmSubject() : toSwarmSubject(rolesGroupName, context.getSubject());
+            subject = toSwarmSubject(rolesGroupName, context.getSubject());
             checkLoginAllowed(subject);
             secureSession.extendedLogin(username, password, subject);
         } catch (Exception e) {
@@ -147,6 +147,7 @@ public class WebLoginContext extends UsernamePasswordContext {
                 }
             in.close();
             ((SecureSession) RequestCycle.get().getSession()).setSwarmPrincipals(principals);
+            ((SecureSession) RequestCycle.get().getSession()).setRoleTypes(BaseCfgDelegate.getInstance().getRoleTypeList());
             return true;
         } catch (Exception e) {
             log.error("Exception (error processing hive file): " + e.getMessage());
@@ -155,13 +156,6 @@ public class WebLoginContext extends UsernamePasswordContext {
         }
     }
 
-    private DefaultSubject toRootSwarmSubject() {
-        DefaultSubject subject = new DefaultSubject();
-        for (String appRole : ((SecureSession) RequestCycle.get().getSession()).getSwarmPrincipals().keySet()) 
-            subject.addPrincipal(new SimplePrincipal(appRole));
-        return subject;
-    }
-    
     private DefaultSubject toSwarmSubject(String rolesGroupName, Subject jaasSubject) throws IOException {
         DefaultSubject subject = new DefaultSubject();
         Map<String, Set<String>> mappings = null;

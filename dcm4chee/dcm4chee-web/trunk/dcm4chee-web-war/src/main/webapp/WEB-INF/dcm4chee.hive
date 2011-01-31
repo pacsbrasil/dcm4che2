@@ -108,7 +108,6 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "U
 {
 // DOC: swarm.principal.UserRead
 	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.user.UserListPanel", "render, enable";
-	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:userlist:changeRoleAssignmentCheckbox", "render";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "UserWrite" 
@@ -120,7 +119,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "U
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:userlist:changePasswordLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:userlist:removeUserLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:userlist:manageRolesLink", "render, enable";
-	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.user.RoleAssignmentPage:roleassignment:changeRoleAssignmentCheckbox", "enable";
+	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.user.RoleAssignmentPage:roleassignment:changeRoleAssignmentCheckbox", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "RoleRead"
@@ -129,7 +128,6 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.RolePanel", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.group.GroupListPanel", "render, enable";
-	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:rolelist:changePrincipalAssignmentCheckbox", "render";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "RoleWrite"
@@ -137,10 +135,14 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
 // DOC: swarm.principal.RoleWrite
 	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.CreateOrEditRolePage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.WebPermissionsPage", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.RoleTypePage", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:rolelist:newRoleLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:rolelist:editRoleLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:rolelist:removeRoleLink", "render, enable";
-	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.WebPermissionsPage:webpermissions:changePrincipalAssignmentCheckbox", "enable";
+	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:rolelist:webroleLink", "render, enable";
+	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:rolelist:roletypeLink", "render, enable";
+	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.WebPermissionsPage:webpermissions:changePrincipalAssignmentCheckbox", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.RoleTypePage:roletypes:changeTypeAssignmentCheckbox", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.group.CreateOrEditGroupPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:grouplist:newGroupLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:grouplist:editGroupLink", "render, enable";

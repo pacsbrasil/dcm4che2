@@ -98,8 +98,6 @@ public class BaseCfgDelegate {
         return getString("loginAllowedRolename");
     }
 
-// ************************************************************
-
     public String getStudyPermissionsAllRolename() {
         return getString("studyPermissionsAllRolename");
     }
@@ -138,23 +136,31 @@ public class BaseCfgDelegate {
             return new int[]{800,600};
         }
     }
+    
     public List<String> getModalityList() {
         List<String> mods = getStringList("getModalityList");
         mods.add(0, "*");
         return mods;
     }
+    
     public List<String> getSourceAETList() {
         return getStringList("getSourceAETList"); 
     }
+    
     public List<String> getStationAETList() {
         return getStringList("getStationAETList"); 
     }
+    
     public List<String> getStationNameList() {
         List<String> names = getStringList("getStationNameList");
         names.add(0, "*");
         return names;
     }
     
+    public List<String> getRoleTypeList() {
+        return getStringList("getRoleTypeList"); 
+    }
+
     @SuppressWarnings("unchecked")
     public List<Integer> getPagesizeList() {
         if (server == null) return Arrays.asList(10,25,50);

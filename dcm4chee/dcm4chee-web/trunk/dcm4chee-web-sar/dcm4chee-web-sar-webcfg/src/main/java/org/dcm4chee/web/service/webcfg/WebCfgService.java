@@ -750,7 +750,11 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public String getRoleTypes() {
         return listAsString(roleTypes);
     }
-    
+
+    public List<String> getRoleTypeList() {
+        return roleTypes;
+    }
+
     public void setRoleTypes(String s) {
         updateList(roleTypes, s);
     }
