@@ -41,8 +41,10 @@ package org.dcm4chex.archive.dcm.qrscp;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.management.ObjectName;
@@ -52,6 +54,7 @@ import javax.xml.transform.Templates;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
+import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.AAssociateAC;
@@ -153,15 +156,26 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                 service.coerceAttributes(rqData, coerce);
             }
             service.postCoercionProcessing(rqData, Command.C_FIND_RQ, assoc.getAssociation());
-            boolean noIssuerOfPatientID = !rqData.contains(Tags.IssuerOfPatientID);
-            boolean noIssuerOfAccessionNumber = !rqData.contains(Tags.IssuerOfAccessionNumberSeq);
+            int[] excludeFromRSP = excludeFromRSP(rqData);
+            boolean anyIssuerOfPatientID = 
+                    !rqData.containsValue(Tags.PatientID)
+                    && rqData.contains(Tags.IssuerOfPatientID)
+                    && !rqData.contains(Tags.IssuerOfPatientID);
             service.supplementIssuerOfPatientID(rqData, a, callingAET, false);
+            String requestedIssuer = anyIssuerOfPatientID
+                    ? null 
+                    : rqData.getString(Tags.IssuerOfPatientID);
+
             if (!"PATIENT".equals(rqData.getString(Tags.QueryRetrieveLevel)))
                 service.supplementIssuerOfAccessionNumber(rqData, a, callingAET, false);
-            Set<PIDWithIssuer> pidWithIssuer = (forcePixQuery(assoc)
-                    || service.isPixQueryCallingAET(callingAET))
-                            ? pixQuery(rqData)
-                            : null;
+
+            boolean pixQuery = forcePixQuery(assoc)
+                    || service.isPixQueryCallingAET(callingAET);
+            Set<PIDWithIssuer> pidWithIssuer = pixQuery ? pixQuery(rqData) : null;
+            boolean adjustPatientID = pixQuery && pidWithIssuer == null;
+            // return OtherPatientIDs needed to adjust Patient IDs
+            rqData.putSQ(Tags.OtherPatientIDSeq);
+
             boolean hideWithoutIssuerOfPID = 
                     service.isHideWithoutIssuerOfPIDFromAET(callingAET);
             boolean fuzzyMatchingOfPN = fuzzyMatchingOfPN(
@@ -170,13 +184,13 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             MultiDimseRsp rsp;
             if (service.hasUnrestrictedQueryPermissions(callingAET)) {
                 rsp = newMultiCFindRsp(rqData, pidWithIssuer,
-                        noIssuerOfPatientID, noIssuerOfAccessionNumber,
+                        adjustPatientID, requestedIssuer, excludeFromRSP,
                         fuzzyMatchingOfPN, hideWithoutIssuerOfPID, null);
             } else {
                 Subject subject = (Subject) a.getProperty("user");
                 if (subject != null) {
                     rsp = newMultiCFindRsp(rqData, pidWithIssuer,
-                            noIssuerOfPatientID, noIssuerOfAccessionNumber,
+                            adjustPatientID, requestedIssuer, excludeFromRSP,
                             fuzzyMatchingOfPN, hideWithoutIssuerOfPID, subject);
                 } else {
                     log
@@ -192,6 +206,27 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             log.error("Query DB failed:", e);
             throw new DcmServiceException(Status.UnableToProcess, e);
         }
+    }
+
+    private static final int[] EXCLUDE_FROM_RSP_TAGS = {
+        Tags.OtherPatientIDSeq,
+        Tags.IssuerOfPatientID,
+        Tags.IssuerOfAccessionNumberSeq
+    };
+    
+    private static int[] excludeFromRSP(Dataset rqData) {
+        int count = 0;
+        boolean[] exclude = new boolean[EXCLUDE_FROM_RSP_TAGS.length];
+        for (int i = 0; i < EXCLUDE_FROM_RSP_TAGS.length; i++) {
+            if (exclude[i] = !rqData.contains(EXCLUDE_FROM_RSP_TAGS[i]))
+                count++;
+        }
+        int[] tags = new int[count];
+        for (int i = 0, j = 0; i < exclude.length; i++) {
+            if (exclude[i])
+                tags[j++] = EXCLUDE_FROM_RSP_TAGS[i];
+        }
+        return tags;
     }
 
     private boolean forcePixQuery(ActiveAssociation assoc) {
@@ -230,9 +265,6 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         if (opidsq != null) {
             for (int i = 0, n = opidsq.countItems(); i < n; i++)
                 pixQuery(opidsq.getItem(i), result);
-            // nullify Other Patient ID Seq to avoid 
-            // queryCmd.isMatchingKeyNotSupported() = true
-            rqData.putSQ(Tags.OtherPatientIDSeq);
         }
 
         return result.isEmpty() ? null : result;
@@ -262,19 +294,17 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
     }
 
     protected MultiDimseRsp newMultiCFindRsp(Dataset rqData,
-            Set<PIDWithIssuer> pidWithIssuers, boolean noIssuerInRSP,
-            boolean noIssuerOfAccessionNumber, boolean fuzzyMatchingOfPN,
-            boolean hideWithoutIssuerOfPID, Subject subject)
+            Set<PIDWithIssuer> pidWithIssuers, boolean adjustPatientIDs,
+            String requestedIssuer, int[] excludeFromRSP,
+            boolean fuzzyMatchingOfPN, boolean hideWithoutIssuerOfPID,
+            Subject subject)
             throws SQLException, DcmServiceException {
         QueryCmd queryCmd = QueryCmd.create(rqData, pidWithIssuers,
                 filterResult, fuzzyMatchingOfPN, service.isNoMatchForNoValue(),
                 hideWithoutIssuerOfPID, subject);
-        if (noIssuerInRSP)
-            rqData.remove(Tags.IssuerOfPatientID);
-        if (noIssuerOfAccessionNumber)
-            rqData.remove(Tags.IssuerOfAccessionNumberSeq);
         queryCmd.setFetchSize(service.getFetchSize()).execute();
-        return new MultiCFindRsp(queryCmd);
+        return new MultiCFindRsp(queryCmd, adjustPatientIDs, requestedIssuer,
+                excludeFromRSP);
     }
 
     protected Dataset getDataset(QueryCmd queryCmd) throws SQLException,
@@ -331,17 +361,24 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
     protected class MultiCFindRsp implements MultiDimseRsp {
 
         private final QueryCmd queryCmd;
-
+        private final boolean adjustPatientIDs;
+        private final String requestedIssuer;
+        private final int[] excludeFromRSP;
+        private final Map<PIDWithIssuer, Set<PIDWithIssuer>> pixQueryResults;
         private boolean canceled = false;
-
         private int pendingStatus = Status.Pending;
-
         private int count = 0;
-
         private Templates coerceTpl;
 
-        public MultiCFindRsp(QueryCmd queryCmd) {
+        public MultiCFindRsp(QueryCmd queryCmd, boolean adjustPatientIDs,
+                String requestedIssuer, int[] excludeFromRSP) {
             this.queryCmd = queryCmd;
+            this.adjustPatientIDs = adjustPatientIDs;
+            this.requestedIssuer = requestedIssuer;
+            this.excludeFromRSP = excludeFromRSP;
+            this.pixQueryResults = adjustPatientIDs
+                        ? new HashMap<PIDWithIssuer, Set<PIDWithIssuer>>()
+                        : null;
             if (queryCmd.isMatchNotSupported()) {
                 pendingStatus = 0xff01;
             } else if (service.isCheckMatchingKeySupported()
@@ -374,6 +411,23 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                 }
                 rspCmd.putUS(Tags.Status, pendingStatus);
                 Dataset data = getDataset(queryCmd);
+                if (adjustPatientIDs
+                        && data.containsValue(Tags.PatientID)
+                        && data.containsValue(Tags.IssuerOfPatientID)) {
+                    if (filterResult) {
+                        Dataset tmp = DcmObjectFactory.getInstance().newDataset();
+                        tmp.putAll(data);
+                        data = tmp;
+                    }
+                    service.adjustPatientID(data, requestedIssuer, pixQueryResults);
+                    if (!data.contains(Tags.IssuerOfPatientID))
+                        data.putLO(Tags.IssuerOfPatientID, requestedIssuer);
+                }
+                if (filterResult) {
+                    data = data.exclude(excludeFromRSP);
+                    for (int tag : excludeFromRSP)
+                        data.remove(tag);
+                }
                 if (!service.isCFindRspDebugLogDeferToDoBeforeRsp()) {
                     log.debug("Identifier:\n");
                     log.debug(data);

@@ -269,7 +269,9 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             keys.putCS(Tags.SpecificCharacterSet);
         }
         matchingKeys.add(Tags.QueryRetrieveLevel);
-        adjustPatientID = new AdjustPatientID(keys, pidWithIssuers);
+        adjustPatientID = pidWithIssuers != null
+                ? new AdjustPatientID(keys, pidWithIssuers)
+                : null;
         requestedIssuerOfAccessionNumber =
                 keys.getItem(Tags.IssuerOfAccessionNumberSeq);
     }
@@ -671,7 +673,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         fillDataset(ds);
         if (pidWithIssuers != null)
             checkForDiffPatientDemographics(ds);
-        adjustPatientID.adjust(ds);
+        if (adjustPatientID != null)
+            adjustPatientID.adjust(ds);
         adjustAccessionNumber(ds);
         adjustDataset(ds, keys);
         return filterResult ? ds.subSet(keys) : ds;

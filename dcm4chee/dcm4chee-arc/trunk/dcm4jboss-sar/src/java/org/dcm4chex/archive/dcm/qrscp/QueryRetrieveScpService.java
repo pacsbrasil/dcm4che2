@@ -1438,7 +1438,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
                         .fromByteArray(info.seriesAttrs, DatasetUtils
                                 .fromByteArray(info.instAttrs))));
         }
-        adjustPatientIDOnRetrieval(mergeAttrs, assoc, dest, pixQueryResults);
+        if (adjustPatientIDOnRetrieval 
+                && mergeAttrs.containsValue(Tags.PatientID)
+                && mergeAttrs.containsValue(Tags.IssuerOfPatientID)) {
+            String assocIssuer = getAssociatedIssuerOfPatientID(assoc, dest);
+            if (assocIssuer.length() > 0)
+                adjustPatientID(mergeAttrs, assocIssuer, pixQueryResults);
+        }
         adjustAccessionNumberOnRetrieval(mergeAttrs, assoc, dest);
         coerceOutboundCStoreRQ(mergeAttrs, aeData, assoc, dest);
         byte[] buf = (byte[]) assoc.getProperty(SEND_BUFFER);
@@ -1494,35 +1500,31 @@ public class QueryRetrieveScpService extends AbstractScpService {
         postCoercionProcessing(ds, Command.C_STORE_RQ,assoc);
     }
 
-    private void adjustPatientIDOnRetrieval(Dataset ds, Association as,
-            String dest,
+    void adjustPatientID(Dataset ds, String requestedIssuer,
             Map<PIDWithIssuer, Set<PIDWithIssuer>> pixQueryResults) {
-        String pid, issuer, assocIssuer;
-        if (adjustPatientIDOnRetrieval 
-                && (pid = ds.getString(Tags.PatientID)) != null
-                && (issuer = ds.getString(Tags.IssuerOfPatientID)) != null
-                && (assocIssuer = getAssociatedIssuerOfPatientID(as, dest))
-                        .length() != 0) {
-            Set<PIDWithIssuer> correspondingPIDs =
-                    queryCorrespondingPIDs(pid, issuer, pixQueryResults);
-            ds.putLO(Tags.PatientID);
-            ds.remove(Tags.IssuerOfPatientID);
-            DcmElement opids = ds.get(Tags.OtherPatientIDSeq);
-            if (opids != null)
-                for (int i = 0, n = opids.countItems(); i < n; i++) {
-                    Dataset opid = opids.getItem(i);
-                    correspondingPIDs.add(new PIDWithIssuer(
-                            opid.getString(Tags.PatientID),
-                            opid.getString(Tags.IssuerOfPatientID)));
-                }
-            opids = ds.putSQ(Tags.OtherPatientIDSeq);
-            for (PIDWithIssuer pidWithIssuer : correspondingPIDs) {
-                Dataset opid = pidWithIssuer.issuer.equals(assocIssuer)
-                        ? ds 
-                        : opids.addNewItem();
-                opid.putLO(Tags.PatientID, pidWithIssuer.pid);
-                opid.putLO(Tags.IssuerOfPatientID, pidWithIssuer.issuer);
+        String pid = ds.getString(Tags.PatientID);
+        String issuer = ds.getString(Tags.IssuerOfPatientID);
+        Set<PIDWithIssuer> correspondingPIDs =
+                queryCorrespondingPIDs(pid, issuer, pixQueryResults);
+        ds.putLO(Tags.PatientID);
+        ds.remove(Tags.IssuerOfPatientID);
+        DcmElement opids = ds.get(Tags.OtherPatientIDSeq);
+        if (opids != null)
+            for (int i = 0, n = opids.countItems(); i < n; i++) {
+                Dataset opid = opids.getItem(i);
+                correspondingPIDs.add(new PIDWithIssuer(
+                        opid.getString(Tags.PatientID),
+                        opid.getString(Tags.IssuerOfPatientID)));
             }
+        opids = ds.putSQ(Tags.OtherPatientIDSeq);
+        for (PIDWithIssuer pidWithIssuer : correspondingPIDs) {
+            Dataset opid = (ds.contains(Tags.IssuerOfPatientID)
+                    || requestedIssuer != null
+                    && !pidWithIssuer.issuer.equals(requestedIssuer))
+                            ? opids.addNewItem()
+                            : ds; 
+            opid.putLO(Tags.PatientID, pidWithIssuer.pid);
+            opid.putLO(Tags.IssuerOfPatientID, pidWithIssuer.issuer);
         }
     }
 

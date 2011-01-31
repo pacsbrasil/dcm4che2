@@ -64,9 +64,7 @@ class AdjustPatientID {
         this.includeOtherPIDs = keys.contains(Tags.OtherPatientIDSeq);
         this.pidPattern = toPattern(keys.getString(Tags.PatientID));
         this.requestedIssuer = keys.getString(Tags.IssuerOfPatientID);
-        this.pidWithIssuers = pidWithIssuers != null 
-                ? new HashSet<PIDWithIssuer>(pidWithIssuers)
-                : null;
+        this.pidWithIssuers = new HashSet<PIDWithIssuer>(pidWithIssuers);
     }
 
     private Pattern toPattern(String pid) {
@@ -90,36 +88,28 @@ class AdjustPatientID {
     public void adjust(Dataset ds) {
         String pid = ds.getString(Tags.PatientID);
         String issuer = ds.getString(Tags.IssuerOfPatientID);
-        if (pidWithIssuers != null) {
-            pidWithIssuers.add(new PIDWithIssuer(pid, issuer));
-            DcmElement opidsq = ds.get(Tags.OtherPatientIDSeq);
-            if (opidsq != null) {
-                for (int i = 0, n = opidsq.countItems(); i < n; i++) {
-                    Dataset item = opidsq.getItem(i);
-                    pidWithIssuers.add(new PIDWithIssuer(
-                            item.getString(Tags.PatientID),
-                            item.getString(Tags.IssuerOfPatientID)));
-                }
-                ds.remove(Tags.OtherPatientIDSeq);
+        pidWithIssuers.add(new PIDWithIssuer(pid, issuer));
+        DcmElement opidsq = ds.get(Tags.OtherPatientIDSeq);
+        if (opidsq != null) {
+            for (int i = 0, n = opidsq.countItems(); i < n; i++) {
+                Dataset item = opidsq.getItem(i);
+                pidWithIssuers.add(new PIDWithIssuer(
+                        item.getString(Tags.PatientID),
+                        item.getString(Tags.IssuerOfPatientID)));
             }
-            ds.putLO(Tags.PatientID); // nullify
-            ds.putLO(Tags.IssuerOfPatientID, requestedIssuer);
-            boolean foundMatching = false;
-            for (PIDWithIssuer pwi : pidWithIssuers) {
-                if (foundMatching
-                        || !(matchIssuer(pwi.issuer) && matchPID(pwi.pid))) {
-                   addOtherPatientID(ds, pwi.pid, pwi.issuer);
-                } else {
-                    ds.putLO(Tags.PatientID, pwi.pid);
-                    ds.putLO(Tags.IssuerOfPatientID, pwi.issuer);
-                    foundMatching = true;
-                }
-            }
-        } else {
-            if (!(matchIssuer(issuer) && matchPID(pid))) {
-                ds.putLO(Tags.PatientID); // nullify
-                ds.putLO(Tags.IssuerOfPatientID, requestedIssuer);
-                addOtherPatientID(ds, pid, issuer);
+            ds.remove(Tags.OtherPatientIDSeq);
+        }
+        ds.putLO(Tags.PatientID); // nullify
+        ds.putLO(Tags.IssuerOfPatientID, requestedIssuer);
+        boolean foundMatching = false;
+        for (PIDWithIssuer pwi : pidWithIssuers) {
+            if (foundMatching
+                    || !(matchIssuer(pwi.issuer) && matchPID(pwi.pid))) {
+               addOtherPatientID(ds, pwi.pid, pwi.issuer);
+            } else {
+                ds.putLO(Tags.PatientID, pwi.pid);
+                ds.putLO(Tags.IssuerOfPatientID, pwi.issuer);
+                foundMatching = true;
             }
         }
     }
