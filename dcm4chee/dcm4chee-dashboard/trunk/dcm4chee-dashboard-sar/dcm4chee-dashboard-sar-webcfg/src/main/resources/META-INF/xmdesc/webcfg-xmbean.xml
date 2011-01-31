@@ -54,39 +54,6 @@
          <value value="conf/dcm4chee-web3/roles.json"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isManageUsers"
-      setMethod="setManageUsers">
-      <description><![CDATA[Manage users in the web application.
-      ]]></description>
-      <name>manageUsers</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isUseStudyPermissions"
-      setMethod="setUseStudyPermissions">
-      <description><![CDATA[Let the web users manage study permissions using the web interface.
-      ]]></description>
-      <name>useStudyPermissions</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isWebStudyPermissions"
-      setMethod="setWebStudyPermissions">
-      <description><![CDATA[Apply the study permissions to the web application features.
-      ]]></description>
-      <name>webStudyPermissions</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
    
    &defaultAttributes;
    

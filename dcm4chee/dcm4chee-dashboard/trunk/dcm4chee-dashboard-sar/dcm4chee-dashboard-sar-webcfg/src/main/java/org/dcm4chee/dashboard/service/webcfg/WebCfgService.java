@@ -88,31 +88,6 @@ public class WebCfgService extends ServiceMBeanSupport {
     public String getLoginAllowedRolename() {
         return loginAllowedRolename;
     }
-    
-    public void setManageUsers(boolean manageUsers) {
-        this.manageUsers = manageUsers;
-    }
-
-    public boolean isManageUsers() {
-        return manageUsers;
-    }
-
-    public void setUseStudyPermissions(boolean useStudyPermissions) {
-    }
-
-    public boolean isUseStudyPermissions() {
-        // always return false, so updateDicomRoles is never triggered
-        // for the WebLoginContext in dcm4chee-usr
-        return false;
-    }
-
-    public void setWebStudyPermissions(boolean webStudyPermissions) {
-        this.webStudyPermissions = webStudyPermissions;
-    }
-
-    public boolean isWebStudyPermissions() {
-        return webStudyPermissions;
-    }
 
     public String getRolesFilename() {
         return System.getProperty("dcm4chee-usr.cfg.roles-filename", NONE);
