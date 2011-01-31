@@ -131,11 +131,13 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private String loginAllowedRolename;
     private String studyPermissionsAllRolename;
     private String studyPermissionsOwnRolename;
+
+    private List<String> roleTypes = new ArrayList<String>();
     
     private boolean manageUsers;
     private boolean useStudyPermissions;
     private boolean webStudyPermissions;
-    
+
     private static final String NONE = "NONE";
     private static final String NEWLINE = System.getProperty("line.separator", "\n");
     
@@ -745,6 +747,14 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         return studyPermissionsOwnRolename;
     }
     
+    public String getRoleTypes() {
+        return listAsString(roleTypes);
+    }
+    
+    public void setRoleTypes(String s) {
+        updateList(roleTypes, s);
+    }
+
     private void initDefaultFile() {
         File mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.roles-filename", "conf/dcm4chee-web3/roles.json"));
         if (!mappingFile.isAbsolute())

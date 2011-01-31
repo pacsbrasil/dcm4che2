@@ -1,3 +1,7 @@
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "JBossAdmin"
+{
+};
+
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "LoginAllowed"
 {
 // DOC: swarm.principal.LoginAllowed
@@ -111,10 +115,12 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "U
 {
 // DOC: swarm.principal.UserWrite
 	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.user.AddUserPage", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.user.RoleAssignmentPage", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:userlist:newUserLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:userlist:changePasswordLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:userlist:removeUserLink", "render, enable";
-	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:userlist:changeRoleAssignmentCheckbox", "enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:userlist:manageRolesLink", "render, enable";
+	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.user.RoleAssignmentPage:roleassignment:changeRoleAssignmentCheckbox", "enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "RoleRead"
