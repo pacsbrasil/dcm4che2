@@ -361,20 +361,10 @@ public class HL7SendService extends ServiceMBeanSupport implements
     }
 
     private byte[] preprocessForward(byte[] hl7msg, Document msg, MSH msh, String sending) {
-        String xslFile = FORWARD_XSL+"_"+msh.messageType+"^"+msh.triggerEvent+XSL_EXT;
-        Templates xslt = templates.getTemplatesForAET(sending, xslFile);
-        if (xslt == null) {
-            log.debug("No "+xslFile+" for "+sending+" found. Try to find hl7 forward stylesheet with message type.");
-            xslFile = FORWARD_XSL+"_"+msh.messageType+XSL_EXT;
-            xslt = templates.getTemplatesForAET(sending, xslFile);
-            if (xslt == null) {
-                log.debug("No "+xslFile+" for "+sending+" found. Try to find generic hl7 forward stylesheet.");
-                xslFile = FORWARD_XSL+XSL_EXT;
-                xslt = templates.getTemplatesForAET(sending, xslFile);
-            }
-        }
+        String[] variations = new String[] {"_"+msh.messageType+"^"+msh.triggerEvent, "_"+msh.messageType, "" };
+        Templates xslt = templates.findTemplates(new String[]{sending}, FORWARD_XSL, variations, XSL_EXT);
         if (xslt != null) {
-            log.info("Transform HL7 message with hl7forward stylesheet "+xslFile+ " for " + sending);
+            log.info("Transform HL7 message with hl7forward stylesheet!");
             try {
                 Transformer t = xslt.newTransformer();
                 ByteArrayOutputStream bos = new ByteArrayOutputStream(hl7msg.length);
