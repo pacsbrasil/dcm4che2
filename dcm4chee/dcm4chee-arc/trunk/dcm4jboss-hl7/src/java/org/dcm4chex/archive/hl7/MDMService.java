@@ -38,22 +38,15 @@
 
 package org.dcm4chex.archive.hl7;
 
-import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.xml.transform.Transformer;
-import javax.xml.transform.sax.SAXResult;
-
 import org.dcm4che.data.Dataset;
-import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.util.Base64;
 import org.dcm4che.util.UIDGenerator;
-import org.dcm4chex.archive.util.FileUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.dom4j.io.DocumentSource;
 import org.xml.sax.ContentHandler;
 
 /**
@@ -63,7 +56,7 @@ import org.xml.sax.ContentHandler;
  */
 public class MDMService extends ORU_MDMService {
 
-    public boolean process(MSH msh, Document msg, ContentHandler hl7out)
+    public boolean process(MSH msh, Document msg, ContentHandler hl7out, String[] xslSubdirs)
             throws HL7Exception {
         try
         {
@@ -73,11 +66,7 @@ public class MDMService extends ORU_MDMService {
                         msh.triggerEvent + " without encapsulated report");
                 return true;
             }
-            Dataset doc = DcmObjectFactory.getInstance().newDataset();
-            File xslFile = FileUtils.toExistingFile(xslPath);
-            Transformer t = templates.getTemplates(xslFile).newTransformer();
-            t.transform(new DocumentSource(msg), new SAXResult(
-                    doc.getSAXHandler2(null)));
+            Dataset doc = xslt(msg, xslPath, xslSubdirs);
             if (!doc.containsValue(Tags.StudyInstanceUID)) {
                 log.info("No Study Instance UID in MDM - store report in new Study");
                 doc.putUI(Tags.StudyInstanceUID,

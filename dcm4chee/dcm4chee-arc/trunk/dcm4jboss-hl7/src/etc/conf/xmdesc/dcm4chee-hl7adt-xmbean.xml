@@ -198,7 +198,8 @@ attributes by HL7 ADT messages! => Only change the default value of
       getMethod="getTemplateDir"
       setMethod="setTemplateDir">
       <description><![CDATA[Directory where template file(s) are located.<br />
-      A stylesheet can be placed in this directory or in a sub-directory equal to '&lt;Sending Application&gt;^&lt;Sending Facility&gt;'.<br />
+      A style sheet can be placed in this directory or in a sub-directory to select a style sheet according to the sender.<br />
+      This directory can be &lt;IPAddr&gt;, &lt;hostname&gt; or '&lt;Sending Application&gt;^&lt;Sending Facility&gt;' (In this order).<br />
       A relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>
@@ -303,23 +304,5 @@ attributes by HL7 ADT messages! => Only change the default value of
 
    <!-- Operations -->
    &defaultOperations;
-   <operation impact="ACTION">
-      <description>Update Patient Information</description>
-      <name>updatePatient</name>
-      <parameter>
-        <name>msg</name>
-        <type>org.dom4j.Document</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>   
-   <operation impact="ACTION">
-      <description>Merge two Patient Records</description>
-      <name>mergePatient</name>
-      <parameter>
-        <name>msg</name>
-        <type>org.dom4j.Document</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>   
 </mbean>
     

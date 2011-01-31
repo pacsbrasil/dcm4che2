@@ -50,6 +50,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
@@ -404,6 +405,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         if (soTimeout > 0) {
             s.setSoTimeout(soTimeout);
         }
+        InetSocketAddress inetAddr = (InetSocketAddress) s.getRemoteSocketAddress();
         MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), 
                 new BufferedOutputStream(s.getOutputStream()), false);
         InputStream mllpIn = mllpDriver.getInputStream();
@@ -451,9 +453,11 @@ public class HL7ServerService extends ServiceMBeanSupport implements
                         fileReceivedHL7AsXML(msg, new File(logDir, 
                                 new DecimalFormat("'hl7-'000000'.xml'").format(msgNo)));
                     }
-                    Document newMsg = preprocessHL7(msg);
+                    Document newMsg = preprocessHL7(msg, inetAddr);
                     if (newMsg != null) {
                         msg = newMsg;
+                        log.info("HL7 message changed by preprocess.xsl!");
+                        logMessage(msg);
                         if (fileReceivedHL7AsXML) {
                             fileReceivedHL7AsXML(msg, new File(logDir, 
                                     new DecimalFormat("'hl7-'000000'.preprocessed.xml'").format(msgNo)));
@@ -473,7 +477,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
                     }
                     MSH msh = new MSH(msg);
                     HL7Service service = getService(msh);
-                    if (service == null || service.process(msh, msg, hl7out)) {
+                    if (service == null || service.process(msh, msg, hl7out, getXsltSearchDirectories(inetAddr, msh))) {
                         ack(msg, hl7out, null);
                     }
                     if (sendNotification) {
@@ -504,23 +508,23 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         }
     }
 
-    private Document preprocessHL7(Document msg) {
+    private String[] getXsltSearchDirectories(InetSocketAddress inetAddr, MSH msh) {
+        String sending = msh.sendingApplication+"^"+msh.sendingFacility;
+        String ipAddr = inetAddr == null ? null : inetAddr.getAddress().getHostAddress();
+        String hostname = ipAddr == null ? null : inetAddr.getHostName();
+        log.info("get XSLT search subdirs for ipAddr:"+ipAddr+" hostname:"+hostname+" sending:"+sending);
+        String[] subdirs = ipAddr == null ? new String[]{sending} : 
+                hostname == null ? new String[]{ipAddr, sending} : new String[]{ipAddr, hostname, sending};
+        return subdirs;
+    }
+
+    private Document preprocessHL7(Document msg, InetSocketAddress inetAddr) {
         MSH msh = new MSH(msg);
-        String sending = msh.sendingApplication + '^' + msh.sendingFacility;
-        String xslFile = PREPROCESS_XSL+"_"+msh.messageType+"^"+msh.triggerEvent+XSL_EXT;
-        Templates xslt = templates.getTemplatesForAET(sending, xslFile);
-        if (xslt == null) {
-            log.info("No "+xslFile+" for "+sending+" found. Try to find hl7 preprocess stylesheet with message type.");
-            xslFile = PREPROCESS_XSL+"_"+msh.messageType+XSL_EXT;
-            xslt = templates.getTemplatesForAET(sending, xslFile);
-            if (xslt == null) {
-                log.info("No "+xslFile+" for "+sending+" found. Try to find generic hl7 preprocess stylesheet.");
-                xslFile = PREPROCESS_XSL+XSL_EXT;
-                xslt = templates.getTemplatesForAET(sending, xslFile);
-            }
-        }
+        String[] subdirs = getXsltSearchDirectories(inetAddr, msh);
+        String[] variations = new String[] {"_"+msh.messageType+"^"+msh.triggerEvent, "_"+msh.messageType, "" };
+        Templates xslt = templates.findTemplates(subdirs, PREPROCESS_XSL, variations, XSL_EXT);
         if (xslt != null) {
-            log.info("Preprocess HL7 message with stylesheet "+xslFile+ " for "+sending);
+            log.info("Preprocess HL7 message with stylesheet!");
             try {
                 Transformer t;
                 t = xslt.newTransformer();

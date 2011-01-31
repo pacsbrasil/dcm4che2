@@ -208,20 +208,20 @@ public class ORMService extends AbstractHL7Service {
         aeTemplates.setConfigDir(path);
     }
 
-    public boolean process(MSH msh, Document msg, ContentHandler hl7out)
+    public boolean process(MSH msh, Document msg, ContentHandler hl7out, String[] xslSubdirs)
             throws HL7Exception {
-        process(toOp(msg), msg);
+        process(toOp(msg), msg, xslSubdirs);
         return true;
     }
     
-    public void process(String orderControl, String orderStatus, Document msg)
+    public void process(String orderControl, String orderStatus, Document msg, String[] xslSubdirs)
             throws HL7Exception {
-        process(new int[] { toOp(orderControl, orderStatus) }, msg);
+        process(new int[] { toOp(orderControl, orderStatus) }, msg, xslSubdirs);
     }
     
-    private void process(int op[], Document msg) throws HL7Exception {
+    private void process(int op[], Document msg, String[] xslSubdirs) throws HL7Exception {
         try {
-            Dataset ds = xslt(msg, xslPath);
+            Dataset ds = xslt(msg, xslPath, xslSubdirs);
             final String pid = ds.getString(Tags.PatientID);
             if (pid == null)
                 throw new HL7Exception("AR",

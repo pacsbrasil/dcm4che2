@@ -98,9 +98,10 @@
       setMethod="setForwardTemplateDir">
       <description><![CDATA[Directory where template file(s) are located
       to change the original HL7 message before forwarding it.<br />
-      A stylesheet can be message type specific ("hl7forward_&lt;MSG Type&gt;^&lt;Event Type&gt;.xsl" or "hl7forward_&lt;MSG Type&gt;.xsl")
+      A style sheet can be message type specific ("hl7forward_&lt;MSG Type&gt;^&lt;Event Type&gt;.xsl" or "hl7forward_&lt;MSG Type&gt;.xsl")
       or generic "hl7forward.xsl" 
-      and placed in this directory or in a sub-directory equal to '&lt;Sending Application&gt;^&lt;Sending Facility&gt;'.<br />
+      and placed in this directory or in a sub-directory to select a style sheet according to the sender.<br />
+      This directory can be &lt;IPAddr&gt;, &lt;hostname&gt; or '&lt;Sending Application&gt;^&lt;Sending Facility&gt;' (In this order).<br />
       A relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>

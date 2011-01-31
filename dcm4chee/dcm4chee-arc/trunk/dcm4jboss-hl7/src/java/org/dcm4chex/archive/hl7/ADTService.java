@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.hl7;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -242,7 +243,7 @@ public class ADTService extends AbstractHL7Service {
         this.keepPriorPatientAfterMerge = keepPriorPatientAfterMerge;
     }
 
-    public boolean process(MSH msh, Document msg, ContentHandler hl7out)
+    public boolean process(MSH msh, Document msg, ContentHandler hl7out, String[] xslSubdirs)
             throws HL7Exception {
         try {
             String msgtype = msh.messageType + '^' + msh.triggerEvent;
@@ -250,10 +251,10 @@ public class ADTService extends AbstractHL7Service {
                     && !containsPatientName(msg)) {
                 return processUpdateNotificationMessage(msg);
             }
-            Dataset pat = xslt(msg, pidXslPath);
+            Dataset pat = xslt(msg, pidXslPath, xslSubdirs);
             checkPID(pat);
             if (contains(patientMergeMessageTypes, msgtype)) {
-                Dataset mrg = xslt(msg, mrgXslPath);
+                Dataset mrg = xslt(msg, mrgXslPath, xslSubdirs);
                 if (handleEmptyMrgAsUpdate
                         && !mrg.containsValue(Tags.PatientID)) {
                     updatePatient(pat, patientMatching);
@@ -263,7 +264,7 @@ public class ADTService extends AbstractHL7Service {
                 }
             }
             else if (changePatientIdentifierListMessageType.equals(msgtype)) {
-                Dataset mrg = xslt(msg, mrgXslPath);
+                Dataset mrg = xslt(msg, mrgXslPath, xslSubdirs);
                 checkMRG(mrg, pat);
                 changePatientIdentifierList(pat, mrg, patientMatching);
             }
@@ -322,42 +323,6 @@ public class ADTService extends AbstractHL7Service {
             }
         }
         return false;
-    }
-
-    public void updatePatient(Document msg) throws HL7Exception {
-        try {
-            Dataset pid = xslt(msg, pidXslPath);
-            checkPID(pid);
-            updatePatient(pid, patientMatching);
-        }
-        catch (HL7Exception e) {
-            throw e;
-        }
-        catch (PatientMergedException e) {
-            throw new HL7Exception("AR", e.getMessage());
-        }
-        catch (Exception e) {
-            throw new HL7Exception("AE", e.getMessage(), e);
-        }
-    }
-
-    public void mergePatient(Document msg) throws HL7Exception {
-        try {
-            Dataset pid = xslt(msg, pidXslPath);
-            Dataset mrg = xslt(msg, mrgXslPath);
-            checkPID(pid);
-            checkMRG(mrg, pid);
-            mergePatient(pid, mrg, patientMatching);
-        }
-        catch (HL7Exception e) {
-            throw e;
-        }
-        catch (PatientMergedException e) {
-            throw new HL7Exception("AR", e.getMessage());
-        }
-        catch (Exception e) {
-            throw new HL7Exception("AE", e.getMessage(), e);
-        }
     }
 
     protected void mergePatient(Dataset dominant, Dataset prior, PatientMatching patientMatching) throws Exception {

@@ -103,6 +103,43 @@ public class TemplatesService extends ServiceMBeanSupport {
         return FileUtils.resolve(new File(dir, fname));
     }
 
+    public Templates findTemplates(String dir, String[] subdirs, String prefix, String[] fnames, String postfix) {
+        return getTemplates(findFile(dir, subdirs, prefix, fnames, postfix));
+    }
+
+    private File findFile(String dir, String[] subdirs, String prefix, String[] fnames, String postfix) {
+        String fn;
+        File f = null;
+        loop: for (int i = 0 ; i < fnames.length ; i++) {
+            fn = getFilename(prefix, fnames[i], postfix);
+            if (subdirs != null) {
+                for (int j = 0 ; j < subdirs.length ; j++) {
+                    f = FileUtils.resolve(new File(new File(dir, subdirs[j]), fn));
+                    if (f.exists())
+                        break loop;
+                    if (log.isDebugEnabled()) log.debug("Style sheet file "+f+" does not exist!");
+                }
+            }
+            f = FileUtils.resolve(new File(dir, fn));
+            if (f.exists())
+                break loop;
+            if (log.isDebugEnabled()) log.debug("Style sheet file "+fn+" does not exist in any subfolder!");
+        }
+        if (f.exists())
+            log.info("Style sheet found:"+f);
+        return f;
+    }
+    
+    private String getFilename(String prefix, String filename, String postfix) {
+        StringBuilder sb = new StringBuilder(filename.length()+15);
+        if (prefix != null)
+            sb.append(prefix);
+        sb.append(filename);
+        if (postfix != null)
+            sb.append(postfix);
+        return sb.toString();
+    }
+
     public void clearCache() {
         cache.clear();
     }

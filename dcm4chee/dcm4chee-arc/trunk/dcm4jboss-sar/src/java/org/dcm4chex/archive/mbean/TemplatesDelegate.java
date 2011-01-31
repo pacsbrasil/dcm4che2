@@ -102,4 +102,17 @@ public final class TemplatesDelegate {
             throw new ConfigurationException(e);
         }        
     }
+
+    public Templates findTemplates(String[] subdirs, String prefix, String[] fnames, String postfix) {
+        try {
+            return (Templates) service.getServer().invoke(
+                    templatesServiceName, "findTemplates",
+                    new Object[] { configDir, subdirs, prefix, fnames, postfix},
+                    new String[] { String.class.getName(),
+                            String[].class.getName(), String.class.getName(),
+                            String[].class.getName(), String.class.getName()});
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }        
+    }
 }
