@@ -8,8 +8,9 @@
 	</head>
 	<body>
 	<wicket:panel>
-		<div wicket:id="modal-window" />
+		<div wicket:id="role-window" />
         <div wicket:id="webrole-window" />
+        <div wicket:id="roletype-window" />
 		<div wicket:id="confirmation-window" />
 		<div style="clear: both; margin-top: 5px;" />
 		<button wicket:id="toggle-role-form-link">
@@ -19,33 +20,35 @@
 		<table rules="groups" class="content-table" style="clear: both; margin-top: 9px;">
 		  <thead>
 		    <tr>
-				<th>
+				<th style="width: 10%">
 					<wicket:message key="rolelist.table.rolename.title">
 						[Rolename]
 					</wicket:message>
 				</th>
-                <th></th>
-                <th></th>
-				<th>
-					<wicket:message key="rolelist.table.type.title">
-						[Type]
+                <th style="width: 5%"></th>
+                <th style="width: 5%"></th>
+				<th style="width: 10%">
+					<wicket:message key="rolelist.table.group.title">
+						[Group]
 					</wicket:message>
 				</th>
-                <th>
+                <th style="width: 5%">
                     <wicket:message key="rolelist.table.webrole.title">
                         [Web role]
                     </wicket:message>
                 </th>
-                <th>
+                <th style="width: 5%">
                     <wicket:message key="rolelist.table.dicomrole.title">
                         [Dicom role]
                     </wicket:message>
                 </th>
+                <th style="width: 5%"></th>
                 <th>
-                    <wicket:message key="rolelist.table.clientrole.title">
+                    <wicket:message key="rolelist.table.other.title">
                         [Client role]
                     </wicket:message>
                 </th>
+                <th></th>
 		    </tr>
 		  </thead>
 		  <tbody>
@@ -63,8 +66,8 @@
                         <img wicket:id="rolelist.delete.image" />
                     </a>
                 </td>
-				<td wicket:id="type">
-		      		[Type]
+				<td wicket:id="group">
+		      		[Group]
 		      	</td>
                 <td>
 	                <a wicket:id="webrole-link" href="#">
@@ -75,8 +78,14 @@
                     <input wicket:id="dicomrole-checkbox" type="checkbox" />
                 </td>
                 <td>
-                    <input wicket:id="clientrole-checkbox" type="checkbox" />
+                    <a wicket:id="roletype-link">
+                        <img wicket:id="rolelist.roletype.image" />
+                    </a>
                 </td>
+                <td wicket:id="other">
+                    [Other]
+                </td>
+                <td style="width: 100%"></td>
 		    </tr>
 		  </tbody>
 		</table>

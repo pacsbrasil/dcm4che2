@@ -39,6 +39,7 @@
 package org.dcm4chee.usr.model;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -57,7 +58,7 @@ public class Role implements Serializable, Comparable<Role> {
     private String groupUuid;
     private boolean isWebRole;
     private boolean isDicomRole;
-    private boolean isClientRole;
+    private List<String> roleTypes;
     private Set<String> swarmPrincipals;
 
     public Role() {
@@ -122,12 +123,12 @@ public class Role implements Serializable, Comparable<Role> {
         return isDicomRole;
     }
 
-    public void setClientRole(boolean isClientRole) {
-        this.isClientRole = isClientRole;
+    public void setRoleTypes(List<String> roleTypes) {
+        this.roleTypes = roleTypes;
     }
 
-    public boolean isClientRole() {
-        return isClientRole;
+    public List<String> getRoleTypes() {
+        return roleTypes;
     }
 
     public void setSwarmPrincipals(Set<String> swarmPrincipals) {

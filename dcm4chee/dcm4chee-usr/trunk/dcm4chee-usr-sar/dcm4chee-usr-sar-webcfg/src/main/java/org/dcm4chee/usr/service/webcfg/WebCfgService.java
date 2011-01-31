@@ -48,6 +48,9 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
@@ -67,9 +70,10 @@ public class WebCfgService extends ServiceMBeanSupport {
     private String studyPermissionsAllRolename;
     private String studyPermissionsOwnRolename;
     
+    private List<String> roleTypes;
+    
     private boolean manageUsers;
     private boolean webStudyPermissions;
-    private String root;
     
     private static final String NONE = "NONE";
     
@@ -135,14 +139,6 @@ public class WebCfgService extends ServiceMBeanSupport {
         return webStudyPermissions;
     }
 
-    public void setRoot(String root) {
-        this.root = root;
-    }
-
-    public String getRoot() {
-        return root;
-    }
-    
     public String getRolesFilename() {
         return System.getProperty("dcm4chee-usr.cfg.roles-filename", NONE);
     }
@@ -159,6 +155,43 @@ public class WebCfgService extends ServiceMBeanSupport {
         }
     }
     
+    public String getRoleTypes() {
+        return listAsString(roleTypes);
+    }
+
+    public List<String> getRoleTypeList() {
+        return copyOfList(roleTypes);
+    }
+
+    public void setRoleTypes(String s) {
+        updateList(roleTypes, s);
+    }
+
+    private String listAsString(List<String> list) {
+        if (list.isEmpty()) {
+            return NONE;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String m : list) {
+            sb.append(m).append('|');
+        }
+        return sb.substring(0, sb.length()-1);
+    }
+    private void updateList(List<String> list, String s) {
+        list.clear();
+        if (!NONE.equals(s)) {
+            StringTokenizer st = new StringTokenizer(s, "|");
+            while (st.hasMoreTokens()) {
+                list.add(st.nextToken());
+            }
+        }
+    }
+    private List<String> copyOfList(List<String> src) {
+        List<String> dest = new ArrayList<String>(src.size());
+        dest.addAll(src);
+        return dest;
+    }
+
     private void initDefaultFile() {
         File mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.roles-filename", "conf/dcm4chee-web3/roles.json"));
         if (!mappingFile.isAbsolute())

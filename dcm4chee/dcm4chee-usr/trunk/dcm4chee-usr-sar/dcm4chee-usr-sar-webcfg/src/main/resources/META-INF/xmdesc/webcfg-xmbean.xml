@@ -65,6 +65,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getRoleTypes"
+      setMethod="setRoleTypes">
+      <description><![CDATA[List of role types.<br/>
+        Format: &lt;RoleType&gt;[|&lt;RoleType&gt[|..]]<br/>
+        NONE is used for an empty list. In this case a getRoleTypes will trigger updateRoleTypes.
+      ]]></description>
+      <name>roleTypes</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getRolesFilename"
       setMethod="setRolesFilename">
       <description><![CDATA[Filename path for the roles file (JSON format).<br/>
@@ -109,20 +122,15 @@
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getRoot"
-      setMethod="setRoot">
-      <description><![CDATA[Name of the root user.
-      ]]></description>
-      <name>root</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="admin"/>
-      </descriptors>
-    </attribute>
    
    &defaultAttributes;
    
    <!-- Operations -->
+   <operation impact="ACTION">
+      <description>Get List of role types</description>
+      <name>getRoleTypeList</name>
+      <return-type>java.util.List</return-type>
+   </operation>
+
    &defaultOperations;
 </mbean>

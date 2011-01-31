@@ -149,7 +149,7 @@ public class UserListPanel extends Panel {
         .add(new ImageSizeBehaviour("vertical-align: middle;")))
         .add(new Label("userlist.add-user-form.title", new ResourceModel("userlist.add-user-form.title")))
         .add(new TooltipBehaviour("userlist."))
-        .add(new SecurityBehavior(getModuleName() + ":newUserLink"))
+        .add(new SecurityBehavior(getModuleName() + ":newUserLink"))        
         );
     }
 
@@ -159,11 +159,6 @@ public class UserListPanel extends Panel {
 
         this.allUsers.setObject(getAllUsers());
         this.allRoles.setObject(getAllRoles());
-
-        RepeatingView roleHeaders = new RepeatingView("role-headers");
-        for (Role role : this.allRoles.getObject())
-            roleHeaders.add(new Label(roleHeaders.newChildId(), role.getRolename()));
-        addOrReplace(roleHeaders);
 
         RepeatingView roleRows = new RepeatingView("role-rows");
         addOrReplace(roleRows);
@@ -203,87 +198,41 @@ public class UserListPanel extends Panel {
             );
             rowParent.add(removeUserLink);
             removeUserLink.add(new SecurityBehavior(getModuleName() + ":removeUserLink"));
-            
-            RepeatingView roleDividers = new RepeatingView("role-dividers");
-            rowParent.add(roleDividers);
 
-            for (final Role role : this.allRoles.getObject()) {
-                AjaxCheckBox roleCheckbox = new AjaxCheckBox("role-checkbox", new HasRoleModel(user, role.getRolename())) {
+            rowParent.add((new ModalWindowLink("manage-roles-link", modalWindow, 
+                    new Integer(new ResourceModel("userlist.manage-roles.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
+                    new Integer(new ResourceModel("userlist.manage-roles.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
+            ) {
+                private static final long serialVersionUID = 1L;
 
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    protected void onUpdate(AjaxRequestTarget target) {
-                        target.addComponent(this);
-                    }
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    modalWindow
+                        .setPageCreator(new ModalWindow.PageCreator() {
                       
-                    @Override
-                    protected void onComponentTag(ComponentTag tag) {
-                        super.onComponentTag(tag);
-                        tag.put("title", new ResourceModel(((HasRoleModel) this.getModel()).getObject().booleanValue() ? "userlist.has-role-checkbox.remove.tooltip" : "userlist.has-role-checkbox.add.tooltip").wrapOnAssignment(this).getObject());
-                    }
-                };
-                if (this.userId.equals(user.getUserID())) {
-                    if (role.getRolename().equals(userAccess.getUserRoleName()) || role.getRolename().equals(userAccess.getAdminRoleName())) {
-                        for (UserRoleAssignment ura : user.getRoles()) {
-                            if (ura.getRole().equals(role.getRolename()))
-                                roleCheckbox.setEnabled(false)
-                                .add(new AttributeModifier("title", true, new ResourceModel("userlist.add-role-form.change_denied.tooltip").wrapOnAssignment(this)));
-                        }
-                    }                        
+                            private static final long serialVersionUID = 1L;
+                        
+                                @Override
+                                public Page createPage() {
+                                    return new RoleAssignmentPage(
+                                            modalWindow, 
+                                            user
+                                    );
+                                }
+                        });
+                    super.onClick(target);
                 }
-                roleDividers.add(
-                        new WebMarkupContainer(roleRows.newChildId())
-                        .add(roleCheckbox)              
-                );
-                roleCheckbox.add(new SecurityBehavior(getModuleName() + ":changeRoleAssignmentCheckbox"));
-            }
+            }).add(new Image("img-roles", ImageManager.IMAGE_USER_ROLE_ADD))
+                .add(new SecurityBehavior(getModuleName() + ":manageRolesLink"))
+            );
+            
+            StringBuffer assignedRoles = new StringBuffer();
+            for (UserRoleAssignment ura : user.getRoles())
+                assignedRoles.append(ura.getRole()).append(" ");
+                
+            rowParent.add(new Label("assigned-roles", assignedRoles.toString()));            
         }
     }
-
-    private final class HasRoleModel implements IModel<Boolean> {
-        
-        private static final long serialVersionUID = 1L;
-        
-        private User user;
-        private String rolename;
-        
-        public HasRoleModel(User user, String rolename) {
-            this.user = user;
-            this.rolename = rolename;
-        }
-        
-        @Override
-        public Boolean getObject() {
-            for (UserRoleAssignment role : this.user.getRoles())
-                if (role.getRole().equals(this.rolename)) return true;
-            return false;
-        }
-        
-        @Override
-        public void setObject(Boolean hasRole) {
-            if (hasRole) {
-                UserRoleAssignment role = new UserRoleAssignment();
-                role.setUserID(this.user.getUserID());
-                role.setRole(this.rolename);
-                ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).assignRole(role);
-                this.user.getRoles().add(role);
-            } else {
-                for (UserRoleAssignment role : this.user.getRoles()) {
-                    if (role.getRole().equals(this.rolename)) {
-                        ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).unassignRole(role);
-                        this.user.getRoles().remove(role);
-                        break;
-                    }
-                }
-            }
-        }
-        
-        @Override
-        public void detach() {
-        }
-    }
-    
     private List<User> getAllUsers() {
         List<User> allUsers = new ArrayList<User>();
         allUsers.addAll(((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getAllUsers());

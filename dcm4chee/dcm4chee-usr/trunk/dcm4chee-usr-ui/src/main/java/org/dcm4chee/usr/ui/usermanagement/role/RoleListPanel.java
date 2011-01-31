@@ -97,10 +97,11 @@ public class RoleListPanel extends Panel {
     UserAccess userAccess;
     
     private ListModel<Role> allRoles;
-    private Map<String,Group> types;
+    private Map<String,Group> allGroups;
     private ConfirmationWindow<Role> confirmationWindow;
-    private ModalWindow modalWindow;
+    private ModalWindow roleWindow;
     private ModalWindow webroleWindow;
+    private ModalWindow roletypeWindow;
     
     public RoleListPanel(String id) {
         super(id);
@@ -112,7 +113,7 @@ public class RoleListPanel extends Panel {
         setOutputMarkupId(true);
 
         this.allRoles = new ListModel<Role>(getAllRoles());
-        this.types = getAllTypes();
+        this.allGroups = getAllGroups();
 
         add(this.confirmationWindow = new ConfirmationWindow<Role>("confirmation-window") {
 
@@ -126,9 +127,11 @@ public class RoleListPanel extends Panel {
             }
         });
 
-        add(modalWindow = new ModalWindow("modal-window"));
+        add(roleWindow = new ModalWindow("role-window"));
         add(webroleWindow = new ModalWindow("webrole-window"));
-        add(new ModalWindowLink("toggle-role-form-link", modalWindow, 
+        add(roletypeWindow = new ModalWindow("roletype-window"));
+        
+        add(new ModalWindowLink("toggle-role-form-link", roleWindow, 
                 new Integer(new ResourceModel("rolelist.add-role.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
                 new Integer(new ResourceModel("rolelist.add-role.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
         ) {
@@ -136,14 +139,14 @@ public class RoleListPanel extends Panel {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                modalWindow
+                roleWindow
                 .setPageCreator(new ModalWindow.PageCreator() {
                     
                     private static final long serialVersionUID = 1L;
                       
                     @Override
                     public Page createPage() {
-                        return new CreateOrEditRolePage(modalWindow, allRoles, null, types);
+                        return new CreateOrEditRolePage(roleWindow, allRoles, null, allGroups);
                     }
                 });
                 super.onClick(target);
@@ -162,7 +165,7 @@ public class RoleListPanel extends Panel {
         super.onBeforeRender();
 
         this.allRoles.setObject(getAllRoles());
-        this.types = getAllTypes();
+        this.allGroups = getAllGroups();
         
         RepeatingView roleRows = new RepeatingView("role-rows");
         addOrReplace(roleRows);
@@ -178,14 +181,14 @@ public class RoleListPanel extends Panel {
 
             if (role.getGroupUuid() != null && 
                     !role.getGroupUuid().equals("") && 
-                    types.get(role.getGroupUuid()) != null) {
-                Group type = types.get(role.getGroupUuid());
-                rowParent.add(new Label("type", type.getGroupname()));
-                rowParent.add(new AttributeModifier("style", true, new Model<String>("background-color: " + type.getColor())));
+                    allGroups.get(role.getGroupUuid()) != null) {
+                Group group = allGroups.get(role.getGroupUuid());
+                rowParent.add(new Label("group", group.getGroupname()));
+                rowParent.add(new AttributeModifier("style", true, new Model<String>("background-color: " + group.getColor())));
             } else
-                rowParent.add(new Label("type", ""));
+                rowParent.add(new Label("group", ""));
             
-            rowParent.add((new ModalWindowLink("edit-role-link", modalWindow,
+            rowParent.add((new ModalWindowLink("edit-role-link", roleWindow,
                     new Integer(new ResourceModel("rolelist.add-role.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
                     new Integer(new ResourceModel("rolelist.add-role.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
             ) {
@@ -193,14 +196,14 @@ public class RoleListPanel extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    modalWindow
+                    roleWindow
                     .setPageCreator(new ModalWindow.PageCreator() {
                         
                         private static final long serialVersionUID = 1L;
                           
                         @Override
                         public Page createPage() {
-                            return new CreateOrEditRolePage(modalWindow, allRoles, role, types);
+                            return new CreateOrEditRolePage(roleWindow, allRoles, role, allGroups);
                         }
                     });
                     super.onClick(target);
@@ -245,15 +248,17 @@ public class RoleListPanel extends Panel {
                                 @Override
                                 public Page createPage() {
                                     return new WebPermissionsPage(
-                                            modalWindow, 
+                                            webroleWindow, 
                                             role
                                     );
                                 }
                         });
                     super.onClick(target);
                 }
-            }).add(new Image("rolelist.webrole.image", ImageManager.IMAGE_USER_WEB_PERMISSIONS))
+            }).add(new Image("rolelist.webrole.image", ImageManager.IMAGE_USER_WEB_PERMISSIONS)
+                .add(new TooltipBehaviour("rolelist.", "webrole-link", new Model<String>(role.getRolename()))))
                 .setVisible(role.isWebRole())
+                .add(new SecurityBehavior(getModuleName() + ":webroleLink"))
             );
                     
             rowParent.add((new AjaxCheckBox("dicomrole-checkbox", new Model<Boolean>(role.isDicomRole())) {
@@ -265,14 +270,37 @@ public class RoleListPanel extends Panel {
                 }}.setEnabled(false))
             );
 
-            rowParent.add((new AjaxCheckBox("clientrole-checkbox", new Model<Boolean>(role.isClientRole())) {
-
+            rowParent.add((new ModalWindowLink("roletype-link", roletypeWindow, 
+                    new Integer(new ResourceModel("rolelist.roletype-link.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
+                    new Integer(new ResourceModel("rolelist.roletype-link.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
+            ) {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                protected void onUpdate(AjaxRequestTarget target) {
-                }}.setEnabled(false))
+                public void onClick(AjaxRequestTarget target) {
+                    roletypeWindow
+                        .setPageCreator(new ModalWindow.PageCreator() {
+                      
+                            private static final long serialVersionUID = 1L;
+                        
+                                @Override
+                                public Page createPage() {
+                                    return new RoleTypePage(
+                                            roletypeWindow, 
+                                            role
+                                    );
+                                }
+                        });
+                    super.onClick(target);
+                }
+            }).add(new Image("rolelist.roletype.image", ImageManager.IMAGE_USER_ROLE_TYPE)
+                .add(new TooltipBehaviour("rolelist.", "roletype-link", new Model<String>(role.getRolename()))))
             );
+
+            StringBuffer types = new StringBuffer();
+            for (String type : role.getRoleTypes())
+                types.append(type).append(" ");
+            rowParent.add(new Label("other", types.toString()));
         }
     }
 
@@ -282,11 +310,11 @@ public class RoleListPanel extends Panel {
         return allRoles;
     }
     
-    private Map<String, Group> getAllTypes() {
-        Map<String, Group> types = new HashMap<String,Group>();
-        for (Group type : userAccess.getAllGroups())
-            types.put(type.getUuid(), type);
-        return types;
+    private Map<String, Group> getAllGroups() {
+        Map<String, Group> groups = new HashMap<String,Group>();
+        for (Group group : userAccess.getAllGroups())
+            groups.put(group.getUuid(), group);
+        return groups;
     }
     
     public static String getModuleName() {

@@ -108,9 +108,6 @@ public class CreateOrEditRolePage extends SecureWebPage {
         private DropDownChoice<String> groupDropDown;
         private AjaxCheckBox webroleCheckbox;
         private AjaxCheckBox dicomroleCheckbox;
-        private AjaxCheckBox clientroleCheckbox;
-        
-
         public CreateOrEditRoleForm(String id, final ListModel<Role> allRolenames, final Role role, final Map<String,Group> types) {
             super(id);
 
@@ -164,15 +161,6 @@ public class CreateOrEditRolePage extends SecureWebPage {
                 }
             }));
 
-            add((clientroleCheckbox = new AjaxCheckBox("clientrole-checkbox", new Model<Boolean>(role == null ? false : role.isClientRole())) {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void onUpdate(AjaxRequestTarget target) {
-                }
-            }));
-
             add(new AjaxFallbackButton("add-role-submit", CreateOrEditRoleForm.this) {
                 
                 private static final long serialVersionUID = 1L;
@@ -187,7 +175,6 @@ public class CreateOrEditRolePage extends SecureWebPage {
                             newRole.setGroupUuid(type.getObject());
                             newRole.setWebRole(webroleCheckbox.getModelObject());
                             newRole.setDicomRole(dicomroleCheckbox.getModelObject());
-                            newRole.setClientRole(clientroleCheckbox.getModelObject());
                             userAccess.addRole(newRole);
                             
                         } else {
@@ -196,7 +183,6 @@ public class CreateOrEditRolePage extends SecureWebPage {
                             role.setDescription(description.getObject());
                             role.setWebRole(webroleCheckbox.getModelObject());
                             role.setDicomRole(dicomroleCheckbox.getModelObject());
-                            role.setClientRole(clientroleCheckbox.getModelObject());
                             userAccess.updateRole(role);
                         }
                         allRolenames.setObject(userAccess.getAllRoles());
