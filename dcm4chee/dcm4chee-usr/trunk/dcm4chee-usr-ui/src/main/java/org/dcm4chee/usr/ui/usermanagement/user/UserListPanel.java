@@ -96,10 +96,10 @@ public class UserListPanel extends Panel {
 
     private String userId;
 
+    private ModalWindow addUserWindow;
     private ModalWindow changePasswordWindow;
+    private ModalWindow manageRolesWindow;
     private ConfirmationWindow<User> confirmationWindow;
-    
-    private ModalWindow modalWindow;
 
     public UserListPanel(String id) {
         super(id);
@@ -129,19 +129,19 @@ public class UserListPanel extends Panel {
             }
         });
         
-        add(modalWindow = new ModalWindow("modal-window")
+        add(addUserWindow = new ModalWindow("add-user-window")
             .setPageCreator(new ModalWindow.PageCreator() {
                 
                 private static final long serialVersionUID = 1L;
                   
                 @Override
                 public Page createPage() {
-                    return new AddUserPage(modalWindow, allUsers);
+                    return new AddUserPage(addUserWindow, allUsers);
                 }
             })
         );
         
-        add(new ModalWindowLink("toggle-user-form-link", modalWindow, 
+        add(new ModalWindowLink("toggle-user-form-link", addUserWindow, 
                 new Integer(new ResourceModel("userlist.add-user.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
                 new Integer(new ResourceModel("userlist.add-user.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
         )
@@ -151,6 +151,8 @@ public class UserListPanel extends Panel {
         .add(new TooltipBehaviour("userlist."))
         .add(new SecurityBehavior(getModuleName() + ":newUserLink"))        
         );
+        
+        add(manageRolesWindow = new ModalWindow("manage-roles-window"));
     }
 
     @Override
@@ -199,7 +201,7 @@ public class UserListPanel extends Panel {
             rowParent.add(removeUserLink);
             removeUserLink.add(new SecurityBehavior(getModuleName() + ":removeUserLink"));
 
-            rowParent.add((new ModalWindowLink("manage-roles-link", modalWindow, 
+            rowParent.add((new ModalWindowLink("manage-roles-link", manageRolesWindow, 
                     new Integer(new ResourceModel("userlist.manage-roles.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
                     new Integer(new ResourceModel("userlist.manage-roles.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
             ) {
@@ -207,7 +209,7 @@ public class UserListPanel extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    modalWindow
+                    manageRolesWindow
                         .setPageCreator(new ModalWindow.PageCreator() {
                       
                             private static final long serialVersionUID = 1L;
@@ -215,7 +217,7 @@ public class UserListPanel extends Panel {
                                 @Override
                                 public Page createPage() {
                                     return new RoleAssignmentPage(
-                                            modalWindow, 
+                                            manageRolesWindow, 
                                             user
                                     );
                                 }
