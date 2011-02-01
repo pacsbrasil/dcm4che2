@@ -14,5 +14,7 @@
       >dcm4chee.archive:service=MPPSScp</depends>
     <depends optional-attribute-name="TemplatesServiceName"
       >dcm4chee.archive:service=Templates</depends>
+    <depends optional-attribute-name="ContentEditServiceName"
+      >dcm4chee.archive:service=ContentEditService</depends>
   </mbean>
 </server>

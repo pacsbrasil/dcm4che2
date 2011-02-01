@@ -70,6 +70,7 @@ import org.dcm4che2.audit.message.StudyDeletedMessage;
 import org.dcm4che2.audit.message.AuditEvent.ActionCode;
 import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4chex.archive.common.PatientMatching;
+import org.dcm4chex.archive.dcm.storescp.StoreScpService;
 import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
 import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
@@ -359,7 +360,15 @@ public class ContentEditService extends ServiceMBeanSupport {
         logInstancesAccessed(stdyMgtDs, InstancesAccessedMessage.CREATE, false, null);
         sendStudyMgt(stdyMgtDs.getString(Tags.StudyInstanceUID), Command.N_CREATE_RQ,
                 0, stdyMgtDs);
+        sendNewStudyNotification(ds);
         return stdyMgtDs;
+    }
+
+    private void sendNewStudyNotification(Dataset ds) {
+        long eventID = super.getNextNotificationSequenceNumber();
+        Notification notif = new Notification(StoreScpService.EVENT_TYPE_NEW_STUDY, this, eventID);
+        notif.setUserData(ds);
+        super.sendNotification(notif);
     }
 
     public Dataset createSeries(Dataset ds, Long studyPk)

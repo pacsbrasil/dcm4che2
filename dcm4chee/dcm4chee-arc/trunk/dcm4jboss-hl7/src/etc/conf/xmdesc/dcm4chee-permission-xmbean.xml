@@ -140,6 +140,14 @@
       <name>MppsScpServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getContentEditServiceName"
+      setMethod="setContentEditServiceName">
+      <description>Used internally. Do not modify.     
+      </description>
+      <name>ContentEditServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
    <attribute access="read-write" 
       getMethod="getTemplatesServiceName"
       setMethod="setTemplatesServiceName">

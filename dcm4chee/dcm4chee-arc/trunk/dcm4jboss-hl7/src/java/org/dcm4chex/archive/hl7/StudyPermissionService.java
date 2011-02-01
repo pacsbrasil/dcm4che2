@@ -88,25 +88,19 @@ import org.xml.sax.helpers.DefaultHandler;
 public class StudyPermissionService extends ServiceMBeanSupport {
     
     private ObjectName hl7ServerName;
-
     private ObjectName storeScpServiceName;
-
     private ObjectName mppsScpServiceName;
+    private ObjectName contentEditServiceName;
 
     private TemplatesDelegate templates = new TemplatesDelegate(this);
        
     private String hl7Stylesheet;
-    
     private String seriesStylesheet;
-    
     private String mppsStylesheet;
     
     private boolean updateOnHl7Received;
-    
     private boolean updateOnSeriesStored;
-
     private boolean updateOnMppsCreate;
-
     private boolean updateOnNewStudy;
 
     public final ObjectName getHL7ServerName() {
@@ -131,6 +125,14 @@ public class StudyPermissionService extends ServiceMBeanSupport {
 
     public final void setMppsScpServiceName(ObjectName name) {
         this.mppsScpServiceName = name;
+    }
+
+    public final ObjectName getContentEditServiceName() {
+        return contentEditServiceName;
+    }
+
+    public final void setContentEditServiceName(ObjectName name) {
+        this.contentEditServiceName = name;
     }
 
     public final ObjectName getTemplatesServiceName() {
@@ -354,6 +356,8 @@ public class StudyPermissionService extends ServiceMBeanSupport {
                 mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);
         server.addNotificationListener(storeScpServiceName, 
                 newStudyListener, StoreScpService.NOTIF_FILTER_NEW_STUDY, null);
+        server.addNotificationListener(contentEditServiceName, 
+                newStudyListener, StoreScpService.NOTIF_FILTER_NEW_STUDY, null);
     }
 
     protected void stopService() throws Exception {
@@ -364,6 +368,8 @@ public class StudyPermissionService extends ServiceMBeanSupport {
         server.removeNotificationListener(mppsScpServiceName,
                 mppsReceivedListener, MPPSScpService.NOTIF_FILTER, null);
         server.removeNotificationListener(mppsScpServiceName,
+                newStudyListener, StoreScpService.NOTIF_FILTER_NEW_STUDY, null);
+        server.removeNotificationListener(contentEditServiceName,
                 newStudyListener, StoreScpService.NOTIF_FILTER_NEW_STUDY, null);
     }
 
@@ -512,6 +518,8 @@ public class StudyPermissionService extends ServiceMBeanSupport {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             String callingAET = ds.getString(PrivateTags.CallingAET);
             ds.setPrivateCreatorID(null);
+            if (callingAET == null)
+                callingAET ="UNKNOWN";
             xslt(seriesStylesheet, ds, callingAET);        
         } catch (Exception e) {
             log.error("Failed to update permissions on NewStudy received", e);
