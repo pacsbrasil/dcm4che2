@@ -198,6 +198,7 @@ public class ExportPage extends SecureWebPage {
 
             @Override
             public boolean isEnabled() {
+System.out.println("DROPDOWN ISENABLED: " + exportInfo.hasSelection() + " " + isExportInactive());
                 return exportInfo.hasSelection() && isExportInactive();
             }
         }.setNullValid(false).setOutputMarkupId(true));
@@ -442,11 +443,11 @@ public class ExportPage extends SecureWebPage {
             List<Study> studies = getStudiesOfPatient(pat);
             int allowed = 0;
             for (Study study : studies) {
-                if (!StudyPermissionHelper.get().useStudyPermissions() ||
-                        dao.findStudyPermissionActions(study.getStudyInstanceUID(), 
-                                StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
-                                        null : StudyPermissionHelper.get().getDicomRoles())
-                                        .contains(StudyPermission.EXPORT_ACTION)) {
+                boolean denied = StudyPermissionHelper.get().useStudyPermissions()
+                && !(StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL))
+                &&  !(dao.findStudyPermissionActions(study.getStudyInstanceUID(), StudyPermissionHelper.get().getDicomRoles())
+                                        .contains(StudyPermission.EXPORT_ACTION));
+                if (!denied) {
                     uids.add(study.getStudyInstanceUID());
                     allowed++;
                 } else 
@@ -468,11 +469,10 @@ public class ExportPage extends SecureWebPage {
         private void prepareStudyRequests(List<StudyModel> studies) {
             ArrayList<String> uids = new ArrayList<String>();
             for (StudyModel study : studies ) {
-                boolean denied = StudyPermissionHelper.get().useStudyPermissions() && 
-                        !dao.findStudyPermissionActions(study.getStudyInstanceUID(), 
-                                StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
-                                        null : StudyPermissionHelper.get().getDicomRoles())
-                                        .contains(StudyPermission.EXPORT_ACTION);
+                boolean denied = StudyPermissionHelper.get().useStudyPermissions()
+                && !(StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL))
+                &&  !(dao.findStudyPermissionActions(study.getStudyInstanceUID(), StudyPermissionHelper.get().getDicomRoles())
+                                        .contains(StudyPermission.EXPORT_ACTION));
                 if (study.isSelected()) {
                     if (denied) {
                         NOTnrStudy++;
