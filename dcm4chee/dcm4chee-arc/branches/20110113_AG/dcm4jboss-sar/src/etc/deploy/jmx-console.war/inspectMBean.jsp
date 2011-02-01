@@ -148,7 +148,7 @@
             else if (String.valueOf(attrValue).indexOf(sep) == -1)
             {
 %>
-            <input type="text" name="<%= attrName %>" value="<%= attrValue %>" <%= readonly %>>
+            <input type="text" name="<%= attrName %>" value="<%= attrValue.replace("\"","&quot;") %>" <%= readonly %>>
 <%
             }
             else
