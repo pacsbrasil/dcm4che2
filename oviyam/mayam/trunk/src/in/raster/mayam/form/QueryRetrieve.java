@@ -783,7 +783,8 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
     private void studyListTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studyListTableMouseClicked
         String serverName = ((ServerTableModel) serverListTable.getModel()).getValueAt(serverListTable.getSelectedRow(), 0);
         String[] s = ApplicationContext.databaseRef.getListenerDetails();
-       if (dicomServerArray != null) {
+       if (evt.getClickCount() == 2) {
+        if (dicomServerArray != null) {
             for (int i = 0; i < dicomServerArray.size(); i++) {
                 if (dicomServerArray.get(i).getName().equalsIgnoreCase(serverName)) {
                     int index[] = studyListTable.getSelectedRows();
@@ -823,6 +824,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
                 }
             }
         }
+    }
     }//GEN-LAST:event_studyListTableMouseClicked
 
     private class SearchDaysHandler implements ItemListener {
