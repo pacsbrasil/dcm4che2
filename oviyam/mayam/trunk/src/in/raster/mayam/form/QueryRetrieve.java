@@ -783,23 +783,38 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
     private void studyListTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studyListTableMouseClicked
         String serverName = ((ServerTableModel) serverListTable.getModel()).getValueAt(serverListTable.getSelectedRow(), 0);
         String[] s = ApplicationContext.databaseRef.getListenerDetails();
-        if (evt.getClickCount() == 2) {
-            if (dicomServerArray != null) {
-                for (int i = 0; i < dicomServerArray.size(); i++) {
-                    if (dicomServerArray.get(i).getName().equalsIgnoreCase(serverName)) {
+       if (dicomServerArray != null) {
+            for (int i = 0; i < dicomServerArray.size(); i++) {
+                if (dicomServerArray.get(i).getName().equalsIgnoreCase(serverName)) {
+                    int index[] = studyListTable.getSelectedRows();
+                    for (int j = 0; j < index.length; j++) {
+                        index[j] = studyListTable.convertRowIndexToModel(index[j]);
+                    }
+                    for (int tempI = 0; tempI < index.length; tempI++) {
 
-                        String tem[] = new String[]{
+                        String cmoveParam[] = new String[]{
                             "dicom" + "://" + dicomServerArray.get(i).getAe().getAeTitle() + "@" + dicomServerArray.get(i).getAe().getHostName() + ":" + dicomServerArray.get(i).getAe().getPort(),
-                            "--dest", s[0], "--pid", dicomServerArray.get(i).getStudyListModel().getValueAt(studyListTable.getSelectedRow(), 0), "--suid",
-                            dicomServerArray.get(i).getStudyListModel().getValueAt(studyListTable.getSelectedRow(), 8)};
+                            "--dest", s[0], "--pid", dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), "--suid",
+                            dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8)};
+
+                        String cgetParam[] = new String[]{"-L", s[0] + ":" + s[1], dicomServerArray.get(i).getAe().getAeTitle() + "@" + dicomServerArray.get(i).getAe().getHostName() + ":" + dicomServerArray.get(i).getAe().getPort(),
+                            "-cget", "-qModalitiesInStudy=" + dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 6), "-qStudyInstanceUID=" + dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8),
+                            "-qPatientID=" + dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), "-rel"};
                         try {
-                            if (ApplicationContext.databaseRef.checkRecordExists("study", "StudyInstanceUID", dicomServerArray.get(i).getStudyListModel().getValueAt(studyListTable.getSelectedRow(), 8))) {
-                                StudyAvailabilityStatus studyStatus = new StudyAvailabilityStatus(this, true);
-                                Display.alignScreen(studyStatus);
-                                studyStatus.setVisible(true);
+                            if (!ApplicationContext.databaseRef.checkRecordExists("study", "StudyInstanceUID", dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8))) {
+                                MainScreen.sndRcvFrm.setVisible(true);
+                                MoveDelegate moveDelegate = null;
+                                CgetDelegate cgetDelegate = null;
+                                if (dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("C-MOVE")) {
+                                    moveDelegate = new MoveDelegate(cmoveParam);
+                                } else if (dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("WADO")) {
+                                    WadoRetrieveDelegate wadoRetrieveDelegate = new WadoRetrieveDelegate();
+                                    wadoRetrieveDelegate.retrieveStudy(serverName, dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8));
+                                } else if (dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("C-GET")) {
+                                    cgetDelegate = new CgetDelegate(cgetParam);
+                                }
                             } else {
                                 MainScreen.sndRcvFrm.setVisible(true);
-                                MoveScu.main(tem);
                             }
                         } catch (Exception ex) {
                             Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
