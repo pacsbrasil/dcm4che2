@@ -543,12 +543,14 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
      */
     public void windowChanged(int windowCenter, int windowWidth) {
         try {
+            if(cmParam!=null){
             cmParam = cmParam.update(windowCenter,
                     windowWidth, cmParam.isInverse());
             cm = cmFactory.getColorModel(cmParam);
             currentbufferedimage = new BufferedImage(cm, currentbufferedimage.getRaster(), false, null);
             this.windowLevel = windowCenter;
             this.windowWidth = windowWidth;
+            }
             convertToRGBImage();
             repaint();
             changeTextOverlay();

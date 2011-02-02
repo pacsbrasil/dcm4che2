@@ -235,7 +235,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     private int instanceNumber;
     private String sliceLocation;
     public static boolean synchornizeTiles = false;
-    public int syncStartInstance;
+    public int syncStartInstance;    
 
     public ImagePanel() {
         initComponents();
@@ -1307,15 +1307,18 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         try {
             widowingFlag = true;
             if (cmParam != null) {
+                System.out.println("cmparam not null");               
                 cmParam = cmParam.update(windowCenter, windowWidth, cmParam.isInverse());
                 cm = cmFactory.getColorModel(cmParam);
                 currentbufferedimage = new BufferedImage(cm, currentbufferedimage.getRaster(), false, null);
                 this.windowLevel = windowCenter;
                 this.windowWidth = windowWidth;
+                }
                 convertToRGBImage();
                 repaint();
                 changeTextOverlay();
-            }
+            
+
         } catch (Exception e) {
             System.out.println("Windowing can't be applied");
         }
