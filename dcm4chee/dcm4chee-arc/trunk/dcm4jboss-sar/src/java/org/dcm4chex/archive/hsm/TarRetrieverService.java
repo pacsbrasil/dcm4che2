@@ -305,8 +305,9 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                     in = new DigestInputStream(tar, digest);
                 }
 
-                File f = new File(cacheDir, 
+                File fOri = new File(cacheDir, 
                         entryName.replace('/', File.separatorChar));
+                File f = new File(fOri.getAbsolutePath()+".tmp");
                 File dir = f.getParentFile();
                 if (dir.mkdirs()) {
                     log.info("M-WRITE " + dir);
@@ -347,6 +348,8 @@ public class TarRetrieverService extends ServiceMBeanSupport {
                 free -= f.length();
                 count++;
                 totalSize += f.length();
+                if (f.exists())
+                    f.renameTo(fOri);
             }
         } finally {
             tar.close();
