@@ -160,7 +160,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             if (rq.getParameter("prev") != null
                     || rq.getParameter("prev.x") != null
                     || rq.getParameter("next") != null
-                    || rq.getParameter("next.x") != null) { return query(false, false); }
+                    || rq.getParameter("next.x") != null) { return query(false, true); }
             if (rq.getParameter("send") != null
                     || rq.getParameter("send.x") != null) { return send(); }
             if ( allowedMethods.contains("folder.delete") ) {
