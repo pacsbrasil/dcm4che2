@@ -119,6 +119,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     protected static final String ANY = "ANY";
     protected static final String CONFIGURED_AETS = "CONFIGURED_AETS";
     protected static final String NONE = "NONE";
+    protected static final String COERCE = "COERCE";
 
     private static int sequenceInt = new Random().nextInt();
 
@@ -1191,16 +1192,31 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
 
     public void supplementInstitutionalData(Dataset ds, Association as,
             String aet) {
-        if (supplementInstitutionName
-                && !ds.containsValue(Tags.InstitutionName)) {
-            String name = getAssociatedInstitutionName(as, aet);
-            if (name.length() != 0) {
-                ds.putLO(Tags.InstitutionName, name);
-                log.info("Supplement Institution Name " + name);
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("No Institution Name associated to " + as
-                            + " - no supplement of Institution Name");
+        if (supplementInstitutionName) {
+            String origName = ds.getString(Tags.InstitutionName);
+            Dataset codeItem = ds.getItem(Tags.InstitutionCodeSeq);
+            if (codeItem != null && !codeItem.containsValue(Tags.CodeValue))
+                codeItem = null;
+            if (origName == null || codeItem == null) {
+                String name = getAssociatedInstitutionName(as, aet);
+                if (name.length() != 0) {
+                    String[] code = StringUtils.split(name, '^');
+                    if (code.length == 3) {
+                        if (codeItem == null) {
+                            supplementInstitutionCode(ds, as, code, origName);
+                            log.info("Supplement Institution Code " + name);
+                        }
+                        name = code[2];
+                    } 
+                    if (!ds.containsValue(Tags.InstitutionName)) {
+                        ds.putLO(Tags.InstitutionName, name);
+                        log.info("Supplement Institution Name " + name);
+                    }
+                } else {
+                    if (origName == null && log.isDebugEnabled()) {
+                        log.debug("No Institution Name associated to " + as
+                                + " - no supplement of Institution Name");
+                    }
                 }
             }
         }
@@ -1217,6 +1233,37 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
                 }
             }
        }
+    }
+
+    private void supplementInstitutionCode(Dataset ds, Association as,
+            String[] code, String origName) {
+        Dataset codeItem = ds.putSQ(Tags.InstitutionCodeSeq).addNewItem();
+        codeItem.putSH(Tags.CodeValue, code[0]);
+        String scheme = code[1];
+        String meaning = code[2];
+        int delim;
+        if (scheme.endsWith("]")
+                && (delim = scheme.lastIndexOf('[')) > 0) {
+            codeItem.putSH(Tags.CodingSchemeVersion,
+                    scheme.substring(delim+1, scheme.length()-1));
+            scheme = scheme.substring(0, delim);
+        }
+        codeItem.putSH(Tags.CodingSchemeDesignator, scheme);
+        codeItem.putLO(Tags.CodeMeaning, meaning);
+        if (origName != null && !origName.equals(meaning)) {
+            DcmElement origAttrSq = ds.get(Tags.OriginalAttributesSeq);
+            if (origAttrSq == null)
+                origAttrSq = ds.putSQ(Tags.OriginalAttributesSeq);
+            Dataset origAttrItem = origAttrSq.addNewItem();
+            origAttrItem.putLO(Tags.SourceOfPreviousValues, as.getCallingAET());
+            origAttrItem.putLO(Tags.ModifyingSystem, as.getCalledAET());
+            origAttrItem.putDT(Tags.AttributeModificationDatetime, new Date());
+            origAttrItem.putCS(Tags.ReasonForTheAttributeModification, COERCE);
+            Dataset modifiedAtts = origAttrItem
+                    .putSQ(Tags.ModifiedAttributesSeq).addNewItem();
+            modifiedAtts.putLO(Tags.InstitutionName, origName);
+            ds.remove(Tags.InstitutionName);
+        }
     }
 
     public void generatePatientID(Dataset pat, Dataset sty, String calledAET)

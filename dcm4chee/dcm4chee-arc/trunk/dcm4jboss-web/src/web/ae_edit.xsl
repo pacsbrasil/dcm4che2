@@ -20,13 +20,13 @@
 					<tr>
 							<td width="50">AE Title</td>
 			        	<td title="AE Title" >
-							<input size="25" name="title" type="text" value="{title}"/>
+							<input size="50" name="title" type="text" value="{title}"/>
 						</td>
 					</tr>
 					<tr>
 						<td width="50">Hostname</td>
 				    	<td title="Hostname" >
-							<input size="25" name="hostName" type="text" value="{hostName}"/>
+							<input size="50" name="hostName" type="text" value="{hostName}"/>
 							<input name="checkHost" type="checkbox" value="true">
 								<xsl:if test="/model/checkHost = 'true'">
 									<xsl:attribute name="checked"/>
@@ -38,7 +38,7 @@
 					<tr>				        
 						<td width="50">Port</td>														
 				        <td title="Port">
-			                <input size="25" name="port" type="text" value="{port}"/>
+			                <input size="50" name="port" type="text" value="{port}"/>
 				    	</td>
 					</tr>
 					<tr>
@@ -70,73 +70,73 @@
 					<tr>				        
 						<td width="50">Issuer of Patient ID</td>														
 				        <td title="Issuer of Patient ID">
-			                <input size="25" name="issuerOfPatientID" type="text" value="{issuerOfPatientID}"/>
+			                <input size="50" name="issuerOfPatientID" type="text" value="{issuerOfPatientID}"/>
 				        </td>
 					</tr>
                     <tr>                        
                         <td width="50">Issuer of Accession Number ID</td>                                                      
                         <td title="Issuer of Accession Number Local Namespace ID">
-                            <input size="25" name="issuerOfAccessionNumberID" type="text" value="{issuerOfAccessionNumber/item[1]}"/>
+                            <input size="50" name="issuerOfAccessionNumberID" type="text" value="{issuerOfAccessionNumber/item[1]}"/>
                         </td>
                     </tr>
                     <tr>                        
                         <td width="50">Issuer of Accession Number UID</td>                                                      
                         <td title="Issuer of Accession Number Universal Entity ID">
-                            <input size="25" name="issuerOfAccessionNumberUID" type="text" value="{issuerOfAccessionNumber/item[2]}"/>
+                            <input size="50" name="issuerOfAccessionNumberUID" type="text" value="{issuerOfAccessionNumber/item[2]}"/>
                         </td>
                     </tr>
                     <tr>                        
                         <td width="50">Issuer of Accession Number UID Type</td>                                                      
                         <td title="Issuer of Accession Number Universal Entity ID Type">
-                            <input size="25" name="issuerOfAccessionNumberUIDType" type="text" value="{issuerOfAccessionNumber/item[3]}"/>
+                            <input size="50" name="issuerOfAccessionNumberUIDType" type="text" value="{issuerOfAccessionNumber/item[3]}"/>
                         </td>
                     </tr>
 					<tr>				        
 						<td width="50">User ID</td>														
 				        <td title="User ID">
-			                <input size="25" name="userID" type="text" value="{userID}"/>
+			                <input size="50" name="userID" type="text" value="{userID}"/>
 				        </td>
 					</tr>
 					<tr>				        
 						<td width="50">Password</td>														
 				        <td title="Password">
-			                <input size="25" name="password" type="password" value="{password}"/>
+			                <input size="50" name="password" type="password" value="{password}"/>
 				        </td>
 					</tr>
 					<tr>				        
 						<td width="50">FS Group ID</td>														
 				        <td title="File System Group ID">
-			                <input size="25" name="fileSystemGroupID" type="text" value="{fileSystemGroupID}"/>
+			                <input size="50" name="fileSystemGroupID" type="text" value="{fileSystemGroupID}"/>
 				        </td>
 					</tr>
                     <tr>                        
                         <td width="50">Description</td>                                                     
                         <td title="Description">
-                            <input size="25" name="description" type="text" value="{description}"/>
+                            <input size="50" name="description" type="text" value="{description}"/>
                         </td>
                     </tr>
                     <tr>                        
                         <td width="50">Station Name</td>                                                     
                         <td title="Station Name">
-                            <input size="25" name="stationName" type="text" value="{stationName}"/>
+                            <input size="50" name="stationName" type="text" value="{stationName}"/>
                         </td>
                     </tr>
                     <tr>                        
-                        <td width="50">Institution Name</td>                                                     
-                        <td title="Institution Name">
-                            <input size="25" name="institution" type="text" value="{institution}"/>
+                        <td width="50">Institution Name or Code</td>                                                     
+                        <td title="Institution Name or Code (CODE^SCHEME[VERSION]^MEANING)">
+                            <input size="50" name="institution" type="text" value="{institution}"/>
                         </td>
                     </tr>
                     <tr>                        
                         <td width="50">Department Name</td>                                                     
                         <td title="Institutional Department Name">
-                            <input size="25" name="department" type="text" value="{department}"/>
+                            <input size="50" name="department" type="text" value="{department}"/>
                         </td>
                     </tr>
                     <tr>                        
                         <td width="50">WADO URL</td>                                                     
                         <td title="WadoUrl">
-                            <input size="25" name="wadoUrl" type="text" value="{wadoUrl}"/>
+                            <input size="50" name="wadoUrl" type="text" value="{wadoUrl}"/>
                         </td>
                     </tr>
                     <tr>
