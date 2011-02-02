@@ -2682,6 +2682,9 @@
   <uid value="1.2.840.10008.1.2.4.96" name="No Pixel Data" key="NoPixelData" />
   <uid value="1.2.840.10008.1.2.4.97" name="No Pixel Data Deflate" key="NoPixelDataDeflate" />
   <uid value="1.2.840.10008.1.2.4.100" name="MPEG2 Main Profile @ Main Level" key="MPEG2" />
+  <uid value="1.2.840.10008.1.2.4.101" name="MPEG2 Main Profile @ High Level" key="MPEG2HL" />
+  <uid value="1.2.840.10008.1.2.4.102" name="MPEG-4 AVC/H.264 High Profile / Level 4.1" key="MPEG4" />
+  <uid value="1.2.840.10008.1.2.4.103" name="MPEG-4 AVC/H.264 BD-compatible High Profile / Level 4.1" key="MPEG4BD" />
   <uid value="1.2.840.10008.1.2.5" name="RLE Lossless" key="RLELossless" />
   <uid value="1.2.840.10008.1.2.6.1" name="RFC 2557 MIME encapsulation" key="RFC2557MIMEEncapsulation" />
   <uid value="1.2.840.10008.1.2.6.2" name="XML Encoding" key="XMLEncoding" />
