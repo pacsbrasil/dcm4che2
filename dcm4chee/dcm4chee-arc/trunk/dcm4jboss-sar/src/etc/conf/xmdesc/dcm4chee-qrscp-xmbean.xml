@@ -184,6 +184,9 @@ names:
 <li>JPEGLSLossy</li>
 <li>JPEG2000Lossy</li>
 <li>MPEG2</li>
+<li>MPEG2HL</li>
+<li>MPEG4</li>
+<li>MPEG4BD</li>
 </ul>
 <p>Not effective for Move Destinations listed in 
 <b>SendWithDefaultTransferSyntaxToAETitles</b>.]]>
@@ -191,7 +194,11 @@ names:
       <name>DoNotDecompressTransferSyntaxes</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="MPEG2"/>
+         <value value="
+         MPEG2
+         MPEG2HL
+         MPEG4
+         MPEG4BD"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

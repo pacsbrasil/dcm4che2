@@ -861,6 +861,9 @@ Notifications for one Series.]]>
         Transfer Syntaxes UID value or following defined symbolic names: 
         JPEGBaseline,
         MPEG2,
+        MPEG2HL,
+        MPEG4,
+        MPEG4BD,
         Dcm4cheURIReferenced
         NoPixelData
         NoPixelDataDeflate
@@ -872,6 +875,9 @@ Notifications for one Series.]]>
          <value value="
            JPEGBaseline
            MPEG2
+           MPEG2HL
+           MPEG4
+           MPEG4BD
            Dcm4cheURIReferenced
            NoPixelData
            NoPixelDataDeflate"/>
