@@ -139,6 +139,8 @@ public class HL7ServerService extends ServiceMBeanSupport implements
     private boolean suppressErrorResponse;
 
     private boolean sendNotification;
+    
+    private boolean useHostSubdirs;
 
     private int soTimeout = 0;
 
@@ -182,6 +184,14 @@ public class HL7ServerService extends ServiceMBeanSupport implements
 
     public final void setTemplateDir(String path) {
         templates.setConfigDir(path);
+    }
+
+    public boolean isUseHostSubdirs() {
+        return useHostSubdirs;
+    }
+
+    public void setUseHostSubdirs(boolean useHostSubdirs) {
+        this.useHostSubdirs = useHostSubdirs;
     }
 
     public final ObjectName getTemplatesServiceName() {
@@ -510,9 +520,9 @@ public class HL7ServerService extends ServiceMBeanSupport implements
 
     private String[] getXsltSearchDirectories(InetSocketAddress inetAddr, MSH msh) {
         String sending = msh.sendingApplication+"^"+msh.sendingFacility;
-        String ipAddr = inetAddr == null ? null : inetAddr.getAddress().getHostAddress();
+        String ipAddr = !useHostSubdirs || inetAddr == null ? null : inetAddr.getAddress().getHostAddress();
         String hostname = ipAddr == null ? null : inetAddr.getHostName();
-        log.info("get XSLT search subdirs for ipAddr:"+ipAddr+" hostname:"+hostname+" sending:"+sending);
+        if (log.isDebugEnabled() ) log.debug("get XSLT search subdirs for ipAddr:"+ipAddr+" hostname:"+hostname+" sending:"+sending);
         String[] subdirs = ipAddr == null ? new String[]{sending} : 
                 hostname == null ? new String[]{ipAddr, sending} : new String[]{ipAddr, hostname, sending};
         return subdirs;
