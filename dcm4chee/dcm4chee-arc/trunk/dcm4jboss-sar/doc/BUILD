@@ -18,7 +18,7 @@ application)
 
 dcm4chee-2.16.0 archive also relies on
 
-- dcm4che-1.4.27 : DICOM Library
+- dcm4che-1.4.29 : DICOM Library
 
 which binary and source distribution package is also available at
 http://sourceforge.net/projects/dcm4che. The binary package is sufficient to
@@ -67,7 +67,7 @@ The build scripts (dcm4jboss-all/dcm4jboss-xxx/build.xml) assumes following
 locations of dcm4che-1.4.27, XDoclet, JBoss, Apache FOP, Jakarta Cactus and
 your local Maven2 Repository:
 
-dcm4che14.home=${user.home}/dcm4che14/build/dcm4che-1.4.27
+dcm4che14.home=${user.home}/dcm4che14/build/dcm4che-1.4.29
 xdoclet.home=${user.home}/xdoclet-1.2.3
 jboss.home=${user.home}/jboss-4.2.3.GA
 fop.home=${user.home}/fop-0.95

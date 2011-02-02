@@ -296,23 +296,23 @@ you can configure http.proxyHost! (see run.conf or run.bat)
    Execute the patch_jdk6_jbossws.bat or patch_jdk6_jbossws.sh script, as appropriate for your operating system.
    This copies several jar files to JBOSS endorsed directory to avoid conflicts between JDK Webservice Stack and JBOSS WS.
 
-DEPLOY DCM4CHEE AUDIT RECORD REPOSITORY 3.0.10 with DCM4CHEE ARCHIVE:
+DEPLOY DCM4CHEE AUDIT RECORD REPOSITORY 3.0.11 with DCM4CHEE ARCHIVE:
 ===================================================================
 Starting with dcm4chee-2.12.0, the binary distribution package of the archive
 application does NOT longer include dcm4chee Audit Record Repository 2.x
 (dcm4chee-arr-2.x).
 There are now a separate binary distribution packages for dcm4chee Audit Record
-Repository 3.0.10 (dcm4chee-arr-3.0.10) available at
+Repository 3.0.11 (dcm4chee-arr-3.0.11) available at
 http://sourceforge.net/projects/dcm4che .
-You may deploy dcm4chee-arr-3.0.10 in the same JBoss instance as dcm4che archive:
+You may deploy dcm4chee-arr-3.0.11 in the same JBoss instance as dcm4che archive:
 
-1. Download and extract the binary distribution package of dcm4chee-arr-3.0.10
+1. Download and extract the binary distribution package of dcm4chee-arr-3.0.11
 for the database of your choice for storage of audit records. - It may differ
 from the database used for dcm4chee archive.
 
 2. Move to the dcm4chee-2.16.0-xxx/bin directory and execute the
 install_arr.bat or install_arr.sh script, as appropriate for your operating
-system, with the path of the dcm4chee-arr-3.0.10 installation directory as
+system, with the path of the dcm4chee-arr-3.0.11 installation directory as
 parameter.
 
 3a. If the Audit Record Repository shall use a different database instance than
@@ -320,7 +320,7 @@ the archive to store received Audit Records, create the audit record repository
 database instance: arrdb, and grant sufficient privileges to the DB user,
 configured in the datasource descriptor arr-xxx-ds.xml.
 Optionally, you may also initialize the database using create DDL script
-dcm4chee-arr-3.0.10-xxx/sql/dcm4chee-arr-xxx.ddl. Otherwise, the database will
+dcm4chee-arr-3.0.11-xxx/sql/dcm4chee-arr-xxx.ddl. Otherwise, the database will
 be initialized automatically at first startup of the application.
 
 4b. If the Audit Record Repository shall share the database instance already
@@ -329,7 +329,7 @@ used by the archive, you have to modify database name - but NOT the JNDI name!
 the values specified in the datasource descriptor pacs-xxx-ds.xml for the
 archive database.
 Optionally, you may update the database with dcm4chee-arr specific tables using
-modified create DDL script dcm4chee-arr-3.0.10-xxx/sql/dcm4chee-arr-xxx.ddl:
+modified create DDL script dcm4chee-arr-3.0.11-xxx/sql/dcm4chee-arr-xxx.ddl:
 you have to remove or comment out the creation of already exisiting 'code'
 table. But missing tables will be also initialized automatically at first
 startup of the application.
