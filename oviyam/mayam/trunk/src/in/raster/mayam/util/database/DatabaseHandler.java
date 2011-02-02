@@ -985,7 +985,7 @@ public class DatabaseHandler {
                     multiframe = "true";
                     totalFrame = Integer.parseInt(dataset.getString(Tags.NumberOfFrames));
                 }
-                String sliceLocation = (dataset.getString(Tags.SliceLocation) != null) ? dataset.getString(Tags.SliceLocation) : "";
+                String sliceLocation = (dataset.getString(Tags.SliceLocation) != null) ? dataset.getString(Tags.SliceLocation) : "100000";
                 conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber) + ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "'," + sliceLocation + ",'" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
                 conn.commit();
                 int receivedCount = this.getReceiveCount(dataset.getString(Tag.StudyInstanceUID));
