@@ -66,6 +66,7 @@ import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.Group;
+import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
@@ -93,12 +94,16 @@ public class GroupListPanel extends Panel {
     private ConfirmationWindow<Group> confirmationWindow;
     private ModalWindow modalWindow;
     
+    int[] winSize;
+    
     public GroupListPanel(String id) {
         super(id);
 
         if (GroupListPanel.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(GroupListPanel.BaseCSS));
 
+        winSize = UsrCfgDelegate.getInstance().getWindowSize("editGroup");
+        
         userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);        
         setOutputMarkupId(true);
 
@@ -117,10 +122,7 @@ public class GroupListPanel extends Panel {
         });
 
         add(modalWindow = new ModalWindow("modal-window"));
-        add(new ModalWindowLink("toggle-group-form-link", modalWindow, 
-                new Integer(new ResourceModel("grouplist.add-group.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                new Integer(new ResourceModel("grouplist.add-group.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-        ) {
+        add(new ModalWindowLink("toggle-group-form-link", modalWindow, winSize[0], winSize[1]) {
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -163,10 +165,7 @@ public class GroupListPanel extends Panel {
             );
             rowParent.add(new AttributeModifier("style", true, new Model<String>("background-color: " + group.getColor())));
             rowParent.add(new Label("color", group.getColor()));
-            rowParent.add((new ModalWindowLink("edit-group-link", modalWindow,
-                    new Integer(new ResourceModel("grouplist.add-group.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                    new Integer(new ResourceModel("grouplist.add-group.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-            ) {
+            rowParent.add((new ModalWindowLink("edit-group-link", modalWindow, winSize[0], winSize[1]) {
                 private static final long serialVersionUID = 1L;
 
                 @Override

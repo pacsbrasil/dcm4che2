@@ -63,6 +63,7 @@ import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.Group;
 import org.dcm4chee.usr.model.Role;
+import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
@@ -107,32 +108,34 @@ public class RoleTypePage extends SecureWebPage {
         addOrReplace(typeRows);
         
         int i = 0;
-        for (String type : ((SecureSession) RequestCycle.get().getSession()).getRoleTypes()) {
-            WebMarkupContainer rowParent;            
-            typeRows.add((rowParent = new WebMarkupContainer(typeRows.newChildId()))
-                    .add(new Label("typename", type)
-                    )
-            );
-            rowParent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i++))));
-
-            AjaxCheckBox typeCheckbox = new AjaxCheckBox("type-checkbox", new HasTypeModel(role, type)) {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
-                }
-                  
-                @Override
-                protected void onComponentTag(ComponentTag tag) {
-                    super.onComponentTag(tag);
-                    tag.put("title", new ResourceModel(((HasTypeModel) this.getModel()).getObject().booleanValue() ? "roleTypes.has-type-checkbox.remove.tooltip" : "roleTypes.has-type-checkbox.add.tooltip").wrapOnAssignment(this).getObject());
-                }
-            };
-            typeCheckbox.add(new SecurityBehavior(getModuleName() + ":changeTypeAssignmentCheckbox"));
-            typeRows.add(rowParent.add(typeCheckbox));
-        }
+        List<String> roleTypes = UsrCfgDelegate.getInstance().getRoleTypes();
+        if (roleTypes != null)
+            for (String type : roleTypes) {
+                WebMarkupContainer rowParent;            
+                typeRows.add((rowParent = new WebMarkupContainer(typeRows.newChildId()))
+                        .add(new Label("typename", type)
+                        )
+                );
+                rowParent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i++))));
+    
+                AjaxCheckBox typeCheckbox = new AjaxCheckBox("type-checkbox", new HasTypeModel(role, type)) {
+    
+                    private static final long serialVersionUID = 1L;
+    
+                    @Override
+                    protected void onUpdate(AjaxRequestTarget target) {
+                        target.addComponent(this);
+                    }
+                      
+                    @Override
+                    protected void onComponentTag(ComponentTag tag) {
+                        super.onComponentTag(tag);
+                        tag.put("title", new ResourceModel(((HasTypeModel) this.getModel()).getObject().booleanValue() ? "roleTypes.has-type-checkbox.remove.tooltip" : "roleTypes.has-type-checkbox.add.tooltip").wrapOnAssignment(this).getObject());
+                    }
+                };
+                typeCheckbox.add(new SecurityBehavior(getModuleName() + ":changeTypeAssignmentCheckbox"));
+                typeRows.add(rowParent.add(typeCheckbox));
+            }
     }
     
     private final class HasTypeModel implements IModel<Boolean> {

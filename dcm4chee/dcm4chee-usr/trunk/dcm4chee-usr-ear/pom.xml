@@ -63,7 +63,7 @@
                         <webModule>
                             <groupId>dcm4che.dcm4chee</groupId>
                             <artifactId>dcm4chee-usr-war</artifactId>
-                            <contextRoot>/dcm4chee-usr-war</contextRoot>
+                            <contextRoot>/dcm4chee-usr</contextRoot>
                             <bundleFileName>dcm4chee-usr-war.war</bundleFileName>
                         </webModule>
                     </modules>

@@ -49,7 +49,9 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.jboss.system.ServiceMBeanSupport;
@@ -67,17 +69,31 @@ public class WebCfgService extends ServiceMBeanSupport {
     private String webConfigPath;
     
     private String loginAllowedRolename;
-    private String studyPermissionsAllRolename;
-    private String studyPermissionsOwnRolename;
-    
-    private List<String> roleTypes;
-    
     private boolean manageUsers;
-    private boolean webStudyPermissions;
+
+    private List<String> roleTypes = new ArrayList<String>();
+    private Map<String,int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
     
     private static final String NONE = "NONE";
+    private static final String NEWLINE = System.getProperty("line.separator", "\n");
     
     public WebCfgService() {
+    }
+
+    public void setManageUsers(boolean manageUsers) {
+        this.manageUsers = manageUsers;
+    }
+
+    public boolean isManageUsers() {
+        return manageUsers;
+    }
+
+    public void setLoginAllowedRolename(String loginAllowedRolename) {
+        this.loginAllowedRolename = loginAllowedRolename;
+    }
+
+    public String getLoginAllowedRolename() {
+        return loginAllowedRolename;
     }
 
     public String getWebConfigPath() {
@@ -88,55 +104,40 @@ public class WebCfgService extends ServiceMBeanSupport {
         this.webConfigPath = webConfigPath;
     }
 
-    public void setLoginAllowedRolename(String loginAllowedRolename) {
-        this.loginAllowedRolename = loginAllowedRolename;
+    public String getRoleTypes() {
+        return listAsString(roleTypes);
     }
 
-    public String getLoginAllowedRolename() {
-        return loginAllowedRolename;
+    public void setRoleTypes(String s) {
+        updateList(roleTypes, s);
+    }
+
+    public List<String> getRoleTypeList() {
+        return copyOfList(roleTypes);
+    }
+
+    public String getUserRole() {
+        return System.getProperty("dcm4chee-usr.cfg.userrole", NONE);
+    }
+
+    public void setUserRole(String name) {
+        if (NONE.equals(name)) {
+            System.getProperties().remove("dcm4chee-usr.cfg.userrole");
+        } else {
+            System.setProperty("dcm4chee-usr.cfg.userrole", name);
+        }
     }
     
-    public void setStudyPermissionsAllRolename(
-            String studyPermissionsAllRolename) {
-        this.studyPermissionsAllRolename = studyPermissionsAllRolename;
+    public String getAdminRole() {
+        return System.getProperty("dcm4chee-usr.cfg.adminrole", NONE);
     }
 
-    public String getStudyPermissionsAllRolename() {
-        return studyPermissionsAllRolename;
-    }
-
-    public void setStudyPermissionsOwnRolename(
-            String studyPermissionsOwnRolename) {
-        this.studyPermissionsOwnRolename = studyPermissionsOwnRolename;
-    }
-
-    public String getStudyPermissionsOwnRolename() {
-        return studyPermissionsOwnRolename;
-    }
-    
-    public void setManageUsers(boolean manageUsers) {
-        this.manageUsers = manageUsers;
-    }
-
-    public boolean isManageUsers() {
-        return manageUsers;
-    }
-
-    public void setUseStudyPermissions(boolean useStudyPermissions) {
-    }
-
-    public boolean isUseStudyPermissions() {
-        // always return false, so updateDicomRoles is never triggered
-        // for the WebLoginContext in dcm4chee-usr
-        return false;
-    }
-
-    public void setWebStudyPermissions(boolean webStudyPermissions) {
-        this.webStudyPermissions = webStudyPermissions;
-    }
-
-    public boolean isWebStudyPermissions() {
-        return webStudyPermissions;
+    public void setAdminRole(String name) {
+        if (NONE.equals(name)) {
+            System.getProperties().remove("dcm4chee-usr.cfg.adminrole");
+        } else {
+            System.setProperty("dcm4chee-usr.cfg.adminrole", name);
+        }
     }
 
     public String getRolesFilename() {
@@ -154,48 +155,23 @@ public class WebCfgService extends ServiceMBeanSupport {
             }
         }
     }
-    
-    public String getRoleTypes() {
-        return listAsString(roleTypes);
+
+    public String getGroupsFilename() {
+        return System.getProperty("dcm4chee-usr.cfg.groups-filename", NONE);
     }
 
-    public List<String> getRoleTypeList() {
-        return copyOfList(roleTypes);
-    }
-
-    public void setRoleTypes(String s) {
-        updateList(roleTypes, s);
-    }
-
-    private String listAsString(List<String> list) {
-        if (list.isEmpty()) {
-            return NONE;
-        }
-        StringBuilder sb = new StringBuilder();
-        for (String m : list) {
-            sb.append(m).append('|');
-        }
-        return sb.substring(0, sb.length()-1);
-    }
-    private void updateList(List<String> list, String s) {
-        list.clear();
-        if (!NONE.equals(s)) {
-            StringTokenizer st = new StringTokenizer(s, "|");
-            while (st.hasMoreTokens()) {
-                list.add(st.nextToken());
-            }
-        }
-    }
-    private List<String> copyOfList(List<String> src) {
-        List<String> dest = new ArrayList<String>(src.size());
-        dest.addAll(src);
-        return dest;
+    public void setGroupsFilename(String name) {
+        if (NONE.equals(name)) 
+            System.getProperties().remove("dcm4chee-usr.cfg.groups-filename");
+        else 
+            System.setProperty("dcm4chee-usr.cfg.groups-filename", name);
     }
 
     private void initDefaultFile() {
         File mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.roles-filename", "conf/dcm4chee-web3/roles.json"));
         if (!mappingFile.isAbsolute())
             mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
+        if (mappingFile.exists()) return;
         log.info("Init default Role Mapping file! mappingFile:"+mappingFile);
         if (mappingFile.getParentFile().mkdirs())
             log.info("M-WRITE dir:" +mappingFile.getParent());
@@ -226,5 +202,75 @@ public class WebCfgService extends ServiceMBeanSupport {
                 log.debug("Error closing : "+toClose.getClass().getName(), ignore);
             }
         }
+    }
+    
+    public String getWindowSizeConfig() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, int[]> e : windowsizeMap.entrySet()) {
+            sb.append(e.getKey()).append(':').
+            append(e.getValue()[0]).append('x').append(e.getValue()[1]).
+            append(NEWLINE);
+        }
+        return sb.toString();
+    }
+
+    public void setWindowSizeConfig(String s) {
+        windowsizeMap.clear();
+        StringTokenizer st = new StringTokenizer(s, " \t\r\n;");
+        String t;
+        int pos;
+        while (st.hasMoreTokens()) {
+            t = st.nextToken();
+            if ((pos = t.indexOf(':')) == -1) {
+                throw new IllegalArgumentException("Format must be:<name>:<width>x<height>! "+t);
+            } else {
+                windowsizeMap.put(t.substring(0, pos), parseSize(t.substring(++pos)));
+            }
+        }
+    }
+    
+    public int[] getWindowSize(String name) {
+        int[] size = windowsizeMap.get(name);
+        if (size==null) 
+            size = windowsizeMap.get("default");
+        if (size==null) {
+            log.warn("No default window size is configured! use 800x600 as default!");
+            return new int[]{800,600};
+        }
+        return size;
+    }
+    
+    private int[] parseSize(String s) {
+        int pos = s.indexOf('x');
+        if (pos == -1)
+            throw new IllegalArgumentException("Windowsize must be <width>x<height>! "+s);
+        return new int[]{Integer.parseInt(s.substring(0,pos).trim()), 
+                Integer.parseInt(s.substring(++pos).trim())};
+    }
+    
+    private String listAsString(List<String> list) {
+        if (list == null || list.isEmpty()) 
+            return NONE;
+        StringBuilder sb = new StringBuilder();
+        for (String m : list) 
+            sb.append(m).append('|');
+        return sb.substring(0, sb.length()-1);
+    }
+    
+    
+    private void updateList(List<String> list, String s) {
+        list.clear();
+        if (!NONE.equals(s)) {
+            StringTokenizer st = new StringTokenizer(s, "|");
+            while (st.hasMoreTokens()) {
+                list.add(st.nextToken());
+            }
+        }
+    }
+    
+    private List<String> copyOfList(List<String> src) {
+        List<String> dest = new ArrayList<String>(src.size());
+        dest.addAll(src);
+        return dest;
     }
 }

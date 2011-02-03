@@ -67,6 +67,7 @@ import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
 import org.dcm4chee.usr.model.Role;
+import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordLink;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
@@ -113,6 +114,11 @@ public class UserListPanel extends Panel {
         
         this.userId = ((SecureSession) getSession()).getUsername();
         add(this.changePasswordWindow = new ModalWindow("change-password-window"));
+        int[] winSize = UsrCfgDelegate.getInstance().getWindowSize("changePassword");
+        if (winSize != null) {
+            changePasswordWindow.setInitialWidth(winSize[0]);
+            changePasswordWindow.setInitialHeight(winSize[1]);
+        }
                
         this.allUsers = new ListModel<User>(getAllUsers());
         this.allRoles = new ListModel<Role>(getAllRoles());
@@ -141,10 +147,8 @@ public class UserListPanel extends Panel {
             })
         );
         
-        add(new ModalWindowLink("toggle-user-form-link", addUserWindow, 
-                new Integer(new ResourceModel("userlist.add-user.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                new Integer(new ResourceModel("userlist.add-user.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-        )
+        winSize = UsrCfgDelegate.getInstance().getWindowSize("addUser");
+        add(new ModalWindowLink("toggle-user-form-link", addUserWindow, winSize[0], winSize[1])
         .add(new Image("toggle-user-form-image", ImageManager.IMAGE_USER_ADD)
         .add(new ImageSizeBehaviour("vertical-align: middle;")))
         .add(new Label("userlist.add-user-form.title", new ResourceModel("userlist.add-user-form.title")))
@@ -178,7 +182,7 @@ public class UserListPanel extends Panel {
                     .add(new ImageSizeBehaviour()))
                     .add(new AttributeModifier("title", true, new Model<String>(new ResourceModel("userlist.change_password.tooltip").wrapOnAssignment(this).getObject()))
              );
-            
+
             rowParent.add(changePasswordLink)
             .add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))));
             changePasswordLink.add(new SecurityBehavior(getModuleName() + ":changePasswordLink"));
@@ -201,10 +205,8 @@ public class UserListPanel extends Panel {
             rowParent.add(removeUserLink);
             removeUserLink.add(new SecurityBehavior(getModuleName() + ":removeUserLink"));
 
-            rowParent.add((new ModalWindowLink("manage-roles-link", manageRolesWindow, 
-                    new Integer(new ResourceModel("userlist.manage-roles.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                    new Integer(new ResourceModel("userlist.manage-roles.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-            ) {
+            int[] winSize = UsrCfgDelegate.getInstance().getWindowSize("manageRoles");
+            rowParent.add((new ModalWindowLink("manage-roles-link", manageRolesWindow, winSize[0], winSize[1]) {
                 private static final long serialVersionUID = 1L;
 
                 @Override

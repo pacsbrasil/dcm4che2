@@ -19,16 +19,14 @@
     </constructor>
 
    <attribute access="read-write"
-      getMethod="getWebConfigPath"
-      setMethod="setWebConfigPath">
-      <description><![CDATA[
-        Configuration Path for web specific config files.<br/>
-        A relative path name is resolved relative to archive-install-directory/server/default/.]]>
-      </description>
-      <name>WebConfigPath</name>
-      <type>java.lang.String</type>
+      getMethod="isManageUsers"
+      setMethod="setManageUsers">
+      <description><![CDATA[Manage users in the web application.
+      ]]></description>
+      <name>manageUsers</name>
+      <type>boolean</type>
       <descriptors>
-         <value value="conf/dcm4chee-web3"/>
+         <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -43,25 +41,16 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getStudyPermissionsAllRolename"
-      setMethod="setStudyPermissionsAllRolename">
-      <description><![CDATA[Rolename who can manage all study permissions.
-      ]]></description>
-      <name>studyPermissionsAllRolename</name>
+      getMethod="getWebConfigPath"
+      setMethod="setWebConfigPath">
+      <description><![CDATA[
+        Configuration Path for web specific config files.<br/>
+        A relative path name is resolved relative to archive-install-directory/server/default/.]]>
+      </description>
+      <name>WebConfigPath</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="StudyPermissionsAll"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getStudyPermissionsOwnRolename"
-      setMethod="setStudyPermissionsOwnRolename">
-      <description><![CDATA[Rolename who can manage own study permissions.
-      ]]></description>
-      <name>studyPermissionsOwnRolename</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="StudyPermissionsOwn"/>
+         <value value="conf/dcm4chee-web3"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -78,6 +67,31 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getUserRole"
+      setMethod="setUserRole">
+      <description><![CDATA[List of role types.<br/>
+        Format: &lt;RoleType&gt;[|&lt;RoleType&gt[|..]]<br/>
+        NONE is used for an empty list. In this case a getRoleTypes will trigger updateRoleTypes.
+      ]]></description>
+      <name>userRole</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getAdminRole"
+      setMethod="setAdminRole">
+      <description><![CDATA[List of role types.<br/>
+        Format: &lt;RoleType&gt;[|&lt;RoleType&gt[|..]]<br/>
+        NONE is used for an empty list. In this case a getRoleTypes will trigger updateRoleTypes.
+      ]]></description>
+      <name>adminRole</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>   <attribute access="read-write"
       getMethod="getRolesFilename"
       setMethod="setRolesFilename">
       <description><![CDATA[Filename path for the roles file (JSON format).<br/>
@@ -90,39 +104,53 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isManageUsers"
-      setMethod="setManageUsers">
-      <description><![CDATA[Manage users in the web application.
+      getMethod="getGroupsFilename"
+      setMethod="setGroupsFilename">
+      <description><![CDATA[Filename path for the groups file (JSON format).<br/>
+            A relative path name is resolved relative to <i>archive-install-directory</i>/server/default/.
       ]]></description>
-      <name>manageUsers</name>
-      <type>boolean</type>
+      <name>groupsFilename</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true"/>
+         <value value="conf/dcm4chee-web3/groups.json"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isUseStudyPermissions"
-      setMethod="setUseStudyPermissions">
-      <description><![CDATA[Let the web users manage study permissions using the web interface.
+      getMethod="getWindowSizeConfig"
+      setMethod="setWindowSizeConfig">
+      <description><![CDATA[Window size configuration of modal windows.<br/>
+        Format: &lt;name&gt;:&lt;width&gt;x&lt;height&gt;<br/>
+        <dl><dt>Following window names can be used:</dt>
+        <dd>default:   default size</dd>
+        <dd>addUser: Add user in User Management</dd>
+        <dd>changePassword: Change password in User Management</dd>
+        <dd>manageRoles: Manage roles in User Management</dd>
+        <dd>editRole: New role and edit role in User Management</dd>
+        <dd>webPermissions: Web permissions in User Management</dd>
+        <dd>typeAssignment: Type assignment in User Management</dd>
+        <dd>editGroup: Edit group in User Management</dd>
       ]]></description>
-      <name>useStudyPermissions</name>
-      <type>boolean</type>
+      <name>WindowSizeConfig</name>
+      <type>java.lang.String</type>
       <descriptors>
-         <value value="true"/>
+         <value value="
+            default:800x600
+            export:650x500
+            aeEdit:960x600
+            mwEdit:1024x768
+            mpps2mwl:1024x600
+            move:900x320
+            addUser:400x300
+            changePassword:400x300
+            manageRoles:300x700
+            editRole:570x350
+            webPermissions:300x700
+            typeAssignment:300x700
+            editGroup:600x350
+            "/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isWebStudyPermissions"
-      setMethod="setWebStudyPermissions">
-      <description><![CDATA[Apply the study permissions to the web application features.
-      ]]></description>
-      <name>webStudyPermissions</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true"/>
-      </descriptors>
-   </attribute>
-   
+
    &defaultAttributes;
    
    <!-- Operations -->
@@ -130,6 +158,16 @@
       <description>Get List of role types</description>
       <name>getRoleTypeList</name>
       <return-type>java.util.List</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Get window size for given window name. Return an int[] with 0..width and 1..height</description>
+      <name>getWindowSize</name>
+      <parameter>
+        <description>Name of window</description>
+        <name>name</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>[I</return-type>
    </operation>
 
    &defaultOperations;

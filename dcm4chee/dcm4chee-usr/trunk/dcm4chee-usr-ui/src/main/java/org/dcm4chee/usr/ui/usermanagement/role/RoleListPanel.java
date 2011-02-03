@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,6 +74,7 @@ import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.model.Group;
+import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
@@ -103,12 +105,18 @@ public class RoleListPanel extends Panel {
     private ModalWindow webroleWindow;
     private ModalWindow roletypeWindow;
     
+    private Map<String,int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
+    
     public RoleListPanel(String id) {
         super(id);
 
         if (RoleListPanel.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(RoleListPanel.BaseCSS));
 
+        windowsizeMap.put("editRole", UsrCfgDelegate.getInstance().getWindowSize("editRole"));
+        windowsizeMap.put("webPermissions", UsrCfgDelegate.getInstance().getWindowSize("webPermissions"));
+        windowsizeMap.put("typeAssignment", UsrCfgDelegate.getInstance().getWindowSize("typeAssignment"));
+        
         userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);        
         setOutputMarkupId(true);
 
@@ -130,11 +138,9 @@ public class RoleListPanel extends Panel {
         add(roleWindow = new ModalWindow("role-window"));
         add(webroleWindow = new ModalWindow("webrole-window"));
         add(roletypeWindow = new ModalWindow("roletype-window"));
-        
-        add(new ModalWindowLink("toggle-role-form-link", roleWindow, 
-                new Integer(new ResourceModel("rolelist.add-role.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                new Integer(new ResourceModel("rolelist.add-role.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-        ) {
+
+        int[] winSize = windowsizeMap.get("editRole");
+        add(new ModalWindowLink("toggle-role-form-link", roleWindow, winSize[0], winSize[1]) {
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -187,11 +193,9 @@ public class RoleListPanel extends Panel {
                 rowParent.add(new AttributeModifier("style", true, new Model<String>("background-color: " + group.getColor())));
             } else
                 rowParent.add(new Label("group", ""));
-            
-            rowParent.add((new ModalWindowLink("edit-role-link", roleWindow,
-                    new Integer(new ResourceModel("rolelist.add-role.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                    new Integer(new ResourceModel("rolelist.add-role.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-            ) {
+
+            int[] winSize = windowsizeMap.get("editRole");
+            rowParent.add((new ModalWindowLink("edit-role-link", roleWindow, winSize[0], winSize[1]) {
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -232,10 +236,8 @@ public class RoleListPanel extends Panel {
             .add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))))
             .add(new SecurityBehavior(getModuleName() + ":removeRoleLink")));
 
-            rowParent.add((new ModalWindowLink("webrole-link", webroleWindow, 
-                    new Integer(new ResourceModel("rolelist.webrole-link.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                    new Integer(new ResourceModel("rolelist.webrole-link.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-            ) {
+            winSize = windowsizeMap.get("webPermissions");
+            rowParent.add((new ModalWindowLink("webrole-link", webroleWindow, winSize[0], winSize[1]) {
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -270,10 +272,8 @@ public class RoleListPanel extends Panel {
                 }}.setEnabled(false))
             );
 
-            rowParent.add((new ModalWindowLink("roletype-link", roletypeWindow, 
-                    new Integer(new ResourceModel("rolelist.roletype-link.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                    new Integer(new ResourceModel("rolelist.roletype-link.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-            ) {
+            winSize = windowsizeMap.get("typeAssignment");
+            rowParent.add((new ModalWindowLink("roletype-link", roletypeWindow, winSize[0], winSize[1]) {
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -298,8 +298,9 @@ public class RoleListPanel extends Panel {
             );
 
             StringBuffer types = new StringBuffer();
-            for (String type : role.getRoleTypes())
-                types.append(type).append(" ");
+            if (role.getRoleTypes() != null)
+                for (String type : role.getRoleTypes())
+                    types.append(type).append(" ");
             rowParent.add(new Label("other", types.toString()));
         }
     }
