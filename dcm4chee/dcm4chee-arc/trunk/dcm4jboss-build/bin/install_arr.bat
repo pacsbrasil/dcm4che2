@@ -44,7 +44,7 @@ copy "%ARR_SERV%\deploy\dcm4chee-arr-%VERS%-%ARR_DB%.ear" "%DCM4CHEE_SERV%\deplo
 copy "%ARR_SERV%\deploy\arr-%ARR_DB%-ds.xml" "%DCM4CHEE_SERV%\deploy"
 copy "%DCM4CHEE_HOME%\doc\dcm4chee-auditlog-service.xml" "%DCM4CHEE_SERV%\deploy"
 
-copy "%ARR_SERV%\lib\dcm4che-core-2.0.21.jar" "%DCM4CHEE_SERV%\lib"
+copy "%ARR_SERV%\lib\dcm4che-core-2.0.25.jar" "%DCM4CHEE_SERV%\lib"
 
 :end
 if "%OS%" == "Windows_NT" endlocal
