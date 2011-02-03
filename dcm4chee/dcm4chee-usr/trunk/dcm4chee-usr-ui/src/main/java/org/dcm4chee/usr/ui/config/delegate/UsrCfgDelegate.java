@@ -65,6 +65,10 @@ public class UsrCfgDelegate extends BaseCfgDelegate {
         return singleton;
     }
 
+    public boolean getManageUsers() {
+        return getBoolean("manageUsers", true);
+    }
+
     @SuppressWarnings("unchecked")
     public List<String> getRoleTypes() {
         try {

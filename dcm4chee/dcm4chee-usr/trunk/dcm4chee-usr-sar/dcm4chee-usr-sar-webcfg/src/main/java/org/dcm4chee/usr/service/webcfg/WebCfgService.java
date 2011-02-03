@@ -66,10 +66,9 @@ public class WebCfgService extends ServiceMBeanSupport {
 
     private static final long serialVersionUID = 1L;
 
-    private String webConfigPath;
-    
-    private String loginAllowedRolename;
     private boolean manageUsers;
+    private String loginAllowedRolename;
+    private String webConfigPath;
 
     private List<String> roleTypes = new ArrayList<String>();
     private Map<String,int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
