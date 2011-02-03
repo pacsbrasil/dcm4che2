@@ -1306,8 +1306,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     public void windowChanged(int windowCenter, int windowWidth) {
         try {
             widowingFlag = true;
-            if (cmParam != null) {
-                System.out.println("cmparam not null");               
+            if (cmParam != null) {                            
                 cmParam = cmParam.update(windowCenter, windowWidth, cmParam.isInverse());
                 cm = cmFactory.getColorModel(cmParam);
                 currentbufferedimage = new BufferedImage(cm, currentbufferedimage.getRaster(), false, null);
