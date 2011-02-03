@@ -165,9 +165,8 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
                         cal.set(Calendar.MILLISECOND, calT.get(Calendar.MILLISECOND));
                     }
                 }
-                d = cal.getTime();
             }
-            setConvertedInput(d);
+            setConvertedInput(cal.getTime());
         }
         log.debug("Converted Input:{}", getConvertedInput());
     }
