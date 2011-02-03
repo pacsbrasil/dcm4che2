@@ -59,48 +59,15 @@ import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * @author franz.willer@gmail.com
+ * @author robert.david@agfa.com
  * @version $Revision$ $Date$
  * @since July 26, 2010
  */
 public class WebCfgService extends ServiceMBeanSupport {
 
-    private static final long serialVersionUID = 1L;
-
-    private boolean manageUsers;
-    private String loginAllowedRolename;
-    private String webConfigPath;
-
     private List<String> roleTypes = new ArrayList<String>();
-    private Map<String,int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
-    
-    private static final String NONE = "NONE";
-    private static final String NEWLINE = System.getProperty("line.separator", "\n");
-    
+        
     public WebCfgService() {
-    }
-
-    public void setManageUsers(boolean manageUsers) {
-        this.manageUsers = manageUsers;
-    }
-
-    public boolean isManageUsers() {
-        return manageUsers;
-    }
-
-    public void setLoginAllowedRolename(String loginAllowedRolename) {
-        this.loginAllowedRolename = loginAllowedRolename;
-    }
-
-    public String getLoginAllowedRolename() {
-        return loginAllowedRolename;
-    }
-
-    public String getWebConfigPath() {
-        return webConfigPath;
-    }
-
-    public void setWebConfigPath(String webConfigPath) {
-        this.webConfigPath = webConfigPath;
     }
 
     public String getRoleTypes() {
@@ -139,6 +106,78 @@ public class WebCfgService extends ServiceMBeanSupport {
         }
     }
 
+    public String getGroupsFilename() {
+        return System.getProperty("dcm4chee-usr.cfg.groups-filename", NONE);
+    }
+
+    public void setGroupsFilename(String name) {
+        if (NONE.equals(name)) 
+            System.getProperties().remove("dcm4chee-usr.cfg.groups-filename");
+        else 
+            System.setProperty("dcm4chee-usr.cfg.groups-filename", name);
+    }
+
+    private String listAsString(List<String> list) {
+        if (list == null || list.isEmpty()) 
+            return NONE;
+        StringBuilder sb = new StringBuilder();
+        for (String m : list) 
+            sb.append(m).append('|');
+        return sb.substring(0, sb.length()-1);
+    }
+    
+    
+    private void updateList(List<String> list, String s) {
+        list.clear();
+        if (!NONE.equals(s)) {
+            StringTokenizer st = new StringTokenizer(s, "|");
+            while (st.hasMoreTokens()) {
+                list.add(st.nextToken());
+            }
+        }
+    }
+    
+    private List<String> copyOfList(List<String> src) {
+        List<String> dest = new ArrayList<String>(src.size());
+        dest.addAll(src);
+        return dest;
+    }
+    
+    protected static final long serialVersionUID = 1L;
+
+    protected String loginAllowedRolename;
+    protected boolean manageUsers;
+    protected String webConfigPath;
+    
+    protected Map<String,int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
+    
+    protected static final String NONE = "NONE";
+    protected final String NEWLINE = System.getProperty("line.separator", "\n");
+    
+    public void setLoginAllowedRolename(String loginAllowedRolename) {
+        this.loginAllowedRolename = loginAllowedRolename;
+    }
+
+    public String getLoginAllowedRolename() {
+        return loginAllowedRolename;
+    }
+
+    public void setManageUsers(boolean manageUsers) {
+        this.manageUsers = manageUsers;
+    }
+
+    public boolean isManageUsers() {
+        return manageUsers;
+    }
+
+    public String getWebConfigPath() {
+        return webConfigPath;
+    }
+
+    public void setWebConfigPath(String webConfigPath) {
+        this.webConfigPath = webConfigPath;
+    }
+
     public String getRolesFilename() {
         return System.getProperty("dcm4chee-usr.cfg.roles-filename", NONE);
     }
@@ -154,19 +193,8 @@ public class WebCfgService extends ServiceMBeanSupport {
             }
         }
     }
-
-    public String getGroupsFilename() {
-        return System.getProperty("dcm4chee-usr.cfg.groups-filename", NONE);
-    }
-
-    public void setGroupsFilename(String name) {
-        if (NONE.equals(name)) 
-            System.getProperties().remove("dcm4chee-usr.cfg.groups-filename");
-        else 
-            System.setProperty("dcm4chee-usr.cfg.groups-filename", name);
-    }
-
-    private void initDefaultFile() {
+    
+    protected void initDefaultFile() {
         File mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.roles-filename", "conf/dcm4chee-web3/roles.json"));
         if (!mappingFile.isAbsolute())
             mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
@@ -193,7 +221,7 @@ public class WebCfgService extends ServiceMBeanSupport {
         }
     }
     
-    private void close(Closeable toClose) {
+    protected void close(Closeable toClose) {
         if (toClose != null) {
             try {
                 toClose.close();
@@ -202,7 +230,7 @@ public class WebCfgService extends ServiceMBeanSupport {
             }
         }
     }
-    
+
     public String getWindowSizeConfig() {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, int[]> e : windowsizeMap.entrySet()) {
@@ -238,38 +266,12 @@ public class WebCfgService extends ServiceMBeanSupport {
         }
         return size;
     }
-    
-    private int[] parseSize(String s) {
+
+    protected int[] parseSize(String s) {
         int pos = s.indexOf('x');
         if (pos == -1)
             throw new IllegalArgumentException("Windowsize must be <width>x<height>! "+s);
         return new int[]{Integer.parseInt(s.substring(0,pos).trim()), 
                 Integer.parseInt(s.substring(++pos).trim())};
-    }
-    
-    private String listAsString(List<String> list) {
-        if (list == null || list.isEmpty()) 
-            return NONE;
-        StringBuilder sb = new StringBuilder();
-        for (String m : list) 
-            sb.append(m).append('|');
-        return sb.substring(0, sb.length()-1);
-    }
-    
-    
-    private void updateList(List<String> list, String s) {
-        list.clear();
-        if (!NONE.equals(s)) {
-            StringTokenizer st = new StringTokenizer(s, "|");
-            while (st.hasMoreTokens()) {
-                list.add(st.nextToken());
-            }
-        }
-    }
-    
-    private List<String> copyOfList(List<String> src) {
-        List<String> dest = new ArrayList<String>(src.size());
-        dest.addAll(src);
-        return dest;
     }
 }
