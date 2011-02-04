@@ -147,7 +147,6 @@ public class WebLoginContext extends UsernamePasswordContext {
                 }
             in.close();
             ((SecureSession) RequestCycle.get().getSession()).setSwarmPrincipals(principals);
-            ((SecureSession) RequestCycle.get().getSession()).setRoleTypes(BaseCfgDelegate.getInstance().getRoleTypeList());
             return true;
         } catch (Exception e) {
             log.error("Exception (error processing hive file): " + e.getMessage());
@@ -216,7 +215,7 @@ public class WebLoginContext extends UsernamePasswordContext {
 
     private void checkLoginAllowed(DefaultSubject subject) {
         String rolename = BaseCfgDelegate.getInstance().getLoginAllowedRolename();
-        if (!subject.getPrincipals().contains(new SimplePrincipal(rolename))) {                            
+        if (!subject.getPrincipals().contains(new SimplePrincipal(rolename))) {
           ((SecureSession) RequestCycle.get().getSession()).invalidate();
           log.warn("Failed to authorize subject for login, denied. See 'LoginAllowed' rolename attribute in Web Config Service.");
         }

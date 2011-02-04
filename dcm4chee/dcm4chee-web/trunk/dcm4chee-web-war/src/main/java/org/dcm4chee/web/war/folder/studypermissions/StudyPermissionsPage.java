@@ -82,6 +82,7 @@ import org.dcm4chee.web.dao.folder.StudyPermissionsLocal;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.StudyPermissionHelper.StudyPermissionRight;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.slf4j.Logger;
@@ -165,10 +166,8 @@ public class StudyPermissionsPage extends SecureWebPage {
 
         final ModalWindow addRoleModalWindow = new ModalWindow("modal-window");
         add(addRoleModalWindow);
-        add(new ModalWindowLink("toggle-dicom-role-form-link", addRoleModalWindow, 
-                new Integer(new ResourceModel("studypermission.add-dicom-role.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                new Integer(new ResourceModel("studypermission.add-dicom-role.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-        ) {
+        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("addDicomRole");
+        add(new ModalWindowLink("toggle-dicom-role-form-link", addRoleModalWindow, winSize[0], winSize[1]) {
             private static final long serialVersionUID = 1L;
 
             @Override

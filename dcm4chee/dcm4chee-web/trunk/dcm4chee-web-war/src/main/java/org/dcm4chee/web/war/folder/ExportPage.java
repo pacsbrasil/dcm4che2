@@ -198,7 +198,6 @@ public class ExportPage extends SecureWebPage {
 
             @Override
             public boolean isEnabled() {
-System.out.println("DROPDOWN ISENABLED: " + exportInfo.hasSelection() + " " + isExportInactive());
                 return exportInfo.hasSelection() && isExportInactive();
             }
         }.setNullValid(false).setOutputMarkupId(true));

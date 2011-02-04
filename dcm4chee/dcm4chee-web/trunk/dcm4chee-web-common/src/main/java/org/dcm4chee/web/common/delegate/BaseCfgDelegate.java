@@ -38,8 +38,6 @@
 
 package org.dcm4chee.web.common.delegate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.management.MBeanServerConnection;
@@ -69,11 +67,34 @@ public class BaseCfgDelegate {
     protected BaseCfgDelegate() {
         init();
     }
-    
+
     public static BaseCfgDelegate getInstance() {
         if (singleton == null)
             singleton = new BaseCfgDelegate();
         return singleton;
+    }
+
+    public String getLoginAllowedRolename() {
+        return getString("loginAllowedRolename");
+    }
+
+    public boolean getManageUsers() {
+        return getBoolean("manageUsers", true);
+    }
+
+    public String getWebConfigPath() {
+        return getString("WebConfigPath");
+    }
+    
+    public int[] getWindowSize(String name) {
+        if (server == null) return new int[]{800,600};
+        try {
+            return (int[]) server.invoke(serviceObjectName, "getWindowSize", 
+                    new Object[]{name}, new String[]{String.class.getName()});
+        } catch (Exception x) {
+            log.warn("Cant invoke getWindowSize, using 800,600 as default!", x);
+            return new int[]{800,600};
+        }
     }
 
     public ObjectName getObjectName(String attrName, String defaultName) throws MalformedObjectNameException, NullPointerException {
@@ -86,144 +107,7 @@ public class BaseCfgDelegate {
         }
     }
 
-    public String getWebConfigPath() {
-        return getString("WebConfigPath");
-    }
-
-    public boolean getManageUsers() {
-        return getBoolean("manageUsers", true);
-    }
-
-    public String getLoginAllowedRolename() {
-        return getString("loginAllowedRolename");
-    }
-
-    public String getStudyPermissionsAllRolename() {
-        return getString("studyPermissionsAllRolename");
-    }
-
-    public String getStudyPermissionsOwnRolename() {
-        return getString("studyPermissionsOwnRolename");
-    }
-
-    public boolean getUseStudyPermissions() {
-        return getBoolean("useStudyPermissions", true);
-    }
-
-    public boolean getWebStudyPermissions() {
-        return getBoolean("webStudyPermissions", true);
-    }
-
-    public String getWadoBaseURL() {
-        return noneAsNull(getString("WadoBaseURL"));
-    }
-
-    public String getWebviewerName() {
-        return noneAsNull(getString("WebviewerName"));
-    }
-
-    public String getWebviewerBaseUrl() {
-        return noneAsNull(getString("WebviewerBaseUrl"));
-    }
-   
-    public int[] getWindowSize(String name) {
-        if (server == null) return new int[]{800,600};
-        try {
-            return (int[]) server.invoke(serviceObjectName, "getWindowSize", 
-                    new Object[]{name}, new String[]{String.class.getName()});
-        } catch (Exception x) {
-            log.warn("Cant invoke getWindowWidth! use 800,600 as default!", x);
-            return new int[]{800,600};
-        }
-    }
-    
-    public List<String> getModalityList() {
-        List<String> mods = getStringList("getModalityList");
-        mods.add(0, "*");
-        return mods;
-    }
-    
-    public List<String> getSourceAETList() {
-        return getStringList("getSourceAETList"); 
-    }
-    
-    public List<String> getStationAETList() {
-        return getStringList("getStationAETList"); 
-    }
-    
-    public List<String> getStationNameList() {
-        List<String> names = getStringList("getStationNameList");
-        names.add(0, "*");
-        return names;
-    }
-    
-    public List<String> getRoleTypeList() {
-        return getStringList("getRoleTypeList"); 
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<Integer> getPagesizeList() {
-        if (server == null) return Arrays.asList(10,25,50);
-        try {
-            return (List<Integer>) server.invoke(serviceObjectName, "getPagesizeList", 
-                    new Object[]{}, new String[]{});
-        } catch (Exception x) {
-            log.warn("Cant invoke 'getPagesizeList'! Return default list (10,25,50)!", x);
-            return Arrays.asList(10,25,50);
-        }
-    }
-    public Integer getDefaultFolderPagesize() {
-        if (server == null) return 10;
-        try {
-            return (Integer) server.getAttribute(serviceObjectName, "DefaultFolderPagesize"); 
-        } catch (Exception x) {
-            log.warn("Cant get DefaultFolderPagesize attribute! return 10 as default!", x);
-            return 10;
-        }
-    }
-    public Integer getDefaultMWLPagesize() {
-        if (server == null) return 10;
-        try {
-            return (Integer) server.getAttribute(serviceObjectName, "DefaultMWLPagesize"); 
-        } catch (Exception x) {
-            log.warn("Cant get DefaultMWLPagesize attribute! return 10 as default!", x);
-            return 10;
-        }
-    }
-    public boolean isQueryAfterPagesizeChange() {
-        return getBoolean("QueryAfterPagesizeChange", true); 
-    }
-
-    public boolean useFamilyAndGivenNameQueryFields() {
-        return getBoolean("useFamilyAndGivenNameQueryFields", false); 
-    }
-
-    public String getMpps2mwlPresetPatientname() {
-        return getString("Mpps2mwlPresetPatientname");
-    }
-    public String getMpps2mwlPresetStartDate() {
-        return getString("Mpps2mwlPresetStartDate");
-    }
-    public String getMpps2mwlPresetModality() {
-        return getString("Mpps2mwlPresetModality");
-    }
-
-    public int checkCUID(String cuid) {
-        if (server == null) return -1;
-        try {
-            return (Integer) server.invoke(serviceObjectName, "checkCUID", 
-                    new Object[]{cuid}, new String[]{String.class.getName()});
-        } catch (Exception x) {
-            log.warn("Cant invoke checkCUID! Ignored by return -1!", x);
-            return -1;
-        }
-    }
-
-    private String noneAsNull(String s) {
-        return "NONE".equals(s) ? null : s;
-    }
-
-    private String getString(String attrName) {
+    protected String getString(String attrName) {
         if (server == null) return null;
         try {
             return (String) server.getAttribute(serviceObjectName, attrName);
@@ -233,7 +117,7 @@ public class BaseCfgDelegate {
         }
     }
     
-    private boolean getBoolean(String attrName, boolean defVal) {
+    protected boolean getBoolean(String attrName, boolean defVal) {
         if (server == null) return defVal;
         try {
             return (Boolean) server.getAttribute(serviceObjectName, attrName);
@@ -259,20 +143,8 @@ public class BaseCfgDelegate {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private List<String> getStringList(String name) {
-        if (server == null) return new ArrayList<String>();
-        try {
-            return (List<String>) server.invoke(serviceObjectName, name, 
-                    new Object[]{}, new String[]{});
-        } catch (Exception x) {
-            log.warn("Cant invoke '"+name+"'! Return empty list!", x);
-            return new ArrayList<String>();
-        }
-    }
-
     protected void init() {
-        log.info("Init BaseCfgDelegate!");
+        log.info("Init " + getClass().getName());
         List<?> servers = MBeanServerFactory.findMBeanServer(null);
         if (servers != null && !servers.isEmpty()) {
             server = (MBeanServerConnection) servers.get(0);
@@ -286,9 +158,9 @@ public class BaseCfgDelegate {
             s = "dcm4chee.web:service=WebConfig";
         try {
             serviceObjectName = new ObjectName(s);
-            log.info("BaseCfgDelegate initialized! WebConfig serviceName:"+serviceObjectName);
+            log.info(getClass().getName() + " initialized! WebConfig serviceName: "+serviceObjectName);
         } catch (Exception e) {
-            log.error( "Failed to set ObjectName for BaseCfgDelegate! name:"+s, e);
+            log.error( "Failed to set ObjectName for " + getClass().getName() + "! name:"+s, e);
         }
     }
 

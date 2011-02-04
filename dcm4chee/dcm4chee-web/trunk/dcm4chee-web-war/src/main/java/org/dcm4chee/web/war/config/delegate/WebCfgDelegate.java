@@ -42,13 +42,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.management.MBeanServerConnection;
-import javax.management.MBeanServerFactory;
-import javax.management.ObjectName;
-
-import org.apache.wicket.Application;
-import org.apache.wicket.protocol.http.WebApplication;
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -58,10 +54,24 @@ import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
  */
 public class WebCfgDelegate extends BaseCfgDelegate {
 
-    private WebCfgDelegate() {
-        super();
+    protected static WebCfgDelegate singleton;
+
+    protected static Logger log = LoggerFactory.getLogger(WebCfgDelegate.class);
+    
+    protected WebCfgDelegate() {
+        init();
     }
     
+    public static WebCfgDelegate getInstance() {
+        if (singleton == null)
+            singleton = new WebCfgDelegate();
+        return singleton;
+    }
+
+    public boolean getManageUsers() {
+        return getBoolean("manageUsers", true);
+    }
+
     public String getStudyPermissionsAllRolename() {
         return getString("studyPermissionsAllRolename");
     }
@@ -90,33 +100,30 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return noneAsNull(getString("WebviewerBaseUrl"));
     }
    
-    public int[] getWindowSize(String name) {
-        if (server == null) return new int[]{800,600};
-        try {
-            return (int[]) server.invoke(serviceObjectName, "getWindowSize", 
-                    new Object[]{name}, new String[]{String.class.getName()});
-        } catch (Exception x) {
-            log.warn("Cant invoke getWindowWidth! use 800,600 as default!", x);
-            return new int[]{800,600};
-        }
-    }
     public List<String> getModalityList() {
         List<String> mods = getStringList("getModalityList");
         mods.add(0, "*");
         return mods;
     }
+    
     public List<String> getSourceAETList() {
         return getStringList("getSourceAETList"); 
     }
+    
     public List<String> getStationAETList() {
         return getStringList("getStationAETList"); 
     }
+    
     public List<String> getStationNameList() {
         List<String> names = getStringList("getStationNameList");
         names.add(0, "*");
         return names;
     }
     
+    public List<String> getRoleTypeList() {
+        return getStringList("getRoleTypeList"); 
+    }
+
     @SuppressWarnings("unchecked")
     public List<Integer> getPagesizeList() {
         if (server == null) return Arrays.asList(10,25,50);
@@ -174,81 +181,19 @@ public class WebCfgDelegate extends BaseCfgDelegate {
             return -1;
         }
     }
-
-    private String noneAsNull(String s) {
-        return "NONE".equals(s) ? null : s;
-    }
-
-    private String getString(String attrName) {
-        if (server == null) return null;
-        try {
-            return (String) server.getAttribute(serviceObjectName, attrName);
-        } catch (Exception x) {
-            log.warn("Cant get "+attrName+"! Ignored by return null!", x);
-            return null;
-        }
-    }
     
-    private boolean getBoolean(String attrName, boolean defVal) {
-        if (server == null) return defVal;
-        try {
-            return (Boolean) server.getAttribute(serviceObjectName, attrName);
-        } catch (Exception x) {
-            log.warn("Cant get "+attrName+" attribute! return "+defVal+" as default!", x);
-            return defVal;
-        }
-    }
-    
-    public Object invoke(String opName, Object[] args, Object defVal) {
-        try {
-            if (args == null) {
-                args = new Object[]{};
-            }
-            String[] argTypes = new String[args.length];
-            for (int i = 0 ; i < args.length ; i++) {
-                argTypes[i] = args.getClass().getName();
-            }
-            return server.invoke(serviceObjectName, opName, args, argTypes);
-        } catch (Exception x) {
-            log.warn("Cant invoke "+opName+"! Return defVal:"+defVal, x);
-            return defVal;
-        }
-    }
-
     @SuppressWarnings("unchecked")
     private List<String> getStringList(String name) {
         if (server == null) return new ArrayList<String>();
         try {
-            return (List<String>) server.invoke(serviceObjectName, name, 
-                    new Object[]{}, new String[]{});
-        } catch (Exception x) {
-            log.warn("Cant invoke '"+name+"'! Return empty list!", x);
+            return (List<String>) server.invoke(serviceObjectName, name, new Object[] {}, new String[] {});
+        } catch (Exception e) {
+            log.warn("Cant invoke '" + name + "', returning empty list.", e);
             return new ArrayList<String>();
         }
     }
-
-    protected void init() {
-        log.info("Init WebCfgDelegate!");
-        List<?> servers = MBeanServerFactory.findMBeanServer(null);
-        if (servers != null && !servers.isEmpty()) {
-            server = (MBeanServerConnection) servers.get(0);
-            log.debug("Found MBeanServer:"+server);
-        } else {
-            log.error("Failed to get MBeanServerConnection! MbeanDelegate class:"+getClass().getName());
-            return;
-        }
-        String s = ((WebApplication)Application.get()).getInitParameter("WebCfgServiceName");
-        if (s == null)
-            s = "dcm4chee.web:service=WebConfig";
-        try {
-            serviceObjectName = new ObjectName(s);
-            log.info("WebCfgDelegate initialized! WebConfig serviceName:"+serviceObjectName);
-        } catch (Exception e) {
-            log.error( "Failed to set ObjectName for WebCfgDelegate! name:"+s, e);
-        }
-    }
-
-    public MBeanServerConnection getMBeanServer() {
-        return server;
+    
+    private String noneAsNull(String s) {
+        return "NONE".equals(s) ? null : s;
     }
 }

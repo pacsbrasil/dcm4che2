@@ -39,7 +39,6 @@
 package org.dcm4chee.web.common.secure;
 
 import java.util.HashMap;
-import java.util.List;
 
 import org.apache.wicket.Request;
 import org.apache.wicket.security.WaspApplication;
@@ -56,7 +55,6 @@ public class SecureSession extends WaspSession {
     
     private String username;
     private HashMap<String, String> swarmPrincipals;
-    private List<String> roleTypes;
     private boolean manageUsers;
 
     public SecureSession(WaspApplication application, Request request) {
@@ -81,16 +79,7 @@ public class SecureSession extends WaspSession {
     public HashMap<String, String> getSwarmPrincipals() {
         return swarmPrincipals;
     }
-
     
-    public void setRoleTypes(List<String> roleTypes) {
-        this.roleTypes = roleTypes;
-    }
-
-    public List<String> getRoleTypes() {
-        return roleTypes;
-    }
-
     public void setManageUsers(boolean manageUsers) {
         this.manageUsers = manageUsers;
     }

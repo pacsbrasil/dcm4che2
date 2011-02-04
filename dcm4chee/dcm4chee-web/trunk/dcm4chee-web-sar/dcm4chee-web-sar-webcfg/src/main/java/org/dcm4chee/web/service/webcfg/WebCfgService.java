@@ -76,17 +76,15 @@ import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * @author franz.willer@gmail.com
+ * @author robert.david@agfa.com
  * @version $Revision$ $Date$
  * @since July 26, 2010
  */
 public class WebCfgService extends ServiceMBeanSupport implements NotificationListener, NotificationFilter {
 
-    private static final long serialVersionUID = 1L;
-    
     private static final String DEFAULT_TIMER_SERVICE = "jboss:service=Timer";
     private static final long ONE_DAY_IN_MILLIS = 60000*60*24;
 
-    private String webConfigPath;
     private String wadoBaseURL;
     private String webviewerName;
     private String webviewerBaseUrl;
@@ -99,8 +97,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private ObjectName mppsEmulatorServiceName;
     private ObjectName timerServiceName;
         
-    private Map<String,int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
-    
     private Map<String, String> imageCUIDS = new LinkedHashMap<String, String>();
     private Map<String, String> srCUIDS = new LinkedHashMap<String, String>();
     private Map<String, String> waveformCUIDS = new LinkedHashMap<String, String>();
@@ -128,19 +124,14 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     
     private boolean useFamilyAndGivenNameQueryFields;
     
-    private String loginAllowedRolename;
     private String studyPermissionsAllRolename;
     private String studyPermissionsOwnRolename;
 
     private List<String> roleTypes = new ArrayList<String>();
-    
-    private boolean manageUsers;
+
     private boolean useStudyPermissions;
     private boolean webStudyPermissions;
 
-    private static final String NONE = "NONE";
-    private static final String NEWLINE = System.getProperty("line.separator", "\n");
-    
     public WebCfgService() {
     }
     
@@ -149,14 +140,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         updateAutoUpdateTimer();
     }
     
-    public String getWebConfigPath() {
-        return webConfigPath;
-    }
-
-    public void setWebConfigPath(String webConfigPath) {
-        this.webConfigPath = webConfigPath;
-    }
-
     public String getWadoBaseURL() {
         return wadoBaseURL;
     }
@@ -230,48 +213,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         this.encapsulatedCUIDS = parseUIDs(encapsulatedCUIDS);
     }
 
-    public String getWindowSizeConfig() {
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, int[]> e : windowsizeMap.entrySet()) {
-            sb.append(e.getKey()).append(':').
-            append(e.getValue()[0]).append('x').append(e.getValue()[1]).
-            append(NEWLINE);
-        }
-        return sb.toString();
-    }
-    public void setWindowSizeConfig(String s) {
-        windowsizeMap.clear();
-        StringTokenizer st = new StringTokenizer(s, " \t\r\n;");
-        String t;
-        int pos;
-        while (st.hasMoreTokens()) {
-            t = st.nextToken();
-            if ((pos = t.indexOf(':')) == -1) {
-                throw new IllegalArgumentException("Format must be:<name>:<width>x<height>! "+t);
-            } else {
-                windowsizeMap.put(t.substring(0, pos), parseSize(t.substring(++pos)));
-            }
-        }
-    }
-    
-    public int[] getWindowSize(String name) {
-        int[] size = windowsizeMap.get(name);
-        if (size==null)
-            size = windowsizeMap.get("default");
-        if (size==null) {
-            log.warn("No default window size is configured! use 800x600 as default!");
-            return new int[]{800,600};
-        }
-        return size;
-    }
-    private int[] parseSize(String s) {
-        int pos = s.indexOf('x');
-        if (pos == -1)
-            throw new IllegalArgumentException("Windowsize must be <width>x<height>! "+s);
-        return new int[]{Integer.parseInt(s.substring(0,pos).trim()), 
-                Integer.parseInt(s.substring(++pos).trim())};
-    }
-    
     public String getModalities() {
         return listAsString(modalities);
     }
@@ -298,18 +239,22 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public String getSourceAETs() {
         return listAsString(sourceAETs);
     }
+    
     public List<String> getSourceAETList() {
         if (sourceAETs.isEmpty()) {
             this.updateSourceAETs();
         }
         return copyOfList(sourceAETs);
     }
+    
     public void setSourceAETs(String s) {
         updateList(sourceAETs, s);
     }
+    
     public boolean isAutoUpdateSourceAETs() {
         return autoUpdateSourceAETs;
     }
+    
     public void setAutoUpdateSourceAETs(boolean b) {
         autoUpdateSourceAETs = b;
         updateAutoUpdateTimer();
@@ -318,18 +263,22 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public String getStationAETs() {
         return listAsString(stationAETs);
     }
+    
     public List<String> getStationAETList() {
         if (stationAETs.isEmpty()) {
             this.updateStationAETs();
         }
         return copyOfList(stationAETs);
     }
+    
     public void setStationAETs(String s) {
         updateList(stationAETs, s);
     }
+    
     public boolean isAutoUpdateStationAETs() {
         return autoUpdateStationAETs;
     }
+    
     public void setAutoUpdateStationAETs(boolean b) {
         autoUpdateStationAETs = b;
         updateAutoUpdateTimer();
@@ -338,18 +287,22 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public String getStationNames() {
         return listAsString(stationNames);
     }
+    
     public List<String> getStationNameList() {
         if (stationNames.isEmpty()) {
             this.updateStationNames();
         }
         return copyOfList(stationNames);
     }
+    
     public void setStationNames(String s) {
         updateList(stationNames, s);
     }
+    
     public boolean isAutoUpdateStationNames() {
         return autoUpdateStationNames;
     }
+    
     public void setAutoUpdateStationNames(boolean b) {
         autoUpdateStationNames = b;
         updateAutoUpdateTimer();
@@ -425,6 +378,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         }
         return sb.substring(0, sb.length()-1);
     }
+    
     private void updateList(List<String> list, String s) {
         list.clear();
         if (!NONE.equals(s)) {
@@ -434,6 +388,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             }
         }
     }
+    
     private List<String> copyOfList(List<String> src) {
         List<String> dest = new ArrayList<String>(src.size());
         dest.addAll(src);
@@ -584,6 +539,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             this.setModalities(mods);
         }
     }
+    
     public void updateSourceAETs() {
         log.info("Update SourceAET List");
         StudyListLocal dao = (StudyListLocal)
@@ -597,6 +553,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             this.setSourceAETs(aets);
         }
     }
+    
     public void updateStationAETs() {
         log.info("Update StationAET List");
         ModalityWorklistLocal dao = (ModalityWorklistLocal) JNDIUtils.lookup(ModalityWorklistLocal.JNDI_NAME);
@@ -609,6 +566,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             this.setStationAETs(aets);
         }
     }
+    
     public void updateStationNames() {
         log.info("Update Station Name List");
         ModalityWorklistLocal dao = (ModalityWorklistLocal) JNDIUtils.lookup(ModalityWorklistLocal.JNDI_NAME);
@@ -640,6 +598,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             }
         }).start();
     }
+    
     public boolean isNotificationEnabled(Notification notification) {
         if (autoUpdateTimerId != null && (notification instanceof TimerNotification)) {
             TimerNotification lTimerNotification = (TimerNotification) notification;
@@ -678,22 +637,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         }
     }
 
-    public String getRolesFilename() {
-        return System.getProperty("dcm4chee-usr.cfg.roles-filename", NONE);
-    }
-
-    public void setRolesFilename(String name) {
-        if (NONE.equals(name)) {
-            System.getProperties().remove("dcm4chee-usr.cfg.roles-filename");
-        } else {
-            String old = System.getProperty("dcm4chee-usr.cfg.roles-filename");
-            System.setProperty("dcm4chee-usr.cfg.roles-filename", name);
-            if (old == null) {
-                initDefaultFile();
-            }
-        }
-    }
-
     public void updateDicomRoles() {
         ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).updateDicomRoles();
     }
@@ -709,6 +652,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             System.setProperty("dcm4chee-usr.cfg.userrole", name);
         }
     }
+    
     public String getUserMgtAdminRole() {
         return System.getProperty("dcm4chee-usr.cfg.adminrole", NONE);
     }
@@ -721,14 +665,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         }
     }
 
-    public void setLoginAllowedRolename(String loginAllowedRolename) {
-        this.loginAllowedRolename = loginAllowedRolename;
-    }
-
-    public String getLoginAllowedRolename() {
-        return loginAllowedRolename;
-    }
-    
     public void setStudyPermissionsAllRolename(
             String studyPermissionsAllRolename) {
         this.studyPermissionsAllRolename = studyPermissionsAllRolename;
@@ -759,51 +695,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         updateList(roleTypes, s);
     }
 
-    private void initDefaultFile() {
-        File mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.roles-filename", "conf/dcm4chee-web3/roles.json"));
-        if (!mappingFile.isAbsolute())
-            mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
-        if (mappingFile.exists()) return;
-        log.info("Init default Roles file: "+mappingFile);
-        if (mappingFile.getParentFile().mkdirs())
-            log.info("M-WRITE dir:" +mappingFile.getParent());
-        FileChannel fos = null;
-        InputStream is = null;
-        try {
-            URL url = getClass().getResource("/META-INF/roles-default.json");
-            log.info("Use default File content of url: "+url);
-            is = url.openStream();
-            ReadableByteChannel inCh = Channels.newChannel(is);
-            fos = new FileOutputStream(mappingFile).getChannel();
-            int pos = 0;
-            while (is.available() > 0)
-                pos += fos.transferFrom(inCh, pos, is.available());
-        } catch (Exception e) {
-            log.error("Roles file doesn't exist and the default can't be created!", e);
-        } finally {
-            close(is);
-            close(fos);
-        }
-    }
-    
-    private void close(Closeable toClose) {
-        if (toClose != null) {
-            try {
-                toClose.close();
-            } catch (IOException ignore) {
-                log.debug("Error closing : "+toClose.getClass().getName(), ignore);
-            }
-        }
-    }
-
-    public void setManageUsers(boolean manageUsers) {
-        this.manageUsers = manageUsers;
-    }
-
-    public boolean isManageUsers() {
-        return manageUsers;
-    }
-
     public void setUseStudyPermissions(boolean useStudyPermissions) {
         this.useStudyPermissions = useStudyPermissions;
     }
@@ -818,6 +709,138 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public boolean isWebStudyPermissions() {
         return webStudyPermissions;
+    }
+    
+    protected static final long serialVersionUID = 1L;
+
+    protected String loginAllowedRolename;
+    protected boolean manageUsers;
+    protected String webConfigPath;
+    
+    protected Map<String,int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
+    
+    protected static final String NONE = "NONE";
+    protected final String NEWLINE = System.getProperty("line.separator", "\n");
+    
+    public void setLoginAllowedRolename(String loginAllowedRolename) {
+        this.loginAllowedRolename = loginAllowedRolename;
+    }
+
+    public String getLoginAllowedRolename() {
+        return loginAllowedRolename;
+    }
+
+    public void setManageUsers(boolean manageUsers) {
+        this.manageUsers = manageUsers;
+    }
+
+    public boolean isManageUsers() {
+        return manageUsers;
+    }
+
+    public String getWebConfigPath() {
+        return webConfigPath;
+    }
+
+    public void setWebConfigPath(String webConfigPath) {
+        this.webConfigPath = webConfigPath;
+    }
+
+    public String getRolesFilename() {
+        return System.getProperty("dcm4chee-usr.cfg.roles-filename", NONE);
+    }
+
+    public void setRolesFilename(String name) {
+        if (NONE.equals(name)) {
+            System.getProperties().remove("dcm4chee-usr.cfg.roles-filename");
+        } else {
+            String old = System.getProperty("dcm4chee-usr.cfg.roles-filename");
+            System.setProperty("dcm4chee-usr.cfg.roles-filename", name);
+            if (old == null) {
+                initDefaultFile();
+            }
+        }
+    }
+    
+    protected void initDefaultFile() {
+        File mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.roles-filename", "conf/dcm4chee-web3/roles.json"));
+        if (!mappingFile.isAbsolute())
+            mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
+        if (mappingFile.exists()) return;
+        log.info("Init default Role Mapping file! mappingFile:"+mappingFile);
+        if (mappingFile.getParentFile().mkdirs())
+            log.info("M-WRITE dir:" +mappingFile.getParent());
+        FileChannel fos = null;
+        InputStream is = null;
+        try {
+            URL url = getClass().getResource("/META-INF/roles-default.json");
+            log.info("Use default Mapping File content of url:"+url);
+            is = url.openStream();
+            ReadableByteChannel inCh = Channels.newChannel(is);
+            fos = new FileOutputStream(mappingFile).getChannel();
+            int pos = 0;
+            while (is.available() > 0)
+                pos += fos.transferFrom(inCh, pos, is.available());
+        } catch (Exception e) {
+            log.error("Roles file doesn't exist and the default can't be created!", e);
+        } finally {
+            close(is);
+            close(fos);
+        }
+    }
+    
+    protected void close(Closeable toClose) {
+        if (toClose != null) {
+            try {
+                toClose.close();
+            } catch (IOException ignore) {
+                log.debug("Error closing : "+toClose.getClass().getName(), ignore);
+            }
+        }
+    }
+
+    public String getWindowSizeConfig() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, int[]> e : windowsizeMap.entrySet()) {
+            sb.append(e.getKey()).append(':').
+            append(e.getValue()[0]).append('x').append(e.getValue()[1]).
+            append(NEWLINE);
+        }
+        return sb.toString();
+    }
+
+    public void setWindowSizeConfig(String s) {
+        windowsizeMap.clear();
+        StringTokenizer st = new StringTokenizer(s, " \t\r\n;");
+        String t;
+        int pos;
+        while (st.hasMoreTokens()) {
+            t = st.nextToken();
+            if ((pos = t.indexOf(':')) == -1) {
+                throw new IllegalArgumentException("Format must be:<name>:<width>x<height>! "+t);
+            } else {
+                windowsizeMap.put(t.substring(0, pos), parseSize(t.substring(++pos)));
+            }
+        }
+    }
+    
+    public int[] getWindowSize(String name) {
+        int[] size = windowsizeMap.get(name);
+        if (size==null) 
+            size = windowsizeMap.get("default");
+        if (size==null) {
+            log.warn("No default window size is configured! use 800x600 as default!");
+            return new int[]{800,600};
+        }
+        return size;
+    }
+
+    protected int[] parseSize(String s) {
+        int pos = s.indexOf('x');
+        if (pos == -1)
+            throw new IllegalArgumentException("Windowsize must be <width>x<height>! "+s);
+        return new int[]{Integer.parseInt(s.substring(0,pos).trim()), 
+                Integer.parseInt(s.substring(++pos).trim())};
     }
 }
 

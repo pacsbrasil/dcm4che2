@@ -231,18 +231,45 @@
       	<dd>aeEdit:    Edit window in AE Managment</dd>
       	<dd>mpps2mwl:  MPPS to MWL link window</dd>
       	<dd>move:      Move Entities Window</dd>
-      	<dd>studyPerm: Study Permision window in Folder</dd>
+      	<dd>studyPerm: Study Permission window in Folder</dd>
+      	<dd>addDicomRole: Add dicom role window in study permission window</dd>
+        <dd>addUser: Add user in User Management</dd>
+        <dd>changePassword: Change password in User Management</dd>
+        <dd>manageRoles: Manage roles in User Management</dd>
+        <dd>editRole: New role and edit role in User Management</dd>
+        <dd>webPermissions: Web permissions in User Management</dd>
+        <dd>typeAssignment: Type assignment in User Management</dd>
+        <dd>editGroup: Edit group in User Management</dd>
+        <dd>createGroup:   size of the create group window</dd>
+        <dd>reportDiagram:   size of the report diagram window</dd>
+        <dd>reportDiagramImage:   size of the diagram image</dd>
+        <dd>reportTable:   size of the report table window</dd>
+        <dd>reportTable:   size of the window displaying both diagram image and report table</dd>
       ]]></description>
       <name>WindowSizeConfig</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="
-         	default:800x600
+         	default:803x603
          	export:650x500
          	aeEdit:960x600
          	mwEdit:1024x768
          	mpps2mwl:1024x600
          	move:900x320
+            addDicomRole:570x350
+            addUser:400x300
+            changePassword:400x300
+            manageRoles:300x700
+            editRole:570x350
+            webPermissions:300x700
+            typeAssignment:300x700
+            editGroup:600x350
+            createGroup:400x300
+            editReport:850x500
+            reportDiagram:1024x768
+            reportDiagramImage:800x600
+            reportTable:1024x768
+            reportDiagramandtable:1024x768
          	"/>
       </descriptors>
    </attribute>
