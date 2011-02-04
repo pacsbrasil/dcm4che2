@@ -206,6 +206,7 @@ public class DatabaseHandler {
 
     public void rebuild() {
         deleteRows();
+        deleteDir(new File(getListenerDetails()[2]));
         ApplicationContext.mainScreen.restartReceiver();
     }
 

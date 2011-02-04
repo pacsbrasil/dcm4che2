@@ -71,6 +71,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
@@ -935,10 +936,14 @@ public class MainScreen extends javax.swing.JFrame {
     }//GEN-LAST:event_queueMenuItemActionPerformed
 
     private void resetMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetMenuItemActionPerformed
+          int resetDB=0;
+        resetDB=JOptionPane.showConfirmDialog(this,"Are you sure want to reset the database", "Confirmation Dialog", JOptionPane.YES_NO_OPTION);
+        if(resetDB==0){
         ApplicationContext.databaseRef.rebuild();
         MainScreen.showLocalDBStorage();
         removeThumbnailComponents();
         removeWindowingImage();
+        }
     }//GEN-LAST:event_resetMenuItemActionPerformed
     private void deleteExamMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteExamMenuItemActionPerformed
         if (studyListTable.getSelectedRow() != -1) {
