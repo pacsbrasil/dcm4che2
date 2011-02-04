@@ -37,7 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.util.core;
 
-import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegate.NetworkQueueUpdateDelegate;
 import in.raster.mayam.form.MainScreen;
 import java.io.BufferedOutputStream;
@@ -976,9 +975,6 @@ public class DcmRcv {
             cache.setCacheRootDir(null);
         } else {
             devnull = null;
-            if (!ApplicationContext.canWrite(ApplicationContext.getAppDirectory())) {
-                destination=new File(System.getProperty("java.io.tmpdir"),filePath);
-            }
             cache.setCacheRootDir(destination);
         }
     }

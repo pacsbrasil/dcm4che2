@@ -1762,9 +1762,6 @@ public class DcmQR {
             devnull = destination;
         } else {
             devnull = null;
-            if (!ApplicationContext.canWrite(ApplicationContext.getAppDirectory())) {
-                destination = new File(System.getProperty("java.io.tmpdir"), filePath);
-            }
         }
     }
 

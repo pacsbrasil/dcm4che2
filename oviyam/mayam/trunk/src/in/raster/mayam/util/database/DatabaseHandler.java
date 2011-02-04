@@ -118,11 +118,7 @@ public class DatabaseHandler {
     /** It initializes the Java Derby Databse.It creates the database if it is not available. */
     public void openOrCreateDB() {
         try {
-            if (!ApplicationContext.canWrite(ApplicationContext.getAppDirectory())) {
-                System.setProperty("derby.system.home", System.getProperty("java.io.tmpdir"));
-            } else {
-                System.setProperty("derby.system.home", ApplicationContext.getAppDirectory());
-            }
+            System.setProperty("derby.system.home", ApplicationContext.getAppDirectory());
             try {
                 Class.forName(driver).newInstance();
             } catch (InstantiationException e) {
@@ -164,19 +160,8 @@ public class DatabaseHandler {
         this.dbExists = checkDBexists(ApplicationContext.getAppDirectory());
         try {
             if (!dbExists) {
-                if (ApplicationContext.canWrite(ApplicationContext.getAppDirectory())) {
-                    conn = DriverManager.getConnection(protocol + databasename + ";create=true",
-                            username, password);
-                } else {
-                    if (!checkDBexists(System.getProperty("java.io.tmpdir"))) {
-                        conn = DriverManager.getConnection(protocol + System.getProperty("java.io.tmpdir") + File.separator + databasename + ";create=true",
-                                username, password);
-                    } else {
-                        dbExists = true;
-                        conn = DriverManager.getConnection(protocol + System.getProperty("java.io.tmpdir") + File.separator + databasename + ";create=false", username, password);
-                        deleteRows();
-                    }
-                }
+                conn = DriverManager.getConnection(protocol + databasename + ";create=true",
+                        username, password);
             } else {
                 conn = DriverManager.getConnection(protocol + databasename + ";create=false", username, password);
             }
@@ -566,7 +551,7 @@ public class DatabaseHandler {
 
     public void insertDefaultListenerDetail() {
         try {
-            boolean insertStatus = conn.createStatement().execute("insert into" + " listener(aetitle,port,storagelocation) values('MAYAM',1025,'" + ApplicationContext.getAppDirectory()+ File.separator + "archive')");
+            boolean insertStatus = conn.createStatement().execute("insert into" + " listener(aetitle,port,storagelocation) values('MAYAM',1025,'" + ApplicationContext.getAppDirectory() + File.separator + "archive')");
             conn.commit();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -1449,7 +1434,6 @@ public class DatabaseHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return seriesDesc;
     }
 

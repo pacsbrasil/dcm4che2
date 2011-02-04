@@ -54,7 +54,6 @@ import java.util.Calendar;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.util.DcmURL;
@@ -195,7 +194,6 @@ public class WadoRetrieveDelegate extends Thread {
     }
 
     private void responseSuccess(WadoParam wadoParam) {
-
         InputStream in = null;
         try {
             OutputStream out = null;
@@ -227,12 +225,7 @@ public class WadoRetrieveDelegate extends Thread {
     }
 
     public void setDestination() {
-        String storageLocation = ApplicationContext.databaseRef.getListenerDetails()[2];
-        if (!ApplicationContext.canWrite(ApplicationContext.getAppDirectory())) {
-            //    destinationPath = System.getProperty("java.io.tmpdir") + File.separator + storageLocation;
-        } else {
-            destinationPath = storageLocation;
-        }
+        destinationPath = ApplicationContext.databaseRef.getListenerDetails()[2];;
     }
 
     private synchronized void copy(InputStream in, OutputStream out)

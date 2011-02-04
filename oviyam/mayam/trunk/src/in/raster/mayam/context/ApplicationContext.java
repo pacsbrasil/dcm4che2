@@ -165,24 +165,4 @@ public class ApplicationContext {
             }
         }
     }
-
-    public static boolean canWrite(String path) {
-        File file = new File(path);
-        if (!file.canWrite()) {
-            return false;
-        }
-
-        /* Java lies on Windows */       
-       if(Platform.getCurrentPlatform().equals(Platform.WINDOWS))
-        {           
-        try {
-            File newFile=new File(file,"newfile");
-            new FileOutputStream(newFile, true).close();
-            newFile.delete();
-        } catch (IOException e) {
-            return false;
-        }
-        }
-        return true;
-    }
 }
