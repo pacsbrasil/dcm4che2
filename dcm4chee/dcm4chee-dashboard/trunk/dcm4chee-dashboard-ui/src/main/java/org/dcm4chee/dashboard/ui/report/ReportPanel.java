@@ -69,6 +69,7 @@ import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
+import org.dcm4chee.dashboard.ui.config.delegate.DashboardCfgDelegate;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
@@ -111,10 +112,8 @@ public class ReportPanel extends Panel {
             })
         );       
 
-        add(new ModalWindowLink("toggle-group-form-link", modalWindow, 
-                new Integer(new ResourceModel("dashboard.report.create-group.window.width").wrapOnAssignment(this).getObject().toString()).intValue(), 
-                new Integer(new ResourceModel("dashboard.report.create-group.window.height").wrapOnAssignment(this).getObject().toString()).intValue()
-        )
+        int[] winSize = DashboardCfgDelegate.getInstance().getWindowSize("createGroup");
+        add(new ModalWindowLink("toggle-group-form-link", modalWindow, winSize[0],winSize[1])
         .add(new Image("toggle-group-form-image", ImageManager.IMAGE_COMMON_ADD)
         .add(new ImageSizeBehaviour("vertical-align: middle;")))
         .add(new Label("dashboard.report.add-group-form.title", new ResourceModel("dashboard.report.add-group-form.title")))

@@ -63,6 +63,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.ui.common.JFreeChartImage;
+import org.dcm4chee.dashboard.ui.config.delegate.DashboardCfgDelegate;
 import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
@@ -207,10 +208,11 @@ public class DisplayReportDiagramPanel extends Panel {
                         true);
             }
 
+            int[] winSize = DashboardCfgDelegate.getInstance().getWindowSize("reportDiagramImage");
             addOrReplace(new JFreeChartImage("diagram", 
                                     chart, 
-                                    new Integer(new ResourceModel("dashboard.report.reportdiagram.image.width").wrapOnAssignment(this).getObject().toString()), 
-                                    new Integer(new ResourceModel("dashboard.report.reportdiagram.image.height").wrapOnAssignment(this).getObject().toString())));
+                                    winSize[0], winSize[1])
+            );
 
             final JFreeChart downloadableChart = chart;
             addOrReplace(new Link<Object>("diagram-download") {

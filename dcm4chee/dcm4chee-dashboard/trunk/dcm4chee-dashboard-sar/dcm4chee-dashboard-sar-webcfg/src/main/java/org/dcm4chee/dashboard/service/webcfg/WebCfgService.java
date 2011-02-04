@@ -48,29 +48,46 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * @author franz.willer@gmail.com
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since July 26, 2010
  */
 public class WebCfgService extends ServiceMBeanSupport {
+    
+    protected static final long serialVersionUID = 1L;
 
-    private static final long serialVersionUID = 1L;
+    protected String loginAllowedRolename;
+    protected boolean manageUsers;
+    protected String webConfigPath;
+    
+    protected Map<String,int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
+    
+    protected static final String NONE = "NONE";
+    protected final String NEWLINE = System.getProperty("line.separator", "\n");
+    
+    public void setLoginAllowedRolename(String loginAllowedRolename) {
+        this.loginAllowedRolename = loginAllowedRolename;
+    }
 
-    private String webConfigPath;
-    
-    private String loginAllowedRolename;
-    
-    private boolean manageUsers;
-    private boolean webStudyPermissions;
-    
-    private static final String NONE = "NONE";
-    
-    public WebCfgService() {
+    public String getLoginAllowedRolename() {
+        return loginAllowedRolename;
+    }
+
+    public void setManageUsers(boolean manageUsers) {
+        this.manageUsers = manageUsers;
+    }
+
+    public boolean isManageUsers() {
+        return manageUsers;
     }
 
     public String getWebConfigPath() {
@@ -79,14 +96,6 @@ public class WebCfgService extends ServiceMBeanSupport {
 
     public void setWebConfigPath(String webConfigPath) {
         this.webConfigPath = webConfigPath;
-    }
-
-    public void setLoginAllowedRolename(String loginAllowedRolename) {
-        this.loginAllowedRolename = loginAllowedRolename;
-    }
-
-    public String getLoginAllowedRolename() {
-        return loginAllowedRolename;
     }
 
     public String getRolesFilename() {
@@ -105,10 +114,11 @@ public class WebCfgService extends ServiceMBeanSupport {
         }
     }
     
-    private void initDefaultFile() {
+    protected void initDefaultFile() {
         File mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.roles-filename", "conf/dcm4chee-web3/roles.json"));
         if (!mappingFile.isAbsolute())
             mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
+        if (mappingFile.exists()) return;
         log.info("Init default Role Mapping file! mappingFile:"+mappingFile);
         if (mappingFile.getParentFile().mkdirs())
             log.info("M-WRITE dir:" +mappingFile.getParent());
@@ -131,7 +141,7 @@ public class WebCfgService extends ServiceMBeanSupport {
         }
     }
     
-    private void close(Closeable toClose) {
+    protected void close(Closeable toClose) {
         if (toClose != null) {
             try {
                 toClose.close();
@@ -139,5 +149,49 @@ public class WebCfgService extends ServiceMBeanSupport {
                 log.debug("Error closing : "+toClose.getClass().getName(), ignore);
             }
         }
+    }
+
+    public String getWindowSizeConfig() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, int[]> e : windowsizeMap.entrySet()) {
+            sb.append(e.getKey()).append(':').
+            append(e.getValue()[0]).append('x').append(e.getValue()[1]).
+            append(NEWLINE);
+        }
+        return sb.toString();
+    }
+
+    public void setWindowSizeConfig(String s) {
+        windowsizeMap.clear();
+        StringTokenizer st = new StringTokenizer(s, " \t\r\n;");
+        String t;
+        int pos;
+        while (st.hasMoreTokens()) {
+            t = st.nextToken();
+            if ((pos = t.indexOf(':')) == -1) {
+                throw new IllegalArgumentException("Format must be:<name>:<width>x<height>! "+t);
+            } else {
+                windowsizeMap.put(t.substring(0, pos), parseSize(t.substring(++pos)));
+            }
+        }
+    }
+    
+    public int[] getWindowSize(String name) {
+        int[] size = windowsizeMap.get(name);
+        if (size==null) 
+            size = windowsizeMap.get("default");
+        if (size==null) {
+            log.warn("No default window size is configured! use 800x600 as default!");
+            return new int[]{800,600};
+        }
+        return size;
+    }
+
+    protected int[] parseSize(String s) {
+        int pos = s.indexOf('x');
+        if (pos == -1)
+            throw new IllegalArgumentException("Windowsize must be <width>x<height>! "+s);
+        return new int[]{Integer.parseInt(s.substring(0,pos).trim()), 
+                Integer.parseInt(s.substring(++pos).trim())};
     }
 }

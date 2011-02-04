@@ -55,6 +55,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
+import org.dcm4chee.dashboard.ui.config.delegate.DashboardCfgDelegate;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
@@ -243,9 +244,10 @@ public class DynamicLinkPanel extends Panel {
                 }
             });
             
+            int[] winSize = DashboardCfgDelegate.getInstance().getWindowSize("editReport");
             ((ModalWindow) this.modalWindow.add(new DisableDefaultConfirmBehavior()))
-            .setInitialWidth(new Integer(new ResourceModel("dashboard.dynamiclink.report.createoredit.window.width").wrapOnAssignment(this).getObject().toString()))
-            .setInitialHeight(new Integer(new ResourceModel("dashboard.dynamiclink.report.createoredit.window.height").wrapOnAssignment(this).getObject().toString()))
+            .setInitialWidth(winSize[0])
+            .setInitialHeight(winSize[1])
             .show(target);
         }
     }    
@@ -293,9 +295,10 @@ public class DynamicLinkPanel extends Panel {
                 }                
             });
 
+            int[] winSize = DashboardCfgDelegate.getInstance().getWindowSize("reportDiagram");
             ((ModalWindow) this.modalWindow.add(new DisableDefaultConfirmBehavior()))
-            .setInitialWidth(new Integer(new ResourceModel("dashboard.dynamiclink.report.display.diagram.window.width").wrapOnAssignment(this).getObject().toString()))
-            .setInitialHeight(new Integer(new ResourceModel("dashboard.dynamiclink.report.display.diagram.window.height").wrapOnAssignment(this).getObject().toString()))
+            .setInitialWidth(winSize[0])
+            .setInitialHeight(winSize[1])
             .show(target);
         }        
     }
@@ -323,9 +326,10 @@ public class DynamicLinkPanel extends Panel {
                 }                
             });
 
+            int[] winSize = DashboardCfgDelegate.getInstance().getWindowSize("reportTable");
             ((ModalWindow) this.modalWindow.add(new DisableDefaultConfirmBehavior()))
-            .setInitialWidth(new Integer(new ResourceModel("dashboard.dynamiclink.report.display.table.window.width").wrapOnAssignment(this).getObject().toString()))
-            .setInitialHeight(new Integer(new ResourceModel("dashboard.dynamiclink.report.display.table.window.height").wrapOnAssignment(this).getObject().toString()))
+            .setInitialWidth(winSize[0])
+            .setInitialHeight(winSize[1])
             .show(target);
         }        
     }
@@ -353,9 +357,10 @@ public class DynamicLinkPanel extends Panel {
                 }                
             });
             
+            int[] winSize = DashboardCfgDelegate.getInstance().getWindowSize("reportDiagramandtable");
             ((ModalWindow) this.modalWindow.add(new DisableDefaultConfirmBehavior()))
-            .setInitialWidth(new Integer(new ResourceModel("dashboard.dynamiclink.report.display.diagramandtable.window.width").wrapOnAssignment(this).getObject().toString()))
-            .setInitialHeight(new Integer(new ResourceModel("dashboard.dynamiclink.report.display.diagramandtable.window.height").wrapOnAssignment(this).getObject().toString()))
+            .setInitialWidth(winSize[0])
+            .setInitialHeight(winSize[1])
             .show(target);
         }
     }
