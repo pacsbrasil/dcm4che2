@@ -72,7 +72,7 @@
         Format: &lt;name&gt;:&lt;width&gt;x&lt;height&gt;<br/>
         <dl><dt>Following window names can be used:</dt>
         <dd>default:   default size</dd>
-        <dd>default:   size of the create group window</dd>
+        <dd>createGroup:   size of the create group window</dd>
         <dd>reportDiagram:   size of the report diagram window</dd>
         <dd>reportDiagramImage:   size of the diagram image</dd>
         <dd>reportTable:   size of the report table window</dd>
