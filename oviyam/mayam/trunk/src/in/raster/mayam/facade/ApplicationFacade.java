@@ -60,7 +60,7 @@ public class ApplicationFacade {
     //public String applicationName="Mayam";
     public static String binPath="";
 
-    public ApplicationFacade() {
+    private ApplicationFacade() {
     }
 
     public void createSplash() {
@@ -82,8 +82,7 @@ public class ApplicationFacade {
             System.setProperty("apple.awt.graphics.EnableLazyPixelConversion.TYPE_3BYTE_BGR", "false");
             System.setProperty("apple.awt.graphics.EnableLazyDrawing", "false");
             System.setProperty("apple.awt.rendering", "speed");
-        }   
-
+        }
     }    
 
     public static void exitApp(String exitString) {
@@ -107,6 +106,5 @@ public class ApplicationFacade {
             Logger.getLogger(ApplicationFacade.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
 }
 

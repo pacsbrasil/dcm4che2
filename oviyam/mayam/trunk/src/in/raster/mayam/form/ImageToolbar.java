@@ -90,8 +90,7 @@ import javax.swing.JPanel;
  */
 public class ImageToolbar extends javax.swing.JPanel {
 
-    /** Creates new form ImageToolbar */
-    ApplicationContext app;
+    /** Creates new form ImageToolbar */  
     CineTimer cineTimer;
     Timer timer;
     ImageView imgView;
@@ -102,15 +101,13 @@ public class ImageToolbar extends javax.swing.JPanel {
     DicomVolumeRendering dicomVolumeRendering = null;
 
     public ImageToolbar() {
-        initComponents();
-        app = new ApplicationContext();
+        initComponents();      
         cineTimer = new CineTimer();
         addKeyEventDispatcher();
     }
 
     public ImageToolbar(ImageView imgView) {
-        initComponents();
-        app = new ApplicationContext();
+        initComponents();    
         cineTimer = new CineTimer();
         this.imgView = imgView;
         designPopup();

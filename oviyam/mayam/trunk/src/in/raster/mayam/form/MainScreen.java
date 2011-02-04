@@ -89,7 +89,7 @@ import javax.swing.table.TableRowSorter;
 public class MainScreen extends javax.swing.JFrame {
 
     /** Creates new form MainScreen */
-    public MainScreen() {
+    private MainScreen() {
         initComponents();
         initAppDefaults();
     }

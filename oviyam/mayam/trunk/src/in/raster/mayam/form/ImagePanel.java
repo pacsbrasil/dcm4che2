@@ -51,7 +51,6 @@ import in.raster.mayam.param.TextOverlayParam;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -82,7 +81,6 @@ import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import javax.media.jai.PlanarImage;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -90,7 +88,6 @@ import javax.swing.JPopupMenu;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4che2.data.Tag;
-import sun.tools.tree.ThisExpression;
 
 /**
  *

@@ -87,7 +87,7 @@ public class ApplicationContext {
 
     public static String applicationName="Mayam";
 
-    public ApplicationContext() {
+    private ApplicationContext() {
     }
 
     /**

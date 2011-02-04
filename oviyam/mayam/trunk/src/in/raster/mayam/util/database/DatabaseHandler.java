@@ -97,7 +97,7 @@ public class DatabaseHandler {
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private String DicomServersHeaderDisplayName = "Dicom Servers";
 
-    public DatabaseHandler() {
+    private DatabaseHandler() {
     }
 
     /**it checks whether database available in local folder or not.
