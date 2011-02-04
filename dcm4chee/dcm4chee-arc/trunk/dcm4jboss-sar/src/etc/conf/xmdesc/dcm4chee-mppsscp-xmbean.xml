@@ -95,16 +95,33 @@ MPPS SCP (=Called) AE by its AE Configuration entry.]]>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isSupplementIssuerOfAccessionNumber"
+      setMethod="setSupplementIssuerOfAccessionNumber">
+      <description><![CDATA[Supplement received MPPS N-CREATE message containing
+<i>Scheduled Step Attributes Sequence</i> items with a non-empty <i>Accession
+Number</i>, but no <i>Issuer of Accession Number Sequence</i>, with such
+Sequence containing one item with <i>Local Namespace Enitity ID</i>,
+<i>Universial Enitity ID</i> and <i>Universial Enitity ID Type</i>, if such is
+associated with the MPPS SCU AE by its AE Configuration entry.]]>
+      </description>
+      <name>SupplementIssuerOfAccessionNumber</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isSupplementByHostName"
       setMethod="setSupplementByHostName">
-      <description><![CDATA[If there is no <i>Issuer of Patient ID</i>
-          associated to the MPPS SCU AE by an AE configuration entry with
-          matching AE Title, AE configuration entries which host name is equals
-          to the host name of the MPPS SCU AE will be considered to determine
-          the associated <i>Issuer of Patient ID</i>. If there are several
-          AE configuration entries with matching host name with different
-          non-zero values for <i>Issuer of Patient ID</i>, no 
-          <i>Issuer of Patient ID</i> will be supplemented.]]>
+      <description><![CDATA[If there is no <i>Issuer of Patient ID</i> or
+<i>Issuer of Accession Number</i> associated to the MPPS SCU AE by an AE
+configuration entry with matching AE Title, AE configuration entries which host
+name is equals to the host name of the MPPS SCU AE will be considered to
+determine the associated <i>Issuer of Patient ID</i> or <i>Issuer of Accession
+Number</i>. If there are several AE configuration entries with matching host
+name with different non-zero values for <i>Issuer of Patient ID</i> or
+<i>Issuer of Accession Number</i>, no <i>Issuer of Patient ID</i> or
+<i>Issuer of Accession Number</i> will be supplemented.]]>
       </description>
       <name>SupplementByHostName</name>
       <type>boolean</type>
@@ -115,14 +132,15 @@ MPPS SCP (=Called) AE by its AE Configuration entry.]]>
    <attribute access="read-write"
       getMethod="isSupplementByHostAddress"
       setMethod="setSupplementByHostAddress">
-      <description><![CDATA[If there is no <i>Issuer of Patient ID</i>
-          associated to the MPPS SCU AE by an AE configuration entry with
-          matching AE Title, AE configuration entries which host name is equals
-          to the IP address of the MPPS SCU AE will be considered to determine
-          the associated <i>Issuer of Patient ID</i>. If there are several
-          AE configuration entries with matching host name with different
-          non-zero values for <i>Issuer of Patient ID</i>, no 
-          <i>Issuer of Patient ID</i> will be supplemented.]]>
+      <description><![CDATA[If there is no <i>Issuer of Patient ID</i> or
+<i>Issuer of Accession Number</i> associated to the MPPS SCU AE by an AE
+configuration entry with matching AE Title, AE configuration entries which host
+name is equals to the IP address of the MPPS SCU AE will be considered to
+determine the associated <i>Issuer of Patient ID</i> or <i>Issuer of Accession
+Number</i>. If there are several AE configuration entries with matching host
+name with different non-zero values for <i>Issuer of Patient ID</i> or
+<i>Issuer of Accession Number</i>, no <i>Issuer of Patient ID</i> or
+<i>Issuer of Accession Number</i> will be supplemented.]]>
       </description>
       <name>SupplementByHostAddress</name>
       <type>boolean</type>

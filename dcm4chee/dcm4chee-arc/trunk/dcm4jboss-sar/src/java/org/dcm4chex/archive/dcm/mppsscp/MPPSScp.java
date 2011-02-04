@@ -121,9 +121,13 @@ public class MPPSScp extends DcmServiceBase {
         if (!callingAET.equals(calledAET)) {
             service.ignorePatientIDForUnscheduled(mpps,
                     Tags.ScheduledStepAttributesSeq, callingAET);
-            service.supplementIssuerOfPatientID(mpps, as, as.getCallingAET(), false);
+            service.supplementIssuerOfPatientID(mpps, as, callingAET, false);
             service.generatePatientID(mpps,
                     mpps.getItem(Tags.ScheduledStepAttributesSeq), calledAET);
+            DcmElement ssasq = mpps.get(Tags.ScheduledStepAttributesSeq);
+            for (int i = 0, n = ssasq.countItems(); i < n; i++)
+                service.supplementIssuerOfAccessionNumber(
+                        ssasq.getItem(i), as, callingAET, false);
         }
         mpps.putUI(Tags.SOPClassUID, cuid);
         mpps.putUI(Tags.SOPInstanceUID, iuid);
