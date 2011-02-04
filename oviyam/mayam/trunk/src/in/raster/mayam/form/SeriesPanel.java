@@ -173,19 +173,22 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
             reader.setInput(iis, false);
             dataset = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
             try {
+                  if(reader.getNumImages(true)>0)
                 currentbufferedimage = reader.read(0);
                 nFrames = reader.getNumImages(true);
                 if (nFrames - 1 > 0) {
                     mulitiFrame = true;
-                }
+                }  if(reader.getNumImages(true)>0){
                 imageIcon = new ImageIcon();
                 imageIcon.setImage(currentbufferedimage);
                 loadedImage = imageIcon.getImage();
                 image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
                 Graphics2D g2 = image.createGraphics();
                 g2.drawImage(loadedImage, 0, 0, null);
+                }
                 addImage();
             } catch (RuntimeException e) {
+                e.printStackTrace();
                 System.out.println("while Reading Image " + e.getMessage());
             }
         } catch (Exception e) {

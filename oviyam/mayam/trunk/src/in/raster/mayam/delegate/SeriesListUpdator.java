@@ -305,6 +305,7 @@ public class SeriesListUpdator extends Thread {
             reader.setInput(iis, false);
             dataset = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
             try {
+                if(reader.getNumImages(true)>0)
                 img.setPixelData(reader.read(img.getCurrentFrameNum()));
                 updateInstanceInfo(dataset, img);
             } catch (NullPointerException e) {

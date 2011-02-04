@@ -65,9 +65,11 @@ public class Thumbnail extends JLabel{
 
     public Thumbnail(BufferedImage image) {
         this.image = image;
+        if(image!=null){
         imageWidth=image.getWidth();
         imageHeight=image.getHeight();
         calculateAspectRatioBasedSize();
+        }
         initComponents();
         
     }
