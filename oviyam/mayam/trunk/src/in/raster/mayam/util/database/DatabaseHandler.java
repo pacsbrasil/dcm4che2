@@ -387,6 +387,7 @@ public class DatabaseHandler {
                 st.setStudyDescription(rs.getString("StudyDescription").equalsIgnoreCase("null") ? "" : rs.getString("StudyDescription"));
                 st.setStudyUID(rs.getString("StudyInstanceUID"));
                 st.setModalitiesInStudy(rs.getString("ModalityInStudy"));
+                st.setStudyLevelInstances("" + getStudyLevelInstance(st.getStudyUID()));
 
                 String sql2 = "select PatientName,PatientBirthDate from patient where PatientId='" + rs.getString("PatientId") + "'";
                 ResultSet rs1 = conn.createStatement().executeQuery(sql2);

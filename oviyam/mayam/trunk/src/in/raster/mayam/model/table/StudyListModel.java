@@ -50,8 +50,8 @@ import javax.swing.table.AbstractTableModel;
  */
 public class StudyListModel extends AbstractTableModel {
 
-    String columnName[] = {"Patient ID", "Patient Name", "Date of Birth", "Accession Number", "Study Date", "Study Description", "Modality"};
-    Class columnType[] = {String.class, String.class, String.class, String.class, String.class, String.class, String.class};
+    String columnName[] = {"Patient ID", "Patient Name", "Date of Birth", "Accession Number", "Study Date", "Study Description", "Modality", "Instance Count"};
+    Class columnType[] = {String.class, String.class, String.class, String.class, String.class, String.class, String.class, String.class};
     Vector studyList;
 
     public StudyListModel() {
@@ -98,6 +98,8 @@ public class StudyListModel extends AbstractTableModel {
                 return row.getStudyDescription();
             case 6:
                 return row.getModalitiesInStudy();
+            case 7:
+                return row.getStudyLevelInstances();
             case 8:
                 return row.getStudyUID();
         }
