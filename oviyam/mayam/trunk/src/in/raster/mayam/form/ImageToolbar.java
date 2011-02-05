@@ -90,7 +90,7 @@ import javax.swing.JPanel;
  */
 public class ImageToolbar extends javax.swing.JPanel {
 
-    /** Creates new form ImageToolbar */  
+    /** Creates new form ImageToolbar */
     CineTimer cineTimer;
     Timer timer;
     ImageView imgView;
@@ -101,13 +101,13 @@ public class ImageToolbar extends javax.swing.JPanel {
     DicomVolumeRendering dicomVolumeRendering = null;
 
     public ImageToolbar() {
-        initComponents();      
+        initComponents();
         cineTimer = new CineTimer();
         addKeyEventDispatcher();
     }
 
     public ImageToolbar(ImageView imgView) {
-        initComponents();    
+        initComponents();
         cineTimer = new CineTimer();
         this.imgView = imgView;
         designPopup();
@@ -142,34 +142,26 @@ public class ImageToolbar extends javax.swing.JPanel {
     private void keyEventProcessor(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_LEFT) {
             ApplicationContext.imgPanel.moveToPreviousInstance();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_RIGHT) {
+        } else if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_RIGHT) {
             ApplicationContext.imgPanel.moveToNextInstance();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_O) {
+        } else if (e.getKeyCode() == KeyEvent.VK_O) {
             doScout();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_I) {           
+        } else if (e.getKeyCode() == KeyEvent.VK_I) {
             doTextOverlay();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+        } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
             doReset();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_C) {
+        } else if (e.getKeyCode() == KeyEvent.VK_C) {
             if (!loopCheckbox.isSelected()) {
                 loopCheckbox.setSelected(true);
             } else {
                 loopCheckbox.setSelected(false);
             }
             doCineLoop();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_S) {
+        } else if (e.getKeyCode() == KeyEvent.VK_S) {
             doStack();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_D) {
+        } else if (e.getKeyCode() == KeyEvent.VK_D) {
             doRuler();
-        }
-        else if (e.getKeyCode() == KeyEvent.VK_T) {
+        } else if (e.getKeyCode() == KeyEvent.VK_T) {
             doPan();
         }
     }
@@ -814,9 +806,10 @@ public class ImageToolbar extends javax.swing.JPanel {
             enableAllTools();
         } else {
             setAnnotationToolsStatus();
-            layoutToolStatus();           
+            layoutToolStatus();
         }
     }
+
     private void layoutToolStatus() {
         if (ApplicationContext.imgPanel.getCanvas().getLayeredCanvas().getComparedWithStudies() != null) {
             layoutButton.setEnabled(false);
@@ -824,6 +817,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             layoutButton.setEnabled(true);
         }
     }
+
     private void enableAllTools() {
         layoutToolStatus();
         windowing.setEnabled(true);
@@ -845,6 +839,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         stackButton.setEnabled(true);
         scoutButton.setEnabled(true);
         cube3DButton.setEnabled(true);
+        synchronizeButton.setEnabled(true);
         setAnnotationToolsStatus();
     }
 
@@ -875,6 +870,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         stackButton.setEnabled(false);
         scoutButton.setEnabled(false);
         cube3DButton.setEnabled(false);
+        synchronizeButton.setEnabled(false);
     }
     private void stackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stackButtonActionPerformed
         doStack();
@@ -1157,12 +1153,12 @@ public class ImageToolbar extends javax.swing.JPanel {
     }//GEN-LAST:event_scoutButtonActionPerformed
 
     public void doScout() {
-        if (!ApplicationContext.imgPanel.isDisplayScout()) {
-            ApplicationContext.imgPanel.setDisplayScout(true);
+        if (!ImagePanel.isDisplayScout()) {
+            ImagePanel.setDisplayScout(true);
             LocalizerDelegate localizer = new LocalizerDelegate();
             localizer.drawScoutLineWithBorder();
         } else {
-            ApplicationContext.imgPanel.setDisplayScout(false);
+            ImagePanel.setDisplayScout(false);
             LocalizerDelegate.hideScoutLine();
         }
     }
@@ -1192,7 +1188,7 @@ public class ImageToolbar extends javax.swing.JPanel {
 }//GEN-LAST:event_cube3DButtonActionPerformed
 
     private void synchronizeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_synchronizeButtonActionPerformed
-      ApplicationContext.imgPanel.doSynchronize();
+        ApplicationContext.imgPanel.doSynchronize();
     }//GEN-LAST:event_synchronizeButtonActionPerformed
     private void designPresetContext() {
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {

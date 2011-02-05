@@ -232,7 +232,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     private int instanceNumber;
     private String sliceLocation;
     public static boolean synchornizeTiles = false;
-    public int syncStartInstance;    
+    public int syncStartInstance;
 
     public ImagePanel() {
         initComponents();
@@ -492,22 +492,22 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             this.reader.setInput(iis, false);
             dataset = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
             try {
-                  if(reader.getNumImages(true)>0){
-                currentbufferedimage = reader.read(0);
-                floatAspectRatio = reader.getAspectRatio(0);
-            }
+                if (reader.getNumImages(true) > 0) {
+                    currentbufferedimage = reader.read(0);
+                    floatAspectRatio = reader.getAspectRatio(0);
+                }
                 nFrames = reader.getNumImages(true);
                 if (nFrames - 1 > 0) {
                     mulitiFrame = true;
                     this.totalInstance = nFrames;
                 }
-                  if(reader.getNumImages(true)>0){
-                imageIcon = new ImageIcon();
-                imageIcon.setImage(currentbufferedimage);
-                loadedImage = imageIcon.getImage();
-                image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
-                Graphics2D g2 = image.createGraphics();
-                g2.drawImage(loadedImage, 0, 0, null);
+                if (reader.getNumImages(true) > 0) {
+                    imageIcon = new ImageIcon();
+                    imageIcon.setImage(currentbufferedimage);
+                    loadedImage = imageIcon.getImage();
+                    image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
+                    Graphics2D g2 = image.createGraphics();
+                    g2.drawImage(loadedImage, 0, 0, null);
                 }
                 repaint();
             } catch (RuntimeException e) {
@@ -1307,17 +1307,17 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     public void windowChanged(int windowCenter, int windowWidth) {
         try {
             widowingFlag = true;
-            if (cmParam != null) {                            
+            if (cmParam != null) {
                 cmParam = cmParam.update(windowCenter, windowWidth, cmParam.isInverse());
                 cm = cmFactory.getColorModel(cmParam);
                 currentbufferedimage = new BufferedImage(cm, currentbufferedimage.getRaster(), false, null);
                 this.windowLevel = windowCenter;
                 this.windowWidth = windowWidth;
-                }
-                convertToRGBImage();
-                repaint();
-                changeTextOverlay();
-            
+            }
+            convertToRGBImage();
+            repaint();
+            changeTextOverlay();
+
 
         } catch (Exception e) {
             System.out.println("Windowing can't be applied");
@@ -1826,7 +1826,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 localizer.drawScoutLineWithBorder();
             }
         }
-        this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getAnnotation());     
+        this.getCanvas().getLayeredCanvas().annotationPanel.setAnnotation(instance.getAnnotation());
         //this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
         if (!ApplicationContext.databaseRef.getMultiframeStatus()) {
             this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(instance.getSeriesLevelIndex());
@@ -1835,47 +1835,45 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setInstanceNumber("" + this.instanceNumber);
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setSlicePosition(sliceLocation);
-           if (synchornizeTiles && !isMulitiFrame() && modality.startsWith("CT")) {
+        if (synchornizeTiles && !isMulitiFrame() && modality.startsWith("CT")) {
             SynchronizationDelegate synchronizationDelegate = new SynchronizationDelegate();
             synchronizationDelegate.doTileSync();
         }
     }
 
     public void setImage(String sliceLocation) {
-       /**
-          * This mehtod has been added for synchronized scroll it will not support for multiframe sync scroll. so that
-          * instance number can be set directly to instanceNumber and currentInstanceNo variable.
-          */
+        /**
+         * This mehtod has been added for synchronized scroll it will not support for multiframe sync scroll. so that
+         * instance number can be set directly to instanceNumber and currentInstanceNo variable.
+         */
         int instanceNo = ApplicationContext.databaseRef.getInstaneNumberBasedOnSliceLocation(studyUID, seriesUID, instanceUID, sliceLocation);
-        instanceNo--;      
+        instanceNo--;
         if (instanceNumber != -1) {
-            if(instanceNo>-1 && instanceNo<instanceArray.size())
-            {
-            setImage(instanceArray.get(instanceNo).getPixelData());
-            setInstanceInfo(instanceArray.get(instanceNo));
-            this.instanceNumber = instanceNo;
-            currentInstanceNo=instanceNo-1;
-            updateTextoverlay();
+            if (instanceNo > -1 && instanceNo < instanceArray.size()) {
+                setImage(instanceArray.get(instanceNo).getPixelData());
+                setInstanceInfo(instanceArray.get(instanceNo));
+                this.instanceNumber = instanceNo;
+                currentInstanceNo = instanceNo - 1;
+                updateTextoverlay();
             }
         }
     }
 
     public void setImage(int instanceNo) {
-         /**
-          * This mehtod has been added for synchronized scroll it will not support for multiframe sync scroll. so that
-          * instance number can be set directly to instanceNumber and currentInstanceNo variable.
-          */
-        if(instanceNo>-1 && instanceNo<instanceArray.size())
-            {
-        setImage(instanceArray.get(instanceNo).getPixelData());
-        setInstanceInfo(instanceArray.get(instanceNo));
-        this.instanceNumber = instanceNo+1;
-        currentInstanceNo=instanceNo;
-        updateTextoverlay();
+        /**
+         * This mehtod has been added for synchronized scroll it will not support for multiframe sync scroll. so that
+         * instance number can be set directly to instanceNumber and currentInstanceNo variable.
+         */
+        if (instanceNo > -1 && instanceNo < instanceArray.size()) {
+            setImage(instanceArray.get(instanceNo).getPixelData());
+            setInstanceInfo(instanceArray.get(instanceNo));
+            this.instanceNumber = instanceNo + 1;
+            currentInstanceNo = instanceNo;
+            updateTextoverlay();
         }
     }
 
-    public void updateTextoverlay() {  
+    public void updateTextoverlay() {
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(this.currentInstanceNo);
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setInstanceNumber("" + this.instanceNumber);
         this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setSlicePosition(sliceLocation);
@@ -2030,13 +2028,12 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         this.currentInstanceNo = currentInstanceNo;
     }
 
-    public boolean isDisplayScout() {
+    public static boolean isDisplayScout() {
         return displayScout;
     }
 
-    public void setDisplayScout(boolean displayScout) {
-        this.displayScout = displayScout;
-        repaint();
+    public static void setDisplayScout(boolean displayScout) {
+        ImagePanel.displayScout = displayScout;
     }
 
     private void clearProbeValues() {
@@ -2261,32 +2258,30 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             synchornizeTiles = false;
         } else {
             synchornizeTiles = true;
-            syncStartInstance=this.currentInstanceNo;
+            syncStartInstance = this.currentInstanceNo;
             SynchronizationDelegate.setSyncStartInstanceInAllTiles();
         }
     }
-    public boolean canBeProcessed()
-    {
-        boolean temp=false;
-        if(modality.startsWith("CT"))
-        {
-            temp=true;
-           // System.out.println("temp value set as true");
+
+    public boolean canBeProcessed() {
+        boolean temp = false;
+        if (modality.startsWith("CT")) {
+            temp = true;
         }
         return temp;
     }
-    public int getSyncDifference()
-    {
-        return currentInstanceNo-syncStartInstance;
+
+    public int getSyncDifference() {
+        return currentInstanceNo - syncStartInstance;
     }
-    public void updateSyncStartInstance()
-    {
-        syncStartInstance=this.currentInstanceNo;
+
+    public void updateSyncStartInstance() {
+        syncStartInstance = this.currentInstanceNo;
     }
+
     public int getSyncStartInstance() {
         return syncStartInstance;
     }
-
 
     private void changeSeries(ActionEvent e, String studyUID, String seriesUID) {
         SeriesChooserDelegate seriesChooser = new SeriesChooserDelegate(studyUID, seriesUID, this.getCanvas().getLayeredCanvas());
