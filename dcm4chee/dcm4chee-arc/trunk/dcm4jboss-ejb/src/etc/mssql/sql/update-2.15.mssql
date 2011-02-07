@@ -11,7 +11,7 @@ UPDATE ae SET installed=1;
 ALTER TABLE ae ALTER COLUMN installed BIT NOT NULL;
 
 CREATE TABLE ups (
-    pk                NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT ups_req_pk PRIMARY KEY,
+    pk                NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT ups_pk PRIMARY KEY,
     patient_fk        NUMERIC(19,0) NULL,
     code_fk           NUMERIC(19,0) NULL,
     ups_iuid          VARCHAR(255) NOT NULL,
