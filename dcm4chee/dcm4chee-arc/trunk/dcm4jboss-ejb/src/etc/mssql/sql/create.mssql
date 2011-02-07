@@ -588,7 +588,7 @@ CREATE INDEX gppps_gpsps_fk ON rel_gpsps_gppps(gpsps_fk);
 CREATE INDEX gpsps_gppps_fk ON rel_gpsps_gppps(gppps_fk);
 
 CREATE TABLE ups (
-    pk                NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT ups_req_pk PRIMARY KEY,
+    pk                NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT ups_pk PRIMARY KEY,
     patient_fk        NUMERIC(19,0) NULL,
     code_fk           NUMERIC(19,0) NULL,
     ups_iuid          VARCHAR(255) NOT NULL,
