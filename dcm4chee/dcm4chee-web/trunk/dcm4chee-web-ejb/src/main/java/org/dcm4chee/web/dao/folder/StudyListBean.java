@@ -405,7 +405,7 @@ public class StudyListBean implements StudyListLocal {
 
     @SuppressWarnings("unchecked")
     public List<String> findStudyPermissionActions(String studyInstanceUID, List<String> roles) {
-        return ((roles != null) && (roles.size() > 0)) ? 
+        return ((roles != null) && (roles.size()) > 0) ? 
                 em.createQuery("SELECT DISTINCT sp.action FROM StudyPermission sp WHERE sp.studyInstanceUID = :studyInstanceUID AND role IN (:roles)")
                     .setParameter("studyInstanceUID", studyInstanceUID)
                     .setParameter("roles", roles)

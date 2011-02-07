@@ -112,7 +112,7 @@ public class StudyPermissionsPage extends SecureWebPage {
     Set<String> studyPermissionActions = new LinkedHashSet<String>();
     private ConfirmationWindow<Role> confirmationWindow;
     
-    public StudyPermissionsPage(final ModalWindow modalWindow, AbstractEditableDicomModel model) {
+    public StudyPermissionsPage(AbstractEditableDicomModel model) {
         super();
         
         if (StudyPermissionsPage.BaseCSS != null)
@@ -203,7 +203,7 @@ public class StudyPermissionsPage extends SecureWebPage {
                 server = (MBeanServerConnection) servers.get(0);
                 log.debug("Found MBeanServer:"+server);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             log.error("Failed to get WebConfig Service Attributes: " + e.getMessage());
             return;
         }

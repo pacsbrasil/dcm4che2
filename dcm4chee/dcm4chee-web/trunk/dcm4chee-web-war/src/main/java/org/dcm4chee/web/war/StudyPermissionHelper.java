@@ -108,7 +108,7 @@ public class StudyPermissionHelper implements Serializable {
     }
 
     private void setDicomSubject(Subject dicomSubject) {
-        if (!webStudyPermissions) {
+        if (!useStudyPermissions && !webStudyPermissions) {
             dicomRoles = null;
         } else {
             dicomRoles = new ArrayList<String>();
@@ -149,7 +149,8 @@ public class StudyPermissionHelper implements Serializable {
     }
     
     public boolean checkPermission(Set<? extends AbstractDicomModel> c, String action) {
-        if (dicomRoles == null)
+        if (!isWebStudyPermissions()
+        || (dicomRoles == null))
             return true;
         if (dicomRoles.size() == 0)
             return false;
@@ -162,8 +163,10 @@ public class StudyPermissionHelper implements Serializable {
         }
         return true;
     }
+    
     public boolean checkPermission(AbstractDicomModel m, String action) {
-        if (dicomRoles == null)
+        if ((!isWebStudyPermissions())
+        || (dicomRoles == null))
             return true;
         if (dicomRoles.size() == 0)
             return false;

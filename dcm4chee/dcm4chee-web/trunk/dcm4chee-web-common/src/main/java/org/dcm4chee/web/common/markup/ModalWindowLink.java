@@ -42,7 +42,7 @@ public class ModalWindowLink extends AjaxFallbackLink<Object> {
         modalWindow.show(target);
     }
     
-    class DisableDefaultConfirmBehavior extends AbstractBehavior implements IHeaderContributor {
+    public class DisableDefaultConfirmBehavior extends AbstractBehavior implements IHeaderContributor {
 
         private static final long serialVersionUID = 1L;
 

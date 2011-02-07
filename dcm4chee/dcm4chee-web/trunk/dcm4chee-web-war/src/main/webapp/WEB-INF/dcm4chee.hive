@@ -1,7 +1,3 @@
-grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "JBossAdmin"
-{
-};
-
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "LoginAllowed"
 {
 // DOC: swarm.principal.LoginAllowed
