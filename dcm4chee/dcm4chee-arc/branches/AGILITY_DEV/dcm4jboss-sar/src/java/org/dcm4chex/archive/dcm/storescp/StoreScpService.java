@@ -95,13 +95,13 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 
-import com.sun.jmx.snmp.tasks.Task;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
  * @version $Revision$ $Date::            $
  * @since 03.08.2003
  */
+
 public class StoreScpService extends AbstractScpService {
 
     public static final String EVENT_TYPE_OBJECT_STORED = 
@@ -269,12 +269,8 @@ public class StoreScpService extends AbstractScpService {
                 .parseInterval(interval);
         if (getState() == STARTED
                 && oldInterval != checkPendingSeriesStoredInterval) {
-            scheduler.stopScheduler(timerIDCheckPendingSeriesStored,
-                    listenerID, checkPendingSeriesStoredListener);
-            listenerID = scheduler.startScheduler(
-                    timerIDCheckPendingSeriesStored,
-                    checkPendingSeriesStoredInterval,
-                    checkPendingSeriesStoredListener);
+            startSeriesStoredScheduler();
+            stopSeriesStoredScheduler();
         }
     }
 
@@ -691,15 +687,23 @@ public class StoreScpService extends AbstractScpService {
 
     protected void startService() throws Exception {
         super.startService();
+        startSeriesStoredScheduler();
+    }
+
+    protected void startSeriesStoredScheduler() throws Exception {
         listenerID = scheduler.startScheduler(timerIDCheckPendingSeriesStored,
                 checkPendingSeriesStoredInterval,
                 checkPendingSeriesStoredListener);
     }
 
     protected void stopService() throws Exception {
+        stopSeriesStoredScheduler();
+        super.stopService();
+    }
+
+    protected void stopSeriesStoredScheduler() throws Exception {
         scheduler.stopScheduler(timerIDCheckPendingSeriesStored, listenerID,
                 checkPendingSeriesStoredListener);
-        super.stopService();
     }
 
     protected void bindDcmServices(DcmServiceRegistry services) {
