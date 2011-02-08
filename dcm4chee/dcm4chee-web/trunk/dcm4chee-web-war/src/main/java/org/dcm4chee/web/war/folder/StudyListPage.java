@@ -611,6 +611,7 @@ public class StudyListPage extends Panel {
             @Override
             public void onDecline(AjaxRequestTarget target, SelectedEntities selected) {
                 if (selected.getPpss().size() != 0) {
+                    System.out.println("getPpss");
                     if (ContentEditDelegate.getInstance().deletePps(selected)) {
                         this.setStatus(new StringResourceModel("folder.message.deleteDone", StudyListPage.this,null));
                         selected.refreshView(true);
@@ -628,9 +629,6 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset(), 
-                        studyPermissionHelper.applyStudyPermissions() ?
-                                null : studyPermissionHelper.getDicomRoles()));
                 boolean hasIgnored = selected.update(studyPermissionHelper.isWebStudyPermissions(), 
                         viewport.getPatients(), StudyPermission.DELETE_ACTION);
                 selected.deselectChildsOfSelectedEntities();
