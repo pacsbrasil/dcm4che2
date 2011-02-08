@@ -254,10 +254,13 @@ public class MoveEntitiesPage extends SecureWebPage {
     }
     
     private boolean checkStudyPermissionOfSelection() {
+System.out.println("checkStudyPermissionOfSelection()");
         StudyPermissionHelper sph = StudyPermissionHelper.get();
-        if (!sph.useStudyPermissions())
+        if (!sph.isWebStudyPermissions())
             return true;
         String action = (selected.getPatients().size() > 0) ? StudyPermission.DELETE_ACTION : StudyPermission.APPEND_ACTION;
+System.out.println("ACTION is: " + action);
+System.out.println("selected.getStudies().size() is: " + selected.getStudies().size());
         if (selected.getStudies().size() > 0) {
             if (!sph.checkPermission(selected.getStudies(), action))
                 return false;

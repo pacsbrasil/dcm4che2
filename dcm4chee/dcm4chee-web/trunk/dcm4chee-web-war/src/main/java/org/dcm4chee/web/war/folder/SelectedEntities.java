@@ -88,18 +88,7 @@ public class SelectedEntities implements Serializable {
         clear();
         for ( PatientModel patient : allPatients ) {
             if (patient.isSelected()) {
-                if (!allowSrcInTarget) {
-                    for (StudyModel study : patient.getStudies()) {
-                        if (useStudyPermissions && !study.getStudyPermissionActions().contains(action)) 
-                            ignoredNotAllowedEntities = true;
-                        else 
-                            studies.add(study);
-                    }
-                }
-                if (patient.getStudies().size() == studies.size()) {
-                    patients.add(patient);
-                    studies.clear();
-                }
+                patients.add(patient);
             }
             if (allowSrcInTarget || !patient.isSelected()) {
                 studyLoop: for (StudyModel study : patient.getStudies()) {
