@@ -664,10 +664,8 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-System.out.println("MOVE -> " + selected.getStudies().size());
                 selected.update(false, viewport.getPatients(), StudyPermission.UPDATE_ACTION, true);
                 log.info("Selected Entities:"+selected);
-System.out.println("MOVE -> " + selected.getStudies().size());
                 if (selected.hasDicomSelection()) {
                     modalWindow
                     .setPageCreator(new ModalWindow.PageCreator() {

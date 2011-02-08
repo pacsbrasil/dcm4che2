@@ -154,9 +154,6 @@ public class StudyPermissionHelper implements Serializable {
     }
     
     public boolean checkPermission(Set<? extends AbstractDicomModel> c, String action) {
-System.out.println("checkPermission: isWebStudyPermissions(): " + isWebStudyPermissions());
-System.out.println("checkPermission: dicomRoles: " + dicomRoles);
-//if (dicomRoles != null) System.out.println("checkPermission: dicomRoles: " + dicomRoles);
         if (!isWebStudyPermissions()
         || (dicomRoles == null))
             return true;
