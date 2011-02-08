@@ -53,7 +53,7 @@ import org.dcm4chex.archive.ejb.conf.AttributeFilter;
  * @version $Revision$ $Date$
  * @since 10.02.2004
  */
-public class GPPPSQueryCmd extends BaseReadCmd {
+public class GPPPSQueryCmd extends BaseDSQueryCmd {
 
     public static int transactionIsolationLevel = 0;
     public static int blobAccessType = Types.LONGVARBINARY;
@@ -66,15 +66,12 @@ public class GPPPSQueryCmd extends BaseReadCmd {
     private static final String[] RELATIONS = { "Patient.pk",
     		"GPPPS.patient_fk"};
 
-    private final SqlBuilder sqlBuilder = new SqlBuilder();
-
     /**
      * @param ds
      * @throws SQLException
      */
     public GPPPSQueryCmd(Dataset keys) throws SQLException {
-        super(JdbcProperties.getInstance().getDataSource(),
-                    transactionIsolationLevel);
+        super(keys, false, true, transactionIsolationLevel);
         AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
         defineColumnTypes(new int[] { blobAccessType, blobAccessType });
         // ensure keys contains (8,0005) for use as result filter
@@ -100,10 +97,6 @@ public class GPPPSQueryCmd extends BaseReadCmd {
         sqlBuilder.addListOfStringMatch(null, "GPPPS.ppsStatusAsInt",
                 SqlBuilder.TYPE1,
                 keys.getStrings(Tags.PPSStatus));
-    }
-
-    public void execute() throws SQLException {
-        execute(sqlBuilder.getSql());
     }
 
     public Dataset getDataset() throws SQLException {

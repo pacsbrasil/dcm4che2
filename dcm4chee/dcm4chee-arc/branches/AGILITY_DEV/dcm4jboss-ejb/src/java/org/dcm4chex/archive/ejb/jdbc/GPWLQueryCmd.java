@@ -285,10 +285,6 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
                 : list.toArray(new String[list.size()]));
     }
 
-    public void execute() throws SQLException {
-        execute(sqlBuilder.getSql());
-    }
-
     public Dataset getDataset() throws SQLException {
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
         DatasetUtils.fromByteArray( rs.getBytes(1), ds);
