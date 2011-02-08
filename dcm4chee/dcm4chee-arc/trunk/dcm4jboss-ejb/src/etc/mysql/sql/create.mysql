@@ -220,7 +220,7 @@ CREATE TABLE series (
     updated_time      DATETIME,
     series_attrs      LONGBLOB,
 FOREIGN KEY (study_fk) REFERENCES study(pk),
-FOREIGN KEY (mpps_fk) REFERENCES mpps(pk)
+FOREIGN KEY (mpps_fk) REFERENCES mpps(pk),
 FOREIGN KEY (inst_code_fk) REFERENCES code(pk)
 ) ENGINE=INNODB;
 CREATE INDEX study_fk ON series(study_fk);
