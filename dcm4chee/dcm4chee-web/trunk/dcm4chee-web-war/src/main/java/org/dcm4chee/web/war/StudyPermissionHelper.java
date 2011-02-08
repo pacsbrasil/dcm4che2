@@ -107,6 +107,11 @@ public class StudyPermissionHelper implements Serializable {
         }
     }
 
+    public boolean applyStudyPermissions() {
+        return isWebStudyPermissions() 
+            && !getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL);
+    }
+    
     private void setDicomSubject(Subject dicomSubject) {
         if (!useStudyPermissions && !webStudyPermissions) {
             dicomRoles = null;

@@ -628,11 +628,8 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                if (studyPermissionHelper.isWebStudyPermissions())
-                    updateStudyPermissions();
                 updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset(), 
-                        !studyPermissionHelper.isWebStudyPermissions() 
-                        || studyPermissionHelper.getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                        studyPermissionHelper.applyStudyPermissions() ?
                                 null : studyPermissionHelper.getDicomRoles()));
                 boolean hasIgnored = selected.update(studyPermissionHelper.isWebStudyPermissions(), 
                         viewport.getPatients(), StudyPermission.DELETE_ACTION);
@@ -669,8 +666,6 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                if (studyPermissionHelper.isWebStudyPermissions())
-                    updateStudyPermissions();
                 selected.update(false, viewport.getPatients(), StudyPermission.UPDATE_ACTION, true);
                 log.info("Selected Entities:"+selected);
                 if (selected.hasDicomSelection()) {
@@ -710,8 +705,6 @@ public class StudyListPage extends Panel {
 
             @Override
             public void onClick() {
-                if (studyPermissionHelper.isWebStudyPermissions())
-                    updateStudyPermissions();
                 this.setResponsePage(new ExportPage(viewport.getPatients()));
             }
         };
@@ -813,9 +806,8 @@ public class StudyListPage extends Panel {
     }
 
     private void queryStudies() {
-        List<String> dicomSecurityRoles = !studyPermissionHelper.isWebStudyPermissions() || 
-            studyPermissionHelper.getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
-                    null : studyPermissionHelper.getDicomRoles();
+        List<String> dicomSecurityRoles = studyPermissionHelper.applyStudyPermissions() ? 
+                    studyPermissionHelper.getDicomRoles() : null;
         viewport.setTotal(dao.count(viewport.getFilter(), dicomSecurityRoles));
         updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset(), dicomSecurityRoles));
         notSearched = false;
@@ -823,7 +815,7 @@ public class StudyListPage extends Panel {
 
     private void updateStudyPermissions() {
         for (PatientModel patient : viewport.getPatients()) {
-            for (StudyModel study : patient.getStudies())
+            for (StudyModel study : patient.getStudies()) 
                 study.setStudyPermissionActions(dao.findStudyPermissionActions((study).getStudyInstanceUID(), 
                         studyPermissionHelper.getDicomRoles()
                 ));
@@ -833,16 +825,15 @@ public class StudyListPage extends Panel {
     private void updatePatients(List<Patient> patients) {
         retainSelectedPatients();
         for (Patient patient : patients) {
-            PatientModel patientModel = addPatient(patient);
-            List<String> dicomSecurityRoles = studyPermissionHelper.getDicomRoles();            
+            PatientModel patientModel = addPatient(patient);            
+            List<String> dicomSecurityRoles = studyPermissionHelper.applyStudyPermissions() ?
+                    studyPermissionHelper.getDicomRoles() : null;
             if (viewport.getFilter().isPatientsWithoutStudies()) {
                 patientModel.setExpandable(dao.countStudiesOfPatient(patient.getPk(), dicomSecurityRoles) > 0);
             } else {
                 for (Study study : patient.getStudies()) {
-                    List<String> actions = dao.findStudyPermissionActions((study).getStudyInstanceUID(), dicomSecurityRoles);
-                    if (!studyPermissionHelper.isWebStudyPermissions()
-                        || studyPermissionHelper.getStudyPermissionRight()
-                            .equals(StudyPermissionHelper.StudyPermissionRight.ALL)
+                    List<String> actions = dao.findStudyPermissionActions((study).getStudyInstanceUID(), studyPermissionHelper.getDicomRoles());
+                    if (!studyPermissionHelper.applyStudyPermissions()
                         || actions.contains("Q")) {  
                         addStudy(study, patientModel, actions);
                         patientModel.setExpandable(true);
@@ -995,7 +986,7 @@ public class StudyListPage extends Panel {
                 @Override
                 public boolean isVisible() {
                     return !studyPermissionHelper.isWebStudyPermissions() 
-                    && webviewerLinkProvider.supportPatientLevel();
+                        && webviewerLinkProvider.supportPatientLevel();
                 }
             }
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
@@ -1128,7 +1119,7 @@ public class StudyListPage extends Panel {
                 @Override
                 public boolean isVisible() {
                     return !studyPermissionHelper.isWebStudyPermissions() 
-                    && webviewerLinkProvider.supportStudyLevel();
+                        && webviewerLinkProvider.supportStudyLevel();
                 }
             }
             .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
@@ -1429,7 +1420,7 @@ public class StudyListPage extends Panel {
                 @Override
                 public boolean isVisible() {
                     return !studyPermissionHelper.isWebStudyPermissions() 
-                    && webviewerLinkProvider.supportSeriesLevel();
+                        && webviewerLinkProvider.supportSeriesLevel();
                 }
             }
                 .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
@@ -1508,7 +1499,7 @@ public class StudyListPage extends Panel {
                 @Override
                 public boolean isVisible() {
                     return !studyPermissionHelper.isWebStudyPermissions() 
-                    && webviewerLinkProvider.supportInstanceLevel();
+                        && webviewerLinkProvider.supportInstanceLevel();
                 }
             }
                 .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
@@ -1665,7 +1656,8 @@ public class StudyListPage extends Panel {
             
             @Override
             public boolean isVisible() {
-                return !studyPermissionHelper.isWebStudyPermissions() || checkEditStudyPermission(model);
+                return !studyPermissionHelper.isWebStudyPermissions() 
+                    || checkEditStudyPermission(model);
             }
         };
         Image image = new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT);
@@ -1704,6 +1696,7 @@ public class StudyListPage extends Panel {
                     @Override
                     public void onClose(AjaxRequestTarget target) {
                         updateStudyPermissions();
+
                         modalWindow.getPage().setOutputMarkupId(true);
                         target.addComponent(modalWindow.getPage());
                     }
@@ -1716,7 +1709,7 @@ public class StudyListPage extends Panel {
             public boolean isVisible() {
                 return studyPermissionHelper.useStudyPermissions() 
                     && model.getDataset() != null
-                    && !((model instanceof PatientModel && ((PatientModel) model).getStudies().size() == 0));
+                    && !(model instanceof PatientModel && !((PatientModel) model).isExpandable());
             }
         };
         Image image = new Image("studyPermissionsImg",ImageManager.IMAGE_FOLDER_STUDY_PERMISSIONS);
