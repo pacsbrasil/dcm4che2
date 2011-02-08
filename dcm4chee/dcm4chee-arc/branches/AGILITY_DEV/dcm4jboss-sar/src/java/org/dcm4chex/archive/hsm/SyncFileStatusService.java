@@ -10,10 +10,14 @@
 package org.dcm4chex.archive.hsm;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
+import javax.ejb.FinderException;
 import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -61,8 +65,17 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
 
     private ObjectName hsmModuleServicename = null;
     
+    private Timestamp oldestCreatedTimeOfCheckFileStatus;
+    private long nextUpdate;
+    
     private final NotificationListener timerListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
+            if (fileSystem == null) {
+                log.debug("SyncFileStatus disabled (fileSystem=NONE)!");
+            }
+            if (oldestCreatedTimeOfCheckFileStatus == null || System.currentTimeMillis() > nextUpdate) {
+                updateOldestCreatedTimeOfCheckFileStatus();
+            }
             Calendar cal = Calendar.getInstance();
             int hour = cal.get(Calendar.HOUR_OF_DAY);
             if (isDisabled(hour)) {
@@ -154,6 +167,32 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         this.limitNumberOfFilesPerTask = limit;
     }
 
+    public String getOldestCreatedTimeOfCheckFileStatus() {
+        return oldestCreatedTimeOfCheckFileStatus == null ? "UNKNOWN" : 
+            new SimpleDateFormat("yyyy/MM/dd hh:mm:ss").format(oldestCreatedTimeOfCheckFileStatus);
+    }
+
+    public void updateOldestCreatedTimeOfCheckFileStatus() {
+        try {
+            oldestCreatedTimeOfCheckFileStatus = newFileSystemMgt().minCreatedTimeOnFsWithFileStatus(this.fileSystem, this.checkFileStatus);
+            if (oldestCreatedTimeOfCheckFileStatus == null) {
+                nextUpdate = System.currentTimeMillis() + this.minFileAge;
+                log.info("OldestCreatedTimeOfCheckFileStatus is null! -> There is no file with fileStatus="+checkFileStatus+" on filesystem="+fileSystem);
+                log.info("Next update of OldestCreatedTimeOfCheckFileStatus in "+getMinimumFileAge()+" (when new files are old enough to be considered)");
+            } else {
+                Calendar cal = Calendar.getInstance();
+                cal.set(Calendar.HOUR_OF_DAY, 23);
+                cal.set(Calendar.MINUTE, 59);
+                cal.set(Calendar.SECOND, 59);
+                cal.set(Calendar.MILLISECOND, 999);
+                nextUpdate = cal.getTimeInMillis();
+                log.info("OldestCreatedTimeOfCheckFileStatus updated to "+oldestCreatedTimeOfCheckFileStatus+" ! Next update after midnight.");
+            }
+        } catch (Exception x) {
+            log.warn("Update OldestCreatedTimeOfCheckFileStatus failed!", x);
+        }
+    }
+
     public final String getHSMModulServicename() {
         return hsmModuleServicename == null ? NONE : hsmModuleServicename.toString();
     }
@@ -201,10 +240,15 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
             isRunning = true;
         }
         try {
+            if (this.nextUpdate == 0L && oldestCreatedTimeOfCheckFileStatus == null)
+                this.updateOldestCreatedTimeOfCheckFileStatus();
+            if (oldestCreatedTimeOfCheckFileStatus == null) {
+               log.info("OldestCreatedTimeOfCheckFileStatus is null! SyncFileStatus skipped!");
+               return 0;
+            }
             FileSystemMgt2 fsmgt = newFileSystemMgt();
-            FileDTO[] c = fsmgt.findFilesByStatusAndFileSystem(fileSystem,
-                    checkFileStatus, new Timestamp(System.currentTimeMillis()
-                            - minFileAge), limitNumberOfFilesPerTask);
+            FileDTO[] c = fsmgt.findFilesByStatusAndFileSystem(fileSystem, checkFileStatus, this.oldestCreatedTimeOfCheckFileStatus,
+                    new Timestamp(System.currentTimeMillis() - minFileAge), limitNumberOfFilesPerTask);
             if (log.isDebugEnabled()) log.debug("found "+c.length+" files to check status.");
             if (c.length == 0) {
                 return 0;

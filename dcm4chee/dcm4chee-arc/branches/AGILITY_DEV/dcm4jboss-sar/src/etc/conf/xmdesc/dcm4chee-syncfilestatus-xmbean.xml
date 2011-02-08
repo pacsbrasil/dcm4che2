@@ -67,7 +67,7 @@
       </descriptors>
    </attribute>
    
-     <attribute access="read-write"
+   <attribute access="read-write"
       getMethod="getTaskInterval"
       setMethod="setTaskInterval">
       <description><![CDATA[Interval in which the File status is checked.
@@ -87,6 +87,14 @@
       <descriptors>
          <value value="NEVER"/>
       </descriptors>
+   </attribute>
+
+   <attribute access="read-only"
+      getMethod="getOldestCreatedTimeOfCheckFileStatus">
+      <description>Creation Date of oldest file on configured filesystem with file status of configured CheckFileStatus.
+      </description>
+      <name>OldestCreatedTimeOfCheckFileStatus</name>
+      <type>java.lang.String</type>
    </attribute>
 
    <attribute access="read-write"
@@ -138,6 +146,13 @@
       ]]></description>
       <name>check</name>
       <return-type>int</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[Update OldestCreatedTimeOfCheckFileStatus. 
+      This will be done automatically every day after midnight if this service is enabled.
+      ]]></description>
+      <name>updateOldestCreatedTimeOfCheckFileStatus</name>
+      <return-type>void</return-type>
    </operation>
 
 </mbean>
