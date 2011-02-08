@@ -270,8 +270,8 @@ public class StoreScpService extends AbstractScpService {
                 .parseInterval(interval);
         if (getState() == STARTED
                 && oldInterval != checkPendingSeriesStoredInterval) {
-            startSeriesStoredScheduler();
             stopSeriesStoredScheduler();
+            startSeriesStoredScheduler();
         }
     }
 
