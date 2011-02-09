@@ -73,11 +73,14 @@ public class FolderSubmitCtrl2 extends FolderSubmitCtrl {
     @Override
     protected String perform() throws Exception {
         String folder = super.perform();
-        HttpServletRequest rq = getCtx().getRequest();
-        Set allowedMethods = getPermissions().getPermissionsForApp("folder");
-        if (allowedMethods.contains("folder.view")) {
-            if (rq.getParameter("view") != null || rq.getParameter("view.x") != null) {
-                return view();
+        // Fix WEA-27, only when folder
+        if ("folder".equals(folder)) {
+            HttpServletRequest rq = getCtx().getRequest();
+            Set allowedMethods = getPermissions().getPermissionsForApp("folder");
+            if (allowedMethods.contains("folder.view")) {
+                if (rq.getParameter("view") != null || rq.getParameter("view.x") != null) {
+                    return view();
+                }
             }
         }
         return folder;
