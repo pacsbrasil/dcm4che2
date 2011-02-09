@@ -14,7 +14,6 @@
     </properties>
     <modules>
         <module>dcm4chee-web-ejb</module>
-        <module>dcm4chee-web-common</module>
         <module>dcm4chee-web-war</module>
         <module>dcm4chee-web-sar</module>
         <module>dcm4chee-web-ear</module>
