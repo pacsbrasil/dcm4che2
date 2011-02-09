@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.folder;
+package org.dcm4chee.web.war.folder.delegate;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -57,6 +57,8 @@ import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
 import org.dcm4chee.web.common.exceptions.SelectionException;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.folder.MoveEntitiesPage;
+import org.dcm4chee.web.war.folder.SelectedEntities;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;

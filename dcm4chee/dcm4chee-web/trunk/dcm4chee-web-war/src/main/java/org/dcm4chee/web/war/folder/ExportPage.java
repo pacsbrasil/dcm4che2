@@ -79,6 +79,7 @@ import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.StudyPermissionHelper;
+import org.dcm4chee.web.war.folder.delegate.ExportDelegate;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;

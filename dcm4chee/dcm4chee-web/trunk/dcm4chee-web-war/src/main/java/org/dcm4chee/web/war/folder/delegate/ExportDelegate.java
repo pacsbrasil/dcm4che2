@@ -36,64 +36,42 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.ae;
+package org.dcm4chee.web.war.folder.delegate;
 
-import java.net.UnknownHostException;
-
-import org.dcm4chee.archive.entity.AE;
+import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
  * @since Aug 18, 2009
  */
-public class EchoDelegate extends BaseMBeanDelegate {
+public class ExportDelegate extends BaseMBeanDelegate {
 
-    private static Logger log = LoggerFactory.getLogger(EchoDelegate.class);
-    
-    public EchoDelegate() {
+    private static ExportDelegate delegate;
+
+    private ExportDelegate() {
         super();
     }
-    
-    public String echo(AE ae, int nrOfTests) {
-        log.debug("ECHO:"+ae);
-        try {
-            return (String) server.invoke(serviceObjectName, "echo", 
-                new Object[]{ae, nrOfTests}, 
-                new String[]{AE.class.getName(), int.class.getName()});
-        } catch (Exception x) {
-            String msg = "DICOM Echo failed! Reason:"+x.getMessage();
-            log.error(msg,x);
-            return msg;
-        }
-    }
 
-    public boolean ping(String host) throws UnknownHostException {
-        try {
-            return (Boolean) server.invoke(serviceObjectName, "ping", 
-                new Object[]{host}, 
-                new String[]{String.class.getName()});
-        } catch (UnknownHostException x) {
-            throw x;
-        } catch (Exception x) {
-            if ( x.getCause() instanceof UnknownHostException) {
-                throw (UnknownHostException) x.getCause();
-            }
-            log.error("ICMP PING failed! Reason:"+x.getMessage(),x);
-            return false;
-        }
+    public void export(String destAET, String patID, String[] studyIUIDs, String[] seriesIUIDs, String[] sopIUIDs, 
+            DimseRSPHandler handler) throws Exception {
+            server.invoke(serviceObjectName, "move", 
+                    new Object[]{null, destAET, patID, studyIUIDs, seriesIUIDs, sopIUIDs, handler, false}, 
+                    new String[]{String.class.getName(), String.class.getName(), String.class.getName(),
+                    String[].class.getName(), String[].class.getName(), String[].class.getName(), 
+                    DimseRSPHandler.class.getName(), boolean.class.getName()});
     }
 
     @Override
     public String getServiceNameCfgAttribute() {
-        return "echoServiceName";
+        return "moveScuServiceName";
     }
-    
-    @Override
-    public String getDefaultServiceObjectName() {
-        return "dcm4chee.web:service=EchoService";
+
+    public static ExportDelegate getInstance() {
+        if (delegate==null)
+            delegate = new ExportDelegate();
+        return delegate;
     }
+
 }

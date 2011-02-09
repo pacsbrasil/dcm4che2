@@ -122,6 +122,8 @@ import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
+import org.dcm4chee.web.war.folder.delegate.ContentEditDelegate;
+import org.dcm4chee.web.war.folder.delegate.MppsEmulateDelegate;
 import org.dcm4chee.web.war.folder.model.FileModel;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;

@@ -70,6 +70,7 @@ import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
+import org.dcm4chee.web.war.ae.delegate.AEDelegate;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 
 /**

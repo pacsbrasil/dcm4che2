@@ -67,6 +67,7 @@ import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.war.common.SelectAllLink;
 import org.dcm4chee.web.war.common.WadoImage;
+import org.dcm4chee.web.war.folder.delegate.WADODelegate;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;

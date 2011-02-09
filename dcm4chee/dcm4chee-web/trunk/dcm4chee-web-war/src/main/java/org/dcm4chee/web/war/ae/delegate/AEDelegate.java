@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.ae;
+package org.dcm4chee.web.war.ae.delegate;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

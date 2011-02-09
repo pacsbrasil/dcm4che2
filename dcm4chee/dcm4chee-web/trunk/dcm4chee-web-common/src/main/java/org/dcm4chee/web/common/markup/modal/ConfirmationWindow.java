@@ -97,7 +97,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                 return true;
             }
         });
-        setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
+        setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {  
             
             private static final long serialVersionUID = 1L;
 

@@ -91,7 +91,7 @@ import org.dcm4chee.web.dao.vo.EntityTree;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.service.common.FileImportOrder;
 import org.dcm4chee.web.service.common.HttpUserInfo;
-import org.dcm4chee.web.service.common.TemplatesDelegate;
+import org.dcm4chee.web.service.common.delegate.TemplatesDelegate;
 import org.dcm4chee.web.service.common.XSLTUtils;
 import org.jboss.system.ServiceMBeanSupport;
 import org.slf4j.Logger;

@@ -44,6 +44,8 @@ import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
 import javax.management.ObjectName;
 
+import org.dcm4chee.web.service.common.delegate.JMSDelegate;
+
 /**
  * @author franz.willer@gmail.com
  * @version $Revision$ $Date$

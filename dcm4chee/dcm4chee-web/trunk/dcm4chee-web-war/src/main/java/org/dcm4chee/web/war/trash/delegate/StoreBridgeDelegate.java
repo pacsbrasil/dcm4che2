@@ -36,47 +36,45 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.folder;
+package org.dcm4chee.web.war.trash.delegate;
+
+import java.io.IOException;
+
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MalformedObjectNameException;
+import javax.management.ReflectionException;
 
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.dcm4chee.web.service.common.FileImportOrder;
 
 /**
- * @author Franz Willer <franz.willer@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since Sept 10, 2010
+ * @since 17.05.2010
  */
-public class MppsEmulateDelegate extends BaseMBeanDelegate {
+public class StoreBridgeDelegate extends BaseMBeanDelegate {
 
-    private static MppsEmulateDelegate delegate;
-
-    private static Logger log = LoggerFactory.getLogger(MppsEmulateDelegate.class);
-
-    private MppsEmulateDelegate() {
+    private static StoreBridgeDelegate delegate;
+    
+    private StoreBridgeDelegate() throws MalformedObjectNameException, NullPointerException {
         super();
     }
 
-    public int emulateMpps(long studyPk) {
-        try {
-            return (Integer) server.invoke(serviceObjectName, "emulateMPPS", 
-                new Object[]{studyPk}, 
-                new String[]{"long"});
-        } catch (Exception x) {
-            String msg = "Emulate MPPS failed! Reason:"+x.getMessage();
-            log.error(msg,x);
-            return -1;
-        }
-    }
-
-    @Override
-    public String getServiceNameCfgAttribute() {
-        return "mppsEmulatorServiceName";
-    }
-
-    public static MppsEmulateDelegate getInstance() {
+    public static StoreBridgeDelegate getInstance() throws MalformedObjectNameException, NullPointerException {
         if (delegate==null)
-            delegate = new MppsEmulateDelegate();
+            delegate = new StoreBridgeDelegate();
         return delegate;
+    }
+
+    public String getServiceNameCfgAttribute() {
+        return "storeBridgeServiceName";
+    }
+    
+    public void importFile(FileImportOrder order) throws 
+        InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+        
+        server.invoke(serviceObjectName, "importFile", new Object[] {order}, 
+                new String[] {org.dcm4chee.web.service.common.FileImportOrder.class.getName()});
     }
 }

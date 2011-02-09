@@ -47,6 +47,7 @@ import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.war.folder.delegate.WADODelegate;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 
 /**

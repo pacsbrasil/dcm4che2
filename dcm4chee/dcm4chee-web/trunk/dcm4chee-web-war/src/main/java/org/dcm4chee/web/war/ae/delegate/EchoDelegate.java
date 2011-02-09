@@ -36,45 +36,64 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.trash;
+package org.dcm4chee.web.war.ae.delegate;
 
-import java.io.IOException;
+import java.net.UnknownHostException;
 
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
-import javax.management.MalformedObjectNameException;
-import javax.management.ReflectionException;
-
+import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
-import org.dcm4chee.web.service.common.FileImportOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * @author Robert David <robert.david@agfa.com>
+ * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since 17.05.2010
+ * @since Aug 18, 2009
  */
-public class StoreBridgeDelegate extends BaseMBeanDelegate {
+public class EchoDelegate extends BaseMBeanDelegate {
 
-    private static StoreBridgeDelegate delegate;
+    private static Logger log = LoggerFactory.getLogger(EchoDelegate.class);
     
-    private StoreBridgeDelegate() throws MalformedObjectNameException, NullPointerException {
+    public EchoDelegate() {
         super();
     }
-
-    public static StoreBridgeDelegate getInstance() throws MalformedObjectNameException, NullPointerException {
-        if (delegate==null)
-            delegate = new StoreBridgeDelegate();
-        return delegate;
+    
+    public String echo(AE ae, int nrOfTests) {
+        log.debug("ECHO:"+ae);
+        try {
+            return (String) server.invoke(serviceObjectName, "echo", 
+                new Object[]{ae, nrOfTests}, 
+                new String[]{AE.class.getName(), int.class.getName()});
+        } catch (Exception x) {
+            String msg = "DICOM Echo failed! Reason:"+x.getMessage();
+            log.error(msg,x);
+            return msg;
+        }
     }
 
+    public boolean ping(String host) throws UnknownHostException {
+        try {
+            return (Boolean) server.invoke(serviceObjectName, "ping", 
+                new Object[]{host}, 
+                new String[]{String.class.getName()});
+        } catch (UnknownHostException x) {
+            throw x;
+        } catch (Exception x) {
+            if ( x.getCause() instanceof UnknownHostException) {
+                throw (UnknownHostException) x.getCause();
+            }
+            log.error("ICMP PING failed! Reason:"+x.getMessage(),x);
+            return false;
+        }
+    }
+
+    @Override
     public String getServiceNameCfgAttribute() {
-        return "storeBridgeServiceName";
+        return "echoServiceName";
     }
     
-    public void importFile(FileImportOrder order) throws 
-        InstanceNotFoundException, MBeanException, ReflectionException, IOException {
-        
-        server.invoke(serviceObjectName, "importFile", new Object[] {order}, 
-                new String[] {org.dcm4chee.web.service.common.FileImportOrder.class.getName()});
+    @Override
+    public String getDefaultServiceObjectName() {
+        return "dcm4chee.web:service=EchoService";
     }
 }

@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.service.common;
+package org.dcm4chee.web.service.common.delegate;
 
 import java.io.Serializable;
 

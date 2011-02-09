@@ -66,7 +66,7 @@ import org.dcm4che2.net.ExtRetrieveTransferCapability;
 import org.dcm4che2.net.NoPresentationContextException;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4chee.web.service.common.AbstractScuService;
-import org.dcm4chee.web.service.common.JMSDelegate;
+import org.dcm4chee.web.service.common.delegate.JMSDelegate;
 import org.dcm4chee.web.service.common.RetryIntervalls;
 
 /**

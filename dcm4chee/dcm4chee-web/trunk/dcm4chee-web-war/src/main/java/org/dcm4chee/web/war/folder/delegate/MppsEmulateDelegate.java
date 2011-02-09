@@ -36,42 +36,47 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.folder;
+package org.dcm4chee.web.war.folder.delegate;
 
-import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since Aug 18, 2009
+ * @since Sept 10, 2010
  */
-public class ExportDelegate extends BaseMBeanDelegate {
+public class MppsEmulateDelegate extends BaseMBeanDelegate {
 
-    private static ExportDelegate delegate;
+    private static MppsEmulateDelegate delegate;
 
-    private ExportDelegate() {
+    private static Logger log = LoggerFactory.getLogger(MppsEmulateDelegate.class);
+
+    private MppsEmulateDelegate() {
         super();
     }
 
-    public void export(String destAET, String patID, String[] studyIUIDs, String[] seriesIUIDs, String[] sopIUIDs, 
-            DimseRSPHandler handler) throws Exception {
-            server.invoke(serviceObjectName, "move", 
-                    new Object[]{null, destAET, patID, studyIUIDs, seriesIUIDs, sopIUIDs, handler, false}, 
-                    new String[]{String.class.getName(), String.class.getName(), String.class.getName(),
-                    String[].class.getName(), String[].class.getName(), String[].class.getName(), 
-                    DimseRSPHandler.class.getName(), boolean.class.getName()});
+    public int emulateMpps(long studyPk) {
+        try {
+            return (Integer) server.invoke(serviceObjectName, "emulateMPPS", 
+                new Object[]{studyPk}, 
+                new String[]{"long"});
+        } catch (Exception x) {
+            String msg = "Emulate MPPS failed! Reason:"+x.getMessage();
+            log.error(msg,x);
+            return -1;
+        }
     }
 
     @Override
     public String getServiceNameCfgAttribute() {
-        return "moveScuServiceName";
+        return "mppsEmulatorServiceName";
     }
 
-    public static ExportDelegate getInstance() {
+    public static MppsEmulateDelegate getInstance() {
         if (delegate==null)
-            delegate = new ExportDelegate();
+            delegate = new MppsEmulateDelegate();
         return delegate;
     }
-
 }
