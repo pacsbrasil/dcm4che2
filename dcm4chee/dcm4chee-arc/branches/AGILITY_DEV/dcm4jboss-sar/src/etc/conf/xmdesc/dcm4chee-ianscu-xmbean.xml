@@ -135,6 +135,26 @@
       </descriptors>
    </attribute>
 
+   <attribute access="read-write" getMethod="getRetrieveURI" setMethod="setRetrieveURI">
+      <description>Retrieve URI of this system. This value will be added to IAN dataset in attribute (0040,E010).
+      NONE = do not add Retrieve URI(0040,E010).
+      </description>
+      <name>RetrieveURI</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getRetrieveLocationUID" setMethod="setRetrieveLocationUID">
+      <description>Retrieve Location UID of this system. This value will be added to IAN dataset in attribute (0040,E011).
+      NONE = do not add Retrieve Location UID(0040,E011).
+      </description>
+      <name>RetrieveLocationUID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" 
      getMethod="getQueueName"
      setMethod="setQueueName">

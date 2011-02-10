@@ -114,8 +114,8 @@ public class IANScuService extends AbstractScuService implements
             Tags.PatientName, Tags.PatientID, Tags.StudyID
     };
 
-     private static final int[] INSTANCE_AVAILABILITY = {
-         Tags.InstanceAvailability
+     private static final int[] EXCLUDE_ATTRS = {
+         Tags.InstanceAvailability, Tags.RetrieveURI, Tags.RetrieveLocationUID
      };
 
     private final NotificationListener seriesStoredListener = new NotificationListener() {
@@ -172,10 +172,13 @@ public class IANScuService extends AbstractScuService implements
     private boolean sendOneIANforEachMPPS;
 
     private int concurrency = 1;
+    
+    private final JMSDelegate jmsDelegate = new JMSDelegate(this);
 
     private boolean onMppsLinkedEnabled;
-
-    private JMSDelegate jmsDelegate = new JMSDelegate(this);
+    
+    private String retrieveURI;
+    private String retrieveLocationUID;
 
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
@@ -271,6 +274,28 @@ public class IANScuService extends AbstractScuService implements
     public final void setScnPriority(String scnPriority) {
         this.scnPriority = DicomPriority.toCode(scnPriority);
     }
+    
+    public String getRetrieveURI() {
+        return retrieveURI == null ? NONE : retrieveURI;
+    }
+
+    public void setRetrieveURI(String uri) {
+        this.retrieveURI = NONE.equals(uri) ? null : uri;
+    }
+
+    public String getRetrieveLocationUID() {
+        return retrieveLocationUID == null ? NONE : retrieveLocationUID;
+    }
+
+    public void setRetrieveLocationUID(String uid) {
+        if (NONE.equals(uid)) {
+            retrieveLocationUID = null;
+        } else {
+            if (!UIDs.isValid(uid))
+                throw new IllegalArgumentException("Retrieve Location UID must be a valid UID!");
+            retrieveLocationUID = uid;
+        }
+    }
 
     public final ObjectName getStoreScpServiceName() {
         return storeScpServiceName;
@@ -312,7 +337,8 @@ public class IANScuService extends AbstractScuService implements
         this.queueName = queueName;
     }
 
-    protected void startService() throws Exception {
+	@Override
+	protected void startService() throws Exception {
         jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(storeScpServiceName,
                 seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
@@ -325,7 +351,8 @@ public class IANScuService extends AbstractScuService implements
 
     }
 
-    protected void stopService() throws Exception {
+	@Override
+	protected void stopService() throws Exception {
         server.removeNotificationListener(storeScpServiceName,
                 seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
         server.removeNotificationListener(deleteStudyServiceName,
@@ -423,6 +450,7 @@ public class IANScuService extends AbstractScuService implements
 
     private void schedule(String patid, String patname, String studyid,
             Dataset ian) {
+    	updateRetrieveURIandLocationUID(ian);
         if (log.isDebugEnabled()) {
             log.debug("IAN Dataset:");
             log.debug(ian);
@@ -437,6 +465,21 @@ public class IANScuService extends AbstractScuService implements
                         0L);
             } catch (Exception e) {
                 log.error("Failed to schedule " + order, e);
+            }
+        }
+    }
+    
+    private void updateRetrieveURIandLocationUID(Dataset ian) {
+        if (retrieveURI != null || retrieveLocationUID != null) {
+            DcmElement refSerSeq = ian.get(Tags.RefSeriesSeq);
+            for (int i = 0, n = refSerSeq.countItems(); i < n; i++) {
+                Dataset refSer = refSerSeq.getItem(i);
+                DcmElement refSopSeq = refSer.get(Tags.RefSOPSeq);
+                for (int j = 0, m = refSopSeq.countItems(); j < m; j++) {
+                    Dataset refSOP = refSopSeq.getItem(j);
+                    refSOP.putUT(Tags.RetrieveURI, retrieveURI);
+                    refSOP.putUT(Tags.RetrieveLocationUID, retrieveLocationUID);
+                }
             }
         }
     }
@@ -557,7 +600,7 @@ public class IANScuService extends AbstractScuService implements
             DcmElement scnSOPSeq = scnSeries.putSQ(Tags.RefImageSeq);
             for (int j = 0, m = ianSOPSeq.countItems(); j < m; ++j) {
                 scnSOPSeq.addItem(
-                        ianSOPSeq.getItem(j).exclude(INSTANCE_AVAILABILITY));
+                		ianSOPSeq.getItem(j).exclude(EXCLUDE_ATTRS));
             }
         }
         return scn;
