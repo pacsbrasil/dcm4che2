@@ -31,6 +31,15 @@ CREATE TABLE code (
 );
 CREATE UNIQUE INDEX code_value ON code(code_value,code_designator,code_version);
 
+CREATE TABLE issuer (
+    pk              NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT issuer_pk PRIMARY KEY,
+    entity_id       VARCHAR(255) NULL,
+    entity_uid      VARCHAR(255) NULL,
+    entity_uid_type VARCHAR(255) NULL
+);
+CREATE UNIQUE INDEX entity_id ON issuer(entity_id);
+CREATE UNIQUE INDEX entity_uid ON issuer(entity_uid,entity_uid_type);
+
 CREATE TABLE patient (
     pk              NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT patient_pk PRIMARY KEY,
     merge_fk        NUMERIC(19,0) NULL,
@@ -83,6 +92,7 @@ CREATE INDEX pat_other_pid_fk ON rel_pat_other_pid(other_pid_fk);
 CREATE TABLE study (
     pk              NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT study_pk PRIMARY KEY,
     patient_fk      NUMERIC(19,0) NULL,
+    accno_issuer_fk NUMERIC(19,0) NULL,
     study_iuid      VARCHAR(255) NOT NULL,
     study_id        VARCHAR(255) NULL,
     study_datetime  DATETIME NULL,
@@ -111,9 +121,11 @@ CREATE TABLE study (
     created_time    DATETIME NULL,
     updated_time    DATETIME NULL,
     study_attrs     IMAGE NULL,
-FOREIGN KEY (patient_fk) REFERENCES patient(pk)
+FOREIGN KEY (patient_fk) REFERENCES patient(pk),
+FOREIGN KEY (accno_issuer_fk) REFERENCES issuer(pk)
 );
 CREATE INDEX patient_fk ON study(patient_fk);
+CREATE INDEX accno_issuer_fk ON study(accno_issuer_fk);
 CREATE UNIQUE INDEX study_iuid ON study(study_iuid);
 CREATE INDEX study_id ON study(study_id);
 CREATE INDEX study_datetime ON study(study_datetime);
@@ -240,6 +252,8 @@ CREATE INDEX series_updated ON series(updated_time);
 CREATE TABLE series_req (
     pk              NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT series_req_pk PRIMARY KEY,
     series_fk       NUMERIC(19,0) NULL,
+    accno_issuer_fk NUMERIC(19,0) NULL,
+    accession_no    VARCHAR(255) NULL,
     study_iuid      VARCHAR(255) NULL,
     req_proc_id     VARCHAR(255) NULL,
     sps_id          VARCHAR(255) NULL,
@@ -249,10 +263,13 @@ CREATE TABLE series_req (
     req_phys_gn_sx  VARCHAR(255) NULL,
     req_phys_i_name VARCHAR(255) NULL,
     req_phys_p_name VARCHAR(255) NULL,
-FOREIGN KEY (series_fk) REFERENCES series(pk)
+FOREIGN KEY (series_fk) REFERENCES series(pk),
+FOREIGN KEY (accno_issuer_fk) REFERENCES issuer(pk)
 );
 CREATE INDEX ser_req_series_fk ON series_req(series_fk);
-CREATE INDEX ser_rq_study_iuid ON series_req(study_iuid);
+CREATE INDEX ser_req_accno_issuer_fk ON series_req(accno_issuer_fk);
+CREATE INDEX ser_req_accession_no ON series_req(accession_no);
+CREATE INDEX ser_req_study_iuid ON series_req(study_iuid);
 CREATE INDEX ser_req_proc_id ON series_req(req_proc_id);
 CREATE INDEX ser_req_sps_id ON series_req(sps_id);    
 CREATE INDEX ser_req_service ON series_req(req_service);
@@ -339,7 +356,24 @@ CREATE INDEX observer_gn_sx ON verify_observer(observer_gn_sx);
 CREATE INDEX observer_i_name ON verify_observer(observer_i_name);
 CREATE INDEX observer_p_name ON verify_observer(observer_p_name);
 
-CREATE TABLE filesystem (
+CREATE TABLE content_item (
+   pk               NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT content_item_pk PRIMARY KEY,
+   instance_fk      NUMERIC(19,0) NULL,
+   name_fk          NUMERIC(19,0) NULL,
+   code_fk          NUMERIC(19,0) NULL,
+   rel_type         VARCHAR(255) NULL,
+   text_value       VARCHAR(255) NULL,
+FOREIGN KEY (instance_fk) REFERENCES instance(pk),
+FOREIGN KEY (name_fk) REFERENCES code(pk),
+FOREIGN KEY (code_fk) REFERENCES code(pk)
+);
+CREATE INDEX content_item_inst_fk ON content_item(instance_fk);
+CREATE INDEX content_item_name_fk ON content_item(name_fk);
+CREATE INDEX content_item_code_fk ON content_item(code_fk);
+CREATE INDEX content_item_rel_type ON content_item(rel_type);
+CREATE INDEX content_item_text_value ON content_item(text_value);
+
+REATE TABLE filesystem (
     pk              NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT filesystem_pk PRIMARY KEY,
     next_fk         NUMERIC(19,0) NULL,
     dirpath         VARCHAR(255) NOT NULL,

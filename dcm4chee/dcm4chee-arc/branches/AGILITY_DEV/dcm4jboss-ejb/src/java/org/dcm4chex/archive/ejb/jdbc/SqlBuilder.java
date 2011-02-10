@@ -70,6 +70,7 @@ class SqlBuilder {
     private static final String[] ONE = { "1" };
     private String[] select;
     private String[] from;
+    private String[] aliases;
     private String[] leftJoin;
     private String[] relations;
     private ArrayList<Match> matches = new ArrayList<Match>();
@@ -126,6 +127,16 @@ class SqlBuilder {
         from = jp.getProperties(entities);
     }
 
+    public void setAliases(String[] aliases) {
+        if (aliases != null) {
+            if (aliases.length != from.length)
+                throw new IllegalArgumentException("aliases.length != from.length");
+            if (relations != null)
+                throw new IllegalStateException("relations != null");
+        }
+        this.aliases = aliases;
+    }
+
     public void setSubquery( SqlBuilder subQuery ) {
         from = new String[]{ "("+subQuery.getSql()+")" };
     }
@@ -169,6 +180,8 @@ class SqlBuilder {
             this.relations = null;
             return;
         }
+        if (aliases != null)
+            throw new IllegalArgumentException("aliases != null");
         if ((relations.length & 1) != 0) {
             throw new IllegalArgumentException(
                     "relations[" + relations.length + "]");
@@ -600,7 +613,13 @@ class SqlBuilder {
 
     private void appendInnerJoinsToFrom(StringBuffer sb) {
         if (relations == null || getDatabase() == JdbcProperties.ORACLE) {
-            appendTo(sb,from);
+            for (int i = 0; i < from.length; i++) {
+                if (i > 0)
+                    sb.append(", ");
+                sb.append(from[i]);
+                if (aliases != null && aliases[i] != null)
+                    sb.append(' ').append(aliases[i]);
+            }
         } else {
             sb.append(from[0]);
             for (int i = 0, n = relations.length/2; i < n; ++i) {

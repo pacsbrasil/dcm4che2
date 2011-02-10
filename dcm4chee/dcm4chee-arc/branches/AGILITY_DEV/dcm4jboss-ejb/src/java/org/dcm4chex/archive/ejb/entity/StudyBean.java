@@ -68,6 +68,8 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.IssuerLocal;
+import org.dcm4chex.archive.ejb.interfaces.IssuerLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -152,6 +154,7 @@ import org.dcm4chex.archive.util.Convert;
  *                  query="SELECT COUNT(s) FROM Series s WHERE s.study.pk = ?1 AND s.seriesStatus <> 0"
  *
  * @ejb.ejb-ref ejb-name="Code" view-type="local" ref-name="ejb/Code"
+ * @ejb.ejb-ref ejb-name="Issuer" view-type="local" ref-name="ejb/Issuer"
  *
  */
 public abstract class StudyBean implements EntityBean {
@@ -162,12 +165,15 @@ public abstract class StudyBean implements EntityBean {
     
     private CodeLocalHome codeHome;
 
+    private IssuerLocalHome issuerHome;
+
     public void setEntityContext(EntityContext ctx) {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
             codeHome = (CodeLocalHome) jndiCtx.lookup("java:comp/env/ejb/Code");
-        } catch (NamingException e) {
+            issuerHome = (IssuerLocalHome) jndiCtx.lookup("java:comp/env/ejb/Issuer");
+       } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
             if (jndiCtx != null) {
@@ -181,6 +187,7 @@ public abstract class StudyBean implements EntityBean {
 
     public void unsetEntityContext() {
         codeHome = null;
+        issuerHome = null;
     }
     
     /**
@@ -511,6 +518,15 @@ public abstract class StudyBean implements EntityBean {
     public abstract void setProcedureCodes(java.util.Collection codes);
     
     /**
+     * @ejb.relation name="study-issuer-of-accno" role-name="study-with-issuer-of-accno"
+     *               target-ejb="Issuer" target-role-name="issuer-of-study-accno"
+     *               target-multiple="yes"
+     * @jboss.relation fk-column="accno_issuer_fk" related-pk-field="pk"
+     */
+    public abstract IssuerLocal getIssuerOfAccessionNumber();
+    public abstract void setIssuerOfAccessionNumber(IssuerLocal issuer);
+
+    /**
      * Create study.
      *
      * @ejb.create-method
@@ -531,6 +547,8 @@ public abstract class StudyBean implements EntityBean {
                             "Procedure Code Sequence (0008,1032)", proceCodeSq)) {
                 CodeBean.addCodesTo(codeHome, proceCodeSq, getProcedureCodes());
             }
+            updateIssuerOfAccessionNumber(null,
+                    ds.getItem(Tags.IssuerOfAccessionNumberSeq));
         } catch (Exception e) {
             // ensure to rollback transaction
             throw new EJBException(e);
@@ -978,14 +996,35 @@ public abstract class StudyBean implements EntityBean {
         }
     }
 
+    private boolean updateIssuerOfAccessionNumber(Dataset oldIssuer, Dataset newIssuer) {
+        if (oldIssuer == null ? newIssuer == null 
+                : oldIssuer.equals(newIssuer)) {
+            return false;
+        }
+        try {
+            setIssuerOfAccessionNumber(
+                    IssuerBean.valueOf(issuerHome, newIssuer));
+        } catch (CreateException e) {
+            throw new EJBException(e);
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        }
+        return true;
+    }
+
     /** 
     * @ejb.interface-method
     */
    public boolean updateAttributes( Dataset newAttrs, Dataset modifiedAttrs) {
        Dataset oldAttrs = getAttributes(false);
        if ( oldAttrs == null ) {
+           updateIssuerOfAccessionNumber(null,
+                   newAttrs.getItem(Tags.IssuerOfAccessionNumberSeq));
            setAttributes( newAttrs );
        } else {
+           updateIssuerOfAccessionNumber(
+                   oldAttrs.getItem(Tags.IssuerOfAccessionNumberSeq),
+                   newAttrs.getItem(Tags.IssuerOfAccessionNumberSeq));
            AttributeFilter filter = AttributeFilter.getStudyAttributeFilter();
            if (!AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs),
                    modifiedAttrs, log) )
