@@ -182,6 +182,12 @@
             <version>4.0.2</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>javax.security</groupId>
+            <artifactId>jacc</artifactId>
+            <version>1.0</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
     <build>
         <testResources>

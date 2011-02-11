@@ -41,7 +41,12 @@ package org.dcm4chee.web.war;
 import org.apache.wicket.Page;
 import org.apache.wicket.Request;
 import org.apache.wicket.Response;
+import org.apache.wicket.security.authentication.LoginException;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
+import org.dcm4chee.web.common.base.SSOLoginContext;
+
+import javax.security.auth.Subject;
+import javax.security.jacc.PolicyContext;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -57,6 +62,21 @@ public class WicketApplication extends BaseWicketApplication {
     
     @Override
     public AuthenticatedWebSession newSession(Request request, Response response) {
-        return new AuthenticatedWebSession(this, request);
+        Subject jaasSubject = null;
+        try {
+            jaasSubject = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
+        } catch (Exception x) {
+            x.printStackTrace();
+        }
+        AuthenticatedWebSession session = new AuthenticatedWebSession(this, request);
+        if (jaasSubject != null) {
+            try {
+                session.login(new SSOLoginContext(session, jaasSubject));
+            } catch (LoginException x) {
+                // TODO Auto-generated catch block
+                x.printStackTrace();
+            }
+        }
+        return session;
     }
 }
