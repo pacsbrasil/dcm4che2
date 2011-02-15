@@ -168,9 +168,6 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
                 patAttrFilter.isICase(Tags.PatientName),
                 keys.getString(Tags.PatientName));
         
-        matchingKeys.add(MATCHING_KEYS);
-        seqMatchingKeys.put(new Integer(Tags.SPSSeq), new IntList().add(MATCHING_SPS_SQ_KEYS));
-        
     }
 
     public Dataset getDataset() throws SQLException {

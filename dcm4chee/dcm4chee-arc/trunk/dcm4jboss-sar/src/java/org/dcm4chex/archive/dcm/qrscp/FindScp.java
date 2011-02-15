@@ -365,7 +365,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         private final int[] excludeFromRSP;
         private final Map<PIDWithIssuer, Set<PIDWithIssuer>> pixQueryResults;
         private boolean canceled = false;
-        private int pendingStatus = Status.Pending;
+        private final int pendingStatus;
         private int count = 0;
         private Templates coerceTpl;
 
@@ -378,12 +378,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             this.pixQueryResults = adjustPatientIDs
                         ? new HashMap<PIDWithIssuer, Set<PIDWithIssuer>>()
                         : null;
-            if (queryCmd.isMatchNotSupported()) {
-                pendingStatus = 0xff01;
-            } else if (service.isCheckMatchingKeySupported()
-                    && queryCmd.isMatchingKeyNotSupported()) {
-                pendingStatus = 0xff01;
-            }
+            this.pendingStatus = queryCmd.isKeyNotSupported() ? 0xff01 : 0xff00;
         }
 
         public DimseListener getCancelListener() {

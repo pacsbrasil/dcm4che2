@@ -236,7 +236,7 @@ public class MWLScuService extends AbstractScuService {
                 logResponse(rsp);
                 result.add(rsp);
             }
-            return queryCmd.isMatchNotSupported() ? 0xff01 : 0xff00;
+            return 0xff00;
         } catch (SQLException x) {
             log.error("Exception in findMWLEntriesLocal! ", x);
             return Status.ProcessingFailure;
