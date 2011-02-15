@@ -1346,11 +1346,7 @@ public class DcmQR {
                     }
                     NetworkQueueUpdateDelegate networkQueueUpdateDelegate = new NetworkQueueUpdateDelegate();
                     networkQueueUpdateDelegate.updateReceiveTable(file, as.getCallingAET());
-                    if (!MainScreen.sndRcvFrm.isVisible()) {
-                        MainScreen.sndRcvFrm.setVisible(true);
-                    }
                 }
-
             }
         };
     }

@@ -210,9 +210,6 @@ public class WadoRetrieveDelegate extends Thread {
             copy(in, out);
             NetworkQueueUpdateDelegate networkQueueUpdateDelegate = new NetworkQueueUpdateDelegate();
             networkQueueUpdateDelegate.updateReceiveTable(storeLocation, wadoParam.getAeTitle());
-            if (!MainScreen.sndRcvFrm.isVisible()) {
-                MainScreen.sndRcvFrm.setVisible(true);
-            }
         } catch (IOException ex) {
             Logger.getLogger(WadoRetrieveDelegate.class.getName()).log(Level.SEVERE, null, ex);
         } finally {

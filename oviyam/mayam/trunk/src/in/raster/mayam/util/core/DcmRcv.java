@@ -1161,10 +1161,6 @@ public class DcmRcv {
         }*/
         NetworkQueueUpdateDelegate networkQueueUpdateDelegate = new NetworkQueueUpdateDelegate();
         networkQueueUpdateDelegate.updateReceiveTable(file, as.getCallingAET());
-        if (!MainScreen.sndRcvFrm.isVisible()) {
-            MainScreen.sndRcvFrm.setVisible(true);
-        }
-
     }
 
     private File getDir(Association as) {
