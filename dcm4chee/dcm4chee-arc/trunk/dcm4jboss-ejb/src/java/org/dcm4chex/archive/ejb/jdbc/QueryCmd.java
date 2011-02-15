@@ -161,6 +161,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     private static final String SR_CODE = "sr_code";
 
+    private static final String NAME_CODE = "name_code";
+
     private static final String CONCEPT_CODE = "concept_code";
 
     public static int transactionIsolationLevel = 0;
@@ -622,9 +624,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     if (conceptName != null) {
                         if (conceptCode != null) {
                             entities = new String[] { "ContentItem", "Code", "Code" };
-                            aliases = new String[] { null, null, CONCEPT_CODE };
+                            aliases = new String[] { null, NAME_CODE, CONCEPT_CODE };
                         } else {
                             entities = new String[] { "ContentItem", "Code" };
+                            aliases = new String[] { null, NAME_CODE };
                         }
                     } else {
                         if (conceptCode != null) {
@@ -644,8 +647,16 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                             SqlBuilder.TYPE1, relType);
                     subQuery.addWildCardMatch(null, "ContentItem.textValue",
                             SqlBuilder.TYPE1, textValue);
-                    subQuery.addCodeMatch(null, conceptName);
-                    subQuery.addCodeMatch(CONCEPT_CODE, conceptCode);
+                    if (conceptName != null) {
+                        subQuery.addFieldValueMatch(NAME_CODE, "Code.pk", 
+                                SqlBuilder.TYPE1, null, "ContentItem.name_fk");
+                        subQuery.addCodeMatch(NAME_CODE, conceptName);
+                    }
+                    if (conceptCode != null) {
+                        subQuery.addFieldValueMatch(CONCEPT_CODE, "Code.pk", 
+                                SqlBuilder.TYPE1, null, "ContentItem.code_fk");
+                        subQuery.addCodeMatch(CONCEPT_CODE, conceptCode);
+                    }
                     if (node0 == null)
                         node0 = sqlBuilder.addNodeMatch("AND", false);
                     node0.addMatch(new Match.Subquery(subQuery, null, null));
