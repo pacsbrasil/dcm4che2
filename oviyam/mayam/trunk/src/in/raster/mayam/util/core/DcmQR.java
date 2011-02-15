@@ -127,6 +127,7 @@ public class DcmQR {
     private static String[] NO_SSL2 = {"TLSv1", "SSLv3"};
     private static String[] NO_SSL3 = {"TLSv1", "SSLv2Hello"};
     private static char[] SECRET = {'s', 'e', 'c', 'r', 'e', 't'};
+    private static int cgetServiceCount=0;
 
     public static enum QueryRetrieveLevel {
 
@@ -395,6 +396,7 @@ public class DcmQR {
     private File destination;
 
     public DcmQR(String name) {
+        cgetServiceCount++;
         device = new Device(name);
         executor = new NewThreadExecutor(name);
         remoteAE.setInstalled(true);
@@ -1311,7 +1313,7 @@ public class DcmQR {
             @Override
             protected void onCStoreRQ(Association as, int pcid, DicomObject rq,
                     PDVInputStream dataStream, String tsuid, DicomObject rsp)
-                    throws IOException, DicomServiceException {
+                    throws IOException, DicomServiceException {                
                 if (storeDest == null) {
                     super.onCStoreRQ(as, pcid, rq, dataStream, tsuid, rsp);
                 } else {
@@ -1434,18 +1436,20 @@ public class DcmQR {
         return s2;
     }
 
-    public void start() throws IOException {
-        ApplicationContext.mainScreen.stopReceiver();
-        if (conn.isListening()) {
+    public void start() throws IOException {     
+        ApplicationContext.mainScreen.stopReceiver();        
+        if (cgetServiceCount==1 && conn.isListening()) {
             conn.bind(executor);
         }
     }
 
-    public void stop() {
+    public void stop() {    
         if (conn.isListening()) {
             conn.unbind();
         }
         try {
+            cgetServiceCount--;
+            if(cgetServiceCount==0)
             ApplicationContext.mainScreen.startReceiver();
         } catch (Exception e) {
             e.printStackTrace();
