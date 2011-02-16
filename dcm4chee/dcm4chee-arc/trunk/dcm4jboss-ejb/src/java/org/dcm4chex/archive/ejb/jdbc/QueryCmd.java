@@ -54,8 +54,10 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmValueException;
+import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PIDWithIssuer;
@@ -110,7 +112,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Set<PIDWithIssuer> pidWithIssuers,  boolean filterResult,
             boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
             boolean noMatchWithoutIssuerOfPID, Subject subject)
-            throws SQLException {
+            throws SQLException, DcmServiceException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         if ("IMAGE".equals(qrLevel))
             return createInstanceQuery(keys, pidWithIssuers,
@@ -135,7 +137,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Set<PIDWithIssuer> pidWithIssuers, boolean filterResult,
             boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
             boolean noMatchWithoutIssuerOfPID, Subject subject)
-            throws SQLException {
+            throws SQLException, DcmServiceException {
         final PatientQueryCmd cmd = new PatientQueryCmd(keys, pidWithIssuers,
                 filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
@@ -147,7 +149,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Set<PIDWithIssuer> pidWithIssuers, boolean filterResult,
             boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
             boolean noMatchWithoutIssuerOfPID, Subject subject)
-            throws SQLException {
+            throws SQLException, DcmServiceException {
         final StudyQueryCmd cmd = new StudyQueryCmd(keys, pidWithIssuers,
                 filterResult, fuzzyMatchingOfPN,noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
@@ -159,7 +161,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Set<PIDWithIssuer> pidWithIssuers, boolean filterResult,
             boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
             boolean noMatchWithoutIssuerOfPID, Subject subject)
-            throws SQLException {
+            throws SQLException, DcmServiceException {
         final SeriesQueryCmd cmd = new SeriesQueryCmd(keys, pidWithIssuers,
                 filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
@@ -171,7 +173,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Set<PIDWithIssuer> pidWithIssuers, boolean filterResult,
             boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
             boolean noMatchWithoutIssuerOfPID, Subject subject)
-            throws SQLException {
+            throws SQLException, DcmServiceException {
         final ImageQueryCmd cmd = new ImageQueryCmd(keys, pidWithIssuers,
                 filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
@@ -205,7 +207,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         keys.putCS(Tags.InstanceAvailability);
     }
 
-    protected void init() {
+    protected void init() throws DcmServiceException {
         sqlBuilder.setSelect(getSelectAttributes());
         sqlBuilder.setFrom(getTables());
         sqlBuilder.setLeftJoin(getLeftJoin());
@@ -240,7 +242,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return false;
     }
 
-    protected abstract boolean isKeySupported(DcmElement key);
+    protected abstract boolean isKeySupported(DcmElement key)
+    throws DcmServiceException;
     
     protected abstract String[] getSelectAttributes();
 
@@ -267,16 +270,29 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return key.isEmpty() && filter.hasTag(tag);
     }
 
-    protected boolean isSupportedPatientKey(DcmElement key) {
+    protected boolean isSupportedPatientKey(DcmElement key)
+    throws DcmServiceException {
         switch (key.tag()) {
         case Tags.PatientID:
         case Tags.IssuerOfPatientID:
         case Tags.PatientName:
-        case Tags.PatientBirthDate:
         case Tags.PatientSex:
+            return true;
+        case Tags.PatientBirthDate:
+            checkDateRange(key);
             return true;
         }
         return isSupportedKey(key, AttributeFilter.getPatientAttributeFilter());
+    }
+
+    private void checkDateRange(DcmElement key) throws DcmServiceException {
+        try {
+            key.getDateRange();
+        } catch (DcmValueException e) {
+            throw new DcmServiceException(
+                    Status.IdentifierDoesNotMatchSOPClass,
+                    Tags.toString(key.tag()) + " contains invalid date range");
+        }
     }
 
     protected void addPatientMatch() {
@@ -330,17 +346,20 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
     }
 
-    protected boolean isSupportedStudyKey(DcmElement key) {
+    protected boolean isSupportedStudyKey(DcmElement key)
+    throws DcmServiceException {
         switch (key.tag()) {
         case Tags.StudyInstanceUID:
         case Tags.StudyID:
-        case Tags.StudyDate:
-        case Tags.StudyTime:
         case Tags.AccessionNumber:
         case Tags.ReferringPhysicianName:
         case Tags.StudyDescription:
         case Tags.StudyStatusID:
         case Tags.ModalitiesInStudy:
+            return true;
+        case Tags.StudyDate:
+        case Tags.StudyTime:
+            checkDateRange(key);
             return true;
         case Tags.IssuerOfAccessionNumberSeq:
             checkIssuerOfAccessionNumberSeq(key);
@@ -349,22 +368,24 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return isSupportedKey(key, AttributeFilter.getStudyAttributeFilter());
     }
 
-    private void checkIssuerOfAccessionNumberSeq(DcmElement seq) {
+    private void checkOnlyOneItem(DcmElement seq) throws DcmServiceException {
         int n = seq.countItems();
-        switch (n) {
-        case 0:
-            return;
-        case 1:
-            break;
-        default:
-            log.warn(seq + " contains " + n + " items");
-        }
+        if (n > 1)
+            throw new DcmServiceException(
+                    Status.IdentifierDoesNotMatchSOPClass,
+                    Tags.toString(seq.tag()) + " contains " + n + " items");
+    }
+
+    private void checkIssuerOfAccessionNumberSeq(DcmElement seq)
+            throws DcmServiceException {
+        checkOnlyOneItem(seq);
         Dataset item = seq.getItem();
-        for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
-            DcmElement key = iter.next();
-            if (!isIssuerOfAccessionNumberKeySupported(key))
-                setKeyNotSupported(key, seq);
-        }
+        if (item != null)
+            for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
+                DcmElement key = iter.next();
+                if (!isIssuerOfAccessionNumberKeySupported(key))
+                    setKeyNotSupported(key, seq);
+            }
     }
 
     private boolean isIssuerOfAccessionNumberKeySupported(DcmElement key) {
@@ -451,7 +472,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return new String[]{};
     }
 
-    protected boolean isSupportedSeriesKey(DcmElement key) {
+    protected boolean isSupportedSeriesKey(DcmElement key)
+    throws DcmServiceException {
         switch (key.tag()) {
         case Tags.SeriesInstanceUID:
         case Tags.SeriesNumber:
@@ -463,8 +485,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         case Tags.SeriesDescription:
         case Tags.InstitutionalDepartmentName:
         case Tags.PerformingPhysicianName:
+            return true;
         case Tags.PPSStartDate:
         case Tags.PPSStartTime:
+            checkDateRange(key);
             return true;
         case Tags.RequestAttributesSeq:
             checkRequestAttributesSeq(key);
@@ -476,25 +500,20 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return isSupportedKey(key, AttributeFilter.getSeriesAttributeFilter());
     }
 
-    private void checkRequestAttributesSeq(DcmElement seq) {
-        int n = seq.countItems();
-        switch (n) {
-        case 0:
-            return;
-        case 1:
-            break;
-        default:
-            log.warn(seq + " contains " + n + " items");
-        }
+    private void checkRequestAttributesSeq(DcmElement seq)
+    throws DcmServiceException {
+        checkOnlyOneItem(seq);
         Dataset item = seq.getItem();
-        for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
-            DcmElement key = iter.next();
-            if (!isRequestAttributesKeySupported(key))
-                setKeyNotSupported(key, seq);
-        }
+        if (item != null)
+            for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
+                DcmElement key = iter.next();
+                if (!isRequestAttributesKeySupported(key))
+                    setKeyNotSupported(key, seq);
+            }
     }
 
-    private boolean isRequestAttributesKeySupported(DcmElement key) {
+    private boolean isRequestAttributesKeySupported(DcmElement key)
+    throws DcmServiceException {
         switch (key.tag()) {
         case Tags.StudyInstanceUID:
         case Tags.RequestedProcedureID:
@@ -510,22 +529,15 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return key.isEmpty();
     }
 
-    private void checkCodeSeq(DcmElement seq) {
-        int n = seq.countItems();
-        switch (n) {
-        case 0:
-            return;
-        case 1:
-            break;
-        default:
-            log.warn(seq + " contains " + n + " items");
-        }
+    private void checkCodeSeq(DcmElement seq) throws DcmServiceException {
+        checkOnlyOneItem(seq);
         Dataset item = seq.getItem();
-        for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
-            DcmElement key = iter.next();
-            if (!isCodeKeySupported(key))
-                setKeyNotSupported(key, seq);
-        }
+        if (item != null)
+            for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
+                DcmElement key = iter.next();
+                if (!isCodeKeySupported(key))
+                    setKeyNotSupported(key, seq);
+            }
     }
 
     private boolean isCodeKeySupported(DcmElement key) {
@@ -645,15 +657,18 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
     }
 
-    protected boolean isSupportedInstanceKey(DcmElement key) {
+    protected boolean isSupportedInstanceKey(DcmElement key)
+    throws DcmServiceException {
         switch (key.tag()) {
         case Tags.SOPInstanceUID:
         case Tags.SOPClassUID:
         case Tags.InstanceNumber:
-        case Tags.ContentDate:
-        case Tags.ContentTime:
         case Tags.CompletionFlag:
         case Tags.VerificationFlag:
+            return true;
+        case Tags.ContentDate:
+        case Tags.ContentTime:
+            checkDateRange(key);
             return true;
         case Tags.ConceptNameCodeSeq:
             checkCodeSeq(key);
@@ -668,34 +683,30 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return isSupportedKey(key, AttributeFilter.getInstanceAttributeFilter(null));
     }
 
-    private void checkVerifyingObserverSeq(DcmElement seq) {
-        int n = seq.countItems();
-        switch (n) {
-        case 0:
-            return;
-        case 1:
-            break;
-        default:
-            log.warn(seq + " contains " + n + " items");
-        }
+    private void checkVerifyingObserverSeq(DcmElement seq)
+    throws DcmServiceException {
+        checkOnlyOneItem(seq);
         Dataset item = seq.getItem();
-        for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
-            DcmElement key = iter.next();
-            if (!isVerifyingObserverKeySupported(key))
-                setKeyNotSupported(key, seq);
-        }
+        if (item != null)
+            for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
+                DcmElement key = iter.next();
+                if (!isVerifyingObserverKeySupported(key))
+                    setKeyNotSupported(key, seq);
+            }
     }
 
-    private boolean isVerifyingObserverKeySupported(DcmElement key) {
+    private boolean isVerifyingObserverKeySupported(DcmElement key)
+    throws DcmServiceException {
         switch (key.tag()) {
         case Tags.VerificationDateTime:
+            checkDateRange(key);
         case Tags.VerifyingObserverName:
             return true;
         }
         return key.isEmpty();
     }
 
-    private void checkContentSeq(DcmElement seq) {
+    private void checkContentSeq(DcmElement seq) throws DcmServiceException {
         for (int i = 0, n = seq.countItems(); i < n; i++) {
             Dataset item = seq.getItem(i);
             for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
@@ -706,7 +717,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
     }
 
-    private boolean isContentKeySupported(DcmElement key) {
+    private boolean isContentKeySupported(DcmElement key)
+    throws DcmServiceException {
         switch (key.tag()) {
         case Tags.RelationshipType:
         case Tags.TextValue:
@@ -935,13 +947,14 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             defineColumnTypes(new int[] { blobAccessType });
         }
 
-        protected void init() {
+        protected void init() throws DcmServiceException {
             super.init();
             addPatientMatch();
             addStudyPermissionMatch(true);
         }
 
-        protected boolean isKeySupported(DcmElement key) {
+        protected boolean isKeySupported(DcmElement key)
+        throws DcmServiceException {
             return isSupportedPatientKey(key);
         }
 
@@ -986,7 +999,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addAdditionalReturnKeys();
         }
 
-        protected void init() {
+        protected void init() throws DcmServiceException {
             super.init();
             addPatientMatch();
             addStudyMatch();
@@ -1019,7 +1032,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             return new String[] { "Patient.pk", "Study.patient_fk" };
         }
 
-        protected boolean isKeySupported(DcmElement key) {
+        protected boolean isKeySupported(DcmElement key)
+        throws DcmServiceException {
             return isSupportedPatientKey(key)
                 || isSupportedStudyKey(key);
         }
@@ -1072,7 +1086,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addAdditionalReturnKeys();
         }
 
-        protected void init() {
+        protected void init() throws DcmServiceException {
             super.init();
             addPatientMatch();
             addStudyMatch();
@@ -1114,7 +1128,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             return null;
         }
 
-        protected boolean isKeySupported(DcmElement key) {
+        protected boolean isKeySupported(DcmElement key)
+        throws DcmServiceException {
             return isSupportedPatientKey(key)
                 || isSupportedStudyKey(key)
                 || isSupportedSeriesKey(key);
@@ -1189,7 +1204,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addAdditionalReturnKeys();
         }
 
-        protected void init() {
+        protected void init() throws DcmServiceException {
             super.init();
             addPatientMatch();
             addStudyMatch();
@@ -1251,7 +1266,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                             "Instance.series_fk" };
         }
 
-        protected boolean isKeySupported(DcmElement key) {
+        protected boolean isKeySupported(DcmElement key)
+        throws DcmServiceException {
             return isSupportedPatientKey(key)
                 || isSupportedStudyKey(key)
                 || isSupportedSeriesKey(key)

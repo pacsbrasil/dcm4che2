@@ -45,7 +45,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -118,7 +117,7 @@ public class FileCopyService extends AbstractFileCopyService {
             isReady = false;
     }
 
-    public boolean copyFilesOfStudy(String studyIUID) throws SQLException {
+    public boolean copyFilesOfStudy(String studyIUID) throws Exception {
         log.info("Start copy files of study "+studyIUID);
         Dataset queryDs = DcmObjectFactory.getInstance().newDataset();
         queryDs.putCS(Tags.QueryRetrieveLevel, "SERIES");
@@ -134,7 +133,7 @@ public class FileCopyService extends AbstractFileCopyService {
         cmd.close();
         return true;
     }
-    public boolean copyFilesOfSeries(String seriesIUID) throws SQLException {
+    public boolean copyFilesOfSeries(String seriesIUID) throws Exception {
         Dataset queryDs = DcmObjectFactory.getInstance().newDataset();
         queryDs.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         queryDs.putUI(Tags.StudyInstanceUID);
