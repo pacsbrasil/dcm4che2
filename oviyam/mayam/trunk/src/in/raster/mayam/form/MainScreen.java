@@ -65,6 +65,8 @@ import in.raster.mayam.model.Study;
 import in.raster.mayam.model.table.StudyListModel;
 import in.raster.mayam.model.table.renderer.CellRenderer;
 import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Toolkit;
 import java.io.File;
 import java.util.ArrayList;
@@ -323,6 +325,10 @@ public class MainScreen extends javax.swing.JFrame {
                 studyListTableMouseClicked(evt);
             }
         });
+        studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));
+        Font f=studyListTable.getTableHeader().getFont();
+        studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.PLAIN,14));
+        studyListTable.setRowHeight(25);
         studyTableScroll.setViewportView(studyListTable);
 
         jSplitPane1.setTopComponent(studyTableScroll);
@@ -335,7 +341,7 @@ public class MainScreen extends javax.swing.JFrame {
         windowingPanelCanvas.setLayout(windowingPanelCanvasLayout);
         windowingPanelCanvasLayout.setHorizontalGroup(
             windowingPanelCanvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 598, Short.MAX_VALUE)
+            .add(0, 614, Short.MAX_VALUE)
         );
         windowingPanelCanvasLayout.setVerticalGroup(
             windowingPanelCanvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -346,6 +352,7 @@ public class MainScreen extends javax.swing.JFrame {
         thumbnailScroll.getVerticalScrollBar().setUnitIncrement(24);
 
         thumbnailDisplay.setAutoscrolls(true);
+        thumbnailDisplay.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         thumbnailDisplay.setMaximumSize(new java.awt.Dimension(1000, 1000));
         thumbnailDisplay.setMinimumSize(new java.awt.Dimension(13, 2));
         thumbnailScroll.setViewportView(thumbnailDisplay);
@@ -364,7 +371,7 @@ public class MainScreen extends javax.swing.JFrame {
                     .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 598, Short.MAX_VALUE))
+                .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 614, Short.MAX_VALUE))
         );
         studyAndSeriesDisplayPanelLayout.setVerticalGroup(
             studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -384,7 +391,7 @@ public class MainScreen extends javax.swing.JFrame {
             .add(contentAreaLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(contentAreaLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 942, Short.MAX_VALUE)
+                    .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 958, Short.MAX_VALUE)
                     .add(jLabel1))
                 .addContainerGap())
         );
@@ -405,7 +412,6 @@ public class MainScreen extends javax.swing.JFrame {
         importButton.setBorderPainted(false);
         importButton.setContentAreaFilled(false);
         importButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        importButton.setRolloverEnabled(true);
         importButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/import1.png"))); // NOI18N
         importButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         importButton.addActionListener(new java.awt.event.ActionListener() {
@@ -421,7 +427,6 @@ public class MainScreen extends javax.swing.JFrame {
         exportButton.setContentAreaFilled(false);
         exportButton.setDefaultCapable(false);
         exportButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        exportButton.setRolloverEnabled(true);
         exportButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/export_study1.png"))); // NOI18N
         exportButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         exportButton.addActionListener(new java.awt.event.ActionListener() {
@@ -437,7 +442,6 @@ public class MainScreen extends javax.swing.JFrame {
         cdImportButton.setContentAreaFilled(false);
         cdImportButton.setDefaultCapable(false);
         cdImportButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        cdImportButton.setRolloverEnabled(true);
         cdImportButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/cd_import1.png"))); // NOI18N
         cdImportButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         cdImportButton.addActionListener(new java.awt.event.ActionListener() {
@@ -453,7 +457,6 @@ public class MainScreen extends javax.swing.JFrame {
         deleteButton.setContentAreaFilled(false);
         deleteButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         deleteButton.setPreferredSize(new java.awt.Dimension(52, 50));
-        deleteButton.setRolloverEnabled(true);
         deleteButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/delete_study1.png"))); // NOI18N
         deleteButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
@@ -469,7 +472,6 @@ public class MainScreen extends javax.swing.JFrame {
         metaDataButton.setContentAreaFilled(false);
         metaDataButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         metaDataButton.setPreferredSize(new java.awt.Dimension(52, 50));
-        metaDataButton.setRolloverEnabled(true);
         metaDataButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/metadata_mainpage1.png"))); // NOI18N
         metaDataButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         metaDataButton.addActionListener(new java.awt.event.ActionListener() {
@@ -485,7 +487,6 @@ public class MainScreen extends javax.swing.JFrame {
         sendButton.setContentAreaFilled(false);
         sendButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         sendButton.setPreferredSize(new java.awt.Dimension(52, 50));
-        sendButton.setRolloverEnabled(true);
         sendButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/send1.png"))); // NOI18N
         sendButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         sendButton.addActionListener(new java.awt.event.ActionListener() {
@@ -501,7 +502,6 @@ public class MainScreen extends javax.swing.JFrame {
         queryRetrieveButton.setContentAreaFilled(false);
         queryRetrieveButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         queryRetrieveButton.setPreferredSize(new java.awt.Dimension(52, 50));
-        queryRetrieveButton.setRolloverEnabled(true);
         queryRetrieveButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/query1.png"))); // NOI18N
         queryRetrieveButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         queryRetrieveButton.addActionListener(new java.awt.event.ActionListener() {
@@ -517,7 +517,6 @@ public class MainScreen extends javax.swing.JFrame {
         viewerButton.setContentAreaFilled(false);
         viewerButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         viewerButton.setPreferredSize(new java.awt.Dimension(52, 50));
-        viewerButton.setRolloverEnabled(true);
         viewerButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/viewer1.png"))); // NOI18N
         viewerButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         viewerButton.addActionListener(new java.awt.event.ActionListener() {
@@ -534,7 +533,6 @@ public class MainScreen extends javax.swing.JFrame {
         queueButton.setFocusPainted(false);
         queueButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         queueButton.setPreferredSize(new java.awt.Dimension(52, 50));
-        queueButton.setRolloverEnabled(true);
         queueButton.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/queue1.png"))); // NOI18N
         queueButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         queueButton.addActionListener(new java.awt.event.ActionListener() {
@@ -585,7 +583,7 @@ public class MainScreen extends javax.swing.JFrame {
                     .add(cdImportButton)
                     .add(exportButton)
                     .add(importButton))
-                .addContainerGap(7, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         headerPanelLayout.linkSize(new java.awt.Component[] {cdImportButton, deleteButton, exportButton, importButton, metaDataButton, queryRetrieveButton, queueButton, sendButton, viewerButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -595,7 +593,7 @@ public class MainScreen extends javax.swing.JFrame {
         containerLayout.setHorizontalGroup(
             containerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(contentArea, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(headerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 982, Short.MAX_VALUE)
+            .add(headerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 998, Short.MAX_VALUE)
         );
         containerLayout.setVerticalGroup(
             containerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

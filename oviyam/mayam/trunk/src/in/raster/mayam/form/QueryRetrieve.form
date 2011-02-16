@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.5" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <NonVisualComponents>
@@ -72,7 +72,7 @@
                               </Group>
                               <Group type="103" alignment="1" groupAlignment="1" max="-2" attributes="0">
                                   <Group type="102" attributes="0">
-                                      <Component id="jPanel7" max="32767" attributes="1"/>
+                                      <Component id="jPanel7" pref="642" max="32767" attributes="1"/>
                                       <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" attributes="0">
@@ -551,7 +551,7 @@
                 </Property>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="serverListTable.setDefaultRenderer(Object.class, new CellRenderer());"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="serverListTable.setDefaultRenderer(Object.class, new CellRenderer());&#xa;serverListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 20));&#xa;Font font=serverListTable.getTableHeader().getFont();&#xa;serverListTable.getTableHeader().setFont(new Font(font.getName(),Font.PLAIN,11));&#xa;serverListTable.setRowHeight(20);"/>
               </AuxValues>
             </Component>
           </SubComponents>
@@ -634,6 +634,7 @@
               </Events>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="studyListTable.setDefaultRenderer(Object.class, new CellRenderer());"/>
+                <AuxValue name="JavaCodeGenerator_ListenersCodePost" type="java.lang.String" value="studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));&#xa;Font f=studyListTable.getTableHeader().getFont();&#xa;studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.PLAIN,14));&#xa;studyListTable.setRowHeight(25);"/>
               </AuxValues>
             </Component>
           </SubComponents>

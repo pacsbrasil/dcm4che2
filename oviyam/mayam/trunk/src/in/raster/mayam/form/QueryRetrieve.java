@@ -73,6 +73,8 @@ import javax.swing.event.ListSelectionEvent;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.util.DcmURL;
 import in.raster.mayam.model.table.renderer.CellRenderer;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Toolkit;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionListener;
@@ -472,6 +474,10 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
 
         serverListTable.setModel(new ServerTableModel());
         serverListTable.setDefaultRenderer(Object.class, new CellRenderer());
+        serverListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 20));
+        Font font=serverListTable.getTableHeader().getFont();
+        serverListTable.getTableHeader().setFont(new Font(font.getName(),Font.PLAIN,11));
+        serverListTable.setRowHeight(20);
         serverlistScroll.setViewportView(serverListTable);
 
         verifyButton.setText("Verify");
@@ -525,17 +531,21 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
                 studyListTableMouseClicked(evt);
             }
         });
+        studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));
+        Font f=studyListTable.getTableHeader().getFont();
+        studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.PLAIN,14));
+        studyListTable.setRowHeight(25);
         jScrollPane2.setViewportView(studyListTable);
 
         serverNameLabel.setBackground(new java.awt.Color(117, 113, 113));
-        serverNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        serverNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         serverNameLabel.setForeground(new java.awt.Color(0, 0, 104));
         serverNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         serverNameLabel.setText(" Server Name");
         serverNameLabel.setOpaque(true);
 
         headerLabel.setBackground(new java.awt.Color(117, 113, 113));
-        headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
         headerLabel.setForeground(new java.awt.Color(0, 0, 104));
         headerLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         headerLabel.setText(" DICOM Nodes ");
@@ -570,7 +580,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
                                 .add(30, 30, 30))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                                 .add(jPanel9Layout.createSequentialGroup()
-                                    .add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE)
                                     .add(22, 22, 22))
                                 .add(jPanel9Layout.createSequentialGroup()
                                     .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
