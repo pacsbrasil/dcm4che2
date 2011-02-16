@@ -1451,125 +1451,134 @@ public class WADOSupport implements NotificationListener {
         ArrayList<Integer> oldStyleOverlayPlanes = new ArrayList<Integer>();
 
         for (int group = 0; group < 0x20; group += 2) {
-
-            int oBitPosition = getInt(ds, group, Tags.OverlayBitPosition, -1);
-            int oRows = getInt(ds, group, Tags.OverlayRows, -1);
-            int oCols = getInt(ds, group, Tags.OverlayColumns, -1);
-            int[] oOrigin = getInts(ds, group, Tags.OverlayOrigin);
-            int oBitsAllocated = getInt(ds, group, Tags.OverlayBitsAllocated, -1);
-            String oType = getString(ds, group, Tags.OverlayType);
-            int oNumberOfFrames = getInt(ds, group, 0x60000015, 1);
-            int oFrameStart = getInt(ds, group, 0x60000051, 1) - 1;
-            int oFrameEnd = oFrameStart + oNumberOfFrames;
-
-            if (oBitPosition == -1 &&
-                    oBitsAllocated == -1 &&
-                    oRows == -1 &&
-                    oCols == -1) {
-                log.trace("No overlay data associated with image for group {}", group);
-                continue;
-            }
-
-
-            if ("R".equals(oType)) {
-                log.debug("Overlay ROI bitmap, not doing anything");
-                continue;
-            }
-
-            if ((oBitsAllocated != 1) && (oBitPosition != 0)) {
-                log.debug("Overlay: {}  OldStyle bitPostion {}", group, oBitPosition);
-                oldStyleOverlayPlanes.add(oBitPosition);
-                continue;
-            }
-
-            if ("GR".indexOf(oType) < 0) {
-                log.warn("mergeOverlays(): Overlay Type {} not supported", oType);
-                continue;
-            }
-
-            int oX1 = 0;
-            int oY1 = 0;
-            if (oOrigin != null) {
-                oX1 = oOrigin[1] - 1;
-                oY1 = oOrigin[0] - 1;
-            }
-
-            log.debug("Overlay: {} OverlayType: {}", group, oType);
-            log.debug("Overlay: {} OverlayRows: {}", group, oRows);
-            log.debug("Overlay: {} OverlayColumns: {}", group, oCols);
-            log.debug("Overlay: {} OverlayOrigin: {} {}", new Object[]{group, oX1, oY1});
-            log.debug("Overlay: {} for Frames: [{}, {})", new Object[]{group, oFrameStart, oFrameEnd});
-
-            if (!((oFrameStart <= frame) && (frame < oFrameEnd))) {
-                log.debug("Overlay: frame {} not in range, skipping", frame);
-            }
-
-            int oFrameOffset = frame - oFrameStart;
-            int bitOffset = oFrameOffset * oRows * oCols;
-            int byteOffset = bitOffset / 8;  // dont round up!
-            int numBits = oRows * oCols;
-            int numBytes = (numBits + 7) / 8; // round up!
-
-            log.debug("Overlay: {} bitOffset: {}", group, bitOffset);
-            log.debug("Overlay: {} byteOffset: {}", group, byteOffset);
-            log.debug("Overlay: {} numBits: {}", group, numBits);
-            log.debug("Overlay: {} numBytes: {}", group, numBytes);
-
-            ByteBuffer bb = ds.get(groupedTag(group, Tags.OverlayData)).getByteBuffer();
-            log.debug("Overlay: {} ByteBuffer: {}", group, bb);
-            log.debug("Overlay: {} ByteBuffer ByteOrder: {}", group, (bb.order() == ByteOrder.BIG_ENDIAN) ? "BigEndian" : "LittleEndian");
-
-
-            IndexColorModel icm = new IndexColorModel(1, 2, icmColorValues, icmColorValues, icmColorValues, 0);
-            BufferedImage overBi = new BufferedImage(oCols, oRows, BufferedImage.TYPE_BYTE_BINARY, icm);
-            DataBufferByte dataBufferByte = (DataBufferByte) overBi.getRaster().getDataBuffer();
-
-
-            byte[] dest = dataBufferByte.getData();
-
-            // java awt cant even handle non byte packed lines
-            // so if a line lenght is not a multiple of 8, it gets really slow
-            int packedRowBits = (oCols + 7) & (~7);
-            log.debug("packed row bits: {}", packedRowBits);
-
-            if(packedRowBits == oCols) {
-                // overlay is 8-bit padded, we can do it fast
-                for (int i = 0; i < numBytes; i++) {
-                    int idx = bb.get(byteOffset + i) & 0xFF;
-                    dest[i] = bitSwapLut[idx];
+            try {
+                int oBitPosition = getInt(ds, group, Tags.OverlayBitPosition, -1);
+                int oRows = getInt(ds, group, Tags.OverlayRows, -1);
+                int oCols = getInt(ds, group, Tags.OverlayColumns, -1);
+                int[] oOrigin = getInts(ds, group, Tags.OverlayOrigin);
+                int oBitsAllocated = getInt(ds, group, Tags.OverlayBitsAllocated, -1);
+                String oType = getString(ds, group, Tags.OverlayType);
+                int oNumberOfFrames = getInt(ds, group, Tags.NumberOfFramesInOverlay, 1);
+                int oFrameStart = getInt(ds, group, Tags.ImageFrameOrigin, 1) - 1;
+                int oFrameEnd = oFrameStart + oNumberOfFrames;
+    
+                if (oBitPosition == -1 &&
+                        oBitsAllocated == -1 &&
+                        oRows == -1 &&
+                        oCols == -1) {
+                    log.trace("No overlay data associated with image for group {}", group);
+                    continue;
                 }
-            } else {
-                // no joy, slow version
-                int packedRowBytes = packedRowBits / 8;
-                for (int y = 0; y < oRows; y++) {
-                    int rowBitOffset = bitOffset + y * oCols;
-                    int rowByteOffset = rowBitOffset / 8;
-                    int packedRowByteOffset = y * packedRowBytes;
-                    int bitsToMove = (rowBitOffset % 8);
-                    if(bitsToMove != 0) {
-                        for (int i = 0, size = packedRowBytes - 1; i < size; i++) {
-                            int inOffset = rowByteOffset + i;
-                            int b1 = bb.get(inOffset) & 0xFF;
-                            int b2 = bb.get(inOffset + 1) & 0xFF;
-                            int rc = ((b1 >> bitsToMove) ^
-                                    ((b2 << (8 - bitsToMove)) & 0xFF));
-                            dest[packedRowByteOffset + i] = bitSwapLut[rc];
-                        }
-                    } else {
-                        for(int i = 0, size=packedRowBytes - 1; i < size; i++) {
-                            int inOffset = rowByteOffset + i;
-                            int b1 = bb.get(inOffset) & 0xFF;
-                            dest[packedRowByteOffset + i] = bitSwapLut[b1];
+    
+    
+                if ("R".equals(oType)) {
+                    log.debug("Overlay ROI bitmap, not doing anything");
+                    continue;
+                }
+    
+                if ((oBitsAllocated != 1) && (oBitPosition != 0)) {
+                    log.debug("Overlay: {}  OldStyle bitPostion {}", group, oBitPosition);
+                    oldStyleOverlayPlanes.add(oBitPosition);
+                    continue;
+                }
+    
+                if ("GR".indexOf(oType) < 0) {
+                    log.warn("mergeOverlays(): Overlay Type {} not supported", oType);
+                    continue;
+                }
+    
+                int oX1 = 0;
+                int oY1 = 0;
+                if (oOrigin != null) {
+                    oX1 = oOrigin[1] - 1;
+                    oY1 = oOrigin[0] - 1;
+                }
+    
+                log.debug("Overlay: {} OverlayType: {}", group, oType);
+                log.debug("Overlay: {} OverlayRows: {}", group, oRows);
+                log.debug("Overlay: {} OverlayColumns: {}", group, oCols);
+                log.debug("Overlay: {} OverlayOrigin: {} {}", new Object[]{group, oX1, oY1});
+                log.debug("Overlay: {} for Frames: [{}, {})", new Object[]{group, oFrameStart, oFrameEnd});
+    
+                if (!((oFrameStart <= frame) && (frame < oFrameEnd))) {
+                    log.debug("Overlay: frame {} not in range, skipping", frame);
+                    continue;
+                }
+    
+                int oFrameOffset = frame - oFrameStart;
+                int bitOffset = oFrameOffset * oRows * oCols;
+                int byteOffset = bitOffset / 8;  // dont round up!
+                int numBits = oRows * oCols;
+                int numBytes = (numBits + 7) / 8; // round up!
+    
+                log.debug("Overlay: {} bitOffset: {}", group, bitOffset);
+                log.debug("Overlay: {} byteOffset: {}", group, byteOffset);
+                log.debug("Overlay: {} numBits: {}", group, numBits);
+                log.debug("Overlay: {} numBytes: {}", group, numBytes);
+    
+                ByteBuffer bb = ds.get(groupedTag(group, Tags.OverlayData)).getByteBuffer();
+                if (bb.limit() == 0) {
+                    log.warn("Overlay: {} Missing overlay data! Skipped.", group);
+                    continue;
+                }
+                log.debug("Overlay: {} ByteBuffer: {}", group, bb);
+                log.debug("Overlay: {} ByteBuffer ByteOrder: {}", group, (bb.order() == ByteOrder.BIG_ENDIAN) ? "BigEndian" : "LittleEndian");
+    
+    
+                IndexColorModel icm = new IndexColorModel(1, 2, icmColorValues, icmColorValues, icmColorValues, 0);
+                BufferedImage overBi = new BufferedImage(oCols, oRows, BufferedImage.TYPE_BYTE_BINARY, icm);
+                DataBufferByte dataBufferByte = (DataBufferByte) overBi.getRaster().getDataBuffer();
+    
+    
+                byte[] dest = dataBufferByte.getData();
+    
+                // java awt cant even handle non byte packed lines
+                // so if a line lenght is not a multiple of 8, it gets really slow
+                int packedRowBits = (oCols + 7) & (~7);
+                log.debug("packed row bits: {}", packedRowBits);
+    
+                if(packedRowBits == oCols) {
+                    // overlay is 8-bit padded, we can do it fast
+                    for (int i = 0; i < numBytes; i++) {
+                        int idx = bb.get(byteOffset + i) & 0xFF;
+                        dest[i] = bitSwapLut[idx];
+                    }
+                } else {
+                    // no joy, slow version
+                    int packedRowBytes = packedRowBits / 8;
+                    for (int y = 0; y < oRows; y++) {
+                        int rowBitOffset = bitOffset + y * oCols;
+                        int rowByteOffset = rowBitOffset / 8;
+                        int packedRowByteOffset = y * packedRowBytes;
+                        int bitsToMove = (rowBitOffset % 8);
+                        if(bitsToMove != 0) {
+                            for (int i = 0, size = packedRowBytes - 1; i < size; i++) {
+                                int inOffset = rowByteOffset + i;
+                                int b1 = bb.get(inOffset) & 0xFF;
+                                int b2 = bb.get(inOffset + 1) & 0xFF;
+                                int rc = ((b1 >> bitsToMove) ^
+                                        ((b2 << (8 - bitsToMove)) & 0xFF));
+                                dest[packedRowByteOffset + i] = bitSwapLut[rc];
+                            }
+                        } else {
+                            for(int i = 0, size=packedRowBytes - 1; i < size; i++) {
+                                int inOffset = rowByteOffset + i;
+                                int b1 = bb.get(inOffset) & 0xFF;
+                                dest[packedRowByteOffset + i] = bitSwapLut[b1];
+                            }
                         }
                     }
                 }
+    
+    
+                log.debug("Overlay: {} BufferedImage: {}", group, overBi);
+                Graphics2D gBi = bi.createGraphics();
+                gBi.drawImage(overBi, oX1, oY1, null);
+            } catch (Exception x) {
+                log.warn("Render overlay failed! skipped frame:"+frame+" group:"+group+"!  Enable DEBUG log level to get stacktrace");
+                log.debug("Reason for skipped overlay:",x);
+                continue;
             }
-
-
-            log.debug("Overlay: {} BufferedImage: {}", group, overBi);
-            Graphics2D gBi = bi.createGraphics();
-            gBi.drawImage(overBi, oX1, oY1, null);
-
         }
         log.debug("Overlay: done combining overlays");
 
