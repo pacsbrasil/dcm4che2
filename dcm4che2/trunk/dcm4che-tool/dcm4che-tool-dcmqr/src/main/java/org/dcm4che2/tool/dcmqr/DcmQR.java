@@ -881,19 +881,19 @@ public class DcmQR {
                 + "exclusive with -S and -I, perform study level query "
                 + "by default.");
         OptionBuilder.withLongOpt("patient");
-        opts.addOption(OptionBuilder.create("P"));
+        qrlevel.addOption(OptionBuilder.create("P"));
 
         OptionBuilder.withDescription("perform series level query, multiple "
                 + "exclusive with -P and -I, perform study level query "
                 + "by default.");
         OptionBuilder.withLongOpt("series");
-        opts.addOption(OptionBuilder.create("S"));
+        qrlevel.addOption(OptionBuilder.create("S"));
 
         OptionBuilder.withDescription("perform instance level query, multiple "
                 + "exclusive with -P and -S, perform study level query "
                 + "by default.");
         OptionBuilder.withLongOpt("image");
-        opts.addOption(OptionBuilder.create("I"));
+        qrlevel.addOption(OptionBuilder.create("I"));
 
         OptionBuilder.withArgName("cuid");
         OptionBuilder.hasArgs();
@@ -920,6 +920,9 @@ public class DcmQR {
         OptionBuilder.withDescription("specify additional return key. attr can " +
                 "be specified by name or tag value (in hex).");
         opts.addOption(OptionBuilder.create("r"));
+
+        opts.addOption("nodefret", false,
+                "only inlcude return keys specified by -r into the request.");
 
         OptionBuilder.withArgName("num");
         OptionBuilder.hasArg();
@@ -1121,14 +1124,10 @@ public class DcmQR {
             dcmqr.setMoveDest(cl.getOptionValue("cmove"));
         if (cl.hasOption("evalRetrieveAET"))
             dcmqr.setEvalRetrieveAET(true);
-        if (cl.hasOption("P"))
-            dcmqr.setQueryLevel(QueryRetrieveLevel.PATIENT);
-        else if (cl.hasOption("S"))
-            dcmqr.setQueryLevel(QueryRetrieveLevel.SERIES);
-        else if (cl.hasOption("I"))
-            dcmqr.setQueryLevel(QueryRetrieveLevel.IMAGE);
-        else
-            dcmqr.setQueryLevel(QueryRetrieveLevel.STUDY);
+        dcmqr.setQueryLevel(cl.hasOption("P") ? QueryRetrieveLevel.PATIENT
+                          : cl.hasOption("S") ? QueryRetrieveLevel.SERIES
+                          : cl.hasOption("I") ? QueryRetrieveLevel.IMAGE
+                                              : QueryRetrieveLevel.STUDY);
         if (cl.hasOption("noextneg"))
             dcmqr.setNoExtNegotiation(true);
         if (cl.hasOption("rel"))
@@ -1152,16 +1151,18 @@ public class DcmQR {
             String[] cuids = cl.getOptionValues("cfind");
             for (int i = 0; i < cuids.length; i++)
                 dcmqr.addPrivate(cuids[i]);
-        }    
-        if (cl.hasOption("q")) {
-            String[] matchingKeys = cl.getOptionValues("q");
-            for (int i = 1; i < matchingKeys.length; i++, i++)
-                dcmqr.addMatchingKey(Tag.toTagPath(matchingKeys[i - 1]), matchingKeys[i]);
         }
+        if (!cl.hasOption("nodefret"))
+            dcmqr.addDefReturnKeys();
         if (cl.hasOption("r")) {
             String[] returnKeys = cl.getOptionValues("r");
             for (int i = 0; i < returnKeys.length; i++)
                 dcmqr.addReturnKey(Tag.toTagPath(returnKeys[i]));
+        }
+        if (cl.hasOption("q")) {
+            String[] matchingKeys = cl.getOptionValues("q");
+            for (int i = 1; i < matchingKeys.length; i++, i++)
+                dcmqr.addMatchingKey(Tag.toTagPath(matchingKeys[i - 1]), matchingKeys[i]);
         }
 
         dcmqr.configureTransferCapability(cl.hasOption("ivrle"));
@@ -1352,6 +1353,11 @@ public class DcmQR {
         keys.putNull(tagPath, null);
     }
 
+    public void addDefReturnKeys() {
+        for (int tag : qrlevel.getReturnKeys())
+            keys.putNull(tag, null);
+    }
+
     public void configureTransferCapability(boolean ivrle) {
         String[] findcuids = qrlevel.getFindClassUids();
         String[] movecuids = moveDest != null ? qrlevel.getMoveClassUids()
@@ -1443,9 +1449,6 @@ public class DcmQR {
     public void setQueryLevel(QueryRetrieveLevel qrlevel) {
         this.qrlevel = qrlevel;
         keys.putString(Tag.QueryRetrieveLevel, VR.CS, qrlevel.getCode());
-        for (int tag : qrlevel.getReturnKeys()) {
-            keys.putNull(tag, null);
-        }
     }
 
     public final void addPrivate(String cuid) {
