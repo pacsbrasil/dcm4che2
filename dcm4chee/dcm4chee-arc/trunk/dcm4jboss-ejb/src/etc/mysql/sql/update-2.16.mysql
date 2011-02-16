@@ -31,8 +31,9 @@ ALTER TABLE study ADD (
    accno_issuer_fk BIGINT,
    ref_phys_fn_sx VARCHAR(250) BINARY,
    ref_phys_gn_sx VARCHAR(250) BINARY);
-ALTER TABLE study ADD FOREIGN KEY (accno_issuer_fk) REFERENCES issuer(pk);
-CREATE INDEX accno_issuer_fk ON study(accno_issuer_fk);
+ALTER TABLE study
+   ADD INDEX accno_issuer_fk (accno_issuer_fk),
+   ADD CONSTRAINT accno_issuer_fk FOREIGN KEY (accno_issuer_fk) REFERENCES issuer(pk);
 CREATE INDEX ref_phys_fn_sx ON study(ref_phys_fn_sx(16));
 CREATE INDEX ref_phys_gn_sx ON study(ref_phys_gn_sx(16));
 
@@ -58,9 +59,10 @@ ALTER TABLE series_req ADD (
    accession_no VARCHAR(250) BINARY,
    req_phys_fn_sx VARCHAR(250) BINARY,
    req_phys_gn_sx VARCHAR(250) BINARY);
-ALTER TABLE series_req ADD FOREIGN KEY (accno_issuer_fk) REFERENCES issuer(pk);
-CREATE INDEX ser_req_accno_issuer_fk ON series_req(accno_issuer_fk);
-CREATE INDEX ser_req_accession_no ON series_req(accession_no(16));
+ALTER TABLE series_req
+   ADD INDEX ser_req_accno_issuer_fk (accno_issuer_fk),
+   ADD CONSTRAINT ser_req_accno_issuer_fk FOREIGN KEY (accno_issuer_fk) REFERENCES issuer(pk);
+REATE INDEX ser_req_accession_no ON series_req(accession_no(16));
 CREATE INDEX ser_req_phys_fn_sx ON series_req(req_phys_fn_sx(16));
 CREATE INDEX ser_req_phys_gn_sx ON series_req(req_phys_gn_sx(16));
 
@@ -88,13 +90,16 @@ CREATE TABLE content_item (
     name_fk           BIGINT,
     code_fk           BIGINT,
     rel_type          VARCHAR(250) BINARY,
-    text_value        VARCHAR(250) BINARY,
-FOREIGN KEY (instance_fk) REFERENCES instance(pk),
-FOREIGN KEY (name_fk) REFERENCES code(pk),
-FOREIGN KEY (code_fk) REFERENCES code(pk)
+    text_value        VARCHAR(250) BINARY
 );
-CREATE INDEX content_item_inst_fk ON content_item(instance_fk);
-CREATE INDEX content_item_name_fk ON content_item(name_fk);
-CREATE INDEX content_item_code_fk ON content_item(code_fk);
+ALTER TABLE content_item
+    ADD INDEX content_item_inst_fk (instance_fk),
+    ADD CONSTRAINT content_item_inst_fk FOREIGN KEY (instance_fk) REFERENCES instance(pk);
+ALTER TABLE content_item
+    ADD INDEX content_item_name_fk (name_fk),
+    ADD CONSTRAINT content_item_name_fk FOREIGN KEY (name_fk) REFERENCES code(pk);
+ALTER TABLE content_item
+    ADD INDEX content_item_code_fk (code_fk),
+    ADD CONSTRAINT content_item_code_fk FOREIGN KEY (code_fk) REFERENCES code(pk);
 CREATE INDEX content_item_rel_type ON content_item(rel_type(16));
 CREATE INDEX content_item_text_value ON content_item(text_value(64));

@@ -55,10 +55,11 @@ CREATE TABLE patient (
     pat_custom3       VARCHAR(250) BINARY,
     updated_time      DATETIME,
     created_time      DATETIME,
-    pat_attrs         LONGBLOB,
-FOREIGN KEY (merge_fk) REFERENCES patient(pk)
+    pat_attrs         LONGBLOB
 ) ENGINE=INNODB;
-CREATE INDEX pat_merge_fk ON patient(merge_fk);
+ALTER TABLE patient
+    ADD INDEX pat_merge_fk (merge_fk),
+    ADD CONSTRAINT pat_merge_fk FOREIGN KEY (merge_fk) REFERENCES patient(pk);
 CREATE INDEX pat_id ON patient(pat_id(64), pat_id_issuer(64));
 CREATE INDEX pat_name ON patient(pat_name(64));
 CREATE INDEX pat_fn_sx ON patient(pat_fn_sx(16));
@@ -80,12 +81,14 @@ CREATE UNIQUE INDEX other_pat_id ON other_pid(pat_id(64), pat_id_issuer(64));
 
 CREATE TABLE rel_pat_other_pid (
     patient_fk        BIGINT,
-    other_pid_fk      BIGINT,
-FOREIGN KEY (patient_fk) REFERENCES patient(pk),
-FOREIGN KEY (other_pid_fk) REFERENCES other_pid(pk)
+    other_pid_fk      BIGINT
 ) ENGINE=INNODB;
-CREATE INDEX other_pid_pat_fk ON rel_pat_other_pid(patient_fk);
-CREATE INDEX pat_other_pid_fk ON rel_pat_other_pid(other_pid_fk);
+ALTER TABLE rel_pat_other_pid
+    ADD INDEX other_pid_pat_fk (patient_fk),
+    ADD CONSTRAINT other_pid_pat_fk FOREIGN KEY (patient_fk) REFERENCES patient(pk);
+ALTER TABLE rel_pat_other_pid
+    ADD INDEX pat_other_pid_fk (other_pid_fk),
+    ADD CONSTRAINT pat_other_pid_fk FOREIGN KEY (other_pid_fk) REFERENCES other_pid(pk);
 
 CREATE TABLE study (
     pk                BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -118,12 +121,14 @@ CREATE TABLE study (
     checked_time      DATETIME,
     updated_time      DATETIME,
     created_time      DATETIME,
-    study_attrs       LONGBLOB,
-FOREIGN KEY (patient_fk) REFERENCES patient(pk),
-FOREIGN KEY (accno_issuer_fk) REFERENCES issuer(pk)
+    study_attrs       LONGBLOB
 ) ENGINE=INNODB;
-CREATE INDEX patient_fk ON study(patient_fk);
-CREATE INDEX accno_issuer_fk ON study(accno_issuer_fk);
+ALTER TABLE study
+    ADD INDEX patient_fk (patient_fk),
+    ADD CONSTRAINT patient_fk FOREIGN KEY (patient_fk) REFERENCES patient(pk);
+ALTER TABLE study
+    ADD INDEX accno_issuer_fk (accno_issuer_fk),
+    ADD CONSTRAINT accno_issuer_fk FOREIGN KEY (accno_issuer_fk) REFERENCES issuer(pk);
 CREATE UNIQUE INDEX study_iuid ON study(study_iuid(64));
 CREATE INDEX study_id ON study(study_id(64));
 CREATE INDEX study_datetime ON study(study_datetime);
@@ -145,12 +150,14 @@ CREATE INDEX study_status ON study(study_status);
 
 CREATE TABLE rel_study_pcode (
     study_fk          BIGINT,
-    pcode_fk          BIGINT,
-FOREIGN KEY (study_fk) REFERENCES study(pk),
-FOREIGN KEY (pcode_fk) REFERENCES code(pk)
+    pcode_fk          BIGINT
 ) ENGINE=INNODB;
-CREATE INDEX pcode_study_fk ON rel_study_pcode(study_fk);
-CREATE INDEX study_pcode_fk ON rel_study_pcode(pcode_fk);
+ALTER TABLE rel_study_pcode
+    ADD INDEX pcode_study_fk (study_fk),
+    ADD CONSTRAINT pcode_study_fk FOREIGN KEY (study_fk) REFERENCES study(pk);
+ALTER TABLE rel_study_pcode
+    ADD INDEX study_pcode_fk (pcode_fk),
+    ADD CONSTRAINT study_pcode_fk FOREIGN KEY (pcode_fk) REFERENCES code(pk);
 
 CREATE TABLE study_permission (
     pk                BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -172,13 +179,15 @@ CREATE TABLE mpps (
     mpps_status       INTEGER NOT NULL,
     updated_time      DATETIME,
     created_time      DATETIME,
-    mpps_attrs        LONGBLOB,
-FOREIGN KEY (patient_fk) REFERENCES patient(pk),
-FOREIGN KEY (drcode_fk) REFERENCES code(pk)
+    mpps_attrs        LONGBLOB
 ) ENGINE=INNODB;
+ALTER TABLE mpps
+    ADD INDEX mpps_patient_fk (patient_fk),
+    ADD CONSTRAINT mpps_patient_fk FOREIGN KEY (patient_fk) REFERENCES patient(pk);
+ALTER TABLE mpps
+    ADD INDEX mpps_drcode_fk (drcode_fk),
+    ADD CONSTRAINT mpps_drcode_fk FOREIGN KEY (drcode_fk) REFERENCES code(pk);
 CREATE UNIQUE INDEX mpps_iuid ON mpps (mpps_iuid);
-CREATE INDEX mpps_patient_fk ON mpps(patient_fk);
-CREATE INDEX mpps_drcode_fk ON mpps(drcode_fk);
 CREATE INDEX mpps_pps_start ON mpps (pps_start);
 CREATE INDEX mpps_station_aet ON mpps (station_aet(16));
 CREATE INDEX mpps_modality ON mpps (modality(16));
@@ -218,14 +227,17 @@ CREATE TABLE series (
     series_status     INTEGER NOT NULL,
     created_time      DATETIME,
     updated_time      DATETIME,
-    series_attrs      LONGBLOB,
-FOREIGN KEY (study_fk) REFERENCES study(pk),
-FOREIGN KEY (mpps_fk) REFERENCES mpps(pk),
-FOREIGN KEY (inst_code_fk) REFERENCES code(pk)
+    series_attrs      LONGBLOB
 ) ENGINE=INNODB;
-CREATE INDEX study_fk ON series(study_fk);
-CREATE INDEX series_mpps_fk ON series(mpps_fk);
-CREATE INDEX series_inst_code_fk ON series(inst_code_fk);
+ALTER TABLE series
+    ADD INDEX study_fk (study_fk),
+    ADD CONSTRAINT study_fk FOREIGN KEY (study_fk) REFERENCES study(pk);
+ALTER TABLE series
+    ADD INDEX series_mpps_fk (mpps_fk),
+    ADD CONSTRAINT series_mpps_fk FOREIGN KEY (mpps_fk) REFERENCES mpps(pk);
+ALTER TABLE series
+    ADD INDEX series_inst_code_fk (inst_code_fk),
+    ADD CONSTRAINT series_inst_code_fk FOREIGN KEY (inst_code_fk) REFERENCES code(pk);
 CREATE UNIQUE INDEX series_iuid ON series(series_iuid(64));
 CREATE INDEX series_no ON series(series_no(16));
 CREATE INDEX modality ON series(modality(16));
@@ -263,12 +275,14 @@ CREATE TABLE series_req (
     req_phys_fn_sx    VARCHAR(250) BINARY,
     req_phys_gn_sx    VARCHAR(250) BINARY,
     req_phys_i_name   VARCHAR(250) BINARY,
-    req_phys_p_name   VARCHAR(250) BINARY,
-FOREIGN KEY (series_fk) REFERENCES series(pk),
-FOREIGN KEY (accno_issuer_fk) REFERENCES issuer(pk)
+    req_phys_p_name   VARCHAR(250) BINARY
 ) ENGINE=INNODB;
-CREATE INDEX ser_req_series_fk ON series_req(series_fk);
-CREATE INDEX ser_req_accno_issuer_fk ON series_req(accno_issuer_fk);
+ALTER TABLE series_req
+    ADD INDEX ser_req_series_fk (series_fk),
+    ADD CONSTRAINT ser_req_series_fk FOREIGN KEY (series_fk) REFERENCES series(pk);
+ALTER TABLE series_req
+    ADD INDEX ser_req_accno_issuer_fk (accno_issuer_fk),
+    ADD CONSTRAINT ser_req_accno_issuer_fk FOREIGN KEY (accno_issuer_fk) REFERENCES issuer(pk);
 CREATE INDEX ser_req_accession_no ON series_req(accession_no(16));
 CREATE INDEX ser_req_study_iuid ON series_req(study_iuid(64));
 CREATE INDEX ser_req_proc_id ON series_req(req_proc_id(16));
@@ -317,14 +331,17 @@ CREATE TABLE instance (
     archived          BIT NOT NULL,
     updated_time      DATETIME,
     created_time      DATETIME,
-    inst_attrs        LONGBLOB,
-FOREIGN KEY (series_fk) REFERENCES series(pk),
-FOREIGN KEY (srcode_fk) REFERENCES code(pk),
-FOREIGN KEY (media_fk) REFERENCES media(pk)
+    inst_attrs        LONGBLOB
 ) ENGINE=INNODB;
-CREATE INDEX series_fk ON instance(series_fk);
-CREATE INDEX srcode_fk ON instance(srcode_fk);
-CREATE INDEX media_fk ON instance(media_fk);
+ALTER TABLE instance
+    ADD INDEX series_fk (series_fk),
+    ADD CONSTRAINT series_fk FOREIGN KEY (series_fk) REFERENCES series(pk);
+ALTER TABLE instance
+    ADD INDEX srcode_fk (srcode_fk),
+    ADD CONSTRAINT srcode_fk FOREIGN KEY (srcode_fk) REFERENCES code(pk);
+ALTER TABLE instance
+    ADD INDEX media_fk (media_fk),
+    ADD CONSTRAINT media_fk FOREIGN KEY (media_fk) REFERENCES media(pk);
 CREATE UNIQUE INDEX sop_iuid ON instance(sop_iuid(64));
 CREATE INDEX sop_cuid ON instance(sop_cuid(64));
 CREATE INDEX inst_no ON instance(inst_no(16));
@@ -348,10 +365,11 @@ CREATE TABLE verify_observer (
     observer_fn_sx    VARCHAR(250) BINARY,
     observer_gn_sx    VARCHAR(250) BINARY,
     observer_i_name   VARCHAR(250) BINARY,
-    observer_p_name   VARCHAR(250) BINARY,
-FOREIGN KEY (instance_fk) REFERENCES instance(pk)
+    observer_p_name   VARCHAR(250) BINARY
 ) ENGINE=INNODB;
-CREATE INDEX observer_inst_fk ON verify_observer(instance_fk);
+ALTER TABLE verify_observer
+    ADD INDEX observer_inst_fk (instance_fk),
+    ADD CONSTRAINT observer_inst_fk FOREIGN KEY (instance_fk) REFERENCES instance(pk);
 CREATE INDEX verify_datetime ON verify_observer(verify_datetime);
 CREATE INDEX observer_name ON verify_observer(observer_name(64));
 CREATE INDEX observer_fn_sx ON verify_observer(observer_fn_sx(16));
@@ -365,14 +383,17 @@ CREATE TABLE content_item (
     name_fk           BIGINT,
     code_fk           BIGINT,
     rel_type          VARCHAR(250) BINARY,
-    text_value        VARCHAR(250) BINARY,
-FOREIGN KEY (instance_fk) REFERENCES instance(pk),
-FOREIGN KEY (name_fk) REFERENCES code(pk),
-FOREIGN KEY (code_fk) REFERENCES code(pk)
+    text_value        VARCHAR(250) BINARY
 );
-CREATE INDEX content_item_inst_fk ON content_item(instance_fk);
-CREATE INDEX content_item_name_fk ON content_item(name_fk);
-CREATE INDEX content_item_code_fk ON content_item(code_fk);
+ALTER TABLE content_item
+    ADD INDEX content_item_inst_fk (instance_fk),
+    ADD CONSTRAINT content_item_inst_fk FOREIGN KEY (instance_fk) REFERENCES instance(pk);
+ALTER TABLE content_item
+    ADD INDEX content_item_name_fk (name_fk),
+    ADD CONSTRAINT content_item_name_fk FOREIGN KEY (name_fk) REFERENCES code(pk);
+ALTER TABLE content_item
+    ADD INDEX content_item_code_fk (code_fk),
+    ADD CONSTRAINT content_item_code_fk FOREIGN KEY (code_fk) REFERENCES code(pk);
 CREATE INDEX content_item_rel_type ON content_item(rel_type(16));
 CREATE INDEX content_item_text_value ON content_item(text_value(64));
 
@@ -384,11 +405,12 @@ CREATE TABLE filesystem (
     retrieve_aet      VARCHAR(250) BINARY NOT NULL,
     availability      INTEGER NOT NULL,
     fs_status         INTEGER NOT NULL,
-    user_info         VARCHAR(250) BINARY,
-FOREIGN KEY (next_fk) REFERENCES filesystem(pk)
+    user_info         VARCHAR(250) BINARY
 ) ENGINE=INNODB;
+ALTER TABLE filesystem
+    ADD INDEX fs_next_fk (next_fk),
+    ADD CONSTRAINT fs_next_fk FOREIGN KEY (next_fk) REFERENCES filesystem(pk);
 CREATE UNIQUE INDEX fs_dirpath ON filesystem(dirpath(64));
-CREATE INDEX fs_next_fk ON filesystem(next_fk);
 CREATE INDEX fs_group_id ON filesystem(fs_group_id(16));
 CREATE INDEX fs_retrieve_aet ON filesystem(retrieve_aet(16));
 CREATE INDEX fs_availability ON filesystem(availability);
@@ -404,12 +426,14 @@ CREATE TABLE files (
     file_size         BIGINT,
     file_status       INTEGER,
     md5_check_time    DATETIME,
-    created_time      DATETIME,
-FOREIGN KEY (instance_fk) REFERENCES instance(pk),
-FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
+    created_time      DATETIME
 ) ENGINE=INNODB;
-CREATE INDEX instance_fk ON files(instance_fk);
-CREATE INDEX filesystem_fk ON files(filesystem_fk);
+ALTER TABLE files
+    ADD INDEX instance_fk (instance_fk),
+    ADD CONSTRAINT instance_fk FOREIGN KEY (instance_fk) REFERENCES instance(pk);
+ALTER TABLE files
+    ADD INDEX filesystem_fk (filesystem_fk),
+    ADD CONSTRAINT filesystem_fk FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk);
 CREATE INDEX file_tsuid ON files(file_tsuid(64));
 CREATE INDEX md5_check_time ON files(md5_check_time);
 CREATE INDEX file_created ON files(created_time);
@@ -420,12 +444,14 @@ CREATE TABLE study_on_fs (
     study_fk          BIGINT,
     filesystem_fk     BIGINT,
     access_time       DATETIME NOT NULL,
-    mark_to_delete    BIT NOT NULL,
-FOREIGN KEY (study_fk) REFERENCES study(pk),
-FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
+    mark_to_delete    BIT NOT NULL
 ) ENGINE=INNODB;
-CREATE UNIQUE INDEX i_study_on_fs ON study_on_fs(study_fk, filesystem_fk);
-CREATE INDEX fs_of_study ON study_on_fs(filesystem_fk);
+ALTER TABLE study_on_fs
+    ADD UNIQUE INDEX i_study_on_fs (study_fk, filesystem_fk),
+    ADD CONSTRAINT i_study_on_fs FOREIGN KEY (study_fk) REFERENCES study(pk);
+ALTER TABLE study_on_fs
+    ADD INDEX fs_of_study (filesystem_fk),
+    ADD CONSTRAINT fs_of_study FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk);
 CREATE INDEX access_time ON study_on_fs(access_time);
 CREATE INDEX mark_to_delete ON study_on_fs(mark_to_delete);
 
@@ -448,10 +474,11 @@ CREATE TABLE mwl_item (
     study_iuid        VARCHAR(250) BINARY NOT NULL,
     updated_time      DATETIME,
     created_time      DATETIME,
-    item_attrs        LONGBLOB,
-FOREIGN KEY (patient_fk) REFERENCES patient(pk)
+    item_attrs        LONGBLOB
 ) ENGINE=INNODB;
-CREATE INDEX mwl_patient_fk ON mwl_item(patient_fk);
+ALTER TABLE mwl_item
+    ADD INDEX mwl_patient_fk (patient_fk),
+    ADD CONSTRAINT mwl_patient_fk FOREIGN KEY (patient_fk) REFERENCES patient(pk);
 CREATE INDEX sps_status ON mwl_item(sps_status);
 CREATE UNIQUE INDEX mwl_sps_id ON mwl_item(sps_id(16),req_proc_id(16));
 CREATE INDEX mwl_start_time ON mwl_item(start_datetime);
@@ -478,12 +505,14 @@ CREATE TABLE gpsps (
     gpsps_status      INTEGER,
     gpsps_prior       INTEGER,
     in_availability   INTEGER,
-    item_attrs        LONGBLOB,
-FOREIGN KEY (patient_fk) REFERENCES patient(pk),
-FOREIGN KEY (code_fk) REFERENCES code(pk)
+    item_attrs        LONGBLOB
 ) ENGINE=INNODB;
-CREATE INDEX gpsps_patient_fk ON gpsps(patient_fk);
-CREATE INDEX gpsps_code_fk ON gpsps(code_fk);
+ALTER TABLE gpsps
+    ADD INDEX gpsps_patient_fk (patient_fk),
+    ADD CONSTRAINT gpsps_patient_fk FOREIGN KEY (patient_fk) REFERENCES patient(pk);
+ALTER TABLE gpsps
+    ADD INDEX gpsps_code_fk (code_fk),
+    ADD CONSTRAINT gpsps_code_fk FOREIGN KEY (code_fk) REFERENCES code(pk);
 CREATE UNIQUE INDEX gpsps_iuid ON gpsps(gpsps_iuid(64));
 CREATE INDEX gpsps_tuid ON gpsps(gpsps_tuid(64));
 CREATE INDEX gpsps_start_time ON gpsps(start_datetime);
@@ -494,39 +523,47 @@ CREATE INDEX in_availability ON gpsps(in_availability);
 
 CREATE TABLE rel_gpsps_appcode (
     gpsps_fk          BIGINT,
-    appcode_fk        BIGINT,
-FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
-FOREIGN KEY (appcode_fk) REFERENCES code(pk)
+    appcode_fk        BIGINT
 ) ENGINE=INNODB;
-CREATE INDEX appcode_gpsps_fk ON rel_gpsps_appcode(gpsps_fk);
-CREATE INDEX gpsps_appcode_fk ON rel_gpsps_appcode(appcode_fk);
+ALTER TABLE rel_gpsps_appcode
+    ADD INDEX appcode_gpsps_fk (gpsps_fk),
+    ADD CONSTRAINT appcode_gpsps_fk FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk);
+ALTER TABLE rel_gpsps_appcode
+    ADD INDEX gpsps_appcode_fk (appcode_fk),
+    ADD CONSTRAINT gpsps_appcode_fk FOREIGN KEY (appcode_fk) REFERENCES code(pk);
 
 CREATE TABLE rel_gpsps_devname (
     gpsps_fk          BIGINT,
-    devname_fk        BIGINT,
-FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
-FOREIGN KEY (devname_fk) REFERENCES code(pk)
+    devname_fk        BIGINT
 ) ENGINE=INNODB;
-CREATE INDEX devname_gpsps_fk ON rel_gpsps_devname(gpsps_fk);
-CREATE INDEX gpsps_devname_fk ON rel_gpsps_devname(devname_fk);
+ALTER TABLE rel_gpsps_devname
+    ADD INDEX devname_gpsps_fk (gpsps_fk),
+    ADD CONSTRAINT devname_gpsps_fk FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk);
+ALTER TABLE rel_gpsps_devname
+    ADD INDEX gpsps_devname_fk (devname_fk),
+    ADD CONSTRAINT gpsps_devname_fk FOREIGN KEY (devname_fk) REFERENCES code(pk);
 
 CREATE TABLE rel_gpsps_devclass (
     gpsps_fk          BIGINT,
-    devclass_fk       BIGINT,
-FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
-FOREIGN KEY (devclass_fk) REFERENCES code(pk)
+    devclass_fk       BIGINT
 ) ENGINE=INNODB;
-CREATE INDEX devclass_gpsps_fk ON rel_gpsps_devclass(gpsps_fk);
-CREATE INDEX gpsps_devclass_fk ON rel_gpsps_devclass(devclass_fk);
+ALTER TABLE rel_gpsps_devclass
+    ADD INDEX devclass_gpsps_fk (gpsps_fk),
+    ADD CONSTRAINT devclass_gpsps_fk FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk);
+ALTER TABLE rel_gpsps_devclass
+    ADD INDEX gpsps_devclass_fk (devclass_fk),
+    ADD CONSTRAINT gpsps_devclass_fk FOREIGN KEY (devclass_fk) REFERENCES code(pk);
 
 CREATE TABLE rel_gpsps_devloc (
     gpsps_fk          BIGINT,
-    devloc_fk         BIGINT,
-FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
-FOREIGN KEY (devloc_fk) REFERENCES code(pk)
+    devloc_fk         BIGINT
 ) ENGINE=INNODB;
-CREATE INDEX devloc_gpsps_fk ON rel_gpsps_devloc(gpsps_fk);
-CREATE INDEX gpsps_devloc_fk ON rel_gpsps_devloc(devloc_fk);
+ALTER TABLE rel_gpsps_devloc
+    ADD INDEX devloc_gpsps_fk (gpsps_fk),
+    ADD CONSTRAINT devloc_gpsps_fk FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk);
+ALTER TABLE rel_gpsps_devloc
+    ADD INDEX gpsps_devloc_fk (devloc_fk),
+    ADD CONSTRAINT gpsps_devloc_fk FOREIGN KEY (devloc_fk) REFERENCES code(pk);
 
 CREATE TABLE gpsps_perf (
     pk                BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -536,12 +573,14 @@ CREATE TABLE gpsps_perf (
     hum_perf_fn_sx    VARCHAR(250) BINARY,
     hum_perf_gn_sx    VARCHAR(250) BINARY,
     hum_perf_i_name   VARCHAR(250) BINARY,
-    hum_perf_p_name   VARCHAR(250) BINARY,
-FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
-FOREIGN KEY (code_fk) REFERENCES code(pk)
+    hum_perf_p_name   VARCHAR(250) BINARY
 ) ENGINE=INNODB;
-CREATE INDEX gpsps_perf_sps_fk ON gpsps_perf(gpsps_fk);
-CREATE INDEX gpsps_perf_code_fk ON gpsps_perf(code_fk);
+ALTER TABLE gpsps_perf
+    ADD INDEX gpsps_perf_sps_fk (gpsps_fk),
+    ADD CONSTRAINT gpsps_perf_sps_fk FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk);
+ALTER TABLE gpsps_perf
+    ADD INDEX gpsps_perf_code_fk (code_fk),
+    ADD CONSTRAINT gpsps_perf_code_fk FOREIGN KEY (code_fk) REFERENCES code(pk);
 CREATE INDEX gpsps_perf_name ON gpsps_perf(human_perf_name(64));
 CREATE INDEX gpsps_perf_fn_sx ON gpsps_perf(hum_perf_fn_sx(16));
 CREATE INDEX gpsps_perf_gn_sx ON gpsps_perf(hum_perf_gn_sx(16));
@@ -552,10 +591,11 @@ CREATE TABLE gpsps_req (
     pk                BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     gpsps_fk          BIGINT,
     req_proc_id       VARCHAR(250) BINARY,
-    accession_no      VARCHAR(250) BINARY,
-FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk)
+    accession_no      VARCHAR(250) BINARY
 ) ENGINE=INNODB;
-CREATE INDEX gpsps_req_gpsps_fk ON gpsps_req(gpsps_fk);
+ALTER TABLE gpsps_req
+    ADD INDEX gpsps_req_gpsps_fk (gpsps_fk),
+    ADD CONSTRAINT gpsps_req_gpsps_fk FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk);
 CREATE INDEX gpsps_req_proc_id ON gpsps_req(req_proc_id);
 CREATE INDEX gpsps_req_acc_no ON gpsps_req(accession_no);    
 
@@ -567,21 +607,24 @@ CREATE TABLE gppps (
     pps_status        INTEGER NOT NULL,
     created_time      DATETIME,
     updated_time      DATETIME,
-    pps_attrs         LONGBLOB,
-FOREIGN KEY (patient_fk) REFERENCES patient(pk)
+    pps_attrs         LONGBLOB
 ) ENGINE=INNODB;
+ALTER TABLE gppps
+    ADD INDEX gppps_patient_fk (patient_fk),
+    ADD CONSTRAINT gppps_patient_fk FOREIGN KEY (patient_fk) REFERENCES patient(pk);
 CREATE UNIQUE INDEX gppps_iuid ON gppps (pps_iuid);
-CREATE INDEX gppps_patient_fk ON gppps(patient_fk);
 CREATE INDEX gppps_pps_start ON gppps (pps_start);
 
 CREATE TABLE rel_gpsps_gppps (
     gpsps_fk          BIGINT,
-    gppps_fk          BIGINT,
-FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk),
-FOREIGN KEY (gppps_fk) REFERENCES gppps(pk)
+    gppps_fk          BIGINT
 ) ENGINE=INNODB;
-CREATE INDEX gppps_gpsps_fk ON rel_gpsps_gppps(gpsps_fk);
-CREATE INDEX gpsps_gppps_fk ON rel_gpsps_gppps(gppps_fk);
+ALTER TABLE rel_gpsps_gppps
+    ADD INDEX gppps_gpsps_fk (gpsps_fk),
+    ADD CONSTRAINT gppps_gpsps_fk FOREIGN KEY (gpsps_fk) REFERENCES gpsps(pk);
+ALTER TABLE rel_gpsps_gppps
+    ADD INDEX gpsps_gppps_fk (gppps_fk),
+    ADD CONSTRAINT gpsps_gppps_fk FOREIGN KEY (gppps_fk) REFERENCES gppps(pk);
 
 CREATE TABLE ups (
     pk                BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -600,11 +643,14 @@ CREATE TABLE ups (
     ups_prior         INTEGER,
     created_time      DATETIME,
     updated_time      DATETIME,
-    ups_attrs         LONGBLOB,
-FOREIGN KEY (patient_fk) REFERENCES patient(pk)
+    ups_attrs         LONGBLOB
 );
-CREATE INDEX ups_patient_fk ON ups(patient_fk);
-CREATE INDEX ups_code_fk ON ups(code_fk);
+ALTER TABLE ups
+    ADD INDEX ups_patient_fk (patient_fk),
+    ADD CONSTRAINT ups_patient_fk FOREIGN KEY (patient_fk) REFERENCES patient(pk);
+ALTER TABLE ups
+    ADD INDEX ups_code_fk (code_fk),
+    ADD CONSTRAINT ups_code_fk FOREIGN KEY (code_fk) REFERENCES code(pk);
 CREATE UNIQUE INDEX ups_iuid ON ups(ups_iuid);
 CREATE INDEX ups_tuid ON ups(ups_tuid);
 CREATE INDEX ups_adm_id ON ups(adm_id);
@@ -620,48 +666,58 @@ CREATE INDEX ups_updated_time ON ups(updated_time);
 
 CREATE TABLE rel_ups_appcode (
     ups_fk            BIGINT,
-    appcode_fk        BIGINT,
-FOREIGN KEY (ups_fk) REFERENCES ups(pk),
-FOREIGN KEY (appcode_fk) REFERENCES code(pk)
+    appcode_fk        BIGINT
 );
-CREATE INDEX appcode_ups_fk ON rel_ups_appcode(ups_fk);
-CREATE INDEX ups_appcode_fk ON rel_ups_appcode(appcode_fk);
+ALTER TABLE rel_ups_appcode
+    ADD INDEX appcode_ups_fk (ups_fk),
+    ADD CONSTRAINT appcode_ups_fk FOREIGN KEY (ups_fk) REFERENCES ups(pk);
+ALTER TABLE rel_ups_appcode
+    ADD INDEX ups_appcode_fk (appcode_fk),
+    ADD CONSTRAINT ups_appcode_fk FOREIGN KEY (appcode_fk) REFERENCES code(pk);
 
 CREATE TABLE rel_ups_devname (
     ups_fk            BIGINT,
-    devname_fk        BIGINT,
-FOREIGN KEY (ups_fk) REFERENCES ups(pk),
-FOREIGN KEY (devname_fk) REFERENCES code(pk)
+    devname_fk        BIGINT
 );
-CREATE INDEX devname_ups_fk ON rel_ups_devname(ups_fk);
-CREATE INDEX ups_devname_fk ON rel_ups_devname(devname_fk);
+ALTER TABLE rel_ups_devname
+    ADD INDEX devname_ups_fk (ups_fk),
+    ADD CONSTRAINT devname_ups_fk FOREIGN KEY (ups_fk) REFERENCES ups(pk);
+ALTER TABLE rel_ups_devname
+    ADD INDEX ups_devname_fk (devname_fk),
+    ADD CONSTRAINT ups_devname_fk FOREIGN KEY (devname_fk) REFERENCES code(pk);
 
 CREATE TABLE rel_ups_devclass (
     ups_fk            BIGINT,
-    devclass_fk       BIGINT,
-FOREIGN KEY (ups_fk) REFERENCES ups(pk),
-FOREIGN KEY (devclass_fk) REFERENCES code(pk)
+    devclass_fk       BIGINT
 );
-CREATE INDEX devclass_ups_fk ON rel_ups_devclass(ups_fk);
-CREATE INDEX ups_devclass_fk ON rel_ups_devclass(devclass_fk);
+ALTER TABLE rel_ups_devclass
+    ADD INDEX devclass_ups_fk (ups_fk),
+    ADD CONSTRAINT devclass_ups_fk FOREIGN KEY (ups_fk) REFERENCES ups(pk);
+ALTER TABLE rel_ups_devclass
+    ADD INDEX ups_devclass_fk (devclass_fk),
+    ADD CONSTRAINT ups_devclass_fk FOREIGN KEY (devclass_fk) REFERENCES code(pk);
 
 CREATE TABLE rel_ups_devloc (
     ups_fk            BIGINT,
-    devloc_fk         BIGINT,
-FOREIGN KEY (ups_fk) REFERENCES ups(pk),
-FOREIGN KEY (devloc_fk) REFERENCES code(pk)
+    devloc_fk         BIGINT
 );
-CREATE INDEX devloc_ups_fk ON rel_ups_devloc(ups_fk);
-CREATE INDEX ups_devloc_fk ON rel_ups_devloc(devloc_fk);
+ALTER TABLE rel_ups_devloc
+    ADD INDEX devloc_ups_fk (ups_fk),
+    ADD CONSTRAINT devloc_ups_fk FOREIGN KEY (ups_fk) REFERENCES ups(pk);
+ALTER TABLE rel_ups_devloc
+    ADD INDEX ups_devloc_fk (devloc_fk),
+    ADD CONSTRAINT ups_devloc_fk FOREIGN KEY (devloc_fk) REFERENCES code(pk);
 
 CREATE TABLE rel_ups_performer (
     ups_fk            BIGINT,
-    performer_fk      BIGINT,
-FOREIGN KEY (ups_fk) REFERENCES ups(pk),
-FOREIGN KEY (performer_fk) REFERENCES code(pk)
+    performer_fk      BIGINT
 );
-CREATE INDEX performer_ups_fk ON rel_ups_performer(ups_fk);
-CREATE INDEX ups_performer_fk ON rel_ups_performer(performer_fk);
+ALTER TABLE rel_ups_performer
+    ADD INDEX performer_ups_fk (ups_fk),
+    ADD CONSTRAINT performer_ups_fk FOREIGN KEY (ups_fk) REFERENCES ups(pk);
+ALTER TABLE rel_ups_performer
+    ADD INDEX ups_performer_fk (performer_fk),
+    ADD CONSTRAINT ups_performer_fk FOREIGN KEY (performer_fk) REFERENCES code(pk);
 
 CREATE TABLE ups_req (
     pk                BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -669,10 +725,11 @@ CREATE TABLE ups_req (
     req_proc_id       VARCHAR(250) BINARY,
     accession_no      VARCHAR(250) BINARY,
     confidentiality   VARCHAR(250) BINARY,
-    req_service       VARCHAR(250) BINARY,
-FOREIGN KEY (ups_fk) REFERENCES ups(pk)
+    req_service       VARCHAR(250) BINARY
 );
-CREATE INDEX ups_req_ups_fk ON ups_req(ups_fk);
+ALTER TABLE ups_req
+    ADD INDEX ups_req_ups_fk (ups_fk),
+    ADD CONSTRAINT ups_req_ups_fk FOREIGN KEY (ups_fk) REFERENCES ups(pk);
 CREATE INDEX ups_req_proc_id ON ups_req(req_proc_id);
 CREATE INDEX ups_req_acc_no ON ups_req(accession_no);
 CREATE INDEX ups_confidentiality ON ups_req(confidentiality);
@@ -682,10 +739,11 @@ CREATE TABLE ups_rel_ps (
     pk                BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     ups_fk            BIGINT,
     sop_iuid          VARCHAR(250) BINARY NOT NULL,
-    sop_cuid          VARCHAR(250) BINARY NOT NULL,
- FOREIGN KEY (ups_fk) REFERENCES ups(pk)
+    sop_cuid          VARCHAR(250) BINARY NOT NULL
 );
-CREATE INDEX ups_rel_ps_ups_fk ON ups_rel_ps(ups_fk);
+ALTER TABLE ups_rel_ps
+    ADD INDEX ups_rel_ps_ups_fk (ups_fk),
+    ADD CONSTRAINT ups_rel_ps_ups_fk FOREIGN KEY (ups_fk) REFERENCES ups(pk);
 CREATE INDEX ups_rel_ps_iuid ON ups_rel_ps(sop_iuid);
 CREATE INDEX ups_rel_ps_cuid ON ups_rel_ps(sop_cuid);
 
@@ -693,10 +751,11 @@ CREATE TABLE ups_repl_ps (
     pk                BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     ups_fk            BIGINT,
     sop_iuid          VARCHAR(250) BINARY NOT NULL,
-    sop_cuid          VARCHAR(250) BINARY NOT NULL,
- FOREIGN KEY (ups_fk) REFERENCES ups(pk)
+    sop_cuid          VARCHAR(250) BINARY NOT NULL
 );
-CREATE INDEX ups_repl_ps_ups_fk ON ups_repl_ps(ups_fk);
+ALTER TABLE ups_repl_ps
+    ADD INDEX ups_repl_ps_ups_fk (ups_fk),
+    ADD CONSTRAINT ups_repl_ps_ups_fk FOREIGN KEY (ups_fk) REFERENCES ups(pk);
 CREATE INDEX ups_repl_ps_iuid ON ups_repl_ps(sop_iuid);
 CREATE INDEX ups_repl_ps_cuid ON ups_repl_ps(sop_cuid);
 
@@ -704,10 +763,11 @@ CREATE TABLE ups_subscr (
     pk                BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     ups_fk            BIGINT,
     aet               VARCHAR(250) BINARY NOT NULL,
-    deletion_lock     BIT NOT NULL,
-FOREIGN KEY (ups_fk) REFERENCES ups(pk)
+    deletion_lock     BIT NOT NULL
 );
-CREATE INDEX ups_subscr_ups_fk ON ups_subscr(ups_fk);
+ALTER TABLE ups_subscr
+    ADD INDEX ups_subscr_ups_fk (ups_fk),
+    ADD CONSTRAINT ups_subscr_ups_fk FOREIGN KEY (ups_fk) REFERENCES ups(pk);
 CREATE INDEX ups_deletion_lock ON ups_subscr(deletion_lock);
 CREATE INDEX ups_subscr_aet ON ups_subscr(aet);
 
@@ -728,10 +788,11 @@ CREATE TABLE hp (
     hp_level          INTEGER,
     num_priors        INTEGER,
     num_screens       INTEGER,
-    hp_attrs          LONGBLOB,
-FOREIGN KEY (user_fk) REFERENCES code(pk)
+    hp_attrs          LONGBLOB
 ) ENGINE=INNODB;
-CREATE INDEX hp_user_fk ON hp(user_fk);
+ALTER TABLE hp
+    ADD INDEX hp_user_fk (user_fk),
+    ADD CONSTRAINT hp_user_fk FOREIGN KEY (user_fk) REFERENCES code(pk);
 CREATE UNIQUE INDEX hp_iuid ON hp(hp_iuid(64));
 CREATE INDEX hp_cuid ON hp(hp_cuid(64));
 CREATE INDEX hp_name ON hp(hp_name(64));
@@ -743,39 +804,46 @@ CREATE TABLE hpdef (
     pk                BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     hp_fk             BIGINT,
     modality          VARCHAR(250) BINARY,
-    laterality        VARCHAR(250) BINARY,
-FOREIGN KEY (hp_fk) REFERENCES hp(pk)
+    laterality        VARCHAR(250) BINARY
 ) ENGINE=INNODB;
-CREATE INDEX hp_fk ON hpdef(hp_fk);
+ALTER TABLE hpdef
+    ADD INDEX hp_fk (hp_fk),
+    ADD CONSTRAINT hp_fk FOREIGN KEY (hp_fk) REFERENCES hp(pk);
 CREATE INDEX hpdef_modality ON hpdef(modality(16));
 CREATE INDEX hpdef_laterality ON hpdef(laterality(16));
 
 CREATE TABLE rel_hpdef_region (
     hpdef_fk          BIGINT,
-    region_fk         BIGINT,
-FOREIGN KEY (hpdef_fk) REFERENCES hpdef(pk),
-FOREIGN KEY (region_fk) REFERENCES code(pk)
+    region_fk         BIGINT
 ) ENGINE=INNODB;
-CREATE INDEX region_hpdef_fk ON rel_hpdef_region(hpdef_fk);
-CREATE INDEX hpdef_region_fk ON rel_hpdef_region(region_fk);
+ALTER TABLE rel_hpdef_region
+    ADD INDEX region_hpdef_fk (hpdef_fk),
+    ADD CONSTRAINT region_hpdef_fk FOREIGN KEY (hpdef_fk) REFERENCES hpdef(pk);
+ALTER TABLE rel_hpdef_region
+    ADD INDEX hpdef_region_fk (region_fk),
+    ADD CONSTRAINT hpdef_region_fk FOREIGN KEY (region_fk) REFERENCES code(pk);
 
 CREATE TABLE rel_hpdef_proc (
     hpdef_fk          BIGINT,
-    proc_fk           BIGINT,
-FOREIGN KEY (hpdef_fk) REFERENCES hpdef(pk),
-FOREIGN KEY (proc_fk) REFERENCES code(pk)
+    proc_fk           BIGINT
 ) ENGINE=INNODB;
-CREATE INDEX proc_hpdef_fk ON rel_hpdef_proc(hpdef_fk);
-CREATE INDEX hpdef_proc_fk ON rel_hpdef_proc(proc_fk);
+ALTER TABLE rel_hpdef_proc
+    ADD INDEX proc_hpdef_fk (hpdef_fk),
+    ADD CONSTRAINT proc_hpdef_fk FOREIGN KEY (hpdef_fk) REFERENCES hpdef(pk);
+ALTER TABLE rel_hpdef_proc
+    ADD INDEX hpdef_proc_fk (proc_fk),
+    ADD CONSTRAINT hpdef_proc_fk FOREIGN KEY (proc_fk) REFERENCES code(pk);
 
 CREATE TABLE rel_hpdef_reason (
     hpdef_fk          BIGINT,
-    reason_fk         BIGINT,
-FOREIGN KEY (hpdef_fk) REFERENCES hpdef(pk),
-FOREIGN KEY (reason_fk) REFERENCES code(pk)
+    reason_fk         BIGINT
 ) ENGINE=INNODB;
-CREATE INDEX reason_hpdef_fk ON rel_hpdef_reason(hpdef_fk);
-CREATE INDEX hpdef_reason_fk ON rel_hpdef_reason(reason_fk);
+ALTER TABLE rel_hpdef_reason
+    ADD INDEX reason_hpdef_fk (hpdef_fk),
+    ADD CONSTRAINT reason_hpdef_fk FOREIGN KEY (hpdef_fk) REFERENCES hpdef(pk);
+ALTER TABLE rel_hpdef_reason
+    ADD INDEX hpdef_reason_fk (reason_fk),
+    ADD CONSTRAINT hpdef_reason_fk FOREIGN KEY (reason_fk) REFERENCES code(pk);
 
 CREATE TABLE priv_patient (
     pk                BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -795,10 +863,11 @@ CREATE TABLE priv_study (
     priv_type         INTEGER NOT NULL,
     study_iuid        VARCHAR(250) BINARY NOT NULL,
     accession_no      VARCHAR(250) BINARY,
-    study_attrs       LONGBLOB,
-FOREIGN KEY (patient_fk) REFERENCES priv_patient(pk)
+    study_attrs       LONGBLOB
 ) ENGINE=INNODB;
-CREATE INDEX priv_patient_fk ON priv_study(patient_fk);
+ALTER TABLE priv_study
+    ADD INDEX priv_patient_fk (patient_fk),
+    ADD CONSTRAINT priv_patient_fk FOREIGN KEY (patient_fk) REFERENCES priv_patient(pk);
 CREATE INDEX priv_study_type ON priv_study(priv_type);
 CREATE INDEX priv_study_iuid ON priv_study(study_iuid(64));
 CREATE INDEX priv_study_accs_no ON priv_study(accession_no(16));
@@ -809,10 +878,11 @@ CREATE TABLE priv_series (
     priv_type         INTEGER NOT NULL,
     series_iuid       VARCHAR(250) BINARY NOT NULL,
     src_aet           VARCHAR(250) BINARY,
-    series_attrs      LONGBLOB,
-FOREIGN KEY (study_fk) REFERENCES priv_study(pk)
+    series_attrs      LONGBLOB
 ) ENGINE=INNODB;
-CREATE INDEX priv_study_fk ON priv_series(study_fk);
+ALTER TABLE priv_series
+    ADD INDEX priv_study_fk (study_fk),
+    ADD CONSTRAINT priv_study_fk FOREIGN KEY (study_fk) REFERENCES priv_study(pk);
 CREATE INDEX priv_series_type ON priv_series(priv_type);
 CREATE INDEX priv_series_iuid ON priv_series(series_iuid(64));
 CREATE INDEX priv_ser_src_aet ON priv_series(src_aet(16));
@@ -823,10 +893,11 @@ CREATE TABLE priv_instance (
     series_fk         BIGINT,
     priv_type         INTEGER NOT NULL,
     sop_iuid          VARCHAR(250) BINARY NOT NULL,
-    inst_attrs        LONGBLOB,
-FOREIGN KEY (series_fk) REFERENCES priv_series(pk)
+    inst_attrs        LONGBLOB
 ) ENGINE=INNODB;
-CREATE INDEX priv_series_fk ON priv_instance(series_fk);
+ALTER TABLE priv_instance
+    ADD INDEX priv_series_fk (series_fk),
+    ADD CONSTRAINT priv_series_fk FOREIGN KEY (series_fk) REFERENCES priv_series(pk);
 CREATE INDEX priv_inst_type ON priv_instance(priv_type);
 CREATE INDEX priv_sop_iuid ON priv_instance(sop_iuid(64));
 
@@ -838,12 +909,14 @@ CREATE TABLE priv_file (
     file_tsuid        VARCHAR(250) BINARY NOT NULL,
     file_md5          VARCHAR(250) BINARY,
     file_size         BIGINT,
-    file_status       INTEGER,
-FOREIGN KEY (instance_fk) REFERENCES priv_instance(pk),
-FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
+    file_status       INTEGER
 ) ENGINE=INNODB;
-CREATE INDEX priv_instance_fk ON priv_file(instance_fk);
-CREATE INDEX priv_fs_fk ON priv_file(filesystem_fk);
+ALTER TABLE priv_file
+    ADD INDEX priv_instance_fk (instance_fk),
+    ADD CONSTRAINT priv_instance_fk FOREIGN KEY (instance_fk) REFERENCES priv_instance(pk);
+ALTER TABLE priv_file
+    ADD INDEX priv_fs_fk (filesystem_fk),
+    ADD CONSTRAINT priv_fs_fk FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk);
 
 
 CREATE TABLE device (
@@ -856,12 +929,14 @@ CREATE UNIQUE INDEX dev_station_name ON device(station_name(16));
 
 CREATE TABLE rel_dev_proto (
     device_fk         BIGINT,
-    prcode_fk         BIGINT,
-FOREIGN KEY (device_fk) REFERENCES device(pk),
-FOREIGN KEY (prcode_fk) REFERENCES code(pk)
+    prcode_fk         BIGINT
 ) ENGINE=INNODB;
-CREATE INDEX device_fk ON rel_dev_proto(device_fk);
-CREATE INDEX prcode_fk ON rel_dev_proto(prcode_fk);
+ALTER TABLE rel_dev_proto
+    ADD INDEX device_fk (device_fk),
+    ADD CONSTRAINT device_fk FOREIGN KEY (device_fk) REFERENCES device(pk);
+ALTER TABLE rel_dev_proto
+    ADD INDEX prcode_fk (prcode_fk),
+    ADD CONSTRAINT prcode_fk FOREIGN KEY (prcode_fk) REFERENCES code(pk);
 
 CREATE TABLE users(
     user_id           VARCHAR(250) BINARY NOT NULL PRIMARY KEY,
@@ -869,10 +944,11 @@ CREATE TABLE users(
 ) ENGINE=INNODB;
 CREATE TABLE roles(
     user_id           VARCHAR(250) BINARY,
-    roles             VARCHAR(250) BINARY,
-FOREIGN KEY (user_id) REFERENCES users(user_id)
+    roles             VARCHAR(250) BINARY
 ) ENGINE=INNODB;
-CREATE INDEX roles_user_id ON roles(user_id(16));
+ALTER TABLE roles
+    ADD INDEX roles_user_id (user_id),
+    ADD CONSTRAINT roles_user_id FOREIGN KEY (user_id) REFERENCES users(user_id);
 
 INSERT INTO users VALUES('admin','0DPiKuNIrrVmD8IUCuw1hQxNqZc=');
 INSERT INTO roles VALUES('admin','JBossAdmin');
