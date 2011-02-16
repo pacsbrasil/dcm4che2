@@ -212,11 +212,19 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         sqlBuilder.setRelations(getRelations());
         for (Iterator<DcmElement> iter = keys.iterator(); iter.hasNext();) {
             DcmElement key = iter.next();
-            if (!(isAdditionalKey(key) || isKeySupported(key))) {
-                log.warn(key + " not supported for existence and/or matching");
-                keyNotSupported = true;
-            }
+            if (!(isAdditionalKey(key) || isKeySupported(key)))
+                setKeyNotSupported(key);
         }
+    }
+
+    private void setKeyNotSupported(DcmElement key) {
+        log.warn(key + " not supported for existence and/or matching");
+        keyNotSupported = true;
+    }
+
+    private void setKeyNotSupported(DcmElement key, DcmElement seq) {
+        log.warn(key + " in item of " + seq + " not supported for  matching");
+        keyNotSupported = true;
     }
 
     private boolean isAdditionalKey(DcmElement key) {
@@ -354,11 +362,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         Dataset item = seq.getItem();
         for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
             DcmElement key = iter.next();
-            if (!isIssuerOfAccessionNumberKeySupported(key)) {
-                log.warn(key + " in item of " + seq 
-                        + " not supported for  matching");
-                keyNotSupported = true;
-            }
+            if (!isIssuerOfAccessionNumberKeySupported(key))
+                setKeyNotSupported(key, seq);
         }
     }
 
@@ -484,11 +489,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         Dataset item = seq.getItem();
         for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
             DcmElement key = iter.next();
-            if (!isRequestAttributesKeySupported(key)) {
-                log.warn(key + " in item of " + seq 
-                        + " not supported for  matching");
-                keyNotSupported = true;
-            }
+            if (!isRequestAttributesKeySupported(key))
+                setKeyNotSupported(key, seq);
         }
     }
 
@@ -521,11 +523,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         Dataset item = seq.getItem();
         for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
             DcmElement key = iter.next();
-            if (!isCodeKeySupported(key)) {
-                log.warn(key + " in item of " + seq 
-                        + " not supported for matching");
-                keyNotSupported = true;
-            }
+            if (!isCodeKeySupported(key))
+                setKeyNotSupported(key, seq);
         }
     }
 
@@ -682,11 +681,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         Dataset item = seq.getItem();
         for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
             DcmElement key = iter.next();
-            if (!isVerifyingObserverKeySupported(key)) {
-                log.warn(key + " in item of " + seq 
-                        + " not supported for matching");
-                keyNotSupported = true;
-            }
+            if (!isVerifyingObserverKeySupported(key))
+                setKeyNotSupported(key, seq);
         }
     }
 
@@ -704,11 +700,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Dataset item = seq.getItem(i);
             for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
                 DcmElement key = iter.next();
-                if (!isContentKeySupported(key)) {
-                    log.warn(key + " in item of " + seq 
-                            + " not supported for matching");
-                    keyNotSupported = true;
-                }
+                if (!isContentKeySupported(key))
+                    setKeyNotSupported(key, seq);
             }
         }
     }
