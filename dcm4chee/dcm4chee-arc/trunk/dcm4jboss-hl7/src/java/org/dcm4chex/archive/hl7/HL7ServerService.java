@@ -427,6 +427,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         xmlReader.setContentHandler(hl7in);
         byte[] bb = new byte[1024];
         while (mllpDriver.hasMoreInput()) {
+            ++numberOfReceivedMessages;
             int msglen = 0;
             int read = 0;
             long msgNo = System.currentTimeMillis();
