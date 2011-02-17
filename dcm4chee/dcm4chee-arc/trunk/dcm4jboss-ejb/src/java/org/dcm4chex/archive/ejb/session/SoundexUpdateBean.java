@@ -174,8 +174,7 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.interface-method view-type="local"
      */
     public void updatePatientNameSoundex(PatientLocal pat) {
-        DcmObjectFactory pnFact = DcmObjectFactory.getInstance();
-        PersonName pn = pnFact.newPersonName(pat.getPatientName());
+        PersonName pn = newPersonName(pat.getPatientName());
         pat.setPatientFamilyNameSoundex(
                 AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
         pat.setPatientGivenNameSoundex(
@@ -209,9 +208,7 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.interface-method view-type="local"
      */
     public void updateReferringPhysicianNameSoundex(StudyLocal study) {
-        DcmObjectFactory pnFact = DcmObjectFactory.getInstance();
-        PersonName pn = pnFact.newPersonName(
-                study.getReferringPhysicianName());
+        PersonName pn = newPersonName(study.getReferringPhysicianName());
         study.setReferringPhysicianFamilyNameSoundex(
                 AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
         study.setReferringPhysicianGivenNameSoundex(
@@ -245,9 +242,7 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.interface-method view-type="local"
      */
     public void updatePerformingPhysicianNameSoundex(SeriesLocal series) {
-        DcmObjectFactory pnFact = DcmObjectFactory.getInstance();
-        PersonName pn = pnFact.newPersonName(
-                series.getPerformingPhysicianName());
+        PersonName pn = newPersonName(series.getPerformingPhysicianName());
         series.setPerformingPhysicianFamilyNameSoundex(
                 AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
         series.setPerformingPhysicianGivenNameSoundex(
@@ -281,9 +276,7 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.interface-method view-type="local"
      */
     public void updateRequestingPhysicianNameSoundex(SeriesRequestLocal seriesRequest) {
-        DcmObjectFactory pnFact = DcmObjectFactory.getInstance();
-        PersonName pn = pnFact.newPersonName(
-                seriesRequest.getRequestingPhysician());
+        PersonName pn = newPersonName(seriesRequest.getRequestingPhysician());
         seriesRequest.setRequestingPhysicianFamilyNameSoundex(
                 AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
         seriesRequest.setRequestingPhysicianGivenNameSoundex(
@@ -317,9 +310,7 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.interface-method view-type="local"
      */
     public void updateVerifyingObserverNameSoundex(VerifyingObserverLocal observer) {
-        DcmObjectFactory pnFact = DcmObjectFactory.getInstance();
-        PersonName pn = pnFact.newPersonName(
-                observer.getVerifyingObserverName());
+        PersonName pn = newPersonName(observer.getVerifyingObserverName());
         observer.setVerifyingObserverFamilyNameSoundex(
                 AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
         observer.setVerifyingObserverGivenNameSoundex(
@@ -353,9 +344,7 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.interface-method view-type="local"
      */
     public void updateMWLPerformingPhysicianNameSoundex(MWLItemLocal mwlitem) {
-        DcmObjectFactory pnFact = DcmObjectFactory.getInstance();
-        PersonName pn = pnFact.newPersonName(
-                mwlitem.getPerformingPhysicianName());
+        PersonName pn = newPersonName(mwlitem.getPerformingPhysicianName());
         mwlitem.setPerformingPhysicianFamilyNameSoundex(
                 AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
         mwlitem.setPerformingPhysicianGivenNameSoundex(
@@ -389,11 +378,21 @@ public abstract class SoundexUpdateBean implements SessionBean {
      * @ejb.interface-method view-type="local"
      */
     public void updateGPSPSPerformerNameSoundex(GPSPSPerformerLocal performer) {
-        DcmObjectFactory pnFact = DcmObjectFactory.getInstance();
-        PersonName pn = pnFact.newPersonName(performer.getHumanPerformerName());
+        PersonName pn = newPersonName(performer.getHumanPerformerName());
         performer.setHumanPerformerFamilyNameSoundex(
                 AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*"));
         performer.setHumanPerformerGivenNameSoundex(
                 AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*"));
     }
+
+    private PersonName newPersonName(String pname) {
+        try {
+            return DcmObjectFactory.getInstance().newPersonName(pname);
+        } catch (IllegalArgumentException e) {
+            LOG.warn("Cannot generate Soundex code for Illegal Person Name: "
+                    + pname + " - treat as unknown.");
+            return null;
+        }
+    }
+
 }
