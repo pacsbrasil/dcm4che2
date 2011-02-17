@@ -206,8 +206,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private boolean noMatchForNoValue = true;
 
-    private boolean checkMatchingKeySupported = true;
-
     private String[] pixQueryCallingAETs;
     
     private String[] pixQueryIssuers;
@@ -515,21 +513,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     public final void setNoMatchForNoValue(boolean noMatchForNoValue) {
         this.noMatchForNoValue = noMatchForNoValue;
-    }
-
-    /**
-     * @return Returns the checkMatchingKeySupport.
-     */
-    public boolean isCheckMatchingKeySupported() {
-        return checkMatchingKeySupported;
-    }
-
-    /**
-     * @param checkMatchingKeySupport
-     *            The checkMatchingKeySupport to set.
-     */
-    public void setCheckMatchingKeySupported(boolean checkMatchingKeySupport) {
-        this.checkMatchingKeySupported = checkMatchingKeySupport;
     }
 
     public final boolean getLazyFetchSeriesAttrsOnImageLevelQuery() {

@@ -467,8 +467,7 @@ public class StudyReconciliationService extends AbstractScuService {
      * @throws InterruptedException
      */
     private Dataset checkStudy(Dataset qrSeriesDS, Dataset qrInstanceDS,
-            Map archiveStudy, ActiveAssociation aa) throws SQLException,
-            InterruptedException, IOException {
+            Map archiveStudy, ActiveAssociation aa) throws Exception {
         QueryCmd queryCmd = QueryCmd.create(qrSeriesDS, false, false, false, false, null);
         Map map = new HashMap();
         try {
@@ -533,7 +532,7 @@ public class StudyReconciliationService extends AbstractScuService {
      * @throws SQLException
      */
     private boolean checkSeries(Dataset qrInstanceDS, ActiveAssociation aa)
-            throws InterruptedException, IOException, SQLException {
+            throws Exception {
         Map archiveSeries = query(aa, qrInstanceDS, Tags.SOPInstanceUID);
 
         QueryCmd queryCmd = QueryCmd.create(qrInstanceDS, false, false, false, false, null);

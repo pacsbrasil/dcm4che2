@@ -392,8 +392,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         private final QueryCmd queryCmd;
 
         private boolean canceled = false;
-
-        private int pendingStatus = Status.Pending;
+        private final int pendingStatus;
 
         private int count = 0;
 
@@ -401,13 +400,8 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
 
         public MultiCFindRsp(QueryCmd queryCmd) {
             this.queryCmd = queryCmd;
-            if (queryCmd.isMatchNotSupported()) {
-                pendingStatus = 0xff01;
-            } else if (service.isCheckMatchingKeySupported()
-                    && queryCmd.isMatchingKeyNotSupported()) {
-                pendingStatus = 0xff01;
+            this.pendingStatus = queryCmd.isKeyNotSupported() ? 0xff01 : 0xff00;
             }
-        }
 
         public DimseListener getCancelListener() {
             return new DimseListener() {
