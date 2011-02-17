@@ -26,6 +26,7 @@
         <attr tag="00200011"/> <!-- Series Number -->
     </series>
     <instance>
+        <attr tag="00080016"/> <!-- SOP Class UID -->
         <attr tag="00080018"/> <!-- SOP Instance UID -->
         <attr tag="00200013"/> <!-- Instance Number -->
     </instance>

@@ -30,6 +30,7 @@ Minimal descriptor for DICOM Standard Conformance of Query/Retrieve Service:
         <attr tag="00200011"/>
     </series>
     <instance>
+        <attr tag="00080016"/>
         <attr tag="00080018"/>
         <attr tag="00200013"/>
     </instance>
