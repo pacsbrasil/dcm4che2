@@ -52,8 +52,10 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmValueException;
+import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -67,82 +69,6 @@ import org.dcm4chex.archive.ejb.jdbc.Match.Node;
  */
 public abstract class QueryCmd extends BaseDSQueryCmd {
     
-    private static final int[] MATCHING_PATIENT_KEYS = new int[] {
-            Tags.PatientID, 
-            Tags.IssuerOfPatientID, 
-            Tags.OtherPatientIDSeq,
-            Tags.PatientName, 
-            Tags.PatientBirthDate, 
-            Tags.PatientBirthTime,
-            Tags.PatientSex,
-            };
-
-    private static final int[] MATCHING_STUDY_KEYS = new int[] {
-            Tags.StudyInstanceUID, 
-            Tags.StudyID, 
-            Tags.StudyDate,
-            Tags.StudyTime, 
-            Tags.AccessionNumber, 
-            Tags.IssuerOfAccessionNumberSeq, 
-            Tags.ReferringPhysicianName,
-            Tags.StudyDescription,
-            Tags.StudyStatusID,
-            };
-
-    private static final int[] MATCHING_SERIES_KEYS = new int[] {
-            Tags.SeriesInstanceUID, 
-            Tags.SeriesNumber,
-            Tags.Modality,
-            Tags.ModalitiesInStudy, 
-            Tags.InstitutionName,
-            Tags.StationName,
-            Tags.SeriesDescription,
-            Tags.InstitutionalDepartmentName,
-            Tags.PerformingPhysicianName,
-            Tags.BodyPartExamined,
-            Tags.Laterality,
-            Tags.PPSStartDate,
-            Tags.PPSStartTime, 
-            Tags.RequestAttributesSeq,
-            };
-
-    private static final int[] MATCHING_INSTANCE_KEYS = new int[] {
-            Tags.SOPInstanceUID, 
-            Tags.SOPClassUID, 
-            Tags.InstanceNumber,
-            Tags.VerificationFlag, 
-            Tags.ContentDate, 
-            Tags.ContentTime,
-            Tags.CompletionFlag, 
-            Tags.VerificationFlag,
-            Tags.ConceptNameCodeSeq,
-            Tags.VerifyingObserverSeq,
-            Tags.ContentSeq };
-
-    private static final int[] MATCHING_VERIFYING_OBSERVER = new int[] {
-            Tags.VerificationDateTime,
-            Tags.VerifyingObserverName };
-
-    private static final int[] MATCHING_CONTENT_ITEM_KEYS= new int[] {
-            Tags.RelationshipType,
-            Tags.ConceptNameCodeSeq,
-            Tags.TextValue,
-            Tags.ConceptCodeSeq };
-
-    private static final int[] MATCHING_REQ_ATTR_KEYS = new int[] {
-            Tags.AccessionNumber,
-            Tags.IssuerOfAccessionNumberSeq,
-            Tags.StudyInstanceUID,
-            Tags.RequestedProcedureID,
-            Tags.SPSID, 
-            Tags.RequestingService,
-            Tags.RequestingPhysician };
-
-    private static final int[] MATCHING_ENTITY_ID_KEYS = new int[] {
-            Tags.LocalNamespaceEntityID,
-            Tags.UniversalEntityID,
-            Tags.UniversalEntityIDType };
-
     private static final int[] PAT_DEMOGRAPHICS_ATTRS = new int[] {
             Tags.PatientName,
             Tags.PatientBirthDate,
@@ -181,6 +107,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     protected final boolean fuzzyMatchingOfPN;
 
     protected Subject subject;
+    
+    protected boolean keyNotSupported;
 
     public void setCoercePatientIds( boolean coercePatientIds ) {
         this.coercePatientIds = coercePatientIds;
@@ -189,7 +117,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     public static QueryCmd create(Dataset keys, boolean filterResult,
             boolean fuzzyMatchingOfPN, boolean noMatchForNoValue,
             boolean noMatchWithoutIssuerOfPID, Subject subject)
-            throws SQLException {
+            throws SQLException, DcmServiceException {
         String qrLevel = keys.getString(Tags.QueryRetrieveLevel);
         if ("IMAGE".equals(qrLevel))
             return createInstanceQuery(keys, filterResult, fuzzyMatchingOfPN,
@@ -209,7 +137,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     public static PatientQueryCmd createPatientQuery(Dataset keys,
             boolean filterResult, boolean fuzzyMatchingOfPN,
             boolean noMatchForNoValue, boolean noMatchWithoutIssuerOfPID,
-            Subject subject) throws SQLException {
+            Subject subject) throws SQLException, DcmServiceException {
         final PatientQueryCmd cmd = new PatientQueryCmd(keys, filterResult,
                 fuzzyMatchingOfPN, noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
@@ -220,7 +148,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     public static StudyQueryCmd createStudyQuery(Dataset keys,
             boolean filterResult, boolean fuzzyMatchingOfPN,
             boolean noMatchForNoValue, boolean noMatchWithoutIssuerOfPID,
-            Subject subject) throws SQLException {
+            Subject subject) throws SQLException, DcmServiceException {
         final StudyQueryCmd cmd = new StudyQueryCmd(keys, filterResult,
                 fuzzyMatchingOfPN, noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
@@ -231,7 +159,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     public static SeriesQueryCmd createSeriesQuery(Dataset keys,
             boolean filterResult, boolean fuzzyMatchingOfPN,
             boolean noMatchForNoValue, boolean noMatchWithoutIssuerOfPID,
-            Subject subject) throws SQLException {
+            Subject subject) throws SQLException, DcmServiceException {
         final SeriesQueryCmd cmd = new SeriesQueryCmd(keys, filterResult,
                 fuzzyMatchingOfPN, noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
@@ -242,7 +170,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
     public static ImageQueryCmd createInstanceQuery(Dataset keys,
             boolean filterResult, boolean fuzzyMatchingOfPN,
             boolean noMatchForNoValue, boolean noMatchWithoutIssuerOfPID,
-            Subject subject) throws SQLException {
+            Subject subject) throws SQLException, DcmServiceException {
         final ImageQueryCmd cmd = new ImageQueryCmd(keys, filterResult,
                 fuzzyMatchingOfPN, noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
@@ -261,7 +189,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         if (!keys.contains(Tags.SpecificCharacterSet)) {
             keys.putCS(Tags.SpecificCharacterSet);
         }
-        matchingKeys.add(Tags.QueryRetrieveLevel);
     }
 
     protected void addAdditionalReturnKeys() {
@@ -271,13 +198,43 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         keys.putCS(Tags.InstanceAvailability);
     }
 
-    protected void init() {
+    protected void init() throws DcmServiceException {
         sqlBuilder.setSelect(getSelectAttributes());
         sqlBuilder.setFrom(getTables());
         sqlBuilder.setLeftJoin(getLeftJoin());
         sqlBuilder.setRelations(getRelations());
+        for (Iterator<DcmElement> iter = keys.iterator(); iter.hasNext();) {
+            DcmElement key = iter.next();
+            if (!(isAdditionalKey(key) || isKeySupported(key)))
+                setKeyNotSupported(key);
+        }
     }
 
+    private void setKeyNotSupported(DcmElement key) {
+        log.warn(key + " not supported for existence and/or matching");
+        keyNotSupported = true;
+    }
+
+    private void setKeyNotSupported(DcmElement key, DcmElement seq) {
+        log.warn(key + " in item of " + seq + " not supported for  matching");
+        keyNotSupported = true;
+    }
+
+    private boolean isAdditionalKey(DcmElement key) {
+        switch (key.tag()) {
+            case Tags.SpecificCharacterSet:
+            case Tags.QueryRetrieveLevel:
+            case Tags.RetrieveAET:
+            case Tags.StorageMediaFileSetID:
+            case Tags.StorageMediaFileSetUID:
+            case Tags.InstanceAvailability:
+                return true;
+        }
+        return false;
+    }
+
+    protected abstract boolean isKeySupported(DcmElement key) throws DcmServiceException;
+    
     protected abstract String[] getSelectAttributes();
 
     protected abstract String[] getTables();
@@ -290,18 +247,41 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return null;
     }
 
-    public boolean isMatchNotSupported() {
-        return sqlBuilder.isMatchNotSupported();
+    public boolean isKeyNotSupported() {
+        return keyNotSupported || sqlBuilder.isMatchNotSupported();
     }
 
-    /**
-     * Check if this QueryCmd use an unsupported matching key.
-     * 
-     * @return true if an unsupported matching key is found!
-     */
-    public boolean isMatchingKeyNotSupported() {
-        return otherPatientIDMatchNotSupported
-                || super.isMatchingKeyNotSupported();
+    protected boolean isSupportedKey(DcmElement key, AttributeFilter filter) {
+        int tag = key.tag();
+        for (int fieldTag : filter.getFieldTags()) {
+            if (tag == fieldTag)
+                return true;
+        }
+        return key.isEmpty() && filter.hasTag(tag);
+    }
+
+    protected boolean isSupportedPatientKey(DcmElement key) throws DcmServiceException {
+        switch (key.tag()) {
+        case Tags.PatientID:
+        case Tags.IssuerOfPatientID:
+        case Tags.PatientName:
+        case Tags.PatientSex:
+            return true;
+        case Tags.PatientBirthDate:
+            checkDateRange(key);
+            return true;
+        }
+        return isSupportedKey(key, AttributeFilter.getPatientAttributeFilter());
+    }
+
+    private void checkDateRange(DcmElement key) throws DcmServiceException {
+        try {
+            key.getDateRange();
+        } catch (DcmValueException e) {
+            throw new DcmServiceException(
+                    Status.IdentifierDoesNotMatchSOPClass,
+                    Tags.toString(key.tag()) + " contains invalid date range");
+        }
     }
 
     protected void addPatientMatch() {
@@ -346,8 +326,58 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     filter.getStrings(keys, fieldTags[i]));
             
         }
-        matchingKeys.add(MATCHING_PATIENT_KEYS);
-        matchingKeys.add(fieldTags);
+    }
+
+    protected boolean isSupportedStudyKey(DcmElement key) throws DcmServiceException {
+        switch (key.tag()) {
+        case Tags.StudyInstanceUID:
+        case Tags.StudyID:
+        case Tags.AccessionNumber:
+        case Tags.ReferringPhysicianName:
+        case Tags.StudyDescription:
+        case Tags.StudyStatusID:
+        case Tags.ModalitiesInStudy:
+            return true;
+        case Tags.StudyDate:
+        case Tags.StudyTime:
+            checkDateRange(key);
+            return true;
+        case Tags.IssuerOfAccessionNumberSeq:
+            checkIssuerOfAccessionNumberSeq(key);
+            return true;
+        }
+        return isSupportedKey(key, AttributeFilter.getStudyAttributeFilter());
+    }
+
+    private void checkOnlyOneItem(DcmElement seq) throws DcmServiceException {
+        int n = seq.countItems();
+        if (n > 1)
+            throw new DcmServiceException(
+                    Status.IdentifierDoesNotMatchSOPClass,
+                    Tags.toString(seq.tag()) + " contains " + n + " items");
+    }
+    
+
+    private void checkIssuerOfAccessionNumberSeq(DcmElement seq)
+            throws DcmServiceException {
+        checkOnlyOneItem(seq);
+        Dataset item = seq.getItem();
+        if (item != null)
+            for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
+                DcmElement key = iter.next();
+                if (!isIssuerOfAccessionNumberKeySupported(key))
+                    setKeyNotSupported(key, seq);
+            }
+    }
+
+    private boolean isIssuerOfAccessionNumberKeySupported(DcmElement key) {
+        switch (key.tag()) {
+        case Tags.LocalNamespaceEntityID:
+        case Tags.UniversalEntityID:
+        case Tags.UniversalEntityIDType:
+            return true;
+        }
+        return key.isEmpty();
     }
 
     private boolean useOtherPatientIdSequenceForMatch(DcmElement otherPatIdSQ) {
@@ -454,10 +484,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     filter.getStrings(keys, fieldTags[i]));
             
         }
-        matchingKeys.add(MATCHING_STUDY_KEYS);
-        matchingKeys.add(fieldTags);
-        seqMatchingKeys.put(Tags.IssuerOfAccessionNumberSeq,
-                new IntList().add(MATCHING_ENTITY_ID_KEYS));
     }
 
 
@@ -473,8 +499,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         sqlBuilder.addModalitiesInStudyNestedMatch(null, keys
                 .getStrings(Tags.ModalitiesInStudy));
         sqlBuilder.addCallingAETsNestedMatch(false, getCallingAETs(keys));
-        matchingKeys.add(Tags.ModalitiesInStudy);
-        matchingKeys.add(PrivateTags.CallingAET);
     }
 
     private String[] getCallingAETs(Dataset ds) {
@@ -489,6 +513,82 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return new String[]{};
     }
 
+    protected boolean isSupportedSeriesKey(DcmElement key) throws DcmServiceException {
+        switch (key.tag()) {
+        case Tags.SeriesInstanceUID:
+        case Tags.SeriesNumber:
+        case Tags.Modality:
+        case Tags.BodyPartExamined:
+        case Tags.Laterality:
+        case Tags.InstitutionName:
+        case Tags.StationName:
+        case Tags.SeriesDescription:
+        case Tags.InstitutionalDepartmentName:
+        case Tags.PerformingPhysicianName:
+            return true;
+        case Tags.PPSStartDate:
+        case Tags.PPSStartTime:
+            checkDateRange(key);
+            return true;
+        case Tags.RequestAttributesSeq:
+            checkRequestAttributesSeq(key);
+            return true;
+        case Tags.InstitutionCodeSeq:
+            checkCodeSeq(key);
+            return true;
+        }
+        return isSupportedKey(key, AttributeFilter.getSeriesAttributeFilter());
+    }
+
+    private void checkRequestAttributesSeq(DcmElement seq)
+    throws DcmServiceException {
+        checkOnlyOneItem(seq);
+        Dataset item = seq.getItem();
+        if (item != null)
+            for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
+                DcmElement key = iter.next();
+                if (!isRequestAttributesKeySupported(key))
+                    setKeyNotSupported(key, seq);
+            }
+    }
+
+    private boolean isRequestAttributesKeySupported(DcmElement key) throws DcmServiceException {
+        switch (key.tag()) {
+        case Tags.StudyInstanceUID:
+        case Tags.RequestedProcedureID:
+        case Tags.SPSID:
+        case Tags.RequestingService:
+        case Tags.RequestingPhysician:
+        case Tags.AccessionNumber:
+            return true;
+        case Tags.IssuerOfAccessionNumberSeq:
+            checkIssuerOfAccessionNumberSeq(key);
+            return true;
+        }
+        return key.isEmpty();
+    }
+
+    private void checkCodeSeq(DcmElement seq) throws DcmServiceException {
+        checkOnlyOneItem(seq);
+        Dataset item = seq.getItem();
+        if (item != null)
+            for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
+                DcmElement key = iter.next();
+                if (!isCodeKeySupported(key))
+                    setKeyNotSupported(key, seq);
+            }
+    }
+
+    private boolean isCodeKeySupported(DcmElement key) {
+        switch (key.tag()) {
+        case Tags.CodeValue:
+        case Tags.CodingSchemeDesignator:
+        case Tags.CodingSchemeVersion:
+            return true;
+        }
+        return key.isEmpty();
+    }
+
     protected void addSeriesMatch() {
         AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
         sqlBuilder.addListOfUidMatch(null, "Series.seriesIuid",
@@ -497,8 +597,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 filter.getStrings(keys, Tags.SeriesNumber));
         sqlBuilder.addWildCardMatch(null, "Series.modality", type2,
                 filter.getStrings(keys, Tags.Modality));
-        sqlBuilder.addWildCardMatch(null, "Series.seriesNumber", type2,
-                filter.getStrings(keys, Tags.SeriesNumber));
         sqlBuilder.addWildCardMatch(null, "Series.bodyPartExamined", type2,
                 filter.getStrings(keys, Tags.BodyPartExamined));
         sqlBuilder.addWildCardMatch(null, "Series.laterality", type2,
@@ -596,11 +694,76 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     filter.getStrings(keys, fieldTags[i]));
             
         }
+    }
+    
+    protected boolean isSupportedInstanceKey(DcmElement key) throws DcmServiceException {
+        switch (key.tag()) {
+        case Tags.SOPInstanceUID:
+        case Tags.SOPClassUID:
+        case Tags.InstanceNumber:
+        case Tags.CompletionFlag:
+        case Tags.VerificationFlag:
+            return true;
+        case Tags.ContentDate:
+        case Tags.ContentTime:
+            checkDateRange(key);
+            return true;
+        case Tags.ConceptNameCodeSeq:
+            checkCodeSeq(key);
+            return true;
+        case Tags.VerifyingObserverSeq:
+            checkVerifyingObserverSeq(key);
+            return true;
+        case Tags.ContentSeq:
+            checkContentSeq(key);
+            return true;
+        }
+        return isSupportedKey(key, AttributeFilter.getInstanceAttributeFilter(null));
+    }
 
-        matchingKeys.add(MATCHING_SERIES_KEYS);
-        matchingKeys.add(fieldTags);
-        seqMatchingKeys.put(new Integer(Tags.RequestAttributesSeq),
-                new IntList().add(MATCHING_REQ_ATTR_KEYS));
+    private void checkVerifyingObserverSeq(DcmElement seq) throws DcmServiceException {
+        checkOnlyOneItem(seq);
+        Dataset item = seq.getItem();
+        if (item != null)
+            for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
+                DcmElement key = iter.next();
+                if (!isVerifyingObserverKeySupported(key))
+                    setKeyNotSupported(key, seq);
+            }
+    }
+
+    private boolean isVerifyingObserverKeySupported(DcmElement key) throws DcmServiceException {
+        switch (key.tag()) {
+        case Tags.VerificationDateTime:
+            checkDateRange(key);
+        case Tags.VerifyingObserverName:
+            return true;
+        }
+        return key.isEmpty();
+    }
+
+    private void checkContentSeq(DcmElement seq) throws DcmServiceException {
+        for (int i = 0, n = seq.countItems(); i < n; i++) {
+            Dataset item = seq.getItem(i);
+            for (Iterator<DcmElement> iter = item.iterator(); iter.hasNext();) {
+                DcmElement key = iter.next();
+                if (!isContentKeySupported(key))
+                    setKeyNotSupported(key, seq);
+            }
+        }
+    }
+
+    private boolean isContentKeySupported(DcmElement key) throws DcmServiceException {
+        switch (key.tag()) {
+        case Tags.RelationshipType:
+        case Tags.TextValue:
+            return true;
+        case Tags.ConceptNameCodeSeq:
+        case Tags.ConceptCodeSeq:
+            checkCodeSeq(key);
+            return true;
+        }
+        return false;
     }
 
     protected void addInstanceMatch() {
@@ -712,14 +875,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     "Instance." + filter.getField(fieldTags[i]), type2,
                     filter.getStrings(keys, fieldTags[i]));
         }
-        matchingKeys.add(MATCHING_INSTANCE_KEYS);
-        matchingKeys.add(fieldTags);
-        seqMatchingKeys.put(new Integer(Tags.ConceptNameCodeSeq), new IntList()
-                .add(Tags.CodeValue).add(Tags.CodingSchemeDesignator));
-        seqMatchingKeys.put(new Integer(Tags.VerifyingObserverSeq),
-                new IntList().add(MATCHING_VERIFYING_OBSERVER));
-        seqMatchingKeys.put(new Integer(Tags.ContentSeq),
-                new IntList().add(MATCHING_CONTENT_ITEM_KEYS));
     }
 
     public Dataset getDataset() throws SQLException {
@@ -840,22 +995,31 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             defineColumnTypes(new int[] { blobAccessType });
         }
 
-        protected void init() {
+        @Override
+		protected void init() throws DcmServiceException {
             super.init();
             addPatientMatch();
             addStudyPermissionMatch(true);
         }
 
-        protected void fillDataset(Dataset ds) throws SQLException {
+        @Override
+		protected boolean isKeySupported(DcmElement key) throws DcmServiceException {
+            return isSupportedPatientKey(key);
+        }
+
+        @Override
+		protected void fillDataset(Dataset ds) throws SQLException {
             fillDataset(ds, 1);
             ds.putCS(Tags.QueryRetrieveLevel, "PATIENT");
         }
 
-        protected String[] getSelectAttributes() {
+        @Override
+		protected String[] getSelectAttributes() {
             return new String[] { "Patient.encodedAttributes" };
         }
 
-        protected String[] getTables() {
+        @Override
+		protected String[] getTables() {
             return new String[] { "Patient" };
         }
 
@@ -886,7 +1050,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addAdditionalReturnKeys();
         }
 
-        protected void init() {
+        @Override
+		protected void init() throws DcmServiceException {
             super.init();
             addPatientMatch();
             addStudyMatch();
@@ -894,7 +1059,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addNestedSeriesMatch();
         }
 
-        protected String[] getSelectAttributes() {
+        @Override
+		protected String[] getSelectAttributes() {
             return new String[] { 
                     "Patient.encodedAttributes",                // (1)
                     "Study.encodedAttributes",                  // (2)
@@ -911,15 +1077,24 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     };
         }
 
-        protected String[] getTables() {
+        @Override
+		protected String[] getTables() {
             return new String[] { "Patient", "Study" };
         }
 
-        protected String[] getRelations() {
+        @Override
+		protected String[] getRelations() {
             return new String[] { "Patient.pk", "Study.patient_fk" };
         }
 
-        protected void fillDataset(Dataset ds) throws SQLException {
+        @Override
+		protected boolean isKeySupported(DcmElement key) throws DcmServiceException {
+            return isSupportedPatientKey(key)
+                || isSupportedStudyKey(key);
+        }
+
+        @Override
+		protected void fillDataset(Dataset ds) throws SQLException {
             fillDataset(ds, 1);
             fillDataset(ds, 2);
             ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs.getString(3),
@@ -966,7 +1141,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addAdditionalReturnKeys();
         }
 
-        protected void init() {
+        @Override
+		protected void init() throws DcmServiceException {
             super.init();
             addPatientMatch();
             addStudyMatch();
@@ -975,7 +1151,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addSeriesMatch();
         }
 
-        protected String[] getSelectAttributes() {
+        @Override
+		protected String[] getSelectAttributes() {
             return new String[] {
                     "Patient.encodedAttributes",                // (1)
                     "Study.encodedAttributes",                  // (2)
@@ -995,20 +1172,31 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     };
         }
 
-        protected String[] getTables() {
+        @Override
+		protected String[] getTables() {
             return new String[] { "Patient", "Study", "Series" };
         }
 
-        protected String[] getRelations() {
+        @Override
+		protected String[] getRelations() {
             return new String[] { "Patient.pk", "Study.patient_fk",
                             "Study.pk", "Series.study_fk" };
         }
 
-        protected String[] getLeftJoin() {
+        @Override
+		protected String[] getLeftJoin() {
             return null;
         }
 
-        protected void fillDataset(Dataset ds) throws SQLException {
+        @Override
+		protected boolean isKeySupported(DcmElement key) throws DcmServiceException {
+            return isSupportedPatientKey(key)
+                || isSupportedStudyKey(key)
+                || isSupportedSeriesKey(key);
+        }
+
+        @Override
+		protected void fillDataset(Dataset ds) throws SQLException {
             fillDataset(ds, 1);
             fillDataset(ds, 2);
             fillDataset(ds, 3);
@@ -1076,7 +1264,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addAdditionalReturnKeys();
         }
 
-        protected void init() {
+        @Override
+		protected void init() throws DcmServiceException {
             super.init();
             addPatientMatch();
             addStudyMatch();
@@ -1086,7 +1275,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addInstanceMatch();
         }
 
-        protected String[] getSelectAttributes() {
+        @Override
+		protected String[] getSelectAttributes() {
             return lazyFetchSeriesAttrsOnImageLevelQuery
                     ? new String[] {
                             "Instance.encodedAttributes",               // (1)
@@ -1120,11 +1310,13 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                             };
         }
 
-        protected String[] getTables() {
+        @Override
+		protected String[] getTables() {
             return new String[] { "Patient", "Study", "Series", "Instance" };
         }
 
-        protected String[] getLeftJoin() {
+        @Override
+		protected String[] getLeftJoin() {
             return isMatchCode(keys.getItem(Tags.ConceptNameCodeSeq)) ? new String[] {
                         "Code", SR_CODE, "Instance.srcode_fk", "Code.pk",
                         "Media", null, "Instance.media_fk", "Media.pk" }
@@ -1132,13 +1324,23 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                         "Media", null, "Instance.media_fk", "Media.pk" };
         }
 
-        protected String[] getRelations() {
+        @Override
+		protected String[] getRelations() {
             return new String[] { "Patient.pk", "Study.patient_fk",
                             "Study.pk", "Series.study_fk", "Series.pk",
                             "Instance.series_fk" };
         }
 
-        protected void fillDataset(Dataset ds) throws SQLException {
+        @Override
+		protected boolean isKeySupported(DcmElement key) throws DcmServiceException {
+            return isSupportedPatientKey(key)
+                || isSupportedStudyKey(key)
+                || isSupportedSeriesKey(key)
+                || isSupportedInstanceKey(key);
+        }
+
+        @Override
+		protected void fillDataset(Dataset ds) throws SQLException {
             if (lazyFetchSeriesAttrsOnImageLevelQuery) {
                 fillDatasetWithLazyFetchSeriesAttrs(ds);
             } else {
@@ -1157,7 +1359,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             String seriesIuid = rs.getString(6);
             ds.putSH(Tags.StorageMediaFileSetID, rs.getString(7));
             ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(8));
-            Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
+            Dataset seriesAttrs = seriesAttrsCache.get(seriesIuid);
             if (seriesAttrs == null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Lazy fetch Series attributes for Series "
@@ -1186,7 +1388,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             fillDataset(ds, 1);
             if (cacheSeriesAttrsOnImageLevelQuery) {
                 String seriesIuid = rs.getString(2);
-                Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
+                Dataset seriesAttrs = seriesAttrsCache.get(seriesIuid);
                 if (seriesAttrs == null) {
                     if (log.isDebugEnabled()) {
                         log.debug("Cache Series attributes for Series "

@@ -40,7 +40,6 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Iterator;
 
 import org.dcm4che.data.Dataset;
@@ -56,11 +55,6 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
 
 
     protected final Dataset keys;
-    /** Contains all supported matching keys of the 'root' Dataset (have to include Seq.Tag if match is supported in SQ)  */
-    protected final IntList matchingKeys= new IntList();
-    /** Contains supported matching keys of sequence Items. key=SQ tag, value=list of supported tags) */
-    protected final HashMap<Integer,IntList> seqMatchingKeys =
-            new HashMap<Integer,IntList>();
 
     protected final SqlBuilder sqlBuilder = new SqlBuilder();
 
@@ -86,62 +80,6 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
             close(); // prevent leaking DB Connection
             throw re;
         }
-    }
-    
-    public boolean isMatchNotSupported() {
-        return sqlBuilder.isMatchNotSupported();
-    }
-    
-    /**
-     * Check if this QueryCmd use an unsupported matching key.
-     * 
-     * @return true if an unsupported matching key is found!
-     */
-    public boolean isMatchingKeyNotSupported() {
-        return findUnsupportedMatchingKey(keys, matchingKeys);
-    }
-
-    /**
-     * Search for unsupported Matching key.
-     * <p>
-     * Returns true if a key with value (a matching key) is found that is not supported.
-     * <p>
-     * <code>matchingKeys</code> holds the supported keys for the current Dataset <code>ds</code>
-     * <p>
-     * If <code>ds</code> contains a sequence element, all items of this sequence are also checked against a new list
-     * of matching keys.<br>
-     * 
-     * @param ds Dataset to check for matching keys
-     * @param matchingKeys List containing all supported keys for ds.
-     * 
-     * @return true if an unsupported key is found.
-     */
-    @SuppressWarnings("unchecked")
-    protected boolean findUnsupportedMatchingKey(Dataset ds, IntList matchingKeys) {
-        DcmElement el;
-        int tag;
-        for ( Iterator<DcmElement> iter = ds.iterator() ; iter.hasNext() ; ) {
-            el = iter.next();
-            tag = el.tag();
-            if (el.isEmpty() || tag == Tags.SpecificCharacterSet
-                    || Tags.isPrivate(tag)) {
-                continue;
-            }
-            if (matchingKeys == null || !matchingKeys.contains(tag)) {
-                log.warn("QueryCmd: Unsupported matching key found! key:"+el);
-                return true;
-            }
-            if ( el.vr() == VRs.SQ ) {
-                IntList il = seqMatchingKeys.get(new Integer(tag));
-                for ( int i=0; i<el.countItems() ; i++ ) {
-                    if( findUnsupportedMatchingKey(el.getItem(i),il) ) {
-                        log.warn("QueryCmd: Unsupported matching key found in SQ "+el);
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
     
     @SuppressWarnings("unchecked")
@@ -179,35 +117,4 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
         }
     }
     
-    static class IntList {
-        int[] values = new int[40];
-        int pos = 0;
-        
-        public IntList add(int i){
-            if (pos == values.length ) resize();
-            values[pos++] = i;
-            return this;
-        }
-        public IntList add(int[] vals){
-            while (pos+vals.length >= values.length ) resize();
-            for ( int i=0;i<vals.length;i++ ) {
-                values[pos++] = vals[i];
-            }
-            return this;
-        }
-        
-        public boolean contains(int val) {
-            for ( int i = 0 ; i < pos ; i++ ) {
-                if ( values[i] == val ) return true;
-            }
-            return false;
-        }
-        
-        private void resize() {
-           int[] tmp = new int[values.length+20];
-           System.arraycopy(values,0,tmp,0,pos);
-           values = tmp;
-        }
-    }
-
  }
