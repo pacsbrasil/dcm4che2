@@ -380,7 +380,7 @@ CREATE INDEX content_item_code_fk ON content_item(code_fk);
 CREATE INDEX content_item_rel_type ON content_item(rel_type);
 CREATE INDEX content_item_text_value ON content_item(text_value);
 
-REATE TABLE filesystem (
+CREATE TABLE filesystem (
     pk              NUMERIC(19,0) IDENTITY(1,1) NOT NULL CONSTRAINT filesystem_pk PRIMARY KEY,
     next_fk         NUMERIC(19,0) NULL,
     dirpath         VARCHAR(255) NOT NULL,
