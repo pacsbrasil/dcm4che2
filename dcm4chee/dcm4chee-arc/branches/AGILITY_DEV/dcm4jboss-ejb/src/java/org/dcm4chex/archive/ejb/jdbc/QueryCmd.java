@@ -62,7 +62,7 @@ import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.jdbc.Match.Node;
 
 /**
- * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
+ * @author <a href="mailto:gunterze@gmail.com">Gunter Zeilinger</a>
  * @version $Revision$ $Date$
  */
 public abstract class QueryCmd extends BaseDSQueryCmd {
@@ -83,6 +83,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.StudyDate,
             Tags.StudyTime, 
             Tags.AccessionNumber, 
+            Tags.IssuerOfAccessionNumberSeq, 
             Tags.ReferringPhysicianName,
             Tags.StudyDescription,
             Tags.StudyStatusID,
@@ -94,7 +95,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.Modality,
             Tags.ModalitiesInStudy, 
             Tags.InstitutionName,
-            Tags.InstitutionCodeSeq,
             Tags.StationName,
             Tags.SeriesDescription,
             Tags.InstitutionalDepartmentName,
@@ -117,35 +117,36 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Tags.VerificationFlag,
             Tags.ConceptNameCodeSeq,
             Tags.VerifyingObserverSeq,
-            Tags.ContentSeq};
+            Tags.ContentSeq };
 
     private static final int[] MATCHING_VERIFYING_OBSERVER = new int[] {
             Tags.VerificationDateTime,
             Tags.VerifyingObserverName };
 
-    private static final int[] MATCHING_CODE_ITEM_KEYS= new int[] {
-        Tags.CodeValue,
-        Tags.CodingSchemeDesignator,
-        Tags.CodingSchemeVersion };
-
     private static final int[] MATCHING_CONTENT_ITEM_KEYS= new int[] {
-        Tags.RelationshipType,
-        Tags.ConceptNameCodeSeq,
-        Tags.TextValue,
-        Tags.ConceptCodeSeq };
-    
+            Tags.RelationshipType,
+            Tags.ConceptNameCodeSeq,
+            Tags.TextValue,
+            Tags.ConceptCodeSeq };
+
     private static final int[] MATCHING_REQ_ATTR_KEYS = new int[] {
+            Tags.AccessionNumber,
+            Tags.IssuerOfAccessionNumberSeq,
             Tags.StudyInstanceUID,
             Tags.RequestedProcedureID,
             Tags.SPSID, 
             Tags.RequestingService,
             Tags.RequestingPhysician };
 
-    private static final int[] MATCHING_OTHER_PAT_ID_SEQ = new int[] {
-            Tags.PatientID, 
-            Tags.IssuerOfPatientID, 
-            Tags.TypeOfPatientID // We cannot match but should add here to avoid warnings.
-    };
+    private static final int[] MATCHING_ENTITY_ID_KEYS = new int[] {
+            Tags.LocalNamespaceEntityID,
+            Tags.UniversalEntityID,
+            Tags.UniversalEntityIDType };
+
+    private static final int[] PAT_DEMOGRAPHICS_ATTRS = new int[] {
+            Tags.PatientName,
+            Tags.PatientBirthDate,
+            Tags.PatientSex };
 
     private static final int[] ATTR_IGNORE_DIFF_LOG = new int[] {
             Tags.PatientID,
@@ -156,6 +157,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             "ONLINE", "NEARLINE", "OFFLINE", "UNAVAILABLE" };
 
     private static final String SR_CODE = "sr_code";
+
+    private static final String NAME_CODE = "name_code";
 
     private static final String CONCEPT_CODE = "concept_code";
 
@@ -287,8 +290,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return null;
     }
 
-    @Override
-	public boolean isMatchNotSupported() {
+    public boolean isMatchNotSupported() {
         return sqlBuilder.isMatchNotSupported();
     }
 
@@ -297,8 +299,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
      * 
      * @return true if an unsupported matching key is found!
      */
-    @Override
-	public boolean isMatchingKeyNotSupported() {
+    public boolean isMatchingKeyNotSupported() {
         return otherPatientIDMatchNotSupported
                 || super.isMatchingKeyNotSupported();
     }
@@ -347,8 +348,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
         matchingKeys.add(MATCHING_PATIENT_KEYS);
         matchingKeys.add(fieldTags);
-        seqMatchingKeys.put(new Integer(Tags.OtherPatientIDSeq), new IntList()
-                .add(MATCHING_OTHER_PAT_ID_SEQ));
     }
 
     private boolean useOtherPatientIdSequenceForMatch(DcmElement otherPatIdSQ) {
@@ -418,8 +417,27 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 filter.getStrings(keys, Tags.StudyID));
         sqlBuilder.addRangeMatch(null, "Study.studyDateTime", type2, keys
                 .getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
-        sqlBuilder.addWildCardMatch(null, "Study.accessionNumber", type2,
-                filter.getStrings(keys, Tags.AccessionNumber));
+        if (sqlBuilder.addWildCardMatch(null, "Study.accessionNumber", type2,
+                filter.getStrings(keys, Tags.AccessionNumber)) != null) {
+            Dataset issuer = keys.getItem(Tags.IssuerOfAccessionNumberSeq);
+            if (isMatchIssuer(issuer)) {
+                SqlBuilder subQuery = new SqlBuilder();
+                subQuery.setSelect(new String[] { "Issuer.pk" });
+                subQuery.setFrom(new String[] { "Issuer" });
+                subQuery.addFieldValueMatch(null, "Issuer.pk",
+                        SqlBuilder.TYPE1, null, "Study.accno_issuer_fk");
+                subQuery.addSingleValueMatch(null,
+                        "Issuer.localNamespaceEntityID", type2,
+                        issuer.getString(Tags.LocalNamespaceEntityID));
+                subQuery.addSingleValueMatch(null, "Issuer.universalEntityID",
+                        type2, issuer.getString(Tags.UniversalEntityID));
+                subQuery.addSingleValueMatch(null,
+                        "Issuer.universalEntityIDType", type2,
+                        issuer.getString(Tags.UniversalEntityIDType));
+                Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
+                node0.addMatch(new Match.Subquery(subQuery, null, null));
+            }
+        }
         sqlBuilder.addPNMatch(new String[] { "Study.referringPhysicianName",
                 "Study.referringPhysicianIdeographicName",
                 "Study.referringPhysicianPhoneticName" }, type2,
@@ -438,6 +456,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
         matchingKeys.add(MATCHING_STUDY_KEYS);
         matchingKeys.add(fieldTags);
+        seqMatchingKeys.put(Tags.IssuerOfAccessionNumberSeq,
+                new IntList().add(MATCHING_ENTITY_ID_KEYS));
     }
 
 
@@ -500,13 +520,13 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 .getDateTimeRange(Tags.PPSStartDate, Tags.PPSStartTime));
         sqlBuilder.addListOfStringMatch(null, "Series.sourceAET", type2, getCallingAETs(keys));
         if (this.isMatchRequestAttributes()) {
+            Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
 
             SqlBuilder subQuery = new SqlBuilder();
             subQuery.setSelect(new String[] { "SeriesRequest.pk" });
             subQuery.setFrom(new String[] { "SeriesRequest" });
             subQuery.addFieldValueMatch(null, "Series.pk", SqlBuilder.TYPE1, null,
                     "SeriesRequest.series_fk");
-            Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
             subQuery.addListOfUidMatch(null, "SeriesRequest.studyIuid", type2,
                     rqAttrs.getStrings(Tags.StudyInstanceUID));
             subQuery.addWildCardMatch(null,
@@ -522,18 +542,41 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     "SeriesRequest.requestingPhysicianPhoneticName" }, type2,
                     filter.isICase(Tags.RequestingPhysician),
                     rqAttrs.getString(Tags.RequestingPhysician));
-
+            if (subQuery.addWildCardMatch(null,
+                    "SeriesRequest.accessionNumber", type2,
+                    filter.getStrings(rqAttrs, Tags.AccessionNumber)) != null) {
+                Dataset issuer = rqAttrs.getItem(Tags.IssuerOfAccessionNumberSeq);
+                if (isMatchIssuer(issuer)) {
+                    SqlBuilder subQuery2 = new SqlBuilder();
+                    subQuery2.setSelect(new String[] { "Issuer.pk" });
+                    subQuery2.setFrom(new String[] { "Issuer" });
+                    subQuery2.addFieldValueMatch(null, "Issuer.pk",
+                            SqlBuilder.TYPE1, null,
+                            "SeriesRequest.accno_issuer_fk");
+                    subQuery2.addSingleValueMatch(null,
+                            "Issuer.localNamespaceEntityID", type2, issuer
+                                    .getString(Tags.LocalNamespaceEntityID));
+                    subQuery2.addSingleValueMatch(null,
+                            "Issuer.universalEntityID", type2, issuer
+                                    .getString(Tags.UniversalEntityID));
+                    subQuery2.addSingleValueMatch(null,
+                            "Issuer.universalEntityIDType", type2, issuer
+                                    .getString(Tags.UniversalEntityIDType));
+                    subQuery.addNodeMatch("OR", false).addMatch(
+                            new Match.Subquery(subQuery2, null, null));
+                }
+            }
             Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
             node0.addMatch(new Match.Subquery(subQuery, null, null));
         }
 
-        if (isMatchCode(keys.getItem(Tags.InstitutionCodeSeq))) {
+        Dataset code = keys.getItem(Tags.InstitutionCodeSeq);
+        if (isMatchCode(code)) {
             SqlBuilder subQuery = new SqlBuilder();
             subQuery.setSelect(new String[] { "Code.pk" });
             subQuery.setFrom(new String[] { "Code" });
             subQuery.addFieldValueMatch(null, "Code.pk", SqlBuilder.TYPE1, null,
                     "Series.inst_code_fk");
-            Dataset code = keys.getItem(Tags.InstitutionCodeSeq);
             subQuery.addSingleValueMatch(null, "Code.codeValue", type2,
                     code.getString(Tags.CodeValue));
             subQuery.addSingleValueMatch(null,
@@ -544,7 +587,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     code.getString(Tags.CodingSchemeVersion));
             Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
             node0.addMatch(new Match.Subquery(subQuery, null, null));
-        }        
+        }
+
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             sqlBuilder.addWildCardMatch(null,
@@ -557,8 +601,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         matchingKeys.add(fieldTags);
         seqMatchingKeys.put(new Integer(Tags.RequestAttributesSeq),
                 new IntList().add(MATCHING_REQ_ATTR_KEYS));
-        seqMatchingKeys.put(new Integer(Tags.InstitutionCodeSeq),
-                new IntList().add(MATCHING_CODE_ITEM_KEYS));
     }
 
     protected void addInstanceMatch() {
@@ -582,9 +624,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             sqlBuilder.addSingleValueMatch(SR_CODE,
                     "Code.codingSchemeDesignator", type2, code
                             .getString(Tags.CodingSchemeDesignator));
-            sqlBuilder.addSingleValueMatch(SR_CODE,
-                    "Code.codingSchemeVersion", type2, code
-                            .getString(Tags.CodingSchemeVersion));
         }
         if (this.isMatchVerifyingObserver()) {
             Dataset voAttrs = keys.getItem(Tags.VerifyingObserverSeq);
@@ -608,7 +647,6 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
             node0.addMatch(new Match.Subquery(subQuery, null, null));
         }
-        
         DcmElement contentSeq = keys.get(Tags.ContentSeq);
         if (contentSeq != null) {
             Match.Node node0 = null;
@@ -629,9 +667,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     if (conceptName != null) {
                         if (conceptCode != null) {
                             entities = new String[] { "ContentItem", "Code", "Code" };
-                            aliases = new String[] { null, null, CONCEPT_CODE };
+                            aliases = new String[] { null, NAME_CODE, CONCEPT_CODE };
                         } else {
                             entities = new String[] { "ContentItem", "Code" };
+                            aliases = new String[] { null, NAME_CODE };
                         }
                     } else {
                         if (conceptCode != null) {
@@ -651,14 +690,22 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                             SqlBuilder.TYPE1, relType);
                     subQuery.addWildCardMatch(null, "ContentItem.textValue",
                             SqlBuilder.TYPE1, textValue);
-                    subQuery.addCodeMatch(null, conceptName);
-                    subQuery.addCodeMatch(CONCEPT_CODE, conceptCode);
+                    if (conceptName != null) {
+                        subQuery.addFieldValueMatch(NAME_CODE, "Code.pk", 
+                                SqlBuilder.TYPE1, null, "ContentItem.name_fk");
+                        subQuery.addCodeMatch(NAME_CODE, conceptName);
+                    }
+                    if (conceptCode != null) {
+                        subQuery.addFieldValueMatch(CONCEPT_CODE, "Code.pk", 
+                                SqlBuilder.TYPE1, null, "ContentItem.code_fk");
+                        subQuery.addCodeMatch(CONCEPT_CODE, conceptCode);
+                    }
                     if (node0 == null)
                         node0 = sqlBuilder.addNodeMatch("AND", false);
                     node0.addMatch(new Match.Subquery(subQuery, null, null));
                 }
             }
-         }        
+         }
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             sqlBuilder.addWildCardMatch(null,
@@ -667,13 +714,13 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
         matchingKeys.add(MATCHING_INSTANCE_KEYS);
         matchingKeys.add(fieldTags);
-        seqMatchingKeys.put(new Integer(Tags.ConceptNameCodeSeq),
-        		new IntList().add(MATCHING_CODE_ITEM_KEYS));
+        seqMatchingKeys.put(new Integer(Tags.ConceptNameCodeSeq), new IntList()
+                .add(Tags.CodeValue).add(Tags.CodingSchemeDesignator));
         seqMatchingKeys.put(new Integer(Tags.VerifyingObserverSeq),
                 new IntList().add(MATCHING_VERIFYING_OBSERVER));
         seqMatchingKeys.put(new Integer(Tags.ContentSeq),
                 new IntList().add(MATCHING_CONTENT_ITEM_KEYS));
-        }
+    }
 
     public Dataset getDataset() throws SQLException {
         Dataset ds = dof.newDataset();
@@ -793,26 +840,22 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             defineColumnTypes(new int[] { blobAccessType });
         }
 
-        @Override
-		protected void init() {
+        protected void init() {
             super.init();
             addPatientMatch();
             addStudyPermissionMatch(true);
         }
 
-        @Override
-		protected void fillDataset(Dataset ds) throws SQLException {
+        protected void fillDataset(Dataset ds) throws SQLException {
             fillDataset(ds, 1);
             ds.putCS(Tags.QueryRetrieveLevel, "PATIENT");
         }
 
-        @Override
-		protected String[] getSelectAttributes() {
+        protected String[] getSelectAttributes() {
             return new String[] { "Patient.encodedAttributes" };
         }
 
-        @Override
-		protected String[] getTables() {
+        protected String[] getTables() {
             return new String[] { "Patient" };
         }
 
@@ -843,8 +886,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addAdditionalReturnKeys();
         }
 
-        @Override
-		protected void init() {
+        protected void init() {
             super.init();
             addPatientMatch();
             addStudyMatch();
@@ -852,8 +894,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addNestedSeriesMatch();
         }
 
-        @Override
-		protected String[] getSelectAttributes() {
+        protected String[] getSelectAttributes() {
             return new String[] { 
                     "Patient.encodedAttributes",                // (1)
                     "Study.encodedAttributes",                  // (2)
@@ -870,18 +911,15 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     };
         }
 
-        @Override
-		protected String[] getTables() {
+        protected String[] getTables() {
             return new String[] { "Patient", "Study" };
         }
 
-        @Override
-		protected String[] getRelations() {
+        protected String[] getRelations() {
             return new String[] { "Patient.pk", "Study.patient_fk" };
         }
 
-        @Override
-		protected void fillDataset(Dataset ds) throws SQLException {
+        protected void fillDataset(Dataset ds) throws SQLException {
             fillDataset(ds, 1);
             fillDataset(ds, 2);
             ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(rs.getString(3),
@@ -928,8 +966,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addAdditionalReturnKeys();
         }
 
-        @Override
-		protected void init() {
+        protected void init() {
             super.init();
             addPatientMatch();
             addStudyMatch();
@@ -938,8 +975,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addSeriesMatch();
         }
 
-        @Override
-		protected String[] getSelectAttributes() {
+        protected String[] getSelectAttributes() {
             return new String[] {
                     "Patient.encodedAttributes",                // (1)
                     "Study.encodedAttributes",                  // (2)
@@ -959,24 +995,20 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     };
         }
 
-        @Override
-		protected String[] getTables() {
+        protected String[] getTables() {
             return new String[] { "Patient", "Study", "Series" };
         }
 
-        @Override
-		protected String[] getRelations() {
+        protected String[] getRelations() {
             return new String[] { "Patient.pk", "Study.patient_fk",
                             "Study.pk", "Series.study_fk" };
         }
 
-        @Override
-		protected String[] getLeftJoin() {
+        protected String[] getLeftJoin() {
             return null;
         }
 
-        @Override
-		protected void fillDataset(Dataset ds) throws SQLException {
+        protected void fillDataset(Dataset ds) throws SQLException {
             fillDataset(ds, 1);
             fillDataset(ds, 2);
             fillDataset(ds, 3);
@@ -1044,8 +1076,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addAdditionalReturnKeys();
         }
 
-        @Override
-		protected void init() {
+        protected void init() {
             super.init();
             addPatientMatch();
             addStudyMatch();
@@ -1055,8 +1086,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             addInstanceMatch();
         }
 
-        @Override
-		protected String[] getSelectAttributes() {
+        protected String[] getSelectAttributes() {
             return lazyFetchSeriesAttrsOnImageLevelQuery
                     ? new String[] {
                             "Instance.encodedAttributes",               // (1)
@@ -1090,13 +1120,11 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                             };
         }
 
-        @Override
-		protected String[] getTables() {
+        protected String[] getTables() {
             return new String[] { "Patient", "Study", "Series", "Instance" };
         }
 
-        @Override
-		protected String[] getLeftJoin() {
+        protected String[] getLeftJoin() {
             return isMatchCode(keys.getItem(Tags.ConceptNameCodeSeq)) ? new String[] {
                         "Code", SR_CODE, "Instance.srcode_fk", "Code.pk",
                         "Media", null, "Instance.media_fk", "Media.pk" }
@@ -1104,15 +1132,13 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                         "Media", null, "Instance.media_fk", "Media.pk" };
         }
 
-        @Override
-		protected String[] getRelations() {
+        protected String[] getRelations() {
             return new String[] { "Patient.pk", "Study.patient_fk",
                             "Study.pk", "Series.study_fk", "Series.pk",
                             "Instance.series_fk" };
         }
 
-        @Override
-		protected void fillDataset(Dataset ds) throws SQLException {
+        protected void fillDataset(Dataset ds) throws SQLException {
             if (lazyFetchSeriesAttrsOnImageLevelQuery) {
                 fillDatasetWithLazyFetchSeriesAttrs(ds);
             } else {
@@ -1131,7 +1157,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             String seriesIuid = rs.getString(6);
             ds.putSH(Tags.StorageMediaFileSetID, rs.getString(7));
             ds.putUI(Tags.StorageMediaFileSetUID, rs.getString(8));
-            Dataset seriesAttrs = seriesAttrsCache.get(seriesIuid);
+            Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
             if (seriesAttrs == null) {
                 if (log.isDebugEnabled()) {
                     log.debug("Lazy fetch Series attributes for Series "
@@ -1160,7 +1186,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             fillDataset(ds, 1);
             if (cacheSeriesAttrsOnImageLevelQuery) {
                 String seriesIuid = rs.getString(2);
-                Dataset seriesAttrs = seriesAttrsCache.get(seriesIuid);
+                Dataset seriesAttrs = (Dataset) seriesAttrsCache.get(seriesIuid);
                 if (seriesAttrs == null) {
                     if (log.isDebugEnabled()) {
                         log.debug("Cache Series attributes for Series "
@@ -1207,6 +1233,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                         || code.containsValue(Tags.CodingSchemeDesignator));
     }
 
+    private static boolean isMatchIssuer(Dataset issuer) {
+        return issuer != null 
+                && (issuer.containsValue(Tags.LocalNamespaceEntityID)
+                        ||  issuer.containsValue(Tags.UniversalEntityID));
+    }
+
     protected boolean isMatchRequestAttributes() {
         Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
         return rqAttrs != null
@@ -1214,7 +1246,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                         || rqAttrs.containsValue(Tags.SPSID)
                         || rqAttrs.containsValue(Tags.RequestingService)
                         || rqAttrs.containsValue(Tags.RequestingPhysician)
-                        || rqAttrs.containsValue(Tags.StudyInstanceUID));
+                        || rqAttrs.containsValue(Tags.StudyInstanceUID)
+                        || rqAttrs.containsValue(Tags.AccessionNumber));
     }
 
     protected boolean isMatchVerifyingObserver() {
@@ -1223,4 +1256,5 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 && (item.containsValue(Tags.VerificationDateTime)
                         || item.containsValue(Tags.VerifyingObserverName));
     }
+
 }
