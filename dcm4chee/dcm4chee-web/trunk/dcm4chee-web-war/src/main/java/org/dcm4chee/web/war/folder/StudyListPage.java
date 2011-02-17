@@ -41,6 +41,7 @@ package org.dcm4chee.web.war.folder;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
@@ -876,8 +877,14 @@ public class StudyListPage extends Panel {
         StudyModel m = new StudyModel(study, patient, studyPermissionActions);
         if (viewport.getFilter().isPpsWithoutMwl()) {
             m.expand();
-            for (PPSModel pps : m.getPPSs()) {
-                pps.collapse();
+            PPSModel pps;
+            for (Iterator<PPSModel> it = m.getPPSs().iterator() ; it.hasNext() ; ) {
+                pps = it.next();
+                if (pps.getDataset() == null || pps.getAccessionNumber()!=null) {
+                    it.remove();
+                } else {
+                    pps.collapse();
+                }
             }
         }
         studies.add(m);
