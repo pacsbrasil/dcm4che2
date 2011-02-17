@@ -1206,7 +1206,6 @@ public class StudyListPage extends Panel {
                 .add(tooltip))
             );
             item.add(getEditLink(modalWindow, ppsModel, tooltip)
-                    .setVisible(studyPermissionHelper.checkPermission(ppsModel, StudyPermission.UPDATE_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":editPPSLink"))
             );
             
@@ -1377,7 +1376,6 @@ public class StudyListPage extends Panel {
                 .add(tooltip))
             );
             item.add(getEditLink(modalWindow, seriesModel, tooltip)
-                    .setVisible(studyPermissionHelper.checkPermission(seriesModel.getPPS(), StudyPermission.UPDATE_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":editSeriesLink"))
             );
             item.add(new AjaxCheckBox("selected") {
@@ -1656,8 +1654,8 @@ public class StudyListPage extends Panel {
             
             @Override
             public boolean isVisible() {
-                return !studyPermissionHelper.isWebStudyPermissions() 
-                    || checkEditStudyPermission(model);
+                return model.getDataset()!= null && (!studyPermissionHelper.isWebStudyPermissions() 
+                    || checkEditStudyPermission(model));
             }
         };
         Image image = new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT);
