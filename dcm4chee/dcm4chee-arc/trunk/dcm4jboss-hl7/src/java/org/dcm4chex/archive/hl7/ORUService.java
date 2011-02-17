@@ -197,7 +197,7 @@ public class ORUService extends ORU_MDMService
                 } while (query.next());
             }
             return true;
-        } catch (SQLException e) {
+        } catch (Exception e) {
             log.error("Query DB for Studies with Accession Number " + accno
                     + " failed - store report in new Study", e);
             sr.putSQ(Tags.IdenticalDocumentsSeq);
