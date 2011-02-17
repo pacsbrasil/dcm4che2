@@ -43,7 +43,6 @@ cp -v -R "$JBOSS_SERV"/conf/props \
   "$JBOSS_SERV"/conf/xmdesc \
   "$DCM4CHEE_SERV"/conf
 
-mkdir "$DCM4CHEE_SERV"/lib
 cp -v "$JBOSS_SERV"/lib/* "$DCM4CHEE_SERV"/lib
 rm -v "$DCM4CHEE_SERV"/lib/jbossmq.jar
 
@@ -114,7 +113,6 @@ cp -v "$JBOSS_SERV"/deploy/management/console-mgr.sar/web-console.war/*.html \
   "$JBOSS_SERV"/deploy/management/console-mgr.sar/web-console.war/*.jar \
   "$JBOSS_SERV"/deploy/management/console-mgr.sar/web-console.war/*.js \
   "$JBOSS_SERV"/deploy/management/console-mgr.sar/web-console.war/*.jsp \
-  "$JBOSS_SERV"/deploy/management/console-mgr.sar/web-console.war/*.xml \
   "$DCM4CHEE_SERV"/deploy/management/console-mgr.sar/web-console.war
   
 cp -v -R "$JBOSS_SERV"/deploy/management/console-mgr.sar/web-console.war/css \
