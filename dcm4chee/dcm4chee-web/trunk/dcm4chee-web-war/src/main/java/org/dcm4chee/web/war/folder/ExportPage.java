@@ -223,14 +223,14 @@ public class ExportPage extends SecureWebPage {
 
             @Override
             public void onComponentTag(ComponentTag tag) {
-
-                tag.getAttributes().put("class", exportPerformed ? 
-                                                    r == null ? 
-                                                            "export_succeed" : 
-                                                            "export_failed"
-                                                    :
-                                                    "export_nop"
-                );
+                String cssClass = exportPerformed ? 
+                        r == null ? "export_succeed" : 
+                                r.failedRequests.size() == 0 ? 
+                                        "export_running" : "export_failed"
+                        :
+                        "export_nop";
+                log.debug("Export Result CSS class: {}",cssClass);
+                tag.getAttributes().put("class", cssClass);
                 super.onComponentTag(tag);
             }
         }.setOutputMarkupId(true));
