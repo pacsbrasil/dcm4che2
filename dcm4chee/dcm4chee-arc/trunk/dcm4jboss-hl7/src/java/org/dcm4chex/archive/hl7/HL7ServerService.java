@@ -429,7 +429,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         while (mllpDriver.hasMoreInput()) {
             int msglen = 0;
             int read = 0;
-            int msgNo = ++numberOfReceivedMessages;
+            long msgNo = System.currentTimeMillis();
             if (log.isDebugEnabled()) {
                 log.debug("Receiving message #" + msgNo +
                                 " from " + s);
@@ -447,7 +447,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
             }
             if (fileReceivedHL7) {
                 fileReceivedHL7(bb, msglen, new File(logDir, 
-                        new DecimalFormat("'hl7-'000000'.hl7'").format(msgNo)));
+                        new DecimalFormat("'hl7-'#'.hl7'").format(msgNo)));
             }
             try {
                 try {
