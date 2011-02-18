@@ -72,6 +72,15 @@ public class AuthenticatedWebSession extends SecureSession {
         }
     }
 
+    @Override
+    public void extendedLogin() {
+        try {
+            studyPermissionHelper = new StudyPermissionHelper();
+        } catch (Exception x) {
+            throw new RuntimeException("Extended Login Failed!", x);
+        }
+    }
+
     public StudyPermissionHelper getStudyPermissionHelper() {
         return studyPermissionHelper;
     }
