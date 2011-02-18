@@ -165,17 +165,19 @@ public class UPSQueryCmd extends BaseDSQueryCmd {
         if (fuzzyMatchingOfPN)
             sqlBuilder.addPNFuzzyMatch(
                     new String[] {
-                            "Patient.patientFamilyNameSoundex",
-                            "Patient.patientGivenNameSoundex" },
-                            keys.getString(Tags.PatientName));
+                        "Patient.patientFamilyNameSoundex",
+                        "Patient.patientGivenNameSoundex" },
+                    type2,
+                    keys.getString(Tags.PatientName));
         else
-            sqlBuilder.addPNMatch(new String[] {
-                "Patient.patientName",
-                "Patient.patientIdeographicName",
-                "Patient.patientPhoneticName"},
-                SqlBuilder.TYPE2,
-                patAttrFilter.isICase(Tags.PatientName),
-                keys.getString(Tags.PatientName));
+            sqlBuilder.addPNMatch(
+                    new String[] {
+                        "Patient.patientName",
+                        "Patient.patientIdeographicName",
+                        "Patient.patientPhoneticName"},
+                    type2,
+                    patAttrFilter.isICase(Tags.PatientName),
+                    keys.getString(Tags.PatientName));
         sqlBuilder.addRangeMatch(null, "Patient.patientBirthDate", type2,
                 keys.getString(Tags.PatientBirthDate));
         sqlBuilder.addWildCardMatch(null, "Patient.patientSex", type2,

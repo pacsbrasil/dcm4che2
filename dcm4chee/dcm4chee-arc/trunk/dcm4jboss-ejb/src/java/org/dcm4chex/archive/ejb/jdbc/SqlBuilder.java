@@ -330,11 +330,11 @@ class SqlBuilder {
     }   
 
 
-    public void addPNFuzzyMatch(String[] fields, String val) {
+    public void addPNFuzzyMatch(String[] fields, boolean type2, String val) {
         if (val == null || val.length() == 0 || val.equals("*"))
             return;
         PersonName pn = DcmObjectFactory.getInstance().newPersonName(val);
-        addMatch(new Match.PNFuzzy(fields,
+        addMatch(new Match.PNFuzzy(fields, type2,
                 DcmObjectFactory.getInstance().newPersonName(val)));
     }
 

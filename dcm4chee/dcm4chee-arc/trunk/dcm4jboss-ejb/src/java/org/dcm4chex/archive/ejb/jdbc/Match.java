@@ -59,14 +59,8 @@ abstract class Match {
     protected String column;
     protected final boolean type2;
 
-    /**
-     * Default empty constructor.
-     * <p>
-     * Only used for class Node!
-     * 
-     */
-    private Match() {
-        type2 = false;
+    protected Match(boolean type2) {
+        this.type2 = type2;
     }
 
     protected Match(String alias, String field, boolean type2) {
@@ -585,6 +579,7 @@ abstract class Match {
         private final boolean invert;
 
         public Node(String orORand, boolean invert) {
+            super(false);
             this.orORand = orORand;
             this.invert = invert;
         }
@@ -622,6 +617,7 @@ abstract class Match {
         private final String subQueryStr;
 
         public Subquery(SqlBuilder subQuery, String field, String alias) {
+            super(false);
             subQuery.setSubQueryMode(true);
             StringBuffer sb = new StringBuffer();
             if (field == null) { // correlated
@@ -657,7 +653,8 @@ abstract class Match {
         private String[] columns;
         private String[] soundex;
 
-        public PNFuzzy(String[] fields, PersonName pn) {
+        public PNFuzzy(String[] fields, boolean type2, PersonName pn) {
+            super(type2);
             columns = JdbcProperties.getInstance().getProperties(fields);
             soundex = new String[] {
                     AttributeFilter.toSoundex(pn, PersonName.FAMILY, null),
@@ -667,22 +664,41 @@ abstract class Match {
 
         @Override
         protected void appendBodyTo(StringBuffer sb) {
-            sb.append(columns[0]).append(" IN ('*', '");
-            if (soundex[0] != null && soundex[1] != null) {
-                sb.append(soundex[0]).append("') AND ")
-                    .append(columns[1]).append(" IN ('*', '")
-                    .append(soundex[1]).append("') OR ")
-                    .append(columns[0]).append(" IN ('*', '")
-                    .append(soundex[1]).append("') AND ")
-                    .append(columns[1]).append(" IN ('*', '")
-                    .append(soundex[0]);
+            if (type2) {
+                sb.append(columns[0]).append(" IN ('*', '");
+                if (soundex[0] != null && soundex[1] != null) {
+                    sb.append(soundex[0]).append("') AND ")
+                        .append(columns[1]).append(" IN ('*', '")
+                        .append(soundex[1]).append("') OR ")
+                        .append(columns[0]).append(" IN ('*', '")
+                        .append(soundex[1]).append("') AND ")
+                        .append(columns[1]).append(" IN ('*', '")
+                        .append(soundex[0]);
+                } else {
+                    String soundex0 = soundex[soundex[0] != null ? 0 : 1];
+                    sb.append(soundex0).append("') OR ")
+                        .append(columns[1]).append(" IN ('*', '")
+                        .append(soundex0);
+                }
+                sb.append("')");
             } else {
-                String soundex0 = soundex[soundex[0] != null ? 0 : 1];
-                sb.append(soundex0).append("') OR ")
-                    .append(columns[1]).append(" IN ('*', '")
-                    .append(soundex0);
+                sb.append(columns[0]).append(" = '");
+                if (soundex[0] != null && soundex[1] != null) {
+                    sb.append(soundex[0]).append("' AND ")
+                        .append(columns[1]).append(" = '")
+                        .append(soundex[1]).append("' OR ")
+                        .append(columns[0]).append(" = '")
+                        .append(soundex[1]).append("' AND ")
+                        .append(columns[1]).append(" = '")
+                        .append(soundex[0]);
+                } else {
+                    String soundex0 = soundex[soundex[0] != null ? 0 : 1];
+                    sb.append(soundex0).append("' OR ")
+                        .append(columns[1]).append(" = '")
+                        .append(soundex0);
+                }
+                sb.append("'");
             }
-            sb.append("')");
         }
 
         @Override

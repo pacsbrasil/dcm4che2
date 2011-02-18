@@ -126,14 +126,16 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
             if (fuzzyMatchingOfPN)
                 sqlBuilder.addPNFuzzyMatch(
                         new String[] {
-                                "MWLItem.performingPhysicianFamilyNameSoundex",
-                                "MWLItem.performingPhysicianGivenNameSoundex" },
-                                keys.getString(Tags.PerformingPhysicianName));
+                            "MWLItem.performingPhysicianFamilyNameSoundex",
+                            "MWLItem.performingPhysicianGivenNameSoundex" },
+                        type2,
+                        keys.getString(Tags.PerformingPhysicianName));
             else
-                sqlBuilder.addPNMatch(new String[] {
-                        "MWLItem.performingPhysicianName",
-                        "MWLItem.performingPhysicianIdeographicName",
-                        "MWLItem.performingPhysicianPhoneticName"},
+                sqlBuilder.addPNMatch(
+                        new String[] {
+                            "MWLItem.performingPhysicianName",
+                            "MWLItem.performingPhysicianIdeographicName",
+                            "MWLItem.performingPhysicianPhoneticName"},
                         true, // TODO make ICASE configurable
                         type2,
                         spsItem.getString(Tags.PerformingPhysicianName));
@@ -156,17 +158,19 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
         if (fuzzyMatchingOfPN)
             sqlBuilder.addPNFuzzyMatch(
                     new String[] {
-                            "Patient.patientFamilyNameSoundex",
-                            "Patient.patientGivenNameSoundex" },
-                            keys.getString(Tags.PatientName));
+                        "Patient.patientFamilyNameSoundex",
+                        "Patient.patientGivenNameSoundex" },
+                    type2,
+                    keys.getString(Tags.PatientName));
         else
-            sqlBuilder.addPNMatch(new String[] {
-                "Patient.patientName",
-                "Patient.patientIdeographicName",
-                "Patient.patientPhoneticName"},
-                type2,
-                patAttrFilter.isICase(Tags.PatientName),
-                keys.getString(Tags.PatientName));
+            sqlBuilder.addPNMatch(
+                    new String[] {
+                        "Patient.patientName",
+                        "Patient.patientIdeographicName",
+                        "Patient.patientPhoneticName"},
+                    type2,
+                    patAttrFilter.isICase(Tags.PatientName),
+                    keys.getString(Tags.PatientName));
         
     }
 

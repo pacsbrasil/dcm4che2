@@ -322,16 +322,20 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
         if (fuzzyMatchingOfPN)
             sqlBuilder.addPNFuzzyMatch(
-                    new String[] { "Patient.patientFamilyNameSoundex",
-                            "Patient.patientGivenNameSoundex" },
-                            keys.getString(Tags.PatientName));
+                    new String[] {
+                        "Patient.patientFamilyNameSoundex",
+                        "Patient.patientGivenNameSoundex" },
+                    type2,
+                    keys.getString(Tags.PatientName));
         else
             sqlBuilder.addPNMatch(
-                    new String[] { "Patient.patientName",
-                            "Patient.patientIdeographicName",
-                            "Patient.patientPhoneticName" }, type2,
-                            filter.isICase(Tags.PatientName),
-                            keys.getString(Tags.PatientName));
+                    new String[] {
+                        "Patient.patientName",
+                        "Patient.patientIdeographicName",
+                        "Patient.patientPhoneticName" },
+                    type2,
+                    filter.isICase(Tags.PatientName),
+                    keys.getString(Tags.PatientName));
         sqlBuilder
                 .addRangeMatch(null, "Patient.patientBirthDate", type2,
                         keys.getString(Tags.PatientBirthDate));
@@ -427,11 +431,22 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 node0.addMatch(new Match.Subquery(subQuery, null, null));
             }
         }
-        sqlBuilder.addPNMatch(new String[] { "Study.referringPhysicianName",
-                "Study.referringPhysicianIdeographicName",
-                "Study.referringPhysicianPhoneticName" }, type2,
-                filter.isICase(Tags.ReferringPhysicianName),
-                keys.getString(Tags.ReferringPhysicianName));
+        if (fuzzyMatchingOfPN)
+            sqlBuilder.addPNFuzzyMatch(
+                    new String[] {
+                        "Study.referringPhysicianFamilyNameSoundex",
+                        "Study.referringPhysicianGivenNameSoundex" },
+                    type2,
+                    keys.getString(Tags.ReferringPhysicianName));
+        else 
+            sqlBuilder.addPNMatch(
+                    new String[] {
+                        "Study.referringPhysicianName",
+                        "Study.referringPhysicianIdeographicName",
+                        "Study.referringPhysicianPhoneticName" },
+                    type2,
+                    filter.isICase(Tags.ReferringPhysicianName),
+                    keys.getString(Tags.ReferringPhysicianName));
         sqlBuilder.addWildCardMatch(null, "Study.studyDescription", type2,
                 filter.getStrings(keys, Tags.StudyDescription));
         sqlBuilder.addListOfStringMatch(null, "Study.studyStatusId", type2,
@@ -570,11 +585,22 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                 filter.getStrings(keys, Tags.SeriesDescription));
         sqlBuilder.addWildCardMatch(null, "Series.institutionalDepartmentName",
                 type2, filter.getStrings(keys, Tags.InstitutionalDepartmentName));
-        sqlBuilder.addPNMatch(new String[] { "Series.performingPhysicianName",
-                "Series.performingPhysicianIdeographicName",
-                "Series.performingPhysicianPhoneticName" }, type2,
-                filter.isICase(Tags.PerformingPhysicianName),
-                keys.getString(Tags.PerformingPhysicianName));
+        if (fuzzyMatchingOfPN)
+            sqlBuilder.addPNFuzzyMatch(
+                    new String[] {
+                        "Series.performingPhysicianFamilyNameSoundex",
+                        "Series.performingPhysicianGivenNameSoundex" },
+                    type2,
+                    keys.getString(Tags.PerformingPhysicianName));
+        else 
+            sqlBuilder.addPNMatch(
+                    new String[] {
+                        "Series.performingPhysicianName",
+                        "Series.performingPhysicianIdeographicName",
+                        "Series.performingPhysicianPhoneticName" },
+                    type2,
+                    filter.isICase(Tags.PerformingPhysicianName),
+                    keys.getString(Tags.PerformingPhysicianName));
         sqlBuilder.addRangeMatch(null, "Series.ppsStartDateTime", type2, keys
                 .getDateTimeRange(Tags.PPSStartDate, Tags.PPSStartTime));
         sqlBuilder.addListOfStringMatch(null, "Series.sourceAET", type2, getCallingAETs(keys));
@@ -595,12 +621,22 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     filter.getStrings(rqAttrs,Tags.SPSID));
             subQuery.addWildCardMatch(null, "SeriesRequest.requestingService",
                     type2, filter.getStrings(rqAttrs, Tags.RequestingService));
-            subQuery.addPNMatch(new String[] {
-                    "SeriesRequest.requestingPhysician",
-                    "SeriesRequest.requestingPhysicianIdeographicName",
-                    "SeriesRequest.requestingPhysicianPhoneticName" }, type2,
-                    filter.isICase(Tags.RequestingPhysician),
-                    rqAttrs.getString(Tags.RequestingPhysician));
+            if (fuzzyMatchingOfPN)
+                subQuery.addPNFuzzyMatch(
+                        new String[] {
+                            "SeriesRequest.requestingPhysicianFamilyNameSoundex",
+                            "SeriesRequest.requestingPhysicianGivenNameSoundex" },
+                        type2,
+                        rqAttrs.getString(Tags.RequestingPhysician));
+            else 
+                subQuery.addPNMatch(
+                        new String[] {
+                            "SeriesRequest.requestingPhysician",
+                            "SeriesRequest.requestingPhysicianIdeographicName",
+                            "SeriesRequest.requestingPhysicianPhoneticName" },
+                        type2,
+                        filter.isICase(Tags.RequestingPhysician),
+                        rqAttrs.getString(Tags.RequestingPhysician));
             if (subQuery.addWildCardMatch(null,
                     "SeriesRequest.accessionNumber", type2,
                     filter.getStrings(rqAttrs, Tags.AccessionNumber)) != null) {
@@ -767,13 +803,22 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             subQuery.addRangeMatch(null,
                     "VerifyingObserver.verificationDateTime", SqlBuilder.TYPE1,
                     voAttrs.getDateRange(Tags.VerificationDateTime));
-            subQuery.addPNMatch(new String[] {
-                    "VerifyingObserver.verifyingObserverName",
-                    "VerifyingObserver.verifyingObserverIdeographicName",
-                    "VerifyingObserver.verifyingObserverPhoneticName" },
-                    SqlBuilder.TYPE1,
-                    filter.isICase(Tags.VerifyingObserverName),
-                    voAttrs.getString(Tags.VerifyingObserverName));
+            if (fuzzyMatchingOfPN)
+                subQuery.addPNFuzzyMatch(
+                        new String[] {
+                            "VerifyingObserver.verifyingObserverFamilyNameSoundex",
+                            "VerifyingObserver.verifyingObserverGivenNameSoundex" },
+                        SqlBuilder.TYPE1,
+                        voAttrs.getString(Tags.VerifyingObserverName));
+            else 
+                subQuery.addPNMatch(
+                        new String[] {
+                            "VerifyingObserver.verifyingObserverName",
+                            "VerifyingObserver.verifyingObserverIdeographicName",
+                            "VerifyingObserver.verifyingObserverPhoneticName" },
+                        SqlBuilder.TYPE1,
+                        filter.isICase(Tags.VerifyingObserverName),
+                        voAttrs.getString(Tags.VerifyingObserverName));
 
             Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
             node0.addMatch(new Match.Subquery(subQuery, null, null));

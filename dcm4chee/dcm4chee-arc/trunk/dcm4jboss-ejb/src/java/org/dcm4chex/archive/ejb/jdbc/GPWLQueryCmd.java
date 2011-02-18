@@ -127,17 +127,19 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
             if (fuzzyMatchingOfPN)
                 sqlBuilder.addPNFuzzyMatch(
                         new String[] {
-                                "GPSPSPerformer.humanPerformerFamilyNameSoundex",
-                                "GPSPSPerformer.humanPerformerGivenNameSoundex" },
-                                keys.getString(Tags.HumanPerformerName));
+                            "GPSPSPerformer.humanPerformerFamilyNameSoundex",
+                            "GPSPSPerformer.humanPerformerGivenNameSoundex" },
+                        SqlBuilder.TYPE2,
+                        keys.getString(Tags.HumanPerformerName));
             else
-                sqlBuilder.addPNMatch(new String[] {
-                    "GPSPSPerformer.humanPerformerName",
-                    "GPSPSPerformer.humanPerformerIdeographicName",
-                    "GPSPSPerformer.humanPerformerPhoneticName"},
-                    SqlBuilder.TYPE2,
-                    true, // TODO make ICASE configurable
-                    item.getString(Tags.HumanPerformerName));
+                sqlBuilder.addPNMatch(
+                        new String[] {
+                            "GPSPSPerformer.humanPerformerName",
+                            "GPSPSPerformer.humanPerformerIdeographicName",
+                            "GPSPSPerformer.humanPerformerPhoneticName"},
+                        SqlBuilder.TYPE2,
+                        true, // TODO make ICASE configurable
+                        item.getString(Tags.HumanPerformerName));
             addCodeMatch(item.getItem(Tags.HumanPerformerCodeSeq), PERF_CODE);
         }
         item = keys.getItem(Tags.RefRequestSeq);
@@ -162,15 +164,17 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
                     new String[] {
                             "Patient.patientFamilyNameSoundex",
                             "Patient.patientGivenNameSoundex" },
-                            keys.getString(Tags.PatientName));
+                    SqlBuilder.TYPE2,
+                    keys.getString(Tags.PatientName));
         else
-            sqlBuilder.addPNMatch(new String[] {
-                "Patient.patientName",
-                "Patient.patientIdeographicName",
-                "Patient.patientPhoneticName"},
-                SqlBuilder.TYPE2,
-                patAttrFilter.isICase(Tags.PatientName),
-                keys.getString(Tags.PatientName));
+            sqlBuilder.addPNMatch(
+                    new String[] {
+                        "Patient.patientName",
+                        "Patient.patientIdeographicName",
+                        "Patient.patientPhoneticName" },
+                    SqlBuilder.TYPE2,
+                    patAttrFilter.isICase(Tags.PatientName),
+                    keys.getString(Tags.PatientName));
     }
 
     private void addCodeMatch(int tag, String alias) {
