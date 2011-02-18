@@ -87,18 +87,21 @@ public class WebLoginContext extends UsernamePasswordContext {
 
     protected static Logger log = LoggerFactory.getLogger(BaseMBeanDelegate.class);
     
+    public WebLoginContext() {
+    }
+    
     public WebLoginContext(String username, String password) {
         super(username, password);
     }
 
     @Override
     protected org.apache.wicket.security.hive.authentication.Subject getSubject(String username, String password) throws LoginException {
-
         WebApplication app = (WebApplication) RequestCycle.get().getApplication();
         String webApplicationPolicy = app.getInitParameter("webApplicationPolicy");
         if (webApplicationPolicy == null) webApplicationPolicy = "dcm4chee";
         String rolesGroupName = app.getInitParameter("rolesGroupName");
         if (rolesGroupName == null) rolesGroupName = "Roles";
+        
         LoginCallbackHandler handler = new LoginCallbackHandler(username, password);
         LoginContext context;
         SecureSession secureSession;

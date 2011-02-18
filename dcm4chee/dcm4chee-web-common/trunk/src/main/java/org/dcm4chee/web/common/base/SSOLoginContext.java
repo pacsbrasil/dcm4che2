@@ -74,6 +74,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Robert David <robert.david@agfa.com>
+ * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
  * @since Aug. 31, 2010
  */
@@ -120,12 +121,11 @@ public class SSOLoginContext extends LoginContext {
 
         DefaultSubject subject;
         try {
-            session.setUsername("TODO_FOR_SSO");
-            subject = toSwarmSubject(rolesGroupName, jaasSubject);
+            subject = toSwarmSubject(jaasSubject, session, rolesGroupName);
             checkLoginAllowed(subject);
-            //TODO session.extendedLogin(username, password, subject);
+            session.extendedLogin();
         } catch (Exception e) {
-            log.error("Login failed for user JAAS Subject"+jaasSubject, e);
+            log.error("Login failed for JAAS subject: "+jaasSubject, e);
             session.invalidate();
             subject = new DefaultSubject();
         }
@@ -158,11 +158,13 @@ public class SSOLoginContext extends LoginContext {
         }
     }
 
-    private DefaultSubject toSwarmSubject(String rolesGroupName, Subject jaasSubject) throws IOException {
+    private DefaultSubject toSwarmSubject(Subject jaasSubject, SecureSession session, String rolesGroupName) throws IOException {
         DefaultSubject subject = new DefaultSubject();
         Map<String, Set<String>> mappings = null;
         Set<String> swarmPrincipals = new HashSet<String>();
         for (Principal principal : jaasSubject.getPrincipals()) {
+            if (!(principal instanceof Group)) 
+                session.setUsername(principal.getName());
             if ((principal instanceof Group) && (rolesGroupName.equalsIgnoreCase(principal.getName()))) {
                 Enumeration<? extends Principal> members = ((Group) principal).members();                    
                 if (mappings == null) {
@@ -223,5 +225,4 @@ public class SSOLoginContext extends LoginContext {
           log.warn("Failed to authorize subject for login, denied. See 'LoginAllowed' rolename attribute in Web Config Service.");
         }
     }
-
 }
