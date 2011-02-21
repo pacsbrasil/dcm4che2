@@ -642,45 +642,12 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
             int noFilterQuery = 0;
             AEModel ae = ApplicationContext.databaseRef.getServerDetail(serverName);
             DcmURL url = new DcmURL("dicom://" + ae.getAeTitle() + "@" + ae.getHostName() + ":" + ae.getPort());
-            QueryService qs = new QueryService();
-            setPatientInfoToQueryParam();
-            if (queryParam.getPatientId().equalsIgnoreCase("") && queryParam.getPatientName().equalsIgnoreCase("") && queryParam.getSearchDate().equalsIgnoreCase("") && modalityText.getText().equalsIgnoreCase("") && queryParam.getAccessionNo().equalsIgnoreCase("")) {
-                noFilterQuery = JOptionPane.showConfirmDialog(this, "No filters have been selected. It will take long time to query and display result...!", "Confirm Dialog", JOptionPane.YES_NO_OPTION);
-            }
-            if (noFilterQuery == 0) {
-                qs.callFindWithQuery(queryParam.getPatientId(), queryParam.getPatientName(), "", queryParam.getSearchDate(), modalityText.getText(), queryParam.getAccessionNo(), null, url);
-                Vector studyList = new Vector();
-                for (int dataSetCount = 0; dataSetCount < qs.getDatasetVector().size(); dataSetCount++) {
-                    try {
-                        Dataset dataSet = (Dataset) qs.getDatasetVector().elementAt(dataSetCount);
-                        StudyModel studyModel = new StudyModel(dataSet);
-                        studyList.addElement(studyModel);   
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage());
-                    }
-                }
-                StudyListModel studyListModel = new StudyListModel();
-                studyListModel.setData(studyList);
-                studyListTable.setModel(studyListModel);
-                TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(studyListModel);
-                studyListTable.setRowSorter(sorter);
-                boolean dicomServerDetailAlreadyPresentInArray = false;
-                jLabel6.setText(qs.getDatasetVector().size()+" Studies found");
-                if (dicomServerArray != null) {
-                    for (int i = 0; i < dicomServerArray.size(); i++) {
-                        if (dicomServerArray.get(i).getName().equalsIgnoreCase(ae.getServerName())) {
-                            dicomServerDetailAlreadyPresentInArray = true;
-                            dicomServerArray.get(i).setAe(ae);
-                            dicomServerArray.get(i).setStudyListModel(studyListModel);
-                        }
-                    }
-                }
-                if (!dicomServerDetailAlreadyPresentInArray) {
-                    DicomServerDelegate dsd = new DicomServerDelegate(ae.getServerName());
-                    dsd.setAe(ae);
-                    dsd.setStudyListModel(studyListModel);
-                    dicomServerArray.add(dsd);
-                }
+            EchoService echo = new EchoService();
+            echo.checkEcho(url);
+            if (echo.getStatus().trim().equalsIgnoreCase("EchoSuccess")) {
+                doQuery(ae, url, noFilterQuery);
+            } else {
+                JOptionPane.showMessageDialog(this, "Server is not available", "Server Status", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (Exception e) {
             System.out.println("Select a Server");
@@ -689,6 +656,49 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
 
         startSearch = false;
 }//GEN-LAST:event_queryButtonActionPerformed
+    private void doQuery(AEModel ae, DcmURL url, int noFilterQuery) {
+        QueryService qs = new QueryService();
+        setPatientInfoToQueryParam();
+        if (queryParam.getPatientId().equalsIgnoreCase("") && queryParam.getPatientName().equalsIgnoreCase("") && queryParam.getSearchDate().equalsIgnoreCase("") && modalityText.getText().equalsIgnoreCase("") && queryParam.getAccessionNo().equalsIgnoreCase("")) {
+            noFilterQuery = JOptionPane.showConfirmDialog(this, "No filters have been selected. It will take long time to query and display result...!", "Confirm Dialog", JOptionPane.YES_NO_OPTION);
+        }
+        if (noFilterQuery == 0) {
+            qs.callFindWithQuery(queryParam.getPatientId(), queryParam.getPatientName(), "", queryParam.getSearchDate(), modalityText.getText(), queryParam.getAccessionNo(), null, url);
+            Vector studyList = new Vector();
+            for (int dataSetCount = 0; dataSetCount < qs.getDatasetVector().size(); dataSetCount++) {
+                try {
+                    Dataset dataSet = (Dataset) qs.getDatasetVector().elementAt(dataSetCount);
+                    StudyModel studyModel = new StudyModel(dataSet);
+                    studyList.addElement(studyModel);
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+            StudyListModel studyListModel = new StudyListModel();
+            studyListModel.setData(studyList);
+            studyListTable.setModel(studyListModel);
+            TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(studyListModel);
+            studyListTable.setRowSorter(sorter);
+            boolean dicomServerDetailAlreadyPresentInArray = false;
+            jLabel6.setText(qs.getDatasetVector().size() + " Studies found");
+            if (dicomServerArray != null) {
+                for (int i = 0; i < dicomServerArray.size(); i++) {
+                    if (dicomServerArray.get(i).getName().equalsIgnoreCase(ae.getServerName())) {
+                        dicomServerDetailAlreadyPresentInArray = true;
+                        dicomServerArray.get(i).setAe(ae);
+                        dicomServerArray.get(i).setStudyListModel(studyListModel);
+                    }
+                }
+            }
+            if (!dicomServerDetailAlreadyPresentInArray) {
+                DicomServerDelegate dsd = new DicomServerDelegate(ae.getServerName());
+                dsd.setAe(ae);
+                dsd.setStudyListModel(studyListModel);
+                dicomServerArray.add(dsd);
+            }
+        }
+    }
+
     /**
      * This routine is the handler for retrieve button.
      * @param evt
@@ -793,48 +803,48 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
     private void studyListTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_studyListTableMouseClicked
         String serverName = ((ServerTableModel) serverListTable.getModel()).getValueAt(serverListTable.getSelectedRow(), 0);
         String[] s = ApplicationContext.databaseRef.getListenerDetails();
-       if (evt.getClickCount() == 2) {
-        if (dicomServerArray != null) {
-            for (int i = 0; i < dicomServerArray.size(); i++) {
-                if (dicomServerArray.get(i).getName().equalsIgnoreCase(serverName)) {
-                    int index[] = studyListTable.getSelectedRows();
-                    for (int j = 0; j < index.length; j++) {
-                        index[j] = studyListTable.convertRowIndexToModel(index[j]);
-                    }
-                    for (int tempI = 0; tempI < index.length; tempI++) {
+        if (evt.getClickCount() == 2) {
+            if (dicomServerArray != null) {
+                for (int i = 0; i < dicomServerArray.size(); i++) {
+                    if (dicomServerArray.get(i).getName().equalsIgnoreCase(serverName)) {
+                        int index[] = studyListTable.getSelectedRows();
+                        for (int j = 0; j < index.length; j++) {
+                            index[j] = studyListTable.convertRowIndexToModel(index[j]);
+                        }
+                        for (int tempI = 0; tempI < index.length; tempI++) {
 
-                        String cmoveParam[] = new String[]{
-                            "dicom" + "://" + dicomServerArray.get(i).getAe().getAeTitle() + "@" + dicomServerArray.get(i).getAe().getHostName() + ":" + dicomServerArray.get(i).getAe().getPort(),
-                            "--dest", s[0], "--pid", dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), "--suid",
-                            dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8)};
+                            String cmoveParam[] = new String[]{
+                                "dicom" + "://" + dicomServerArray.get(i).getAe().getAeTitle() + "@" + dicomServerArray.get(i).getAe().getHostName() + ":" + dicomServerArray.get(i).getAe().getPort(),
+                                "--dest", s[0], "--pid", dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), "--suid",
+                                dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8)};
 
-                        String cgetParam[] = new String[]{"-L", s[0] + ":" + s[1], dicomServerArray.get(i).getAe().getAeTitle() + "@" + dicomServerArray.get(i).getAe().getHostName() + ":" + dicomServerArray.get(i).getAe().getPort(),
-                            "-cget", "-qModalitiesInStudy=" + dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 6), "-qStudyInstanceUID=" + dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8),
-                            "-qPatientID=" + dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), "-rel"};
-                        try {
-                            if (!ApplicationContext.databaseRef.checkRecordExists("study", "StudyInstanceUID", dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8))) {
-                                MainScreen.sndRcvFrm.setVisible(true);
-                                MoveDelegate moveDelegate = null;
-                                CgetDelegate cgetDelegate = null;
-                                if (dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("C-MOVE")) {
-                                    moveDelegate = new MoveDelegate(cmoveParam);
-                                } else if (dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("WADO")) {
-                                    WadoRetrieveDelegate wadoRetrieveDelegate = new WadoRetrieveDelegate();
-                                    wadoRetrieveDelegate.retrieveStudy(serverName, dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8));
-                                } else if (dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("C-GET")) {
-                                    cgetDelegate = new CgetDelegate(cgetParam);
+                            String cgetParam[] = new String[]{"-L", s[0] + ":" + s[1], dicomServerArray.get(i).getAe().getAeTitle() + "@" + dicomServerArray.get(i).getAe().getHostName() + ":" + dicomServerArray.get(i).getAe().getPort(),
+                                "-cget", "-qModalitiesInStudy=" + dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 6), "-qStudyInstanceUID=" + dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8),
+                                "-qPatientID=" + dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), "-rel"};
+                            try {
+                                if (!ApplicationContext.databaseRef.checkRecordExists("study", "StudyInstanceUID", dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8))) {
+                                    MainScreen.sndRcvFrm.setVisible(true);
+                                    MoveDelegate moveDelegate = null;
+                                    CgetDelegate cgetDelegate = null;
+                                    if (dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("C-MOVE")) {
+                                        moveDelegate = new MoveDelegate(cmoveParam);
+                                    } else if (dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("WADO")) {
+                                        WadoRetrieveDelegate wadoRetrieveDelegate = new WadoRetrieveDelegate();
+                                        wadoRetrieveDelegate.retrieveStudy(serverName, dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 0), dicomServerArray.get(i).getStudyListModel().getValueAt(index[tempI], 8));
+                                    } else if (dicomServerArray.get(i).getAe().getRetrieveType().equalsIgnoreCase("C-GET")) {
+                                        cgetDelegate = new CgetDelegate(cgetParam);
+                                    }
+                                } else {
+                                    MainScreen.sndRcvFrm.setVisible(true);
                                 }
-                            } else {
-                                MainScreen.sndRcvFrm.setVisible(true);
+                            } catch (Exception ex) {
+                                Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
                             }
-                        } catch (Exception ex) {
-                            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
                 }
             }
         }
-    }
     }//GEN-LAST:event_studyListTableMouseClicked
 
     private class SearchDaysHandler implements ItemListener {
