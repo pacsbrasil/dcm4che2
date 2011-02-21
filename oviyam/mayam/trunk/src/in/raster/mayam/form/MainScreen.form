@@ -27,14 +27,6 @@
             </MenuItem>
             <MenuItem class="javax.swing.JSeparator" name="jSeparator2">
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="QRMenuItem">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Query/Retrieve"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="QRMenuItemActionPerformed"/>
-              </Events>
-            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="deleteExamMenuItem">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Delete Selected Exam"/>
@@ -88,7 +80,7 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="jMenu3">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Window"/>
+            <Property name="text" type="java.lang.String" value="Network"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="queueMenuItem">
@@ -97,6 +89,22 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="queueMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="sendMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Send"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sendMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="QRMenuItem1">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Query/Retrieve"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="QRMenuItem1ActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>

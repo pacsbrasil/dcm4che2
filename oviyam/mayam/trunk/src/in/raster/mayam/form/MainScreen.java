@@ -287,7 +287,6 @@ public class MainScreen extends javax.swing.JFrame {
         importMenuItem = new javax.swing.JMenuItem();
         exportMenuItem = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JSeparator();
-        QRMenuItem = new javax.swing.JMenuItem();
         deleteExamMenuItem = new javax.swing.JMenuItem();
         jMenuItem8 = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JSeparator();
@@ -298,6 +297,8 @@ public class MainScreen extends javax.swing.JFrame {
         preferenceMenuItem = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         queueMenuItem = new javax.swing.JMenuItem();
+        sendMenuItem = new javax.swing.JMenuItem();
+        QRMenuItem1 = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
         nimrodLFMenu = new javax.swing.JMenuItem();
         motifLFMenu = new javax.swing.JMenuItem();
@@ -623,14 +624,6 @@ public class MainScreen extends javax.swing.JFrame {
         jMenu1.add(exportMenuItem);
         jMenu1.add(jSeparator2);
 
-        QRMenuItem.setText("Query/Retrieve");
-        QRMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                QRMenuItemActionPerformed(evt);
-            }
-        });
-        jMenu1.add(QRMenuItem);
-
         deleteExamMenuItem.setText("Delete Selected Exam");
         deleteExamMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -675,7 +668,7 @@ public class MainScreen extends javax.swing.JFrame {
 
         menuBar.add(jMenu2);
 
-        jMenu3.setText("Window");
+        jMenu3.setText("Network");
 
         queueMenuItem.setText("Queue");
         queueMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -684,6 +677,22 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
         jMenu3.add(queueMenuItem);
+
+        sendMenuItem.setText("Send");
+        sendMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu3.add(sendMenuItem);
+
+        QRMenuItem1.setText("Query/Retrieve");
+        QRMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                QRMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(QRMenuItem1);
 
         menuBar.add(jMenu3);
 
@@ -783,28 +792,7 @@ public class MainScreen extends javax.swing.JFrame {
         showThumbnails();
     }//GEN-LAST:event_deleteButtonActionPerformed
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-        String forwardAET = "";
-        String forwardHost = "";
-        int forwardPort;
-        ServerListDialog configuredServer = new ServerListDialog(this, true);
-        configuredServer.setLocationRelativeTo(this);
-        configuredServer.setVisible(true);
-        if (configuredServer.getAe() != null) {
-            AEModel ae = configuredServer.getAe();
-            forwardAET = ae.getAeTitle();
-            forwardHost = ae.getHostName();
-            forwardPort = ae.getPort();
-            if (studyListTable.getSelectedRow() != -1) {
-                int index[] = studyListTable.getSelectedRows();
-                for (int j = 0; j < index.length; j++) {
-                    index[j] = studyListTable.convertRowIndexToModel(index[j]);
-                }
-                for (int tempI = 0; tempI < index.length; tempI++) {
-                    String studyIUID = (String) studyListTable.getModel().getValueAt(index[tempI], 8);
-                    SendingDelegate sendingDelegate = new SendingDelegate(studyIUID, ae);
-                }
-            }
-        }
+       doSend();
     }//GEN-LAST:event_sendButtonActionPerformed
     private void viewerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewerButtonActionPerformed
         if (studyListTable.getSelectedRow() != -1) {
@@ -868,6 +856,31 @@ public class MainScreen extends javax.swing.JFrame {
         settingsDialog.setVisible(true);
     }
 
+    private void doSend()
+    {
+        String forwardAET = "";
+        String forwardHost = "";
+        int forwardPort;
+        ServerListDialog configuredServer = new ServerListDialog(this, true);
+        configuredServer.setLocationRelativeTo(this);
+        configuredServer.setVisible(true);
+        if (configuredServer.getAe() != null) {
+            AEModel ae = configuredServer.getAe();
+            forwardAET = ae.getAeTitle();
+            forwardHost = ae.getHostName();
+            forwardPort = ae.getPort();
+            if (studyListTable.getSelectedRow() != -1) {
+                int index[] = studyListTable.getSelectedRows();
+                for (int j = 0; j < index.length; j++) {
+                    index[j] = studyListTable.convertRowIndexToModel(index[j]);
+                }
+                for (int tempI = 0; tempI < index.length; tempI++) {
+                    String studyIUID = (String) studyListTable.getModel().getValueAt(index[tempI], 8);
+                    SendingDelegate sendingDelegate = new SendingDelegate(studyIUID, ae);
+                }
+            }
+        }
+    }
     public SettingsDialog getPreference() {
         return settingsDialog;
     }
@@ -924,10 +937,6 @@ public class MainScreen extends javax.swing.JFrame {
     private void exportMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportMenuItemActionPerformed
         exportHandler();
     }//GEN-LAST:event_exportMenuItemActionPerformed
-    private void QRMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_QRMenuItemActionPerformed
-        queryRetrieve.setLocationRelativeTo(this);
-        queryRetrieve.setVisible(true);
-    }//GEN-LAST:event_QRMenuItemActionPerformed
     private void queueMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queueMenuItemActionPerformed
         sndRcvFrm.setLocationRelativeTo(this);
         sndRcvFrm.setVisible(true);
@@ -988,6 +997,14 @@ public class MainScreen extends javax.swing.JFrame {
         updateThemeStatus("Nimrod");
 
     }//GEN-LAST:event_nimrodLFMenuActionPerformed
+
+    private void sendMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendMenuItemActionPerformed
+      doSend();
+    }//GEN-LAST:event_sendMenuItemActionPerformed
+
+    private void QRMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_QRMenuItem1ActionPerformed
+      queryRetrieve.setVisible(true);
+    }//GEN-LAST:event_QRMenuItem1ActionPerformed
 
     private void setNimrodTheme() {
         try {
@@ -1127,7 +1144,7 @@ public class MainScreen extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenuItem QRMenuItem;
+    private javax.swing.JMenuItem QRMenuItem1;
     private javax.swing.JMenuItem aboutMenu;
     private javax.swing.JButton cdImportButton;
     private javax.swing.JPanel container;
@@ -1162,6 +1179,7 @@ public class MainScreen extends javax.swing.JFrame {
     private javax.swing.JMenuItem queueMenuItem;
     private javax.swing.JMenuItem resetMenuItem;
     private javax.swing.JButton sendButton;
+    private javax.swing.JMenuItem sendMenuItem;
     private javax.swing.JPanel studyAndSeriesDisplayPanel;
     public static javax.swing.JTable studyListTable;
     private javax.swing.JScrollPane studyTableScroll;

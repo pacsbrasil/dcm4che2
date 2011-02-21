@@ -42,6 +42,9 @@ import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.model.PresetModel;
 import in.raster.mayam.model.combo.ModalityComboModel;
 import in.raster.mayam.model.table.PresetTableModel;
+import in.raster.mayam.model.table.renderer.CellRenderer;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -68,7 +71,7 @@ public class WindowingManagerPanel extends javax.swing.JPanel implements KeyList
    }
     private void setPresetTableModel()
     {
-         PresetTableModel presetTableModel=new PresetTableModel();
+        PresetTableModel presetTableModel=new PresetTableModel();
         presetTableModel.setData(ApplicationContext.databaseRef.getPresetValueForModality((String)jComboBox1.getSelectedItem()));
         jTable1.setModel(presetTableModel);
      
@@ -89,7 +92,7 @@ public class WindowingManagerPanel extends javax.swing.JPanel implements KeyList
         addButton = new javax.swing.JButton();
 
         jLabel1.setBackground(new java.awt.Color(204, 204, 204));
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14));
         jLabel1.setText(" Preset");
         jLabel1.setOpaque(true);
 
@@ -103,6 +106,11 @@ public class WindowingManagerPanel extends javax.swing.JPanel implements KeyList
         });
 
         jTable1.setModel(new PresetTableModel());
+        jTable1.setDefaultRenderer(Object.class, new CellRenderer());
+        jTable1.getTableHeader().setPreferredSize(new Dimension(jScrollPane1.WIDTH,24));;
+        Font f=jTable1.getFont();
+        jTable1.getTableHeader().setFont(new Font(f.getName(),Font.PLAIN,12));;
+        jTable1.setRowHeight(24);
         jScrollPane1.setViewportView(jTable1);
 
         addButton.setText("Add");
@@ -119,28 +127,28 @@ public class WindowingManagerPanel extends javax.swing.JPanel implements KeyList
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)
+            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel2)
-                .addContainerGap(350, Short.MAX_VALUE))
+                .addContainerGap(378, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jComboBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 97, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(310, Short.MAX_VALUE))
+                .addContainerGap(338, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(299, Short.MAX_VALUE)
+                .addContainerGap(327, Short.MAX_VALUE)
                 .add(addButton)
                 .add(50, 50, 50))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -148,7 +156,7 @@ public class WindowingManagerPanel extends javax.swing.JPanel implements KeyList
                 .add(13, 13, 13)
                 .add(addButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents

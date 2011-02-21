@@ -39,6 +39,8 @@
 package in.raster.mayam.form;
 
 import in.raster.mayam.model.table.renderer.CellRenderer;
+import java.awt.Dimension;
+import java.awt.Font;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -73,7 +75,6 @@ public class SendReceivePanel extends javax.swing.JPanel {
 
         jLabel1.setBackground(new java.awt.Color(117, 113, 113));
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(0, 0, 104));
         jLabel1.setText("  Receive");
         jLabel1.setOpaque(true);
 
@@ -86,6 +87,10 @@ public class SendReceivePanel extends javax.swing.JPanel {
             }
         ));
         receiveTable.setDefaultRenderer(Object.class, new CellRenderer());
+        receiveTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 20));
+        Font receiveFont=receiveTable.getTableHeader().getFont();
+        receiveTable.getTableHeader().setFont(new Font(receiveFont.getName(),Font.PLAIN,11));
+        receiveTable.setRowHeight(20);
         jScrollPane1.setViewportView(receiveTable);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -98,9 +103,9 @@ public class SendReceivePanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents

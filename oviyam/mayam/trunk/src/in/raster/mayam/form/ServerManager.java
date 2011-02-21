@@ -47,6 +47,7 @@ import in.raster.mayam.model.ServerModel;
 import in.raster.mayam.model.table.PresetTableModel;
 import in.raster.mayam.model.table.ServerTableModel;
 import in.raster.mayam.model.table.renderer.CellRenderer;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -149,6 +150,8 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
 
         serverListTable.setModel(new PresetTableModel());
         serverListTable.setDefaultRenderer(Object.class, new CellRenderer());
+        serverListTable.getTableHeader().setPreferredSize(new Dimension(jScrollPane1.WIDTH,25));
+        serverListTable.setRowHeight(25);
         jScrollPane1.setViewportView(serverListTable);
 
         addButton.setText("Add");
@@ -202,14 +205,14 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(30, 30, 30)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(DeleteButton)
                     .add(addButton)
                     .add(jButton1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
