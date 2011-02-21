@@ -129,8 +129,7 @@ public class EchoService {
 		try {
 			delay = cDimseService.cECHO();
                         
-			status = "EchoSuccess";
-                        System.out.println("echo success");
+			status = "EchoSuccess";                       
 		//	log.info("C-ECHO delay: " + String.valueOf(delay));
 		} catch (Exception e) {
 			log.error(e.getMessage());
