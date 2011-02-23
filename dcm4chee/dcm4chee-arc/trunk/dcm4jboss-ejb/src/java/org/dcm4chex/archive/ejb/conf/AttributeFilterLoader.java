@@ -157,7 +157,7 @@ class AttributeFilterLoader extends DefaultHandler {
         }
         boolean inst = qName.equals("instance");
         if (inst || qName.equals("series") || qName.equals("study")
-                || qName.equals("patient")) {
+                || qName.equals("patient") || qName.equals("exclude-patient")) {
             int[] tags = parseInts(tagList, true);
             int[] vrs = parseVRs(vrList);
             if (inst && filter.isExclude()) {
