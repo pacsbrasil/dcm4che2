@@ -97,7 +97,7 @@
         <include>*.bat</include>
       </includes>
       <lineEnding>dos</lineEnding>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory>/bin</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>dcm4che-soundex/src/bin</directory>
