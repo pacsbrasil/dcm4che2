@@ -9,6 +9,7 @@
       <includes>
         <include>dcm4che-audit/**</include>
         <include>dcm4che-base64/**</include>
+        <include>dcm4che-code/**</include>
         <include>dcm4che-core/**</include>
         <include>dcm4che-core-test-dictionary/**</include>
         <include>dcm4che-filecache/**</include>
