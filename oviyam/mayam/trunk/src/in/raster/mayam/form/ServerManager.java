@@ -57,6 +57,7 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.InputMap;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.table.TableCellEditor;
@@ -315,10 +316,15 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
 
     private void DeleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DeleteButtonActionPerformed
         if (serverListTable.getSelectedRow() != -1) {
+            int canDelete=0;
+            canDelete=JOptionPane.showConfirmDialog(null, "Are you sure want to delete the server", "Delete Confirmation", JOptionPane.YES_NO_OPTION);
+            if(canDelete==0)
+            {
             ServerModel serverModel = ((ServerTableModel) serverListTable.getModel()).getRow(serverListTable.getSelectedRow());
             ApplicationContext.databaseRef.deleteServer(serverModel);
             setServerTableModel();
             addOrDeleteServerNotification();
+            }
         }
     }//GEN-LAST:event_DeleteButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables

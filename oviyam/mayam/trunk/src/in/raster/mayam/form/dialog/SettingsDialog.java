@@ -144,6 +144,7 @@ public class SettingsDialog extends javax.swing.JDialog {
         dateFormatPanel1 = new in.raster.mayam.form.DateFormatPanel();
         windowConfigurationPanel1 = new in.raster.mayam.form.WindowConfigurationPanel();
 
+        setTitle("Mayam Preferences");
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
