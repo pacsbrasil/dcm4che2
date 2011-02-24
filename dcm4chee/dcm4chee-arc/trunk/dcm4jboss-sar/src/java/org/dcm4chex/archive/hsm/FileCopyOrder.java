@@ -51,6 +51,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.BaseJmsOrder;
+import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.JmsOrderProperties;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
@@ -108,9 +109,13 @@ public class FileCopyOrder extends BaseJmsOrder {
             fiCopy.clear();
             fi2Copy.clear();
             for (FileInfo fi : a) {
-                if ( fi.basedir.equals(dstFsPath)) {
+                if (fi.basedir.equals(dstFsPath)) {
                     log.info("Instance "+fi.sopIUID+" md5:"+fi.md5+" has already a copy on dstFsPath:"+dstFsPath);
-                    fiCopy.put(fi.md5, fi);
+                    if (fi.status != FileStatus.MD5_CHECK_FAILED && fi.status != FileStatus.QUERY_HSM_FAILED) {
+                        fiCopy.put(fi.md5, fi);
+                    } else {
+                        log.info("Copy has file status "+FileStatus.toString(fi.status)+"! Retry copy!");
+                    }
                 } else if (isLocalRetrieveAET(fi.fileRetrieveAET)) {
                     fi2Copy.put(fi.md5, fi);
                 }
