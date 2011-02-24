@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.dcm.mppsscu;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.StringTokenizer;
@@ -56,6 +57,7 @@ import org.dcm4chex.archive.mbean.SchedulerDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.system.server.ServerImplMBean;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -182,11 +184,20 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
     }
     
     public void handleNotification(Notification notification, Object handback) {
-        if (stationAETs.length > 0) {
-            new Thread(new Runnable(){
-                public void run() {
-                    emulateMPPS();
-                }}).start();
+        if (notification.getType().equals(org.jboss.system.server.Server.START_NOTIFICATION_TYPE)) {
+            try {
+                schedulerID = scheduler.startScheduler(timerIDCheckSeriesWithoutMPPS,
+                        pollInterval, this);
+            } catch (Exception x) {
+                log.error("Can not start timer!", x);
+            }
+        } else {
+            if (stationAETs.length > 0) {
+                new Thread(new Runnable(){
+                    public void run() {
+                        emulateMPPS();
+                    }}).start();
+            }
         }
     }
 
@@ -323,8 +334,7 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
     }
 
     protected void startService() throws Exception {
-        schedulerID = scheduler.startScheduler(timerIDCheckSeriesWithoutMPPS,
-        		pollInterval, this);
+        server.addNotificationListener(ServerImplMBean.OBJECT_NAME, this, null, null);
     }
 
     protected void stopService() throws Exception {
