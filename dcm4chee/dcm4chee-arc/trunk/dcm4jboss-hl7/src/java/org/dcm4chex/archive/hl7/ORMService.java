@@ -334,7 +334,12 @@ public class ORMService extends AbstractHL7Service {
             List<Dataset> mppsList, MPPSManager mppsManager) throws Exception {
         for (Dataset mpps : mppsList) {
             String aet = mpps.getString(Tags.PerformedStationAET);
-            Templates xslt = aeTemplates.getTemplatesForAET(aet, MWL2STORE_XSL);
+            Templates xslt = null;
+            try {
+                xslt = aeTemplates.getTemplatesForAET(aet, MWL2STORE_XSL);
+            } catch (Exception x) {
+                log.error("Internal error to get template for "+MWL2STORE_XSL, x);
+            }
             if (xslt == null) {
                 log.warn("Failed to find or load stylesheet "
                             + MWL2STORE_XSL
@@ -357,8 +362,12 @@ public class ORMService extends AbstractHL7Service {
     }
     
     protected void updateSeriesAttributes(MPPSManager mppsManager, String uid, Dataset newAttrs,
-        boolean updateStudyAttributes) throws Exception {
-        mppsManager.updateSeriesAttributes(uid, newAttrs, updateStudyAttributes);	
+        boolean updateStudyAttributes) {
+        try {
+            mppsManager.updateSeriesAttributes(uid, newAttrs, updateStudyAttributes);
+        } catch (Exception x) {
+            log.warn("Failed to update series attributes! Series IUID:"+uid+" - Reason:"+x);
+        }
     }
 
     protected void updateSPSStatus(Dataset mwlitem, Dataset mpps,
