@@ -65,7 +65,7 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     
     private List<StudyModel> studies = new ArrayList<StudyModel>();
     private IModel<Boolean> latestStudyFirst;
-    private boolean expandable;
+    private Boolean expandable;
 
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
 
@@ -73,7 +73,7 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
         setPk(patient.getPk());
         this.dataset = patient.getAttributes();
         this.latestStudyFirst = latestStudyFirst;
-        expandable = false;
+        expandable = null;
     }
 
     @Override
@@ -175,6 +175,11 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     }
     
     public boolean isExpandable() {
+        if (expandable == null) {
+            List<String> dicomSecurityRoles = StudyPermissionHelper.get().applyStudyPermissions() ?
+                    StudyPermissionHelper.get().getDicomRoles() : null;
+            expandable = dao.countStudiesOfPatient(getPk(), dicomSecurityRoles) > 0;
+        }
         return expandable;
     }
 }

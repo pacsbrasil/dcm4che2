@@ -38,10 +38,13 @@
 
 package org.dcm4chee.web.dao.util;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.StringTokenizer;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TemporalType;
 
 /**
  * @author Franz Willer <fwiller@gmail.com>
@@ -51,6 +54,8 @@ import javax.persistence.Query;
 
 public class QueryUtil {
 
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+    
     public static Query getQueryForPks(EntityManager em, String base, long[] pks) {
         Query q;
         int len=pks.length;
@@ -85,8 +90,8 @@ public class QueryUtil {
         for ( Object v : values ) {
             q.setParameter(i++, v);
         }
-    }    
-    
+    }
+        
     public static Query getPatientQuery(EntityManager em, String patId, String issuer) {
         StringBuilder sb = new StringBuilder();
         boolean useIssuer = issuer != null && issuer.trim().length() > 0;
@@ -165,7 +170,7 @@ public class QueryUtil {
                 ql.append(" IS NULL");
             } else if (isMustNotNull(value)) {
                 ql.append(" IS NOT NULL");
-            } else if (QueryUtil.containsWildcard(value)) {
+            } else if (containsWildcard(value)) {
                 ql.append(" LIKE ");
                 if (needEscape(value)) {
                     ql.append("'").append(toLike(value)).append("' ESCAPE '\\'");
@@ -181,13 +186,17 @@ public class QueryUtil {
     public static void setTextQueryParameter(Query query, String varName, String value) {
         if (value!=null
                 && !"-".equals(value)
-                && !QueryUtil.isMustNotNull(value)
+                && !isMustNotNull(value)
                 && !needEscape(value)) {
             query.setParameter(varName,
-                    QueryUtil.containsWildcard(value)
+                    containsWildcard(value)
                             ? toLike(value)
                             : value);
         }
+    }
+
+    public static void appendPatientNameFilter(StringBuilder ql, String patientName) {
+        appendPatientName(ql, "p.patientName", ":patientName", patientName);
     }
 
     public static void appendPatientName(StringBuilder ql, String fieldName, String varName, String patientName) {
@@ -201,13 +210,165 @@ public class QueryUtil {
         }
     }
     
+    public static void setPatientNameQueryParameter(Query query, String patientName) {
+        setPatientNameQueryParameter(query, "patientName", patientName);
+    }
+
     public static void setPatientNameQueryParameter(Query query, String varName, String patientName) {
         if (patientName!=null && !needEscape(patientName)) {
             query.setParameter(varName, toPatientNameQueryString(patientName));
         }
     }
 
-    public static String toPatientNameQueryString(String patientName) {
+    public static void appendPatientIDFilter(StringBuilder ql,
+            String patientID) {
+        appendANDwithTextValue(ql, "p.patientID", "patientID", patientID);
+    }
+
+    public static void setPatientIDQueryParameter(Query query,
+            String patientID) {
+        setTextQueryParameter(query, "patientID", patientID);
+    }
+
+    public static void appendIssuerOfPatientIDFilter(StringBuilder ql,
+            String issuerOfPatientID) {
+        appendANDwithTextValue(ql, "p.issuerOfPatientID", "issuerOfPatientID", issuerOfPatientID);
+    }
+
+    public static void setIssuerOfPatientIDQueryParameter(Query query,
+            String issuerOfPatientID) {
+        setTextQueryParameter(query, "issuerOfPatientID", issuerOfPatientID);
+    }
+
+    public static void appendPatientBirthDateFilter(StringBuilder ql, Date minDate, Date maxDate) {
+        if (minDate!=null) {
+            if (maxDate==null) {
+                ql.append(" AND p.patientBirthDate >= :birthdateMin");
+            } else {
+                ql.append(" AND p.patientBirthDate BETWEEN :birthdateMin AND :birthdateMax");
+                
+            }
+        } else if (maxDate!=null) {
+            ql.append(" AND p.patientBirthDate <= :birthdateMax");
+        }
+    }
+    public static void setPatientBirthDateQueryParameter(Query query, Date minDate, Date maxDate) {
+        if ( minDate!=null)
+            query.setParameter("birthdateMin", sdf.format(minDate));
+        if ( maxDate!=null)
+            query.setParameter("birthdateMax", sdf.format(maxDate));
+    }
+
+    public static void appendStudyDateMinFilter(StringBuilder ql, Date date) {
+        if (date != null) {
+            ql.append(" AND s.studyDateTime >= :studyDateTimeMin");
+        }
+    }
+
+    public static void appendStudyDateMaxFilter(StringBuilder ql, Date date) {
+        if (date != null) {
+            ql.append(" AND s.studyDateTime <= :studyDateTimeMax");
+        }
+    }
+    
+    public static void setStudyDateMinQueryParameter(Query query, Date date) {
+        setStudyDateQueryParameter(query, date, "studyDateTimeMin");
+    }
+
+    public static void setStudyDateMaxQueryParameter(Query query, Date date) {
+        setStudyDateQueryParameter(query, date, "studyDateTimeMax");
+    }
+
+    public static void setStudyDateQueryParameter(Query query, Date studyDate, String param) {
+        if (studyDate != null) {
+            query.setParameter(param, studyDate, TemporalType.TIMESTAMP);
+        }
+    }
+
+    public static void appendAccessionNumberFilter(StringBuilder ql, String accessionNumber) {
+        appendANDwithTextValue(ql, "s.accessionNumber", "accessionNumber", accessionNumber);
+    }
+
+    public static void setAccessionNumberQueryParameter(Query query, String accessionNumber) {
+        setTextQueryParameter(query, "accessionNumber", accessionNumber);
+    }
+
+    public static void appendPpsWithoutMwlFilter(StringBuilder ql, boolean ppsWithoutMwl) {
+        if (ppsWithoutMwl) {
+            ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE "+
+                    "ser.modalityPerformedProcedureStep IS NOT NULL AND ser.modalityPerformedProcedureStep.accessionNumber IS NULL)");
+        }
+    }
+    
+    public static void setStudyInstanceUIDQueryParameter(Query query, String studyInstanceUID) {
+        if (!isUniversalMatch(studyInstanceUID)) {
+            query.setParameter("studyInstanceUID", studyInstanceUID);
+        }
+    }
+
+    public static void appendDicomSecurityFilter(StringBuilder ql) {
+        ql.append(" AND (s.studyInstanceUID IN (SELECT sp.studyInstanceUID FROM StudyPermission sp WHERE sp.action = 'Q' AND sp.role IN (:roles)))");
+    }
+
+    
+    public static void appendModalityFilter(StringBuilder ql, String modality) {
+        if (!isUniversalMatch(modality)) {
+            ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE ser.modality = :modality)");
+        }
+    }
+
+    public static void setModalityQueryParameter(Query query, String modality) {
+        if (!isUniversalMatch(modality)) {
+            query.setParameter("modality", modality);
+        }
+    }
+
+    public static void appendSourceAETFilter(StringBuilder ql, String[] sourceAETs) {
+        if (!isUniversalMatch(sourceAETs)) {
+            if (sourceAETs.length == 1) {
+                ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE ser.sourceAET = :sourceAET)");
+            } else {
+                ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE ser.sourceAET");
+                appendIN(ql, sourceAETs.length);
+                ql.append(")");
+            }
+        }
+    }
+
+    public static void setSourceAETQueryParameter(Query query, String[] sourceAETs) {
+        if (!isUniversalMatch(sourceAETs)) {
+            if (sourceAETs.length == 1) {
+                query.setParameter("sourceAET", sourceAETs[0]);
+            } else {
+                setParametersForIN(query, sourceAETs);
+            }
+        }
+    }
+
+    public static void appendSeriesInstanceUIDFilter(StringBuilder ql, String seriesInstanceUID) {
+        if (!isUniversalMatch(seriesInstanceUID)) {
+            ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE ser.seriesInstanceUID = :seriesInstanceUID)");
+        }
+    }
+    
+    public static void setSeriesInstanceUIDQueryParameter(Query query, String seriesInstanceUID) {
+        if (!isUniversalMatch(seriesInstanceUID)) {
+            query.setParameter("seriesInstanceUID", seriesInstanceUID);
+        }
+    }
+    
+    public static void appendOrderBy(StringBuilder ql, String[] order) {
+        if (order != null && order.length > 0) {
+            ql.append(" ORDER BY ").append(order[0]);
+            for (int i = 1 ; i < order.length ; i++) {
+                if (order[i] != null)
+                    ql.append(", ").append(order[i]);
+            }
+        }
+    }
+
+
+    private static String toPatientNameQueryString(String patientName) {
         int padcarets = 4;
         StringBuilder param = new StringBuilder();
         StringTokenizer tokens = new StringTokenizer(patientName.toUpperCase(),

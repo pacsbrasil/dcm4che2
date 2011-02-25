@@ -132,6 +132,8 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private boolean useStudyPermissions;
     private boolean webStudyPermissions;
 
+    private boolean forcePatientExpandableForPatientQuery;
+    
     public WebCfgService() {
     }
     
@@ -366,6 +368,14 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public void setUseFamilyAndGivenNameQueryFields(boolean b) {
         this.useFamilyAndGivenNameQueryFields = b;
+    }
+
+    public boolean isForcePatientExpandableForPatientQuery() {
+        return forcePatientExpandableForPatientQuery;
+    }
+
+    public void setForcePatientExpandableForPatientQuery(boolean b) {
+        this.forcePatientExpandableForPatientQuery = b;
     }
 
     private String listAsString(List<String> list) {

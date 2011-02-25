@@ -161,6 +161,10 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return getBoolean("useFamilyAndGivenNameQueryFields", false); 
     }
 
+    public boolean forcePatientExpandableForPatientQuery() {
+        return getBoolean("forcePatientExpandableForPatientQuery", true); 
+    }
+    
     public String getMpps2mwlPresetPatientname() {
         return getString("Mpps2mwlPresetPatientname");
     }

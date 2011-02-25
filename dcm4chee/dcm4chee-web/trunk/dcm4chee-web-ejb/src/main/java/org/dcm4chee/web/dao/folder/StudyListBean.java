@@ -49,7 +49,6 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.persistence.TemporalType;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.common.Availability;
@@ -75,7 +74,6 @@ import org.jboss.annotation.ejb.LocalBinding;
 @LocalBinding(jndiBinding=StudyListLocal.JNDI_NAME)
 public class StudyListBean implements StudyListLocal {
 
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
     private static Comparator<Instance> instanceComparator = new Comparator<Instance>() {
         public int compare(Instance o1, Instance o2) {
             String in1 = o1.getInstanceNumber();
@@ -139,22 +137,14 @@ public class StudyListBean implements StudyListLocal {
     @PersistenceContext(unitName="dcm4chee-arc")
     private EntityManager em;
     
-    private void appendDicomSecurityFilter(StringBuilder ql) {
-        ql.append(" AND (s.studyInstanceUID IN (SELECT sp.studyInstanceUID FROM StudyPermission sp WHERE sp.action = 'Q' AND sp.role IN (:roles)))");
-    }
-
     public int count(StudyListFilter filter, List<String> roles) {
         if ((roles != null) && (roles.size() == 0)) return 0;
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT COUNT(*)");
         appendFromClause(ql, filter, false);
-        appendWhereClause(ql, filter);
-        if ((roles != null) && !filter.isPatientsWithoutStudies()) 
-            appendDicomSecurityFilter(ql);
+        appendWhereClause(ql, filter, roles);
         Query query = em.createQuery(ql.toString());
-        if ((roles != null) && !filter.isPatientsWithoutStudies())
-            query.setParameter("roles", roles);        
-        setQueryParameters(query, filter);
+        setQueryParameters(query, filter, roles);
         return ((Number) query.getSingleResult()).intValue();
     }
 
@@ -164,217 +154,88 @@ public class StudyListBean implements StudyListLocal {
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT p");
         appendFromClause(ql, filter, true);
-        appendWhereClause(ql, filter);
-        if ((roles != null) && !filter.isPatientsWithoutStudies())
-            appendDicomSecurityFilter(ql);
-        ql.append(" ORDER BY p.patientName" + (filter.isPatientsWithoutStudies() ? "" : ", s.studyDateTime"));
-        if (filter.isLatestStudiesFirst()) 
-            ql.append(" DESC");
+        appendWhereClause(ql, filter, roles);
+        String studyDT = filter.isPatientQuery() ? null : 
+            filter.isLatestStudiesFirst() ? "s.studyDateTime DESC" : "s.studyDateTime";
+        QueryUtil.appendOrderBy(ql, new String[]{"p.patientName", studyDT});
         Query query = em.createQuery(ql.toString());
-        if ((roles != null) && !filter.isPatientsWithoutStudies())
-            query.setParameter("roles", roles);
-        setQueryParameters(query, filter);
+        setQueryParameters(query, filter, roles);
         return query.setMaxResults(max).setFirstResult(index).getResultList();
     }
 
     private static void appendFromClause(StringBuilder ql, StudyListFilter filter, boolean fetch) {
-        ql.append(" FROM Patient p" + (filter.isPatientsWithoutStudies()
-                ? "" : " INNER JOIN " + (fetch ? "FETCH " : "") + "p.studies s"));
+        ql.append(" FROM Patient p");
+        if (!filter.isPatientQuery() ) {
+            ql.append(" INNER JOIN ");
+            if (fetch) {
+                ql.append("FETCH ");
+            }
+            ql.append("p.studies s");
+        }
     }
 
-    private static void appendWhereClause(StringBuilder ql,
-            StudyListFilter filter) {
+    private void appendWhereClause(StringBuilder ql, StudyListFilter filter, List<String> roles) {
         ql.append(" WHERE p.mergedWith IS NULL");
-        if ( filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
-            ql.append(" AND s.studyInstanceUID = :studyInstanceUID");
-        } else if (filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())) {
-            appendSeriesInstanceUIDFilter(ql, filter.getSeriesInstanceUID());
+        if ( filter.isPatientQuery()) {
+            appendPatFilter(ql, filter);
         } else {
-            appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
-            appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID()));
-            appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
-            if ( filter.isExtendedQuery()) {
-                appendPatientBirthDateFilter(ql, filter.getBirthDateMin(), filter.getBirthDateMax());
+            if ( filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
+                ql.append(" AND s.studyInstanceUID = :studyInstanceUID");
+            } else if (filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())) {
+                QueryUtil.appendSeriesInstanceUIDFilter(ql, filter.getSeriesInstanceUID());
+            } else {
+                appendPatFilter(ql, filter);
+                QueryUtil.appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
+                QueryUtil.appendPpsWithoutMwlFilter(ql, filter.isPpsWithoutMwl());
+                QueryUtil.appendStudyDateMinFilter(ql, filter.getStudyDateMin());
+                QueryUtil.appendStudyDateMaxFilter(ql, filter.getStudyDateMax());
+                QueryUtil.appendModalityFilter(ql, filter.getModality());
+                QueryUtil.appendSourceAETFilter(ql, filter.getSourceAETs());
             }
-            appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
-            appendPpsWithoutMwlFilter(ql, filter.isPpsWithoutMwl());
-            appendStudyDateMinFilter(ql, filter.getStudyDateMin());
-            appendStudyDateMaxFilter(ql, filter.getStudyDateMax());
-            appendModalityFilter(ql, filter.getModality());
-            appendSourceAETFilter(ql, filter.getSourceAETs());
+            if ((roles != null) && !filter.isPatientQuery())
+                QueryUtil.appendDicomSecurityFilter(ql);
         }
     }
 
-    private static void setQueryParameters(Query query, StudyListFilter filter) {
-        if ( filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
-            setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
-        } else if (filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())) {
-            setSeriesInstanceUIDQueryParameter(query, filter.getSeriesInstanceUID());
+    private static void appendPatFilter(StringBuilder ql, StudyListFilter filter) {
+        QueryUtil.appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+        QueryUtil.appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID()));
+        QueryUtil.appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
+        if ( filter.isExtendedQuery()) {
+            QueryUtil.appendPatientBirthDateFilter(ql, filter.getBirthDateMin(), filter.getBirthDateMax());
+        }
+    }
+
+    private static void setQueryParameters(Query query, StudyListFilter filter, List<String> roles) {
+        if ( filter.isPatientQuery()) {
+            setPatQueryParameters(query, filter);
         } else {
-            setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
-            setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID()));
-            setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
-            if ( filter.isExtendedQuery()) {
-                setPatientBirthDateQueryParameter(query, filter.getBirthDateMin(), filter.getBirthDateMax());
-            }
-            setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
-            setStudyDateMinQueryParameter(query, filter.getStudyDateMin());
-            setStudyDateMaxQueryParameter(query, filter.getStudyDateMax());
-            setModalityQueryParameter(query, filter.getModality());
-            setSourceAETQueryParameter(query, filter.getSourceAETs());
-        }
-    }
-
-    private static void appendPatientNameFilter(StringBuilder ql,
-            String patientName) {
-        QueryUtil.appendPatientName(ql, "p.patientName", ":patientName", patientName);
-    }
-
-    private static void setPatientNameQueryParameter(Query query,
-            String patientName) {
-        QueryUtil.setPatientNameQueryParameter(query, "patientName", patientName);
-    }
-
-    private static void appendPatientIDFilter(StringBuilder ql,
-            String patientID) {
-        QueryUtil.appendANDwithTextValue(ql, "p.patientID", "patientID", patientID);
-    }
-
-    private static void setPatientIDQueryParameter(Query query,
-            String patientID) {
-        QueryUtil.setTextQueryParameter(query, "patientID", patientID);
-    }
-
-    private static void appendIssuerOfPatientIDFilter(StringBuilder ql,
-            String issuerOfPatientID) {
-        QueryUtil.appendANDwithTextValue(ql, "p.issuerOfPatientID", "issuerOfPatientID", issuerOfPatientID);
-    }
-
-    private static void setIssuerOfPatientIDQueryParameter(Query query,
-            String issuerOfPatientID) {
-        QueryUtil.setTextQueryParameter(query, "issuerOfPatientID", issuerOfPatientID);
-    }
-
-    private static void appendPatientBirthDateFilter(StringBuilder ql, Date minDate, Date maxDate) {
-        if (minDate!=null) {
-            if (maxDate==null) {
-                ql.append(" AND p.patientBirthDate >= :birthdateMin");
+            if ( filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
+                QueryUtil.setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
+            } else if (filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())) {
+                QueryUtil.setSeriesInstanceUIDQueryParameter(query, filter.getSeriesInstanceUID());
             } else {
-                ql.append(" AND p.patientBirthDate BETWEEN :birthdateMin AND :birthdateMax");
-                
+                setPatQueryParameters(query, filter);
+                QueryUtil.setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
+                QueryUtil.setStudyDateMinQueryParameter(query, filter.getStudyDateMin());
+                QueryUtil.setStudyDateMaxQueryParameter(query, filter.getStudyDateMax());
+                QueryUtil.setModalityQueryParameter(query, filter.getModality());
+                QueryUtil.setSourceAETQueryParameter(query, filter.getSourceAETs());
             }
-        } else if (maxDate!=null) {
-            ql.append(" AND p.patientBirthDate <= :birthdateMax");
-        }
-    }
-    private static void setPatientBirthDateQueryParameter(Query query, Date minDate, Date maxDate) {
-        if ( minDate!=null)
-            query.setParameter("birthdateMin", sdf.format(minDate));
-        if ( maxDate!=null)
-            query.setParameter("birthdateMax", sdf.format(maxDate));
-    }
-
-    private static void appendStudyDateMinFilter(StringBuilder ql, Date date) {
-        if (date != null) {
-            ql.append(" AND s.studyDateTime >= :studyDateTimeMin");
+            if ((roles != null) && !filter.isPatientQuery())
+                query.setParameter("roles", roles);        
         }
     }
 
-    private static void appendStudyDateMaxFilter(StringBuilder ql, Date date) {
-        if (date != null) {
-            ql.append(" AND s.studyDateTime <= :studyDateTimeMax");
-        }
-    }
-    
-    private static void setStudyDateMinQueryParameter(Query query, Date date) {
-        setStudyDateQueryParameter(query, date, "studyDateTimeMin");
-    }
-
-    private static void setStudyDateMaxQueryParameter(Query query, Date date) {
-        setStudyDateQueryParameter(query, date, "studyDateTimeMax");
-    }
-
-    private static void setStudyDateQueryParameter(Query query,
-            Date studyDate, String param) {
-        if (studyDate != null) {
-            query.setParameter(param, studyDate, TemporalType.TIMESTAMP);
+    private static void setPatQueryParameters(Query query, StudyListFilter filter) {
+        QueryUtil.setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+        QueryUtil.setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID()));
+        QueryUtil.setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
+        if ( filter.isExtendedQuery()) {
+            QueryUtil.setPatientBirthDateQueryParameter(query, filter.getBirthDateMin(), filter.getBirthDateMax());
         }
     }
 
-    private static void appendAccessionNumberFilter(StringBuilder ql,
-            String accessionNumber) {
-        QueryUtil.appendANDwithTextValue(ql, "s.accessionNumber", "accessionNumber", accessionNumber);
-    }
-
-    private static void setAccessionNumberQueryParameter(Query query,
-            String accessionNumber) {
-        QueryUtil.setTextQueryParameter(query, "accessionNumber", accessionNumber);
-    }
-
-    private static void appendPpsWithoutMwlFilter(StringBuilder ql, boolean ppsWithoutMwl) {
-        if (ppsWithoutMwl) {
-            ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE "+
-                    "ser.modalityPerformedProcedureStep IS NOT NULL AND ser.modalityPerformedProcedureStep.accessionNumber IS NULL)");
-        }
-    }
-    
-    private static void setStudyInstanceUIDQueryParameter(Query query,
-            String studyInstanceUID) {
-        if (!QueryUtil.isUniversalMatch(studyInstanceUID)) {
-            query.setParameter("studyInstanceUID", studyInstanceUID);
-        }
-    }
-
-    private static void appendModalityFilter(StringBuilder ql,
-            String modality) {
-        if (!QueryUtil.isUniversalMatch(modality)) {
-            ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE ser.modality = :modality)");
-        }
-    }
-
-    private static void setModalityQueryParameter(Query query,
-            String modality) {
-        if (!QueryUtil.isUniversalMatch(modality)) {
-            query.setParameter("modality", modality);
-        }
-    }
-
-    private static void appendSourceAETFilter(StringBuilder ql,
-            String[] sourceAETs) {
-        if (!QueryUtil.isUniversalMatch(sourceAETs)) {
-            if (sourceAETs.length == 1) {
-                ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE ser.sourceAET = :sourceAET)");
-            } else {
-                ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE ser.sourceAET");
-                QueryUtil.appendIN(ql, sourceAETs.length);
-                ql.append(")");
-            }
-        }
-    }
-
-    private static void setSourceAETQueryParameter(Query query,
-            String[] sourceAETs) {
-        if (!QueryUtil.isUniversalMatch(sourceAETs)) {
-            if (sourceAETs.length == 1) {
-                query.setParameter("sourceAET", sourceAETs[0]);
-            } else {
-                QueryUtil.setParametersForIN(query, sourceAETs);
-            }
-        }
-    }
-
-    private static void appendSeriesInstanceUIDFilter(StringBuilder ql, String seriesInstanceUID) {
-        if (!QueryUtil.isUniversalMatch(seriesInstanceUID)) {
-            ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE ser.seriesInstanceUID = :seriesInstanceUID)");
-        }
-    }
-    
-    private static void setSeriesInstanceUIDQueryParameter(Query query,
-            String seriesInstanceUID) {
-        if (!QueryUtil.isUniversalMatch(seriesInstanceUID)) {
-            query.setParameter("seriesInstanceUID", seriesInstanceUID);
-        }
-    }
 
     public int countStudiesOfPatient(long pk, List<String> roles) {
         if ((roles != null) && (roles.size() == 0)) return 0;
@@ -391,7 +252,7 @@ public class StudyListBean implements StudyListLocal {
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT " + (isCount ? "COUNT(s)" : "s") + " FROM Study s WHERE s.patient.pk=?1");
         if (roles != null)
-            appendDicomSecurityFilter(ql);
+            QueryUtil.appendDicomSecurityFilter(ql);
         if (!isCount)
             ql.append(latestStudyFirst
                   ? " ORDER BY s.studyDateTime DESC"

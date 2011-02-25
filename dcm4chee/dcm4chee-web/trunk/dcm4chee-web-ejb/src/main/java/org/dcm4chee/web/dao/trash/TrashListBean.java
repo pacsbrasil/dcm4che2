@@ -55,6 +55,7 @@ import org.dcm4chee.archive.entity.PrivateInstance;
 import org.dcm4chee.archive.entity.PrivatePatient;
 import org.dcm4chee.archive.entity.PrivateSeries;
 import org.dcm4chee.archive.entity.PrivateStudy;
+import org.dcm4chee.web.dao.folder.StudyListFilter;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.jboss.annotation.ejb.LocalBinding;
 
@@ -80,10 +81,10 @@ public class TrashListBean implements TrashListLocal {
         ql.append("SELECT COUNT(*)");
         appendFromClause(ql, filter, false);
         appendWhereClause(ql, filter);
-        if ((roles != null) && !filter.isPatientsWithoutStudies()) 
+        if ((roles != null) && !filter.isPatientQuery()) 
             appendDicomSecurityFilter(ql);
         Query query = em.createQuery(ql.toString());
-        if ((roles != null) && !filter.isPatientsWithoutStudies())
+        if ((roles != null) && !filter.isPatientQuery())
             query.setParameter("roles", roles);        
         setQueryParameters(query, filter);
         return ((Number) query.getSingleResult()).intValue();
@@ -96,105 +97,68 @@ public class TrashListBean implements TrashListLocal {
         ql.append("SELECT p");
         appendFromClause(ql, filter, true);
         appendWhereClause(ql, filter);
-        if ((roles != null) && !filter.isPatientsWithoutStudies())
+        if ((roles != null) && !filter.isPatientQuery())
             appendDicomSecurityFilter(ql);
         ql.append(" ORDER BY p.patientName");
         Query query = em.createQuery(ql.toString());
-        if ((roles != null) && !filter.isPatientsWithoutStudies())
+        if ((roles != null) && !filter.isPatientQuery())
             query.setParameter("roles", roles);
         setQueryParameters(query, filter);
         return query.setMaxResults(pagesize).setFirstResult(offset).getResultList();
     }
 
     private static void appendFromClause(StringBuilder ql, TrashListFilter filter, boolean fetch) {
-        ql.append(" FROM PrivatePatient p" + (filter.isPatientsWithoutStudies()
-                ? "" : " INNER JOIN " + (fetch ? "FETCH " : "") + "p.studies s"));
+        ql.append(" FROM PrivatePatient p");
+        if (!filter.isPatientQuery() ) {
+            ql.append(" INNER JOIN ");
+            if (fetch) {
+                ql.append("FETCH ");
+            }
+            ql.append("p.studies s");
+        }
     }
 
     private static void appendWhereClause(StringBuilder ql, TrashListFilter filter) {
         ql.append(" WHERE p.privateType = 1");
-        if ( QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) ) {
-            appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
-            appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID()));
-            appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
-            appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
+        if ( filter.isPatientQuery()) {
+            appendPatFilter(ql, filter);
         } else {
-            ql.append(" AND s.studyInstanceUID = :studyInstanceUID");
+            if ( QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) ) {
+                appendPatFilter(ql, filter);
+                QueryUtil.appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
+            } else {
+                ql.append(" AND s.studyInstanceUID = :studyInstanceUID");
+            }
+            QueryUtil.appendSourceAETFilter(ql, new String[]{filter.getSourceAET()});
         }
-        appendSourceAETFilter(ql, filter.getSourceAET());
+    }
+
+    private static void appendPatFilter(StringBuilder ql, TrashListFilter filter) {
+        QueryUtil.appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+        QueryUtil.appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID()));
+        QueryUtil.appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
+    }
+
+    private static void setQueryParameters(Query query, TrashListFilter filter) {
+        if ( filter.isPatientQuery()) {
+            setPatQueryParameters(query, filter);
+        } else {
+            if ( QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) ) {
+                setPatQueryParameters(query, filter);
+                QueryUtil.setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
+            } else {
+                QueryUtil.setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
+            }
+            QueryUtil.setSourceAETQueryParameter(query, new String[]{filter.getSourceAET()});
+        }
+    }
+
+    private static void setPatQueryParameters(Query query, TrashListFilter filter) {
+        QueryUtil.setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+        QueryUtil.setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID()));
+        QueryUtil.setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
     }
     
-    private static void setQueryParameters(Query query, TrashListFilter filter) {
-        if ( QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) ) {
-            setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
-            setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID()));
-            setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
-            setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
-        } else {
-            setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
-        }
-        setSourceAETQueryParameter(query, filter.getSourceAET());
-    }
-
-    private static void appendPatientNameFilter(StringBuilder ql, String patientName) {
-        QueryUtil.appendPatientName(ql, "p.patientName", ":patientName", patientName);
-    }
-
-    private static void setPatientNameQueryParameter(Query query, String patientName) {
-        QueryUtil.setPatientNameQueryParameter(query, "patientName", patientName);
-    }
-
-    private static void appendPatientIDFilter(StringBuilder ql,
-            String patientID) {
-        QueryUtil.appendANDwithTextValue(ql, "p.patientID", "patientID", patientID);
-    }
-
-    private static void setPatientIDQueryParameter(Query query,
-            String patientID) {
-        QueryUtil.setTextQueryParameter(query, "patientID", patientID);
-    }
-
-    private static void appendIssuerOfPatientIDFilter(StringBuilder ql,
-            String issuerOfPatientID) {
-        QueryUtil.appendANDwithTextValue(ql, "p.issuerOfPatientID", "issuerOfPatientID", issuerOfPatientID);
-    }
-
-    private static void setIssuerOfPatientIDQueryParameter(Query query,
-            String issuerOfPatientID) {
-        QueryUtil.setTextQueryParameter(query, "issuerOfPatientID", issuerOfPatientID);
-    }
-
-    private static void appendAccessionNumberFilter(StringBuilder ql,
-            String accessionNumber) {
-        QueryUtil.appendANDwithTextValue(ql, "s.accessionNumber", "accessionNumber", accessionNumber);
-    }
-
-    private static void setAccessionNumberQueryParameter(Query query,
-            String accessionNumber) {
-        QueryUtil.setTextQueryParameter(query, "accessionNumber", accessionNumber);
-    }
-
-    private static void setStudyInstanceUIDQueryParameter(Query query,
-            String studyInstanceUID) {
-        if (!QueryUtil.isUniversalMatch(studyInstanceUID)) {
-            query.setParameter("studyInstanceUID", studyInstanceUID);
-        }
-    }
-
-    private static void appendSourceAETFilter(StringBuilder ql,
-            String sourceAET) {
-        if (!QueryUtil.isUniversalMatch(sourceAET)) {
-            ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE ser.sourceAET = :sourceAET)");
-        }
-    }
-
-    private static void setSourceAETQueryParameter(Query query,
-            String sourceAET) {
-        if (!QueryUtil.isUniversalMatch(sourceAET)) {
-            query.setParameter("sourceAET", sourceAET);
-        }
-    }
-
     public int countStudiesOfPatient(long pk, List<String> roles) {
         if ((roles != null) && (roles.size() == 0)) return 0;
         return ((Number) getStudiesOfPatientQuery(true, pk, roles).getSingleResult()).intValue();

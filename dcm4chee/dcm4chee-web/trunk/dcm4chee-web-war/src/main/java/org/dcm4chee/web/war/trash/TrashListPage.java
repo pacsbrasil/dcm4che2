@@ -192,11 +192,18 @@ public class TrashListPage extends Panel {
 
     @SuppressWarnings("unchecked")
     private void addQueryFields(final TrashListFilter filter, BaseForm form) {
-        IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
+        IModel<Boolean> enabledModelPat = new AbstractReadOnlyModel<Boolean>(){
             private static final long serialVersionUID = 1L;
             @Override
             public Boolean getObject() {
                 return QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
+            }
+        };
+        IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
+            private static final long serialVersionUID = 1L;
+            @Override
+            public Boolean getObject() {
+                return !filter.isPatientQuery() && QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
             }
         };
         
@@ -210,9 +217,9 @@ public class TrashListPage extends Panel {
         searchTableComponents.add(form.createAjaxParent("searchFields"));
         
         form.addPatientNameField("patientName", new PropertyModel<String>(filter, "patientName"),
-                WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModel, false);
-        form.addTextField("patientID", enabledModel, true);
-        form.addTextField("issuerOfPatientID", enabledModel, true);
+                WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModelPat, false);
+        form.addTextField("patientID", enabledModelPat, true);
+        form.addTextField("issuerOfPatientID", enabledModelPat, true);
         form.addTextField("accessionNumber", enabledModel, false);       
         form.addDropDownChoice("sourceAET", null, viewport.getSourceAetChoices(
                 WebCfgDelegate.getInstance().getSourceAETList()), enabledModel, false).setModelObject("*");
@@ -225,14 +232,14 @@ public class TrashListPage extends Panel {
         searchOptions.add(new ResourceModel("trash.searchOptions.patient").wrapOnAssignment(this).getObject());
         searchOptions.add(new ResourceModel("trash.searchOptions.study").wrapOnAssignment(this).getObject());
         final Model<String> searchOptionSelected = new Model<String>(searchOptions.get(1));
-        form.addDropDownChoice("patientsWithoutStudies", searchOptionSelected, searchOptions, 
+        form.addDropDownChoice("queryType", searchOptionSelected, searchOptions, 
                 new Model<Boolean>(true), true)
                 .add(new AjaxFormComponentUpdatingBehavior("onchange") {
                     
                     private static final long serialVersionUID = 1L;
 
                         protected void onUpdate(AjaxRequestTarget target) {
-                            viewport.getFilter().setPatientsWithoutStudies(searchOptionSelected.getObject().equals(searchOptions.get(0)));
+                            viewport.getFilter().setPatientQuery(searchOptionSelected.getObject().equals(searchOptions.get(0)));
                         }
                 });
     }
@@ -374,7 +381,7 @@ public class TrashListPage extends Panel {
             @Override
             public Serializable getObject() {
                 return notSearched ? "trash.search.notSearched" : 
-                    viewport.getFilter().isPatientsWithoutStudies() ? 
+                    viewport.getFilter().isPatientQuery() ? 
                             (viewport.getTotal() == 0 ? "trash.search.noMatchingPatientsFound" : 
                             "trash.search.patientsFound")
                             : (viewport.getTotal() == 0 ? "trash.search.noMatchingStudiesFound" : 
@@ -574,7 +581,7 @@ public class TrashListPage extends Panel {
         retainSelectedPatients();
         for (PrivatePatient patient : patients) {
             PrivPatientModel patientModel = addPatient(patient);
-            if (viewport.getFilter().isPatientsWithoutStudies()) {
+            if (viewport.getFilter().isPatientQuery()) {
                 patientModel.setExpandable(dao.countStudiesOfPatient(patient.getPk(), StudyPermissionHelper.get().getDicomRoles()) > 0);
             } else {
                 StudyListLocal folderDao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);

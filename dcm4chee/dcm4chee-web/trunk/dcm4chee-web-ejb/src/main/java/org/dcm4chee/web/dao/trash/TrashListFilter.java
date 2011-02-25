@@ -55,12 +55,12 @@ public class TrashListFilter implements Serializable {
     private String accessionNumber;
     private String studyInstanceUID;
     private String sourceAET;
-    private boolean patientsWithoutStudies;
+    private boolean patientQuery;
 
     public void clear() {
         patientName = patientID = issuerOfPatientID = accessionNumber = 
             studyInstanceUID = sourceAET = null;
-        patientsWithoutStudies = false;
+        patientQuery = false;
     }
 
     public String getPatientName() {
@@ -112,11 +112,11 @@ public class TrashListFilter implements Serializable {
         this.sourceAET = sourceAET;
     }
 
-    public boolean isPatientsWithoutStudies() {
-        return patientsWithoutStudies;
+    public boolean isPatientQuery() {
+        return patientQuery;
     }
 
-    public void setPatientsWithoutStudies(boolean patientsWithoutStudies) {
-        this.patientsWithoutStudies = patientsWithoutStudies;
+    public void setPatientQuery(boolean patQuery) {
+        this.patientQuery = patQuery;
     }
 }

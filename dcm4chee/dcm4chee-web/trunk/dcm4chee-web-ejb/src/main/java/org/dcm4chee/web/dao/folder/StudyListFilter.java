@@ -66,7 +66,7 @@ public class StudyListFilter implements Serializable {
     private String sourceAET;
     private Map<String,List<String>> sourceAetGroups;
     private String seriesInstanceUID;
-    private boolean patientsWithoutStudies;
+    private boolean patientQuery;
     private boolean latestStudiesFirst;
     private boolean ppsWithoutMwl;
 
@@ -81,7 +81,6 @@ public class StudyListFilter implements Serializable {
         studyDateMin = studyDateMax = null; 
         birthDateMin = birthDateMax = null;
         extendedQuery = false;
-        patientsWithoutStudies = false;
         latestStudiesFirst = false;
         ppsWithoutMwl = false;
     }
@@ -208,12 +207,12 @@ public class StudyListFilter implements Serializable {
         this.seriesInstanceUID = seriesInstanceUID;
     }
     
-    public boolean isPatientsWithoutStudies() {
-        return patientsWithoutStudies;
+    public boolean isPatientQuery() {
+        return patientQuery;
     }
 
-    public void setPatientsWithoutStudies(boolean patientsWithoutStudies) {
-        this.patientsWithoutStudies = patientsWithoutStudies;
+    public void setPatientQuery(boolean patQuery) {
+        this.patientQuery = patQuery;
     }
 
     public boolean isLatestStudiesFirst() {

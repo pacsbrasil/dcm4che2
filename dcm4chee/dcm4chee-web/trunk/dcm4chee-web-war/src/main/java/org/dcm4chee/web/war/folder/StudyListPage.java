@@ -67,6 +67,7 @@ import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
@@ -276,13 +277,24 @@ public class StudyListPage extends Panel {
 
     @SuppressWarnings("unchecked")
     private void addQueryFields(final StudyListFilter filter, final BaseForm form) {
+        final IModel<Boolean> enabledModelPat = new AbstractReadOnlyModel<Boolean>(){
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Boolean getObject() {
+                return (!filter.isExtendedQuery() || 
+                        (QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) && 
+                         QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())));
+            }
+        };
         final IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
             private static final long serialVersionUID = 1L;
 
             @Override
             public Boolean getObject() {
-                return (!filter.isExtendedQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) &&
-                       (!filter.isExtendedQuery() || QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID()));
+                return !filter.isPatientQuery() && (!filter.isExtendedQuery() || 
+                        (QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) && 
+                         QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())));
             }
         };
         
@@ -296,9 +308,9 @@ public class StudyListPage extends Panel {
         searchTableComponents.add(form.createAjaxParent("searchFields"));
         
         form.addPatientNameField("patientName", new PropertyModel<String>(filter, "patientName"),
-                    WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModel, false);
-        form.addTextField("patientID", enabledModel, true);
-        form.addTextField("issuerOfPatientID", enabledModel, true);
+                    WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModelPat, false);
+        form.addTextField("patientID", enabledModelPat, true);
+        form.addTextField("issuerOfPatientID", enabledModelPat, true);
         SimpleDateTimeField dtf = form.addDateTimeField("studyDateMin", new PropertyModel<Date>(filter, "studyDateMin"), 
                 enabledModel, false, true);
         SimpleDateTimeField dtfEnd = form.addDateTimeField("studyDateMax", new PropertyModel<Date>(filter, "studyDateMax"), enabledModel, true, true);
@@ -327,22 +339,28 @@ public class StudyListPage extends Panel {
         extendedFilter.add( new Label("birthDate.label", new ResourceModel("folder.extendedFilter.birthDate.label")));
         extendedFilter.add( new Label("birthDateMin.label", new ResourceModel("folder.extendedFilter.birthDateMin.label")));
         extendedFilter.add( new Label("birthDateMax.label", new ResourceModel("folder.extendedFilter.birthDateMax.label")));
-        SimpleDateTimeField dtfB = form.getDateTextField("birthDateMin", null, "extendedFilter.", enabledModel);
-        SimpleDateTimeField dtfBEnd = form.getDateTextField("birthDateMax", null, "extendedFilter.", enabledModel);
+        SimpleDateTimeField dtfB = form.getDateTextField("birthDateMin", null, "extendedFilter.", enabledModelPat);
+        SimpleDateTimeField dtfBEnd = form.getDateTextField("birthDateMax", null, "extendedFilter.", enabledModelPat);
         dtfB.addToDateField(new CheckOneDayBehaviour(dtfB, dtfBEnd, "onchange"));
         extendedFilter.add(dtfB);
         extendedFilter.add(dtfBEnd);
         extendedFilter.add( new Label("studyInstanceUID.label", new ResourceModel("folder.extendedFilter.studyInstanceUID.label")));
-        extendedFilter.add( new TextField<String>("studyInstanceUID").add(new UIDValidator()));
-
-        extendedFilter.add( new Label("seriesInstanceUID.label", new ResourceModel("folder.extendedFilter.seriesInstanceUID.label")));
-        extendedFilter.add( new TextField<String>("seriesInstanceUID") {
-
+        extendedFilter.add( new TextField<String>("studyInstanceUID"){
             private static final long serialVersionUID = 1L;
 
             @Override
             public boolean isEnabled() {
-                return !filter.isExtendedQuery() || QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
+                return !filter.isPatientQuery();
+            }            
+        }.add(new UIDValidator()));
+
+        extendedFilter.add( new Label("seriesInstanceUID.label", new ResourceModel("folder.extendedFilter.seriesInstanceUID.label")));
+        extendedFilter.add( new TextField<String>("seriesInstanceUID") {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean isEnabled() {
+                return !filter.isPatientQuery() && QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
             }
         }.add(new UIDValidator()));
         form.add(extendedFilter);
@@ -382,23 +400,27 @@ public class StudyListPage extends Panel {
         form.addComponent(link);        
     }
 
-    private void addQueryOptions(BaseForm form) {
+    private void addQueryOptions(final BaseForm form) {
 
-        form.addLabeledCheckBox("latestStudiesFirst", null);
-        form.addLabeledCheckBox("ppsWithoutMwl", null);
+        final CheckBox chkLatestStudyFirst = form.addLabeledCheckBox("latestStudiesFirst", null);
+        final CheckBox chkPpsWoMwl = form.addLabeledCheckBox("ppsWithoutMwl", null);
         
         final List<String> searchOptions = new ArrayList<String>(2);
         searchOptions.add(new ResourceModel("folder.searchOptions.patient").wrapOnAssignment(this).getObject());
         searchOptions.add(new ResourceModel("folder.searchOptions.study").wrapOnAssignment(this).getObject());
         final Model<String> searchOptionSelected = new Model<String>(searchOptions.get(1));
-        form.addDropDownChoice("patientsWithoutStudies", searchOptionSelected, searchOptions, 
+        form.addDropDownChoice("queryType", searchOptionSelected, searchOptions, 
                 new Model<Boolean>(true), true)
                 .add(new AjaxFormComponentUpdatingBehavior("onchange") {
                     
                     private static final long serialVersionUID = 1L;
 
                         protected void onUpdate(AjaxRequestTarget target) {
-                            viewport.getFilter().setPatientsWithoutStudies(searchOptionSelected.getObject().equals(searchOptions.get(0)));
+                            boolean b = searchOptionSelected.getObject().equals(searchOptions.get(0));
+                            viewport.getFilter().setPatientQuery(b);
+                            chkLatestStudyFirst.setEnabled(!b);
+                            chkPpsWoMwl.setEnabled(!b);
+                            BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
                         }
                 });
     }
@@ -541,7 +563,7 @@ public class StudyListPage extends Panel {
             @Override
             public Serializable getObject() {
                 return notSearched ? "folder.search.notSearched" : 
-                    viewport.getFilter().isPatientsWithoutStudies() ? 
+                    viewport.getFilter().isPatientQuery() ? 
                             (viewport.getTotal() == 0 ? "folder.search.noMatchingPatientsFound" : 
                             "folder.search.patientsFound")
                             : (viewport.getTotal() == 0 ? "folder.search.noMatchingStudiesFound" : 
@@ -827,11 +849,7 @@ public class StudyListPage extends Panel {
         retainSelectedPatients();
         for (Patient patient : patients) {
             PatientModel patientModel = addPatient(patient);            
-            List<String> dicomSecurityRoles = studyPermissionHelper.applyStudyPermissions() ?
-                    studyPermissionHelper.getDicomRoles() : null;
-            if (viewport.getFilter().isPatientsWithoutStudies()) {
-                patientModel.setExpandable(dao.countStudiesOfPatient(patient.getPk(), dicomSecurityRoles) > 0);
-            } else {
+            if (!viewport.getFilter().isPatientQuery()) {
                 for (Study study : patient.getStudies()) {
                     List<String> actions = dao.findStudyPermissionActions((study).getStudyInstanceUID(), studyPermissionHelper.getDicomRoles());
                     if (!studyPermissionHelper.applyStudyPermissions()
@@ -840,6 +858,8 @@ public class StudyListPage extends Panel {
                         patientModel.setExpandable(true);
                     }
                 }
+            } else if (WebCfgDelegate.getInstance().forcePatientExpandableForPatientQuery()) {
+                patientModel.setExpandable(true);
             }
         }
     }
