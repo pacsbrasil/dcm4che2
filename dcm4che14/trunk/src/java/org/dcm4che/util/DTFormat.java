@@ -65,41 +65,41 @@ public class DTFormat extends SimpleDateFormat {
     // Methods -------------------------------------------------------
     public Date parse(String source, ParsePosition pos) {        
         calendar.clear();
+        int p = 0;
         try {
             String s = parseTZ(source);
-            int p = 0;
             int l = s.length();
             calendar.set(Calendar.YEAR,
                 Integer.parseInt(s.substring(p,p+4)));
-            pos.setIndex(p+=4);
+            p += 4;
             if (l > p) {
                 if (!Character.isDigit(s.charAt(p))) {
-                    pos.setIndex(++p);
+                    ++p;
                 }
                 calendar.set(Calendar.MONTH,
                     Integer.parseInt(s.substring(p,p+2)) - 1);
-                pos.setIndex(p+=2);
+                p += 2;
                 if (l > p) {
                     if (!Character.isDigit(s.charAt(p))) {
-                        pos.setIndex(++p);
+                        ++p;
                     }
                     calendar.set(Calendar.DAY_OF_MONTH,
                         Integer.parseInt(s.substring(p,p+2)));
-                    pos.setIndex(p+=2);
+                    p += 2;
                     if (l > p) {
                         calendar.set(Calendar.HOUR_OF_DAY,
                             Integer.parseInt(s.substring(p,p+2)));
-                        pos.setIndex(p+=2);
+                        p += 2;
                         if (l > p) {
                             if (s.charAt(p) == ':') {
-                                pos.setIndex(++p);
+                                ++p;
                             }
                             calendar.set(Calendar.MINUTE,
                                 Integer.parseInt(s.substring(p,p+2)));
-                            pos.setIndex(p+=2);
+                            p+=2;
                             if (l > p) {
                                 if (s.charAt(p) == ':') {
-                                    pos.setIndex(++p);
+                                    ++p;
                                 }
                                 float f = Float.parseFloat(s.substring(p));
                                 int i = (int) f;
@@ -114,6 +114,7 @@ public class DTFormat extends SimpleDateFormat {
             pos.setIndex(source.length());
             return calendar.getTime();
         } catch (Exception e) {
+            pos.setErrorIndex(p);
             return null;
         }
     }

@@ -74,23 +74,26 @@ public class DAFormat extends SimpleDateFormat {
     // Methods -------------------------------------------------------
     public Date parse(String s, ParsePosition pos) {        
         calendar.clear();
+        int p = 0;
         try {
-            int l = s.length();
-            int delim = l == 8 ? 0 : l == 10 ? 1 : -1;
-            if (delim < 0) {
-                return null;
-            }
             calendar.set(Calendar.YEAR,
-                Integer.parseInt(s.substring(0,4)));
-            pos.setIndex(4);
+                Integer.parseInt(s.substring(p,p+4)));
+            p += 4;
+            if (!Character.isDigit(s.charAt(p))) {
+                ++p;
+            }
             calendar.set(Calendar.MONTH,
-                Integer.parseInt(s.substring(4 + delim, 6 + delim)) - 1);
-            pos.setIndex(6 + delim + delim);
+                Integer.parseInt(s.substring(p,p+2)) - 1);
+            p += 2;
+            if (!Character.isDigit(s.charAt(p))) {
+                ++p;
+            }
             calendar.set(Calendar.DAY_OF_MONTH,
-                Integer.parseInt(s.substring(6 + delim + delim)));
-            pos.setIndex(l);
+                Integer.parseInt(s.substring(6)));
+            pos.setIndex(s.length());
             return calendar.getTime();
         } catch (Exception e) {
+            pos.setErrorIndex(9);
             return null;
         }
     }

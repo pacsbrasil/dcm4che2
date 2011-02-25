@@ -42,7 +42,6 @@ import java.text.SimpleDateFormat;
 import java.text.ParsePosition;
 import java.util.Date;
 import java.util.Calendar;
-import java.util.TimeZone;
 
 /**
  * <description>
@@ -75,22 +74,22 @@ public class TMFormat extends SimpleDateFormat {
     // Methods -------------------------------------------------------
     public Date parse(String s, ParsePosition pos) {        
         calendar.clear();
+        int p = 0;
         try {
-            int p = 0;
             int l = s.length();
             calendar.set(Calendar.HOUR_OF_DAY,
                 Integer.parseInt(s.substring(p,p+2)));
-            pos.setIndex(p += 2);
+            p += 2;
             if (p < l) {
                 if (s.charAt(p) == ':') {
-                    pos.setIndex(++p);
+                    ++p;
                 }
                 calendar.set(Calendar.MINUTE,
                     Integer.parseInt(s.substring(p,p+2)));
-                pos.setIndex(p += 2);
+                p += 2;
                 if (p < l) {
                     if (s.charAt(p) == ':') {
-                        pos.setIndex(++p);
+                        ++p;
                     }
                     float f = Float.parseFloat(s.substring(p));
                     int i = (int) f;
@@ -99,9 +98,10 @@ public class TMFormat extends SimpleDateFormat {
                         (int) (1000 * (f - i)));
                 }
                 pos.setIndex(l);
-            }            
+            }
             return calendar.getTime();
         } catch (Exception e) {
+            pos.setErrorIndex(p);
             return null;
         }
     }
