@@ -420,6 +420,7 @@ public class StudyListPage extends Panel {
                             viewport.getFilter().setPatientQuery(b);
                             chkLatestStudyFirst.setEnabled(!b);
                             chkPpsWoMwl.setEnabled(!b);
+                            header.expandToLevel(b ? PatientModel.PATIENT_LEVEL : PatientModel.STUDY_LEVEL);
                             BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
                         }
                 });
@@ -847,6 +848,7 @@ public class StudyListPage extends Panel {
     
     private void updatePatients(List<Patient> patients) {
         retainSelectedPatients();
+        boolean forceExpandable = WebCfgDelegate.getInstance().forcePatientExpandableForPatientQuery();
         for (Patient patient : patients) {
             PatientModel patientModel = addPatient(patient);            
             if (!viewport.getFilter().isPatientQuery()) {
@@ -858,7 +860,7 @@ public class StudyListPage extends Panel {
                         patientModel.setExpandable(true);
                     }
                 }
-            } else if (WebCfgDelegate.getInstance().forcePatientExpandableForPatientQuery()) {
+            } else if (forceExpandable) {
                 patientModel.setExpandable(true);
             }
         }
