@@ -285,14 +285,18 @@ public class MWLFindScpService extends AbstractScpService implements
     }
     
     public int findMWLEntries( Dataset rqData, boolean fuzzyMatchingOfPN, 
-            List l, boolean forceLocal ) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        return ((Integer) server.invoke(this.mwlScuServiceName,
-                forceLocal ? "findMWLEntriesLocal":"findMWLEntries", 
-                new Object[] {rqData, fuzzyMatchingOfPN, l}, 
-                new String[] {
-                    Dataset.class.getName(),
-                    boolean.class.getName(),
-                    List.class.getName()}
-                )).intValue();
+            List l, boolean forceLocal ) throws Exception{
+        try {
+            return ((Integer) server.invoke(this.mwlScuServiceName,
+                    forceLocal ? "findMWLEntriesLocal":"findMWLEntries", 
+                    new Object[] {rqData, fuzzyMatchingOfPN, l}, 
+                    new String[] {
+                        Dataset.class.getName(),
+                        boolean.class.getName(),
+                        List.class.getName()}
+                    )).intValue();
+        } catch (MBeanException e) {
+            throw e.getTargetException();
+        }
     }
 }

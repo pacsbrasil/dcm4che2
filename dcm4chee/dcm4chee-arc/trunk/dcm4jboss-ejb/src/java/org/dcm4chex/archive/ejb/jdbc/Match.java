@@ -59,8 +59,8 @@ abstract class Match {
     protected String column;
     protected final boolean type2;
 
-    protected Match(boolean type2) {
-        this.type2 = type2;
+    protected Match() {
+        this.type2 = false;
     }
 
     protected Match(String alias, String field, boolean type2) {
@@ -579,7 +579,6 @@ abstract class Match {
         private final boolean invert;
 
         public Node(String orORand, boolean invert) {
-            super(false);
             this.orORand = orORand;
             this.invert = invert;
         }
@@ -617,7 +616,6 @@ abstract class Match {
         private final String subQueryStr;
 
         public Subquery(SqlBuilder subQuery, String field, String alias) {
-            super(false);
             subQuery.setSubQueryMode(true);
             StringBuffer sb = new StringBuffer();
             if (field == null) { // correlated
@@ -650,54 +648,90 @@ abstract class Match {
 
     public static class PNFuzzy extends Match {
 
-        private String[] columns;
-        private String[] soundex;
+        private final boolean type_2;
+        private final String[] columns;
+        private final String[] soundex;
 
         public PNFuzzy(String[] fields, boolean type2, PersonName pn) {
-            super(type2);
+            type_2 = type2;
             columns = JdbcProperties.getInstance().getProperties(fields);
             soundex = new String[] {
-                    AttributeFilter.toSoundex(pn, PersonName.FAMILY, null),
-                    AttributeFilter.toSoundex(pn, PersonName.GIVEN, null)
+                    AttributeFilter.toSoundexWithLike(pn, PersonName.FAMILY),
+                    AttributeFilter.toSoundexWithLike(pn, PersonName.GIVEN)
             };
+        }
+
+        private static String like(String soundex) {
+            return soundex != null && soundex.endsWith("%") ? " LIKE '" : " = '";
         }
 
         @Override
         protected void appendBodyTo(StringBuffer sb) {
-            if (type2) {
-                sb.append(columns[0]).append(" IN ('*', '");
-                if (soundex[0] != null && soundex[1] != null) {
-                    sb.append(soundex[0]).append("') AND ")
-                        .append(columns[1]).append(" IN ('*', '")
-                        .append(soundex[1]).append("') OR ")
-                        .append(columns[0]).append(" IN ('*', '")
-                        .append(soundex[1]).append("') AND ")
-                        .append(columns[1]).append(" IN ('*', '")
-                        .append(soundex[0]);
+            if (soundex[0] != null && soundex[1] != null) {
+                String[] like = { like(soundex[0]), like(soundex[1]) };
+                if (type_2) {
+                    sb.append('(')
+                        .append(columns[0])
+                        .append(like[0])
+                        .append(soundex[0])
+                        .append("' OR ")
+                        .append(columns[0])
+                        .append(" = '*') AND (")
+                        .append(columns[1])
+                        .append(like[1])
+                        .append(soundex[1])
+                        .append("' OR ")
+                        .append(columns[1])
+                        .append(" = '*') OR (")
+                        .append(columns[0])
+                        .append(like[1])
+                        .append(soundex[1])
+                        .append("' OR ")
+                        .append(columns[0])
+                        .append(" = '*') AND (")
+                        .append(columns[1])
+                        .append(like[0])
+                        .append(soundex[0])
+                        .append("' OR ")
+                        .append(columns[1])
+                        .append(" = '*')");
                 } else {
-                    String soundex0 = soundex[soundex[0] != null ? 0 : 1];
-                    sb.append(soundex0).append("') OR ")
-                        .append(columns[1]).append(" IN ('*', '")
-                        .append(soundex0);
+                    sb.append(columns[0])
+                        .append(like[0])
+                        .append(soundex[0])
+                        .append("' AND ")
+                        .append(columns[1])
+                        .append(like[1])
+                        .append(soundex[1])
+                        .append("' OR ")
+                        .append(columns[0])
+                        .append(like[1])
+                        .append(soundex[1])
+                        .append("' AND ")
+                        .append(columns[1])
+                        .append(like[0])
+                        .append(soundex[0])
+                        .append("'");
                 }
-                sb.append("')");
             } else {
-                sb.append(columns[0]).append(" = '");
-                if (soundex[0] != null && soundex[1] != null) {
-                    sb.append(soundex[0]).append("' AND ")
-                        .append(columns[1]).append(" = '")
-                        .append(soundex[1]).append("' OR ")
-                        .append(columns[0]).append(" = '")
-                        .append(soundex[1]).append("' AND ")
-                        .append(columns[1]).append(" = '")
-                        .append(soundex[0]);
+                String soundex0 = soundex[soundex[0] != null ? 0 : 1];
+                String like0 = like(soundex0);
+                sb.append(columns[0])
+                    .append(like0)
+                    .append(soundex0)
+                    .append("' OR ")
+                    .append(columns[1])
+                    .append(like0)
+                    .append(soundex0);
+                if (type_2) {
+                    sb.append("' OR (")
+                        .append(columns[0])
+                        .append(" = '*' AND ")
+                        .append(columns[1])
+                        .append(" = '*')");
                 } else {
-                    String soundex0 = soundex[soundex[0] != null ? 0 : 1];
-                    sb.append(soundex0).append("' OR ")
-                        .append(columns[1]).append(" = '")
-                        .append(soundex0);
+                    sb.append("'");
                 }
-                sb.append("'");
             }
         }
 

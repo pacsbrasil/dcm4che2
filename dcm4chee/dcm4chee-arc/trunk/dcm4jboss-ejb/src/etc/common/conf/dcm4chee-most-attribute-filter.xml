@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE dcm4chee-attribute-filter SYSTEM "dcm4chee-attribute-filter.dtd">
 <dcm4chee-attribute-filter>
-    <soundex class="org.dcm4che2.soundex.Soundex" />
+    <soundex class="org.dcm4che2.soundex.Soundex" trailing-wildcard="false"/>
+    <!--
+    <soundex class="org.dcm4che2.soundex.ESoundex"/>
+    <soundex class="org.dcm4che2.soundex.ESoundex2"/>
+    <soundex class="org.dcm4che2.soundex.KPhonetik"/>
+    <soundex class="org.dcm4che2.soundex.Metaphone"/>
+    <soundex class="org.dcm4che2.soundex.Phonem"/>
+    -->
     <patient>
         <attr tag="00080005"/> <!-- Specific Character Set -->
         <attr tag="00081120"/> <!-- Referenced Patient Sequence -->

@@ -134,6 +134,9 @@ class AttributeFilterLoader extends DefaultHandler {
             try {
                 AttributeFilter.soundex =
                     (FuzzyStr) Class.forName(clazz).newInstance();
+                AttributeFilter.soundexWithTrailingWildCard = 
+                    "true".equalsIgnoreCase(attributes.getValue("trailing-wildcard"));
+                
             } catch (Exception e) {
                 throw new SAXException(
                         "Failed to instantiate Soundex implementation: "

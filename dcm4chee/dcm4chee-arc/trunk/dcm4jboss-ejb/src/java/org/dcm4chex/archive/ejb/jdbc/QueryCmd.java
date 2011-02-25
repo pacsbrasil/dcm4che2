@@ -295,7 +295,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         }
     }
 
-    protected void addPatientMatch() {
+    protected void addPatientMatch() throws DcmServiceException {
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
         if (pidWithIssuers != null) {
@@ -321,12 +321,18 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             }
         }
         if (fuzzyMatchingOfPN)
-            sqlBuilder.addPNFuzzyMatch(
-                    new String[] {
-                        "Patient.patientFamilyNameSoundex",
-                        "Patient.patientGivenNameSoundex" },
-                    type2,
-                    keys.getString(Tags.PatientName));
+            try {
+                sqlBuilder.addPNFuzzyMatch(
+                        new String[] {
+                            "Patient.patientFamilyNameSoundex",
+                            "Patient.patientGivenNameSoundex" },
+                        type2,
+                        keys.getString(Tags.PatientName));
+            } catch (IllegalArgumentException ex) {
+                throw new DcmServiceException(
+                        Status.IdentifierDoesNotMatchSOPClass,
+                        ex.getMessage() + ": " + keys.get(Tags.PatientName));
+            }
         else
             sqlBuilder.addPNMatch(
                     new String[] {
@@ -408,7 +414,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return key.isEmpty();
     }
 
-    protected void addStudyMatch() {
+    protected void addStudyMatch() throws DcmServiceException {
         AttributeFilter filter = AttributeFilter.getStudyAttributeFilter();
         sqlBuilder.addListOfUidMatch(null, "Study.studyIuid", SqlBuilder.TYPE1,
                 keys.getStrings(Tags.StudyInstanceUID));
@@ -438,12 +444,18 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             }
         }
         if (fuzzyMatchingOfPN)
-            sqlBuilder.addPNFuzzyMatch(
-                    new String[] {
-                        "Study.referringPhysicianFamilyNameSoundex",
-                        "Study.referringPhysicianGivenNameSoundex" },
-                    type2,
-                    keys.getString(Tags.ReferringPhysicianName));
+            try {
+                sqlBuilder.addPNFuzzyMatch(
+                        new String[] {
+                            "Study.referringPhysicianFamilyNameSoundex",
+                            "Study.referringPhysicianGivenNameSoundex" },
+                        type2,
+                        keys.getString(Tags.ReferringPhysicianName));
+            } catch (IllegalArgumentException ex) {
+                throw new DcmServiceException(
+                        Status.IdentifierDoesNotMatchSOPClass,
+                        ex.getMessage() + ": " + keys.get(Tags.ReferringPhysicianName));
+            }
         else 
             sqlBuilder.addPNMatch(
                     new String[] {
@@ -573,7 +585,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return key.isEmpty();
     }
 
-    protected void addSeriesMatch() {
+    protected void addSeriesMatch() throws DcmServiceException {
         AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
         sqlBuilder.addListOfUidMatch(null, "Series.seriesIuid",
                 SqlBuilder.TYPE1, keys.getStrings(Tags.SeriesInstanceUID));
@@ -594,12 +606,19 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         sqlBuilder.addWildCardMatch(null, "Series.institutionalDepartmentName",
                 type2, filter.getStrings(keys, Tags.InstitutionalDepartmentName));
         if (fuzzyMatchingOfPN)
-            sqlBuilder.addPNFuzzyMatch(
-                    new String[] {
-                        "Series.performingPhysicianFamilyNameSoundex",
-                        "Series.performingPhysicianGivenNameSoundex" },
-                    type2,
-                    keys.getString(Tags.PerformingPhysicianName));
+            try {
+                sqlBuilder.addPNFuzzyMatch(
+                        new String[] {
+                            "Series.performingPhysicianFamilyNameSoundex",
+                            "Series.performingPhysicianGivenNameSoundex" },
+                        type2,
+                        keys.getString(Tags.PerformingPhysicianName));
+            } catch (IllegalArgumentException ex) {
+                throw new DcmServiceException(
+                        Status.IdentifierDoesNotMatchSOPClass,
+                        ex.getMessage() + ": " + keys.get(Tags.PerformingPhysicianName));
+            }
+
         else 
             sqlBuilder.addPNMatch(
                     new String[] {
@@ -630,12 +649,18 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             subQuery.addWildCardMatch(null, "SeriesRequest.requestingService",
                     type2, filter.getStrings(rqAttrs, Tags.RequestingService));
             if (fuzzyMatchingOfPN)
-                subQuery.addPNFuzzyMatch(
-                        new String[] {
-                            "SeriesRequest.requestingPhysicianFamilyNameSoundex",
-                            "SeriesRequest.requestingPhysicianGivenNameSoundex" },
-                        type2,
-                        rqAttrs.getString(Tags.RequestingPhysician));
+                try {
+                    subQuery.addPNFuzzyMatch(
+                            new String[] {
+                                "SeriesRequest.requestingPhysicianFamilyNameSoundex",
+                                "SeriesRequest.requestingPhysicianGivenNameSoundex" },
+                            type2,
+                            rqAttrs.getString(Tags.RequestingPhysician));
+                } catch (IllegalArgumentException ex) {
+                    throw new DcmServiceException(
+                            Status.IdentifierDoesNotMatchSOPClass,
+                            ex.getMessage() + ": " + rqAttrs.get(Tags.RequestingPhysician));
+                }
             else 
                 subQuery.addPNMatch(
                         new String[] {
@@ -775,7 +800,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         return false;
     }
 
-    protected void addInstanceMatch() {
+    protected void addInstanceMatch() throws DcmServiceException {
         AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(null);
         sqlBuilder.addListOfUidMatch(null, "Instance.sopIuid",
                 SqlBuilder.TYPE1, keys.getStrings(Tags.SOPInstanceUID));
@@ -812,12 +837,18 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
                     "VerifyingObserver.verificationDateTime", SqlBuilder.TYPE1,
                     voAttrs.getDateRange(Tags.VerificationDateTime));
             if (fuzzyMatchingOfPN)
-                subQuery.addPNFuzzyMatch(
-                        new String[] {
-                            "VerifyingObserver.verifyingObserverFamilyNameSoundex",
-                            "VerifyingObserver.verifyingObserverGivenNameSoundex" },
-                        SqlBuilder.TYPE1,
-                        voAttrs.getString(Tags.VerifyingObserverName));
+                try {
+                    subQuery.addPNFuzzyMatch(
+                            new String[] {
+                                "VerifyingObserver.verifyingObserverFamilyNameSoundex",
+                                "VerifyingObserver.verifyingObserverGivenNameSoundex" },
+                            SqlBuilder.TYPE1,
+                            voAttrs.getString(Tags.VerifyingObserverName));
+                } catch (IllegalArgumentException ex) {
+                    throw new DcmServiceException(
+                            Status.IdentifierDoesNotMatchSOPClass,
+                            ex.getMessage() + ": " + voAttrs.get(Tags.VerifyingObserverName));
+                }
             else 
                 subQuery.addPNMatch(
                         new String[] {

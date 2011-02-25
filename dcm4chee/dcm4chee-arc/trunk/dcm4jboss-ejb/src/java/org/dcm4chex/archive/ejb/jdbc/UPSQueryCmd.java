@@ -43,7 +43,9 @@ import java.sql.Types;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.UPSState;
 import org.dcm4chex.archive.common.Priority;
@@ -68,7 +70,7 @@ public class UPSQueryCmd extends BaseDSQueryCmd {
     private static final String ITEM_CODE = "item_code";
 
     public UPSQueryCmd(Dataset keys, boolean fuzzyMatchingOfPN,
-            boolean noMatchForNoValue) throws SQLException {
+            boolean noMatchForNoValue) throws SQLException, DcmServiceException {
         super(keys, true, noMatchForNoValue, transactionIsolationLevel);
         AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
         defineColumnTypes(new int[] { blobAccessType, blobAccessType });
@@ -163,12 +165,18 @@ public class UPSQueryCmd extends BaseDSQueryCmd {
                     type2,
                     patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
         if (fuzzyMatchingOfPN)
-            sqlBuilder.addPNFuzzyMatch(
-                    new String[] {
-                        "Patient.patientFamilyNameSoundex",
-                        "Patient.patientGivenNameSoundex" },
-                    type2,
-                    keys.getString(Tags.PatientName));
+            try {
+                sqlBuilder.addPNFuzzyMatch(
+                        new String[] {
+                            "Patient.patientFamilyNameSoundex",
+                            "Patient.patientGivenNameSoundex" },
+                        type2,
+                        keys.getString(Tags.PatientName));
+            } catch (IllegalArgumentException ex) {
+                throw new DcmServiceException(
+                        Status.IdentifierDoesNotMatchSOPClass,
+                        ex.getMessage() + ": " + keys.get(Tags.PatientName));
+            }
         else
             sqlBuilder.addPNMatch(
                     new String[] {

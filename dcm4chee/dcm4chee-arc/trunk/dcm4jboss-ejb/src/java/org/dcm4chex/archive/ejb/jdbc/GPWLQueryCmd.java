@@ -45,7 +45,9 @@ import java.util.ArrayList;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.Priority;
 import org.dcm4chex.archive.common.GPSPSStatus;
@@ -79,7 +81,7 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
     private static final String PERF_CODE = "perf_code";
     
     public GPWLQueryCmd(Dataset keys, boolean fuzzyMatchingOfPN)
-            throws SQLException {
+            throws SQLException, DcmServiceException {
         super(keys, true, false, transactionIsolationLevel);
         AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
         defineColumnTypes(new int[] { blobAccessType, blobAccessType });
@@ -125,12 +127,18 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
         Dataset item = keys.getItem(Tags.ScheduledHumanPerformersSeq);
         if (item != null) {
             if (fuzzyMatchingOfPN)
-                sqlBuilder.addPNFuzzyMatch(
-                        new String[] {
-                            "GPSPSPerformer.humanPerformerFamilyNameSoundex",
-                            "GPSPSPerformer.humanPerformerGivenNameSoundex" },
-                        SqlBuilder.TYPE2,
-                        keys.getString(Tags.HumanPerformerName));
+                try {
+                    sqlBuilder.addPNFuzzyMatch(
+                            new String[] {
+                                "GPSPSPerformer.humanPerformerFamilyNameSoundex",
+                                "GPSPSPerformer.humanPerformerGivenNameSoundex" },
+                            SqlBuilder.TYPE2,
+                            keys.getString(Tags.HumanPerformerName));
+                } catch (IllegalArgumentException ex) {
+                    throw new DcmServiceException(
+                            Status.IdentifierDoesNotMatchSOPClass,
+                            ex.getMessage() + ": " + keys.get(Tags.HumanPerformerName));
+                }
             else
                 sqlBuilder.addPNMatch(
                         new String[] {
@@ -160,12 +168,18 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
                     SqlBuilder.TYPE2,
                     patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
         if (fuzzyMatchingOfPN)
-            sqlBuilder.addPNFuzzyMatch(
-                    new String[] {
-                            "Patient.patientFamilyNameSoundex",
-                            "Patient.patientGivenNameSoundex" },
-                    SqlBuilder.TYPE2,
-                    keys.getString(Tags.PatientName));
+            try {
+                sqlBuilder.addPNFuzzyMatch(
+                        new String[] {
+                                "Patient.patientFamilyNameSoundex",
+                                "Patient.patientGivenNameSoundex" },
+                        SqlBuilder.TYPE2,
+                        keys.getString(Tags.PatientName));
+            } catch (IllegalArgumentException ex) {
+                throw new DcmServiceException(
+                        Status.IdentifierDoesNotMatchSOPClass,
+                        ex.getMessage() + ": " + keys.get(Tags.PatientName));
+            }
         else
             sqlBuilder.addPNMatch(
                     new String[] {

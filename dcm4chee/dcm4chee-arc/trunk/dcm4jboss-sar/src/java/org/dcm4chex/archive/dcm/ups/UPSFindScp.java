@@ -99,6 +99,8 @@ class UPSFindScp extends DcmServiceBase {
                             service.isNoMatchForNoValue());
             queryCmd.setFetchSize(service.getFetchSize()).execute();
             return new MultiCFindRsp(queryCmd);
+        } catch (DcmServiceException e) {
+            throw e;
         } catch (Exception e) {
             service.getLog().error("Query DB failed:", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);

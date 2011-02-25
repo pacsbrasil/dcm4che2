@@ -48,9 +48,11 @@ import java.util.List;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.dict.Status;
 import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.AssociationFactory;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.FutureRSP;
 import org.dcm4chex.archive.config.DicomPriority;
@@ -110,8 +112,9 @@ public class GPWLScuService extends AbstractScuService {
 
     /**
      * Get a list of work list entries.
+     * @throws DcmServiceException 
      */
-    public List findGPWLEntries(Dataset searchDS) {
+    public List findGPWLEntries(Dataset searchDS) throws DcmServiceException {
         if (isLocal()) {
             return findGPWLEntriesLocal(searchDS);
         } else {
@@ -122,8 +125,9 @@ public class GPWLScuService extends AbstractScuService {
     /**
      * @param searchDS
      * @return
+     * @throws DcmServiceException 
      */
-    private List findGPWLEntriesLocal(Dataset searchDS) {
+    private List findGPWLEntriesLocal(Dataset searchDS) throws DcmServiceException {
         List l = new ArrayList();
         GPWLQueryCmd queryCmd = null;
         try {
@@ -133,7 +137,7 @@ public class GPWLScuService extends AbstractScuService {
                 l.add(queryCmd.getDataset());
             }
         } catch (SQLException x) {
-            log.error("Exception in findGPWLEntriesLocal! ", x);
+            throw new DcmServiceException(Status.ProcessingFailure, x);
         }
         if (queryCmd != null)
             queryCmd.close();

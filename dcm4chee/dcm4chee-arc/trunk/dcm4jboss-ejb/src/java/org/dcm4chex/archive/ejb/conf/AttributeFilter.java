@@ -58,6 +58,7 @@ import org.dcm4chex.archive.exceptions.ConfigurationException;
 public final class AttributeFilter {
     private static final String CONFIG_URL = "resource:dcm4chee-attribute-filter.xml";
     static FuzzyStr soundex = null;
+    static boolean soundexWithTrailingWildCard;
     static AttributeFilter excludePatientFilter;
     static AttributeFilter patientFilter;
     static AttributeFilter studyFilter;
@@ -256,6 +257,10 @@ public final class AttributeFilter {
         return soundex != null;
     }
 
+    public static boolean isSoundexWithTrailingWildCardEnabled() {
+        return soundexWithTrailingWildCard;
+    }
+
     public static String toSoundex(PersonName pn, int field, String defval) {
         if (soundex == null)
             throw new IllegalStateException("Soundex disabled");
@@ -265,5 +270,36 @@ public final class AttributeFilter {
                 return fuzzy;
         }
         return defval;
+    }
+
+    public static String toSoundexWithLike(PersonName pn, int field) {
+        if (soundex == null)
+            throw new IllegalStateException("Soundex disabled");
+        if (pn != null) {
+            String s = pn.get(field);
+            if (s != null) {
+                if (s.indexOf('?') != -1)
+                    throw new IllegalArgumentException(
+                            "Unsupported Wildcard with fuzzy matching");
+
+                int wc = s.indexOf('*');
+                if (wc != -1) {
+                    int endIndex = s.length()-1;
+                    if (!soundexWithTrailingWildCard || wc != endIndex)
+                        throw new IllegalArgumentException(
+                                "Unsupported Wildcard with fuzzy matching");
+
+                    String fuzzy = soundex.toFuzzy(s.substring(0, endIndex));
+                    if (fuzzy.length() > 0)
+                        return fuzzy + '%';
+                    
+                } else {
+                    String fuzzy = soundex.toFuzzy(s);
+                    if (fuzzy.length() > 0)
+                        return fuzzy;
+                }
+            }
+        }
+        return null;
     }
 }

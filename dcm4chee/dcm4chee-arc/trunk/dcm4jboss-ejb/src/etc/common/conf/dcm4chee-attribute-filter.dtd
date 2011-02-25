@@ -5,7 +5,7 @@ This is the XML DTD for the dcm4chee attribute filter descriptor.
 
 Minimal descriptor for DICOM Standard Conformance of Query/Retrieve Service:
   <dcm4chee-attribute-filter>
-    <soundex class="org.dcm4che2.soundex.Soundex" />
+    <soundex class="org.dcm4che2.soundex.Soundex" trailingWildCard="false"/>
     <patient>
         <attr tag="00080005"/>
         <attr tag="00100010" case-sensitive="false"/>
@@ -41,6 +41,7 @@ Minimal descriptor for DICOM Standard Conformance of Query/Retrieve Service:
 
 <!ELEMENT soundex EMPTY>
 <!ATTLIST soundex class CDATA #REQUIRED>
+<!ATTLIST soundex trailing-wildcard (true | false) "true">
 
 <!ELEMENT patient (attr)*>
 <!ATTLIST patient tsuid CDATA #IMPLIED>

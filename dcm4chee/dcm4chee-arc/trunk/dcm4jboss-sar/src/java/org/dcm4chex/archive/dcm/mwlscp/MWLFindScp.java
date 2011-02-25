@@ -106,6 +106,8 @@ public class MWLFindScp extends DcmServiceBase {
             int pendingStatus = service.findMWLEntries(rqData,
                     fuzzyMatchingOfPN, l, forceLocal);
             return new MultiCFindRsp(l, pendingStatus);
+        } catch (DcmServiceException dse) {
+            throw dse;
         } catch (Exception e) {
             log.error("Forwarding request to proxy failed!", e);
             throw new DcmServiceException(Status.ProcessingFailure, e);

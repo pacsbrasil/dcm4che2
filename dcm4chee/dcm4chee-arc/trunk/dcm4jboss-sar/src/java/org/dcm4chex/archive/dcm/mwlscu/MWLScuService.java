@@ -53,6 +53,7 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4cheri.util.StringUtils;
@@ -203,9 +204,10 @@ public class MWLScuService extends AbstractScuService {
 
     /**
      * Get a list of work list entries.
+     * @throws DcmServiceException 
      */
     public int findMWLEntries(Dataset searchDS, boolean fuzzyMatchingOfPN,
-                List result) {
+                List result) throws DcmServiceException {
         log.debug("Query MWL SCP: " + calledAET + " with keys:");
         log.debug(searchDS);
         if (isLocal()) {
@@ -218,9 +220,10 @@ public class MWLScuService extends AbstractScuService {
     /**
      * @param searchDS
      * @return
+     * @throws DcmServiceException 
      */
     public int findMWLEntriesLocal(Dataset searchDS,
-            boolean fuzzyMatchingOfPN, List result) {
+            boolean fuzzyMatchingOfPN, List result) throws DcmServiceException {
         MWLQueryCmd queryCmd = null;
         try {
             queryCmd = new MWLQueryCmd(searchDS, fuzzyMatchingOfPN,
@@ -238,8 +241,7 @@ public class MWLScuService extends AbstractScuService {
             }
             return 0xff00;
         } catch (SQLException x) {
-            log.error("Exception in findMWLEntriesLocal! ", x);
-            return Status.ProcessingFailure;
+            throw new DcmServiceException(Status.ProcessingFailure, x);
         } finally {
             if (queryCmd != null)
                 queryCmd.close();
