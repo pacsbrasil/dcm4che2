@@ -152,13 +152,17 @@ public class FileCopyOrder extends BaseJmsOrder {
                         .append(((FileInfo) fi).fileID).append("\n");
             }
         } else if (ian != null) {
-            sb.append("\n\tIAN Dataset: \n");
-            StringWriter sw = new StringWriter();
-            try {
-                ian.dumpDataset(sw, null);
-                sb.append(sw.toString());
-            } catch (Throwable e) {
-                sb.append("Failed to dump dataset due to: " + e.getMessage());
+            if (log.isDebugEnabled()) {
+                sb.append("\n\tIAN Dataset: \n");
+                StringWriter sw = new StringWriter();
+                try {
+                    ian.dumpDataset(sw, null);
+                    sb.append(sw.toString());
+                } catch (Throwable e) {
+                    sb.append("Failed to dump dataset due to: " + e.getMessage());
+                }
+            } else {
+                sb.append("\n\tIAN ").append(ian);
             }
         }
         sb.append("\n");
