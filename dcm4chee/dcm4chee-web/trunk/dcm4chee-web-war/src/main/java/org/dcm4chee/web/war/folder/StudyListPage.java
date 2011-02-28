@@ -1429,7 +1429,8 @@ public class StudyListPage extends Panel {
                 
             }
                 .add(new Image("selectImg",ImageManager.IMAGE_COMMON_SEARCH)
-                .add(new ImageSizeBehaviour()))
+                .add(new ImageSizeBehaviour())
+                .add(tooltip))
                 .setVisible(studyPermissionHelper.checkPermission(seriesModel, StudyPermission.READ_ACTION))
                 .add(new SecurityBehavior(getModuleName() + ":imageSelectionSeriesLink"))
             );
