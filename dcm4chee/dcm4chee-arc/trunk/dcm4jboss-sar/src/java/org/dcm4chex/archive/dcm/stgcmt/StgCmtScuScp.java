@@ -63,6 +63,8 @@ import org.jboss.logging.Logger;
  */
 public class StgCmtScuScp extends DcmServiceBase {
 
+    private static final String RESULT_XSL = "stgcmt-neventreportrq.xsl";
+
     private final StgCmtScuScpService service;
 
     private final Logger log;
@@ -145,6 +147,12 @@ public class StgCmtScuScp extends DcmServiceBase {
         }
         checkRefSopSeq(refSOPSeq, false);
         checkRefSopSeq(failedSOPSeq, true);
+        final Association a = assoc.getAssociation();
+        final String aet = a.getCallingAET();
+        Dataset coerce = service.getCoercionAttributesFor(aet, RESULT_XSL, data, a);
+        if (coerce != null) {
+            service.coerceAttributes(data, coerce);
+        }
         service.commited(data);
         return null;
     }
