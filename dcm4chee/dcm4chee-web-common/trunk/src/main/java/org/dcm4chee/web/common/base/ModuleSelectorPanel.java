@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
@@ -51,10 +53,12 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.protocol.http.WebRequest;
 import org.dcm4chee.web.common.secure.SecureAjaxTabbedPanel;
 
 /**
@@ -73,20 +77,32 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
     public ModuleSelectorPanel(String id) {
         super(id);
 
-        add(new AjaxFallbackLink<Object>("logout") {
-            
-            private static final long serialVersionUID = 1L;
-            
-            @Override
-            public void onClick(final AjaxRequestTarget target) {
-                getSession().invalidate();
-                setResponsePage(LoginPage.class);
+        String authType = ((WebRequest) RequestCycle.get().getRequest()).getHttpServletRequest().getAuthType();
+        if (authType != null && authType.equals("BASIC"))
+            add(new Link<Object>("logout") {
+                
+                private static final long serialVersionUID = 1L;
+
+                public void onClick() {}
             }
-            @Override
-            public boolean isVisible() {
-                return showLogout;
-            }
-        }.add(new Label("logoutLabel", new ResourceModel("logout"))));
+            .add(new Label("logoutLabel", new ResourceModel("logout")))
+            .setEnabled(false))
+            .add(new AttributeModifier("title", true, new ResourceModel("logout.notSupported"))); 
+        else
+            add(new AjaxFallbackLink<Object>("logout") {
+                
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+                public void onClick(final AjaxRequestTarget target) {
+                    getSession().invalidate();
+                    setResponsePage(LoginPage.class);
+                }
+                @Override
+                public boolean isVisible() {
+                    return showLogout;
+                }
+            }.add(new Label("logoutLabel", new ResourceModel("logout"))));
 
         List<String> languages = new ArrayList<String>();
         languages.add("en");
