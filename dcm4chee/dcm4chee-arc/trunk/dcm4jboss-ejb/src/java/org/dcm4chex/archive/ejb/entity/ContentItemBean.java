@@ -49,6 +49,7 @@ import javax.naming.NamingException;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocal;
 import org.dcm4chex.archive.ejb.interfaces.CodeLocalHome;
 
@@ -138,13 +139,19 @@ public abstract class ContentItemBean implements EntityBean {
     /**
      * @ejb.create-method
      */
-    public Long ejbCreate(Dataset item) throws CreateException {
+    public Long ejbCreate(Dataset item, int maxLength) throws CreateException {
         setRelationshipType(item.getString(Tags.RelationshipType));
-        setTextValue(item.getString(Tags.TextValue));
+        setTextValue(truncate(item.getString(Tags.TextValue), maxLength));
         return null;
     }
 
-    public void ejbPostCreate(Dataset item) throws CreateException {
+    private String truncate(String s, int maxLength) {
+        return s != null && s.length() > maxLength
+                ? s.substring(0, maxLength)
+                : s;
+    }
+
+    public void ejbPostCreate(Dataset item, int maxLength) throws CreateException {
         try {
             setConceptName(CodeBean.valueOf(codeHome,
                     item.getItem(Tags.ConceptNameCodeSeq)));

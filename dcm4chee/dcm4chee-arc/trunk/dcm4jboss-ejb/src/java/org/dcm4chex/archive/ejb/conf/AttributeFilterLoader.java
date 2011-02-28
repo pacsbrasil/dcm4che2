@@ -109,6 +109,13 @@ class AttributeFilterLoader extends DefaultHandler {
             }
             AttributeFilter.instanceFilters.put(cuid,
                     filter = makeFilter(attributes));
+            String s = attributes.getValue("content-item-text-value-max-length");
+            try {
+                filter.setContentItemTextValueMaxLength(Integer.parseInt(s));
+            } catch (IllegalArgumentException e) {
+                throw new SAXException(
+                        "illegal content-item-text-value-max-length: " + s);
+            }
         } else if (qName.equals("series")) {
             if (AttributeFilter.seriesFilter != null) {
                 throw new SAXException("more than one series element");
