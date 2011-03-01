@@ -67,11 +67,13 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
     private SeriesModel series1;
     private int numberOfInstances;
     private int numberOfSeries;
+    private Boolean hasForeignPpsInfo;
     
     public PPSModel(MPPS mpps, SeriesModel series1, StudyModel studyModel) {
         if (mpps != null) {
             setPk(mpps.getPk());
             this.dataset = mpps.getAttributes();
+            hasForeignPpsInfo = false;
         }
         setParent(studyModel);
         series1.setPPS(this);
@@ -179,6 +181,19 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
             }
         }
         return numberOfSeries;
+    }
+    
+    public boolean hasForeignPpsInfo() {
+        if (hasForeignPpsInfo == null) {
+            hasForeignPpsInfo = false;
+            for (int i = 0, len = seriess.size() ; i < len ; i++) {
+                if (seriess.get(i).getPPSUid() != null) {
+                    hasForeignPpsInfo = true;
+                    break;
+                }
+            }
+        }
+        return hasForeignPpsInfo.booleanValue();
     }
 
     public int getNumberOfInstances() {

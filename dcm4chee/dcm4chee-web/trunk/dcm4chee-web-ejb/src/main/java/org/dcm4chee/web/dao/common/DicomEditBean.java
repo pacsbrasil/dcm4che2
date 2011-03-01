@@ -519,6 +519,21 @@ public class DicomEditBean implements DicomEditLocal {
         em.remove(series);
     }
     
+    public int removeForeignPpsInfo(long studyPk) {
+        int count = 0;
+        Study study = em.find(Study.class, studyPk);
+        for (Series s : study.getSeries()) {
+            if (s.getPerformedProcedureStepInstanceUID() != null && s.getModalityPerformedProcedureStep() == null) {
+                DicomObject attrs = s.getAttributes(true);
+                attrs.remove(Tag.ReferencedPerformedProcedureStepSequence);
+                s.setAttributes(attrs);
+                em.merge(s);
+                count++;
+            }
+        }
+        return count;
+    }
+    
     public Study updateStudy(Study study) {
         if (study.getPk() == -1) {
             if (study.getPatient().getPk() == -1) {

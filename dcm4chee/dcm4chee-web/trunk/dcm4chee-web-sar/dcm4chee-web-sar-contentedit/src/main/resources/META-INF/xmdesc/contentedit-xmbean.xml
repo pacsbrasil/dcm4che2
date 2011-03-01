@@ -533,5 +533,18 @@
       </parameter>
       <return-type>org.dcm4chee.archive.entity.Series</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Remove foreign PPS Info from series of study given by studyPk.<br />
+      		Series with foreign PPS Infos have a Performed Procedure Step Sequence item but no MPPS referenced!<br />
+      		Return number of updated series.
+      		]]> </description>
+      <name>removeForeignPpsInfo</name>
+      <parameter>
+        <description>Primary key of Study</description>
+        <name>studyPk</name>
+        <type>long</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>
 
 </mbean>

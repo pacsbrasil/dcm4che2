@@ -812,6 +812,9 @@ public class StudyListPage extends Panel {
                 log.info("Emulate MPPS for Study:"+ppsModel.getStudy().getStudyInstanceUID());
                 int success = -1;
                 try {
+                    if (ppsModel.hasForeignPpsInfo()) {
+                        ContentEditDelegate.getInstance().removeForeignPpsInfo(ppsModel.getStudy().getPk());
+                    }
                     success = MppsEmulateDelegate.getInstance().emulateMpps(ppsModel.getStudy().getPk());
                 } catch (Throwable t) {
                     log.error("Emulate MPPS failed!", t);
@@ -1302,7 +1305,9 @@ public class StudyListPage extends Panel {
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     confirmEmulateMpps.confirm(target, 
-                            new StringResourceModel("folder.message.confirmEmulate",this, null), ppsModel);
+                            new StringResourceModel(ppsModel.hasForeignPpsInfo() ? 
+                                    "folder.message.confirmEmulate" : "folder.message.confirmForcedEmulate"
+                                    ,this, null), ppsModel);
                     
                 }
 

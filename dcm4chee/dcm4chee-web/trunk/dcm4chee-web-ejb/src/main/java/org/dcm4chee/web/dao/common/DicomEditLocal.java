@@ -86,4 +86,5 @@ public interface DicomEditLocal {
     Study updateStudy(Study study);
     Study createStudy(DicomObject studyAttrs, long patPk);
     void removeStudy(long studyPk);
+    int removeForeignPpsInfo(long studyPk);
 }

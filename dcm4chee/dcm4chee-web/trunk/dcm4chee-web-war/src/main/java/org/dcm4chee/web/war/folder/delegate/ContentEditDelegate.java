@@ -194,6 +194,17 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
             return -1;
         }
     }
+    
+    public int removeForeignPpsInfo(long studyPk) {
+        try {
+            return (Integer) server.invoke(serviceObjectName, "removeForeignPpsInfo", 
+                new Object[]{studyPk}, 
+                new String[]{long.class.getName()});
+        } catch (Exception x) {
+            log.error("Failed to remove foreign PPS Info for study! pk:"+studyPk, x);
+            return -1;
+        }
+    }
 
     private void checkAllOnline(SelectedEntities selected) throws SelectionException {
         for ( StudyModel m : selected.getStudies()) {

@@ -593,6 +593,10 @@ public class ContentEditService extends ServiceMBeanSupport {
         return false;
     }
     
+    public int removeForeignPpsInfo(long studyPk) {
+        return this.lookupDicomEditLocal().removeForeignPpsInfo(studyPk);
+    }
+    
     private void updateSeriesAttributes(MppsToMwlLinkResult result) throws InstanceNotFoundException, MBeanException, ReflectionException {
         DicomObject coerce = getCoercionAttrs(result.getMwl().getAttributes());
         if ( coerce != null && !coerce.isEmpty()) {
