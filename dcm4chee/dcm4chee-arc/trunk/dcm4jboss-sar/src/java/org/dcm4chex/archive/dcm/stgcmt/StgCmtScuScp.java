@@ -149,11 +149,15 @@ public class StgCmtScuScp extends DcmServiceBase {
         checkRefSopSeq(failedSOPSeq, true);
         final Association a = assoc.getAssociation();
         final String aet = a.getCallingAET();
-        Dataset coerce = service.getCoercionAttributesFor(aet, RESULT_XSL, data, a);
-        if (coerce != null) {
-            service.coerceAttributes(data, coerce);
-        }
-        service.commited(data);
+        if (service.trustStgCmtFromAET(aet)) {
+            Dataset coerce = service
+                    .getCoercionAttributesFor(aet, RESULT_XSL, data, a);
+            if (coerce != null)
+                service.coerceAttributes(data, coerce);
+            service.commited(data);
+        } else
+            log.info("Do not trust Storage Commitment Result received from "
+                    + aet);
         return null;
     }
 

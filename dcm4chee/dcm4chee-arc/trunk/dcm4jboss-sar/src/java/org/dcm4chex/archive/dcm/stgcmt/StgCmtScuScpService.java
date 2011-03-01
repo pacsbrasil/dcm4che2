@@ -52,22 +52,15 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.Map.Entry;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
-import javax.management.InstanceNotFoundException;
 import javax.management.JMException;
-import javax.management.ListenerNotFoundException;
-import javax.management.Notification;
-import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
 import org.dcm4che.data.Command;
@@ -94,10 +87,8 @@ import org.dcm4che.net.RoleSelection;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
-import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
-import org.dcm4chex.archive.dcm.storescp.StoreScpService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
@@ -146,6 +137,8 @@ public class StgCmtScuScpService extends AbstractScpService implements
     private LinkedHashMap<String,String> requestStgCmtFromAETs =
             new LinkedHashMap<String,String>();
 
+    private String[] trustStgCmtFromAETs;
+
     private StgCmtScuScp stgCmtScuScp = new StgCmtScuScp(this);
 
     private long receiveResultInSameAssocTimeout;
@@ -181,7 +174,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
         }
     }
 
-    public final String getRequestStgCmtFromAETs() {
+    public String getRequestStgCmtFromAETs() {
         if (requestStgCmtFromAETs.isEmpty())
             return NONE;
 
@@ -198,7 +191,7 @@ public class StgCmtScuScpService extends AbstractScpService implements
         return sb.toString();
     }
 
-    public final void setRequestStgCmtFromAETs(String aets) {
+    public void setRequestStgCmtFromAETs(String aets) {
         requestStgCmtFromAETs.clear();
         if (aets != null && aets.length() > 0 && !aets.equalsIgnoreCase(NONE)) {
             String[] a = StringUtils.split(aets, '\\');
@@ -216,10 +209,30 @@ public class StgCmtScuScpService extends AbstractScpService implements
         }
     }
 
-    String getStgCmtAET(String moveDest) {
-        return requestStgCmtFromAETs.get(moveDest);
+    public String getTrustStgCmtFromAETs() {
+        return trustStgCmtFromAETs == null ? ANY
+                : trustStgCmtFromAETs.length == 0 ? NONE
+                : StringUtils.toString(trustStgCmtFromAETs, '\\');
     }
- 
+
+    public void setTrustStgCmtFromAETs(String aets) {
+        String trim = aets.trim();
+        trustStgCmtFromAETs = trim.equalsIgnoreCase(ANY) ? null
+                            : trim.equalsIgnoreCase(NONE) ? new String[0]
+                            : StringUtils.split(trim, '\\');
+    }
+
+    boolean trustStgCmtFromAET(String aet) {
+        if (trustStgCmtFromAETs == null)
+            return true;
+        
+        for (String trust : trustStgCmtFromAETs)
+            if (aet.equals(trust))
+                return true;
+        
+        return false;
+    }
+
     public final String getScuRetryIntervalls() {
         return scuRetryIntervalls.toString();
     }

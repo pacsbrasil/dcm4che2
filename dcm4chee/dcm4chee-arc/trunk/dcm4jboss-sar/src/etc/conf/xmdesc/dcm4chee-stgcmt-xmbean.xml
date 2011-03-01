@@ -72,6 +72,23 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTrustStgCmtFromAETs"
+      setMethod="setTrustStgCmtFromAETs">
+      <description><![CDATA[AE titles of trusted Storage Commitment SCPs.
+      Only Storage Commitment results received from these sources will cause
+      to mark referenced instances as external retrievable.
+      Separate multiple values with a \(backslash). 
+      <br><tt>NONE</tt> = Do not mark instances as external retrievable.
+      <br><tt>ANY</tt> = Trust Storage Commitment results from any Storage
+      Commitment SCP.]]> 
+      </description>
+      <name>TrustStorageCommitFromAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getReceiveResultInSameAssocTimeout"
       setMethod="setReceiveResultInSameAssocTimeout">
       <description>Time in milliseconds that the Storage Commit SCU waits to 
