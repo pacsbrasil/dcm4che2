@@ -11,7 +11,7 @@
     <name>dcm4che</name>
   </organization>
   <name>dcm4che</name>
-  <description>dcm4che DICOM toolkit</description>
+  <description>dcm4che DICOM toolkit</description>  
   <modules>
     <module>dcm4che-audit</module>
     <module>dcm4che-base64</module>
@@ -28,6 +28,7 @@
     <module>dcm4che-soundex</module>
     <module>dcm4che-tool</module>
   </modules>
+  
   <build>
     <plugins>
       <plugin>
@@ -77,6 +78,7 @@
       </plugin>
     </plugins>
   </build>
+  
   <reporting>
     <plugins>
       <plugin>
