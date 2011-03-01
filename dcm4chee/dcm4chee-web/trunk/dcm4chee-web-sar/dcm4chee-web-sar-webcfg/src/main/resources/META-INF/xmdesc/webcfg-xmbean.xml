@@ -649,22 +649,22 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isUseStudyPermissions"
-      setMethod="setUseStudyPermissions">
+      getMethod="isManageStudyPermissions"
+      setMethod="setManageStudyPermissions">
       <description><![CDATA[Let the web users manage study permissions using the web interface.
       ]]></description>
-      <name>useStudyPermissions</name>
+      <name>manageStudyPermissions</name>
       <type>boolean</type>
       <descriptors>
          <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="isWebStudyPermissions"
-      setMethod="setWebStudyPermissions">
+      getMethod="isUseStudyPermissions"
+      setMethod="setUseStudyPermissions">
       <description><![CDATA[Apply the study permissions to the web application features.
       ]]></description>
-      <name>webStudyPermissions</name>
+      <name>useStudyPermissions</name>
       <type>boolean</type>
       <descriptors>
          <value value="true"/>

@@ -87,8 +87,8 @@ public class StudyPermissionHelper implements Serializable {
     private String newline = System.getProperty("line.separator");
 
     private List<String> dicomRoles;
+    private boolean manageStudyPermissions;
     private boolean useStudyPermissions;
-    private boolean webStudyPermissions;
     private StudyPermissionRight studyPermissionRight;
 
     public static StudyPermissionHelper get() {
@@ -126,7 +126,6 @@ public class StudyPermissionHelper implements Serializable {
             urlConnection = (HttpURLConnection) new URL("http://localhost:8080/dcm4chee-web3-dicom/dicom-security-servlet").openConnection();
             WebRequest webRequest = ((WebRequest) RequestCycle.get().getRequest());
             Cookie[] cookies = webRequest.getCookies();
-System.out.println("COOKIES ARE: " + cookies);
             if (cookies == null) 
                 return;           
             StringBuffer cookieValue = new StringBuffer();
@@ -138,7 +137,6 @@ System.out.println("COOKIES ARE: " + cookies);
                     .append(";");
             }
             urlConnection.setRequestProperty("Cookie", cookieValue.toString());
-            System.out.println("cookieString: " + cookieValue.toString());
             urlConnection.connect();
             in = urlConnection.getInputStream();
             Reader reader = new InputStreamReader(in);
@@ -147,20 +145,8 @@ System.out.println("COOKIES ARE: " + cookies);
             while ((reader.read(buf)) >= 0)
                 returnValue.append(buf);
             reader.close();
-            
-System.out.println("RETURNED: " + returnValue);
             if (returnValue.length() > 0) 
                 setDicomRoles(returnValue.toString());
-
-System.out.println(" --- DONE --- ");
-
-System.out.println(" Listing dicom roles ...");
- List<String> xxx = getDicomRoles();
- System.out.println("DICOM ROLES ARE: " + xxx);
- if (xxx == null) return;
-for (String dicomRole : getDicomRoles())
-    System.out.println("r: " + dicomRole);
-
         } catch (IOException e) {
             log.error(getClass().getName() + ": ", e);
         } finally {
@@ -177,17 +163,17 @@ for (String dicomRole : getDicomRoles())
 
     private void setStudyPermissionParameters() {
         studyPermissionRight = StudyPermissionRight.NONE;
+        manageStudyPermissions = WebCfgDelegate.getInstance().getManageStudyPermissions();
         useStudyPermissions = WebCfgDelegate.getInstance().getUseStudyPermissions();
-        webStudyPermissions = WebCfgDelegate.getInstance().getWebStudyPermissions();
     }
     
     public boolean applyStudyPermissions() {
-        return isWebStudyPermissions() 
+        return isUseStudyPermissions() 
             && !getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL);
     }
     
     private void setDicomRoles(Subject dicomSubject) {
-        if (!useStudyPermissions && !webStudyPermissions) {
+        if (!manageStudyPermissions && !useStudyPermissions) {
             dicomRoles = null;
         } else {
             dicomRoles = new ArrayList<String>();
@@ -204,28 +190,26 @@ for (String dicomRole : getDicomRoles())
     }
 
     private void setDicomRoles(String dicomRoleString) {
-System.out.println("CONDITION: " + (!useStudyPermissions && !webStudyPermissions));
-        if (!useStudyPermissions && !webStudyPermissions) {
+        if (!manageStudyPermissions && !useStudyPermissions) 
             dicomRoles = null;
-        } else 
+        else 
             dicomRoles = Arrays.asList(dicomRoleString.split(newline));
-System.out.println("DICOM ROLES FROM STRING: " + dicomRoles);
     }
     
     public List<String> getDicomRoles() {
         return dicomRoles;
     }
     
-    public boolean useStudyPermissions() {
+    public boolean manageStudyPermissions() {
+        return manageStudyPermissions;
+    }
+
+    public void setUseStudyPermissions(boolean useStudyPermissions) {
+        this.useStudyPermissions = useStudyPermissions;
+    }
+
+    public boolean isUseStudyPermissions() {
         return useStudyPermissions;
-    }
-
-    public void setWebStudyPermissions(boolean webStudyPermissions) {
-        this.webStudyPermissions = webStudyPermissions;
-    }
-
-    public boolean isWebStudyPermissions() {
-        return webStudyPermissions;
     }
 
     public void setStudyPermissionRight(StudyPermissionRight studyPermissionRight) {
@@ -237,7 +221,7 @@ System.out.println("DICOM ROLES FROM STRING: " + dicomRoles);
     }
     
     public boolean checkPermission(Set<? extends AbstractDicomModel> c, String action) {
-        if (!isWebStudyPermissions()
+        if (!isUseStudyPermissions()
         || (dicomRoles == null))
             return true;
         if (dicomRoles.size() == 0)
@@ -253,7 +237,7 @@ System.out.println("DICOM ROLES FROM STRING: " + dicomRoles);
     }
     
     public boolean checkPermission(AbstractDicomModel m, String action) {
-        if ((!isWebStudyPermissions())
+        if ((!isUseStudyPermissions())
         || (dicomRoles == null))
             return true;
         if (dicomRoles.size() == 0)

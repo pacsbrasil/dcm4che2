@@ -129,8 +129,8 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     private List<String> roleTypes = new ArrayList<String>();
 
+    private boolean manageStudyPermissions;
     private boolean useStudyPermissions;
-    private boolean webStudyPermissions;
 
     private boolean forcePatientExpandableForPatientQuery;
     
@@ -705,20 +705,20 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         updateList(roleTypes, s);
     }
 
+    public void setManageStudyPermissions(boolean manageStudyPermissions) {
+        this.manageStudyPermissions = manageStudyPermissions;
+    }
+
+    public boolean isManageStudyPermissions() {
+        return manageStudyPermissions;
+    }
+
     public void setUseStudyPermissions(boolean useStudyPermissions) {
         this.useStudyPermissions = useStudyPermissions;
     }
 
     public boolean isUseStudyPermissions() {
         return useStudyPermissions;
-    }
-
-    public void setWebStudyPermissions(boolean webStudyPermissions) {
-        this.webStudyPermissions = webStudyPermissions;
-    }
-
-    public boolean isWebStudyPermissions() {
-        return webStudyPermissions;
     }
     
     protected static final long serialVersionUID = 1L;

@@ -38,15 +38,17 @@
 
 package org.dcm4chee.web.war;
 
+import javax.security.auth.Subject;
+import javax.security.jacc.PolicyContext;
+
 import org.apache.wicket.Page;
 import org.apache.wicket.Request;
 import org.apache.wicket.Response;
 import org.apache.wicket.security.authentication.LoginException;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.SSOLoginContext;
-
-import javax.security.auth.Subject;
-import javax.security.jacc.PolicyContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -54,6 +56,8 @@ import javax.security.jacc.PolicyContext;
  * @since 31.08.2010
  */
 public class WicketApplication extends BaseWicketApplication {
+    
+    protected static Logger log = LoggerFactory.getLogger(WicketApplication.class);
     
     @Override
     public Class<? extends Page> getHomePage() {
@@ -66,15 +70,14 @@ public class WicketApplication extends BaseWicketApplication {
         try {
             jaasSubject = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
         } catch (Exception x) {
-            x.printStackTrace();
+            log.error(getClass().getName() + ": Failed to get subject from javax.security.auth.Subject.container", x);
         }
         AuthenticatedWebSession session = new AuthenticatedWebSession(this, request);
         if (jaasSubject != null) {
             try {
                 session.login(new SSOLoginContext(session, jaasSubject));
             } catch (LoginException x) {
-                // TODO Auto-generated catch block
-                x.printStackTrace();
+                log.error(getClass().getName() + ": Failed login", x);
             }
         }
         return session;

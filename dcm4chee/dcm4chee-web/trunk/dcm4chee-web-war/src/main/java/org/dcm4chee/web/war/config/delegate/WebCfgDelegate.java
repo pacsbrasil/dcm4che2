@@ -80,12 +80,12 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return getString("studyPermissionsOwnRolename");
     }
 
-    public boolean getUseStudyPermissions() {
-        return getBoolean("useStudyPermissions", true);
+    public boolean getManageStudyPermissions() {
+        return getBoolean("manageStudyPermissions", true);
     }
 
-    public boolean getWebStudyPermissions() {
-        return getBoolean("webStudyPermissions", true);
+    public boolean getUseStudyPermissions() {
+        return getBoolean("useStudyPermissions", true);
     }
 
     public String getWadoBaseURL() {
