@@ -7,16 +7,16 @@
 </head>
 <wicket:panel>
 	<div class="imageSelectWindow">
-	    <div class="imageSelectHeader">
+	    <div class="msgWindow_header">
 	    	<span wicket:id="showSeries">Show 1-n of x Series</span>
             <a wicket:id="selectAll"></a>
             <a wicket:id="deselectAll" />
 	    	<span wicket:id="seriesNavigator">Nav</span>
 	    </div>
-		<table wicket:id="data" class="imageSelect">
+		<table wicket:id="data" class="folded-table imageSelect">
 		  <tbody wicket:id="seriesListView" align="left" valign="top" >
-		    <tr>
-		    	<td class="imageSelectSeriesHeader" colspan="5">
+		    <tr class="series">
+		    	<td colspan="5">
 		    		<wicket:message key="folder.imageselect.dateTimeLabel" />
 		    		<span wicket:id="datetime">seriesDateTime</span>
 		    		<wicket:message key="folder.imageselect.seriesDescrLabel" />
