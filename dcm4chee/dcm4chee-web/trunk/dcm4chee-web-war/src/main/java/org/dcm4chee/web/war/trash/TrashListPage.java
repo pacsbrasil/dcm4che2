@@ -40,6 +40,8 @@ package org.dcm4chee.web.war.trash;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -427,7 +429,10 @@ public class TrashListPage extends Panel {
                 try {
                     FileImportOrder fio = new FileImportOrder();
                     List<PrivateFile> files = getFilesToRestore();
-                  
+                    Collections.sort(files, new Comparator<PrivateFile>() {
+                        public int compare(PrivateFile f1, PrivateFile f2) {
+                            return f2.getFileSystem().getAvailability().compareTo(f1.getFileSystem().getAvailability());
+                        }});
                     for (PrivateFile privateFile : files) {
                         DicomObject dio = dao.getDicomAttributes(privateFile.getPk());
                         File file = new File();
