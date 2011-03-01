@@ -3,12 +3,12 @@
   <parent>
     <artifactId>dcm4chee-audit-parent</artifactId>
     <groupId>dcm4che.dcm4chee</groupId>
-    <version>2.16.1</version>
+    <version>2.16.2</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>dcm4che.dcm4chee</groupId>
   <artifactId>dcm4chee-audit-logger</artifactId>
-  <version>2.16.1</version>
+  <version>2.16.2</version>
   <name>JMX Service for emitting DICOM Supp95 Audit Trail Messages</name>
   <dependencies>
     <dependency>
