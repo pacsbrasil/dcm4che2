@@ -127,7 +127,8 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
                 : FileUtils.formatSize(minFreeDiskSpace);
     }
 
-    public long getMinFreeDiskSpaceBytes() {
+    @Override
+	public long getMinFreeDiskSpaceBytes() {
         return minFreeDiskSpace;
     }
 
@@ -140,7 +141,8 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         return FileUtils.formatSize(expectedDataVolumePerDay);
     }
 
-    public long getExpectedDataVolumePerDayBytes() throws Exception {
+    @Override
+	public long getExpectedDataVolumePerDayBytes() throws Exception {
         Calendar now = Calendar.getInstance();
         if (adjustExpectedDataVolumePerDay != 0
                 && now.getTimeInMillis() > adjustExpectedDataVolumePerDay) {
@@ -267,7 +269,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
     }
 };
 
-    private NotificationListener deleteOrphanedPrivateFilesListener =
+    private final NotificationListener deleteOrphanedPrivateFilesListener =
             new NotificationListener() {
         private Thread thread;
 
@@ -458,7 +460,11 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
     }
     
     protected FileSystemDTO addRWFileSystem( FileSystemDTO fsDTO ) throws Exception {
-        return fileSystemMgt().addAndLinkFileSystem( fsDTO );
+        FileSystemDTO dto = fileSystemMgt().addAndLinkFileSystem( fsDTO );
+        if (dto.getStatus() == FileSystemStatus.DEF_RW){
+        	storageFileSystem = dto;
+        }
+    	return dto; 
     }
 
     private FileSystemDTO mkFileSystemDTO(String dirPath, int status) {
@@ -477,7 +483,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
                 .removeFileSystem(getFileSystemGroupID(), dirPath);
         if (storageFileSystem != null
                 && storageFileSystem.getPk() == fsDTO.getPk()) {
-            storageFileSystem = null;
+            selectStorageFileSystem();
         }
         return fsDTO;
     }
@@ -493,10 +499,8 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         FileSystemDTO fsDTO = fileSystemMgt().updateFileSystemStatus(
                 getFileSystemGroupID(), dirPath,
                 FileSystemStatus.toInt(status));
-        if (storageFileSystem != null
-                && storageFileSystem.getPk() == fsDTO.getPk()) {
-            storageFileSystem = null;
-        }
+        selectStorageFileSystem();
+        
         return fsDTO;
     }
 
@@ -726,7 +730,8 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         return false;
     }
 
-    protected String showTriggerInfo() {
+    @Override
+	protected String showTriggerInfo() {
         StringBuilder sb = new StringBuilder();
         sb.append("Trigger intervall: ").append(getScheduleStudiesForDeletionInterval())
         .append("\nTrigger on SeriesStored:").append(scheduleStudiesForDeletionOnSeriesStored);
