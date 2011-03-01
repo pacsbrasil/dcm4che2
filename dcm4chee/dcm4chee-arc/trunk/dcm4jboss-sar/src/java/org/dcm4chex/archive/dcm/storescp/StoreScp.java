@@ -767,40 +767,48 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     private void logCoercion(Dataset ds, Dataset coerced) {
-    	if ( coerced.size() > 0 ) {
-    		StringBuilder sb = new StringBuilder();
-    		for ( Iterator<DcmElement> i = coerced.iterator(); i.hasNext(); ) {
-    			DcmElement coercedElement = i.next();
-    			DcmElement originalElement = ds.get(coercedElement.tag());
-    			if ( originalElement != null ) {
-    				String originalValue = originalElement.toString();
-    				String coercedValue = coercedElement.toString();
-    				if ( !originalValue.equals(coercedValue) ) {
-    					if ( sb.length() > 0 ) sb.append(";");
-    					sb.append(" [");
-						sb.append(originalValue);
-		    			sb.append("->");
-						sb.append(coercedValue);
-		    			sb.append("]");
-    				}
-    			}
-    		}
-    		if ( sb.length() > 0 ) {
-    			sb.insert(0, "The following elements were coerced during storage: ");
-		    	HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-		    	PatientRecordMessage msg = new PatientRecordMessage(PatientRecordMessage.UPDATE);
-		    	msg.addUserPerson(userInfo.getUserId(), null, null, userInfo.getHostName(), true);
-		    	PersonName pn = ds.getPersonName(Tags.PatientName);
-		    	String pname = pn != null ? pn.format() : null;
-		    	ParticipantObject patient = msg.addPatient(ds.getString(Tags.PatientID), pname);
-		    	patient.addParticipantObjectDetail("Description", sb.toString());
-		    	msg.validate();
-		    	Logger.getLogger("auditlog").info(msg);
-    		}
-    	}
-	}
+        if (coerced.size() > 0) {
+            StringBuilder sb = new StringBuilder();
+            for (Iterator<DcmElement> i = coerced.iterator(); i.hasNext();) {
+                DcmElement coercedElement = i.next();
+                DcmElement originalElement = ds.get(coercedElement.tag());
+                if (originalElement != null) {
+                    String originalValue = originalElement.toString();
+                    String coercedValue = coercedElement.toString();
+                    if (!originalValue.equals(coercedValue)) {
+                        if (sb.length() > 0)
+                            sb.append(";");
+                        sb.append(" [");
+                        sb.append(originalValue);
+                        sb.append("->");
+                        sb.append(coercedValue);
+                        sb.append("]");
+                    }
+                }
+            }
+            if (sb.length() > 0) {
+                sb.insert(0,
+                        "The following elements were coerced during storage: ");
+                HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
+                        .isEnableDNSLookups());
+                PatientRecordMessage msg = new PatientRecordMessage(
+                        PatientRecordMessage.UPDATE);
+                msg.addUserPerson(userInfo.getUserId(), null, null, userInfo
+                        .getHostName(), true);
+                PersonName pn = ds.getPersonName(Tags.PatientName);
+                String pname = pn != null ? pn.format() : null;
+                ParticipantObject patient = msg.addPatient(ds
+                        .getString(Tags.PatientID), pname);
+                patient
+                        .addParticipantObjectDetail("Description", sb
+                                .toString());
+                msg.validate();
+                Logger.getLogger("auditlog").info(msg);
+            }
+        }
+    }
 
-	private String[] selectReferencedDirectoryURI(String uri) {
+    private String[] selectReferencedDirectoryURI(String uri) {
         if ( referencedDirectoryPath == null ) {
             log.debug("ReferencedDirectoryPath is set to ALL! uri:"+uri);
             try {
