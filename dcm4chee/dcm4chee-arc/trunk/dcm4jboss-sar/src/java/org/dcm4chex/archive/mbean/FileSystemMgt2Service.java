@@ -480,7 +480,11 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
     }
     
     protected FileSystemDTO addRWFileSystem( FileSystemDTO fsDTO ) throws Exception {
-        return fileSystemMgt().addAndLinkFileSystem( fsDTO );
+        FileSystemDTO dto = fileSystemMgt().addAndLinkFileSystem( fsDTO );
+        if (dto.getStatus() == FileSystemStatus.DEF_RW){
+        	storageFileSystem = dto;
+        }
+    	return dto; 
     }
 
     private FileSystemDTO mkFileSystemDTO(String dirPath, int status) {
@@ -499,7 +503,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
                 .removeFileSystem(getFileSystemGroupID(), dirPath);
         if (storageFileSystem != null
                 && storageFileSystem.getPk() == fsDTO.getPk()) {
-            storageFileSystem = null;
+            selectStorageFileSystem();
         }
         return fsDTO;
     }
@@ -515,13 +519,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         FileSystemDTO fsDTO = fileSystemMgt().updateFileSystemStatus(
                 getFileSystemGroupID(), dirPath,
                 FileSystemStatus.toInt(status));
-        if (storageFileSystem != null
-                && storageFileSystem.getPk() == fsDTO.getPk()) {
-            storageFileSystem = null;
-            if (minFreeDiskSpaceRatio > 0) {
-                minFreeDiskSpace = -1;
-            }
-        }
+		selectStorageFileSystem();
         return fsDTO;
     }
 
