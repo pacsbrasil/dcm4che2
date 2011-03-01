@@ -167,19 +167,19 @@ public class ExportPage extends SecureWebPage {
         form.addLabel("selectedPats");
         form.add( new Label("selectedPatsValue", new PropertyModel<Integer>(exportInfo, "nrOfPatients")));
         form.add( new Label("deniedPatsValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfPatients"))
-            .setVisible(studyPermissionHelper.isWebStudyPermissions()));
+            .setVisible(studyPermissionHelper.isUseStudyPermissions()));
         form.addLabel("selectedStudies");
         form.add( new Label("selectedStudiesValue", new PropertyModel<Integer>(exportInfo, "nrOfStudies")));
         form.add( new Label("deniedStudiesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfStudies"))
-            .setVisible(studyPermissionHelper.isWebStudyPermissions()));
+            .setVisible(studyPermissionHelper.isUseStudyPermissions()));
         form.addLabel("selectedSeries");
         form.add( new Label("selectedSeriesValue", new PropertyModel<Integer>(exportInfo, "nrOfSeries")));
         form.add( new Label("deniedSeriesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfSeries"))
-            .setVisible(studyPermissionHelper.isWebStudyPermissions()));
+            .setVisible(studyPermissionHelper.isUseStudyPermissions()));
         form.addLabel("selectedInstances");
         form.add( new Label("selectedInstancesValue", new PropertyModel<Integer>(exportInfo, "nrOfInstances")));
         form.add( new Label("deniedInstancesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfInstances"))
-            .setVisible(studyPermissionHelper.isWebStudyPermissions()));
+            .setVisible(studyPermissionHelper.isUseStudyPermissions()));
         form.add(new DropDownChoice<AE>("destinationAETs", destinationModel, destinationAETs, new IChoiceRenderer<AE>(){
             private static final long serialVersionUID = 1L;
 
@@ -443,7 +443,7 @@ public class ExportPage extends SecureWebPage {
             List<Study> studies = getStudiesOfPatient(pat);
             int allowed = 0;
             for (Study study : studies) {
-                boolean denied = StudyPermissionHelper.get().isWebStudyPermissions()
+                boolean denied = StudyPermissionHelper.get().isUseStudyPermissions()
                 &&  !(dao.findStudyPermissionActions(study.getStudyInstanceUID(), StudyPermissionHelper.get().getDicomRoles())
                                         .contains(StudyPermission.EXPORT_ACTION));
                 if (!denied) {
@@ -468,7 +468,7 @@ public class ExportPage extends SecureWebPage {
         private void prepareStudyRequests(List<StudyModel> studies) {
             ArrayList<String> uids = new ArrayList<String>();
             for (StudyModel study : studies ) {
-                boolean denied = StudyPermissionHelper.get().isWebStudyPermissions()
+                boolean denied = StudyPermissionHelper.get().isUseStudyPermissions()
                 &&  !(dao.findStudyPermissionActions(study.getStudyInstanceUID(), StudyPermissionHelper.get().getDicomRoles())
                                         .contains(StudyPermission.EXPORT_ACTION));
                 if (study.isSelected()) {

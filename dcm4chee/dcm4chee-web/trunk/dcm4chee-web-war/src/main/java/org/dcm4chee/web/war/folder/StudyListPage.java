@@ -655,7 +655,7 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                boolean hasIgnored = selected.update(studyPermissionHelper.isWebStudyPermissions(), 
+                boolean hasIgnored = selected.update(studyPermissionHelper.isUseStudyPermissions(), 
                         viewport.getPatients(), StudyPermission.DELETE_ACTION);
                 selected.deselectChildsOfSelectedEntities();
                 confirmDelete.setRemark(hasIgnored ? new StringResourceModel("folder.message.deleteNotAllowed",this, null) : null);
@@ -1017,7 +1017,7 @@ public class StudyListPage extends Panel {
                 private static final long serialVersionUID = 1L;
                 @Override
                 public boolean isVisible() {
-                    return !studyPermissionHelper.isWebStudyPermissions() 
+                    return !studyPermissionHelper.isUseStudyPermissions() 
                         && webviewerLinkProvider.supportPatientLevel();
                 }
             }
@@ -1150,7 +1150,7 @@ public class StudyListPage extends Panel {
                 private static final long serialVersionUID = 1L;
                 @Override
                 public boolean isVisible() {
-                    return !studyPermissionHelper.isWebStudyPermissions() 
+                    return !studyPermissionHelper.isUseStudyPermissions() 
                         && webviewerLinkProvider.supportStudyLevel();
                 }
             }
@@ -1452,7 +1452,7 @@ public class StudyListPage extends Panel {
                 private static final long serialVersionUID = 1L;
                 @Override
                 public boolean isVisible() {
-                    return !studyPermissionHelper.isWebStudyPermissions() 
+                    return !studyPermissionHelper.isUseStudyPermissions() 
                         && webviewerLinkProvider.supportSeriesLevel();
                 }
             }
@@ -1531,7 +1531,7 @@ public class StudyListPage extends Panel {
                 private static final long serialVersionUID = 1L;
                 @Override
                 public boolean isVisible() {
-                    return !studyPermissionHelper.isWebStudyPermissions() 
+                    return !studyPermissionHelper.isUseStudyPermissions() 
                         && webviewerLinkProvider.supportInstanceLevel();
                 }
             }
@@ -1689,7 +1689,7 @@ public class StudyListPage extends Panel {
             
             @Override
             public boolean isVisible() {
-                return model.getDataset()!= null && (!studyPermissionHelper.isWebStudyPermissions() 
+                return model.getDataset()!= null && (!studyPermissionHelper.isUseStudyPermissions() 
                     || checkEditStudyPermission(model));
             }
         };
@@ -1740,7 +1740,7 @@ public class StudyListPage extends Panel {
             
             @Override
             public boolean isVisible() {
-                return studyPermissionHelper.useStudyPermissions() 
+                return studyPermissionHelper.isManageStudyPermissions() 
                     && model.getDataset() != null
                     && !(model instanceof PatientModel && !((PatientModel) model).isExpandable());
             }
@@ -1753,7 +1753,7 @@ public class StudyListPage extends Panel {
     }
 
     private boolean checkEditStudyPermission(AbstractDicomModel model) {
-        if (!studyPermissionHelper.isWebStudyPermissions()
+        if (!studyPermissionHelper.isUseStudyPermissions()
                 || (model instanceof PatientModel))
             return true;
         return studyPermissionHelper.checkPermission(model, StudyPermission.UPDATE_ACTION);

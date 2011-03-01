@@ -388,7 +388,7 @@ public class StudyPermissionsPage extends SecureWebPage {
 
     private boolean checkStudyPermissionRights(Role role, boolean permitOnlyGrantAll) {
         StudyPermissionHelper sph = StudyPermissionHelper.get();
-        if (!sph.useStudyPermissions() || sph.getStudyPermissionRight().equals(StudyPermissionRight.ALL))
+        if (!sph.isUseStudyPermissions() || sph.getStudyPermissionRight().equals(StudyPermissionRight.ALL))
             return true;
         if ((permitOnlyGrantAll) || (role == null)) 
             return false;

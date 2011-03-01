@@ -256,7 +256,7 @@ public class MoveEntitiesPage extends SecureWebPage {
     
     private boolean checkStudyPermissionOfSelection() {
         StudyPermissionHelper sph = StudyPermissionHelper.get();
-        if (!sph.isWebStudyPermissions())
+        if (!sph.isUseStudyPermissions())
             return true;
         String action = (selected.getPatients().size() > 0) ? StudyPermission.DELETE_ACTION : StudyPermission.APPEND_ACTION;
         if (selected.getStudies().size() > 0) {

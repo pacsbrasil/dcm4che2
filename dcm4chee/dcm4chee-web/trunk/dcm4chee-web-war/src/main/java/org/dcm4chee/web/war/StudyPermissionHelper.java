@@ -200,7 +200,7 @@ public class StudyPermissionHelper implements Serializable {
         return dicomRoles;
     }
     
-    public boolean manageStudyPermissions() {
+    public boolean isManageStudyPermissions() {
         return manageStudyPermissions;
     }
 
