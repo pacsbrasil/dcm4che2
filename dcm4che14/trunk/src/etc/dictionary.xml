@@ -1147,6 +1147,7 @@
   <element tag="(0028,0110)" name="Smallest Image Pixel Value in Plane" vr="US,SS" vm="1" key="SmallestImagePixelValueInPlane" />
   <element tag="(0028,0111)" name="Largest Image Pixel Value in Plane" vr="US,SS" vm="1" key="LargestImagePixelValueInPlane" />
   <element tag="(0028,0120)" name="Pixel Padding Value" vr="US,SS" vm="1" key="PixelPaddingValue" />
+  <element tag="(0028,0121)" name="Pixel Padding Range Limit" vr="US,SS" vm="1" key="PixelPaddingRangeLimit" />
   <element tag="(0028,0200)" name="Image Location (Retired)" key="ImageLocationRetired" retired="true" />
   <element tag="(0028,0300)" name="Quality Control Image" vr="CS" vm="1" key="QualityControlImage" />
   <element tag="(0028,0301)" name="Burned In Annotation" vr="CS" vm="1" key="BurnedInAnnotation" />
