@@ -336,6 +336,9 @@ public class ORMService extends AbstractHL7Service {
             String aet = mpps.getString(Tags.PerformedStationAET);
             Templates xslt = null;
             try {
+                if ( aeTemplates.getTemplatesServiceName() == null) {
+                    aeTemplates.setTemplatesServiceName(this.getTemplatesServiceName());
+                }
                 xslt = aeTemplates.getTemplatesForAET(aet, MWL2STORE_XSL);
             } catch (Exception x) {
                 log.error("Internal error to get template for "+MWL2STORE_XSL, x);
