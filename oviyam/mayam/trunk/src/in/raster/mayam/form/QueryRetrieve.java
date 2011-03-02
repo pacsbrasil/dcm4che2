@@ -178,14 +178,14 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
         fromSpinner = new javax.swing.JSpinner();
         toSpinner = new javax.swing.JSpinner();
         jPanel10 = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        birthDateSpinner = new javax.swing.JSpinner();
         jLabel2 = new javax.swing.JLabel();
         patientNameText = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         patientIDText = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
-        accessionNoText = new javax.swing.JTextField();
-        jLabel5 = new javax.swing.JLabel();
-        birthDateSpinner = new javax.swing.JSpinner();
+        jTextField3 = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
         ctCheckBox = new javax.swing.JCheckBox();
         mrCheckBox = new javax.swing.JCheckBox();
@@ -294,15 +294,15 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
 
         jPanel10.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
+        jLabel5.setText("Date Of Birth");
+
+        birthDateSpinner.setEnabled(false);
+
         jLabel2.setText("Patient Name");
 
         jLabel3.setText("Patient ID");
 
         jLabel4.setText("Accession #");
-
-        jLabel5.setText("Date Of Birth");
-
-        birthDateSpinner.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout jPanel10Layout = new org.jdesktop.layout.GroupLayout(jPanel10);
         jPanel10.setLayout(jPanel10Layout);
@@ -311,40 +311,42 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
             .add(jPanel10Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel2)
+                    .add(jLabel5)
                     .add(jLabel4)
                     .add(jLabel3)
-                    .add(jLabel5))
-                .add(10, 10, 10)
+                    .add(jLabel2))
                 .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(org.jdesktop.layout.GroupLayout.TRAILING, patientNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE)
-                        .add(org.jdesktop.layout.GroupLayout.TRAILING, patientIDText)
-                        .add(accessionNoText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, birthDateSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 141, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                    .add(jPanel10Layout.createSequentialGroup()
+                        .add(18, 18, 18)
+                        .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, patientNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, patientIDText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)))
+                    .add(jPanel10Layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextField3)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, birthDateSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 125, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .add(28, 28, 28))
         );
         jPanel10Layout.setVerticalGroup(
             jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel10Layout.createSequentialGroup()
+                .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(patientNameText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel2))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(patientIDText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel3))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jTextField3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel4))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel10Layout.createSequentialGroup()
-                        .add(patientNameText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(patientIDText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(jPanel10Layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .add(60, 60, 60)
-                        .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel4)
-                            .add(accessionNoText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(birthDateSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel5))
-                .addContainerGap())
+                    .add(birthDateSpinner)
+                    .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 28, Short.MAX_VALUE))
+                .add(20, 20, 20))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -472,12 +474,15 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        serverListTable.setFont(new java.awt.Font("Courier", 1, 12)); // NOI18N
         serverListTable.setModel(new ServerTableModel());
         serverListTable.setDefaultRenderer(Object.class, new CellRenderer());
-        serverListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 20));
-        Font font=serverListTable.getTableHeader().getFont();
-        serverListTable.getTableHeader().setFont(new Font(font.getName(),Font.PLAIN,11));
+        serverListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));
+        Font ff=new Font("Courier New",Font.BOLD,12);
+        serverListTable.getTableHeader().setFont(ff);
         serverListTable.setRowHeight(20);
+        serverListTable.getTableHeader().setForeground(new Color(255,138,0));
+        serverListTable.getTableHeader().setBackground(new Color(0,0,0));
         serverlistScroll.setViewportView(serverListTable);
 
         verifyButton.setText("Verify");
@@ -513,7 +518,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
                 .add(retrieveButton)
                 .add(47, 47, 47)
                 .add(jLabel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 198, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(124, Short.MAX_VALUE))
+                .addContainerGap(126, Short.MAX_VALUE))
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -524,6 +529,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
                 .add(jLabel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
+        studyListTable.setFont(new java.awt.Font("Courier", 0, 13)); // NOI18N
         studyListTable.setModel(new StudyListModel());
         studyListTable.setDefaultRenderer(Object.class, new CellRenderer());
         studyListTable.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -532,28 +538,30 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
             }
         });
         studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));
-        Font f=studyListTable.getTableHeader().getFont();
-        studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.PLAIN,14));
+        Font f=new Font("Courier New",Font.BOLD,14);
+        studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.BOLD,14));
         studyListTable.setRowHeight(25);
+        studyListTable.getTableHeader().setForeground(new Color(255,138,0));
+        studyListTable.getTableHeader().setBackground(new Color(0,0,0));
         jScrollPane2.setViewportView(studyListTable);
 
-        serverNameLabel.setBackground(new java.awt.Color(117, 113, 113));
-        serverNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
-        serverNameLabel.setForeground(new java.awt.Color(0, 0, 104));
+        serverNameLabel.setBackground(new java.awt.Color(0, 0, 0));
+        serverNameLabel.setFont(new java.awt.Font("Courier New", 1, 16)); // NOI18N
+        serverNameLabel.setForeground(new java.awt.Color(255, 138, 0));
         serverNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         serverNameLabel.setText(" Server Name");
         serverNameLabel.setOpaque(true);
 
-        headerLabel.setBackground(new java.awt.Color(117, 113, 113));
-        headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
-        headerLabel.setForeground(new java.awt.Color(0, 0, 104));
+        headerLabel.setBackground(new java.awt.Color(0, 0, 0));
+        headerLabel.setFont(new java.awt.Font("Courier New", 1, 16)); // NOI18N
+        headerLabel.setForeground(new java.awt.Color(255, 138, 0));
         headerLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         headerLabel.setText(" DICOM Nodes ");
         headerLabel.setOpaque(true);
 
-        jLabel1.setBackground(new java.awt.Color(117, 113, 113));
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13));
-        jLabel1.setForeground(new java.awt.Color(0, 0, 104));
+        jLabel1.setBackground(new java.awt.Color(0, 0, 0));
+        jLabel1.setFont(new java.awt.Font("Courier New", 1, 16)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 138, 0));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Query Filter");
         jLabel1.setOpaque(true);
@@ -570,38 +578,38 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
                         .addContainerGap())
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel9Layout.createSequentialGroup()
                         .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(serverlistScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, serverNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
-                            .add(headerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE))
+                            .add(serverlistScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, serverNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
+                            .add(headerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel9Layout.createSequentialGroup()
-                                .add(jPanel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(30, 30, 30))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                                 .add(jPanel9Layout.createSequentialGroup()
                                     .add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE)
                                     .add(22, 22, 22))
                                 .add(jPanel9Layout.createSequentialGroup()
                                     .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
-                                    .addContainerGap()))))))
+                                    .addContainerGap()))
+                            .add(jPanel9Layout.createSequentialGroup()
+                                .add(jPanel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(30, 30, 30))))))
         );
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel9Layout.createSequentialGroup()
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(headerLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(headerLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(serverlistScroll, 0, 0, Short.MAX_VALUE)
                     .add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(serverNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(serverNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jPanel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -622,7 +630,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
     private void setPatientInfoToQueryParam() {
         queryParam.setPatientId(patientIDText.getText());
         queryParam.setPatientName(patientNameText.getText());
-        queryParam.setAccessionNo(accessionNoText.getText());
+        queryParam.setAccessionNo(jTextField3.getText());
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
         Date d1 = (Date) birthDateSpinner.getModel().getValue();
         String dateOfBirth = sdf.format(d1);
@@ -987,7 +995,6 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField accessionNoText;
     private javax.swing.JRadioButton anydateRadio;
     private javax.swing.JRadioButton betweenRadio;
     private javax.swing.JSpinner birthDateSpinner;
@@ -1010,6 +1017,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextField jTextField3;
     private javax.swing.JRadioButton lastmonthRadio;
     private javax.swing.JRadioButton lastweekRadio;
     private javax.swing.JCheckBox mgCheckBox;

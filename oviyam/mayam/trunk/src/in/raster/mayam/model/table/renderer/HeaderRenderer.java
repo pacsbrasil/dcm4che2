@@ -56,7 +56,7 @@ public class HeaderRenderer extends DefaultTableCellRenderer {
             int row, int column) {
         super.getTableCellRendererComponent(table, value,
                 selected, focused, row, column);
-        setBorder(UIManager.getBorder("TableHeader.cellBorder"));       
+        setBorder(UIManager.getBorder("TableHeader.cellBorder"));           
         return this;
     }
 }

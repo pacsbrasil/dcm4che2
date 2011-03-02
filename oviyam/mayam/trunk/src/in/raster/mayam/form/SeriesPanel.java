@@ -196,8 +196,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
         } finally {
             try {
                 iis.close();
-                iter = null;
-                reader.dispose();
+                iter = null;              
                 currentbufferedimage = null;
                 imageIcon = null;
                 loadedImage = null;

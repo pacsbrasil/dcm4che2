@@ -169,8 +169,7 @@ public class ThumbnailImage extends javax.swing.JPanel implements MouseListener,
         {
             try {
                 iis.close();
-                iter=null;
-                reader.dispose();
+                iter=null;                
                 currentbufferedimage=null;
                 imageIcon=null;
                 loadedImage=null;

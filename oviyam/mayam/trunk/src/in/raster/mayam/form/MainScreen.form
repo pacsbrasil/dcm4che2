@@ -205,7 +205,7 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Component id="contentArea" alignment="0" max="32767" attributes="1"/>
-              <Component id="headerPanel" alignment="0" pref="998" max="32767" attributes="1"/>
+              <Component id="headerPanel" alignment="0" pref="1025" max="32767" attributes="1"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -228,7 +228,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jSplitPane1" alignment="0" pref="958" max="32767" attributes="0"/>
+                          <Component id="jSplitPane1" alignment="0" pref="985" max="32767" attributes="0"/>
                           <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -241,7 +241,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jSplitPane1" pref="763" max="32767" attributes="0"/>
+                      <Component id="jSplitPane1" pref="761" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -250,7 +250,7 @@
             <Component class="javax.swing.JLabel" name="jLabel1">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Tahoma" size="14" style="1"/>
+                  <Font name="Courier New" size="16" style="1"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value=" Local Database"/>
               </Properties>
@@ -278,6 +278,12 @@
                   <SubComponents>
                     <Component class="javax.swing.JTable" name="studyListTable">
                       <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Courier" size="13" style="0"/>
+                        </Property>
+                        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="0" green="8a" red="fc" type="rgb"/>
+                        </Property>
                         <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                           <Connection code="new StudyListModel()" type="code"/>
                         </Property>
@@ -291,7 +297,7 @@
                       </Events>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="studyListTable.setDefaultRenderer(Object.class, new CellRenderer());"/>
-                        <AuxValue name="JavaCodeGenerator_ListenersCodePost" type="java.lang.String" value="studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));&#xa;Font f=studyListTable.getTableHeader().getFont();&#xa;studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.PLAIN,14));&#xa;studyListTable.setRowHeight(25);"/>
+                        <AuxValue name="JavaCodeGenerator_ListenersCodePost" type="java.lang.String" value="studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));&#xa;Font f=new Font(&quot;Courier New&quot;,Font.BOLD,14);&#xa;studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.BOLD,14));&#xa;studyListTable.setRowHeight(25);&#xa;studyListTable.getTableHeader().setForeground(new Color(255,138,0));&#xa;studyListTable.getTableHeader().setBackground(new Color(0,0,0));"/>
                         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="9"/>
                       </AuxValues>
                     </Component>
@@ -313,18 +319,18 @@
                                   <Component id="jLabel2" alignment="1" pref="330" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="windowingPanelCanvas" pref="614" max="32767" attributes="0"/>
+                              <Component id="windowingPanelCanvas" pref="641" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="1">
-                              <Component id="jLabel2" min="-2" pref="16" max="-2" attributes="0"/>
+                              <Component id="jLabel2" min="-2" pref="20" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="thumbnailScroll" pref="477" max="32767" attributes="0"/>
+                              <Component id="thumbnailScroll" pref="471" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="windowingPanelCanvas" alignment="0" pref="501" max="32767" attributes="2"/>
+                          <Component id="windowingPanelCanvas" alignment="0" pref="499" max="32767" attributes="2"/>
                       </Group>
                     </DimensionLayout>
                   </Layout>
@@ -343,12 +349,12 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <EmptySpace min="0" pref="614" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="641" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                         <DimensionLayout dim="1">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <EmptySpace min="0" pref="501" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="499" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                       </Layout>
@@ -384,10 +390,13 @@
                     <Component class="javax.swing.JLabel" name="jLabel2">
                       <Properties>
                         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                          <Color blue="71" green="71" red="75" type="rgb"/>
+                          <Color blue="0" green="0" red="0" type="rgb"/>
+                        </Property>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Courier New" size="16" style="1"/>
                         </Property>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                          <Color blue="68" green="0" red="0" type="rgb"/>
+                          <Color blue="0" green="8a" red="ff" type="rgb"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Series "/>
                         <Property name="opaque" type="boolean" value="true"/>
@@ -415,16 +424,16 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                      <Component id="importButton" linkSize="2" min="-2" pref="66" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="exportButton" linkSize="2" min="-2" pref="73" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="importButton" min="-2" pref="79" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="exportButton" min="-2" pref="79" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="cdImportButton" min="-2" pref="85" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="deleteButton" min="-2" pref="78" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="metaDataButton" min="-2" pref="91" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="metaDataButton" min="-2" pref="114" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="sendButton" min="-2" pref="69" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="queryRetrieveButton" min="-2" pref="78" max="-2" attributes="0"/>
@@ -432,7 +441,7 @@
                       <Component id="viewerButton" min="-2" pref="79" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="queueButton" min="-2" pref="78" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="272" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="277" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -441,15 +450,15 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="deleteButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="metaDataButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="exportButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="importButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="deleteButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="sendButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="queryRetrieveButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="viewerButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="queueButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="cdImportButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="exportButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="importButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="32767" attributes="0"/>
                   </Group>

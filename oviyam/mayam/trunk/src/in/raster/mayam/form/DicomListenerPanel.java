@@ -92,9 +92,11 @@ public class DicomListenerPanel extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         portText = new javax.swing.JTextField();
 
-        jLabel1.setBackground(new java.awt.Color(204, 204, 204));
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14));
-        jLabel1.setText(" DICOM Listener");
+        jLabel1.setBackground(new java.awt.Color(0, 0, 0));
+        jLabel1.setFont(new java.awt.Font("Courier New", 1, 16)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 138, 0));
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel1.setText("DICOM Listener");
         jLabel1.setOpaque(true);
 
         jLabel2.setText("AE Title");
@@ -109,12 +111,8 @@ public class DicomListenerPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(155, 155, 155)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel3)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 106, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 83, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabel3)
+                    .add(jLabel2)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, portText)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, aetitleText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 131, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))

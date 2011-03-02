@@ -39,6 +39,7 @@
 package in.raster.mayam.form;
 
 import in.raster.mayam.model.table.renderer.CellRenderer;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import javax.swing.table.DefaultTableModel;
@@ -73,8 +74,9 @@ public class SendReceivePanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         receiveTable = new javax.swing.JTable();
 
-        jLabel1.setBackground(new java.awt.Color(117, 113, 113));
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel1.setBackground(new java.awt.Color(0, 0, 0));
+        jLabel1.setFont(new java.awt.Font("Courier New", 1, 16)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(250, 138, 0));
         jLabel1.setText("  Receive");
         jLabel1.setOpaque(true);
 
@@ -83,14 +85,21 @@ public class SendReceivePanel extends javax.swing.JPanel {
 
             },
             new String [] {
-                "From", "Patient Id", "Patient's Name", "Study Date", "Study Description", "Received", "Available", "Failed", "Last Active", "Message"
+                "From", "Patient Id", "Patient Name", "Study Date", "Study Description", "Received", "Available", "Failed", "Last Active", "Message"
             }
         ));
         receiveTable.setDefaultRenderer(Object.class, new CellRenderer());
-        receiveTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 20));
-        Font receiveFont=receiveTable.getTableHeader().getFont();
-        receiveTable.getTableHeader().setFont(new Font(receiveFont.getName(),Font.PLAIN,11));
-        receiveTable.setRowHeight(20);
+        //receiveTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 20));
+        //Font receiveFont=receiveTable.getTableHeader().getFont();
+        //receiveTable.getTableHeader().setFont(new Font(receiveFont.getName(),Font.PLAIN,11));
+        //receiveTable.setRowHeight(20);
+
+        receiveTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 23));
+        Font f=new Font("Courier New",Font.BOLD,12);
+        receiveTable.getTableHeader().setFont(f);
+        receiveTable.setRowHeight(23);
+        receiveTable.getTableHeader().setForeground(new Color(255,138,0));
+        receiveTable.getTableHeader().setBackground(new Color(0,0,0));
         jScrollPane1.setViewportView(receiveTable);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);

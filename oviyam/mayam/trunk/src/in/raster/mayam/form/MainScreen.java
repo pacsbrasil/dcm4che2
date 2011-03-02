@@ -64,6 +64,7 @@ import in.raster.mayam.model.ServerModel;
 import in.raster.mayam.model.Study;
 import in.raster.mayam.model.table.StudyListModel;
 import in.raster.mayam.model.table.renderer.CellRenderer;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -79,6 +80,7 @@ import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.SwingUtilities;
+import javax.swing.UIDefaults;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -311,13 +313,15 @@ public class MainScreen extends javax.swing.JFrame {
         setTitle("Mayam");
         setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/in/raster/mayam/form/images/fav_mayam.png")));
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14));
+        jLabel1.setFont(new java.awt.Font("Courier New", 1, 16));
         jLabel1.setText(" Local Database");
 
         jSplitPane1.setDividerLocation(256);
         jSplitPane1.setDividerSize(4);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
+        studyListTable.setFont(new java.awt.Font("Courier", 0, 13)); // NOI18N
+        studyListTable.setForeground(new java.awt.Color(252, 138, 0));
         studyListTable.setModel(new StudyListModel());
         studyListTable.setShowGrid(true);
         studyListTable.setDefaultRenderer(Object.class, new CellRenderer());
@@ -327,9 +331,11 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
         studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));
-        Font f=studyListTable.getTableHeader().getFont();
-        studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.PLAIN,14));
+        Font f=new Font("Courier New",Font.BOLD,14);
+        studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.BOLD,14));
         studyListTable.setRowHeight(25);
+        studyListTable.getTableHeader().setForeground(new Color(255,138,0));
+        studyListTable.getTableHeader().setBackground(new Color(0,0,0));
         studyTableScroll.setViewportView(studyListTable);
 
         jSplitPane1.setTopComponent(studyTableScroll);
@@ -342,11 +348,11 @@ public class MainScreen extends javax.swing.JFrame {
         windowingPanelCanvas.setLayout(windowingPanelCanvasLayout);
         windowingPanelCanvasLayout.setHorizontalGroup(
             windowingPanelCanvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 614, Short.MAX_VALUE)
+            .add(0, 641, Short.MAX_VALUE)
         );
         windowingPanelCanvasLayout.setVerticalGroup(
             windowingPanelCanvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 501, Short.MAX_VALUE)
+            .add(0, 499, Short.MAX_VALUE)
         );
 
         thumbnailScroll.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -358,8 +364,9 @@ public class MainScreen extends javax.swing.JFrame {
         thumbnailDisplay.setMinimumSize(new java.awt.Dimension(13, 2));
         thumbnailScroll.setViewportView(thumbnailDisplay);
 
-        jLabel2.setBackground(new java.awt.Color(117, 113, 113));
-        jLabel2.setForeground(new java.awt.Color(0, 0, 104));
+        jLabel2.setBackground(new java.awt.Color(0, 0, 0));
+        jLabel2.setFont(new java.awt.Font("Courier New", 1, 16)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(255, 138, 0));
         jLabel2.setText("Series ");
         jLabel2.setOpaque(true);
 
@@ -372,15 +379,15 @@ public class MainScreen extends javax.swing.JFrame {
                     .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 614, Short.MAX_VALUE))
+                .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE))
         );
         studyAndSeriesDisplayPanelLayout.setVerticalGroup(
             studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(studyAndSeriesDisplayPanelLayout.createSequentialGroup()
-                .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE))
-            .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
+                .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE))
+            .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
         );
 
         jSplitPane1.setRightComponent(studyAndSeriesDisplayPanel);
@@ -392,7 +399,7 @@ public class MainScreen extends javax.swing.JFrame {
             .add(contentAreaLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(contentAreaLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 958, Short.MAX_VALUE)
+                    .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 985, Short.MAX_VALUE)
                     .add(jLabel1))
                 .addContainerGap())
         );
@@ -402,7 +409,7 @@ public class MainScreen extends javax.swing.JFrame {
                 .addContainerGap()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 763, Short.MAX_VALUE))
+                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 761, Short.MAX_VALUE))
         );
 
         headerPanel.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(13, 13, 13)));
@@ -548,16 +555,16 @@ public class MainScreen extends javax.swing.JFrame {
             headerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(headerPanelLayout.createSequentialGroup()
                 .add(5, 5, 5)
-                .add(importButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(exportButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 73, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(importButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(exportButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(cdImportButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 85, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(deleteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(metaDataButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 91, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(metaDataButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sendButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(queryRetrieveButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -565,25 +572,22 @@ public class MainScreen extends javax.swing.JFrame {
                 .add(viewerButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(queueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(272, 272, 272))
+                .add(277, 277, 277))
         );
-
-        headerPanelLayout.linkSize(new java.awt.Component[] {exportButton, importButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         headerPanelLayout.setVerticalGroup(
             headerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(headerPanelLayout.createSequentialGroup()
                 .add(5, 5, 5)
                 .add(headerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(deleteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(metaDataButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(exportButton)
+                    .add(importButton)
+                    .add(deleteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(sendButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(queryRetrieveButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(viewerButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(queueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(cdImportButton)
-                    .add(exportButton)
-                    .add(importButton))
+                    .add(cdImportButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -594,7 +598,7 @@ public class MainScreen extends javax.swing.JFrame {
         containerLayout.setHorizontalGroup(
             containerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(contentArea, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(headerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 998, Short.MAX_VALUE)
+            .add(headerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1025, Short.MAX_VALUE)
         );
         containerLayout.setVerticalGroup(
             containerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1009,6 +1013,14 @@ public class MainScreen extends javax.swing.JFrame {
     private void setNimrodTheme() {
         try {
             UIManager.setLookAndFeel(new NimRODLookAndFeel());
+            UIDefaults uIDefaults=UIManager.getDefaults();
+            uIDefaults.put("Menu.font",new Font("Courier New",Font.BOLD,13));
+            uIDefaults.put("MenuItem.font", new Font("Courier New",Font.BOLD,13));
+            uIDefaults.put("Button.font", new Font("Courier New",Font.BOLD,13));
+            uIDefaults.put("Label.font", new Font("Courier New",Font.BOLD,13));
+            uIDefaults.put("RadioButton.font",new Font("Courier New",Font.BOLD,13));
+             uIDefaults.put("CheckBox.font",new Font("Courier New",Font.BOLD,13));
+            uIDefaults.put("Table.font",new Font("Courier New",Font.BOLD,13));
             updateComponentsTreeUI();
         } catch (UnsupportedLookAndFeelException ex) {
             Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);

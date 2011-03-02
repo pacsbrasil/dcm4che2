@@ -329,8 +329,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             } finally {
                 if (!isMulitiFrame()) {
                     iis.close();
-                    iter = null;
-                    reader.dispose();
+                    iter = null;                    
                 }
             }
         } catch (Exception e) {

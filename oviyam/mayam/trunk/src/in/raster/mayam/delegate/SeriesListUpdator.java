@@ -288,9 +288,12 @@ public class SeriesListUpdator extends Thread {
     }
 
     public void setDicomReader() {
+        try{
         ImageIO.scanForPlugins();
         Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
         reader = (ImageReader) iter.next();
+        }
+        catch(Exception e){}
     }
 
     private synchronized void readDicomFile(Instance img) {
@@ -319,8 +322,7 @@ public class SeriesListUpdator extends Thread {
             e.printStackTrace();
         } finally {
             try {
-                iis.close();
-                reader.dispose();
+                iis.close();                
             } catch (Exception ex) {//ignore
             }
         }

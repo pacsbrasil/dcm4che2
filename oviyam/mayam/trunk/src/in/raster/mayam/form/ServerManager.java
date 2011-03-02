@@ -47,7 +47,9 @@ import in.raster.mayam.model.ServerModel;
 import in.raster.mayam.model.table.PresetTableModel;
 import in.raster.mayam.model.table.ServerTableModel;
 import in.raster.mayam.model.table.renderer.CellRenderer;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -144,15 +146,24 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
         jButton1 = new javax.swing.JButton();
         DeleteButton = new javax.swing.JButton();
 
-        jLabel1.setBackground(new java.awt.Color(204, 204, 204));
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14));
+        jLabel1.setBackground(new java.awt.Color(0, 0, 0));
+        jLabel1.setFont(new java.awt.Font("Courier New", 1, 16)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 138, 0));
         jLabel1.setText("Servers");
         jLabel1.setOpaque(true);
 
+        serverListTable.setFont(new java.awt.Font("Courier", 1, 12)); // NOI18N
         serverListTable.setModel(new PresetTableModel());
         serverListTable.setDefaultRenderer(Object.class, new CellRenderer());
-        serverListTable.getTableHeader().setPreferredSize(new Dimension(jScrollPane1.WIDTH,25));
-        serverListTable.setRowHeight(25);
+        //serverListTable.getTableHeader().setPreferredSize(new Dimension(jScrollPane1.WIDTH,25));
+        //serverListTable.setRowHeight(25);
+
+        serverListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));
+        Font ff=new Font("Courier New",Font.BOLD,12);
+        serverListTable.getTableHeader().setFont(ff);
+        serverListTable.setRowHeight(20);
+        serverListTable.getTableHeader().setForeground(new Color(255,138,0));
+        serverListTable.getTableHeader().setBackground(new Color(0,0,0));
         jScrollPane1.setViewportView(serverListTable);
 
         addButton.setText("Add");
