@@ -62,7 +62,7 @@ ALTER TABLE series_req ADD (
 ALTER TABLE series_req
    ADD INDEX ser_req_accno_issuer_fk (accno_issuer_fk),
    ADD CONSTRAINT ser_req_accno_issuer_fk FOREIGN KEY (accno_issuer_fk) REFERENCES issuer(pk);
-REATE INDEX ser_req_accession_no ON series_req(accession_no(16));
+CREATE INDEX ser_req_accession_no ON series_req(accession_no(16));
 CREATE INDEX ser_req_phys_fn_sx ON series_req(req_phys_fn_sx(16));
 CREATE INDEX ser_req_phys_gn_sx ON series_req(req_phys_gn_sx(16));
 
