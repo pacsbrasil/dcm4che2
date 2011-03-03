@@ -172,8 +172,7 @@ public class DicomImageReader extends ImageReader {
     }
 
     @Override
-    public void setInput(Object input, boolean seekForwardOnly,
-            boolean ignoreMetadata) {
+    public void setInput(Object input, boolean seekForwardOnly, boolean ignoreMetadata) {
         super.setInput(input, seekForwardOnly, ignoreMetadata);
 
         resetLocal();
@@ -356,7 +355,7 @@ public class DicomImageReader extends ImageReader {
 
     private void initRawImageReader() {
         long[] frameOffsets = new long[frames];
-        int frameLen = width * height * samples * (allocated >> 3);
+        int frameLen = calculateFrameLength();
         frameOffsets[0] = pixelDataPos;
         for (int i = 1; i < frameOffsets.length; i++) {
             frameOffsets[i] = frameOffsets[i - 1] + frameLen;
@@ -370,6 +369,35 @@ public class DicomImageReader extends ImageReader {
         reader = ImageIO.getImageReadersByFormatName("RAW").next();
         reader.setInput(riis);
     }
+
+	protected int calculateFrameLength() {		
+		if (pmi.endsWith("422") || pmi.endsWith("420")){
+			int calcWidth = width;
+			int calcHeight = height;
+			int extraRowSamples = 0;
+			int extraColSamples = 0;
+			if (pmi.endsWith("422") && width%2 != 0){
+				// odd number of columns
+				calcWidth --;			
+				extraColSamples = 3;	
+			}
+			//FIXME needs work
+//			if (pmi.endsWith("420") && width%2 != 0){
+//				// odd number of columns
+//				calcWidth --;			
+//				extraColSamples = 3;	
+//			}
+//			if (pmi.endsWith("420") &&  height%2 != 0){
+//				// odd number of rows
+//				calcHeight --;
+//				extraRowSamples = 3;
+//			}
+			return (calcWidth * calcHeight * 2 + 
+			calcWidth * extraRowSamples + 
+			calcHeight * extraColSamples) * (allocated >> 3);
+		}					
+		return	width * height * samples * (allocated >> 3);	
+	}
 
     /** Create an image type specifier for the entire image */
     protected ImageTypeSpecifier createImageTypeSpecifier() {
@@ -395,7 +423,7 @@ public class DicomImageReader extends ImageReader {
         }
 
         if( (!compressed) && pmi.endsWith("420") ) {
-            return new PartialComponentSampleModel(width,height,2,2);
+            return new PartialComponentSampleModel(width, height, 2, 2);
         }
         
         return new PixelInterleavedSampleModel(dataType, width, height, 3,
@@ -458,8 +486,7 @@ public class DicomImageReader extends ImageReader {
      * be for those.  
      */
     @Override
-    public Raster readRaster(int imageIndex, ImageReadParam param)
-            throws IOException {
+    public Raster readRaster(int imageIndex, ImageReadParam param) throws IOException {
         initImageReader(imageIndex);
         if (param == null) {
             param = getDefaultReadParam();
@@ -476,18 +503,19 @@ public class DicomImageReader extends ImageReader {
             log.debug("Using a 422/420 partial component image reader.");
             if( param.getSourceXSubsampling()!=1 
                     || param.getSourceYSubsampling()!=1 
-                    || param.getSourceRegion()!=null )
-            {
+                    || param.getSourceRegion()!=null ) {
                 log.warn("YBR_*_422 and 420 reader does not support source sub-sampling or source region.");
                 throw new UnsupportedOperationException("Implement sub-sampling/soure region.");
             }
             SampleModel sm = createSampleModel();
             WritableRaster wr = Raster.createWritableRaster(sm, new Point());
+            
             DataBufferByte dbb = (DataBufferByte) wr.getDataBuffer();
             byte[] data = dbb.getData();
-            log.debug("Seeking to "+(pixelDataPos + imageIndex * data.length)+" and reading "+data.length+" bytes.");
-            iis.seek(pixelDataPos + imageIndex * data.length);
-            iis.read(data);
+            int frameLength = calculateFrameLength();
+            log.debug("Seeking to "+(pixelDataPos + imageIndex * frameLength)+" and reading "+data.length+" bytes.");           
+            iis.seek(pixelDataPos + imageIndex * frameLength);
+            iis.read(data, 0, frameLength);
             if (swapByteOrder) {
                 ByteUtils.toggleShortEndian(data);
             }
@@ -519,8 +547,7 @@ public class DicomImageReader extends ImageReader {
      * the default window level values, or to return the raw image.
      */
     @Override
-    public BufferedImage read(int imageIndex, ImageReadParam param)
-            throws IOException {
+    public BufferedImage read(int imageIndex, ImageReadParam param) throws IOException {
         if (OverlayUtils.isOverlay(imageIndex)) {
             readMetaData();
             String rgbs = (param != null) ? ((DicomImageReadParam) param)
@@ -589,8 +616,7 @@ public class DicomImageReader extends ImageReader {
      * @return
      * @throws IOException
      */
-    private BufferedImage readYbr400(int imageIndex, ImageReadParam param) throws IOException
-    {
+    private BufferedImage readYbr400(int imageIndex, ImageReadParam param) throws IOException {
         ImageReadParam useParam = param;
         Rectangle sourceRegion = param.getSourceRegion();
         if( param.getSourceXSubsampling()!=1 
@@ -653,14 +679,13 @@ public class DicomImageReader extends ImageReader {
      * image data unchanged to a new file/location etc, but some values are
      * being changed in the header, or some images are being excluded.
      */
-    public byte[] readBytes(int imageIndex, ImageReadParam param)
-            throws IOException {
+    public byte[] readBytes(int imageIndex, ImageReadParam param) throws IOException {
         initImageReader(imageIndex);
         if (compressed) {
             return itemParser.readFrame(siis, imageIndex);
         }
 
-        int frameLen = width * height * samples * (allocated >> 3);
+        int frameLen = calculateFrameLength();
         byte[] ret = new byte[frameLen];
         long offset = pixelDataPos + imageIndex * (long) frameLen;
         iis.seek(offset);
@@ -680,8 +705,7 @@ public class DicomImageReader extends ImageReader {
         }
     }
 
-    private Raster decompressRaster(int imageIndex, ImageReadParam param)
-            throws IOException {
+    private Raster decompressRaster(int imageIndex, ImageReadParam param) throws IOException {
         if (!reader.canReadRaster()) {
             BufferedImage bi = reader.read(0, param);
             postDecompress();
@@ -716,8 +740,7 @@ public class DicomImageReader extends ImageReader {
      * @param raster
      * @return Complete lookup table to apply to the image.
      */
-    private LookupTable createLut(DicomImageReadParam param, int frame,
-            Raster raster) {
+    private LookupTable createLut(DicomImageReadParam param, int frame, Raster raster) {
         short[] pval2gray = param.getPValue2Gray();
         DicomObject pr = param.getPresentationState();
         float c = param.getWindowCenter();
