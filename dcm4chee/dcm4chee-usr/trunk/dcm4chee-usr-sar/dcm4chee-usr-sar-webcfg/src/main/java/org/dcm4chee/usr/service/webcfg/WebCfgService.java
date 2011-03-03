@@ -79,7 +79,7 @@ public class WebCfgService extends ServiceMBeanSupport {
     }
 
     public List<String> getRoleTypeList() {
-        return copyOfList(roleTypes);
+        return new ArrayList<String>(roleTypes);
     }
 
     public String getUserRole() {
@@ -135,12 +135,6 @@ public class WebCfgService extends ServiceMBeanSupport {
                 list.add(st.nextToken());
             }
         }
-    }
-    
-    private List<String> copyOfList(List<String> src) {
-        List<String> dest = new ArrayList<String>(src.size());
-        dest.addAll(src);
-        return dest;
     }
     
     protected static final long serialVersionUID = 1L;
