@@ -39,18 +39,9 @@
 
 package org.dcm4chex.archive.dcm.stgcmt;
 
-import java.io.BufferedInputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -67,9 +58,6 @@ import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
-import org.dcm4che.data.DcmParser;
-import org.dcm4che.data.DcmParserFactory;
-import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -86,12 +74,10 @@ import org.dcm4che.net.PDU;
 import org.dcm4che.net.RoleSelection;
 import org.dcm4che.util.UIDGenerator;
 import org.dcm4cheri.util.StringUtils;
-import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.AEManager;
-import org.dcm4chex.archive.ejb.interfaces.MD5;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
@@ -648,55 +634,11 @@ public class StgCmtScuScpService extends AbstractScpService implements
         }
     }
 
-    private void checkFile(FileInfo info) throws IOException {
-        if (info.md5 == null || info.basedir == null
-                || info.availability != Availability.ONLINE
-                || info.basedir.startsWith("ftp://")
-                || !isLocalRetrieveAET(info.fileRetrieveAET))
-            return;
-        File file = FileUtils.toFile(info.basedir, info.fileID);
-        log.info("M-READ file:" + file);
-        MessageDigest md = null;
-        try {
-            md = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-        BufferedInputStream in = new BufferedInputStream(new FileInputStream(
-                file));
-        DigestInputStream dis = new DigestInputStream(in, md);
-        try {
-            DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
-            parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
-            if ((parser.getReadTag() & 0xFFFFFFFFL) >= Tags.PixelData) {
-                if (parser.getReadLength() == -1) {
-                    while (parser.parseHeader() == Tags.Item) {
-                        readOut(parser.getInputStream(), parser.getReadLength());
-                    }
-                }
-                readOut(parser.getInputStream(), parser.getReadLength());
-                parser.parseDataset(parser.getDcmDecodeParam(), -1);
-            }
-        } finally {
-            try {
-                dis.close();
-            } catch (IOException ignore) {
-            }
-        }
-        byte[] md5 = md.digest();
-        if (!Arrays.equals(md5, MD5.toBytes(info.md5))) {
-            throw new IOException("MD5 mismatch");
-        }
-    }
-
-    private void readOut(InputStream in, int len) throws IOException {
-        int toRead = len;
-        while (toRead-- > 0) {
-            if (in.read() < 0) {
-                throw new EOFException();
-            }
-        }
-    }
+    private void checkFile(FileInfo info) throws Exception {
+    	if (isLocalRetrieveAET(info.fileRetrieveAET)) {
+    		FileUtils.verifyMD5(info);
+    	}
+	}
 
     void commited(Dataset stgcmtResult) throws DcmServiceException {
         Storage storage = null;

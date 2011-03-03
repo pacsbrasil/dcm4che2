@@ -267,7 +267,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private boolean coerceAttributeTopDown = false;
 
     private boolean cFindRspDebugLogDeferToDoBeforeRsp = false;
-    
+
+    private boolean verifyMD5OnMakeCStoreRQ = false;
+
     protected DatasetUpdater datasetUpdater = null;
     
     public QueryRetrieveScpService() {
@@ -1350,6 +1352,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
             PerfMonDelegate perfMon, 
             Map<PIDWithIssuer, Set<PIDWithIssuer>> pixQueryResults)
     throws Exception {
+    	if (isVerifyMD5OnMakeCStoreRQ()) {
+    		FileUtils.verifyMD5(info);
+    	}
         Association assoc = activeAssoc.getAssociation();
         String dest = assoc.isRequestor() ? assoc.getCalledAET() 
                 : assoc.getCallingAET();
@@ -1768,4 +1773,12 @@ public class QueryRetrieveScpService extends AbstractScpService {
     public void setCFindRspDebugLogDeferToDoBeforeRsp(boolean defer) {
         this.cFindRspDebugLogDeferToDoBeforeRsp = defer;
     }
+
+	public void setVerifyMD5OnMakeCStoreRQ(boolean verifyMD5OnMakeCStoreRQ) {
+		this.verifyMD5OnMakeCStoreRQ = verifyMD5OnMakeCStoreRQ;
+	}
+
+	public boolean isVerifyMD5OnMakeCStoreRQ() {
+		return verifyMD5OnMakeCStoreRQ;
+	}
 }

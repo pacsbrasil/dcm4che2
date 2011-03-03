@@ -1136,6 +1136,17 @@ DICOM JPEG-LS images by specified value. Only effective for WADO retrieval.
          <value value="false"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isVerifyMD5OnMakeCStoreRQ"
+      setMethod="setVerifyMD5OnMakeCStoreRQ">
+      <description>Perform an MD5 check on the file in the filesystem prior to performing a CMOVE or CGET
+      </description>
+      <name>VerifyMD5OnMakeCStoreRQ</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" 
       getMethod="getFetchSize"
       setMethod="setFetchSize">
