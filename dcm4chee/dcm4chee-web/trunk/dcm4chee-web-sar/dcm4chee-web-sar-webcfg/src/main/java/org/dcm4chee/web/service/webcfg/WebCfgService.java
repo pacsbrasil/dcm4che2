@@ -223,7 +223,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         if (modalities.isEmpty()) {
             this.updateModalities();
         }
-        return copyOfList(modalities);
+        return new ArrayList<String>(modalities);
     }
     
     public void setModalities(String s) {
@@ -246,7 +246,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         if (sourceAETs.isEmpty()) {
             this.updateSourceAETs();
         }
-        return copyOfList(sourceAETs);
+        return new ArrayList<String>(sourceAETs);
     }
     
     public void setSourceAETs(String s) {
@@ -270,7 +270,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         if (stationAETs.isEmpty()) {
             this.updateStationAETs();
         }
-        return copyOfList(stationAETs);
+        return new ArrayList<String>(stationAETs);
     }
     
     public void setStationAETs(String s) {
@@ -294,7 +294,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         if (stationNames.isEmpty()) {
             this.updateStationNames();
         }
-        return copyOfList(stationNames);
+        return new ArrayList<String>(stationNames);
     }
     
     public void setStationNames(String s) {
@@ -399,12 +399,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         }
     }
     
-    private List<String> copyOfList(List<String> src) {
-        List<String> dest = new ArrayList<String>(src.size());
-        dest.addAll(src);
-        return dest;
-    }
-
     public String getMpps2mwlPresetPatientname() {
         return mpps2mwlPresetPatientname;
     }
@@ -698,7 +692,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
 
     public List<String> getRoleTypeList() {
-        return roleTypes;
+        return new ArrayList<String>(roleTypes);
     }
 
     public void setRoleTypes(String s) {
