@@ -376,25 +376,39 @@ public class DicomImageReader extends ImageReader {
 			int calcHeight = height;
 			int extraRowSamples = 0;
 			int extraColSamples = 0;
-			if (pmi.endsWith("422") && width%2 != 0){
-				// odd number of columns
-				calcWidth --;			
-				extraColSamples = 3;	
+			if (pmi.endsWith("422")){ 
+
+				if (width%2 != 0){
+					// odd number of columns
+					calcWidth --;			
+					extraColSamples = 3;	
+				}
+				return (calcWidth * calcHeight * 2 +  
+						calcHeight * extraColSamples) * (allocated >> 3);
 			}
-			//FIXME needs work
-//			if (pmi.endsWith("420") && width%2 != 0){
-//				// odd number of columns
-//				calcWidth --;			
-//				extraColSamples = 3;	
-//			}
-//			if (pmi.endsWith("420") &&  height%2 != 0){
-//				// odd number of rows
-//				calcHeight --;
-//				extraRowSamples = 3;
-//			}
-			return (calcWidth * calcHeight * 2 + 
-			calcWidth * extraRowSamples + 
-			calcHeight * extraColSamples) * (allocated >> 3);
+
+			if (pmi.endsWith("420")){
+				calcHeight = calcHeight/2;
+				if (width%2 != 0){
+					// odd number of columns
+					calcWidth --;			
+					extraColSamples = 4;	
+				}
+				if (height%2 != 0){
+					// odd number of rows					
+					extraRowSamples = 2;
+				}
+				
+				int length = (calcWidth * calcHeight * 3 + 
+						calcWidth * extraRowSamples + 
+						calcHeight * extraColSamples) * (allocated >> 3);
+				
+				if (width%2 != 0 && height%2 != 0){
+					length = length + 3; 
+				}
+
+				return length;
+			}
 		}					
 		return	width * height * samples * (allocated >> 3);	
 	}
