@@ -227,6 +227,14 @@ public class HSMCommandModule extends AbstractHSMModule {
     }
 
     @Override
+    public void fetchHSMFileFinished(String fsID, String filePath, File file) throws HSMException {
+        if (fetchCmd != null) {
+            log.info("M-DELETE " + file);
+            file.delete();
+        }
+    }
+    
+    @Override
     public Integer queryStatus(String fsID, String filePath, String userInfo) {
         if (qryCmd == null) {
             log.warn("No QueryCommand configured! HSM File Status can not be updated!");

@@ -177,6 +177,10 @@ public class HSMFileBasedModule extends AbstractHSMModule {
     }
 
     @Override
+    public void fetchHSMFileFinished(String fsID, String filePath, File file) throws HSMException {
+    }
+
+    @Override
     public Integer queryStatus(String fsID, String filePath, String userInfo) {
         boolean isTar = fsID.startsWith("tar:");
         for ( Map.Entry<String,Integer> entry : extensionStatusMap.entrySet()) {
