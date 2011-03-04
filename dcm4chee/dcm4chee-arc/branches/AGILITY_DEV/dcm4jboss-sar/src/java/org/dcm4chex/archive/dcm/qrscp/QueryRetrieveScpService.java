@@ -55,10 +55,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Map.Entry;
 
 import javax.ejb.FinderException;
 import javax.management.InstanceNotFoundException;
@@ -269,6 +269,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private boolean coerceAttributeTopDown = false;
 
     private boolean cFindRspDebugLogDeferToDoBeforeRsp = false;
+
+    private boolean verifyMD5OnMakeCStoreRQ = false;
     
     protected DatasetUpdater datasetUpdater = null;
     
@@ -1367,6 +1369,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
     Dimse makeCStoreRQ(ActiveAssociation activeAssoc, FileInfo info, AEDTO aeData,
             int priority, String moveOriginatorAET, int moveRqMsgID,
             PerfMonDelegate perfMon) throws Exception {
+    	if (isVerifyMD5OnMakeCStoreRQ()) {
+    		FileUtils.verifyMD5(info);
+    	}
         Association assoc = activeAssoc.getAssociation();
         String dest = assoc.isRequestor() ? assoc.getCalledAET() 
                 : assoc.getCallingAET();
@@ -1694,4 +1699,12 @@ public class QueryRetrieveScpService extends AbstractScpService {
     public void setCFindRspDebugLogDeferToDoBeforeRsp(boolean defer) {
         this.cFindRspDebugLogDeferToDoBeforeRsp = defer;
     }
+
+	public void setVerifyMD5OnMakeCStoreRQ(boolean verifyMD5OnMakeCStoreRQ) {
+		this.verifyMD5OnMakeCStoreRQ = verifyMD5OnMakeCStoreRQ;
+	}
+
+	public boolean isVerifyMD5OnMakeCStoreRQ() {
+		return verifyMD5OnMakeCStoreRQ;
+	}
 }

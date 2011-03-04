@@ -40,12 +40,16 @@
 package org.dcm4chex.archive.util;
 
 import java.io.BufferedInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteOrder;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
@@ -54,6 +58,9 @@ import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.ejb.interfaces.MD5;
+import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.jboss.system.server.ServerConfigLocator;
 
 /**
@@ -377,4 +384,56 @@ public class FileUtils {
         }
         return true;
     }
+
+    public static void verifyMD5(FileInfo info) throws Exception {
+    	if (info.md5 == null || info.basedir == null
+    			|| info.availability != Availability.ONLINE
+    			|| info.basedir.startsWith("ftp://"))
+    		return;
+    	File file = FileUtils.toFile(info.basedir, info.fileID);
+    	verifyMD5(file, info.md5);
+    }
+    
+    public static void verifyMD5(File file, String originalMd5) throws Exception {
+        log.info("M-READ file:" + file);
+        MessageDigest md = MessageDigest.getInstance("MD5");
+
+        BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+        
+        DigestInputStream dis = new DigestInputStream(in, md);
+        try {
+            DcmParser parser = DcmParserFactory.getInstance().newDcmParser(dis);
+            parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+            if ((parser.getReadTag() & 0xFFFFFFFFL) >= Tags.PixelData) {
+                if (parser.getReadLength() == -1) {
+                    while (parser.parseHeader() == Tags.Item) {
+                        readOut(parser.getInputStream(), parser.getReadLength());
+                    }
+                }
+                readOut(parser.getInputStream(), parser.getReadLength());
+                parser.parseDataset(parser.getDcmDecodeParam(), -1);
+            }
+        } finally {
+            try {
+                dis.close();
+            } catch (IOException ignore) {
+            }
+        }
+        byte[] md5 = md.digest();
+        if (!Arrays.equals(md5, MD5.toBytes(originalMd5))) {
+        	log.error("MD5 for " + file.getAbsolutePath() + " is different that expected.  Has the file been changed or corrupted?");
+            throw new IllegalStateException("MD5 mismatch");
+        }
+    }
+    
+    protected static void readOut(InputStream in, int len) throws IOException {
+        int toRead = len;
+        while (toRead-- > 0) {
+            if (in.read() < 0) {
+                throw new EOFException();
+            }
+        }
+    }
+
+
 }

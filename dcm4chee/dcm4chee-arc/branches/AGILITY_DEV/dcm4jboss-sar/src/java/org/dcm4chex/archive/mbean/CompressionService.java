@@ -399,8 +399,10 @@ public class CompressionService extends ServiceMBeanSupport {
         File baseDir = FileUtils.toFile(fileDTO.getDirectoryPath());
         File srcFile = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO
                 .getFilePath());
+        
         File destFile = null;
         try {
+        	FileUtils.verifyMD5(srcFile, fileDTO.getMd5String());
             if (!ClaimCompressingFileCmd.claim(fileDTO.getPk())) {
                 log.info("File " + srcFile
                         + " already compressed by concurrent thread!");
