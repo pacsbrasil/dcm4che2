@@ -138,11 +138,11 @@ public class GroupedChoices implements Serializable {
         return singleton;
     }
     
-    public List<String> getChoices(List<String> availableChoices) {
+    public List<String> getChoices(List<String> availableChoices, List<String> dcmRoles) {
         List<String> choices = new ArrayList<String>(availableChoices.size()+groups.size());
-        Session session = Session.get();
-        if (session instanceof AuthenticatedWebSession) {
-            Roles roles = ((AuthenticatedWebSession) session).getRoles();
+        if (dcmRoles != null && dcmRoles.size() > 0) {
+            Roles roles = new Roles();
+            roles.addAll(dcmRoles);
             if (universalMatchRoles == null || roles.hasAnyRole(universalMatchRoles)) {
                 choices.add("*");
             }
