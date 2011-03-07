@@ -238,7 +238,11 @@ public class DicomImageWriter extends ImageWriter {
         Object output = getOutput();
         dos = new DicomOutputStream((ImageOutputStream) output);
         dos.setAutoFinish(false);
-        dos.writeDicomFile(dobj);
+        if( dmeta.isFileMetaInfoIncluded() ) {
+            dos.writeDicomFile(dobj);
+        } else {
+            dos.writeDataset(dobj, dobj.getString(Tag.TransferSyntaxUID));
+        }
 
         setupWriter(metadata);
 
