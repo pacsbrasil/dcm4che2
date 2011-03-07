@@ -38,15 +38,29 @@
 
 package org.dcm4chee.usr.war;
 
+import javax.security.auth.Subject;
+import javax.security.jacc.PolicyContext;
+
 import org.apache.wicket.Page;
 import org.apache.wicket.Request;
 import org.apache.wicket.Response;
+import org.apache.wicket.security.authentication.LoginException;
 import org.dcm4chee.usr.war.pages.UserManagementMainPage;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
+import org.dcm4chee.web.common.base.SSOLoginContext;
 import org.dcm4chee.web.common.secure.SecureSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * @author Robert David <robert.david@agfa.com>
+ * @version $Revision$ $Date$
+ * @since 31.08.2010
+ */
 public class WicketApplication extends BaseWicketApplication {
-
+    
+    protected static Logger log = LoggerFactory.getLogger(WicketApplication.class);
+    
     @Override
     public Class<? extends Page> getHomePage() {
         return UserManagementMainPage.class;
@@ -54,6 +68,20 @@ public class WicketApplication extends BaseWicketApplication {
     
     @Override
     public SecureSession newSession(Request request, Response response) {
-        return new SecureSession(this, request);
+        Subject jaasSubject = null;
+        try {
+            jaasSubject = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
+        } catch (Exception x) {
+            log.error(getClass().getName() + ": Failed to get subject from javax.security.auth.Subject.container", x);
+        }
+        SecureSession session = new SecureSession(this, request);
+        if (jaasSubject != null) {
+            try {
+                session.login(new SSOLoginContext(session, jaasSubject));
+            } catch (LoginException x) {
+                log.error(getClass().getName() + ": Failed login", x);
+            }
+        }
+        return session;
     }
 }
