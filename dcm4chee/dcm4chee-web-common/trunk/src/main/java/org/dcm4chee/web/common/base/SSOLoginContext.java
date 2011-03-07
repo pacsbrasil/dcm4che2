@@ -81,6 +81,7 @@ import org.slf4j.LoggerFactory;
 public class SSOLoginContext extends LoginContext {
 
     protected static Logger log = LoggerFactory.getLogger(BaseMBeanDelegate.class);
+
     SecureSession session;
     private Subject jaasSubject;
     

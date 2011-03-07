@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import javax.servlet.http.Cookie;
+
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
@@ -59,6 +61,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebRequest;
+import org.apache.wicket.protocol.http.WebResponse;
 import org.dcm4chee.web.common.secure.SecureAjaxTabbedPanel;
 
 /**
@@ -77,6 +80,22 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
     public ModuleSelectorPanel(String id) {
         super(id);
 
+        boolean found = false;
+        Cookie[] cs = ((WebRequest) RequestCycle.get().getRequest()).getHttpServletRequest().getCookies();
+        if (cs != null)
+            for (Cookie c : cs) {
+                if (c.getName().equals("WEB3LOCALE")) {
+                    getSession().setLocale(new Locale(c.getValue()));
+                    found = true;
+                    break;
+                }
+            }
+
+        if (!found) {
+            ((WebResponse) RequestCycle.get().getResponse()).addCookie(new Cookie("WEB3LOCALE", "en"));
+            getSession().setLocale(new Locale("en"));
+        }
+
         String authType = ((WebRequest) RequestCycle.get().getRequest()).getHttpServletRequest().getAuthType();
         if (authType != null && authType.equals("BASIC"))
             add(new Link<Object>("logout") {
@@ -86,8 +105,8 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
                 public void onClick() {}
             }
             .add(new Label("logoutLabel", new ResourceModel("logout")))
-            .setEnabled(false))
-            .add(new AttributeModifier("title", true, new ResourceModel("logout.notSupported"))); 
+            .setEnabled(false)
+            .add(new AttributeModifier("title", true, new ResourceModel("logout.notSupported")))); 
         else
             add(new AjaxFallbackLink<Object>("logout") {
                 
@@ -96,7 +115,7 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
                 @Override
                 public void onClick(final AjaxRequestTarget target) {
                     getSession().invalidate();
-                    setResponsePage(LoginPage.class);
+                    setResponsePage(getApplication().getHomePage());
                 }
                 @Override
                 public boolean isVisible() {
@@ -124,6 +143,7 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
 
             @Override
             protected void onSelectionChanged(String newSelection) {
+                ((WebResponse) RequestCycle.get().getResponse()).addCookie(new Cookie("WEB3LOCALE", newSelection));
                 getSession().setLocale(new Locale(newSelection));
             }
         };
