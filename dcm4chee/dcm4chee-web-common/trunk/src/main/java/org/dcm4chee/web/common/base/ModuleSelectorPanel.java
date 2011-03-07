@@ -135,7 +135,8 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
             
             @Override
             public String getDisplayValue(String object) {
-                return new Locale(object).getDisplayName();
+                Locale l = new Locale(object);
+                return l.getDisplayName(l);
             }
         }) {
 
