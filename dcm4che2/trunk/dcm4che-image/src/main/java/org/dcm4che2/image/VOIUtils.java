@@ -254,7 +254,7 @@ public class VOIUtils {
     /**
      * This method returns the minimum and maximum window center widths, based
      * on the Modality LUT and image information. If the databuffer is missing,
-     * then no image scannign will occur for min/max pixel information, but
+     * then no image scanning will occur for min/max pixel information, but
      * instead the minimum/maximum possible values will be used instead.
      * 
      * @param img
