@@ -637,7 +637,6 @@ public class StudyListPage extends Panel {
             @Override
             public void onDecline(AjaxRequestTarget target, SelectedEntities selected) {
                 if (selected.getPpss().size() != 0) {
-                    System.out.println("getPpss");
                     if (ContentEditDelegate.getInstance().deletePps(selected)) {
                         this.setStatus(new StringResourceModel("folder.message.deleteDone", StudyListPage.this,null));
                         selected.refreshView(true);

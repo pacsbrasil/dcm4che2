@@ -36,8 +36,7 @@ public class DicomSecurityServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-;
+    protected void service(HttpServletRequest request, HttpServletResponse response) {
         try {
             StringBuffer dicomRoles = new StringBuffer();
             Principal rolesPrincipal;
