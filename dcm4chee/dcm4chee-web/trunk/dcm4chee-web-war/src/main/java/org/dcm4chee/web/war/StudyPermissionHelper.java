@@ -123,7 +123,7 @@ public class StudyPermissionHelper implements Serializable {
         HttpURLConnection urlConnection = null;
         InputStream in = null;
         try {
-            urlConnection = (HttpURLConnection) new URL("http://localhost:8080/dcm4chee-web3-dicom/dicom-security-servlet").openConnection();
+            urlConnection = (HttpURLConnection) new URL(WebCfgDelegate.getInstance().getDicomSecurityServletUrl()).openConnection();
             WebRequest webRequest = ((WebRequest) RequestCycle.get().getRequest());
             Cookie[] cookies = webRequest.getCookies();
             if (cookies == null) 

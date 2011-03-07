@@ -85,6 +85,8 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private static final String DEFAULT_TIMER_SERVICE = "jboss:service=Timer";
     private static final long ONE_DAY_IN_MILLIS = 60000*60*24;
 
+    private String dicomSecurityServletUrl;
+    
     private String wadoBaseURL;
     private String webviewerName;
     private String webviewerBaseUrl;
@@ -142,6 +144,15 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         updateAutoUpdateTimer();
     }
     
+    public void setDicomSecurityServletUrl(
+            String dicomSecurityServletUrl) {
+        this.dicomSecurityServletUrl = dicomSecurityServletUrl;
+    }
+
+    public String getDicomSecurityServletUrl() {
+        return dicomSecurityServletUrl;
+    }
+
     public String getWadoBaseURL() {
         return wadoBaseURL;
     }

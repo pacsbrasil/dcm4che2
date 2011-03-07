@@ -68,6 +68,10 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return singleton;
     }
 
+    public String getDicomSecurityServletUrl() {
+        return getString("dicomSecurityServletUrl");
+    }
+
     public boolean getManageUsers() {
         return getBoolean("manageUsers", true);
     }

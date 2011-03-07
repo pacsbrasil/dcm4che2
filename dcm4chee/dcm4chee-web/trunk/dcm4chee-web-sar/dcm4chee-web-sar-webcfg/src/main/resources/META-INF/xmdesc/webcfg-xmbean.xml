@@ -33,6 +33,19 @@
    </attribute>
    
    <attribute access="read-write"
+      getMethod="getDicomSecurityServletUrl"
+      setMethod="setDicomSecurityServletUrl">
+      <description><![CDATA[
+        URL for the dicom security servlet 
+        for web container based sso authentication.]]>
+      </description>
+      <name>dicomSecurityServletUrl</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="http://localhost:8080/dcm4chee-web3-dicom/dicom-security-servlet"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getWadoBaseURL"
       setMethod="setWadoBaseURL">
       <description><![CDATA[
