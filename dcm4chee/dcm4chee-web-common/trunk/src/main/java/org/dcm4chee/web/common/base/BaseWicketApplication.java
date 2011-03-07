@@ -89,14 +89,8 @@ public class BaseWicketApplication extends SwarmWebApplication {
         getApplicationSettings().setPageExpiredErrorPage(pageExpiredPage);
         if ( internalErrorPage != null ) {
             getApplicationSettings().setInternalErrorPage(internalErrorPage);
-            mountBookmarkablePage("/internalError", internalErrorPage);
             this.getExceptionSettings().setUnexpectedExceptionDisplay(IExceptionSettings.SHOW_INTERNAL_ERROR_PAGE);
         }
-        mountBookmarkablePage("/login", signinPage);
-        if (pageExpiredPage != signinPage)
-            mountBookmarkablePage("/pageExpired", pageExpiredPage);
-        if (accessDeniedPage != signinPage)
-            mountBookmarkablePage("/accessDenied", accessDeniedPage);
     }
 
     @SuppressWarnings("unchecked")
@@ -148,7 +142,7 @@ public class BaseWicketApplication extends SwarmWebApplication {
             }
         });
     }
-    
+
     public Class<? extends Page> getLoginPage() {
         return LoginPage.class;
     }
