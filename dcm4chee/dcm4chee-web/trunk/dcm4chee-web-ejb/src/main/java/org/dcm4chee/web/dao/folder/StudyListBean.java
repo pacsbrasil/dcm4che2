@@ -38,11 +38,10 @@
 
 package org.dcm4chee.web.dao.folder;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -141,7 +140,7 @@ public class StudyListBean implements StudyListLocal {
         if ((roles != null) && (roles.size() == 0)) return 0;
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT COUNT(*)");
-        appendFromClause(ql, filter, false);
+        appendFromClause(ql, filter);
         appendWhereClause(ql, filter, roles);
         Query query = em.createQuery(ql.toString());
         setQueryParameters(query, filter, roles);
@@ -153,25 +152,37 @@ public class StudyListBean implements StudyListLocal {
         if ((roles != null) && (roles.size() == 0)) return new ArrayList<Patient>();
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT p");
-        appendFromClause(ql, filter, true);
+        if (!filter.isPatientQuery())
+            ql.append(", s");
+        appendFromClause(ql, filter);
         appendWhereClause(ql, filter, roles);
         String studyDT = filter.isPatientQuery() ? null : 
             filter.isLatestStudiesFirst() ? "s.studyDateTime DESC" : "s.studyDateTime";
         QueryUtil.appendOrderBy(ql, new String[]{"p.patientName", studyDT});
         Query query = em.createQuery(ql.toString());
         setQueryParameters(query, filter, roles);
-        return query.setMaxResults(max).setFirstResult(index).getResultList();
+        if (filter.isPatientQuery())
+            return query.setMaxResults(max).setFirstResult(index).getResultList();
+        else {
+            List<Object[]> result = query.setMaxResults(max).setFirstResult(index).getResultList();
+            List<Patient> patientList = new ArrayList();
+            Patient patient = null;
+            for (Object[] element: result) {
+                if (!patientList.contains((Patient) element[0])) {
+                    patient = (Patient) element[0];
+                    patient.setStudies(new HashSet<Study>());
+                    patientList.add(patient);
+                }
+                patient.getStudies().add((Study) element[1]);
+            }
+            return patientList;
+        }
     }
 
-    private static void appendFromClause(StringBuilder ql, StudyListFilter filter, boolean fetch) {
+    private static void appendFromClause(StringBuilder ql, StudyListFilter filter) {
         ql.append(" FROM Patient p");
-        if (!filter.isPatientQuery() ) {
-            ql.append(" INNER JOIN ");
-            if (fetch) {
-                ql.append("FETCH ");
-            }
-            ql.append("p.studies s");
-        }
+        if (!filter.isPatientQuery() ) 
+            ql.append(" INNER JOIN p.studies s");
     }
 
     private void appendWhereClause(StringBuilder ql, StudyListFilter filter, List<String> roles) {
