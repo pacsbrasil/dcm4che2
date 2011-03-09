@@ -852,7 +852,7 @@ public class StudyListPage extends Panel {
         retainSelectedPatients();
         boolean forceExpandable = WebCfgDelegate.getInstance().forcePatientExpandableForPatientQuery();
         for (Patient patient : patients) {
-            PatientModel patientModel = addPatient(patient);            
+            PatientModel patientModel = addPatient(patient);   
             if (!viewport.getFilter().isPatientQuery()) {
                 for (Study study : patient.getStudies()) {
                     List<String> actions = dao.findStudyPermissionActions((study).getStudyInstanceUID(), studyPermissionHelper.getDicomRoles());
