@@ -39,6 +39,7 @@
 package org.dcm4chee.web.dao.trash;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -55,7 +56,6 @@ import org.dcm4chee.archive.entity.PrivateInstance;
 import org.dcm4chee.archive.entity.PrivatePatient;
 import org.dcm4chee.archive.entity.PrivateSeries;
 import org.dcm4chee.archive.entity.PrivateStudy;
-import org.dcm4chee.web.dao.folder.StudyListFilter;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.jboss.annotation.ejb.LocalBinding;
 
@@ -71,22 +71,14 @@ public class TrashListBean implements TrashListLocal {
     @PersistenceContext(unitName="dcm4chee-arc")
     private EntityManager em;
 
-    private void appendDicomSecurityFilter(StringBuilder ql) {
-        ql.append(" AND (s.studyInstanceUID IN (SELECT sp.studyInstanceUID FROM StudyPermission sp WHERE sp.action = 'Q' AND sp.role IN (:roles)))");
-    }
-
     public int count(TrashListFilter filter, List<String> roles) {
         if ((roles != null) && (roles.size() == 0)) return 0;
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT COUNT(*)");
-        appendFromClause(ql, filter, false);
-        appendWhereClause(ql, filter);
-        if ((roles != null) && !filter.isPatientQuery()) 
-            appendDicomSecurityFilter(ql);
+        appendFromClause(ql, filter);
+        appendWhereClause(ql, filter, roles);
         Query query = em.createQuery(ql.toString());
-        if ((roles != null) && !filter.isPatientQuery())
-            query.setParameter("roles", roles);        
-        setQueryParameters(query, filter);
+        setQueryParameters(query, filter, roles);
         return ((Number) query.getSingleResult()).intValue();
     }
 
@@ -95,30 +87,38 @@ public class TrashListBean implements TrashListLocal {
         if ((roles != null) && (roles.size() == 0)) return new ArrayList<PrivatePatient>();
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT p");
-        appendFromClause(ql, filter, true);
-        appendWhereClause(ql, filter);
-        if ((roles != null) && !filter.isPatientQuery())
-            appendDicomSecurityFilter(ql);
-        ql.append(" ORDER BY p.patientName");
+        if (!filter.isPatientQuery())
+            ql.append(", s");
+        appendFromClause(ql, filter);
+        appendWhereClause(ql, filter, roles);
+        QueryUtil.appendOrderBy(ql, new String[]{"p.patientName"});        
         Query query = em.createQuery(ql.toString());
-        if ((roles != null) && !filter.isPatientQuery())
-            query.setParameter("roles", roles);
-        setQueryParameters(query, filter);
-        return query.setMaxResults(pagesize).setFirstResult(offset).getResultList();
-    }
-
-    private static void appendFromClause(StringBuilder ql, TrashListFilter filter, boolean fetch) {
-        ql.append(" FROM PrivatePatient p");
-        if (!filter.isPatientQuery() ) {
-            ql.append(" INNER JOIN ");
-            if (fetch) {
-                ql.append("FETCH ");
+        setQueryParameters(query, filter, roles);
+        if (filter.isPatientQuery())
+            return query.setMaxResults(pagesize).setFirstResult(offset).getResultList();
+        else {
+            List<Object[]> result = query.setMaxResults(pagesize).setFirstResult(offset).getResultList();
+            List<PrivatePatient> patientList = new ArrayList();
+            PrivatePatient patient = null;
+            for (Object[] element: result) {
+                if (!patientList.contains((PrivatePatient) element[0])) {
+                    patient = (PrivatePatient) element[0];
+                    patient.setStudies(new HashSet<PrivateStudy>());
+                    patientList.add(patient);
+                }
+                patient.getStudies().add((PrivateStudy) element[1]);
             }
-            ql.append("p.studies s");
+            return patientList;
         }
     }
 
-    private static void appendWhereClause(StringBuilder ql, TrashListFilter filter) {
+    private static void appendFromClause(StringBuilder ql, TrashListFilter filter) {
+        ql.append(" FROM PrivatePatient p");
+        if (!filter.isPatientQuery()) 
+            ql.append(" INNER JOIN p.studies s");
+    }
+
+    private static void appendWhereClause(StringBuilder ql, TrashListFilter filter, List<String> roles) {
         ql.append(" WHERE p.privateType = 1");
         if ( filter.isPatientQuery()) {
             appendPatFilter(ql, filter);
@@ -130,6 +130,8 @@ public class TrashListBean implements TrashListLocal {
                 ql.append(" AND s.studyInstanceUID = :studyInstanceUID");
             }
             QueryUtil.appendSourceAETFilter(ql, new String[]{filter.getSourceAET()});
+            if ((roles != null) && !filter.isPatientQuery())
+                QueryUtil.appendDicomSecurityFilter(ql);
         }
     }
 
@@ -139,7 +141,7 @@ public class TrashListBean implements TrashListLocal {
         QueryUtil.appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
     }
 
-    private static void setQueryParameters(Query query, TrashListFilter filter) {
+    private static void setQueryParameters(Query query, TrashListFilter filter, List<String> roles) {
         if ( filter.isPatientQuery()) {
             setPatQueryParameters(query, filter);
         } else {
@@ -150,6 +152,8 @@ public class TrashListBean implements TrashListLocal {
                 QueryUtil.setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
             }
             QueryUtil.setSourceAETQueryParameter(query, new String[]{filter.getSourceAET()});
+            if ((roles != null) && !filter.isPatientQuery())
+                query.setParameter("roles", roles);
         }
     }
 
@@ -174,7 +178,7 @@ public class TrashListBean implements TrashListLocal {
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT " + (isCount ? "COUNT(s)" : "s") + " FROM PrivateStudy s WHERE s.patient.pk=?1");
         if (roles != null)
-            appendDicomSecurityFilter(ql);
+            QueryUtil.appendDicomSecurityFilter(ql);
         Query query = em.createQuery(ql.toString());
         query.setParameter(1, pk);
         if (roles != null)
