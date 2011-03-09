@@ -258,10 +258,7 @@ public class TarRetrieverService extends ServiceMBeanSupport {
     }
 
     private void fetchHSMFileFinished(String fsID, String tarPath, File tarFile) throws IOException {
-        if (hsmModuleServicename == null) {
-            log.info("M-DELETE " + tarFile);
-            tarFile.delete();
-        } else {
+        if (hsmModuleServicename != null) {
             try {
                 server.invoke(hsmModuleServicename, "fetchHSMFileFinished", new Object[]{fsID, tarPath, tarFile}, 
                     new String[]{String.class.getName(),String.class.getName(),File.class.getName()});
