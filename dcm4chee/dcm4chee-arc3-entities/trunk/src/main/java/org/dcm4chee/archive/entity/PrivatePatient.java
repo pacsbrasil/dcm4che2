@@ -114,6 +114,10 @@ public class PrivatePatient extends BaseEntity implements Serializable {
         return studies;
     }
 
+    public void setStudies(Set<PrivateStudy> studies) {
+        this.studies = studies;
+    }
+    
     @Override
     public String toString() {
         return "PrivatePatient[pk=" + pk

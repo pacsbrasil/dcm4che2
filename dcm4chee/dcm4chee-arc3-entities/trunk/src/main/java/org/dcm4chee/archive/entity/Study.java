@@ -61,6 +61,7 @@ import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.conf.AttributeFilter;
 import org.dcm4chee.archive.exceptions.ConfigurationException;
 import org.dcm4chee.archive.util.DicomObjectUtils;
+import org.hibernate.annotations.BatchSize;
 
 /**
  * @author Damien Evans <damien.daddy@gmail.com>
