@@ -178,6 +178,9 @@ public class WebCfgDelegate extends BaseCfgDelegate {
     public String getMpps2mwlPresetModality() {
         return getString("Mpps2mwlPresetModality");
     }
+    public boolean isMpps2mwlAutoQuery() {
+        return getBoolean("Mpps2mwlAutoQuery", true); 
+    }
 
     public int checkCUID(String cuid) {
         if (server == null) return -1;

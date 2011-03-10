@@ -493,14 +493,30 @@
       setMethod="setMpps2mwlPresetStartDate">
       <description><![CDATA[Preset Value of Start Date searchfiled in MPPS to MWL Link dialog.<br/>
       	<dl><dt>The value can be:</dt>
-      	<dd>delete...Delete the input field.</dd>
-      	<dd>mpps.....Use day of startdate of MPPS.</dd>
-      	<dd>today....Use current day.</dd>
+      	<dd>delete..........................Delete the input field.</dd>
+      	<dd>mpps[(startOffset,endOffset)]...Use day of startdate of MPPS.</dd>
+      	<dd>today[(startOffset,endOffset]...Use current day.</dd>
+      	</dl>
+      	The optional (startOffset,endOffset) can be used to extend/move the search date range.<br />
+      	e.g. mpps(-1,2): Date range is: one day before PPS Start date and 2 days after.<br />
+      	'today(0,1)': Date range is: current day and next day.<br />
+      	Note: dont use + for positive numbers!
       ]]></description>
       <name>Mpps2mwlPresetStartDate</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="mpps"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isMpps2mwlAutoQuery"
+      setMethod="setMpps2mwlAutoQuery">
+      <description><![CDATA[Enable auto query if MPPS Link dialog is opened.
+      ]]></description>
+      <name>Mpps2mwlAutoQuery</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
       </descriptors>
    </attribute>
 

@@ -329,7 +329,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 pagesize.setObject(WebCfgDelegate.getInstance().getDefaultMWLPagesize());
                 notSearched = true;
                 BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
-                
+                target.addComponent(navPanel);
+                target.addComponent(listPanel);
             }
         };
         resetBtn.setDefaultFormProcessing(false);

@@ -84,7 +84,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     private static final String DEFAULT_TIMER_SERVICE = "jboss:service=Timer";
     private static final long ONE_DAY_IN_MILLIS = 60000*60*24;
-
+    
     private String dicomSecurityServletUrl;
     
     private String wadoBaseURL;
@@ -123,6 +123,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private String mpps2mwlPresetPatientname;
     private String mpps2mwlPresetModality;
     private String mpps2mwlPresetStartDate;
+    private boolean mpps2mwlAutoQuery;
     
     private boolean useFamilyAndGivenNameQueryFields;
     
@@ -430,8 +431,31 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         return mpps2mwlPresetStartDate;
     }
 
-    public void setMpps2mwlPresetStartDate(String mpps2mwlPresetStartDate) {
-        this.mpps2mwlPresetStartDate = mpps2mwlPresetStartDate;
+    public void setMpps2mwlPresetStartDate(String s) {
+        if (!"delete".equals(s) && !s.startsWith("today") &&
+            !s.startsWith("mpps")) {
+            throw new IllegalArgumentException("Preset Start Date must be delete, mpps[(startOffset,endOffset)] or today[((startOffset,endOffset)]! "+s);
+        }
+        int pos = s.indexOf('(');
+        if (pos != -1) {
+            try {
+                int pos1 = s.indexOf(',', ++pos);
+                Integer.parseInt(s.substring(pos, pos1));
+                Integer.parseInt(s.substring(++pos1, s.indexOf(')',pos1)));
+            } catch (Exception x) {
+                log.info("Illegal Date range extension!", x);
+                throw new IllegalArgumentException("Date range extension must be (startOffset,endOffset):"+s);
+            }
+        }
+        mpps2mwlPresetStartDate = s;
+    }
+
+    public boolean isMpps2mwlAutoQuery() {
+        return mpps2mwlAutoQuery;
+    }
+
+    public void setMpps2mwlAutoQuery(boolean mpps2mwlAutoQuery) {
+        this.mpps2mwlAutoQuery = mpps2mwlAutoQuery;
     }
 
     public ObjectName getAEServiceName() {
