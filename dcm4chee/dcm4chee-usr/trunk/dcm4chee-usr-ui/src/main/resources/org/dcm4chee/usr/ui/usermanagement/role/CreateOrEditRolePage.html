@@ -47,6 +47,27 @@
                             </div>
                             <input wicket:id="dicomrole-checkbox" type="checkbox" />
                          </div>
+                         <!-- 
+            <tr wicket:id="type-rows">
+                <td>
+                    <input wicket:id="type-checkbox" type="checkbox" />
+                </td>
+                <td wicket:id="typename">
+                    [Typename]
+                </td>
+            </tr>
+             -->
+            
+                        <div wicket:id="type-rows" class="edit-table-row">
+                            <div wicket:id="typename" class="edit-desc">
+                                [Typename]
+                            </div>
+                            <div>
+                                <input wicket:id="type-checkbox" type="checkbox" />
+                            </div>
+                        </div>
+            
+            
 					</div>
 					<div class="edit-buttons">
 						<input wicket:id="add-role-submit" type="submit" wicket:message="value:rolelist.add-role-form.save" />

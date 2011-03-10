@@ -39,8 +39,10 @@
 package org.dcm4chee.usr.ui.usermanagement.role;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
@@ -48,17 +50,21 @@ import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
+import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.Group;
 import org.dcm4chee.usr.model.Role;
+import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
+import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.ui.validator.RoleValidator;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
@@ -161,6 +167,57 @@ public class CreateOrEditRolePage extends SecureWebPage {
                 }
             }));
 
+            RepeatingView typeRows = new RepeatingView("type-rows");
+            add(typeRows);
+            
+            int i = 0;
+            List<String> roleTypes = UsrCfgDelegate.getInstance().getRoleTypes();
+            
+            System.out.println("**********************************");
+            System.out.println("role types: " + roleTypes);
+            if (roleTypes != null)
+                for (String type : roleTypes) 
+                    System.out.println("R: " + type);
+            System.out.println("**********************************");
+            
+            if (roleTypes != null)
+                for (String type : roleTypes) {
+                    WebMarkupContainer rowParent;            
+                    typeRows.add((rowParent = new WebMarkupContainer(typeRows.newChildId()))
+                            .add(new Label("typename", type)
+                            )
+                    );
+                    rowParent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i++))));
+
+                    AjaxCheckBox typeCheckbox;
+                    rowParent.add((typeCheckbox = new AjaxCheckBox("type-checkbox", new Model<Boolean>(role == null ? false : role.isDicomRole())) {
+
+                        private static final long serialVersionUID = 1L;
+
+                        @Override
+                        protected void onUpdate(AjaxRequestTarget target) {
+                        }
+                    }));
+                    
+//                    AjaxCheckBox typeCheckbox = new AjaxCheckBox("type-checkbox", new HasTypeModel(role, type)) {
+//        
+//                        private static final long serialVersionUID = 1L;
+//        
+//                        @Override
+//                        protected void onUpdate(AjaxRequestTarget target) {
+//                            target.addComponent(this);
+//                        }
+//                          
+//                        @Override
+//                        protected void onComponentTag(ComponentTag tag) {
+//                            super.onComponentTag(tag);
+//                            tag.put("title", new ResourceModel(((HasTypeModel) this.getModel()).getObject().booleanValue() ? "roleTypes.has-type-checkbox.remove.tooltip" : "roleTypes.has-type-checkbox.add.tooltip").wrapOnAssignment(this).getObject());
+//                        }
+//                    };
+//                    typeCheckbox.add(new SecurityBehavior(getModuleName() + ":changeTypeAssignmentCheckbox"));
+                    typeRows.add(rowParent.add(typeCheckbox));
+                }
+
             add(new AjaxFallbackButton("add-role-submit", CreateOrEditRoleForm.this) {
                 
                 private static final long serialVersionUID = 1L;
@@ -200,4 +257,8 @@ public class CreateOrEditRolePage extends SecureWebPage {
             });
         }
     };
+
+    public static String getModuleName() {
+        return "roletypes";
+    }
 }

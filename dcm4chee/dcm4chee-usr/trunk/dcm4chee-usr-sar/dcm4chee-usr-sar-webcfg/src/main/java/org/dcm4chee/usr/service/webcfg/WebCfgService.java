@@ -82,11 +82,11 @@ public class WebCfgService extends ServiceMBeanSupport {
         return new ArrayList<String>(roleTypes);
     }
 
-    public String getUserRole() {
+    public String getUserMgtUserRole() {
         return System.getProperty("dcm4chee-usr.cfg.userrole", NONE);
     }
 
-    public void setUserRole(String name) {
+    public void setUserMgtUserRole(String name) {
         if (NONE.equals(name)) {
             System.getProperties().remove("dcm4chee-usr.cfg.userrole");
         } else {
@@ -94,11 +94,11 @@ public class WebCfgService extends ServiceMBeanSupport {
         }
     }
     
-    public String getAdminRole() {
+    public String getUserMgtAdminRole() {
         return System.getProperty("dcm4chee-usr.cfg.adminrole", NONE);
     }
 
-    public void setAdminRole(String name) {
+    public void setUserMgtAdminRole(String name) {
         if (NONE.equals(name)) {
             System.getProperties().remove("dcm4chee-usr.cfg.adminrole");
         } else {
