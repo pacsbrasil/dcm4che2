@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.weasis.dicom</groupId>
+	<artifactId>weasis-dicom</artifactId>
+	<packaging>pom</packaging>
+	<name>DICOM Plug-ins [${project.artifactId}]</name>
+	<version>1.4</version>
+	<parent>
+		<artifactId>weasis-parent</artifactId>
+		<groupId>org.weasis</groupId>
+		<version>1.5</version>
+		<relativePath>../weasis-parent/pom.xml</relativePath>
+	</parent>
+	<scm>
+		<connection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/weasis/weasis_framework/tags/weasis-framework-1.0.8/weasis-dicom</connection>
+		<developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/weasis/weasis_framework/tags/weasis-framework-1.0.8/weasis-dicom</developerConnection>
+		<url>https://dcm4che.svn.sourceforge.net/viewvc/dcm4che/weasis/weasis_framework/tags/weasis-framework-1.0.8/weasis-dicom</url>
+	</scm>
+	<modules>
+		<module>weasis-dicom-parent</module>
+		<module>weasis-dicom-codec</module>
+		<module>weasis-dicom-explorer</module>
+		<module>weasis-dicom-viewer2d</module>
+	</modules>
+</project>
