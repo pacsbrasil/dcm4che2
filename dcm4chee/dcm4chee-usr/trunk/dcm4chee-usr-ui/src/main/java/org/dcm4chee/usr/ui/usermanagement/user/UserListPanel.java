@@ -175,14 +175,12 @@ public class UserListPanel extends Panel {
             
             WebMarkupContainer rowParent;
             roleRows.add((rowParent = new WebMarkupContainer(roleRows.newChildId())).add(new Label("userID", user.getUserID())));
-            
             ChangePasswordLink changePasswordLink
                 = new ChangePasswordLink("change-password-link", this.changePasswordWindow, this.userId, user);
             changePasswordLink.add(new Image("img-change-password", ImageManager.IMAGE_USER_CHANGE_PASSWORD)
                     .add(new ImageSizeBehaviour()))
                     .add(new AttributeModifier("title", true, new Model<String>(new ResourceModel("userlist.change_password.tooltip").wrapOnAssignment(this).getObject()))
-             );
-
+             );           
             rowParent.add(changePasswordLink)
             .add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))));
             changePasswordLink.add(new SecurityBehavior(getModuleName() + ":changePasswordLink"));
@@ -233,7 +231,9 @@ public class UserListPanel extends Panel {
             
             StringBuffer assignedRoles = new StringBuffer();
             for (UserRoleAssignment ura : user.getRoles())
-                assignedRoles.append(ura.getRole()).append(" ");
+                assignedRoles.append(ura.getRole()).append(", ");
+            if (assignedRoles.length() > 0) 
+                assignedRoles.delete(assignedRoles.length() - 2, assignedRoles.length() - 1);
                 
             rowParent.add(new Label("assigned-roles", assignedRoles.toString()));            
         }
