@@ -91,6 +91,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
 
     private static final long serialVersionUID = 1L;
     
+    private static final long ONE_DAY_IN_MILLIS = 60000*60*24;
     private static final ResourceReference CSS = new CompressedResourceReference(Mpps2MwlLinkPage.class, "mpps-link-style.css");
     
     private Mpps2MwlLinkPanelM panel = new Mpps2MwlLinkPanelM("content");
@@ -121,8 +122,10 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         ppsPatModelForInfo = ppsModelForInfo.getStudy().getPatient();
         panel.presetSearchfields();
         comp = c;
-        target.appendJavascript("document.getElementById('" + panel.getSearchButton().getMarkupId() +
+        if (WebCfgDelegate.getInstance().isMpps2mwlAutoQuery() ) {
+            target.appendJavascript("document.getElementById('" + panel.getSearchButton().getMarkupId() +
                 "').click();");
+        }
         super.show(target);
     }
     private void hideLinkedPpsInFolder(org.dcm4chee.web.war.folder.ViewPort viewport) {
@@ -274,18 +277,38 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                 getViewPort().getFilter().setStartDateMin(null);
                 getViewPort().getFilter().setStartDateMax(null);
             } else if (startPreset != null) {
-                Calendar cal = Calendar.getInstance();
-                if ("mpps".equals(startPreset)) {
-                    cal.setTime(ppsModel.getDatetime());
+                Calendar calMin = Calendar.getInstance();
+                Calendar calMax = Calendar.getInstance();
+                if (startPreset.startsWith("mpps")) {
+                    calMin.setTime(ppsModel.getDatetime());
+                    calMax.setTime(ppsModel.getDatetime());
                 }
-                cal.set(Calendar.HOUR_OF_DAY, 0);
-                cal.set(Calendar.MINUTE, 0);
-                cal.set(Calendar.MILLISECOND, 0);
-                getViewPort().getFilter().setStartDateMin(cal.getTime());
-                cal.set(Calendar.HOUR_OF_DAY, 23);
-                cal.set(Calendar.MINUTE, 59);
-                cal.set(Calendar.MILLISECOND, 999);
-                getViewPort().getFilter().setStartDateMax(cal.getTime());
+                extendRange(startPreset, calMin, calMax);
+                calMin.set(Calendar.HOUR_OF_DAY, 0);
+                calMin.set(Calendar.MINUTE, 0);
+                calMin.set(Calendar.MILLISECOND, 0);
+                getViewPort().getFilter().setStartDateMin(calMin.getTime());
+                calMax.set(Calendar.HOUR_OF_DAY, 23);
+                calMax.set(Calendar.MINUTE, 59);
+                calMax.set(Calendar.MILLISECOND, 999);
+                getViewPort().getFilter().setStartDateMax(calMax.getTime());
+            }
+        }
+
+        private void extendRange(String s, Calendar calMin, Calendar calMax) {
+            int pos = s.indexOf('(');
+            if (pos != -1) {
+                try {
+                    int pos1 = s.indexOf(',', ++pos);
+                    int startOffset = Integer.parseInt(s.substring(pos, pos1));
+                    int endOffset = Integer.parseInt(s.substring(++pos1, s.indexOf(')',pos1)));
+                    if (startOffset != 0)
+                        calMin.setTimeInMillis(calMin.getTimeInMillis() + startOffset * ONE_DAY_IN_MILLIS);
+                    if (endOffset != 0)
+                        calMax.setTimeInMillis(calMax.getTimeInMillis() + endOffset * ONE_DAY_IN_MILLIS);
+                } catch (Exception x) {
+                    log.warn("Configuration Error! Can not extend date range! config:"+s);
+                }
             }
         }
     }
