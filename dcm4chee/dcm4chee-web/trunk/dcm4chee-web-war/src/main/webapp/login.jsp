@@ -33,7 +33,7 @@
         <div class="signin" style="padding-top: 160px;">
             <span class="login-desc">${login.loginLabel}</span>
             <div>
-		        <form action="j_security_check">
+		        <form action="j_security_check" method="POST">
 		            <table style="padding-top: 60px; padding-right: 90px; padding-bottom: 10px;">
                         <tbody>
 			                <tr style="text-align: left;">
