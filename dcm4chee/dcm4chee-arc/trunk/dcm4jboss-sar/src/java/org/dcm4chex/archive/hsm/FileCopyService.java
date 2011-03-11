@@ -118,49 +118,66 @@ public class FileCopyService extends AbstractFileCopyService {
     }
 
     public boolean copyFilesOfStudy(String studyIUID) throws Exception {
+        if (destination == null) {
+            log.warn("Destination is not configured! skip this copyFilesOfStudy call!");
+            return false;
+        }
         log.info("Start copy files of study "+studyIUID);
         Dataset queryDs = DcmObjectFactory.getInstance().newDataset();
         queryDs.putCS(Tags.QueryRetrieveLevel, "SERIES");
         queryDs.putUI(Tags.StudyInstanceUID, studyIUID);
         queryDs.putUI(Tags.SeriesInstanceUID);
         QueryCmd cmd = QueryCmd.create(queryDs, null, true, false, false, false, null);
-        cmd.setFetchSize(getFetchSize()).execute();
-        while ( cmd.next() ) {
-            if ( ! copyFilesOfSeries(cmd.getDataset().getString(Tags.SeriesInstanceUID) ) ) {
-                return false;
+        try {
+            cmd.setFetchSize(getFetchSize()).execute();
+            while ( cmd.next() ) {
+                doCopyFilesOfSeries(cmd.getDataset().getString(Tags.SeriesInstanceUID));
             }
+        } finally {
+            cmd.close();
         }
-        cmd.close();
         return true;
     }
+
     public boolean copyFilesOfSeries(String seriesIUID) throws Exception {
+        if (destination == null) {
+            log.warn("Destination is not configured! skip this copyFilesOfSeries call!");
+            return false;
+        }
+        return doCopyFilesOfSeries(seriesIUID);
+    }
+    
+    private boolean doCopyFilesOfSeries(String seriesIUID) throws Exception {
         Dataset queryDs = DcmObjectFactory.getInstance().newDataset();
         queryDs.putCS(Tags.QueryRetrieveLevel, "IMAGE");
         queryDs.putUI(Tags.StudyInstanceUID);
         queryDs.putUI(Tags.SeriesInstanceUID, seriesIUID);
         queryDs.putUI(Tags.SOPInstanceUID);
         QueryCmd cmd = QueryCmd.create(queryDs, null, true, false, false, false, null);
-        cmd.execute();
-        Dataset ds = null;
-        Dataset ian = DcmObjectFactory.getInstance().newDataset();
-        Dataset refSeries = ian.putSQ(Tags.RefSeriesSeq).addNewItem();
-        DcmElement refSOPs = refSeries.putSQ(Tags.RefSOPSeq);
-        while ( cmd.next() ) {
-            ds = cmd.getDataset();
-            refSeries.putUI(Tags.SeriesInstanceUID, ds.getString(Tags.SeriesInstanceUID));
-            refSOPs.addNewItem().putUI(Tags.RefSOPInstanceUID, ds.getString(Tags.SOPInstanceUID));
-        }
-        cmd.close();
-        if ( ds != null ) {
-            ian.putUI(Tags.StudyInstanceUID, ds.getString(Tags.StudyInstanceUID));
-            refSeries.putUI(Tags.SeriesInstanceUID, ds.getString(Tags.SeriesInstanceUID));
-            schedule(createOrder(ian),0l);
-            log.info("Copy files of series "+seriesIUID+" scheduled!");
-            return true;
-        } else {
-            log.info("No instances found for file copy! QueryDS:");
-            log.info(queryDs);
-            return false;
+        try {
+            cmd.execute();
+            Dataset ds = null;
+            Dataset ian = DcmObjectFactory.getInstance().newDataset();
+            Dataset refSeries = ian.putSQ(Tags.RefSeriesSeq).addNewItem();
+            DcmElement refSOPs = refSeries.putSQ(Tags.RefSOPSeq);
+            while ( cmd.next() ) {
+                ds = cmd.getDataset();
+                refSeries.putUI(Tags.SeriesInstanceUID, ds.getString(Tags.SeriesInstanceUID));
+                refSOPs.addNewItem().putUI(Tags.RefSOPInstanceUID, ds.getString(Tags.SOPInstanceUID));
+            }
+            if ( ds != null ) {
+                ian.putUI(Tags.StudyInstanceUID, ds.getString(Tags.StudyInstanceUID));
+                refSeries.putUI(Tags.SeriesInstanceUID, ds.getString(Tags.SeriesInstanceUID));
+                schedule(createOrder(ian),0l);
+                log.info("Copy files of series "+seriesIUID+" scheduled!");
+                return true;
+            } else {
+                log.info("No instances found for file copy! seriesIUID:"+seriesIUID);
+                log.debug(queryDs);
+                return false;
+            }
+        } finally {
+            cmd.close();
         }
 
     }
