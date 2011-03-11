@@ -60,7 +60,6 @@ import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.XSLTUtils;
 import org.jboss.system.ServiceMBeanSupport;
-import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -141,7 +140,7 @@ public class GPWLFeedService2 extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        logDir = new File(ServerConfigLocator.locate().getServerHomeDir(), "log");
+        logDir = new File(System.getProperty("jboss.server.log.dir")); 
         server.addNotificationListener(ianScuServiceName,
                 ianListener , IANScuService.NOTIF_FILTER, null);
     }

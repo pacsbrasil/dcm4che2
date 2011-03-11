@@ -58,10 +58,10 @@ import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.FileFormat;
 import org.dcm4che.dict.Tags;
+
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
-import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -167,7 +167,7 @@ public class FileUtils {
     public static File resolve(File f) {
         if (f.isAbsolute())
             return f;
-        File serverHomeDir = ServerConfigLocator.locate().getServerHomeDir();
+        File serverHomeDir = new File(System.getProperty("jboss.server.home.dir"));
         return new File(serverHomeDir, f.getPath());
     }
 

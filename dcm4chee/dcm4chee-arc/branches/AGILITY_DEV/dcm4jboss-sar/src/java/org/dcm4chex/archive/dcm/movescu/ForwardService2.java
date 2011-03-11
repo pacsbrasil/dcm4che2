@@ -80,7 +80,6 @@ import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.ContentHandlerAdapter;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.system.ServiceMBeanSupport;
-import org.jboss.system.server.ServerConfigLocator;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -323,7 +322,7 @@ public class ForwardService2 extends ServiceMBeanSupport {
         if (logForwardPriorXML ) {
             FileOutputStream fos = null;
             try {
-                File logFile = new File(ServerConfigLocator.locate().getServerLogDir(), 
+                File logFile = new File(System.getProperty("jboss.server.log.dir"), 
                         "forward_prior/"+new DTFormat().format(new Date())+".xml");
                 logFile.getParentFile().mkdirs();
                 TransformerHandler thLog = tf.newTransformerHandler();

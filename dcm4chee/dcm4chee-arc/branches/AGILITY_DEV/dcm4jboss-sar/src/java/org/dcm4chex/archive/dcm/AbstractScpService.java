@@ -98,7 +98,6 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.XSLTUtils;
 import org.jboss.logging.Logger;
 import org.jboss.system.ServiceMBeanSupport;
-import org.jboss.system.server.ServerConfigLocator;
 
 /**
  * @author Gunter.Zeilinger@tiani.com
@@ -680,8 +679,7 @@ public abstract class AbstractScpService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        logDir = new File(ServerConfigLocator.locate().getServerHomeDir(),
-                "log");
+        logDir = new File(System.getProperty("jboss.server.log.dir")); 
         userIdentityNegotiator = (UserIdentityNegotiator) server.invoke(
                 dcmServerName, "userIdentityNegotiator", null, null);
         dcmHandler = (DcmHandler) server.invoke(dcmServerName, "dcmHandler",
