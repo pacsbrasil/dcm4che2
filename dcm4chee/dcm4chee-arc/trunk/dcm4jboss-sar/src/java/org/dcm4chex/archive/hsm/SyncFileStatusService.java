@@ -84,9 +84,6 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
             if (fileSystem == null) {
                 log.debug("SyncFileStatus disabled (fileSystem=NONE)!");
             }
-            if (oldestCreatedTimeOfCheckFileStatus == null || System.currentTimeMillis() > nextUpdate) {
-                updateOldestCreatedTimeOfCheckFileStatus();
-            }
             Calendar cal = Calendar.getInstance();
             int hour = cal.get(Calendar.HOUR_OF_DAY);
             if (isDisabled(hour)) {
@@ -213,6 +210,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     }
 
     public void updateOldestCreatedTimeOfCheckFileStatus() {
+        log.info("Start updateOldestCreatedTimeOfCheckFileStatus! current:"+oldestCreatedTimeOfCheckFileStatus);
         try {
             oldestCreatedTimeOfCheckFileStatus = newFileSystemMgt().minCreatedTimeOnFsWithFileStatus(this.fileSystem, this.checkFileStatus);
             if (oldestCreatedTimeOfCheckFileStatus == null) {
@@ -280,12 +278,15 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
             isRunning = true;
         }
         try {
-            if (this.nextUpdate == 0L && oldestCreatedTimeOfCheckFileStatus == null)
+            
+            if (oldestCreatedTimeOfCheckFileStatus == null || System.currentTimeMillis() > nextUpdate) {
                 this.updateOldestCreatedTimeOfCheckFileStatus();
+            }
             if (oldestCreatedTimeOfCheckFileStatus == null) {
                log.info("OldestCreatedTimeOfCheckFileStatus is null! SyncFileStatus skipped!");
                return 0;
             }
+            log.info("Start SyncFileStatus!");
             FileSystemMgt2 fsmgt = newFileSystemMgt();
             FileDTO[] c = fsmgt.findFilesByStatusAndFileSystem(fileSystem, checkFileStatus, this.oldestCreatedTimeOfCheckFileStatus,
                     new Timestamp(System.currentTimeMillis() - minFileAge), limitNumberOfFilesPerTask);
@@ -300,6 +301,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
                 if (check(fsmgt, c[i], checkedTarsStatus, checkedTarsMD5))
                     ++count;
             }
+            log.info("SyncFileStatus finished! changed files:"+count);
             return count;
         } finally {
             isRunning = false;
