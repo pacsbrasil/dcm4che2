@@ -37,6 +37,7 @@
 <!ENTITY ExportSelectedEntitiesToTeachingFileSystem "Ausgewählte Entitäten zum Lehrarchiv exportieren">
 <!ENTITY ExportSelectedEntitiesToXDSRepository "Ausgewählte Entitäten zum XDS Repository exportieren">
 <!ENTITY DeleteSelectedEntities "Ausgewählte Entitäten löschen">
+<!ENTITY ViewSelectedEntities "Ausgewählte Entitäten in Weasis sehen">
 <!ENTITY RecoverSelectedEntities "Ausgewählte Entitäten wiederherstellen">
 <!ENTITY DeleteSelectedEntitiesIrrevocable "Ausgewählte Entitäten endgültig löschen">
 <!ENTITY EmptyTrash "Papierkorb leeren (=Alle Entitäten endgültig löschen)">

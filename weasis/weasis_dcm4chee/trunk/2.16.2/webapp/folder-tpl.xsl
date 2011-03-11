@@ -9,6 +9,7 @@
 <xsl:param name="folder.xds_consumer" select="'false'" />
 <xsl:param name="folder.send" select="'false'" />
 <xsl:param name="folder.delete" select="'false'" />
+<xsl:param name="folder.view" select="'false'" />
 <xsl:param name="folder.edit" select="'false'" />
 <xsl:param name="folder.move" select="'false'" />
 <xsl:param name="folder.add_worklist" select="'false'" />
@@ -171,6 +172,17 @@
 							</input>
 						</td>
 					</xsl:if>
+					<xsl:if test="$folder.view='true'">
+		             <td width="40">
+		                 <input type="image" value="View" name="view" src="images/view.gif"
+		                     alt="view" border="0" title="&ViewSelectedEntities;"
+		                     onclick="return confirm('&ViewSelectedEntities;?')">
+		                     <xsl:if test="total &lt;= 0">
+		                         <xsl:attribute name="disabled">disabled </xsl:attribute>
+		                     </xsl:if>
+		                 </input>
+		             </td>
+         			</xsl:if>
 					<xsl:if test="$folder.send='true'">
 						<td class="folder_header" width="40">
 							<input type="image" value="Send" name="send"

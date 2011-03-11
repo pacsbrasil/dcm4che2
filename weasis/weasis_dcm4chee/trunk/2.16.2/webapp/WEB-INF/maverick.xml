@@ -60,7 +60,7 @@ default-transform-type="xslt">
     </command>
 
     <command name="foldersubmit">
-      	<controller	class="org.dcm4chex.archive.web.maverick.FolderSubmitCtrl" />
+      	<controller	class="org.dcm4chex.archive.web.maverick.FolderSubmitCtrl2" />
       	<view ref="folder" />
 	    <view id="merge" name="merge">
 	      <transform path="patient_merge.xsl" />

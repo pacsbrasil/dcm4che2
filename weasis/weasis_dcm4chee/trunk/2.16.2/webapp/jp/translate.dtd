@@ -40,6 +40,7 @@
 <!ENTITY DeleteSelectedEntities "選択したエントリを削除">
 <!ENTITY RecoverSelectedEntities "選択したエントリを元に戻す">
 <!ENTITY DeleteSelectedEntitiesIrrevocable "選択したエントリを「未来永劫」削除">
+<!ENTITY ViewSelectedEntities "View selected Entities in Weasis">
 <!ENTITY EmptyTrash "ゴミ箱を空にする (「取り返しがつきませんよ)">
 <!ENTITY SendSelectedEntitiesToSpecifiedDestination "選択したエントリを指定したところへ送る">
 <!ENTITY confirmSendSelectedEntitiesTo1 "選択したエントリを送ってもいいかね ">

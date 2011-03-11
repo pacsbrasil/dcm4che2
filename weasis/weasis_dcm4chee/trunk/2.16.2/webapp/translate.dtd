@@ -37,6 +37,7 @@
 <!ENTITY ExportSelectedEntitiesToTeachingFileSystem "Export selected Entities to Teaching File system">
 <!ENTITY ExportSelectedEntitiesToXDSRepository "Export selected Entities to XDS Repository">
 <!ENTITY DeleteSelectedEntities "Delete selected Entities">
+<!ENTITY ViewSelectedEntities "View selected Entities in Weasis">
 <!ENTITY RecoverSelectedEntities "Recover selected Entities">
 <!ENTITY DeleteSelectedEntitiesIrrevocable "Delete selected Entities irrevocable">
 <!ENTITY EmptyTrash "Empty Trash (=Deletes all Entities irrevocable)">

@@ -37,6 +37,7 @@
 <!ENTITY ExportSelectedEntitiesToTeachingFileSystem "Exporter les entités sélectionnées vers le système de fichiers pédagogique">
 <!ENTITY ExportSelectedEntitiesToXDSRepository "Exporter les entités sélectionnées vers la Dépôt XDS">
 <!ENTITY DeleteSelectedEntities "Supprimer les entités sélectionnées">
+<!ENTITY ViewSelectedEntities "Visualiser la sélection dans Weasis">
 <!ENTITY RecoverSelectedEntities "Restaurer les Entités sélectionnées">
 <!ENTITY DeleteSelectedEntitiesIrrevocable "Supprimer définitif les entités sélectionnées ">
 <!ENTITY EmptyTrash "Supprimer toutes les entités de la corbeille">
