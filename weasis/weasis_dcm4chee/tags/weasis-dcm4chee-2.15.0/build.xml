@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="weasis-dcm4chee" default="build" basedir=".">
+
+	<property name="appName" value="dcm4chee-web" />
+	<property name="webroot" value="webapp" />
+	<property name="webinf" value="${webroot}/WEB-INF" />
+	<property name="build.classes" value="${webinf}/classes" />
+	<property name="build.lib" value="${webinf}/lib" />
+	<property file="etc/config.properties" />
+	<property name="target" value="1.5" />
+	<property name="source" value="1.5" />
+	<property name="debuglevel" value="source,lines,vars" />
+
+	<path id="class.path">
+		<fileset dir="lib" includes="**/*.jar" />
+		<fileset dir="${build.lib}" includes="**/*.jar" />
+		<pathelement path="${build.classes}" />
+	</path>
+
+	<target name="clean">
+		<delete dir="dist/${dcm4chee.version}" />
+		<delete dir="${build.classes}" />
+	</target>
+
+	<target name="prepare" depends="clean">
+		<echo message="Java version is ${ant.java.version}" />
+		<echo message="${appName} version is ${dcm4chee.version}" />
+	</target>
+
+	<target name="configure" depends="prepare">
+
+	</target>
+
+
+	<target name="build" depends="configure">
+		<copy todir="${build.classes}">
+			<fileset dir="etc/message" includes="**/*" />
+		</copy>
+		<echo message="${ant.project.name}: ${ant.file}" />
+		<javac debug="true" debuglevel="${debuglevel}" destdir="${build.classes}" source="${source}" target="${target}">
+			<src path="src" />
+			<classpath refid="class.path" />
+		</javac>
+	</target>
+
+	<target name="dist" depends="build">
+		<mkdir dir="dist/${dcm4chee.version}" />
+		<war destfile="dist/${dcm4chee.version}/${appName}.war">
+			<fileset dir="${webroot}" />
+		</war>
+	</target>
+</project>
