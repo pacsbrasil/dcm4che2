@@ -309,7 +309,7 @@ public class AuditLogger extends ServiceMBeanSupport {
             throws Exception {
         File dir = new File(configDir.replace('/', File.separatorChar));
         if (!dir.isAbsolute()) {
-            dir = new File(ServerConfigLocator.locate().getServerHomeDir(),
+            dir = new File(System.getProperty("jboss.server.home.dir"),
                     dir.getPath());
         }
         if (!dir.isDirectory()) {
