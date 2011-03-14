@@ -121,9 +121,11 @@
         <include name="lib/dcm4che.jar"/>
       </zipfileset>
       <zipfileset dir="${dcm4che14.home}" prefix="${dist.db.config}">
-        <include name="lib/dcm4che-imageio-rle-2.0.12.jar"/>
+        <include name="lib/dcm4che-imageio-rle-2.0.25.jar"/>
         <include name="lib/jai_imageio.jar"/>
         <include name="lib/clibwrapper_jiio.jar"/>
+        <include name="lib/slf4j-api-1.6.1.jar"/>
+        <include name="lib/slf4j-log4j12-1.6.1.jar"/>
       </zipfileset>
       <zipfileset dir="${dcm4che14.home}/bin" prefix="${dist.db}/bin/native">
         <include name="libclib_jiio.so"/>
