@@ -67,6 +67,7 @@ import org.apache.wicket.RequestCycle;
 import org.apache.wicket.protocol.http.WebRequest;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
