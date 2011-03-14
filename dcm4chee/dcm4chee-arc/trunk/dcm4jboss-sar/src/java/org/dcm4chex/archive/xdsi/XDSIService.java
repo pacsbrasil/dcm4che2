@@ -108,7 +108,6 @@ import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
-import org.jboss.system.server.ServerConfigLocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -801,7 +800,7 @@ public class XDSIService extends ServiceMBeanSupport {
     public static String resolvePath(String fn) {
         File f = new File(fn);
         if (f.isAbsolute()) return f.getAbsolutePath();
-        File serverHomeDir = ServerConfigLocator.locate().getServerHomeDir();
+        File serverHomeDir = new File(System.getProperty("jboss.server.home.dir"));
         return new File(serverHomeDir, f.getPath()).getAbsolutePath();
     }
 
