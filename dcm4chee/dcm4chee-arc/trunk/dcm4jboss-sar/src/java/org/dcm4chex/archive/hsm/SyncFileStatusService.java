@@ -343,8 +343,9 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
                 entries = checkedTarsMD5.get(tarPathKey);
                 if (log.isDebugEnabled()) log.debug("entries of checked tar file "+tarPathKey+" :"+entries);
             } else {
+                File tarFile = null;
                 try {
-                    File tarFile = fetchTarFile(dto.getDirectoryPath(), tarfilePath);
+                    tarFile = fetchTarFile(dto.getDirectoryPath(), tarfilePath);
                     entries = VerifyTar.verify(tarFile, buf);
                 } catch (Exception x) {
                     log.error("Verification of tar file "+tarPathKey+" failed! Reason:"+x.getMessage());
@@ -355,6 +356,10 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
                         } catch (Exception e) {
                             log.error("Failed to delete files of invalid tar file! tarFile:"+tarfilePath);
                         }
+                    }
+                } finally {
+                    if (tarFile != null) {
+                        fetchTarFileFinished(dto.getDirectoryPath(), tarfilePath, tarFile);
                     }
                 }
                 checkedTarsMD5.put(tarPathKey, entries);
@@ -392,6 +397,15 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
             throw e.getTargetException();
         } catch (ReflectionException e) {
             throw new ConfigurationException(e.getMessage(), e);
+        }
+    }
+    
+    private void fetchTarFileFinished(String fsID, String tarPath, File tarFile) {
+        try {
+            server.invoke(hsmModuleServicename, "fetchHSMFileFinished", new Object[]{fsID, tarPath, tarFile}, 
+                new String[]{String.class.getName(),String.class.getName(),File.class.getName()});
+        } catch (Exception x) {
+            log.warn("fetchHSMFileFinished failed! fsID:"+fsID+" tarPath:"+tarPath+" tarFile:"+tarFile, x);
         }
     }
 
