@@ -40,7 +40,11 @@ package org.dcm4chee.web.common.secure;
 
 import java.util.HashMap;
 
+import javax.servlet.http.Cookie;
+
 import org.apache.wicket.Request;
+import org.apache.wicket.RequestCycle;
+import org.apache.wicket.protocol.http.WebResponse;
 import org.apache.wicket.security.WaspApplication;
 import org.apache.wicket.security.WaspSession;
 
@@ -67,6 +71,7 @@ public class SecureSession extends WaspSession {
 
     public void setUsername(String username) {
         this.username = username;
+        ((WebResponse) RequestCycle.get().getResponse()).addCookie(new Cookie("signInPanel.signInForm.username", username));
     }
     
     public void extendedLogin(String username, String passwd, org.apache.wicket.security.hive.authentication.Subject subject) {
