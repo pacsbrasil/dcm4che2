@@ -52,6 +52,7 @@ import java.util.Vector;
 
 import javax.imageio.ImageIO;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
@@ -65,8 +66,6 @@ import org.dcm4che.image.PixelDataFactory;
 import org.dcm4che.image.PixelDataReader;
 import org.dcm4che.image.PixelDataWriter;
 import org.dcm4che.net.DataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">gunter zeilinger</a>
@@ -77,7 +76,8 @@ import org.slf4j.LoggerFactory;
  */
 class PrintSCUDataSource implements DataSource
 {
-    private static Logger log = LoggerFactory.getLogger(PrintSCUDataSource.class);
+    private static final Logger log = Logger.getLogger(PrintSCUDataSource.class);
+ 
     /**
      * Simple overlay representation
      * @author jforaci
