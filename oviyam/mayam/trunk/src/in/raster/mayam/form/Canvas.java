@@ -188,12 +188,19 @@ public class Canvas extends javax.swing.JPanel {
             g.setColor(Color.white);
             int wMin = this.layeredCanvas.imgpanel.getWindowLevel() - (this.layeredCanvas.imgpanel.getWindowWidth() / 2);
             int wMax = this.layeredCanvas.imgpanel.getWindowLevel() + (this.layeredCanvas.imgpanel.getWindowWidth() / 2);
+            int windowCenter=this.layeredCanvas.imgpanel.getWindowLevel();
+            if(this.layeredCanvas.imgpanel.getWindowLevel()==0&&this.layeredCanvas.imgpanel.getWindowWidth()==0)
+            {
+                wMin=0;
+                wMax=255;
+                windowCenter=128;
+            }
+            int wlWdith = font.stringWidth(Integer.toString(windowCenter));
             int wMinWidth = font.stringWidth(Integer.toString(wMin));
             int wMaxWidth = font.stringWidth(Integer.toString(wMax));
-            int wlWdith = font.stringWidth(Integer.toString(this.layeredCanvas.imgpanel.getWindowLevel()));
             g.drawString(Integer.toString(wMax), this.getSize().width - fromRight - wMaxWidth - 2, ((this.getSize().height / 2) - (gradientHeight / 2)));
             g.drawString(Integer.toString(wMin), this.getSize().width - fromRight - wMinWidth - 2, ((this.getSize().height / 2) + (gradientHeight / 2)));
-            g.drawString(Integer.toString(this.layeredCanvas.imgpanel.getWindowLevel()), this.getSize().width - fromRight - wlWdith - 2, ((this.getSize().height / 2)));
+            g.drawString(Integer.toString(windowCenter), this.getSize().width - fromRight - wlWdith - 2, ((this.getSize().height / 2)));
 
             if (this.layeredCanvas.imgpanel.getImageOrientation() != null) {
                 this.getOrientation(this.layeredCanvas.imgpanel.getImageOrientation());

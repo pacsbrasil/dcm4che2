@@ -47,6 +47,7 @@ import in.raster.mayam.util.DicomTagsReader;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -61,6 +62,7 @@ import javax.swing.border.LineBorder;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.imageio.plugins.DcmMetadata;
+import org.dcm4che2.data.Tag;
 
 /**
  *
@@ -95,6 +97,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
     private int nFrames = 0;
     private boolean mulitiFrame = false;
     private String instanceUID = "";
+    private boolean isEncapsulatedDocument = false;
 
     public SeriesPanel() {
         initComponents();
@@ -173,18 +176,30 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
             reader.setInput(iis, false);
             dataset = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
             try {
-                  if(reader.getNumImages(true)>0)
-                currentbufferedimage = reader.read(0);
+                if (reader.getNumImages(true) > 0) {
+                    currentbufferedimage = reader.read(0);
+                }
                 nFrames = reader.getNumImages(true);
                 if (nFrames - 1 > 0) {
                     mulitiFrame = true;
-                }  if(reader.getNumImages(true)>0){
-                imageIcon = new ImageIcon();
-                imageIcon.setImage(currentbufferedimage);
-                loadedImage = imageIcon.getImage();
-                image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
-                Graphics2D g2 = image.createGraphics();
-                g2.drawImage(loadedImage, 0, 0, null);
+                }
+                if (reader.getNumImages(true) > 0) {
+                    imageIcon = new ImageIcon();
+                    imageIcon.setImage(currentbufferedimage);
+                    loadedImage = imageIcon.getImage();
+                    image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
+                    Graphics2D g2 = image.createGraphics();
+                    g2.drawImage(loadedImage, 0, 0, null);
+                }
+                if (dataset.getString(Tag.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+                    isEncapsulatedDocument = true;
+                    imageIcon = new ImageIcon();
+                    imageIcon.setImage(Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/in/raster/mayam/form/images/pdficon.png")));
+                    loadedImage = imageIcon.getImage();
+                    image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
+                    Graphics2D g2 = image.createGraphics();
+                    g2.drawImage(loadedImage, 0, 0, null);
+
                 }
                 addImage();
             } catch (RuntimeException e) {
@@ -196,7 +211,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
         } finally {
             try {
                 iis.close();
-                iter = null;              
+                iter = null;
                 currentbufferedimage = null;
                 imageIcon = null;
                 loadedImage = null;
@@ -274,7 +289,11 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
 
     private void setHeaders() {
         seriesDescriptionText.setText("" + seriesDesc != null ? seriesDesc : "");
-        totalImagesText.setText(this.totalInstace + " Images");
+        if (!isEncapsulatedDocument) {
+            totalImagesText.setText(this.totalInstace + " Images");
+        } else {
+            totalImagesText.setText("");
+        }
         modalityText.setText("" + modality != null ? modality : "");
         institutionText.setText(institutionName != null ? institutionName : "");
 

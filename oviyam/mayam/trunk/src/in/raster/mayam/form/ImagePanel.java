@@ -38,6 +38,9 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
+import com.sun.pdfview.PDFFile;
+import com.sun.pdfview.PDFPage;
+import com.sun.pdfview.PagePanel;
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegate.ImageOrientation;
 import in.raster.mayam.delegate.LocalizerDelegate;
@@ -67,6 +70,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -76,6 +80,7 @@ import java.awt.image.BufferedImageOp;
 import java.awt.image.ByteLookupTable;
 import java.awt.image.LookupOp;
 import java.awt.image.ColorModel;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import javax.imageio.ImageIO;
@@ -233,6 +238,10 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     private String sliceLocation;
     public static boolean synchornizeTiles = false;
     public int syncStartInstance;
+    private PDFFile curFile = null;
+    public PagePanel page = null;
+    private int curpage = -1;
+    private boolean isEncapsulatedDocument = false;
 
     public ImagePanel() {
         initComponents();
@@ -509,6 +518,9 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                     Graphics2D g2 = image.createGraphics();
                     g2.drawImage(loadedImage, 0, 0, null);
                 }
+                if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+                    readDicom(selFile);
+                }
                 repaint();
             } catch (RuntimeException e) {
                 e.printStackTrace();
@@ -517,6 +529,74 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             System.out.println("io exception");
         }
 
+    }
+
+    public void readDicom(File file) {
+        try {
+            DicomInputStream din = new DicomInputStream(new File(file.getAbsolutePath()));
+            DicomObject dcmObject = din.readDicomObject();
+            byte[] buf = dcmObject.getBytes(Tags.EncapsulatedDocument);
+            ByteBuffer byteBuffer = ByteBuffer.wrap(buf);
+            openPDFByteBuffer(byteBuffer, null, null);
+            isEncapsulatedDocument = true;
+        } catch (IOException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void openPDFByteBuffer(ByteBuffer buf, String path, String name) {
+        PDFFile newfile = null;
+        try {
+            newfile = new PDFFile(buf);
+        } catch (IOException ioe) {
+            return;
+        }
+        this.curFile = newfile;
+        forceGotoPage(0);
+    }
+    PDFPage pg = null;
+
+    public void forceGotoPage(int pagenum) {
+        if (pagenum <= 0) {
+            pagenum = 0;
+        } else if (pagenum >= curFile.getNumPages()) {
+            pagenum = curFile.getNumPages() - 1;
+        }
+        totalInstance = curFile.getNumPages();
+        curpage = pagenum;
+        pg = curFile.getPage(pagenum + 1);
+        Rectangle rect = new Rectangle(0, 0,
+                (int) pg.getBBox().getWidth(),
+                (int) pg.getBBox().getHeight());
+
+        //generate the image
+        Image current = pg.getImage(
+                rect.width, rect.height, //width & height
+                rect, // clip rect
+                null, // null for the ImageObserver
+                true, // fill background with white
+                true // block until drawing is done
+                );
+        imageIcon = new ImageIcon();
+        imageIcon.setImage(current);
+        loadedImage = imageIcon.getImage();
+        image = null;
+    }
+
+    private void calculateResolutionForPdfDicom(double imageWidthParam, double imageHeightParam) {
+        thumbHeight = 512;
+        thumbWidth = 512;
+        thumbRatio = thumbWidth / thumbHeight;
+        double imageWidth = imageWidthParam;
+        double imageHeight = imageHeightParam;
+        double imageRatio = (double) imageWidth / (double) imageHeight;
+        if (thumbRatio < imageRatio) {
+            thumbHeight = (int) Math.round((thumbWidth + 0.00f) / imageRatio);
+        } else {
+            thumbWidth = (int) Math.round((thumbHeight + 0.00f) * imageRatio);
+        }
+        startX = (maxWidth - thumbWidth) / 2;
+        startY = (maxHeight - thumbHeight) / 2;
     }
 
     public void showNextFrame() {
@@ -604,16 +684,18 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
      * @param op
      */
     private void filter(BufferedImageOp op) {
-        BufferedImage filteredImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
-        op.filter(image, filteredImage);
-        image = filteredImage;
-        repaint();
+        if (image != null) {
+            BufferedImage filteredImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+            op.filter(image, filteredImage);
+            image = filteredImage;
+            repaint();
+        }
     }
     /*
     private void convolve(float[] elements) {
     Kernel kernel = new Kernel(3, 3, elements);
     ConvolveOp op = new ConvolveOp(kernel);
-    filter(op);
+    filter(op);*
     }
 
     public void blur() {
@@ -1020,6 +1102,13 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 }
             }
         }
+        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+            calculateResolutionForPdfDicom(loadedImage.getWidth(null), loadedImage.getHeight(null));
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(curpage);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(totalInstance));
+            g.drawImage(loadedImage, startX, startY, thumbWidth, thumbHeight, null);
+            ApplicationContext.imgView.getImageToolbar().hideAnnotationTools();
+        }
         if (firstTime) {
             centerImage();
             originalHeight = this.getSize().height;
@@ -1197,11 +1286,13 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
 
     public void convertToRGBImage() {
         imageIcon = new ImageIcon();
-        imageIcon.setImage(currentbufferedimage);
-        loadedImage = imageIcon.getImage();
-        image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2 = image.createGraphics();
-        g2.drawImage(loadedImage, 0, 0, null);
+        if (currentbufferedimage != null) {
+            imageIcon.setImage(currentbufferedimage);
+            loadedImage = imageIcon.getImage();
+            image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2 = image.createGraphics();
+            g2.drawImage(loadedImage, 0, 0, null);
+        }
     }
 
     /**
@@ -1474,6 +1565,10 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
             currentInstanceNo = 0;
         }
+        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+            totalInstance = curFile.getNumPages();
+            currentInstanceNo = 0;
+        }
     }
 
     public void mouseWheelMoved(MouseWheelEvent e) {
@@ -1485,6 +1580,18 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             doPrevious();
         } else {
             doNext();
+        }
+    }
+
+    private void nextofEncapsulatedDocument() {
+        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+            forceGotoPage(curpage + 1);
+        }
+    }
+
+    private void previousofEncapsulatedDocument() {
+        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+            forceGotoPage(curpage - 1);
         }
     }
 
@@ -1500,7 +1607,10 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     }
 
     public void doPrevious() {
-        if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
+        if (isEncapsulatedDocument) {
+            previousofEncapsulatedDocument();
+
+        } else if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
             if (instanceArray == null) {
                 previousFrame();
             } else {
@@ -1516,7 +1626,10 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     }
 
     public void doNext() {
-        if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
+        if (isEncapsulatedDocument) {
+            nextofEncapsulatedDocument();
+
+        } else if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
             if (instanceArray == null) {
                 nextFrame();
             } else {

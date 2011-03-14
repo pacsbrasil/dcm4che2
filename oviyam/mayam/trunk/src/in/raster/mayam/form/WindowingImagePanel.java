@@ -38,6 +38,8 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
+import com.sun.pdfview.PDFFile;
+import com.sun.pdfview.PDFPage;
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegate.ShowImageViewDelegate;
 import in.raster.mayam.delegate.StudyListUpdator;
@@ -55,6 +57,7 @@ import org.dcm4che.image.ColorModelParam;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -62,6 +65,7 @@ import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -72,6 +76,8 @@ import javax.imageio.stream.ImageInputStream;
 import javax.swing.ImageIcon;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.imageio.plugins.DcmMetadata;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.io.DicomInputStream;
 
 /**
  *
@@ -147,6 +153,9 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
     private int column;
     private double scaleFactor = 1;
     private String imageOrientation;
+    private PDFFile curFile = null;
+    private int curpage = -1;
+    private boolean isEncapsulatedDocument = false;
 
     public WindowingImagePanel() {
         initComponents();
@@ -269,6 +278,88 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         imageOrientation = dataset.getString(Tags.ImageOrientation) != null ? dataset.getString(Tags.ImageOrientation, 0) + "\\" + dataset.getString(Tags.ImageOrientation, 1) + "\\" + dataset.getString(Tags.ImageOrientation, 2) + "\\" + dataset.getString(Tags.ImageOrientation, 3) + "\\" + dataset.getString(Tags.ImageOrientation, 4) + "\\" + dataset.getString(Tags.ImageOrientation, 5) : null;
     }
 
+    public void readDicom(File file) {
+        try {
+            DicomInputStream din = new DicomInputStream(new File(file.getAbsolutePath()));
+            DicomObject dcmObject = din.readDicomObject();
+            byte[] buf = dcmObject.getBytes(Tags.EncapsulatedDocument);
+            ByteBuffer byteBuffer = ByteBuffer.wrap(buf);
+            openPDFByteBuffer(byteBuffer, null, null);
+            isEncapsulatedDocument = true;
+        } catch (IOException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void openPDFByteBuffer(ByteBuffer buf, String path, String name) {
+        PDFFile newfile = null;
+        try {
+            newfile = new PDFFile(buf);
+        } catch (IOException ioe) {
+            return;
+        }
+        this.curFile = newfile;
+        forceGotoPage(0);
+    }
+
+    public void forceGotoPage(int pagenum) {
+        if (pagenum <= 0) {
+            pagenum = 0;
+        } else if (pagenum >= curFile.getNumPages()) {
+            pagenum = curFile.getNumPages() - 1;
+        }
+        totalInstance = curFile.getNumPages();
+        curpage = pagenum;
+        PDFPage pg = curFile.getPage(pagenum + 1, true);
+
+        Rectangle rect = new Rectangle(0, 0,
+                (int) pg.getBBox().getWidth(),
+                (int) pg.getBBox().getHeight());
+
+        //generate the image
+        Image current = pg.getImage(
+                rect.width, rect.height, //width & height
+                rect, // clip rect
+                null, // null for the ImageObserver
+                true, // fill background with white
+                true // block until drawing is done
+                );
+        Image img = pg.getImage(rect.width, rect.height, rect, null, true, true);
+        imageIcon = new ImageIcon();
+        imageIcon.setImage(current);
+        loadedImage = imageIcon.getImage();
+        image = null;
+        repaint();
+    }
+
+    private void calculateResolutionForPdfDicom(double imageWidthParam, double imageHeightParam) {
+        thumbHeight = 384;
+        thumbWidth = 384;
+        thumbRatio = thumbWidth / thumbHeight;
+        double imageWidth = imageWidthParam;
+        double imageHeight = imageHeightParam;
+        double imageRatio = (double) imageWidth / (double) imageHeight;
+        if (thumbRatio < imageRatio) {
+            thumbHeight = (int) Math.round((thumbWidth + 0.00f) / imageRatio);
+        } else {
+            thumbWidth = (int) Math.round((thumbHeight + 0.00f) * imageRatio);
+        }
+        startX = (maxWidth - thumbWidth) / 2;
+        startY = (maxHeight - thumbHeight) / 2;
+    }
+
+    private void nextofEncapsulatedDocument() {
+        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+            forceGotoPage(curpage + 1);
+        }
+    }
+
+    private void previousofEncapsulatedDocument() {
+        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+            forceGotoPage(curpage - 1);
+        }
+    }
+
     /**
      * Tdhis routine used to return the canvas of the image box
      * @return
@@ -306,22 +397,25 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             reader.setInput(iis, false);
             dataset = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
             try {
-                if(reader.getNumImages(true)>0){
-                currentbufferedimage = reader.read(0);
-                floatAspectRatio = reader.getAspectRatio(0);
+                if (reader.getNumImages(true) > 0) {
+                    currentbufferedimage = reader.read(0);
+                    floatAspectRatio = reader.getAspectRatio(0);
                 }
                 nFrames = reader.getNumImages(true);
                 if (nFrames - 1 > 0) {
                     mulitiFrame = true;
                     this.totalInstance = nFrames;
                 }
-                 if(reader.getNumImages(true)>0){
-                imageIcon = new ImageIcon();
-                imageIcon.setImage(currentbufferedimage);
-                loadedImage = imageIcon.getImage();
-                image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
-                Graphics2D g2 = image.createGraphics();
-                g2.drawImage(loadedImage, 0, 0, null);
+                if (reader.getNumImages(true) > 0) {
+                    imageIcon = new ImageIcon();
+                    imageIcon.setImage(currentbufferedimage);
+                    loadedImage = imageIcon.getImage();
+                    image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
+                    Graphics2D g2 = image.createGraphics();
+                    g2.drawImage(loadedImage, 0, 0, null);
+                }
+                if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+                    readDicom(selFile);
                 }
                 repaint();
             } catch (RuntimeException e) {
@@ -329,7 +423,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             } finally {
                 if (!isMulitiFrame()) {
                     iis.close();
-                    iter = null;                    
+                    iter = null;
                 }
             }
         } catch (Exception e) {
@@ -441,6 +535,13 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             originalWidth = this.getSize().width;
             firstTime = false;
         }
+        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+            calculateResolutionForPdfDicom(loadedImage.getWidth(null), loadedImage.getHeight(null));
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(curpage);
+            this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(totalInstance));
+            g.drawImage(loadedImage, startX, startY, thumbWidth, thumbHeight, null);
+
+        }
     }
     int finalHeight;
     int finalWidth;
@@ -546,13 +647,13 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
      */
     public void windowChanged(int windowCenter, int windowWidth) {
         try {
-            if(cmParam!=null){
-            cmParam = cmParam.update(windowCenter,
-                    windowWidth, cmParam.isInverse());
-            cm = cmFactory.getColorModel(cmParam);
-            currentbufferedimage = new BufferedImage(cm, currentbufferedimage.getRaster(), false, null);
-            this.windowLevel = windowCenter;
-            this.windowWidth = windowWidth;
+            if (cmParam != null) {
+                cmParam = cmParam.update(windowCenter,
+                        windowWidth, cmParam.isInverse());
+                cm = cmFactory.getColorModel(cmParam);
+                currentbufferedimage = new BufferedImage(cm, currentbufferedimage.getRaster(), false, null);
+                this.windowLevel = windowCenter;
+                this.windowWidth = windowWidth;
             }
             convertToRGBImage();
             repaint();
@@ -731,6 +832,10 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
             currentInstanceNo = 0;
         }
+        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+            totalInstance = curFile.getNumPages();
+            currentInstanceNo = 0;
+        }
     }
 
     public void mouseWheelMoved(MouseWheelEvent e) {
@@ -738,6 +843,9 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         if (notches < 0) {
             if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
                 showPreviousFrame();
+            } else if (isEncapsulatedDocument) {
+                previousofEncapsulatedDocument();
+
             } else {
                 if (instanceArray == null) {
                     previousInstance();
@@ -749,6 +857,9 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
 
             if (ApplicationContext.databaseRef.getMultiframeStatus() && isMulitiFrame()) {
                 showNextFrame();
+            } else if (isEncapsulatedDocument) {
+                nextofEncapsulatedDocument();
+
             } else {
                 if (instanceArray == null) {
                     nextInstance();
@@ -889,7 +1000,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
                             selectNextInstance();
                         }
                     } else {
-                        if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {                          
+                        if (series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {
                             totalInstance = series.getImageList().size();
                             instanceArray = (ArrayList<Instance>) series.getImageList();
                             selectNextInstance();
