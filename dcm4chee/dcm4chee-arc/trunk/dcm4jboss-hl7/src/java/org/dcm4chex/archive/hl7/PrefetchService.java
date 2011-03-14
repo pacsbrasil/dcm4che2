@@ -98,7 +98,6 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.DocumentSource;
 import org.dom4j.io.SAXContentHandler;
-import org.jboss.system.server.ServerConfigLocator;
 import org.regenstrief.xhl7.HL7XMLReader;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -435,7 +434,7 @@ public class PrefetchService extends AbstractScuService implements
         try {
             Document doc = order.getHL7Document();
             if (logPostSelectXML) {
-                File logFile = new File(ServerConfigLocator.locate().getServerLogDir(), 
+                File logFile = new File(System.getProperty("jboss.server.log.dir"), 
                         "postselect/"+new DTFormat().format(new Date())+".xml");
                 logFile.getParentFile().mkdirs();
                 TransformerHandler thLog = tf.newTransformerHandler();

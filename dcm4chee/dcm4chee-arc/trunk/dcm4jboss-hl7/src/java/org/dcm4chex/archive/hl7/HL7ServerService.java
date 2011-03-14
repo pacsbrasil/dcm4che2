@@ -82,7 +82,6 @@ import org.dom4j.io.DocumentResult;
 import org.dom4j.io.DocumentSource;
 import org.dom4j.io.SAXContentHandler;
 import org.jboss.system.ServiceMBeanSupport;
-import org.jboss.system.server.ServerConfigLocator;
 import org.jboss.system.server.ServerImplMBean;
 import org.regenstrief.xhl7.HL7XMLReader;
 import org.regenstrief.xhl7.HL7XMLWriter;
@@ -359,8 +358,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
     }
 
     protected void startService() throws Exception {
-        logDir = new File(ServerConfigLocator.locate().getServerHomeDir(),
-                "log");
+        logDir = new File(System.getProperty("jboss.server.log.dir")); 
         hl7srv.addHandshakeFailedListener(tlsConfig.handshakeFailedListener());
         hl7srv.addHandshakeCompletedListener(tlsConfig.handshakeCompletedListener());
         hl7srv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol

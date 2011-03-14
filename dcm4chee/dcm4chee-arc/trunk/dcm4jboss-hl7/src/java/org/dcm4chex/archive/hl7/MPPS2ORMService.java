@@ -68,7 +68,6 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
-import org.jboss.system.server.ServerConfigLocator;
 import org.regenstrief.xhl7.HL7XMLWriter;
 import org.regenstrief.xhl7.XMLWriter;
 
@@ -279,8 +278,7 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
     protected void startService() throws Exception {
         server.addNotificationListener(mppsScpServiceName, this,
                 mppsFilter, null);
-        logDir = new File(ServerConfigLocator.locate().getServerHomeDir(),
-                "log");
+        logDir = new File(System.getProperty("jboss.server.log.dir")); 
     }
 
     protected void stopService() throws Exception {
