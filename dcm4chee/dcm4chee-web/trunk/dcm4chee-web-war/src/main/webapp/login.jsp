@@ -2,22 +2,36 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+    <jsp:useBean id="login" scope="request" class="org.dcm4chee.web.common.base.LoginResources" />
+    <% 
+     Cookie[] cookies = request.getCookies();
+     String userName = "";
+     String focus = "self.focus();document.login.j_username.focus()";
+     int count = 0;
+     for (int i = 0; i < cookies.length; i++) {
+         if (cookies[i].getName().equals("WEB3LOCALE")) {
+             login.setLocale(cookies[i].getValue());
+             count++;
+             if (count==2)
+             	break;
+         }
+         if (cookies[i].getName().equals("signInPanel.signInForm.username")) {
+             userName = cookies[i].getValue();
+             if (userName!=null && userName.length()>0)
+                 focus = "self.focus();document.login.j_username.value='"+userName+
+                 	"';document.login.j_password.focus()";
+             count++;
+             if (count==2)
+             	break;
+         }
+     }
+    %>
     <head>
 	    <title>${login.browser_title}</title>
 	    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
          <link rel="stylesheet" type="text/css" href="resources/org.dcm4chee.web.common.base.LoginPage/base-style.css" />
     </head>
-    <body>
-        <jsp:useBean id="login" scope="request" class="org.dcm4chee.web.common.base.LoginResources" />
-        <% 
-	        Cookie[] cookies = request.getCookies();
-	        for (int i = 0; i < cookies.length; i++) {
-	            if (cookies[i].getName().equals("WEB3LOCALE")) {
-	                login.setLocale(cookies[i].getValue());
-	                break;
-	            }
-	        }
-        %>
+    <body onload="<%= focus %>">
         <div class="tabpanel">
             <div class="module-selector">
                 <div class="tab-row">
@@ -33,7 +47,7 @@
         <div class="signin" style="padding-top: 160px;">
             <span class="login-desc">${login.loginLabel}</span>
             <div>
-		        <form action="j_security_check" method="POST">
+		        <form action="j_security_check" method="POST" name="login" >
 		            <table style="padding-top: 60px; padding-right: 90px; padding-bottom: 10px;">
                         <tbody>
 			                <tr style="text-align: left;">
@@ -52,7 +66,7 @@
 			                    <td></td>
 			                    <td>
 			                        <input type="submit" name="submit" value="${login.submit}" />
-			                        <input type="reset" value="${login.reset}" />
+			                        <input type="reset" value="${login.reset}" onclick="document.login.j_username.focus()"/>
 			                    </td>
 			                </tr>
                         </tbody>
