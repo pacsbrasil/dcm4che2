@@ -466,7 +466,6 @@ public class StudyListPage extends Panel {
                 try {
                     viewport.setOffset(0);
                     queryStudies();
-                    new StudyPermissionHelper();
                 } catch (Throwable t) {
                     log.error("search failed: ", t);
                 }
