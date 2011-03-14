@@ -42,6 +42,7 @@ import java.util.Properties;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.RequestCycle;
+import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.model.Model;
@@ -91,6 +92,7 @@ public class MainPage extends SecureWicketPage {
         });
 
         addModules(getModuleSelectorPanel());        
+        add(JavascriptPackageResource.getHeaderContribution(MainPage.class, "mainpage.js"));
     }
 
     private void addModules(ModuleSelectorPanel selectorPanel) {
