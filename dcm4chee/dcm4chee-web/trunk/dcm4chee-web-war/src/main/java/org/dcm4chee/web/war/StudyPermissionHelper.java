@@ -67,7 +67,6 @@ import org.apache.wicket.RequestCycle;
 import org.apache.wicket.protocol.http.WebRequest;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
-import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,19 +85,24 @@ public class StudyPermissionHelper implements Serializable {
 
     private String newline = System.getProperty("line.separator");
 
-    private List<String> dicomRoles;
+    private List<String> dicomRoles = new ArrayList<String>();
+    private StudyPermissionRight studyPermissionRight = StudyPermissionRight.NONE;
+    
     private boolean manageStudyPermissions;
     private boolean useStudyPermissions;
-    private StudyPermissionRight studyPermissionRight;
+
 
     public static StudyPermissionHelper get() {
         return ((AuthenticatedWebSession) AuthenticatedWebSession.get()).getStudyPermissionHelper();
     }
 
+    public StudyPermissionHelper() {
+        setStudyPermissionParameters();
+    }
+    
     public StudyPermissionHelper(String username, String password, org.apache.wicket.security.hive.authentication.Subject webSubject) throws AttributeNotFoundException, InstanceNotFoundException, MalformedObjectNameException, MBeanException, ReflectionException, NullPointerException, IOException {
 
-        setStudyPermissionParameters();
-        
+        this();
         try {
             javax.security.auth.Subject dicomSubject = new javax.security.auth.Subject();
             WebCfgDelegate.getInstance().getMBeanServer().invoke(
@@ -116,10 +120,11 @@ public class StudyPermissionHelper implements Serializable {
         }
     }
 
-    public StudyPermissionHelper() {        
-
-        setStudyPermissionParameters();
+    public void doDicomAuthentication() { 
         
+        if (!manageStudyPermissions && !useStudyPermissions) 
+            return;
+            
         HttpURLConnection urlConnection = null;
         InputStream in = null;
         try {
@@ -134,8 +139,10 @@ public class StudyPermissionHelper implements Serializable {
                     .append(cookie.getName())
                     .append("=")
                     .append(cookie.getValue())
-                    .append(";");
+                    .append("; ");
             }
+            if (cookieValue.length() > 0)
+                cookieValue.delete(cookieValue.length()-2, cookieValue.length()-1);
             urlConnection.setRequestProperty("Cookie", cookieValue.toString());
             urlConnection.connect();
             in = urlConnection.getInputStream();
@@ -162,7 +169,6 @@ public class StudyPermissionHelper implements Serializable {
     }
 
     private void setStudyPermissionParameters() {
-        studyPermissionRight = StudyPermissionRight.NONE;
         manageStudyPermissions = WebCfgDelegate.getInstance().getManageStudyPermissions();
         useStudyPermissions = WebCfgDelegate.getInstance().getUseStudyPermissions();
     }
@@ -173,10 +179,7 @@ public class StudyPermissionHelper implements Serializable {
     }
     
     private void setDicomRoles(Subject dicomSubject) {
-        if (!manageStudyPermissions && !useStudyPermissions) {
-            dicomRoles = null;
-        } else {
-            dicomRoles = new ArrayList<String>();
+        if (manageStudyPermissions || useStudyPermissions) {
             Principal rolesPrincipal;
             for (Iterator<Principal> i = dicomSubject.getPrincipals().iterator() ; i.hasNext() ; ) {
                 rolesPrincipal = i.next();
@@ -190,9 +193,7 @@ public class StudyPermissionHelper implements Serializable {
     }
 
     private void setDicomRoles(String dicomRoleString) {
-        if (!manageStudyPermissions && !useStudyPermissions) 
-            dicomRoles = null;
-        else 
+        if (manageStudyPermissions || useStudyPermissions) 
             dicomRoles = Arrays.asList(dicomRoleString.split(newline));
     }
     

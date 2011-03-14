@@ -42,7 +42,10 @@ import java.util.Properties;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.RequestCycle;
+import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
+import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.util.time.Duration;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordPanel;
 import org.dcm4chee.usr.ui.usermanagement.role.RolePanel;
@@ -55,6 +58,8 @@ import org.dcm4chee.web.war.ae.AEListPanel;
 import org.dcm4chee.web.war.folder.StudyListPage;
 import org.dcm4chee.web.war.trash.TrashListPage;
 import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -64,9 +69,28 @@ import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
  */
 public class MainPage extends SecureWicketPage {
     
+    protected static Logger log = LoggerFactory.getLogger(MainPage.class);
+    
     public MainPage() {
         super();
-        addModules(getModuleSelectorPanel());
+        
+        add (new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onTimer(AjaxRequestTarget arg0) {
+                try {
+                    StudyPermissionHelper.get().doDicomAuthentication();
+                } catch (Exception e) {
+                    log.error(getClass().getName() + ": error doing dicom authentication: ", e);
+                } finally {
+                    this.stop();
+                }
+            }
+        });
+
+        addModules(getModuleSelectorPanel());        
     }
 
     private void addModules(ModuleSelectorPanel selectorPanel) {

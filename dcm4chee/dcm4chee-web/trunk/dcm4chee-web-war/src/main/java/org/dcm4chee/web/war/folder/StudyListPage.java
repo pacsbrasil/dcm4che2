@@ -49,6 +49,7 @@ import org.apache.wicket.Page;
 import org.apache.wicket.PageMap;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
@@ -88,6 +89,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
@@ -193,13 +195,13 @@ public class StudyListPage extends Panel {
     StudyPermissionHelper studyPermissionHelper;
     
     public StudyListPage(final String id) {
-        super(id);
-
+        super(id);        
+        
         if (StudyListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
-        
-        studyPermissionHelper = StudyPermissionHelper.get();
 
+        studyPermissionHelper = StudyPermissionHelper.get();
+        
         add(modalWindow = new ModalWindow("modal-window"));
         modalWindow.setWindowClosedCallback(new WindowClosedCallback() {
             private static final long serialVersionUID = 1L;
@@ -464,6 +466,7 @@ public class StudyListPage extends Panel {
                 try {
                     viewport.setOffset(0);
                     queryStudies();
+                    new StudyPermissionHelper();
                 } catch (Throwable t) {
                     log.error("search failed: ", t);
                 }

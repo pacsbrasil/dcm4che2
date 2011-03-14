@@ -151,11 +151,11 @@
 		                    <artifactId>dcm4chee-web-war</artifactId>
 		                    <contextRoot>/dcm4chee-web3</contextRoot>
 		                </webModule>
-                        <webModule>
-                            <groupId>dcm4che.dcm4chee</groupId>
-                            <artifactId>dcm4chee-web-dicom</artifactId>
-                            <contextRoot>/dcm4chee-web3-dicom</contextRoot>
-                        </webModule>
+				<webModule>
+				    <groupId>dcm4che.dcm4chee</groupId>
+				    <artifactId>dcm4chee-web-dicom</artifactId>
+				    <contextRoot>/dcm4chee-web3-dicom</contextRoot>
+				</webModule>
 		                <sarModule>
 		                    <groupId>dcm4che.dcm4chee</groupId>
 		                    <artifactId>dcm4chee-dashboard-sar-config</artifactId>

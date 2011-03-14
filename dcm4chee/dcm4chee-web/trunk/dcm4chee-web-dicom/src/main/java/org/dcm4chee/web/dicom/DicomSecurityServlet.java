@@ -15,6 +15,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author Robert David <robert.david@agfa.com>
+ * @version $Revision$ $Date$
+ * @since Feb. 18, 2011
+ */
 public class DicomSecurityServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
