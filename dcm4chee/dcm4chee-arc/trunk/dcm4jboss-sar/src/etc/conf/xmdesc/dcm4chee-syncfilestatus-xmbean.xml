@@ -82,6 +82,21 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getSkipVerifyTarHSMStati"
+      setMethod="setSkipVerifyTarHSMStati">
+      <description><![CDATA[List of HSM stati for which tar verify should be skipped.<br />
+      Enumerated values: DEFAULT, TO_ARCHIVE, ARCHIVED, QUERY_HSM_FAILED or NONE.<br />
+      Optionally HSM status can be overwritten by &lt;hsmStatus&gt;=&lt;newStatus&gt;<br />
+      newStatus can be DEFAULT, TO_ARCHIVE, ARCHIVED, QUERY_HSM_FAILED or DELETE.<br />
+      Only applicable if VeryfyTar is enabled!
+      ]]></description>
+      <name>SkipVerifyTarHSMStati</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getInvalidTarStatus"
       setMethod="setInvalidTarStatus">
       <description><![CDATA[New file status or DELETE if verification of tar failed.<br />
