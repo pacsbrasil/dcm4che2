@@ -147,6 +147,13 @@ public class JpegConvertorDelegate {
                         seriesExportAsJpeg(img.getFilepath(), outputPath, series.isMultiframe(), cm);
                     }
                 }
+            } else if (ApplicationContext.imgPanel.isIsEncapsulatedDocument()) {
+                int i = 1;
+                ArrayList<BufferedImage> pdfArray = ApplicationContext.imgPanel.createPDFArray();
+                for (BufferedImage b : pdfArray) {
+                    instanceExportAsJpeg(outputPath + File.separator + i, b);
+                    i++;
+                }
             } else {
                 if (!series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesUID)) {        //if multiframe image then instance uid also to be checked.
                     Iterator<Instance> imgitr = series.getImageList().iterator();

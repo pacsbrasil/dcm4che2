@@ -580,7 +580,40 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         imageIcon = new ImageIcon();
         imageIcon.setImage(current);
         loadedImage = imageIcon.getImage();
+        currentbufferedimage = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2 = currentbufferedimage.createGraphics();
+        g2.drawImage(loadedImage, 0, 0, null);
         image = null;
+    }
+    public ArrayList createPDFArray() {
+        ArrayList<BufferedImage> temp = new ArrayList<BufferedImage>();
+        for (int pagenum = 0; pagenum < curFile.getNumPages(); pagenum++) {
+            PDFPage pdfPage = curFile.getPage(pagenum + 1);
+            Rectangle rect = new Rectangle(0, 0,
+                    (int) pdfPage.getBBox().getWidth(),
+                    (int) pdfPage.getBBox().getHeight());
+
+            //generate the image
+            Image current = pdfPage.getImage(
+                    rect.width, rect.height, //width & height
+                    rect, // clip rect
+                    null, // null for the ImageObserver
+                    true, // fill background with white
+                    true // block until drawing is done
+                    );
+            imageIcon = new ImageIcon();
+            imageIcon.setImage(current);
+            Image tempImage = imageIcon.getImage();
+            BufferedImage tempBufferedImage = new BufferedImage(tempImage.getWidth(null), tempImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2 = tempBufferedImage.createGraphics();
+            g2.drawImage(tempImage, 0, 0, null);
+            temp.add(tempBufferedImage);
+        }
+        return temp;
+    }
+
+    public boolean isIsEncapsulatedDocument() {
+        return isEncapsulatedDocument;
     }
 
     private void calculateResolutionForPdfDicom(double imageWidthParam, double imageHeightParam) {
@@ -1420,9 +1453,11 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     }
 
     public ColorModel getColorModel() {
+        if(cmParam!=null){
         cmParam = cmParam.update(this.windowLevel,
                 this.windowWidth, cmParam.isInverse());
         cm = cmFactory.getColorModel(cmParam);
+        }
         return cm;
     }
 
