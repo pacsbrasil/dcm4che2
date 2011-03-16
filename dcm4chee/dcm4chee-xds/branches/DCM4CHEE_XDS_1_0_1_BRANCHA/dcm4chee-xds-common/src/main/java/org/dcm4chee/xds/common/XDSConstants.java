@@ -58,5 +58,6 @@ public interface XDSConstants {
 	public static final String XDS_ERR_SEVERITY_ERROR = "urn:oasis:names:tc:ebxml-regrep:ErrorSeverityType:Error";
 	public static final String XDS_ERR_MISSING_REGISTRY_PACKAGE = "RegistryPackage missing";
 	public static final String XDS_ERR_WRONG_REPOSITORY_UNIQUE_ID = "XDSRepositoryWrongRepositoryUniqueId";
+	public static final String XDS_ERR_DOCUMENT_UNIQUE_ID = "XDSDocumentUniqueIdError";
 	
 }
