@@ -148,10 +148,10 @@ public class StudyPermissionHelper implements Serializable {
             urlConnection.connect();
             in = urlConnection.getInputStream();
             Reader reader = new InputStreamReader(in);
-            char[] buf = new char[1024];
+            char[] buffer = new char[1];
             StringBuffer returnValue = new StringBuffer();
-            while ((reader.read(buf)) >= 0)
-                returnValue.append(buf);
+            while ((reader.read(buffer)) >= 0)
+                returnValue.append(buffer);
             reader.close();
             if (returnValue.length() > 0) 
                 setDicomRoles(returnValue.toString());
