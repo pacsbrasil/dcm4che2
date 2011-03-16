@@ -219,7 +219,9 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                         log.error("Error in building DocumentResponse for document:"+doc);
                     }
                 } else {
-                    log.warn("Document not found! document UID:"+docUid);
+                	String msg = "Document not found! document UID:"+docUid;
+                    log.warn(msg);
+                    throw new XDSException(XDSConstants.XDS_ERR_DOCUMENT_UNIQUE_ID, msg, null);
                 }
                 perfLogger.endSubEvent();
             } else if ( mapExternalRepositories == null ) {
