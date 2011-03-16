@@ -73,9 +73,9 @@ public class AuthenticatedWebSession extends SecureSession {
     }
 
     @Override
-    public void extendedLogin() {
+    public void extendedLogin(org.apache.wicket.security.hive.authentication.Subject webSubject) {
         try {
-            studyPermissionHelper = new StudyPermissionHelper();
+            studyPermissionHelper = new StudyPermissionHelper(webSubject);
         } catch (Exception x) {
             throw new RuntimeException("Extended Login Failed!", x);
         }

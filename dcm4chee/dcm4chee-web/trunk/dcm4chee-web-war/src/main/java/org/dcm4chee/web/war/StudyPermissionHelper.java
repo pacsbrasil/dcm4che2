@@ -97,13 +97,14 @@ public class StudyPermissionHelper implements Serializable {
         return ((AuthenticatedWebSession) AuthenticatedWebSession.get()).getStudyPermissionHelper();
     }
 
-    public StudyPermissionHelper() {
+    public StudyPermissionHelper(org.apache.wicket.security.hive.authentication.Subject webSubject) {
         setStudyPermissionParameters();
+        setStudyPermissionRight(webSubject);
     }
     
     public StudyPermissionHelper(String username, String password, org.apache.wicket.security.hive.authentication.Subject webSubject) throws AttributeNotFoundException, InstanceNotFoundException, MalformedObjectNameException, MBeanException, ReflectionException, NullPointerException, IOException {
 
-        this();
+        this(webSubject);
         try {
             javax.security.auth.Subject dicomSubject = new javax.security.auth.Subject();
             WebCfgDelegate.getInstance().getMBeanServer().invoke(
@@ -115,7 +116,6 @@ public class StudyPermissionHelper implements Serializable {
                             javax.security.auth.Subject.class.getName()}
             );
             setDicomRoles(dicomSubject);
-            setStudyPermissionRight(webSubject);
         } catch (Exception e) {
             log.error("Error creating StudyPermissionHelper: revoked rights: ", e);
         }
