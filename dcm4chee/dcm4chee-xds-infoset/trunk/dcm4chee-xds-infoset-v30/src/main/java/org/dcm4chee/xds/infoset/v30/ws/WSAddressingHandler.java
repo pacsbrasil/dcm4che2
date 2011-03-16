@@ -22,7 +22,10 @@ public class WSAddressingHandler extends GenericSOAPHandler
 	public static final String SOAP_HEADER_ACTION = "Action";
 	public static final String SOAP_HEADER_TO = "To";
 	public static final String SOAP_HEADER_MSG_ID = "MessageID";
+	public static final String SOAP_HEADER_REPLY_TO = "ReplyTo";
+	public static final String SOAP_HEADER_ADDRESS = "Address";
 	public static final String NS_WS_ADDRESSING = "http://www.w3.org/2005/08/addressing";
+	public static final String REPLY_TO_ADDRESS = "http://www.w3.org/2005/08/addressing/anonymous";
 	public static final String PREFIX = "wsa";
 	
 	private static Set<QName> HEADERS = new HashSet<QName>();
@@ -49,6 +52,8 @@ public class WSAddressingHandler extends GenericSOAPHandler
 		try {
 			SOAPMessage msg = ((SOAPMessageContext)msgContext).getMessage();
 			
+			boolean useMustUnderstand = !"false".equalsIgnoreCase((String)msgContext.get("useMustUnderstand"));
+			
 			// Set the "To" header
 			SOAPHeaderElement hdr = msg.getSOAPHeader().addHeaderElement(
 					new QName(NS_WS_ADDRESSING, SOAP_HEADER_TO, PREFIX));
@@ -57,12 +62,24 @@ public class WSAddressingHandler extends GenericSOAPHandler
 			// Set the "Action" header
 			hdr = msg.getSOAPHeader().addHeaderElement(
 					new QName(NS_WS_ADDRESSING, SOAP_HEADER_ACTION, PREFIX));
+			hdr.setMustUnderstand(useMustUnderstand);
 			hdr.setValue(action);
 			
 			// Set the "MessageID" header
 			hdr = msg.getSOAPHeader().addHeaderElement(
 					new QName(NS_WS_ADDRESSING, SOAP_HEADER_MSG_ID, PREFIX));
 			hdr.setValue(messageId);
+			
+			// Set the "ReplyTo" header
+			hdr = msg.getSOAPHeader().addHeaderElement(
+					new QName(NS_WS_ADDRESSING, SOAP_HEADER_REPLY_TO, PREFIX));
+			hdr.setMustUnderstand(useMustUnderstand);
+			
+			// Create the Address node to be used within the ReplyTo header
+			SOAPHeaderElement addr = msg.getSOAPHeader().addHeaderElement(
+					new QName(NS_WS_ADDRESSING, SOAP_HEADER_ADDRESS, PREFIX));
+			addr.setValue(REPLY_TO_ADDRESS);
+			hdr.appendChild(addr);
 			
 		} catch (Exception e) {
 			log.error("handleOutbound: could not add headers", e);
