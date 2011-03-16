@@ -77,7 +77,7 @@ public class SecureSession extends WaspSession {
     public void extendedLogin(String username, String passwd, org.apache.wicket.security.hive.authentication.Subject subject) {
     }
 
-    public void extendedLogin() {
+    public void extendedLogin(org.apache.wicket.security.hive.authentication.Subject webSubject) {
     }
 
     public void setSwarmPrincipals(HashMap<String, String> principals) {

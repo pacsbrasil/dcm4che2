@@ -124,7 +124,7 @@ public class SSOLoginContext extends LoginContext {
         try {
             subject = toSwarmSubject(jaasSubject, session, rolesGroupName);
             checkLoginAllowed(subject);
-            session.extendedLogin();
+            session.extendedLogin(subject);
         } catch (Exception e) {
             log.error("Login failed for JAAS subject: "+jaasSubject, e);
             session.invalidate();
