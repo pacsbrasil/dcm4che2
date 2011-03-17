@@ -94,6 +94,7 @@ public class UserListPanel extends Panel {
     
     private ListModel<User> allUsers;
     private ListModel<Role> allRoles;
+    List<String> roleTypes;
 
     private String userId;
 
@@ -122,6 +123,7 @@ public class UserListPanel extends Panel {
                
         this.allUsers = new ListModel<User>(getAllUsers());
         this.allRoles = new ListModel<Role>(getAllRoles());
+        this.roleTypes = UsrCfgDelegate.getInstance().getRoleTypes();
         
         add(this.confirmationWindow = new ConfirmationWindow<User>("confirmation-window") {
 

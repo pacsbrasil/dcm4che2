@@ -25,30 +25,27 @@
 						[Rolename]
 					</wicket:message>
 				</th>
-                <th style="width: 5%"></th>
-                <th style="width: 5%"></th>
-				<th style="width: 10%">
+                <th></th>
+                <th></th>
+                <th style="width: 10%">
 					<wicket:message key="rolelist.table.group.title">
 						[Group]
 					</wicket:message>
 				</th>
-                <th style="width: 5%">
+                <th style="width: 5%; text-align: center;">
                     <wicket:message key="rolelist.table.webrole.title">
                         [Web role]
                     </wicket:message>
                 </th>
-                <th style="width: 5%">
+                <th style="width: 5%; text-align: center;">
                     <wicket:message key="rolelist.table.dicomrole.title">
                         [Dicom role]
                     </wicket:message>
                 </th>
-                <th style="width: 5%"></th>
-                <th>
-                    <wicket:message key="rolelist.table.other.title">
-                        [Client role]
-                    </wicket:message>
+                <th wicket:id="type-header-cells" style="width: 5%; text-align: center;">
+                    <div wicket:id="typename" />
                 </th>
-                <th></th>
+                <th style="width: 100%"></th>
 		    </tr>
 		  </thead>
 		  <tbody>
@@ -69,23 +66,18 @@
 				<td wicket:id="group">
 		      		[Group]
 		      	</td>
-                <td>
+                <td style="text-align: center;">
 	                <a wicket:id="webrole-link" href="#">
 	                    <img wicket:id="rolelist.webrole.image" />
 	                </a>
                 </td>
-                <td>
+                <td style="text-align: center;">
                     <input wicket:id="dicomrole-checkbox" type="checkbox" />
                 </td>
-                <td>
-                    <a wicket:id="roletype-link">
-                        <img wicket:id="rolelist.roletype.image" />
-                    </a>
+                <td wicket:id="type-content-cells" style="text-align: center;">
+                    <input wicket:id="type-checkbox" type="checkbox" />
                 </td>
-                <td wicket:id="other">
-                    [Other]
-                </td>
-                <td style="width: 100%"></td>
+                <td></td>
 		    </tr>
 		  </tbody>
 		</table>

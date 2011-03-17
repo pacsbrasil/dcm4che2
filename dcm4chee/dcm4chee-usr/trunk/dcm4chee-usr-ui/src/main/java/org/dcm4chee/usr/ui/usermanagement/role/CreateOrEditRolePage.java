@@ -45,12 +45,12 @@ import java.util.Map;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
@@ -70,6 +70,7 @@ import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,8 +113,11 @@ public class CreateOrEditRolePage extends SecureWebPage {
         private TextField<String> rolenameTextField= new TextField<String>("rolelist.add-role-form.rolename.input", rolename);
         private TextField<String> descriptionTextField= new TextField<String>("rolelist.add-role-form.description.input", description);
         private DropDownChoice<String> groupDropDown;
-        private AjaxCheckBox webroleCheckbox;
-        private AjaxCheckBox dicomroleCheckbox;
+        
+        private CheckBox webroleCheckbox;
+        private CheckBox dicomroleCheckbox;
+        private List<CheckBox> typeCheckboxList;
+        
         public CreateOrEditRoleForm(String id, final ListModel<Role> allRolenames, final Role role, final Map<String,Group> types) {
             super(id);
 
@@ -149,74 +153,42 @@ public class CreateOrEditRolePage extends SecureWebPage {
                     groupDropDown.setModelObject(role.getGroupUuid());
             }
             
-            add((webroleCheckbox = new AjaxCheckBox("webrole-checkbox", new Model<Boolean>(role == null ? false : role.isWebRole())) {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void onUpdate(AjaxRequestTarget target) {
-                }
-            }));
-            
-            add((dicomroleCheckbox = new AjaxCheckBox("dicomrole-checkbox", new Model<Boolean>(role == null ? false : role.isDicomRole())) {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void onUpdate(AjaxRequestTarget target) {
-                }
-            }));
+            add((webroleCheckbox = new CheckBox("webrole-checkbox", new Model<Boolean>(role == null ? false : role.isWebRole()))));
+            add((dicomroleCheckbox = new CheckBox("dicomrole-checkbox", new Model<Boolean>(role == null ? false : role.isDicomRole()))));
 
             RepeatingView typeRows = new RepeatingView("type-rows");
             add(typeRows);
             
             int i = 0;
             List<String> roleTypes = UsrCfgDelegate.getInstance().getRoleTypes();
-            
-            System.out.println("**********************************");
-            System.out.println("role types: " + roleTypes);
-            if (roleTypes != null)
-                for (String type : roleTypes) 
-                    System.out.println("R: " + type);
-            System.out.println("**********************************");
-            
-            if (roleTypes != null)
-                for (String type : roleTypes) {
+            if (roleTypes != null) {
+                int knownRoleTypes = roleTypes.size();
+                if (role != null) {
+                    List<String> roleRoleTypes = role.getRoleTypes();
+                    for (int j = 0, len = roleRoleTypes.size(); j < len ; j++) {
+                        if (!roleTypes.contains(roleRoleTypes.get(j))) {
+                            roleTypes.add(roleRoleTypes.get(j));
+                        }
+                    }
+                }
+                
+                typeCheckboxList = new ArrayList<CheckBox>(roleTypes.size());
+                for (final String type : roleTypes) {
                     WebMarkupContainer rowParent;            
                     typeRows.add((rowParent = new WebMarkupContainer(typeRows.newChildId()))
-                            .add(new Label("typename", type)
-                            )
+                            .add(new Label("typename", i < knownRoleTypes ? type : type + " (retired)"))
                     );
                     rowParent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i++))));
 
-                    AjaxCheckBox typeCheckbox;
-                    rowParent.add((typeCheckbox = new AjaxCheckBox("type-checkbox", new Model<Boolean>(role == null ? false : role.isDicomRole())) {
-
-                        private static final long serialVersionUID = 1L;
-
-                        @Override
-                        protected void onUpdate(AjaxRequestTarget target) {
-                        }
-                    }));
-                    
-//                    AjaxCheckBox typeCheckbox = new AjaxCheckBox("type-checkbox", new HasTypeModel(role, type)) {
-//        
-//                        private static final long serialVersionUID = 1L;
-//        
-//                        @Override
-//                        protected void onUpdate(AjaxRequestTarget target) {
-//                            target.addComponent(this);
-//                        }
-//                          
-//                        @Override
-//                        protected void onComponentTag(ComponentTag tag) {
-//                            super.onComponentTag(tag);
-//                            tag.put("title", new ResourceModel(((HasTypeModel) this.getModel()).getObject().booleanValue() ? "roleTypes.has-type-checkbox.remove.tooltip" : "roleTypes.has-type-checkbox.add.tooltip").wrapOnAssignment(this).getObject());
-//                        }
-//                    };
-//                    typeCheckbox.add(new SecurityBehavior(getModuleName() + ":changeTypeAssignmentCheckbox"));
-                    typeRows.add(rowParent.add(typeCheckbox));
+                    CheckBox typeCheckbox;
+                    rowParent.add((typeCheckbox = new CheckBox("type-checkbox", 
+                            new Model<Boolean>(role != null ? role.getRoleTypes().contains(type) : false)))
+                    .setLabel(new Model<String>(type))
+                    .add(new SecurityBehavior(getModuleName() + ":changeTypeAssignmentCheckbox")));
+                    typeCheckboxList.add(typeCheckbox);
+                    typeRows.add(rowParent);
                 }
+            }
 
             add(new AjaxFallbackButton("add-role-submit", CreateOrEditRoleForm.this) {
                 
@@ -226,20 +198,27 @@ public class CreateOrEditRolePage extends SecureWebPage {
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
                         UserAccess userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);
+
+                        List<String> typeList = new ArrayList<String>();
+                        for (CheckBox checkbox : typeCheckboxList)
+                            if (checkbox.getModelObject())
+                                typeList.add(checkbox.getLabel().getObject());
+
                         if (role == null) {
                             Role newRole = new Role(rolename.getObject());
                             newRole.setDescription(description.getObject());
                             newRole.setGroupUuid(type.getObject());
                             newRole.setWebRole(webroleCheckbox.getModelObject());
                             newRole.setDicomRole(dicomroleCheckbox.getModelObject());
+                            newRole.setRoleTypes(typeList);
                             userAccess.addRole(newRole);
-                            
                         } else {
                             role.setRolename(rolename.getObject());
                             role.setGroupUuid(type.getObject());
                             role.setDescription(description.getObject());
                             role.setWebRole(webroleCheckbox.getModelObject());
                             role.setDicomRole(dicomroleCheckbox.getModelObject());
+                            role.setRoleTypes(typeList);
                             userAccess.updateRole(role);
                         }
                         allRolenames.setObject(userAccess.getAllRoles());

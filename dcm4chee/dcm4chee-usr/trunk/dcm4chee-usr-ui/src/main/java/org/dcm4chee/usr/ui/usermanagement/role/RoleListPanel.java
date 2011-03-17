@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -60,6 +61,7 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -100,11 +102,11 @@ public class RoleListPanel extends Panel {
     
     private ListModel<Role> allRoles;
     private Map<String,Group> allGroups;
+    List<String> roleTypes;
+    
     private ConfirmationWindow<Role> confirmationWindow;
     private ModalWindow roleWindow;
     private ModalWindow webroleWindow;
-    private ModalWindow roletypeWindow;
-    
     private Map<String,int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
     
     public RoleListPanel(String id) {
@@ -122,6 +124,7 @@ public class RoleListPanel extends Panel {
 
         this.allRoles = new ListModel<Role>(getAllRoles());
         this.allGroups = getAllGroups();
+        this.roleTypes = UsrCfgDelegate.getInstance().getRoleTypes();
 
         add(this.confirmationWindow = new ConfirmationWindow<Role>("confirmation-window") {
 
@@ -137,7 +140,7 @@ public class RoleListPanel extends Panel {
 
         add(roleWindow = new ModalWindow("role-window"));
         add(webroleWindow = new ModalWindow("webrole-window"));
-        add(roletypeWindow = new ModalWindow("roletype-window"));
+        add(new ModalWindow("roletype-window"));
 
         int[] winSize = windowsizeMap.get("editRole");
         add(new ModalWindowLink("toggle-role-form-link", roleWindow, winSize[0], winSize[1]) {
@@ -175,6 +178,14 @@ public class RoleListPanel extends Panel {
         
         RepeatingView roleRows = new RepeatingView("role-rows");
         addOrReplace(roleRows);
+        
+        RepeatingView typeHeaderCells = new RepeatingView("type-header-cells");
+        addOrReplace(typeHeaderCells);
+
+        for (String typename : this.roleTypes) 
+            typeHeaderCells
+                .add(new WebMarkupContainer(typeHeaderCells.newChildId())
+                .add(new Label("typename", typename)));
         
         for (int i = 0; i < this.allRoles.getObject().size(); i++) {
             final Role role = this.allRoles.getObject().get(i);
@@ -272,36 +283,16 @@ public class RoleListPanel extends Panel {
                 }}.setEnabled(false))
             );
 
-            winSize = windowsizeMap.get("typeAssignment");
-            rowParent.add((new ModalWindowLink("roletype-link", roletypeWindow, winSize[0], winSize[1]) {
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onClick(AjaxRequestTarget target) {
-                    roletypeWindow
-                        .setPageCreator(new ModalWindow.PageCreator() {
-                      
-                            private static final long serialVersionUID = 1L;
-                        
-                                @Override
-                                public Page createPage() {
-                                    return new RoleTypePage(
-                                            roletypeWindow, 
-                                            role
-                                    );
-                                }
-                        });
-                    super.onClick(target);
-                }
-            }).add(new Image("rolelist.roletype.image", ImageManager.IMAGE_USER_ROLE_TYPE)
-                .add(new TooltipBehaviour("rolelist.", "roletype-link", new Model<String>(role.getRolename()))))
-            );
-
-            StringBuffer types = new StringBuffer();
-            if (role.getRoleTypes() != null)
-                for (String type : role.getRoleTypes())
-                    types.append(type).append(" ");
-            rowParent.add(new Label("other", types.toString()));
+            RepeatingView typeContentCells = new RepeatingView("type-content-cells");
+            rowParent.add(typeContentCells);
+            for (String typename : this.roleTypes) {
+                CheckBox typeCheckbox = new CheckBox("type-checkbox");
+                typeCheckbox.setEnabled(false);
+                typeCheckbox.setModel(new Model<Boolean>(role.getRoleTypes().contains(typename)));
+                typeContentCells
+                    .add(new WebMarkupContainer(typeContentCells.newChildId())
+                    .add(typeCheckbox));
+            }
         }
     }
 

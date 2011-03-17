@@ -36,38 +36,27 @@
                             <select wicket:id="rolelist.add-role-form.group.input" class="edit-value" />
                         </div>
                          <div class="edit-table-row">
-                            <div class="edit-desc">
+                            <div class="edit-desc" style=" text-decoration: underline; ">
                                 <wicket:message key="rolelist.add-role-form.type.web.label" />
                             </div>
                             <input wicket:id="webrole-checkbox" type="checkbox" />
                          </div>
                          <div class="edit-table-row">
-                            <div class="edit-desc">
+                            <div class="edit-desc" style=" text-decoration: underline; ">
                                 <wicket:message key="rolelist.add-role-form.type.dicom.label" />
                             </div>
                             <input wicket:id="dicomrole-checkbox" type="checkbox" />
                          </div>
-                         <!-- 
-            <tr wicket:id="type-rows">
-                <td>
-                    <input wicket:id="type-checkbox" type="checkbox" />
-                </td>
-                <td wicket:id="typename">
-                    [Typename]
-                </td>
-            </tr>
-             -->
-            
-                        <div wicket:id="type-rows" class="edit-table-row">
-                            <div wicket:id="typename" class="edit-desc">
-                                [Typename]
-                            </div>
-                            <div>
-                                <input wicket:id="type-checkbox" type="checkbox" />
-                            </div>
+                        <div wicket:id="type-rows">
+	                        <div class="edit-table-row">
+	                            <div wicket:id="typename" class="edit-desc">
+	                                [Typename]
+	                            </div>
+	                            <div>
+	                                <input wicket:id="type-checkbox" type="checkbox" />
+	                            </div>
+	                        </div>
                         </div>
-            
-            
 					</div>
 					<div class="edit-buttons">
 						<input wicket:id="add-role-submit" type="submit" wicket:message="value:rolelist.add-role-form.save" />
