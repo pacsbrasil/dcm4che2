@@ -15,7 +15,7 @@ p,ul,ol,li,dl,dt,dd,div,td,th { font-size: 12px; }
 img { border: none; }
 
 div.signin { height: 400px; text-align: center; padding: 160 0 0 0; }
-div.signin table { width: 100%; padding: 60 90 10 0; background-color: #81AED7; }
+div.signin table { width: 100%; padding: 60 90 10 0; background-color: #A0D8C4; }
 div.signin tr, div.signin td { width: 50%; height: 35px; border-style: none; }
 div.signin span.login-desc { font-size:20px; font-weight: bold; }
 
@@ -40,9 +40,9 @@ div.tabpanel div.tab-row li.selected a:link, div.tabpanel div.tab-row a:visited.
 }
 div.tabpanel div.tab-row a:hover { background: #aaa; }
 
-div.module-panel { width: 100%; background: none #DEEEFD; }
+div.module-panel { width: 100%; background: none #E1E0DE; }
 
-div.viewport-and-actions { margin-top: 20px; margin-bottom: 15px; padding: 5; }
+div.viewport-and-actions { margin-top: 20px; margin-bottom: 5px; padding: 5; }
 div.viewport { float: left; margin-right: 40px; }
 img.hourglass { float: left; margin-left: 20%; }
 div.actions { text-align: right; }
@@ -51,10 +51,10 @@ div.actions { text-align: right; }
     table.search-table
 */
 table.search-table { border: thin; border-width: 1px; border-style: solid; border-color: #000000; width:100%; white-space: nowrap; background-color: #FFFFFF; }
-table.search-table th { background-color: #15253E; color: white; width: 20px; height: 20px; text-align: left; }
+table.search-table th { background-color: #446666; color: white; width: 20px; height: 20px; text-align: left; }
 table.search-table tr { vertical-align: bottom; }
 table.search-table tr.search-table-footer { height: 30px; }
-table.search-table tr.search-table-extended { background-color: #81AED7; }
+table.search-table tr.search-table-extended { background-color: #A0D8C4; }
 table.search-table span.toggle-text { vertical-align: middle; }
 table.search-table div.search-header { text-decoration: underline; }
 
@@ -62,13 +62,14 @@ table.search-table div.search-header { text-decoration: underline; }
     table.content-table
 */
 table.content-table { border: thin; border-width: 1px; border-style: solid; border-color: #000000; border-collapse: collapse; empty-cells: show; width:100%; white-space: nowrap; background-color: #FFFFFF; }
-table.content-table th { background-color: #15253E; color: #FFFFFF; width: 20px; height: 30px; text-align: left; }
+table.content-table th { background-color: #446666; color: #FFFFFF; width: 20px; height: 30px; text-align: left; }
 table.content-table tr { height: 25px; width: auto; border: thin; border-width: 1px; border-style: solid; border-color: #AAAAAA; }
 table.content-table tr.odd { background-color: #FFFFFF; }
-table.content-table tr.even { background-color: #DEEEFD; }
+table.content-table tr.even { background-color: #E1E0DE; }
 table.content-table tr td.expand { width: 21px; border: thin; border-left-width: 1px; border-left-style: solid; border-left-color: #AAAAAA; }
 table.content-table tr td.action { text-align: center; }
-table.content-table tr td { padding-left: 5px; padding-right: 5px; }
+table.content-table tr th, table.content-table tr td { padding-left: 10px; padding-right: 10px; }
+
 /*
     table.folded-table
 */
@@ -79,11 +80,11 @@ table.folded-table tr.pps td.expand,
 table.folded-table tr.series td.expand, 
 table.folded-table tr.instance td.expand,
 table.folded-table tr.patient td.expand { width: 21px; border: thin; border-left-width: 1px; border-left-style: solid; border-left-color: #AAAAAA; }
-table.folded-table tr.file { background-color: #15253E; color: #FFFFFF; }
-table.folded-table tr.instance { background-color: #3E6A97; }
-table.folded-table tr.series { background-color: #81AED7; }
-table.folded-table tr.pps { background-color: #8BC8FF; }    
-table.folded-table tr.study { background-color: #DEEEFD; }
+table.folded-table tr.file { background-color: #446666; color: #FFFFFF; }
+table.folded-table tr.instance { background-color: #54B291; }
+table.folded-table tr.series { background-color: #A0D8C4; }
+table.folded-table tr.pps { background-color: #D1FEF6; }    
+table.folded-table tr.study { background-color: #E1E0DE; }
 table.folded-table tr.patient { background-color : #FFFFFF; } 
 
 div.dicomobjectpanel { border: thin; border-width: 1px; border-style: inset; border-color: #AAAAAA; }
@@ -91,18 +92,18 @@ table.dicomobject { background: #FFFFFF; width: 100%; }
 
 .invalid { background: #EEBBAA; }
 
-.msgWindow { background-color: #81AED7; width: 100% ; height: 100%; text-align: center; }
-.msgWindow_header { background-color: #3E6A97; }
-.msgWindow_content {height: 63%; width: 90%;position: absolute; left: 5%; top: 40px; }
+.msgWindow { background-color: #A0D8C4; width: 100% ; height: 100%; text-align: center;}
+.msgWindow_header { background-color: #54B291; }
+.msgWindow_content { height: 63%; width: 90%;position: absolute; left: 5%; top: 40px; }
 .msgWindow-msg { width:90%; position: absolute; left: 5%; top: 45%; }
 .msgWindow-button { width: 50%; position: absolute; left: 25%; top: 80%; }
 
 /*
     div.edit-content
 */
-div.edit-title {margin-bottom: 9px; }
+div.edit-title {margin-bottom: 9px;}
 div.edit-content div.edit-table-panel { width: 100%; }
-div.edit-table-panel div.edit-table-row { float: left; width: 100%; background: #81AED7; height: 30px; }
+div.edit-table-panel div.edit-table-row { float: left; width: 100%; background: #A0D8C4; height: 30px;}
 div.edit-table-panel .edit-desc { border: none; float: left; text-align: right; vertical-align: middle; margin: 2px 6px 0px; width: 50%; }
 div.edit-table-panel .edit-value { border: 1px solid; float: left; text-align: left; vertical-align: middle; margin: 2px 6px 0px; width: auto; }
-div.edit-buttons { background: none #AAAAAA; width: 100%; height: 20px; text-align: center; vertical-align: middle; float: left; }
+div.edit-buttons { background: none #AAAAAA; width: 100%; height: 20px; text-align: center; vertical-align: middle; float: left;}
