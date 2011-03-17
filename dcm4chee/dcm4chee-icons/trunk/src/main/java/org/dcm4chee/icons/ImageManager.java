@@ -113,8 +113,6 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "user/user_add.png");
     public static ResourceReference IMAGE_USER_WEB_PERMISSIONS = 
         new ResourceReference(ImageManager.class, "user/web_permissions.png");
-    public static ResourceReference IMAGE_USER_ROLE_TYPE = 
-        new ResourceReference(ImageManager.class, "user/role_type.png");
     
     public static final ResourceReference IMAGE_DASHBOARD_FILESYSTEM_GROUP = 
         new ResourceReference(ImageManager.class, "dashboard/filesystem/filesystem_group.png");
