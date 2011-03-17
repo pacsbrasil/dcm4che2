@@ -138,7 +138,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:rolelist:webroleLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:rolelist:roletypeLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.WebPermissionsPage:webpermissions:changePrincipalAssignmentCheckbox", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.RoleTypePage:roletypes:changeTypeAssignmentCheckbox", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.CreateOrEditRolePage:roletypes:changeTypeAssignmentCheckbox", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.group.CreateOrEditGroupPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:grouplist:newGroupLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:grouplist:editGroupLink", "render, enable";
