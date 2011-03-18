@@ -105,10 +105,6 @@ public class RoleAssignmentPage extends SecureWebPage {
 
         RepeatingView roleRows = new RepeatingView("role-rows");
         addOrReplace(roleRows);
-        
-//        HashMap<String, String> principalsAndComments = ((SecureSession) getSession()).getSwarmPrincipals();
-
-//        Iterator<String> principals = principalsAndComments.keySet().iterator();
         int i = 0;
         for (String rolename : userAccess.getAllRolenames()) {
             WebMarkupContainer rowParent;
