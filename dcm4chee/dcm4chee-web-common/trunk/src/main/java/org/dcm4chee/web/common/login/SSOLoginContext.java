@@ -107,7 +107,7 @@ public class SSOLoginContext extends LoginContext {
                 RequestCycle.get().getResponse().redirect("");
                 log.warn("Failed to authorize subject for login, denied. See 'LoginAllowed' rolename attribute in Web Config Service.");
             } else
-                session.extendedLogin();
+                session.extendedLogin(subject);
         } catch (Exception e) {
             log.error("Login failed for JAAS subject: "+jaasSubject, e);
             session.invalidate();
