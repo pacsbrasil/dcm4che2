@@ -55,10 +55,11 @@
      setMethod="setFetchCommand">
       <description><![CDATA[External command to fetch files/tarballs from the source
       file system, with
-         <br>%d will be replaced by the source file system name,
-         <br>%f will be replaced by the path of tarball on the source file system,
-         <br>%p will be replaced by the destination path.
-         <br>NONE = TAR file on local accessable file system.
+         <br />%d will be replaced by the source file system name,
+         <br />%f will be replaced by the path of tarball on the source file system,
+         <br />%p will be replaced by the destination path.
+         <br />NONE = TAR file on local accessable file system.
+         <br />Note: The destination file given with %p always exists and must be overwritten!
        ]]>
       </description>
       <name>FetchCommand</name>
