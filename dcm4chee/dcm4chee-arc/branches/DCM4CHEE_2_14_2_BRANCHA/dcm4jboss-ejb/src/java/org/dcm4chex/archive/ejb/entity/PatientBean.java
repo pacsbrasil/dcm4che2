@@ -140,114 +140,46 @@ import org.dcm4chex.archive.util.Convert;
  *             strategy="on-find" eager-load-group="*"
  *
  * @ejb.finder signature="java.util.Collection findCorresponding(java.lang.String pid, java.lang.String issuer)"
- *             query="SELECT OBJECT(p1) FROM Patient"
+ *             query="SELECT DISTINCT OBJECT(p1) FROM Patient AS p1,
+ *             IN(p1.otherPatientIds) opid,
+ *             IN(opid.patients) p2
+ *             WHERE (p1.patientId = ?1 AND p1.issuerOfPatientId = ?2)
+ *             OR (p2.patientId = ?1 AND p2.issuerOfPatientId = ?2)
+ *             OR (opid.patientId = ?1 AND opid.issuerOfPatientId = ?2)"
  *             transaction-type="Supports"
- * @jboss.declared-sql
- *        signature="java.util.Collection findCorresponding(java.lang.String pid, java.lang.String issuer)"
- *        alias  = "p1"
- *        distinct  = "true"
- *        where     = "(p1.pat_id = {0} AND p1.pat_id_issuer = {1})
- *          UNION
- *             SELECT p2.pk, p2.pat_id, p2.pat_id_issuer
- *               FROM rel_pat_other_pid r 
- *                    INNER JOIN other_pid o ON r.other_pid_fk = o.pk
- *                    INNER JOIN patient p2  ON r.patient_fk = p2.pk
- *              WHERE (o.pat_id = {0} AND o.pat_id_issuer = {1})
- *          UNION
- *             SELECT p2.pk, p2.pat_id, p2.pat_id_issuer
- *               FROM patient p1 
- *                    INNER JOIN rel_pat_other_pid r1 ON r1.patient_fk = p1.pk
- *                    INNER JOIN other_pid o          ON r1.other_pid_fk = o.pk
- *                    INNER JOIN rel_pat_other_pid r2 ON r2.other_pid_fk = o.pk
- *                    INNER JOIN patient p2           ON r2.patient_fk = p2.pk
- *              WHERE (p1.pat_id = {0} AND p1.pat_id_issuer = {1})
- *          UNION          
- *             SELECT p.pk, p.pat_id, p.pat_id_issuer 
- *               FROM patient p 
- *                    INNER JOIN rel_pat_other_pid r ON p.pk = r.patient_fk
- *              WHERE r.other_pid_fk in
- *                  (
- *                    SELECT o2.pk
- *                      FROM other_pid o1, other_pid o2, rel_pat_other_pid r1, rel_pat_other_pid r2
- *                     WHERE o1.pk = r1.other_pid_fk
- *                       AND r1.patient_fk = r2.patient_fk
- *                       AND r2.other_pid_fk = o2.pk
- *                       AND o1.pat_id = {0}
- *                       AND o1.pat_id_issuer = {1}
- *                  )"
- *        strategy="on-find" eager-load-group="pid"
- *        
+ * @jboss.query signature="java.util.Collection findCorresponding(java.lang.String pid, java.lang.String issuer)"
+ *              strategy="on-find" eager-load-group="pid"
+ *
  * @ejb.finder signature="java.util.Collection findCorrespondingLike(java.lang.String pid, java.lang.String issuer)"
- *             query="SELECT OBJECT(p1)" transaction-type="Supports"
- * @jboss.declared-sql
- *        signature="java.util.Collection findCorrespondingLike(java.lang.String pid, java.lang.String issuer)"
- *        alias  = "p1"
- *        distinct  = "true"
- *        where     = "(p1.pat_id LIKE {0} AND p1.pat_id_issuer = {1})
- *          UNION
- *             SELECT p2.pk, p2.pat_id, p2.pat_id_issuer
- *               FROM rel_pat_other_pid r 
- *                    INNER JOIN other_pid o ON r.other_pid_fk = o.pk 
- *                    INNER JOIN patient p2  ON r.patient_fk = p2.pk
- *              WHERE (o.pat_id LIKE {0} AND o.pat_id_issuer = {1})
- *          UNION
- *             SELECT p2.pk, p2.pat_id, p2.pat_id_issuer
- *               FROM patient p1 
- *                    INNER JOIN rel_pat_other_pid r1 ON r1.patient_fk = p1.pk
- *                    INNER JOIN other_pid o          ON r1.other_pid_fk = o.pk
- *                    INNER JOIN rel_pat_other_pid r2 ON r2.other_pid_fk = o.pk
- *                    INNER JOIN patient p2           ON r2.patient_fk = p2.pk
- *              WHERE (p1.pat_id LIKE {0} AND p1.pat_id_issuer = {1})
- *          UNION          
- *             SELECT p.pk, p.pat_id, p.pat_id_issuer 
- *               FROM patient p 
- *                    INNER JOIN rel_pat_other_pid r ON p.pk = r.patient_fk
- *              WHERE r.other_pid_fk in
- *                  (
- *                    SELECT o2.pk
- *                      FROM other_pid o1, other_pid o2, rel_pat_other_pid r1, rel_pat_other_pid r2
- *                     WHERE o1.pk = r1.other_pid_fk
- *                       AND r1.patient_fk = r2.patient_fk
- *                       AND r2.other_pid_fk = o2.pk
- *                       AND o1.pat_id LIKE {0}
- *                       AND o1.pat_id_issuer = {1}
- *                  )"
- *        strategy="on-find" eager-load-group="pid"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findCorrespondingLike(java.lang.String pid, java.lang.String issuer)"
+ *             query="SELECT DISTINCT OBJECT(p1) FROM Patient AS p1,
+ *             IN(p1.otherPatientIds) opid,
+ *             IN(opid.patients) p2
+ *             WHERE (p1.patientId LIKE ?1 AND p1.issuerOfPatientId = ?2)
+ *             OR (p2.patientId LIKE ?1 AND p2.issuerOfPatientId = ?2)
+ *             OR (opid.patientId LIKE ?1 AND opid.issuerOfPatientId = ?2)"
+ *             strategy="on-find" eager-load-group="pid"
  *
  * @ejb.finder signature="java.util.Collection findCorrespondingByPrimaryPatientID(java.lang.String pid, java.lang.String issuer)"
- *             query="SELECT OBJECT(p1)"
+ *             query="SELECT DISTINCT OBJECT(p1) FROM Patient AS p1,
+ *             IN(p1.otherPatientIds) opid,
+ *             IN(opid.patients) p2
+ *             WHERE (p1.patientId = ?1 AND p1.issuerOfPatientId = ?2)
+ *             OR (p2.patientId = ?1 AND p2.issuerOfPatientId = ?2)"
  *             transaction-type="Supports"
- * @jboss.declared-sql
- *        signature="java.util.Collection findCorrespondingByPrimaryPatientID(java.lang.String pid, java.lang.String issuer)"
- *        alias  = "p1"
- *        distinct  = "true"
- *        where     = "(p1.pat_id = {0} AND p1.pat_id_issuer = {1})
- *          UNION
- *             SELECT p2.pk, p2.pat_id, p2.pat_id_issuer 
- *               FROM patient p1 
- *                    INNER JOIN rel_pat_other_pid r1 ON r1.patient_fk = p1.pk  
- *                    INNER JOIN other_pid o          ON r1.other_pid_fk = o.pk 
- *                    INNER JOIN rel_pat_other_pid r2 ON r2.other_pid_fk = o.pk 
- *                    INNER JOIN patient p2           ON r2.patient_fk = p2.pk
- *              WHERE (p1.pat_id = {0} AND p1.pat_id_issuer = {1})"
- *        strategy="on-find" eager-load-group="pid"
+ * @jboss.query signature="java.util.Collection findCorrespondingByPrimaryPatientID(java.lang.String pid, java.lang.String issuer)"
+ *              strategy="on-find" eager-load-group="pid"
  *
  * @ejb.finder signature="java.util.Collection findCorrespondingByPrimaryPatientIDLike(java.lang.String pid, java.lang.String issuer)"
- *             query="SELECT OBJECT(p1)" transaction-type="Supports"
- * @jboss.declared-sql
- *        signature="java.util.Collection findCorrespondingByPrimaryPatientIDLike(java.lang.String pid, java.lang.String issuer)"
- *        alias  = "p1"
- *        distinct  = "true"
- *        where     = "(p1.pat_id LIKE {0} AND p1.pat_id_issuer = {1})
- *          UNION
- *             SELECT p2.pk, p2.pat_id, p2.pat_id_issuer
- *               FROM patient p1 
- *                    INNER JOIN rel_pat_other_pid r1 ON r1.patient_fk = p1.pk 
- *                    INNER JOIN other_pid o          ON r1.other_pid_fk = o.pk 
- *                    INNER JOIN rel_pat_other_pid r2 ON r2.other_pid_fk = o.pk 
- *                    INNER JOIN patient p2           ON r2.patient_fk = p2.pk
- *              WHERE (p1.pat_id LIKE {0} AND p1.pat_id_issuer = {1})"
- *        strategy="on-find" eager-load-group="pid"
+ *             query="" transaction-type="Supports"
+ * @jboss.query signature="java.util.Collection findCorrespondingByPrimaryPatientIDLike(java.lang.String pid, java.lang.String issuer)"
+ *             query="SELECT DISTINCT OBJECT(p1) FROM Patient AS p1,
+ *             IN(p1.otherPatientIds) opid,
+ *             IN(opid.patients) p2
+ *             WHERE (p1.patientId LIKE ?1 AND p1.issuerOfPatientId = ?2)
+ *             OR (p2.patientId LIKE ?1 AND p2.issuerOfPatientId = ?2)"
+ *             strategy="on-find" eager-load-group="pid"
  *
  * @ejb.finder signature="java.util.Collection findCorrespondingByOtherPatientID(java.lang.String pid, java.lang.String issuer)"
  *             query="SELECT OBJECT(p1) FROM Patient AS p1,
