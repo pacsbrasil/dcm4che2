@@ -52,6 +52,7 @@ import org.apache.wicket.security.strategies.WaspAuthorizationStrategy;
 import org.apache.wicket.security.swarm.SwarmWebApplication;
 import org.apache.wicket.security.swarm.strategies.SwarmStrategyFactory;
 import org.apache.wicket.settings.IExceptionSettings;
+import org.dcm4chee.web.common.login.LoginPage;
 import org.dcm4chee.web.common.secure.ExtendedSwarmStrategy;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.slf4j.Logger;

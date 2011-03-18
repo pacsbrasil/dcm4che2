@@ -35,7 +35,7 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package org.dcm4chee.web.common.base;
+package org.dcm4chee.web.common.login;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -49,6 +49,7 @@ import org.apache.wicket.resource.loader.ClassStringResourceLoader;
 import org.apache.wicket.resource.loader.PackageStringResourceLoader;
 import org.apache.wicket.security.WaspSession;
 import org.apache.wicket.security.authentication.LoginException;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 
 /**

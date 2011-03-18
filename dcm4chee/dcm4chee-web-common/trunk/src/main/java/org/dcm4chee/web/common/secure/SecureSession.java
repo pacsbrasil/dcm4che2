@@ -38,7 +38,7 @@
 
 package org.dcm4chee.web.common.secure;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.Cookie;
 
@@ -58,7 +58,7 @@ public class SecureSession extends WaspSession {
     private static final long serialVersionUID = 1L;
     
     private String username;
-    private HashMap<String, String> swarmPrincipals;
+    private Map<String, String> swarmPrincipals;
     private boolean manageUsers;
 
     public SecureSession(WaspApplication application, Request request) {
@@ -80,11 +80,11 @@ public class SecureSession extends WaspSession {
     public void extendedLogin(org.apache.wicket.security.hive.authentication.Subject webSubject) {
     }
 
-    public void setSwarmPrincipals(HashMap<String, String> principals) {
-        this.swarmPrincipals = principals;
+    public void setSwarmPrincipals(Map<String, String> map) {
+        this.swarmPrincipals = map;
     }
     
-    public HashMap<String, String> getSwarmPrincipals() {
+    public Map<String, String> getSwarmPrincipals() {
         return swarmPrincipals;
     }
     

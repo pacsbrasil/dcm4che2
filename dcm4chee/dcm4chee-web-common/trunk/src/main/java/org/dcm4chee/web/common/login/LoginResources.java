@@ -1,4 +1,4 @@
-package org.dcm4chee.web.common.base;
+package org.dcm4chee.web.common.login;
 
 import java.util.PropertyResourceBundle;
 
