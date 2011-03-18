@@ -5,7 +5,7 @@
 body {font-family:font-family:Verdana,sans-serif !important}
 
 div.header {
-    background-color: #446666 !important;
+    background-color: #15253E !important;
     color: white !important;
     height: 20px !important;
     text-align: left !important;
@@ -52,3 +52,4 @@ div.diagram-panel {
 div.table-panel {
     margin: 20px;   
 }
+
