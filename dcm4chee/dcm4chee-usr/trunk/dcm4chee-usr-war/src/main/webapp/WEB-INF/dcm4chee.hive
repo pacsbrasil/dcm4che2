@@ -1,19 +1,19 @@
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "LoginAllowed"
 {
-// DOC: swarm.principal.LoginAllowed
+// KEY: swarm.principal.LoginAllowed
     permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.ChangePasswordPanel", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "UserRead"
 {
-// DOC: swarm.principal.UserRead
+// KEY: swarm.principal.UserRead
 	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.user.UserListPanel", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "UserWrite" 
 {
-// DOC: swarm.principal.UserWrite
+// KEY: swarm.principal.UserWrite
 	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.user.AddUserPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.user.RoleAssignmentPage", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:userlist:newUserLink", "render, enable";
@@ -25,7 +25,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "U
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "RoleRead"
 {
-// DOC: swarm.principal.RoleRead
+// KEY: swarm.principal.RoleRead
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.RolePanel", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.group.GroupListPanel", "render, enable";
@@ -33,7 +33,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "RoleWrite"
 {
-// DOC: swarm.principal.RoleWrite
+// KEY: swarm.principal.RoleWrite
 	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.CreateOrEditRolePage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.WebPermissionsPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.RoleTypePage", "render, enable";
