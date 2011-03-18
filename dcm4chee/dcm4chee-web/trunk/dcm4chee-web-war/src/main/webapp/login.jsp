@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
-    <jsp:useBean id="login" scope="request" class="org.dcm4chee.web.common.base.LoginResources" />
+    <jsp:useBean id="login" scope="request" class="org.dcm4chee.web.common.login.LoginResources" />
     <% 
      Cookie[] cookies = request.getCookies();
      String userName = "";
@@ -29,7 +29,7 @@
     <head>
 	    <title>${login.browser_title}</title>
 	    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-         <link rel="stylesheet" type="text/css" href="resources/org.dcm4chee.web.common.base.LoginPage/base-style.css" />
+         <link rel="stylesheet" type="text/css" href="resources/org.dcm4chee.web.common.base.BaseWicketPage/base-style.css" />
     </head>
     <body onload="<%= focus %>">
         <div class="tabpanel">
@@ -39,7 +39,7 @@
 		            </ul>
                 </div>
 		        <div class="tab-logo" style="margin-top: 13px; padding-right: 10px; padding-left: 10px;">
-		           <img alt="dcm4che.org" src="resources/org.dcm4chee.web.common.base.LoginPage/images/logo.gif" /><br/>
+		           <img alt="dcm4che.org" src="resources/org.dcm4chee.web.common.base.BaseWicketPage/images/logo.gif" /><br/>
 		        </div>
 	       </div>
 	       <div class="module-panel"></div>
@@ -47,7 +47,7 @@
         <div class="signin" style="padding-top: 160px;">
             <span class="login-desc">${login.loginLabel}</span>
             <div>
-		        <form action="j_security_check" method="POST" name="login" >
+		        <form action="j_security_check">
 		            <table style="padding-top: 60px; padding-right: 90px; padding-bottom: 10px;">
                         <tbody>
 			                <tr style="text-align: left;">

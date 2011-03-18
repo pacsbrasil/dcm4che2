@@ -34,7 +34,7 @@ import org.dcm4chee.archive.entity.StudyOnFileSystem;
 import org.dcm4chee.archive.entity.VerifyingObserver;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
-import org.dcm4chee.web.common.base.LoginPage;
+import org.dcm4chee.web.common.login.LoginPage;
 import org.dcm4chee.web.dao.folder.StudyListBean;
 import org.junit.Test;
 import org.slf4j.Logger;

@@ -50,7 +50,7 @@ import org.apache.wicket.security.hive.config.SwarmPolicyFileHiveFactory;
 import org.apache.wicket.security.strategies.WaspAuthorizationStrategy;
 import org.apache.wicket.security.swarm.strategies.SwarmStrategyFactory;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
-import org.dcm4chee.web.common.base.LoginPage;
+import org.dcm4chee.web.common.login.LoginPage;
 import org.dcm4chee.web.common.secure.ExtendedSwarmStrategy;
 import org.dcm4chee.web.common.secure.SecureSession;
 
