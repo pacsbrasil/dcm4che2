@@ -304,6 +304,7 @@ CREATE INDEX inst_custom3 ON instance(inst_custom3);
 CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
 CREATE INDEX inst_status ON instance(inst_status);
 CREATE INDEX commitment ON instance(commitment);
+CREATE INDEX inst_created ON instance(created_time);
 
 CREATE SEQUENCE verify_observer_pk_seq;
 CREATE TABLE verify_observer (

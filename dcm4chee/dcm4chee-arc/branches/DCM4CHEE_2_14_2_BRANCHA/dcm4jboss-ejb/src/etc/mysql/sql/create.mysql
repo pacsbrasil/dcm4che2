@@ -293,6 +293,7 @@ CREATE INDEX inst_custom3 ON instance(inst_custom3(64));
 CREATE INDEX ext_retr_aet ON instance(ext_retr_aet(16));
 CREATE INDEX commitment ON instance(commitment);
 CREATE INDEX inst_status ON instance(inst_status);
+CREATE INDEX inst_created ON instance(created_time);
 
 CREATE TABLE verify_observer (
 	pk              BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,

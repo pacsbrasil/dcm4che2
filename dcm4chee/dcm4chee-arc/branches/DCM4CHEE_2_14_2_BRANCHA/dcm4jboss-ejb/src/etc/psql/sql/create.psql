@@ -293,6 +293,7 @@ CREATE INDEX inst_custom3 ON instance(inst_custom3);
 CREATE INDEX ext_retr_aet ON instance(ext_retr_aet);
 CREATE INDEX commitment ON instance(commitment);
 CREATE INDEX instance_status ON instance(inst_status);
+CREATE INDEX inst_created ON instance(created_time);
 
 CREATE TABLE verify_observer (
 	pk              SERIAL8 NOT NULL CONSTRAINT verify_observer_pk PRIMARY KEY,

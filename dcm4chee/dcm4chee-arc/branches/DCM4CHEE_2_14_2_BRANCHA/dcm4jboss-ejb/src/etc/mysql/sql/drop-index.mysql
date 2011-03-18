@@ -88,6 +88,7 @@ ALTER TABLE instance DROP INDEX inst_custom3;
 ALTER TABLE instance DROP INDEX ext_retr_aet;
 ALTER TABLE instance DROP INDEX commitment;
 ALTER TABLE instance DROP INDEX inst_status;
+ALTER TABLE instance DROP INDEX inst_created;
 ALTER TABLE verify_observer DROP INDEX observer_inst_fk;
 ALTER TABLE verify_observer DROP INDEX verify_datetime;
 ALTER TABLE verify_observer DROP INDEX observer_name;
