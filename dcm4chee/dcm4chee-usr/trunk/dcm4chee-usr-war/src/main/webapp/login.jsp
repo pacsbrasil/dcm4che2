@@ -5,10 +5,10 @@
     <head>
 	    <title>${login.browser_title}</title>
 	    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-         <link rel="stylesheet" type="text/css" href="resources/org.dcm4chee.web.common.base.LoginPage/base-style.css" />
+         <link rel="stylesheet" type="text/css" href="resources/org.dcm4chee.web.common.base.BaseWicketPage/base-style.css" />
     </head>
     <body>
-        <jsp:useBean id="login" scope="request" class="org.dcm4chee.web.common.base.LoginResources" />
+        <jsp:useBean id="login" scope="request" class="org.dcm4chee.web.common.login.LoginResources" />
         <% 
 	        Cookie[] cookies = request.getCookies();
 	        for (int i = 0; i < cookies.length; i++) {
@@ -25,7 +25,7 @@
 		            </ul>
                 </div>
 		        <div class="tab-logo" style="margin-top: 13px; padding-right: 10px; padding-left: 10px;">
-		           <img alt="dcm4che.org" src="resources/org.dcm4chee.web.common.base.LoginPage/images/logo.gif" /><br/>
+		           <img alt="dcm4che.org" src="resources/org.dcm4chee.web.common.base.BaseWicketPage/images/logo.gif" /><br/>
 		        </div>
 	       </div>
 	       <div class="module-panel"></div>

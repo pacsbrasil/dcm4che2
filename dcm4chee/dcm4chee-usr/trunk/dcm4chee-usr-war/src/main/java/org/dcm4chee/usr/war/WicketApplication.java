@@ -47,7 +47,7 @@ import org.apache.wicket.Response;
 import org.apache.wicket.security.authentication.LoginException;
 import org.dcm4chee.usr.war.pages.UserManagementMainPage;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
-import org.dcm4chee.web.common.base.SSOLoginContext;
+import org.dcm4chee.web.common.login.SSOLoginContext;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

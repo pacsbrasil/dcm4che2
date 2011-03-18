@@ -41,6 +41,7 @@ package org.dcm4chee.usr.ui.usermanagement.role;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.wicket.AttributeModifier;
@@ -104,22 +105,19 @@ public class WebPermissionsPage extends SecureWebPage {
         RepeatingView principalRows = new RepeatingView("principal-rows");
         addOrReplace(principalRows);
         
-        HashMap<String, String> principalsAndComments = ((SecureSession) getSession()).getSwarmPrincipals();
+        Map<String, String> principalsAndKeys = ((SecureSession) getSession()).getSwarmPrincipals();
         
-        Iterator<String> principals = principalsAndComments.keySet().iterator();
+        Iterator<String> principals = principalsAndKeys.keySet().iterator();
         int i = 0;
         while(principals.hasNext()) {
             String principal = principals.next();
             
             WebMarkupContainer rowParent;
-            String comment;
+            String key = principalsAndKeys.get(principal);
             
             principalRows.add((rowParent = new WebMarkupContainer(principalRows.newChildId()))
-                    .add(new Label("principalname", principal)
-                    .add(new AttributeModifier("title", true, 
-                            (comment = principalsAndComments.get(principal)) != null ? 
-                            new ResourceModel(comment) :
-                                new Model<String>(principal)))
+                    .add(new Label("principalname", new ResourceModel(key + ".name"))
+                    .add(new AttributeModifier("title", true, new ResourceModel(key + ".tooltip")))
                     )
             );
             rowParent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i++))));
