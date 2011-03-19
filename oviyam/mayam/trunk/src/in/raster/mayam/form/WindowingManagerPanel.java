@@ -197,9 +197,9 @@ public class WindowingManagerPanel extends javax.swing.JPanel implements KeyList
 
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_DELETE) {
-            int resetDB = 0;
-            resetDB = JOptionPane.showConfirmDialog(this, "Are you sure want to delete the preset", "Confirmation Dialog", JOptionPane.YES_NO_OPTION);
-            if (resetDB == 0) {
+            int deletePreset = 0;
+            deletePreset = JOptionPane.showConfirmDialog(this, "Are you sure want to delete the preset", "Confirmation Dialog", JOptionPane.YES_NO_OPTION);
+            if (deletePreset == 0) {
                 if (jTable1.getSelectedRow() != -1) {
                     PresetModel presetModel = ((PresetTableModel) jTable1.getModel()).getRow(jTable1.getSelectedRow());
                     ApplicationContext.databaseRef.deletePreset(presetModel);
