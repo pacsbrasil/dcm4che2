@@ -327,14 +327,13 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
 
     private void DeleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DeleteButtonActionPerformed
         if (serverListTable.getSelectedRow() != -1) {
-            int canDelete=0;
-            canDelete=JOptionPane.showConfirmDialog(null, "Are you sure want to delete the server", "Delete Confirmation", JOptionPane.YES_NO_OPTION);
-            if(canDelete==0)
-            {
-            ServerModel serverModel = ((ServerTableModel) serverListTable.getModel()).getRow(serverListTable.getSelectedRow());
-            ApplicationContext.databaseRef.deleteServer(serverModel);
-            setServerTableModel();
-            addOrDeleteServerNotification();
+            int canDelete = 0;
+            canDelete = JOptionPane.showConfirmDialog(null, "Are you sure want to delete the server", "Delete Confirmation", JOptionPane.YES_NO_OPTION);
+            if (canDelete == 0) {
+                ServerModel serverModel = ((ServerTableModel) serverListTable.getModel()).getRow(serverListTable.getSelectedRow());
+                ApplicationContext.databaseRef.deleteServer(serverModel);
+                setServerTableModel();
+                addOrDeleteServerNotification();
             }
         }
     }//GEN-LAST:event_DeleteButtonActionPerformed
@@ -352,15 +351,18 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
 
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_DELETE) {
-            if (serverListTable.getSelectedRow() != -1) {
-                ServerModel serverModel = ((ServerTableModel) serverListTable.getModel()).getRow(serverListTable.getSelectedRow());
-                ApplicationContext.databaseRef.deleteServer(serverModel);
-                setServerTableModel();
-                addOrDeleteServerNotification();
+            int canDelete = 0;
+            canDelete = JOptionPane.showConfirmDialog(null, "Are you sure want to delete the server", "Delete Confirmation", JOptionPane.YES_NO_OPTION);
+            if (canDelete == 0) {
+                if (serverListTable.getSelectedRow() != -1) {
+                    ServerModel serverModel = ((ServerTableModel) serverListTable.getModel()).getRow(serverListTable.getSelectedRow());
+                    ApplicationContext.databaseRef.deleteServer(serverModel);
+                    setServerTableModel();
+                    addOrDeleteServerNotification();
+                }
             }
         }
     }
-
     public void keyReleased(KeyEvent e) {
     }
 }
