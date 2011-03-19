@@ -116,7 +116,7 @@ public class ExportingDelegate extends Thread {
 
     private void exportInstanceOfImage(File patientNameFile, ExportToDcmDelegate exportToDcmDelegate, JpegConvertorDelegate jpegDelegate) {
         if (ExportDialog.conversionFormatDcm) {
-            exportToDcmDelegate.instanceExportAsDicom(ApplicationContext.imgPanel.getDicomFileUrl(), patientNameFile.getAbsolutePath());
+            exportToDcmDelegate.instanceExportAsDicom(ApplicationContext.imgPanel.getDicomFileUrl(), patientNameFile.getAbsolutePath(),ApplicationContext.imgPanel.isIsEncapsulatedDocument());
         } else {
             jpegDelegate.instanceConvertor(patientNameFile.getAbsolutePath() + File.separator + ApplicationContext.imgPanel.getInstanceUID(), ApplicationContext.imgPanel.getCurrentbufferedimage());
         }

@@ -77,7 +77,10 @@ public class ExportToDcmDelegate {
             Iterator<Instance> imgitr = series.getImageList().iterator();
             while (imgitr.hasNext()) {
                 Instance img = imgitr.next();
-                if (img.isMultiframe()) {
+                if (img.isEncapsulatedPDF()) {
+                    File inputFile = new File(img.getFilepath());
+                    exportDcm(inputFile, new File(patientNameFile.getAbsolutePath(), inputFile.getName()));
+                } else if (img.isMultiframe()) {
                     if (img.getCurrentFrameNum() == 0) {
                         doExport(img.getFilepath(), patientNameFile.getAbsolutePath());
                     }
@@ -97,7 +100,10 @@ public class ExportToDcmDelegate {
                 Iterator<Instance> imgitr = series.getImageList().iterator();
                 while (imgitr.hasNext()) {
                     Instance img = imgitr.next();
-                    if (img.isMultiframe()) {
+                    if (img.isEncapsulatedPDF()) {
+                        File inputFile = new File(img.getFilepath());
+                        exportDcm(inputFile, new File(outputFilePath, inputFile.getName()));
+                    } else if (img.isMultiframe()) {
                         if (img.getCurrentFrameNum() == 0) {
                             doExport(img.getFilepath(), outputFilePath);
                         }
@@ -121,33 +127,55 @@ public class ExportToDcmDelegate {
                     while (imgitr.hasNext()) {
                         //one instance is here.
                         Instance img = imgitr.next();
-                        doExport(img.getFilepath(), outputFilePath);
+                        if (img.isEncapsulatedPDF()) {
+                            File inputFile = new File(img.getFilepath());
+                            exportDcm(inputFile, new File(outputFilePath, inputFile.getName()));
+                        } else {
+                            doExport(img.getFilepath(), outputFilePath);
+                        }
                     }
                 }
             } else {//single frame image
                 if (!series.isMultiframe() && series.getSeriesInstanceUID().equalsIgnoreCase(seriesIUID)) {
                     Iterator<Instance> imgitr = series.getImageList().iterator();
                     while (imgitr.hasNext()) {
+
                         Instance img = imgitr.next();
-                        doExport(img.getFilepath(), outputFilePath);
+                        if (img.isEncapsulatedPDF()) {
+                            File inputFile = new File(img.getFilepath());
+                            exportDcm(inputFile, new File(outputFilePath, inputFile.getName()));
+                        } else {
+                            doExport(img.getFilepath(), outputFilePath);
+                        }
                     }
                 }
             }
         }
     }
 
-    public void instanceExportAsDicom(String inputFilePath, String outputFilePath) {
-        doExport(inputFilePath, outputFilePath);
+    public void instanceExportAsDicom(String inputFilePath, String outputFilePath, boolean isEncapsulatedPDF) {
+        if (isEncapsulatedPDF) {
+            File inputFile = new File(inputFilePath);
+            exportDcm(inputFile, new File(outputFilePath, inputFile.getName()));
+        } else {
+            doExport(inputFilePath, outputFilePath);
+        }
     }
 
     private void doExport(String inputFilePath, String outputFilePath) {
+        DestinationFinder destFinder = new DestinationFinder();
+        File inputFile = new File(destFinder.getFileDestination(new File(inputFilePath)));
+        File outputFile = new File(outputFilePath, inputFile.getName());
+        exportDcm(inputFile, outputFile);
+    }
+    //new File(outputFilePath, inputFile.getName())
+
+    private void exportDcm(File inputFile, File outputFile) {
         InputStream in = null;
         OutputStream out = null;
         try {
-            DestinationFinder destFinder = new DestinationFinder();
-            File inputFile = new File(destFinder.getFileDestination(new File(inputFilePath)));
             in = new FileInputStream(inputFile);
-            out = new FileOutputStream(new File(outputFilePath, inputFile.getName()));
+            out = new FileOutputStream(outputFile);
             byte[] buf = new byte[4096];
             int len;
             while ((len = in.read(buf)) > 0) {
@@ -167,4 +195,3 @@ public class ExportToDcmDelegate {
         }
     }
 }
-

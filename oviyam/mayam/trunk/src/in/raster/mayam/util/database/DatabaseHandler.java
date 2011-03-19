@@ -341,7 +341,7 @@ public class DatabaseHandler {
             statement.executeUpdate(sql);
 
             //creating is instance table if it is not exist already
-            sql = "create table " + instanceTable + " (SopUID varchar(255) NOT NULL CONSTRAINT SopUID_pk PRIMARY KEY ," + "InstanceNo integer," + "multiframe varchar(50)," + "totalframe varchar(50)," + "SendStatus varchar(50)," + "ForwardDateTime varchar(30)," + "ReceivedDateTime varchar(30)," + "ReceiveStatus varchar(50)," + "FileStoreUrl varchar(750)," + "SliceLocation integer," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255), foreign key (StudyInstanceUID) references Study(StudyInstanceUID)," + "SeriesInstanceUID varchar(255), foreign key (SeriesInstanceUID) references Series(SeriesInstanceUID))";
+            sql = "create table " + instanceTable + " (SopUID varchar(255) NOT NULL CONSTRAINT SopUID_pk PRIMARY KEY ," + "InstanceNo integer," + "multiframe varchar(50)," + "totalframe varchar(50)," + "SendStatus varchar(50)," + "ForwardDateTime varchar(30)," + "ReceivedDateTime varchar(30)," + "ReceiveStatus varchar(50)," + "FileStoreUrl varchar(750)," + "SliceLocation integer," + "EncapsulatedDocument varchar(50)," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255), foreign key (StudyInstanceUID) references Study(StudyInstanceUID)," + "SeriesInstanceUID varchar(255), foreign key (SeriesInstanceUID) references Series(SeriesInstanceUID))";
             statement.executeUpdate(sql);
 
             sql = "create table ae(pk integer primary key GENERATED ALWAYS AS IDENTITY,logicalname varchar(255),hostname varchar(255),aetitle varchar(255),port integer,retrievetype varchar(100),wadocontext varchar(100),wadoport integer,wadoprotocol varchar(100),retrievets varchar(255))";
@@ -944,12 +944,16 @@ public class DatabaseHandler {
                 String struturedDestination = ApplicationContext.getAppDirectory() + File.separator + "archive" + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + dataset.getString(Tag.StudyInstanceUID) + File.separator + dataset.getString(Tag.SOPInstanceUID);
                 String multiframe = "false";
                 int totalFrame = 0;
+                boolean encapsulatedPDF = false;
+                if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+                    encapsulatedPDF = true;
+                }
                 if (dataset.getString(Tags.NumberOfFrames) != null && Integer.parseInt(dataset.getString(Tags.NumberOfFrames)) > 1) {
                     multiframe = "true";
                     totalFrame = Integer.parseInt(dataset.getString(Tags.NumberOfFrames));
                 }
                 String sliceLocation = (dataset.getString(Tags.SliceLocation) != null) ? dataset.getString(Tags.SliceLocation) : "100000";
-                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber) + ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "'," + sliceLocation + ",'" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
+                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber) + ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "'," + sliceLocation + ",'" + encapsulatedPDF + "','" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
                 conn.commit();
                 int receivedCount = this.getReceiveCount(dataset.getString(Tag.StudyInstanceUID));
                 receivedCount = receivedCount + 1;
@@ -968,12 +972,16 @@ public class DatabaseHandler {
                 String struturedDestination = dicomFile.getAbsolutePath();
                 String multiframe = "false";
                 int totalFrame = 0;
+                boolean encapsulatedPDF = false;
+                if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+                    encapsulatedPDF = true;
+                }
                 if (dataset.getString(Tags.NumberOfFrames) != null && Integer.parseInt(dataset.getString(Tags.NumberOfFrames)) > 1) {
                     multiframe = "true";
                     totalFrame = Integer.parseInt(dataset.getString(Tags.NumberOfFrames));
                 }
                 String sliceLocation = (dataset.getString(Tags.SliceLocation) != null) ? dataset.getString(Tags.SliceLocation) : "100000";
-                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber) + ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "'," + sliceLocation + ",'" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
+                conn.createStatement().execute("insert into " + instanceTable + " values('" + dataset.getString(Tag.SOPInstanceUID) + "'," + dataset.getInt(Tag.InstanceNumber) + ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + struturedDestination + "'," + sliceLocation + ",'" + encapsulatedPDF + "','" + dataset.getString(Tag.PatientID) + "','" + dataset.getString(Tag.StudyInstanceUID) + "','" + dataset.getString(Tag.SeriesInstanceUID) + "')");
                 conn.commit();
                 int receivedCount = this.getReceiveCount(dataset.getString(Tag.StudyInstanceUID));
                 receivedCount = receivedCount + 1;
@@ -1247,7 +1255,7 @@ public class DatabaseHandler {
                 series.setSeriesDesc(rs.getString("SeriesDescription"));
                 series.setBodyPartExamined(rs.getString("BodyPartExamined"));
                 ResultSet rs1 = null;
-                String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" + "AND multiframe='false'" + " order by InstanceNo asc";
+                String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe,EncapsulatedDocument from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" + "AND multiframe='false'" + " order by InstanceNo asc";
                 rs1 = conn.createStatement().executeQuery(sql1);
                 boolean allInstanceAreMultiframe = true;
                 while (rs1.next()) {
@@ -1256,6 +1264,7 @@ public class DatabaseHandler {
                     img.setFilepath(rs1.getString("FileStoreUrl"));
                     img.setSop_iuid(rs1.getString("SopUID"));
                     img.setInstance_no(rs1.getString("InstanceNo"));
+                    img.setEncapsulatedPDF(rs1.getBoolean("EncapsulatedDocument"));
                     img.setMultiframe(false);
                     series.setMultiframe(false);
                     series.getImageList().add(img);
@@ -1275,7 +1284,7 @@ public class DatabaseHandler {
         ArrayList<Series> arr = new ArrayList();
         try {
             ResultSet rs1 = null;
-            String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe from image where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + seriesUID + "'" + " AND multiframe='true'" + " order by InstanceNo asc";
+            String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe,EncapsulatedDocument from image where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + seriesUID + "'" + " AND multiframe='true'" + " order by InstanceNo asc";
             rs1 = conn.createStatement().executeQuery(sql1);
             while (rs1.next()) {
                 Series series = new Series();
@@ -1290,9 +1299,9 @@ public class DatabaseHandler {
                 img.setTotalNumFrames(totalFrames);
                 img.setSop_iuid(rs1.getString("SopUID"));
                 img.setInstance_no(rs1.getString("InstanceNo"));
+                img.setEncapsulatedPDF(rs1.getBoolean("EncapsulatedDocument"));
                 img.setMultiframe(true);
                 series.getImageList().add(img);
-
                 arr.add(series);
             }
         } catch (SQLException e) {

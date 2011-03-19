@@ -62,6 +62,9 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
+import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
+import org.dcm4che.imageio.plugins.DcmMetadata;
 
 /**
  *
@@ -275,22 +278,36 @@ public class JpegConvertorDelegate {
         Iterator<ImageReader> iterator = ImageIO.getImageReadersByFormatName("DICOM");
         ImageReader reader = (ImageReader) iterator.next();
         reader.setInput(iis, false);
+        Dataset dataset = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
         int nFrames = 1;
         if (instance.isMultiframe()) {
             nFrames = reader.getNumImages(true);
         }
         for (int i = 0; i < nFrames; i++) {
             outputJpegFile = new File(outputPath, outputFileName + i + ".jpg");
-            jpegImage = reader.read(i);
-            BufferedImage temp = jpegImage;
-            if (System.getProperty("os.name").startsWith("Mac")) {
-                output = new BufferedOutputStream(new FileOutputStream(outputJpegFile));
-                JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(output);
-                encoder.encode(jpegImage);
-                //  output.close();
+            if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+                //This condition used to check whether the input file is a encapsulated pdf dicom file
+                //following lines of codes are used to create the jpeg image from the encapsulated pdf
+                int k = 1;
+                EncapsulatedPdfToJpeg encapsulatedPdfToJpeg = new EncapsulatedPdfToJpeg();
+                encapsulatedPdfToJpeg.readDicom(inputDicomFile);
+                ArrayList<BufferedImage> pdfArray = encapsulatedPdfToJpeg.createPDFArray();
+                for (BufferedImage b : pdfArray) {
+                    instanceExportAsJpeg(outputPath + File.separator + k, b);
+                    k++;
+                }
             } else {
-                //For linux and windows
-                exportStudy(outputJpegFile, jpegImage);
+                jpegImage = reader.read(i);
+                BufferedImage temp = jpegImage;
+                if (System.getProperty("os.name").startsWith("Mac")) {
+                    output = new BufferedOutputStream(new FileOutputStream(outputJpegFile));
+                    JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(output);
+                    encoder.encode(jpegImage);
+                    //  output.close();
+                } else {
+                    //For linux and windows
+                    exportStudy(outputJpegFile, jpegImage);
+                }
             }
         }
     }
@@ -307,9 +324,7 @@ public class JpegConvertorDelegate {
             ios = new FileImageOutputStream(outputJpegFile);
             writer.setOutput(ios);
             IIOImage iioImage = new IIOImage(jpegImage, null, null);
-            writer.write(null, iioImage, param);
-            writer.dispose();
-            ios.close();
+            writer.write(null, iioImage, param);          
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -414,9 +429,7 @@ public class JpegConvertorDelegate {
             ios = new FileImageOutputStream(outputJpegFile);
             writer.setOutput(ios);
             IIOImage iioImage = new IIOImage(temp, null, null);
-            writer.write(null, iioImage, param);
-            writer.dispose();
-            ios.close();
+            writer.write(null, iioImage, param);           
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -488,9 +501,7 @@ public class JpegConvertorDelegate {
             ios = new FileImageOutputStream(outputJpegFile);
             writer.setOutput(ios);
             IIOImage iioImage = new IIOImage(jpegImage, null, null);
-            writer.write(null, iioImage, param);
-            writer.dispose();
-            ios.close();
+            writer.write(null, iioImage, param);             
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

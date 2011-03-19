@@ -1021,7 +1021,9 @@ public class ImageToolbar extends javax.swing.JPanel {
         clearAllMeasurement.setEnabled(false);
         deleteMeasurement.setEnabled(false);
         moveMeasurement.setEnabled(false);
-        String actionCommand = toolsButtonGroup.getSelection().getActionCommand();
+        String actionCommand=null;
+        if(toolsButtonGroup!=null && toolsButtonGroup.getSelection()!=null)
+        actionCommand = toolsButtonGroup.getSelection().getActionCommand();
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             if (actionCommand != null) {
                 if (actionCommand.equalsIgnoreCase("ruler") || actionCommand.equalsIgnoreCase("rectangle") || actionCommand.equalsIgnoreCase("ellipse") || actionCommand.equalsIgnoreCase("deleteMeasurement") || actionCommand.equalsIgnoreCase("moveMeasurement")) {

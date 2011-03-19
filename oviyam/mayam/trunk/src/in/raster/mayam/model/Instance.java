@@ -73,6 +73,8 @@ public class Instance implements Serializable {
 
     private String sliceLocation;
 
+    private boolean encapsulatedPDF=false;
+
     private HashMap<Integer,Annotation> annotations=null;
 
 
@@ -293,4 +295,11 @@ public class Instance implements Serializable {
         this.sliceLocation = sliceLocation;
     }
 
+    public boolean isEncapsulatedPDF() {
+        return encapsulatedPDF;
+    }
+
+    public void setEncapsulatedPDF(boolean encapsulatedPDF) {
+        this.encapsulatedPDF = encapsulatedPDF;
+    }
 }
