@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<%@ page import='java.net.InetAddress' %>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
     <jsp:useBean id="login" scope="request" class="org.dcm4chee.web.common.login.LoginResources" />
     <% 
+     String nodeInfo = System.getProperty("dcm4che.archive.nodename", InetAddress.getLocalHost().getHostName() );
      Cookie[] cookies = request.getCookies();
      String userName = "";
      String focus = "self.focus();document.login.j_username.focus()";
@@ -27,9 +29,9 @@
      }
     %>
     <head>
-	    <title>${login.browser_title}</title>
+	    <title>${login.browser_title} (<%= nodeInfo %>)</title>
 	    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-         <link rel="stylesheet" type="text/css" href="resources/org.dcm4chee.web.common.base.BaseWicketPage/base-style.css" />
+        <link rel="stylesheet" type="text/css" href="resources/org.dcm4chee.web.common.base.BaseWicketPage/base-style.css" />
     </head>
     <body onload="<%= focus %>">
         <div class="tabpanel">
@@ -45,7 +47,7 @@
 	       <div class="module-panel"></div>
         </div>
         <div class="signin" style="padding-top: 160px;">
-            <span class="login-desc">${login.loginLabel}</span>
+            <span class="login-desc">${login.loginLabel} <%= nodeInfo %></span>
             <div>
 		        <form action="j_security_check" method="POST" name="login" >
 		            <table style="padding-top: 60px; padding-right: 90px; padding-bottom: 10px;">
