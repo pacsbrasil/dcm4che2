@@ -175,6 +175,8 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
                 DicomElement sersq = dataset.get(Tag.PerformedSeriesSequence);
                 if (sersq != null) {
                     numberOfSeries = sersq.countItems();
+                } else {
+                    log.warn("Missing PerformedSeriesSequence in PPS! PpsID:"+dataset.getString(Tag.PerformedProcedureStepID));
                 }
             } else {
                 numberOfSeries = seriess.size();
@@ -200,16 +202,18 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
         if (numberOfInstances == 0) {
             if (dataset != null) {
                 DicomElement sersq = dataset.get(Tag.PerformedSeriesSequence);
-                for (int i = 0, n = sersq.countItems(); i < n; i++) {
-                    DicomObject ser = sersq.getDicomObject(i);
-                    DicomElement imgsq = ser.get(Tag.ReferencedImageSequence);
-                    DicomElement nonimgsq = ser.get(
-                            Tag.ReferencedNonImageCompositeSOPInstanceSequence);
-                    if (imgsq != null) {
-                        numberOfInstances += imgsq.countItems();
-                    }
-                    if (nonimgsq != null) {
-                        numberOfInstances += nonimgsq.countItems();
+                if (sersq != null) {
+                    for (int i = 0, n = sersq.countItems(); i < n; i++) {
+                        DicomObject ser = sersq.getDicomObject(i);
+                        DicomElement imgsq = ser.get(Tag.ReferencedImageSequence);
+                        DicomElement nonimgsq = ser.get(
+                                Tag.ReferencedNonImageCompositeSOPInstanceSequence);
+                        if (imgsq != null) {
+                            numberOfInstances += imgsq.countItems();
+                        }
+                        if (nonimgsq != null) {
+                            numberOfInstances += nonimgsq.countItems();
+                        }
                     }
                 }
             } else {
