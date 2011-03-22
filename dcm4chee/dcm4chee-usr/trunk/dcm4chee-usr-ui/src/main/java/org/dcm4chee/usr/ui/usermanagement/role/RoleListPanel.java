@@ -102,7 +102,7 @@ public class RoleListPanel extends Panel {
     
     private ListModel<Role> allRoles;
     private Map<String,Group> allGroups;
-    List<String> roleTypes;
+    private List<Group> roleGroups;
     
     private ConfirmationWindow<Role> confirmationWindow;
     private ModalWindow roleWindow;
@@ -117,14 +117,13 @@ public class RoleListPanel extends Panel {
 
         windowsizeMap.put("editRole", UsrCfgDelegate.getInstance().getWindowSize("editRole"));
         windowsizeMap.put("webPermissions", UsrCfgDelegate.getInstance().getWindowSize("webPermissions"));
-        windowsizeMap.put("typeAssignment", UsrCfgDelegate.getInstance().getWindowSize("typeAssignment"));
         
         userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);        
         setOutputMarkupId(true);
 
         this.allRoles = new ListModel<Role>(getAllRoles());
         this.allGroups = getAllGroups();
-        this.roleTypes = UsrCfgDelegate.getInstance().getRoleTypes();
+        this.roleGroups = userAccess.getAllGroups();
 
         add(this.confirmationWindow = new ConfirmationWindow<Role>("confirmation-window") {
 
@@ -140,7 +139,6 @@ public class RoleListPanel extends Panel {
 
         add(roleWindow = new ModalWindow("role-window"));
         add(webroleWindow = new ModalWindow("webrole-window"));
-        add(new ModalWindow("roletype-window"));
 
         int[] winSize = windowsizeMap.get("editRole");
         add(new ModalWindowLink("toggle-role-form-link", roleWindow, winSize[0], winSize[1]) {
@@ -175,21 +173,22 @@ public class RoleListPanel extends Panel {
 
         this.allRoles.setObject(getAllRoles());
         this.allGroups = getAllGroups();
+        this.roleGroups = userAccess.getAllGroups();
         
         RepeatingView roleRows = new RepeatingView("role-rows");
         addOrReplace(roleRows);
         
-        RepeatingView typeHeaderCells = new RepeatingView("type-header-cells");
-        addOrReplace(typeHeaderCells);
+        RepeatingView groupHeaderCells = new RepeatingView("group-header-cells");
+        addOrReplace(groupHeaderCells);
 
-        for (String typename : this.roleTypes) 
-            typeHeaderCells
-                .add(new WebMarkupContainer(typeHeaderCells.newChildId())
-                .add(new Label("typename", typename)));
+        for (Group group : this.roleGroups) 
+            groupHeaderCells
+                .add(new WebMarkupContainer(groupHeaderCells.newChildId())
+                .add(new Label("groupname", group.getGroupname())));
         
         for (int i = 0; i < this.allRoles.getObject().size(); i++) {
             final Role role = this.allRoles.getObject().get(i);
-            
+
             WebMarkupContainer rowParent;
             roleRows.add((rowParent = new WebMarkupContainer(roleRows.newChildId()))
                     .add(new Label("rolename", role.getRolename())
@@ -200,10 +199,8 @@ public class RoleListPanel extends Panel {
                     !role.getGroupUuid().equals("") && 
                     allGroups.get(role.getGroupUuid()) != null) {
                 Group group = allGroups.get(role.getGroupUuid());
-                rowParent.add(new Label("group", group.getGroupname()));
                 rowParent.add(new AttributeModifier("style", true, new Model<String>("background-color: " + group.getColor())));
-            } else
-                rowParent.add(new Label("group", ""));
+            }
 
             int[] winSize = windowsizeMap.get("editRole");
             rowParent.add((new ModalWindowLink("edit-role-link", roleWindow, winSize[0], winSize[1]) {
@@ -283,15 +280,18 @@ public class RoleListPanel extends Panel {
                 }}.setEnabled(false))
             );
 
-            RepeatingView typeContentCells = new RepeatingView("type-content-cells");
-            rowParent.add(typeContentCells);
-            for (String typename : this.roleTypes) {
-                CheckBox typeCheckbox = new CheckBox("type-checkbox");
-                typeCheckbox.setEnabled(false);
-                typeCheckbox.setModel(new Model<Boolean>(role.getRoleTypes().contains(typename)));
-                typeContentCells
-                    .add(new WebMarkupContainer(typeContentCells.newChildId())
-                    .add(typeCheckbox));
+            RepeatingView groupContentCells = new RepeatingView("group-content-cells");
+            rowParent.add(groupContentCells);
+            for (Group group : this.roleGroups) {
+                if (group.getGroupname().equalsIgnoreCase("Web")
+                        ||group.getGroupname().equalsIgnoreCase("Dicom"))
+                    continue;
+                CheckBox groupCheckbox = new CheckBox("group-checkbox");
+                groupCheckbox.setEnabled(false);
+                groupCheckbox.setModel(new Model<Boolean>(role.getRoleTypes().contains(group.getGroupname())));
+                groupContentCells
+                    .add(new WebMarkupContainer(groupContentCells.newChildId())
+                    .add(groupCheckbox));
             }
         }
     }

@@ -104,10 +104,10 @@ public class GroupListPanel extends Panel {
 
         winSize = UsrCfgDelegate.getInstance().getWindowSize("editGroup");
         
-        userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);        
+        userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);
         setOutputMarkupId(true);
 
-        this.allGroups = new ListModel<Group>(getAllGroups());
+        allGroups = new ListModel<Group>(getAllGroups());
 
         add(this.confirmationWindow = new ConfirmationWindow<Group>("confirmation-window") {
 
@@ -202,7 +202,8 @@ public class GroupListPanel extends Panel {
             .add(new TooltipBehaviour("grouplist.", "remove-group-link", new Model<String>(group.getGroupname()))))
             .add(new ImageSizeBehaviour()))
             .add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))))
-            .add(new SecurityBehavior(getModuleName() + ":removeGroupLink")));
+            .add(new SecurityBehavior(getModuleName() + ":removeGroupLink"))
+            .setVisible(!group.getGroupname().equals("Web") && !group.getGroupname().equals("Dicom")));
         }
     }
 
@@ -211,7 +212,7 @@ public class GroupListPanel extends Panel {
         allGroups.addAll(userAccess.getAllGroups());
         return allGroups;
     }
-    
+
     public static String getModuleName() {
         return "grouplist";
     }

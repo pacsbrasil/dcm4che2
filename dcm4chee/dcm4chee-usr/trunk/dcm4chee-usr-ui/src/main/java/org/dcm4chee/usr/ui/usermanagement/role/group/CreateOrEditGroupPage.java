@@ -108,6 +108,7 @@ public class CreateOrEditGroupPage extends SecureWebPage {
             add(groupnameTextField
                     .setRequired(true)
                     .add(new GroupValidator(allGroupnames, (group == null ? null : group.getGroupname())))
+                    .setEnabled(group == null || (!group.getGroupname().equals("Web") && !group.getGroupname().equals("Dicom")))
             );
             add(descriptionTextField);
             final ColorPicker colorPicker;

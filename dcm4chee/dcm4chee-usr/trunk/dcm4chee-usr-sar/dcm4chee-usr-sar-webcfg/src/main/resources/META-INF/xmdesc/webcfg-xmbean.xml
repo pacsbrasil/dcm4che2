@@ -124,7 +124,6 @@
         <dd>manageRoles: Manage roles in User Management</dd>
         <dd>editRole: New role and edit role in User Management</dd>
         <dd>webPermissions: Web permissions in User Management</dd>
-        <dd>typeAssignment: Type assignment in User Management</dd>
         <dd>editGroup: Edit group in User Management</dd>
       ]]></description>
       <name>WindowSizeConfig</name>
@@ -142,7 +141,6 @@
             manageRoles:300x700
             editRole:570x350
             webPermissions:300x700
-            typeAssignment:300x700
             editGroup:600x350
             "/>
       </descriptors>

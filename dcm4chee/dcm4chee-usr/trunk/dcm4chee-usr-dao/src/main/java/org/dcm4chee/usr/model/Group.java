@@ -57,7 +57,7 @@ public class Group implements Serializable, Comparable<Group> {
 
     public Group() {
         this.uuid = UUID.randomUUID().toString();
-        this.color = "white";
+        this.color = "";
     }
     
     public Group(String groupname) {

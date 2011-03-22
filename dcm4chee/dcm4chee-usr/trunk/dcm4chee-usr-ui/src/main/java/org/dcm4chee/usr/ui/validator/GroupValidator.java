@@ -68,8 +68,8 @@ public class GroupValidator extends AbstractValidator<String> {
     protected void onValidate(IValidatable<String> validatable) {
         try {
             for (Group aGroup : this.allGroups.getObject()) {
-                if (aGroup.getGroupname().equals(validatable.getValue())) 
-                    if (!validatable.getValue().equals(ignoreName))
+                if (aGroup.getGroupname().equalsIgnoreCase(validatable.getValue())) 
+                    if (!validatable.getValue().equalsIgnoreCase(ignoreName))
                         error(validatable);
             }
         } catch (Exception e) {

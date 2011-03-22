@@ -330,6 +330,38 @@ public class UserAccessBean implements UserAccess {
             while ((line = reader.readLine()) != null)
                 groupList.add((Group) JSONObject.toBean(JSONObject.fromObject(line), Group.class));
             Collections.sort(groupList);
+            
+            int webPos = -1;
+            int dicomPos = -1;
+
+            for (int i = 0; i < groupList.size(); i++) {
+                if (groupList.get(i).getGroupname().equalsIgnoreCase("Web")) 
+                    webPos = i;
+                if (groupList.get(i).getGroupname().equalsIgnoreCase("Dicom")) 
+                    dicomPos = i;
+            }
+            
+            if (dicomPos > 0) {
+                Group dicomGroup = groupList.get(dicomPos);
+                groupList.remove(dicomPos);
+                groupList.add(0, dicomGroup);
+            } else if (dicomPos == -1) {
+                Group group = new Group();
+                group.setGroupname("Dicom");
+                addGroup(group);
+                groupList.add(0, group);
+            }
+            if (webPos > 0) {
+                Group webGroup = groupList.get(webPos);
+                groupList.remove(webPos);
+                groupList.add(0, webGroup);
+            } else if (webPos == -1) {
+                Group group = new Group();
+                group.setGroupname("Web");
+                addGroup(group);
+                groupList.add(0, group);
+            }
+            
             return groupList;
         } catch (Exception e) {
             log.error("Can't get groups from groups file!", e);
