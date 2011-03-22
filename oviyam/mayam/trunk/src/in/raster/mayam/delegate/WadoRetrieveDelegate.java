@@ -39,7 +39,6 @@
 package in.raster.mayam.delegate;
 
 import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.form.MainScreen;
 import in.raster.mayam.model.InputArgumentValues;
 import in.raster.mayam.model.ServerModel;
 import in.raster.mayam.param.WadoParam;
@@ -100,7 +99,7 @@ public class WadoRetrieveDelegate extends Thread {
             echoService.checkEcho(dcmurl);
             if(echoService.getStatus().equalsIgnoreCase("EchoSuccess")){
             QueryService queryService = new QueryService();
-            queryService.callFindWithQuery(inputArgumentValues.getPatientID(), inputArgumentValues.getPatientName(), null, inputArgumentValues.getStudyDate(), inputArgumentValues.getModality(), inputArgumentValues.getAccessionNumber(),inputArgumentValues.getStudyUID(), dcmurl);
+            queryService.callFindWithQuery(inputArgumentValues.getPatientID(), inputArgumentValues.getPatientName(), null, inputArgumentValues.getSearchDate(), inputArgumentValues.getModality(), inputArgumentValues.getAccessionNumber(),inputArgumentValues.getStudyUID(), dcmurl);
             for (int dataSetCount = 0; dataSetCount < queryService.getDatasetVector().size(); dataSetCount++) {
                 try {
                     Dataset dataSet = (Dataset) queryService.getDatasetVector().elementAt(dataSetCount);
@@ -125,8 +124,9 @@ public class WadoRetrieveDelegate extends Thread {
             serverModel = ApplicationContext.databaseRef.getServerModel(serverName);
         }
         DcmURL url = new DcmURL("dicom://" + serverModel.getAeTitle() + "@" + serverModel.getHostName() + ":" + serverModel.getPort());
-        QuerySeriesService querySeriesService = new QuerySeriesService();
-        querySeriesService.callFindWithQuery(patientID, studyUID, url);
+        QuerySeriesService querySeriesService = new QuerySeriesService();       
+        if(patientID!=null || studyUID!=null)
+        querySeriesService.callFindWithQuery(patientID, studyUID, url);       
         for (int dataSetCount = 0; dataSetCount < querySeriesService.getDatasetVector().size(); dataSetCount++) {
             try {
                 Dataset dataSet = (Dataset) querySeriesService.getDatasetVector().elementAt(dataSetCount);

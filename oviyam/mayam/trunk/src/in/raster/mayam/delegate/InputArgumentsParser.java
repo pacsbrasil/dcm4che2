@@ -57,9 +57,9 @@ public class InputArgumentsParser {
     public static InputArgumentValues inputArgumentValues = null;
     private static final String USAGE ="java -jar Mayam.jar [Options] ";//<aet>[@<host>[:<port>]]
     private static final String EXAMPLE =
-            "\nExample: java -jar Mayam.jar -AET QRSCP -HostName localhost -Port 11112 -StudyDate=20060204 -WADOURL wado -WADOPort 8080 -WADOProtocol http  \n"// QRSCP@localhost:11112 -q
+            "\nExample: java -jar Mayam.jar -AET QRSCP -HostName localhost -Port 11112 -StudyDate today -WADOURL wado -WADOPort 8080 -WADOProtocol http  \n"// QRSCP@localhost:11112 -q
             + "=> Query Application Entity QRSCP listening on local port 11112 for "
-            + "studies from Feb 4, 2006 and retrieve instances of matching studies to "
+            + "today studies and retrieve instances of matching studies to "
             + "Application Entity of Mayam";
 
     public static void parse(String[] args) {
@@ -126,6 +126,18 @@ public class InputArgumentsParser {
         OptionBuilder.withDescription("Specifies the wado protocol for retrieving the studies via WADO");
         opts.addOption(OptionBuilder.create("WADOProtocol"));
 
+
+        OptionBuilder.withArgName("From");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("Specifies the starting date of the studies to be queried and loaded at startup");
+        opts.addOption(OptionBuilder.create("From"));
+
+
+        OptionBuilder.withArgName("To");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription("Specifies the ending date of the studies to be queries and loaded at startup");
+        opts.addOption(OptionBuilder.create("To") );
+
         opts.addOption("h", "help", false, "Print this message");
 
         CommandLine cl = null;
@@ -155,17 +167,13 @@ public class InputArgumentsParser {
     public static void getInputArgumentValues(CommandLine cl) {          
             if (cl.hasOption("WADOURL")) {
                 inputArgumentValues.setWadoContext(cl.getOptionValue("WADOURL"));                
-            }
-            if (cl.hasOption("WADOPort")) {
+            }if (cl.hasOption("WADOPort")) {
                 inputArgumentValues.setWadoPort(Integer.parseInt(cl.getOptionValue("WADOPort")));              
-            }
-            if (cl.hasOption("AET")) {
+            }if (cl.hasOption("AET")) {
                 inputArgumentValues.setAeTitle(cl.getOptionValue("AET"));            
-            }
-            if (cl.hasOption("Accession")) {
+            }if (cl.hasOption("Accession")) {
                 inputArgumentValues.setAccessionNumber(cl.getOptionValue("Accession"));              
-            }
-            if (cl.hasOption("HostName")) {
+            }if (cl.hasOption("HostName")) {
                 inputArgumentValues.setHostName(cl.getOptionValue("HostName"));           
             }if (cl.hasOption("Modality")) {
                 inputArgumentValues.setModality(cl.getOptionValue("Modality"));               
@@ -173,8 +181,7 @@ public class InputArgumentsParser {
                 inputArgumentValues.setPatientID(cl.getOptionValue("PatientID"));               
             }if (cl.hasOption("PatientName")) {
                 inputArgumentValues.setPatientName(cl.getOptionValue("PatientName"));              
-            }
-            if (cl.hasOption("Port")) {
+            }if (cl.hasOption("Port")) {
                 inputArgumentValues.setPort(Integer.parseInt(cl.getOptionValue("Port")));               
             }if (cl.hasOption("StudyDate")) {
                 inputArgumentValues.setStudyDate(cl.getOptionValue("StudyDate"));              
@@ -182,6 +189,10 @@ public class InputArgumentsParser {
                 inputArgumentValues.setStudyUID(cl.getOptionValue("StudyUID"));               
             }if (cl.hasOption("WADOProtocol")) {
                 inputArgumentValues.setWadoProtocol(cl.getOptionValue("WADOProtocol"));               
+            } if (cl.hasOption("From")) {
+                inputArgumentValues.setFrom(cl.getOptionValue("From"));               
+            }if (cl.hasOption("To")) {
+                inputArgumentValues.setTo(cl.getOptionValue("To"));               
             }
     }
 }
