@@ -124,10 +124,6 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return names;
     }
     
-    public List<String> getRoleTypeList() {
-        return getStringList("getRoleTypeList"); 
-    }
-
     @SuppressWarnings("unchecked")
     public List<Integer> getPagesizeList() {
         if (server == null) return Arrays.asList(10,25,50);

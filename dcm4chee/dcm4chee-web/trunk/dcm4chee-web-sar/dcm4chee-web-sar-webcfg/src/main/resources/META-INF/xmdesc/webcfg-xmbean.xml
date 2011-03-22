@@ -620,19 +620,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getRoleTypes"
-      setMethod="setRoleTypes">
-      <description><![CDATA[List of role types.<br/>
-        Format: &lt;RoleType&gt;[|&lt;RoleType&gt[|..]]<br/>
-        NONE is used for an empty list. In this case a getRoleTypes will trigger updateRoleTypes.
-      ]]></description>
-      <name>roleTypes</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="NONE"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getRolesFilename"
       setMethod="setRolesFilename">
       <description><![CDATA[Filename path for the roles file (JSON format).<br/>

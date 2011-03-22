@@ -130,8 +130,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private String studyPermissionsAllRolename;
     private String studyPermissionsOwnRolename;
 
-    private List<String> roleTypes = new ArrayList<String>();
-
     private boolean manageStudyPermissions;
     private boolean useStudyPermissions;
 
@@ -722,18 +720,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         return studyPermissionsOwnRolename;
     }
     
-    public String getRoleTypes() {
-        return listAsString(roleTypes);
-    }
-
-    public List<String> getRoleTypeList() {
-        return new ArrayList<String>(roleTypes);
-    }
-
-    public void setRoleTypes(String s) {
-        updateList(roleTypes, s);
-    }
-
     public void setManageStudyPermissions(boolean manageStudyPermissions) {
         this.manageStudyPermissions = manageStudyPermissions;
     }
