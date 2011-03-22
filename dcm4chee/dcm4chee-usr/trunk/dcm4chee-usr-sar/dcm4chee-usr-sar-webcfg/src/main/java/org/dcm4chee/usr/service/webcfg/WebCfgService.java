@@ -48,9 +48,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -65,21 +63,7 @@ import org.jboss.system.server.ServerConfigLocator;
  */
 public class WebCfgService extends ServiceMBeanSupport {
 
-    private List<String> roleTypes = new ArrayList<String>();
-        
     public WebCfgService() {
-    }
-
-    public String getRoleTypes() {
-        return listAsString(roleTypes);
-    }
-
-    public void setRoleTypes(String s) {
-        updateList(roleTypes, s);
-    }
-
-    public List<String> getRoleTypeList() {
-        return new ArrayList<String>(roleTypes);
     }
 
     public String getUserMgtUserRole() {
@@ -117,26 +101,6 @@ public class WebCfgService extends ServiceMBeanSupport {
             System.setProperty("dcm4chee-usr.cfg.groups-filename", name);
     }
 
-    private String listAsString(List<String> list) {
-        if (list == null || list.isEmpty()) 
-            return NONE;
-        StringBuilder sb = new StringBuilder();
-        for (String m : list) 
-            sb.append(m).append('|');
-        return sb.substring(0, sb.length()-1);
-    }
-    
-    
-    private void updateList(List<String> list, String s) {
-        list.clear();
-        if (!NONE.equals(s)) {
-            StringTokenizer st = new StringTokenizer(s, "|");
-            while (st.hasMoreTokens()) {
-                list.add(st.nextToken());
-            }
-        }
-    }
-    
     protected static final long serialVersionUID = 1L;
 
     protected String loginAllowedRolename;
