@@ -108,7 +108,7 @@ public class CreateOrEditRolePage extends SecureWebPage {
         private TextField<String> rolenameTextField= new TextField<String>("rolelist.add-role-form.rolename.input", rolename);
         private TextField<String> descriptionTextField= new TextField<String>("rolelist.add-role-form.description.input", description);
         
-        private RadioGroup<?> groupRadioGroup = new RadioGroup<String>("groupChoiceGroup", new Model<String>());
+        private RadioGroup<?> groupRadioGroup = new RadioGroup<String>("groupChoiceGroup", new Model<String>("Web"));
         
         public CreateOrEditRoleForm(String id, final ListModel<Role> allRolenames, final Role role, final Map<String,Group> types) {
             super(id);
