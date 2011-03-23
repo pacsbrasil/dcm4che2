@@ -44,7 +44,6 @@ import java.util.List;
 
 import org.dcm4chee.web.common.util.GroupedChoices;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
-import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 
 /**
@@ -94,7 +93,6 @@ public class ViewPort implements Serializable {
     }
 
     public List<String> getStationAetChoices(List<String> availableChoices) {
-        return GroupedChoices.get(STATION_AETS_PROPERTIES_FILENAME)
-            .getChoices(availableChoices, StudyPermissionHelper.get().getDicomRoles());
+        return GroupedChoices.get(STATION_AETS_PROPERTIES_FILENAME).getChoices(availableChoices);
     }
 }

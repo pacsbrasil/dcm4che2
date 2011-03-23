@@ -44,7 +44,6 @@ import java.util.List;
 
 import org.dcm4chee.web.common.util.GroupedChoices;
 import org.dcm4chee.web.dao.trash.TrashListFilter;
-import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.trash.model.PrivPatientModel;
 
 /**
@@ -94,7 +93,6 @@ public class ViewPort implements Serializable {
     }
     
     public List<String> getSourceAetChoices(List<String> availableChoices) {
-        return GroupedChoices.get(SOURCE_AETS_PROPERTIES_FILENAME)
-            .getChoices(availableChoices, StudyPermissionHelper.get().getDicomRoles());
+        return GroupedChoices.get(SOURCE_AETS_PROPERTIES_FILENAME).getChoices(availableChoices);
     }
 }

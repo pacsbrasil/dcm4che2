@@ -89,6 +89,8 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.security.hive.authorization.Principal;
+import org.apache.wicket.security.swarm.strategies.SwarmStrategy;
 import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -197,6 +199,12 @@ public class StudyListPage extends Panel {
     public StudyListPage(final String id) {
         super(id);        
         
+System.out.println("******* TEST *********");
+for (Principal p : ((SwarmStrategy) SwarmStrategy.get()).getSubject().getPrincipals())
+    System.out.println(p.getName());
+System.out.println("******* TEST *********");
+
+
         if (StudyListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
 
