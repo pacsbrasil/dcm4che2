@@ -24,7 +24,7 @@
   <name>DIMSETimeout</name>
   <type>int</type>
   <descriptors>
-  <value value="60000"/>
+  <value value="1200000"/>
   </descriptors>
   </attribute>
   
