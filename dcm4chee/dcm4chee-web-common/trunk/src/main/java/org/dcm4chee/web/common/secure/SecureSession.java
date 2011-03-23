@@ -58,9 +58,9 @@ public class SecureSession extends WaspSession {
     private static final long serialVersionUID = 1L;
     
     private String username;
-    private Map<String, String> swarmPrincipals;
+    private Map<String, String> allSwarmPrincipals;
     private boolean manageUsers;
-
+    
     public SecureSession(WaspApplication application, Request request) {
         super(application, request);
     }
@@ -80,12 +80,12 @@ public class SecureSession extends WaspSession {
     public void extendedLogin(org.apache.wicket.security.hive.authentication.Subject webSubject) {
     }
 
-    public void setSwarmPrincipals(Map<String, String> map) {
-        this.swarmPrincipals = map;
+    public void setAllSwarmPrincipals(Map<String, String> map) {
+        this.allSwarmPrincipals = map;
     }
     
-    public Map<String, String> getSwarmPrincipals() {
-        return swarmPrincipals;
+    public Map<String, String> getAllSwarmPrincipals() {
+        return allSwarmPrincipals;
     }
     
     public void setManageUsers(boolean manageUsers) {

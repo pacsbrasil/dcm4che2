@@ -117,7 +117,7 @@ public class WebLoginContext extends UsernamePasswordContext {
 
     private boolean readHiveFile() {
         try {
-            ((SecureSession) RequestCycle.get().getSession()).setSwarmPrincipals(LoginContextSecurityHelper.readSwarmPrincipals());
+            ((SecureSession) RequestCycle.get().getSession()).setAllSwarmPrincipals(LoginContextSecurityHelper.readSwarmPrincipals());
             return true;
         } catch (Exception e) {
             log.error("Exception (error processing hive file): " + e.getMessage());

@@ -72,7 +72,7 @@ public class LoginContextSecurityHelper {
                     if ((set = mappings.get(member.getName()) ) != null) {
                         for (Iterator<String> i = set.iterator() ; i.hasNext() ;) {
                             String appRole = i.next();
-                            if (swarmPrincipals.add(appRole))
+                            if (swarmPrincipals.add(appRole)) 
                                 subject.addPrincipal(new SimplePrincipal(appRole));
                         }
                     }

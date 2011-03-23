@@ -118,7 +118,7 @@ public class SSOLoginContext extends LoginContext {
 
     private boolean readHiveFile() {
         try {
-            session.setSwarmPrincipals(LoginContextSecurityHelper.readSwarmPrincipals());
+            session.setAllSwarmPrincipals(LoginContextSecurityHelper.readSwarmPrincipals());
             return true;
         } catch (Exception e) {
             log.error("Exception (error processing hive file): " + e.getMessage());

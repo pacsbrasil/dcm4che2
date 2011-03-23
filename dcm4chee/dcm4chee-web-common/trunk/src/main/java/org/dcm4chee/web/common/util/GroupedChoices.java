@@ -44,13 +44,15 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
-import org.apache.wicket.Session;
-import org.apache.wicket.authentication.AuthenticatedWebSession;
 import org.apache.wicket.authorization.strategies.role.Roles;
+import org.apache.wicket.security.hive.authorization.Principal;
+import org.apache.wicket.security.swarm.strategies.SwarmStrategy;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.slf4j.Logger;
@@ -138,11 +140,14 @@ public class GroupedChoices implements Serializable {
         return singleton;
     }
     
-    public List<String> getChoices(List<String> availableChoices, List<String> dcmRoles) {
+    public List<String> getChoices(List<String> availableChoices) {
+        Set<Principal> principals = ((SwarmStrategy) SwarmStrategy.get()).getSubject().getPrincipals();
         List<String> choices = new ArrayList<String>(availableChoices.size()+groups.size());
-        if (dcmRoles != null && dcmRoles.size() > 0) {
+        if (principals != null && principals.size() > 0) {
             Roles roles = new Roles();
-            roles.addAll(dcmRoles);
+            Iterator<Principal> i = principals.iterator();
+            while (i.hasNext())
+                roles.add(i.next().getName());
             if (universalMatchRoles == null || roles.hasAnyRole(universalMatchRoles)) {
                 choices.add("*");
             }
@@ -156,11 +161,8 @@ public class GroupedChoices implements Serializable {
             if (availableChoicesRoles == null || roles.hasAnyRole(availableChoicesRoles)) {
                 choices.addAll(availableChoices);
             }
-        } else {
-            choices.add("*");
-            choices.addAll(availableChoices);
         }
-         return choices;
+        return choices;
     }
     
     public Map<String,List<String>> getAllGroups() {
@@ -170,5 +172,4 @@ public class GroupedChoices implements Serializable {
     public List<String> getGroupMembers(String groupName) {
         return groups.get(groupName);
     }
-
 }
