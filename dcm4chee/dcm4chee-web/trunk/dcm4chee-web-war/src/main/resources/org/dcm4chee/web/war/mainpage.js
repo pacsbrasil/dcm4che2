@@ -34,7 +34,7 @@ function reloadPage() {
  */
 Wicket.MainPage.Mask = Wicket.Class.create();
 
-Wicket.MainPage.Mask.zIndex = 20000;
+Wicket.MainPage.Mask.zIndex = 21000;
 
 Wicket.MainPage.Mask.prototype = {
 			
