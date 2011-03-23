@@ -162,6 +162,11 @@ public class OverlayUtils {
                         frameData, 0, frameData.length);
                 data = frameData;
             }
+            // Don't touch the original data
+            if( data==unpaddedData ) {
+                data = new byte[rows * cols / BITS_PER_BYTE];
+                System.arraycopy(unpaddedData, 0, data, 0, data.length);
+            }
         } else {
             Raster raw = reader.readRaster(frameNumber, null);
             int rowLen = (cols + 7) / 8;

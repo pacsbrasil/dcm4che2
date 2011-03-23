@@ -223,7 +223,8 @@ public class VOIUtils {
             return null;
         DicomElement voisq = pr.get(Tag.SoftcopyVOILUTSequence);
         if (voisq == null) {
-            return null;
+            // Imply no VOI functionality
+            return pr;
         }
         for (int i = 0, n = voisq.countItems(); i < n; i++) {
             DicomObject item = voisq.getDicomObject(i);
