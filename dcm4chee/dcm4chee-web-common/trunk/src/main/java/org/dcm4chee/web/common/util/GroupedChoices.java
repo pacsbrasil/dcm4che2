@@ -80,8 +80,7 @@ public class GroupedChoices implements Serializable {
     private static Logger log = LoggerFactory.getLogger(GroupedChoices.class);
     
     private GroupedChoices(String configFilename) {
-        String webConfigPath = BaseCfgDelegate.getInstance().getWebConfigPath();
-        configFile = FileUtils.resolve(new File(webConfigPath, configFilename));
+        configFile = FileUtils.resolve(new File(BaseCfgDelegate.getInstance().getWebConfigPath(), configFilename));
         init();
     }
     
