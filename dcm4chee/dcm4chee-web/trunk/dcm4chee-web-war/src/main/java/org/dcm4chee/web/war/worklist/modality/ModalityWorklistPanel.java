@@ -45,8 +45,10 @@ import java.util.List;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.ComponentTag;
@@ -86,6 +88,7 @@ import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
+import org.dcm4chee.web.war.ajax.MaskingAjaxCallDecorator;
 import org.dcm4chee.web.war.common.EditDicomObjectPanel;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
@@ -125,7 +128,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     private WebMarkupContainer listPanel;
     private WebMarkupContainer navPanel;
     private PatientNameField pnField;
-    protected Button searchBtn;
+    protected IndicatingAjaxButton searchBtn;
     
     protected boolean ajaxRunning = false;
     protected boolean ajaxDone = false;
@@ -350,7 +353,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
             
         });
-        searchBtn = new AjaxButton("searchBtn") {
+        searchBtn = new IndicatingAjaxButton("searchBtn") {
             
             private static final long serialVersionUID = 1L;
             
@@ -364,6 +367,11 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
             }
             
+            @Override
+            protected IAjaxCallDecorator getAjaxCallDecorator() {
+                return new MaskingAjaxCallDecorator();
+            }
+
             @Override
             public boolean isEnabled() {
                 return !ajaxRunning;
@@ -390,7 +398,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 return !ajaxRunning;
             }
         }, true).setNullValid(false)
-        .add(new IndicatingAjaxFormSubmitBehavior(form, "onchange") {
+        .add(new IndicatingAjaxFormSubmitBehavior(form, "onchange", searchBtn) {
 
             private static final long serialVersionUID = 1L;
 

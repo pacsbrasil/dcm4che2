@@ -48,6 +48,7 @@ import java.util.List;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
@@ -96,6 +97,7 @@ import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.service.common.FileImportOrder;
 import org.dcm4chee.web.war.StudyPermissionHelper;
+import org.dcm4chee.web.war.ajax.MaskingAjaxCallDecorator;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
@@ -293,6 +295,11 @@ public class TrashListPage extends Panel {
             public void onError(AjaxRequestTarget target, Form<?> form) {
                 BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
             }
+
+            @Override
+            protected IAjaxCallDecorator getAjaxCallDecorator() {
+                return new MaskingAjaxCallDecorator();
+            }
         };
         searchBtn.setOutputMarkupId(true);
         searchBtn.add(new Image("searchImg",ImageManager.IMAGE_COMMON_SEARCH)
@@ -312,7 +319,7 @@ public class TrashListPage extends Panel {
                 new Model<Boolean>(true), 
                 true)
         .setNullValid(false)
-        .add(new IndicatingAjaxFormSubmitBehavior(form, "onchange") {
+        .add(new IndicatingAjaxFormSubmitBehavior(form, "onchange", searchBtn) {
 
             private static final long serialVersionUID = 1L;
 
