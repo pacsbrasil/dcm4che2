@@ -92,6 +92,14 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return getBoolean("useStudyPermissions", true);
     }
 
+    public String getSourceAetsPropertiesFilename() {
+        return getString("sourceAetsPropertiesFilename");
+    }
+
+    public String getStationAetsPropertiesFilename() {
+        return getString("stationAetsPropertiesFilename");
+    }
+
     public String getWadoBaseURL() {
         return noneAsNull(getString("WadoBaseURL"));
     }

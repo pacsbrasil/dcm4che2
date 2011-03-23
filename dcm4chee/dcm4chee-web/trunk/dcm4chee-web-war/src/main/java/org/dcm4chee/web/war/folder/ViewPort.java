@@ -44,6 +44,7 @@ import java.util.List;
 
 import org.dcm4chee.web.common.util.GroupedChoices;
 import org.dcm4chee.web.dao.folder.StudyListFilter;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 
 /**
@@ -55,12 +56,11 @@ public class ViewPort implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
-    private String SOURCE_AETS_PROPERTIES_FILENAME = "source_aets.properties";
-
     private int offset = 0;
     private int total = 0;
 
-    private final StudyListFilter filter = new StudyListFilter(GroupedChoices.get(SOURCE_AETS_PROPERTIES_FILENAME).getAllGroups());
+    private final StudyListFilter filter = new StudyListFilter(
+            GroupedChoices.get(WebCfgDelegate.getInstance().getSourceAetsPropertiesFilename()).getAllGroups());
 
     private List<PatientModel> patients = new ArrayList<PatientModel>();
     
@@ -99,6 +99,7 @@ public class ViewPort implements Serializable {
     }
   
     public List<String> getSourceAetChoices(List<String> availableChoices) {
-        return GroupedChoices.get(SOURCE_AETS_PROPERTIES_FILENAME).getChoices(availableChoices);
+        return GroupedChoices.get(WebCfgDelegate.getInstance().getSourceAetsPropertiesFilename())
+            .getChoices(availableChoices);
     }
 }
