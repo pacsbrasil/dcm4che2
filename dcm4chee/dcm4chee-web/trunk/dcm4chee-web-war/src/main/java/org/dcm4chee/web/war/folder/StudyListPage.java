@@ -199,12 +199,6 @@ public class StudyListPage extends Panel {
     public StudyListPage(final String id) {
         super(id);        
         
-System.out.println("******* TEST *********");
-for (Principal p : ((SwarmStrategy) SwarmStrategy.get()).getSubject().getPrincipals())
-    System.out.println(p.getName());
-System.out.println("******* TEST *********");
-
-
         if (StudyListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
 
