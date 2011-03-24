@@ -4,7 +4,7 @@
 <!--  Version $Revision:$ $Date:$ -->
 <server>
   <mbean code="org.dcm4chee.usr.service.webcfg.WebCfgService" 
-         name="dcm4chee.web:service=WebConfig"
+         name="dcm4chee.usr:service=WebConfig"
          xmbean-dd="resource:META-INF/xmdesc/webcfg-xmbean.xml">
 
   </mbean>

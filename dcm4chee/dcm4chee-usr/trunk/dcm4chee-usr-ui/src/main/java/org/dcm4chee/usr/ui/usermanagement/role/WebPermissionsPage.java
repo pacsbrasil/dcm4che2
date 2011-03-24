@@ -105,7 +105,7 @@ public class WebPermissionsPage extends SecureWebPage {
         RepeatingView principalRows = new RepeatingView("principal-rows");
         addOrReplace(principalRows);
         
-        Map<String, String> principalsAndKeys = ((SecureSession) getSession()).getSwarmPrincipals();
+        Map<String, String> principalsAndKeys = ((SecureSession) getSession()).getAllSwarmPrincipals();
         
         Iterator<String> principals = principalsAndKeys.keySet().iterator();
         int i = 0;

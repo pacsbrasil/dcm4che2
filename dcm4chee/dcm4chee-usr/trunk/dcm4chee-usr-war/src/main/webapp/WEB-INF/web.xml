@@ -5,15 +5,6 @@
 	 version="2.4">
 
 	<display-name>dcm4chee-usr</display-name>
-	 <!--  
-	      There are three means to configure Wickets configuration mode and they are
-	      tested in the order given. 
-	      1) A system property: -Dwicket.configuration
-	      2) servlet specific <init-param>
-	      3) context specific <context-param>
-	      The value might be either "development" (reloading when templates change)
-	      or "deployment". If no configuration is found, "development" is the default.
-	-->
 	<filter>
 		<filter-name>wicket.dcm4chee-usr</filter-name>
 		<filter-class>org.apache.wicket.protocol.http.WicketFilter</filter-class>
@@ -23,7 +14,7 @@
 	    </init-param>
         <init-param>
           <param-name>WebCfgServiceName</param-name>
-          <param-value>dcm4chee.web:service=WebConfig</param-value>
+          <param-value>dcm4chee.usr:service=WebConfig</param-value>
         </init-param>
 	</filter>
 	<filter-mapping>
