@@ -18,7 +18,7 @@
 	    </init-param>
         <init-param>
           <param-name>WebCfgServiceName</param-name>
-          <param-value>dcm4chee.web:service=WebConfig</param-value>
+          <param-value>dcm4chee.dashboard:service=WebConfig</param-value>
         </init-param>
 	</filter>
 	<filter-mapping>
