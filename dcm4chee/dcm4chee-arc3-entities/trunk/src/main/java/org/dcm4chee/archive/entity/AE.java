@@ -79,6 +79,9 @@ public class AE extends BaseEntity implements Serializable {
     @Column(name = "pat_id_issuer")
     private String issuerOfPatientID;
 
+    @Column(name = "acc_no_issuer")
+    private String issuerOfAccessionNumber;
+
     @Column(name = "user_id")
     private String userID;
 
@@ -169,6 +172,14 @@ public class AE extends BaseEntity implements Serializable {
 
     public void setIssuerOfPatientID(String issuerOfPatientID) {
         this.issuerOfPatientID = issuerOfPatientID;
+    }
+
+    public String getIssuerOfAccessionNumber() {
+        return this.issuerOfAccessionNumber;
+    }
+
+    public void setIssuerOfAccessionNumber(String issuer) {
+        this.issuerOfAccessionNumber = issuer;
     }
 
     public String getUserID() {
