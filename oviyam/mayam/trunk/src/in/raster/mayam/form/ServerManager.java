@@ -147,19 +147,18 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
         DeleteButton = new javax.swing.JButton();
 
         jLabel1.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel1.setFont(new java.awt.Font("Courier New", 1, 16)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 138, 0));
         jLabel1.setText("Servers");
         jLabel1.setOpaque(true);
 
-        serverListTable.setFont(new java.awt.Font("Courier", 1, 12)); // NOI18N
         serverListTable.setModel(new PresetTableModel());
         serverListTable.setDefaultRenderer(Object.class, new CellRenderer());
         //serverListTable.getTableHeader().setPreferredSize(new Dimension(jScrollPane1.WIDTH,25));
         //serverListTable.setRowHeight(25);
 
         serverListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));
-        Font ff=new Font("Courier New",Font.BOLD,12);
+        Font ff=new Font("Lucida Grande",Font.BOLD,12);
         serverListTable.getTableHeader().setFont(ff);
         serverListTable.setRowHeight(20);
         serverListTable.getTableHeader().setForeground(new Color(255,138,0));

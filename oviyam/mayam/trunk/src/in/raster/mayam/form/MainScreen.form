@@ -293,7 +293,7 @@
                       </Events>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="studyListTable.setDefaultRenderer(Object.class, new CellRenderer());"/>
-                        <AuxValue name="JavaCodeGenerator_ListenersCodePost" type="java.lang.String" value="studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));&#xa;Font f=new Font(&quot;Lucida Grande&quot;,Font.PLAIN,14);&#xa;studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.BOLD,12));&#xa;studyListTable.setRowHeight(25);&#xa;studyListTable.getTableHeader().setForeground(new Color(255,138,0));&#xa;studyListTable.getTableHeader().setBackground(new Color(0,0,0));"/>
+                        <AuxValue name="JavaCodeGenerator_ListenersCodePost" type="java.lang.String" value="studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));&#xa;studyListTable.getTableHeader().setFont(new Font(&quot;Lucida Grande&quot;,Font.BOLD,12));&#xa;studyListTable.setRowHeight(25);&#xa;studyListTable.getTableHeader().setForeground(new Color(255,138,0));&#xa;studyListTable.getTableHeader().setBackground(new Color(0,0,0));"/>
                         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="9"/>
                       </AuxValues>
                     </Component>

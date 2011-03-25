@@ -330,8 +330,7 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
         studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));
-        Font f=new Font("Lucida Grande",Font.PLAIN,14);
-        studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.BOLD,12));
+        studyListTable.getTableHeader().setFont(new Font("Lucida Grande",Font.BOLD,12));
         studyListTable.setRowHeight(25);
         studyListTable.getTableHeader().setForeground(new Color(255,138,0));
         studyListTable.getTableHeader().setBackground(new Color(0,0,0));
@@ -803,7 +802,7 @@ public class MainScreen extends javax.swing.JFrame {
         showThumbnails();
     }//GEN-LAST:event_deleteButtonActionPerformed
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-       doSend();
+        doSend();
     }//GEN-LAST:event_sendButtonActionPerformed
     private void viewerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewerButtonActionPerformed
         if (studyListTable.getSelectedRow() != -1) {
@@ -867,8 +866,7 @@ public class MainScreen extends javax.swing.JFrame {
         settingsDialog.setVisible(true);
     }
 
-    private void doSend()
-    {
+    private void doSend() {
         String forwardAET = "";
         String forwardHost = "";
         int forwardPort;
@@ -892,6 +890,7 @@ public class MainScreen extends javax.swing.JFrame {
             }
         }
     }
+
     public SettingsDialog getPreference() {
         return settingsDialog;
     }
@@ -954,13 +953,13 @@ public class MainScreen extends javax.swing.JFrame {
     }//GEN-LAST:event_queueMenuItemActionPerformed
 
     private void resetMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetMenuItemActionPerformed
-          int resetDB=0;
-        resetDB=JOptionPane.showConfirmDialog(this,"Are you sure want to reset the database", "Confirmation Dialog", JOptionPane.YES_NO_OPTION);
-        if(resetDB==0){
-        ApplicationContext.databaseRef.rebuild();
-        MainScreen.showLocalDBStorage();
-        removeThumbnailComponents();
-        removeWindowingImage();
+        int resetDB = 0;
+        resetDB = JOptionPane.showConfirmDialog(this, "Are you sure want to reset the database", "Confirmation Dialog", JOptionPane.YES_NO_OPTION);
+        if (resetDB == 0) {
+            ApplicationContext.databaseRef.rebuild();
+            MainScreen.showLocalDBStorage();
+            removeThumbnailComponents();
+            removeWindowingImage();
         }
     }//GEN-LAST:event_resetMenuItemActionPerformed
     private void deleteExamMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteExamMenuItemActionPerformed
@@ -1010,32 +1009,26 @@ public class MainScreen extends javax.swing.JFrame {
     }//GEN-LAST:event_nimrodLFMenuActionPerformed
 
     private void sendMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendMenuItemActionPerformed
-      doSend();
+        doSend();
     }//GEN-LAST:event_sendMenuItemActionPerformed
 
     private void QRMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_QRMenuItem1ActionPerformed
-      queryRetrieve.setVisible(true);
+        queryRetrieve.setVisible(true);
     }//GEN-LAST:event_QRMenuItem1ActionPerformed
 
     private void setNimrodTheme() {
         try {
             UIManager.setLookAndFeel(new NimRODLookAndFeel());
-            UIDefaults uIDefaults=UIManager.getDefaults();
-              uIDefaults.put("Menu.font",new Font("Lucida Grande",Font.BOLD,12));
-              uIDefaults.put("MenuItem.font", new Font("Lucida Grande",Font.BOLD,12));
-                uIDefaults.put("Menu.font",new Font("Lucida Grande",Font.BOLD,12));
-            uIDefaults.put("MenuItem.font", new Font("Lucida Grande",Font.BOLD,12));
-            uIDefaults.put("Button.font", new Font("Lucida Grande",Font.BOLD,12));
-            uIDefaults.put("Label.font", new Font("Lucida Grande",Font.BOLD,12));
-            uIDefaults.put("RadioButton.font",new Font("Lucida Grande",Font.BOLD,12));
-             uIDefaults.put("CheckBox.font",new Font("Lucida Grande",Font.BOLD,12));
-//            uIDefaults.put("Menu.font",new Font("Courier New",Font.BOLD,13));
-//            uIDefaults.put("MenuItem.font", new Font("Courier New",Font.BOLD,13));
-//            uIDefaults.put("Button.font", new Font("Courier New",Font.BOLD,13));
-//            uIDefaults.put("Label.font", new Font("Courier New",Font.BOLD,13));
-//            uIDefaults.put("RadioButton.font",new Font("Courier New",Font.BOLD,13));
-//             uIDefaults.put("CheckBox.font",new Font("Courier New",Font.BOLD,13));
-//            uIDefaults.put("Table.font",new Font("Courier New",Font.BOLD,13));
+            UIDefaults uIDefaults = UIManager.getDefaults();
+            uIDefaults.put("Menu.font", new Font("Lucida Grande", Font.BOLD, 12));
+            uIDefaults.put("MenuItem.font", new Font("Lucida Grande", Font.BOLD, 12));
+            uIDefaults.put("Menu.font", new Font("Lucida Grande", Font.BOLD, 12));
+            uIDefaults.put("MenuItem.font", new Font("Lucida Grande", Font.BOLD, 12));
+            uIDefaults.put("Button.font", new Font("Lucida Grande", Font.BOLD, 12));
+            uIDefaults.put("Label.font", new Font("Lucida Grande", Font.BOLD, 12));
+            uIDefaults.put("RadioButton.font", new Font("Lucida Grande", Font.BOLD, 12));
+            uIDefaults.put("CheckBox.font", new Font("Lucida Grande", Font.BOLD, 12));
+
             updateComponentsTreeUI();
         } catch (UnsupportedLookAndFeelException ex) {
             Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);

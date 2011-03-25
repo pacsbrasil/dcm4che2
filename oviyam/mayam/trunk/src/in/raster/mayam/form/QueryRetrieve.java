@@ -534,8 +534,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
             }
         });
         studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));
-        Font f=new Font("Lucida Grande",Font.BOLD,14);
-        studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.BOLD,12));
+        studyListTable.getTableHeader().setFont(new Font("Lucida Grande",Font.BOLD,12));
         studyListTable.setRowHeight(25);
         studyListTable.getTableHeader().setForeground(new Color(255,138,0));
         studyListTable.getTableHeader().setBackground(new Color(0,0,0));

@@ -41,6 +41,7 @@ package in.raster.mayam.form;
 import in.raster.mayam.util.DicomTags;
 import in.raster.mayam.model.table.TagsTableDataModel;
 import in.raster.mayam.model.table.renderer.CellRenderer;
+import java.awt.Font;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 
@@ -97,6 +98,7 @@ public class DicomTagsViewer extends javax.swing.JFrame {
             }
         ));
         dicomTagTable.setDefaultRenderer(Object.class, new CellRenderer());
+        dicomTagTable.getTableHeader().setFont(new Font("Lucida Grande",Font.BOLD,12));
         jScrollPane1.setViewportView(dicomTagTable);
 
         jButton1.setText("Close");

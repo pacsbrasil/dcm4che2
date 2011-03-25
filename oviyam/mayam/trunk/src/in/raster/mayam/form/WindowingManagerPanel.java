@@ -94,7 +94,7 @@ public class WindowingManagerPanel extends javax.swing.JPanel implements KeyList
         addButton = new javax.swing.JButton();
 
         jLabel1.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel1.setFont(new java.awt.Font("Courier New", 1, 16)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 138, 0));
         jLabel1.setText("Preset");
         jLabel1.setOpaque(true);
@@ -108,7 +108,6 @@ public class WindowingManagerPanel extends javax.swing.JPanel implements KeyList
             }
         });
 
-        jTable1.setFont(new java.awt.Font("Courier", 1, 12)); // NOI18N
         jTable1.setModel(new PresetTableModel());
         jTable1.setDefaultRenderer(Object.class, new CellRenderer());
         //jTable1.getTableHeader().setPreferredSize(new Dimension(jScrollPane1.WIDTH,24));;
@@ -116,7 +115,7 @@ public class WindowingManagerPanel extends javax.swing.JPanel implements KeyList
         //jTable1.getTableHeader().setFont(new Font(f.getName(),Font.PLAIN,12));;
         //jTable1.setRowHeight(24);
         jTable1.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));
-        Font ff=new Font("Courier New",Font.BOLD,12);
+        Font ff=new Font("Lucida Grande",Font.BOLD,12);
         jTable1.getTableHeader().setFont(ff);
         jTable1.setRowHeight(20);
         jTable1.getTableHeader().setForeground(new Color(255,138,0));

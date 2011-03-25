@@ -80,7 +80,7 @@ public class LayoutManagerPanel extends javax.swing.JPanel {
         multiframe = new javax.swing.JCheckBox();
 
         jLabel1.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel1.setFont(new java.awt.Font("Courier New", 1, 16)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 138, 0));
         jLabel1.setText("Layout");
         jLabel1.setOpaque(true);
