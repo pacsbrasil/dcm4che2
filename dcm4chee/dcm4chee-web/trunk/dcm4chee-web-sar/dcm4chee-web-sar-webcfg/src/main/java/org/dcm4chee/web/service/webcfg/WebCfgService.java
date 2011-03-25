@@ -164,12 +164,17 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
     
     public String getInstalledWebViewer() {
-        Iterator<WebviewerLinkProviderSPI> iter = ServiceRegistry.lookupProviders(WebviewerLinkProviderSPI.class);
-        StringBuilder sb = new StringBuilder();
-        while (iter.hasNext()) {
-            sb.append(iter.next().getName()).append(NEWLINE);
+        try {
+            Iterator<WebviewerLinkProviderSPI> iter = ServiceRegistry.lookupProviders(WebviewerLinkProviderSPI.class);
+            StringBuilder sb = new StringBuilder();
+            while (iter.hasNext()) {
+                sb.append(iter.next().getName()).append(NEWLINE);
+            }
+            return sb.toString();
+        } catch (Throwable t) {
+            log.error("getInstalledWebViewer failed! reason:"+t, t);
+            return "ERROR";
         }
-        return sb.toString();
     }
     
     public String getWebviewerName() {
