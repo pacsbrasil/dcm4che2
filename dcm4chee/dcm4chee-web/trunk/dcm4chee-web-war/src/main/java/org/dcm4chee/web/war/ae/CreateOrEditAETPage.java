@@ -110,6 +110,7 @@ public class CreateOrEditAETPage extends SecureWebPage {
         form.add(new DropDownChoice<String>("ciphersuite3", new CipherModel(ae, 2), CyphersuiteUtils.AVAILABLE_CIPHERSUITES));
         form.addLabeledTextField("description"); 
         form.addLabeledTextField("issuerOfPatientID"); 
+        form.addLabeledTextField("issuerOfAccessionNumber"); 
         form.addLabeledDropDownChoice("fileSystemGroupID", null, 
                 ((FileSystemHomeLocal) JNDIUtils.lookup(FileSystemHomeLocal.JNDI_NAME)).listGroupIDs()
                 ).setNullValid(true);
