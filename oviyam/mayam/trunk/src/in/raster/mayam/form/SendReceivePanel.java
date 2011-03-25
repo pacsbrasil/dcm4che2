@@ -75,7 +75,7 @@ public class SendReceivePanel extends javax.swing.JPanel {
         receiveTable = new javax.swing.JTable();
 
         jLabel1.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel1.setFont(new java.awt.Font("Courier New", 1, 16)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(250, 138, 0));
         jLabel1.setText("  Receive");
         jLabel1.setOpaque(true);
@@ -95,7 +95,7 @@ public class SendReceivePanel extends javax.swing.JPanel {
         //receiveTable.setRowHeight(20);
 
         receiveTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 23));
-        Font f=new Font("Courier New",Font.BOLD,12);
+        Font f=new Font("Lucida Grande",Font.BOLD,12);
         receiveTable.getTableHeader().setFont(f);
         receiveTable.setRowHeight(23);
         receiveTable.getTableHeader().setForeground(new Color(255,138,0));

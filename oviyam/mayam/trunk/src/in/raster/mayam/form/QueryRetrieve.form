@@ -84,7 +84,7 @@
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="serverlistScroll" pref="234" max="32767" attributes="1"/>
+                      <Component id="serverlistScroll" pref="235" max="32767" attributes="1"/>
                       <Component id="jPanel7" alignment="0" max="32767" attributes="1"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -93,7 +93,7 @@
                       <Component id="jPanel8" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane2" pref="517" max="32767" attributes="2"/>
+                  <Component id="jScrollPane2" pref="516" max="32767" attributes="2"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -134,7 +134,7 @@
                           </Group>
                           <Component id="jPanel1" alignment="0" min="-2" max="-2" attributes="1"/>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace pref="21" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -538,15 +538,12 @@
           <SubComponents>
             <Component class="javax.swing.JTable" name="serverListTable">
               <Properties>
-                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Courier" size="12" style="1"/>
-                </Property>
                 <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="new ServerTableModel()" type="code"/>
                 </Property>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="serverListTable.setDefaultRenderer(Object.class, new CellRenderer());&#xa;serverListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));&#xa;Font ff=new Font(&quot;Courier New&quot;,Font.BOLD,12);&#xa;serverListTable.getTableHeader().setFont(ff);&#xa;serverListTable.setRowHeight(20);&#xa;serverListTable.getTableHeader().setForeground(new Color(255,138,0));&#xa;serverListTable.getTableHeader().setBackground(new Color(0,0,0));"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="serverListTable.setDefaultRenderer(Object.class, new CellRenderer());&#xa;serverListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));&#xa;Font ff=new Font(&quot;Lucida Grande&quot;,Font.BOLD,12);&#xa;serverListTable.getTableHeader().setFont(ff);&#xa;serverListTable.setRowHeight(20);&#xa;serverListTable.getTableHeader().setForeground(new Color(255,138,0));&#xa;serverListTable.getTableHeader().setBackground(new Color(0,0,0));"/>
               </AuxValues>
             </Component>
           </SubComponents>
@@ -617,9 +614,6 @@
           <SubComponents>
             <Component class="javax.swing.JTable" name="studyListTable">
               <Properties>
-                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                  <Font name="Courier" size="13" style="0"/>
-                </Property>
                 <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="new StudyListModel()" type="code"/>
                 </Property>
@@ -632,7 +626,7 @@
               </Events>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="studyListTable.setDefaultRenderer(Object.class, new CellRenderer());"/>
-                <AuxValue name="JavaCodeGenerator_ListenersCodePost" type="java.lang.String" value="studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));&#xa;Font f=new Font(&quot;Courier New&quot;,Font.BOLD,14);&#xa;studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.BOLD,14));&#xa;studyListTable.setRowHeight(25);&#xa;studyListTable.getTableHeader().setForeground(new Color(255,138,0));&#xa;studyListTable.getTableHeader().setBackground(new Color(0,0,0));"/>
+                <AuxValue name="JavaCodeGenerator_ListenersCodePost" type="java.lang.String" value="studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));&#xa;Font f=new Font(&quot;Lucida Grande&quot;,Font.BOLD,14);&#xa;studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.BOLD,12));&#xa;studyListTable.setRowHeight(25);&#xa;studyListTable.getTableHeader().setForeground(new Color(255,138,0));&#xa;studyListTable.getTableHeader().setBackground(new Color(0,0,0));"/>
               </AuxValues>
             </Component>
           </SubComponents>
@@ -643,7 +637,7 @@
               <Color blue="0" green="0" red="0" type="rgb"/>
             </Property>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-              <Font name="Courier New" size="16" style="1"/>
+              <Font name="Lucida Grande" size="14" style="1"/>
             </Property>
             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
               <Color blue="0" green="8a" red="ff" type="rgb"/>
@@ -659,7 +653,7 @@
               <Color blue="0" green="0" red="0" type="rgb"/>
             </Property>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-              <Font name="Courier New" size="16" style="1"/>
+              <Font name="Lucida Grande" size="14" style="1"/>
             </Property>
             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
               <Color blue="0" green="8a" red="ff" type="rgb"/>
@@ -675,7 +669,7 @@
               <Color blue="0" green="0" red="0" type="rgb"/>
             </Property>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-              <Font name="Courier New" size="16" style="1"/>
+              <Font name="Lucida Grande" size="14" style="1"/>
             </Property>
             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
               <Color blue="0" green="8a" red="ff" type="rgb"/>

@@ -469,14 +469,13 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
                         .add(8, 8, 8)
                         .add(jPanel10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(21, Short.MAX_VALUE))
         );
 
-        serverListTable.setFont(new java.awt.Font("Courier", 1, 12)); // NOI18N
         serverListTable.setModel(new ServerTableModel());
         serverListTable.setDefaultRenderer(Object.class, new CellRenderer());
         serverListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));
-        Font ff=new Font("Courier New",Font.BOLD,12);
+        Font ff=new Font("Lucida Grande",Font.BOLD,12);
         serverListTable.getTableHeader().setFont(ff);
         serverListTable.setRowHeight(20);
         serverListTable.getTableHeader().setForeground(new Color(255,138,0));
@@ -527,7 +526,6 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
                 .add(jLabel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
-        studyListTable.setFont(new java.awt.Font("Courier", 0, 13)); // NOI18N
         studyListTable.setModel(new StudyListModel());
         studyListTable.setDefaultRenderer(Object.class, new CellRenderer());
         studyListTable.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -536,29 +534,29 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
             }
         });
         studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));
-        Font f=new Font("Courier New",Font.BOLD,14);
-        studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.BOLD,14));
+        Font f=new Font("Lucida Grande",Font.BOLD,14);
+        studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.BOLD,12));
         studyListTable.setRowHeight(25);
         studyListTable.getTableHeader().setForeground(new Color(255,138,0));
         studyListTable.getTableHeader().setBackground(new Color(0,0,0));
         jScrollPane2.setViewportView(studyListTable);
 
         serverNameLabel.setBackground(new java.awt.Color(0, 0, 0));
-        serverNameLabel.setFont(new java.awt.Font("Courier New", 1, 16)); // NOI18N
+        serverNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         serverNameLabel.setForeground(new java.awt.Color(255, 138, 0));
         serverNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         serverNameLabel.setText(" Server Name");
         serverNameLabel.setOpaque(true);
 
         headerLabel.setBackground(new java.awt.Color(0, 0, 0));
-        headerLabel.setFont(new java.awt.Font("Courier New", 1, 16));
+        headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         headerLabel.setForeground(new java.awt.Color(255, 138, 0));
         headerLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         headerLabel.setText(" DICOM Nodes ");
         headerLabel.setOpaque(true);
 
         jLabel1.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel1.setFont(new java.awt.Font("Courier New", 1, 16)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 138, 0));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Query Filter");
@@ -591,14 +589,14 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
                     .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(serverlistScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
+                    .add(serverlistScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE)
                     .add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(serverNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jPanel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE)
                 .addContainerGap())
         );
 

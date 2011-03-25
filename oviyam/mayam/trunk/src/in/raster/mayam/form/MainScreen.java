@@ -313,14 +313,13 @@ public class MainScreen extends javax.swing.JFrame {
         setTitle("Mayam");
         setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/in/raster/mayam/form/images/fav_mayam.png")));
 
-        jLabel1.setFont(new java.awt.Font("Courier New", 1, 16));
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         jLabel1.setText(" Local Database");
 
         jSplitPane1.setDividerLocation(256);
         jSplitPane1.setDividerSize(4);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
-        studyListTable.setFont(new java.awt.Font("Courier", 0, 13)); // NOI18N
         studyListTable.setForeground(new java.awt.Color(252, 138, 0));
         studyListTable.setModel(new StudyListModel());
         studyListTable.setShowGrid(true);
@@ -331,8 +330,8 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
         studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));
-        Font f=new Font("Courier New",Font.BOLD,14);
-        studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.BOLD,14));
+        Font f=new Font("Lucida Grande",Font.PLAIN,14);
+        studyListTable.getTableHeader().setFont(new Font(f.getName(),Font.BOLD,12));
         studyListTable.setRowHeight(25);
         studyListTable.getTableHeader().setForeground(new Color(255,138,0));
         studyListTable.getTableHeader().setBackground(new Color(0,0,0));
@@ -352,7 +351,7 @@ public class MainScreen extends javax.swing.JFrame {
         );
         windowingPanelCanvasLayout.setVerticalGroup(
             windowingPanelCanvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 499, Short.MAX_VALUE)
+            .add(0, 520, Short.MAX_VALUE)
         );
 
         thumbnailScroll.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -365,7 +364,7 @@ public class MainScreen extends javax.swing.JFrame {
         thumbnailScroll.setViewportView(thumbnailDisplay);
 
         jLabel2.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel2.setFont(new java.awt.Font("Courier New", 1, 16)); // NOI18N
+        jLabel2.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 138, 0));
         jLabel2.setText("Series ");
         jLabel2.setOpaque(true);
@@ -386,8 +385,8 @@ public class MainScreen extends javax.swing.JFrame {
             .add(studyAndSeriesDisplayPanelLayout.createSequentialGroup()
                 .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE))
-            .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
+                .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE))
+            .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
         );
 
         jSplitPane1.setRightComponent(studyAndSeriesDisplayPanel);
@@ -406,14 +405,14 @@ public class MainScreen extends javax.swing.JFrame {
         contentAreaLayout.setVerticalGroup(
             contentAreaLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(contentAreaLayout.createSequentialGroup()
-                .addContainerGap()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 761, Short.MAX_VALUE))
+                .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 782, Short.MAX_VALUE))
         );
 
         headerPanel.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(13, 13, 13)));
 
+        importButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         importButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/import.png"))); // NOI18N
         importButton.setText("Import");
         importButton.setToolTipText("Import");
@@ -428,6 +427,7 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
 
+        exportButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         exportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/export_study.png"))); // NOI18N
         exportButton.setText("Export");
         exportButton.setToolTipText("Export");
@@ -443,6 +443,7 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
 
+        cdImportButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         cdImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/cd_import.png"))); // NOI18N
         cdImportButton.setText("CD-Rom");
         cdImportButton.setToolTipText("CD-Rom");
@@ -458,6 +459,7 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
 
+        deleteButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         deleteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/delete_study.png"))); // NOI18N
         deleteButton.setText("Delete");
         deleteButton.setToolTipText("Delete");
@@ -473,6 +475,7 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
 
+        metaDataButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         metaDataButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/metadata_mainpage.png"))); // NOI18N
         metaDataButton.setText("Meta Data");
         metaDataButton.setToolTipText("Meta Data");
@@ -488,6 +491,7 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
 
+        sendButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         sendButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/send.png"))); // NOI18N
         sendButton.setText("Send");
         sendButton.setToolTipText("Send");
@@ -503,6 +507,7 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
 
+        queryRetrieveButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         queryRetrieveButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/query.png"))); // NOI18N
         queryRetrieveButton.setText("Query");
         queryRetrieveButton.setToolTipText("Query");
@@ -518,6 +523,7 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
 
+        viewerButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         viewerButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/viewer.png"))); // NOI18N
         viewerButton.setText("Viewer");
         viewerButton.setToolTipText("Viewer");
@@ -533,6 +539,7 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
 
+        queueButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         queueButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/queue.png"))); // NOI18N
         queueButton.setText("Queue");
         queueButton.setToolTipText("Queue");
@@ -1014,13 +1021,21 @@ public class MainScreen extends javax.swing.JFrame {
         try {
             UIManager.setLookAndFeel(new NimRODLookAndFeel());
             UIDefaults uIDefaults=UIManager.getDefaults();
-            uIDefaults.put("Menu.font",new Font("Courier New",Font.BOLD,13));
-            uIDefaults.put("MenuItem.font", new Font("Courier New",Font.BOLD,13));
-            uIDefaults.put("Button.font", new Font("Courier New",Font.BOLD,13));
-            uIDefaults.put("Label.font", new Font("Courier New",Font.BOLD,13));
-            uIDefaults.put("RadioButton.font",new Font("Courier New",Font.BOLD,13));
-             uIDefaults.put("CheckBox.font",new Font("Courier New",Font.BOLD,13));
-            uIDefaults.put("Table.font",new Font("Courier New",Font.BOLD,13));
+              uIDefaults.put("Menu.font",new Font("Lucida Grande",Font.BOLD,12));
+              uIDefaults.put("MenuItem.font", new Font("Lucida Grande",Font.BOLD,12));
+                uIDefaults.put("Menu.font",new Font("Lucida Grande",Font.BOLD,12));
+            uIDefaults.put("MenuItem.font", new Font("Lucida Grande",Font.BOLD,12));
+            uIDefaults.put("Button.font", new Font("Lucida Grande",Font.BOLD,12));
+            uIDefaults.put("Label.font", new Font("Lucida Grande",Font.BOLD,12));
+            uIDefaults.put("RadioButton.font",new Font("Lucida Grande",Font.BOLD,12));
+             uIDefaults.put("CheckBox.font",new Font("Lucida Grande",Font.BOLD,12));
+//            uIDefaults.put("Menu.font",new Font("Courier New",Font.BOLD,13));
+//            uIDefaults.put("MenuItem.font", new Font("Courier New",Font.BOLD,13));
+//            uIDefaults.put("Button.font", new Font("Courier New",Font.BOLD,13));
+//            uIDefaults.put("Label.font", new Font("Courier New",Font.BOLD,13));
+//            uIDefaults.put("RadioButton.font",new Font("Courier New",Font.BOLD,13));
+//             uIDefaults.put("CheckBox.font",new Font("Courier New",Font.BOLD,13));
+//            uIDefaults.put("Table.font",new Font("Courier New",Font.BOLD,13));
             updateComponentsTreeUI();
         } catch (UnsupportedLookAndFeelException ex) {
             Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
