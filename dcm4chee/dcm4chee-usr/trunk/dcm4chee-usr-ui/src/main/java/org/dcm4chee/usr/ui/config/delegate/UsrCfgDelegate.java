@@ -64,14 +64,4 @@ public class UsrCfgDelegate extends BaseCfgDelegate {
             singleton = new UsrCfgDelegate();
         return singleton;
     }
-
-    @SuppressWarnings("unchecked")
-    public List<String> getRoleTypes() {
-        try {
-            return (List<String>) server.invoke(serviceObjectName, "getRoleTypeList", null, null);
-        } catch (Exception e) {
-            log.error("Error fetching role types: " , e);
-        }
-        return null;
-    }
 }

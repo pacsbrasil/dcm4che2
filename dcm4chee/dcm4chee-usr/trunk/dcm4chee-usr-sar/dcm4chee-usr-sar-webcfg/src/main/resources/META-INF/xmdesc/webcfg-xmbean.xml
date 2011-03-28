@@ -137,11 +137,6 @@
    
    <!-- Operations -->
    <operation impact="ACTION">
-      <description>Get List of role types</description>
-      <name>getRoleTypeList</name>
-      <return-type>java.util.List</return-type>
-   </operation>
-   <operation impact="ACTION">
       <description>Get window size for given window name. Return an int[] with 0..width and 1..height</description>
       <name>getWindowSize</name>
       <parameter>
