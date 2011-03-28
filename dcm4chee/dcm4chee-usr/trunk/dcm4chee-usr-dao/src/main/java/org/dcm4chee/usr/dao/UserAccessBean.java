@@ -47,7 +47,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateful;
@@ -236,7 +239,20 @@ public class UserAccessBean implements UserAccess {
             reader = new BufferedReader(new FileReader(rolesMappingFile));
             while ((line = reader.readLine()) != null)
                 roleList.add((Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class));
-            Collections.sort(roleList);
+
+            final List<Group> allGroups = getAllGroups();
+            final List<String> groupUuidList = new ArrayList<String>(allGroups.size());
+            for (Group group : allGroups)
+                groupUuidList.add(group.getUuid());
+            Collections.sort(roleList, new Comparator<Role>() {
+
+                @Override
+                public int compare(Role role1, Role role2) {
+                    return (role1.getGroupUuid().equals(role2.getGroupUuid())) ? 
+                            role1.getRolename().compareToIgnoreCase(role2.getRolename()) : 
+                                groupUuidList.indexOf(role1.getGroupUuid()) - groupUuidList.indexOf(role2.getGroupUuid());
+                }
+            });
             return roleList;
         } catch (Exception e) {
             log.error("Can't get roles from roles mapping file!", e);
