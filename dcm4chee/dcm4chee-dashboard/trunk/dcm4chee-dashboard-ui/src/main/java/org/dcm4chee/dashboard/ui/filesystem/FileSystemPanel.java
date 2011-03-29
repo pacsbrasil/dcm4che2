@@ -277,17 +277,16 @@ public class FileSystemPanel extends Panel {
 
             final FileSystemModel fsm = (FileSystemModel) ((DefaultMutableTreeNode) node).getUserObject();
 
+            boolean noDiskSpace = fsm.getOverallDiskSpaceLong() == 0f;
+            float used = noDiskSpace ? 0f : (100f * fsm.getUsedDiskSpaceLong()) / fsm.getOverallDiskSpaceLong();
             DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-            dataset.addValue(fsm.getOverallDiskSpaceLong() == 0f ? 0f : (100f * 
-                    fsm.getUsedDiskSpaceLong())
-                    / fsm.getOverallDiskSpaceLong(), new Integer(1), "");
-            dataset.addValue(fsm.getOverallDiskSpaceLong() == 0f ? 0f : 
-                fsm.getMinimumFreeDiskSpaceLong() == 0f ? 100f : (100f * 
-                    fsm.getUsableDiskSpaceLong()
-                    / fsm.getOverallDiskSpaceLong()), new Integer(2), "");
-            dataset.addValue(fsm.getOverallDiskSpaceLong() == 0f ? 0f : (100f * 
+            dataset.addValue(noDiskSpace ? 0f : used, new Integer(1), "");
+            dataset.addValue(noDiskSpace ? 0f : 
+                fsm.getMinimumFreeDiskSpaceLong() == 0f ? (100f - used) : 
+                    (100f * fsm.getUsableDiskSpaceLong() / fsm.getOverallDiskSpaceLong()), new Integer(2), "");
+            dataset.addValue(noDiskSpace ? 0f : (100f * 
                     Math.min(fsm.getMinimumFreeDiskSpaceLong(), fsm.getFreeDiskSpaceLong())
-                    / fsm.getOverallDiskSpaceLong()), new Integer(3), "");
+                        / fsm.getOverallDiskSpaceLong()), new Integer(3), "");
 
             final JFreeChart chart = ChartFactory.createStackedBarChart3D(
                     null, null, null, dataset, PlotOrientation.HORIZONTAL, false,
