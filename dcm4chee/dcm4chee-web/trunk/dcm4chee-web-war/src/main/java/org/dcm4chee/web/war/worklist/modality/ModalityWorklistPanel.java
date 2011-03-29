@@ -360,10 +360,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             @Override
             public void onSubmit(AjaxRequestTarget target, final Form<?> form) {
                 doSearch(target);
-                try {
-                } catch (Exception ignore){
-                    log.warn("sleep interrupted",ignore);
-                }
             }
             
             @Override
