@@ -5,12 +5,12 @@
     <parent>
         <artifactId>dcm4chee-web-sar-bridge</artifactId>
         <groupId>dcm4che.dcm4chee</groupId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-web-sar-bridge-interface</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.0</version>
     <packaging>jar</packaging>
     <name>Interfaces for ejb2 based service (compile without maven dependency)</name>
     <dependencies>

@@ -5,26 +5,26 @@
     <parent>
         <artifactId>dcm4chee-web-sar</artifactId>
         <groupId>dcm4che.dcm4chee</groupId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-web-sar-echo</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.0</version>
     <packaging>jboss-sar</packaging>
     <name>JMX Echo service for dcm4chee-web DICOM Verification</name>
     <dependencies>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-arc-entities</artifactId>
-            <version>3.0.0-SNAPSHOT</version>
+            <version>3.0.0</version>
             <classifier>${db}</classifier>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-common</artifactId>
-            <version>3.0.0-SNAPSHOT</version>
+            <version>3.0.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
