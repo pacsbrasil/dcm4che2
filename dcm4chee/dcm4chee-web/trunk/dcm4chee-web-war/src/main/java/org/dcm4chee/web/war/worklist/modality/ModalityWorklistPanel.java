@@ -361,7 +361,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             public void onSubmit(AjaxRequestTarget target, final Form<?> form) {
                 doSearch(target);
                 try {
-                    Thread.sleep(2000);
                 } catch (Exception ignore){
                     log.warn("sleep interrupted",ignore);
                 }
