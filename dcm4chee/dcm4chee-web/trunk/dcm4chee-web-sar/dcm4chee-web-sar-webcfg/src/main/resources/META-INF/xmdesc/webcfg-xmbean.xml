@@ -516,7 +516,7 @@
       <name>Mpps2mwlAutoQuery</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true"/>
+         <value value="false"/>
       </descriptors>
    </attribute>
 

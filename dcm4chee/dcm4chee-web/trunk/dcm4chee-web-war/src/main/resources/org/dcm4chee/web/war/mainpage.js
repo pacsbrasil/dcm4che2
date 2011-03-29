@@ -10,10 +10,11 @@ function showMask() {
   try {
   	Wicket.MainPage.busyMask = new Wicket.MainPage.Mask(false);
   	Wicket.MainPage.current = this;
-    Wicket.MainPage.busyMask.show();
+  	Wicket.MainPage.busyMask.show();
   } catch (ignore) {
   }
 }
+
 function hideMask() {
   try {
 	Wicket.MainPage.busyMask.hide();
@@ -194,7 +195,8 @@ Wicket.MainPage.Mask.prototype = {
 	 * have always bigger z-order than any other elements).
 	 */
 	hideSelectBoxes : function() {				
-		if (Wicket.Browser.isIE() && Wicket.Browser.isIE7() == false) {
+		if (Wicket.Browser.isIE() && Wicket.Browser.isIE7() == false && 
+				this.document != "undefined" && this.document != null) {
 			var win = Wicket.MainPage.current;					
 			
 			this.boxes = new Array();
@@ -253,7 +255,8 @@ Wicket.MainPage.Mask.prototype = {
 	disableFocus: function() {
 		// explorer doesn't need this, because for IE disableTabs() is called.
 		// plus in IE this causes problems because it scrolls document		);
-		if (Wicket.Browser.isIE() == false) {			
+		if (Wicket.Browser.isIE() == false && 
+				this.document != "undefined" && this.document != null) {			
 			this.focusRevertList = new Array();			
 			var body = this.document.getElementsByTagName("body")[0];			
 			for (var i = 0; i < body.childNodes.length; ++i) {		
@@ -281,7 +284,8 @@ Wicket.MainPage.Mask.prototype = {
 	 */
 	disableTabs: function () {		
 		this.tabbableTags = new Array("A","BUTTON","TEXTAREA","INPUT","IFRAME", "SELECT");
-		if (Wicket.Browser.isIE()) {
+		if (Wicket.Browser.isIE() && 
+				this.document != "undefined" && this.document != null) {
 			var win = Wicket.MainPage.current;			
 			this.tabsAreDisabled = 'true';
 			for (var j = 0; j < this.tabbableTags.length; j++) {

@@ -121,13 +121,15 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         ppsModelForInfo = ppsModels.get(0);
         ppsPatModelForInfo = ppsModelForInfo.getStudy().getPatient();
         panel.presetSearchfields();
+        panel.getViewPort().clear();
         comp = c;
         if (WebCfgDelegate.getInstance().isMpps2mwlAutoQuery() ) {
-            target.appendJavascript("document.getElementById('" + panel.getSearchButton().getMarkupId() +
+            target.appendJavascript("hideMask();document.getElementById('" + panel.getSearchButton().getMarkupId() +
                 "').click();");
         }
         super.show(target);
     }
+    
     private void hideLinkedPpsInFolder(org.dcm4chee.web.war.folder.ViewPort viewport) {
         StudyModel study;
         for (PPSModel mpps : ppsModels) {
