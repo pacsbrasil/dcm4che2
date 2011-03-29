@@ -61,6 +61,7 @@ import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxFallbackLink;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.CloseButtonCallback;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
@@ -1128,7 +1129,7 @@ public class StudyListPage extends Panel {
             item.add(getStudyPermissionLink(modalWindow, studyModel, tooltip)
                     .add(new SecurityBehavior(getModuleName() + ":studyPermissionsStudyLink"))
                     .add(tooltip));
-            item.add(new AjaxLink<Object>("imgSelect") {
+            item.add(new IndicatingAjaxLink<Object>("imgSelect") {
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -1136,6 +1137,10 @@ public class StudyListPage extends Panel {
                     int[] winSize = WebCfgDelegate.getInstance().getWindowSize("imgSelect");
                     imageSelectionWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
                     imageSelectionWindow.show(target, studyModel);
+                }
+                @Override
+                protected IAjaxCallDecorator getAjaxCallDecorator() {
+                    return new MaskingAjaxCallDecorator();
                 }
             }
                 .add(new Image("selectImg",ImageManager.IMAGE_COMMON_SEARCH)
@@ -1441,7 +1446,7 @@ public class StudyListPage extends Panel {
                 }
             }.setOutputMarkupId(true)
             .add(tooltip));
-            item.add(new AjaxLink<Object>("imgSelect") {
+            item.add(new IndicatingAjaxLink<Object>("imgSelect") {
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -1450,7 +1455,10 @@ public class StudyListPage extends Panel {
                     imageSelectionWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
                     imageSelectionWindow.show(target, seriesModel);
                 }
-                
+                @Override
+                protected IAjaxCallDecorator getAjaxCallDecorator() {
+                    return new MaskingAjaxCallDecorator();
+                }
             }
                 .add(new Image("selectImg",ImageManager.IMAGE_COMMON_SEARCH)
                 .add(new ImageSizeBehaviour())

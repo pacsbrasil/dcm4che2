@@ -122,8 +122,12 @@ public class ImageSelectionWindow extends ModalWindow {
         List<PPSModel> ppss = study.getPPSs();
         List<SeriesModel> seriess;
         SeriesModel series;
+        PPSModel pps;
         for (int i = 0 ; i < ppss.size() ; i++) {
-            seriess = ppss.get(i).getSeries();
+            pps = ppss.get(i);
+            if (pps.isCollapsed())
+                pps.expand();
+            seriess = pps.getSeries();
             for (int j = 0 ; j < seriess.size() ; j++) {
                 series = seriess.get(j);
                 if (series.isCollapsed())
