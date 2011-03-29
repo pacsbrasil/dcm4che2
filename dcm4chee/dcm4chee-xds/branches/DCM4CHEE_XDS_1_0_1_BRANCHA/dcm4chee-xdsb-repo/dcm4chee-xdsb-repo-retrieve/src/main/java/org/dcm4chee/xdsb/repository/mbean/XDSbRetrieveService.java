@@ -78,6 +78,8 @@ import org.dcm4chee.xds.infoset.v30.ws.DocumentRepositoryPortType;
 import org.dcm4chee.xds.infoset.v30.ws.DocumentRepositoryPortTypeFactory;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
+import org.jboss.ws.core.CommonMessageContext;
+import org.jboss.ws.core.soap.MessageContextAssociation;
 
 
 /**
@@ -215,6 +217,15 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                     try {
                         docRsp = getDocumentResponse(doc, repositoryUniqueId);
                         rsp.getDocumentResponse().add(docRsp);
+                        
+                        /*
+                         * XDS Repository is already sending a document. So the message is will be in MTOM/XOP.
+                         * Therefore there is no need to force MTOM response using a DUMMY.
+                         */
+                        CommonMessageContext ctx = MessageContextAssociation.peekMessageContext();
+                        if (ctx != null) {
+                            ctx.put("DISABLE_FORCE_MTOM_RESPONSE", "true");
+                        }
                     } catch (IOException e) {
                         log.error("Error in building DocumentResponse for document:"+doc);
                     }

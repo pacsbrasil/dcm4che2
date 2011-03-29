@@ -395,7 +395,8 @@ public class XDSbSourceService extends ServiceMBeanSupport {
                         XDSConstants.URN_IHE_ITI_2007_PROVIDE_AND_REGISTER_DOCUMENT_SET_B, 
                         java.util.UUID.randomUUID().toString());
             }
-            if ( forceMTOMRequest ) {
+            boolean noDocExist = req.getDocument().isEmpty();
+            if ( forceMTOMRequest && noDocExist ) {
                 SOAPBinding binding = (SOAPBinding)((BindingProvider)port).getBinding();
                 List<Handler> handlerChain = binding.getHandlerChain();
                 if ( handlerChain == null ) {
