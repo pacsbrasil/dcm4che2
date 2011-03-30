@@ -673,28 +673,6 @@
          <value value="true"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getSourceAetsPropertiesFilename"
-      setMethod="setSourceAetsPropertiesFilename">
-      <description><![CDATA[Set the name of the source aets properties file.
-      ]]></description>
-      <name>sourceAetsPropertiesFilename</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="source_aets.properties"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getStationAetsPropertiesFilename"
-      setMethod="setStationAetsPropertiesFilename">
-      <description><![CDATA[Set the name of the station aets properties file.
-      ]]></description>
-      <name>stationAetsPropertiesFilename</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="station_aets.properties"/>
-      </descriptors>
-   </attribute>
    
    &defaultAttributes;
    

@@ -135,9 +135,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     private boolean forcePatientExpandableForPatientQuery;
     
-    private String sourceAetsPropertiesFilename;
-    private String stationAetsPropertiesFilename;
-    
     public WebCfgService() {
     }
     
@@ -744,22 +741,12 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         return useStudyPermissions;
     }
     
-    public void setSourceAetsPropertiesFilename(
-            String sourceAetsPropertiesFilename) {
-        this.sourceAetsPropertiesFilename = sourceAetsPropertiesFilename;
-    }
-
     public String getSourceAetsPropertiesFilename() {
-        return sourceAetsPropertiesFilename;
-    }
-
-    public void setStationAetsPropertiesFilename(
-            String stationAetsPropertiesFilename) {
-        this.stationAetsPropertiesFilename = stationAetsPropertiesFilename;
+        return (NONE.equals(getWebConfigPath()) ? getWebConfigPath() : "") + "source_aets.properties";
     }
 
     public String getStationAetsPropertiesFilename() {
-        return stationAetsPropertiesFilename;
+        return (NONE.equals(getWebConfigPath()) ? getWebConfigPath() : "") + "station_aets.properties";
     }
 
     protected static final long serialVersionUID = 1L;
