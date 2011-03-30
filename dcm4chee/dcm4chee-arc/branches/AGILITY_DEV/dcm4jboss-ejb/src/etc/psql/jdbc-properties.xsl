@@ -39,6 +39,9 @@ ClaimCompressingFileCmd=UPDATE files SET file_status=3 WHERE pk=? AND file_statu
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Series']" mode="fk">
 <xsl:with-param name="fk" select="'study_fk'"/>
 </xsl:apply-templates>
+<xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'Series']" mode="fk">
+<xsl:with-param name="fk" select="'inst_code_fk'"/>
+</xsl:apply-templates>
 <xsl:apply-templates select="jbosscmp-jdbc/enterprise-beans/entity[ejb-name = 'SeriesRequest']" mode="fk">
 <xsl:with-param name="fk" select="'series_fk'"/>
 </xsl:apply-templates>
