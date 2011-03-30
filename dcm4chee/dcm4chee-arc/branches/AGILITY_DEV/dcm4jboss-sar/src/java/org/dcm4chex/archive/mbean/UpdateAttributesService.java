@@ -197,7 +197,7 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
         return updateSeries(seriesIuid, updateAttributes());
     }
 
-    private int updateSeries(String seriesIuid,
+    protected int updateSeries(String seriesIuid,
             UpdateAttributes updateAttributes) throws Exception {
         Dataset keys = DcmObjectFactory.getInstance().newDataset();
         keys.putUI(Tags.SeriesInstanceUID, seriesIuid);
