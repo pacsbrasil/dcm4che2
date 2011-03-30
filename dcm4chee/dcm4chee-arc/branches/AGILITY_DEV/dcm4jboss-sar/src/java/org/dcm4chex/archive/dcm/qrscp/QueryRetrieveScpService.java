@@ -55,11 +55,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import javax.ejb.FinderException;
 import javax.management.InstanceNotFoundException;
 import javax.management.JMException;
@@ -171,8 +169,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private Map<String, String> notDecompressTsuidMap = new LinkedHashMap<String, String>();
 
     private Set<String> notDecompressTsuidSet;
-
-    private LinkedHashMap requestStgCmtFromAETs = new LinkedHashMap();
 
     private ObjectName stgCmtScuScpName;
 
@@ -844,41 +840,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.ignorableSOPClasses = parseUIDs(s);
     }
 
-    public final String getRequestStgCmtFromAETs() {
-        if (requestStgCmtFromAETs.isEmpty())
-            return NONE;
-        StringBuffer sb = new StringBuffer();
-        Iterator it = requestStgCmtFromAETs.entrySet().iterator();
-        while (it.hasNext()) {
-            final Map.Entry entry = (Entry) it.next();
-            final String key = (String) entry.getKey();
-            final String value = (String) entry.getValue();
-            sb.append(key);
-            if (!key.equals(value))
-                sb.append(':').append(value);
-            sb.append('\\');
-        }
-        sb.setLength(sb.length() - 1);
-        return sb.toString();
-    }
-
-    public final void setRequestStgCmtFromAETs(String aets) {
-        requestStgCmtFromAETs.clear();
-        if (aets != null && aets.length() > 0 && !aets.equalsIgnoreCase(NONE)) {
-            String[] a = StringUtils.split(aets, '\\');
-            String s;
-            int c;
-            for (int i = 0; i < a.length; i++) {
-                s = a[i];
-                c = s.indexOf(':');
-                if (c == -1)
-                    requestStgCmtFromAETs.put(s, s);
-                else if (c > 0 && c < s.length() - 1)
-                    requestStgCmtFromAETs.put(s.substring(0, c), s
-                            .substring(c + 1));
-            }
-        }
-    }
 
     public final int getMaxUIDsPerMoveRQ() {
         return maxUIDsPerMoveRQ;
@@ -1209,10 +1170,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
                         .contains(moveDest);
     }
 
-    String getStgCmtAET(String moveDest) {
-        return (String) requestStgCmtFromAETs.get(moveDest);
-    }
-
     protected void logInstancesSent(Association moveOrGetAs,
             Association storeAs, ArrayList fileInfos) {
         try {
@@ -1269,15 +1226,18 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return tlsConfig.createSocket(aeMgr().findByAET(moveCalledAET), destAE);
     }
 
-    public void queueStgCmtOrder(String calling, String called,
-            Dataset actionInfo) {
+    void onInstancesRetrieved(String moveScp, String moveDest,
+            Dataset stgCmtActionInfo) {
         try {
-            server.invoke(stgCmtScuScpName, "queueStgCmtOrder", new Object[] {
-                    calling, called, actionInfo, Boolean.FALSE }, new String[] {
-                    String.class.getName(), String.class.getName(),
-                    Dataset.class.getName(), boolean.class.getName() });
+            server.invoke(stgCmtScuScpName, "onInstancesRetrieved",
+                    new Object[] { moveScp, moveDest, stgCmtActionInfo },
+                    new String[] {
+                            String.class.getName(),
+                            String.class.getName(),
+                            Dataset.class.getName()
+                    });
         } catch (JMException e) {
-            log.error("Failed to queue Storage Commitment Request", e);
+            log.error("Failed to invoke onInstancesRetrieved", e);
         }
     }
 

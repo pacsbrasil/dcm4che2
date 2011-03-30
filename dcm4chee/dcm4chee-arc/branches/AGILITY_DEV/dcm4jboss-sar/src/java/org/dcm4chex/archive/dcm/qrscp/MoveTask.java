@@ -450,13 +450,9 @@ public class MoveTask implements Runnable {
         }
         if (!successfulTransferred.isEmpty()) {
             service.logInstancesSent(moveAssoc.getAssociation(), a, successfulTransferred);
+            service.onInstancesRetrieved(moveCalledAET, moveDest, stgCmtActionInfo);
         }
         service.updateStudyAccessTime(studyInfos);
-        String stgCmtAET = service.getStgCmtAET(moveDest);
-        if (stgCmtAET != null && refSOPSeq.countItems() > 0) {
-            service.queueStgCmtOrder(moveCalledAET, stgCmtAET,
-                            stgCmtActionInfo);
-        }
     }
 
     private void updateStgCmtActionInfo(FileInfo fileInfo) {

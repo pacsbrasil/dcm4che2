@@ -167,11 +167,12 @@
          dcm4chee.archive:service=QueryRetrieveScp#CoerceRequestPatientIdsAETitles
          dcm4chee.archive:service=QueryRetrieveScp#UnrestrictedQueryPermissionsToAETitles
          dcm4chee.archive:service=QueryRetrieveScp#UnrestrictedReadPermissionsToAETitles
-         dcm4chee.archive:service=QueryRetrieveScp#UnrestrictedExportPermissionsToAETitles
-         dcm4chee.archive:service=QueryRetrieveScp#RequestStorageCommitFromAETitles
+         dcm4chee.archive:service=QueryRetrieveScp#UnrestrictedExportPermissionsToAETitles        
          dcm4chee.archive:service=QueryRetrieveScp#LogAETitles
          dcm4chee.archive:service=StgCmtScuScp#CalledAETitles
          dcm4chee.archive:service=StgCmtScuScp#CallingAETitles
+         dcm4chee.archive:service=StgCmtScuScp#RequestStorageCommitFromAETitles
+         dcm4chee.archive:service=StgCmtScuScp#TrustStorageCommitFromAETitles
          dcm4chee.archive:service=StoreScp#CalledAETitles
          dcm4chee.archive:service=StoreScp#CallingAETitles
          dcm4chee.archive:service=StoreScp#UnrestrictedAppendPermissionsToAETitles

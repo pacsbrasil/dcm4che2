@@ -459,27 +459,7 @@ DICOM JPEG-LS images by specified value. Only effective for WADO retrieval.
            "/>
       </descriptors>
    </attribute>
-   
-   <attribute access="read-write"
-      getMethod="getRequestStgCmtFromAETs"
-      setMethod="setRequestStgCmtFromAETs">
-      <description><![CDATA[Move Destination AE titles, from which Storage Commitment
-      for transmitted objects shall be requested.
-      <br>Format: 
-      <br><i>STORAGE_AET</i>:<i>STGCMT_AET</i>.
-      <br>The AE title of the Storage Commitment Service (<i>STGCMT_AET</i>)
-      can be omitted, if identical to the AE title of the 
-      Move Destination (<i>STORAGE_AET</i>). 
-      Separate multiple values with a \(backslash). 
-      NONE = No Move Destination from which Storage Commitment
-      will be requested.]]> 
-      </description>
-      <name>RequestStorageCommitFromAETitles</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="NONE"/>
-      </descriptors>
-   </attribute>   
+     
    <attribute access="read-write"
       getMethod="isNoMatchForNoValue"
       setMethod="setNoMatchForNoValue">

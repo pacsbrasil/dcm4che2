@@ -145,7 +145,13 @@ public class StgCmtScuScp extends DcmServiceBase {
         }
         checkRefSopSeq(refSOPSeq, false);
         checkRefSopSeq(failedSOPSeq, true);
-        service.commited(data);
+        final Association a = assoc.getAssociation();
+        final String aet = a.getCallingAET();
+        if (service.trustStgCmtFromAET(aet)) {
+            service.commited(data);
+        } else 
+            log.info("Do not trust Storage Commitment Result received from "
+                    + aet);
         return null;
     }
 

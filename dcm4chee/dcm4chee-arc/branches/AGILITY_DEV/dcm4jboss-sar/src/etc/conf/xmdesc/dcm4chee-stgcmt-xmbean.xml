@@ -52,6 +52,43 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getRequestStgCmtFromAETs"
+      setMethod="setRequestStgCmtFromAETs">
+      <description><![CDATA[Move Destination AE titles, from which Storage
+      Commitment for transmitted objects shall be requested.
+      <br>Format: 
+      <br><i>STORAGE_AET</i>:<i>STGCMT_AET</i>.
+      <br>The AE title of the Storage Commitment Service (<i>STGCMT_AET</i>)
+      can be omitted, if identical to the AE title of the 
+      Move Destination (<i>STORAGE_AET</i>). 
+      Separate multiple values with a \(backslash). 
+      NONE = No Move Destination from which Storage Commitment
+      will be requested.]]> 
+      </description>
+      <name>RequestStorageCommitFromAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getTrustStgCmtFromAETs"
+      setMethod="setTrustStgCmtFromAETs">
+      <description><![CDATA[AE titles of trusted Storage Commitment SCPs.
+      Only Storage Commitment results received from these sources will cause
+      to mark referenced instances as external retrievable.
+      Separate multiple values with a \(backslash). 
+      <br>NONE = Do not mark instances as external retrievable.
+      <br>ANY = Trust Storage Commitment results from any Storage
+      Commitment SCP.]]> 
+      </description>
+      <name>TrustStorageCommitFromAETitles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getReceiveResultInSameAssocTimeout"
       setMethod="setReceiveResultInSameAssocTimeout">
       <description>Time in milliseconds that the Storage Commit SCU waits to 
@@ -314,29 +351,21 @@
    &defaultOperations;
    <operation impact="ACTION">
       <description>Used internally.</description>
-      <name>queueStgCmtOrder</name>
+      <name>onInstancesRetrieved</name>
       <parameter>
-        <description>Calling AET in StgCmt request/response. (Use first AET of CalledAETs attribute as default)</description>
-        <name>calling</name>
+        <description>Called AE Title of Move SCP</description>
+        <name>moveScp</name>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
-        <description>Called AET of StgCmt request/response.</description>
-        <name>called</name>
+        <description>AE Title of Move Destination.</description>
+        <name>moveDest</name>
         <type>java.lang.String</type>
       </parameter>
       <parameter>
         <description>Dataset for StgCmt N-ACTION request.</description>
         <name>actionInfo</name>
         <type>org.dcm4che.data.Dataset</type>
-      </parameter>
-      <parameter>
-        <description><![CDATA[SCP/SCU role of the order.<br/> 
-        	true: SCP Role -&gt; send response<br/>
-        	false: SCU role -&gt; send request.
-        ]]></description>
-        <name>scpRole</name>
-        <type>boolean</type>
       </parameter>
       <return-type>void</return-type>
    </operation>

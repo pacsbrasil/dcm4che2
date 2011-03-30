@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
@@ -72,6 +73,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.RoleSelection;
 import org.dcm4che.util.UIDGenerator;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
@@ -118,6 +120,11 @@ public class StgCmtScuScpService extends AbstractScpService implements
 
     private RetryIntervalls scpRetryIntervalls = new RetryIntervalls();
 
+    private LinkedHashMap<String,String> requestStgCmtFromAETs =
+            new LinkedHashMap<String,String>();
+
+    private String[] trustStgCmtFromAETs;
+
     private StgCmtScuScp stgCmtScuScp = new StgCmtScuScp(this);
 
     private long receiveResultInSameAssocTimeout;
@@ -151,6 +158,65 @@ public class StgCmtScuScpService extends AbstractScpService implements
             if (restart)
                 start();
         }
+    }
+
+    public String getRequestStgCmtFromAETs() {
+        if (requestStgCmtFromAETs.isEmpty())
+            return NONE;
+
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String,String> entry : requestStgCmtFromAETs.entrySet()) {
+            final String key = entry.getKey();
+            final String value = entry.getValue();
+            sb.append(key);
+            if (!key.equals(value))
+                sb.append(':').append(value);
+            sb.append('\\');
+        }
+        sb.setLength(sb.length() - 1);
+        return sb.toString();
+    }
+
+    public void setRequestStgCmtFromAETs(String aets) {
+        requestStgCmtFromAETs.clear();
+        if (aets != null && aets.length() > 0 && !aets.equalsIgnoreCase(NONE)) {
+            String[] a = StringUtils.split(aets, '\\');
+            String s;
+            int c;
+            for (int i = 0; i < a.length; i++) {
+                s = a[i];
+                c = s.indexOf(':');
+                if (c == -1)
+                    requestStgCmtFromAETs.put(s, s);
+                else if (c > 0 && c < s.length() - 1)
+                    requestStgCmtFromAETs.put(s.substring(0, c), s
+                            .substring(c + 1));
+            }
+        }
+    }
+
+    public String getTrustStgCmtFromAETs() {
+        return trustStgCmtFromAETs == null ? ANY
+                : trustStgCmtFromAETs.length == 0 ? NONE
+                : StringUtils.toString(trustStgCmtFromAETs, '\\');
+    }
+
+    public void setTrustStgCmtFromAETs(String aets) {
+        String trim = aets.trim();
+        trustStgCmtFromAETs = trim.equalsIgnoreCase(ANY) ? null
+                            : trim.equalsIgnoreCase(NONE) ? new String[0]
+                            : StringUtils.split(trim, '\\');
+    }
+
+    boolean trustStgCmtFromAET(String aet) {
+        if (trustStgCmtFromAETs == null)
+            return true;
+        
+        for (String trust : trustStgCmtFromAETs)
+            if (aet.equals(trust))
+                return true;
+        
+        return false;
     }
 
     public final String getScuRetryIntervalls() {
@@ -307,24 +373,33 @@ public class StgCmtScuScpService extends AbstractScpService implements
     private int scheduleStgCmtForRetrRq(Dataset retrRq, String called, String calling) throws Exception {
         if (called == null || called.trim().length() == 0)
             throw new IllegalArgumentException("Missing CalledAET");
-        aeMgr().findByAET(called);
-        Dataset actionInfo = DcmObjectFactory.getInstance().newDataset();
-        DcmElement refSOPSeq = actionInfo.putSQ(Tags.RefSOPSeq);
         RetrieveCmd cmd = RetrieveCmd.create(retrRq);
         cmd.setFetchSize(fetchSize);
         FileInfo[][] fileInfos =cmd.getFileInfos();
-        Dataset item;
-        for (int i = 0 ; i < fileInfos.length ; i++) {
-            item = refSOPSeq.addNewItem();
-            item.putUI(Tags.RefSOPClassUID, fileInfos[i][0].sopCUID);
-            item.putUI(Tags.RefSOPInstanceUID, fileInfos[i][0].sopIUID);
+        if (fileInfos.length > 0) {
+            Dataset actionInfo = DcmObjectFactory.getInstance().newDataset();
+            DcmElement refSOPSeq = actionInfo.putSQ(Tags.RefSOPSeq);
+            for (FileInfo[] fileInfo : fileInfos) {
+                Dataset item = refSOPSeq.addNewItem();
+                item.putUI(Tags.RefSOPClassUID, fileInfo[0].sopCUID);
+                item.putUI(Tags.RefSOPInstanceUID, fileInfo[0].sopIUID);
+                
+            }
+            queueStgCmtOrder(calling, called, actionInfo, false);
         }
-        if (refSOPSeq.countItems() > 0)
-            queueStgCmtOrder(calling, called, actionInfo, Boolean.FALSE);
-        return refSOPSeq.countItems();
+        return fileInfos.length;
     }
     
-    public void queueStgCmtOrder(String calling, String called,
+    public void onInstancesRetrieved(String moveScp, String moveDest,
+            Dataset actionInfo) throws Exception {
+        if (actionInfo.get(Tags.RefSOPSeq).countItems() > 0) {
+            String stgCmtScp = requestStgCmtFromAETs.get(moveDest);
+            if (stgCmtScp != null)
+                queueStgCmtOrder(moveScp, stgCmtScp, actionInfo, false);
+        }
+    }
+    
+    void queueStgCmtOrder(String calling, String called,
             Dataset actionInfo, boolean scpRole) throws Exception {
         if (calling == null || calling.trim().length() == 0) 
             calling = calledAETs[0];
