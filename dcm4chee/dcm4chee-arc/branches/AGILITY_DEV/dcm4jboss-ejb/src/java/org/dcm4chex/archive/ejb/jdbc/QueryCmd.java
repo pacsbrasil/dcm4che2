@@ -337,6 +337,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         case Tags.StudyDescription:
         case Tags.StudyStatusID:
         case Tags.ModalitiesInStudy:
+        case PrivateTags.CallingAET & 0xffff0000 | 0x00000010:
+        case PrivateTags.CallingAET | 0x00001000:
             return true;
         case Tags.StudyDate:
         case Tags.StudyTime:
@@ -345,6 +347,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         case Tags.IssuerOfAccessionNumberSeq:
             checkIssuerOfAccessionNumberSeq(key);
             return true;
+        case Tags.SOPClassesInStudy:
+        case Tags.NumberOfStudyRelatedSeries:
+        case Tags.NumberOfStudyRelatedInstances:
+            return key.isEmpty();
         }
         return isSupportedKey(key, AttributeFilter.getStudyAttributeFilter());
     }
@@ -536,6 +542,8 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         case Tags.InstitutionCodeSeq:
             checkCodeSeq(key);
             return true;
+        case Tags.NumberOfSeriesRelatedInstances:
+            return key.isEmpty();
         }
         return isSupportedKey(key, AttributeFilter.getSeriesAttributeFilter());
     }
