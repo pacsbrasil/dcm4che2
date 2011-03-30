@@ -93,7 +93,7 @@ public class UserAccessBean implements UserAccess {
         if (this.rolesMappingFile == null) {
             userRoleName = System.getProperty("dcm4chee-usr.cfg.userrole", "+WebUser");
             adminRoleName = System.getProperty("dcm4chee-usr.cfg.adminrole", "+WebAdmin");
-            rolesMappingFile = new File(System.getProperty("dcm4chee-usr.cfg.roles-filename", "conf/dcm4chee-web3/roles.json"));
+            rolesMappingFile = new File(System.getProperty("dcm4chee-web3.cfg.path", "conf/dcm4chee-web3") + "roles.json");
             if (!rolesMappingFile.isAbsolute())
                 rolesMappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), rolesMappingFile.getPath());
             if (log.isDebugEnabled()) {
@@ -113,7 +113,7 @@ public class UserAccessBean implements UserAccess {
             }
         }
         if (this.groupsFile == null) {
-            groupsFile = new File(System.getProperty("dcm4chee-usr.cfg.groups-filename", "conf/dcm4chee-web3/groups.json"));
+            groupsFile = new File(System.getProperty("dcm4chee-web3.cfg.path", "conf/dcm4chee-web3") + "groups.json");
             if (!groupsFile.isAbsolute())
                 groupsFile = new File(ServerConfigLocator.locate().getServerHomeDir(), groupsFile.getPath());
             if (log.isDebugEnabled()) {

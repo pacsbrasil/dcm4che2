@@ -129,31 +129,25 @@ public class WebCfgService extends ServiceMBeanSupport {
     }
 
     public String getWebConfigPath() {
-        return webConfigPath;
+        return System.getProperty("dcm4chee-web3.cfg.path", NONE);
     }
 
     public void setWebConfigPath(String webConfigPath) {
-        this.webConfigPath = webConfigPath;
-    }
-
-    public String getRolesFilename() {
-        return System.getProperty("dcm4chee-usr.cfg.roles-filename", NONE);
-    }
-
-    public void setRolesFilename(String name) {
-        if (NONE.equals(name)) {
-            System.getProperties().remove("dcm4chee-usr.cfg.roles-filename");
+        if (NONE.equals(webConfigPath)) {
+            System.getProperties().remove("dcm4chee-web3.cfg.path");
         } else {
-            String old = System.getProperty("dcm4chee-usr.cfg.roles-filename");
-            System.setProperty("dcm4chee-usr.cfg.roles-filename", name);
+            String old = System.getProperty("dcm4chee-web3.cfg.path");
+            if (!webConfigPath.endsWith("/")) webConfigPath += "/";
+            System.setProperty("dcm4chee-web3.cfg.path", webConfigPath);
             if (old == null) {
-                initDefaultFile();
+                initDefaultRolesFile();
             }
         }
     }
     
-    protected void initDefaultFile() {
-        File mappingFile = new File(System.getProperty("dcm4chee-usr.cfg.roles-filename", "conf/dcm4chee-web3/roles.json"));
+    protected void initDefaultRolesFile() {
+        String webConfigPath = System.getProperty("dcm4chee-web3.cfg.path", "conf/dcm4chee-web3");
+        File mappingFile = new File(webConfigPath + "roles.json");
         if (!mappingFile.isAbsolute())
             mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
         if (mappingFile.exists()) return;
