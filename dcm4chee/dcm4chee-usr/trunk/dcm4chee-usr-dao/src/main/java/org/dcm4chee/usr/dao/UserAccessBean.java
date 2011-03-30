@@ -48,9 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateful;
@@ -62,8 +60,8 @@ import net.sf.json.JSONObject;
 
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
-import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.model.Group;
+import org.dcm4chee.usr.model.Role;
 import org.jboss.annotation.ejb.LocalBinding;
 import org.jboss.system.server.ServerConfigLocator;
 import org.slf4j.Logger;

@@ -76,30 +76,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getRolesFilename"
-      setMethod="setRolesFilename">
-      <description><![CDATA[Filename path for the roles file (JSON format).<br/>
-      		A relative path name is resolved relative to <i>archive-install-directory</i>/server/default/.
-      ]]></description>
-      <name>rolesFilename</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="conf/dcm4chee-web3/roles.json"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getGroupsFilename"
-      setMethod="setGroupsFilename">
-      <description><![CDATA[Filename path for the groups file (JSON format).<br/>
-            A relative path name is resolved relative to <i>archive-install-directory</i>/server/default/.
-      ]]></description>
-      <name>groupsFilename</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="conf/dcm4chee-web3/groups.json"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getWindowSizeConfig"
       setMethod="setWindowSizeConfig">
       <description><![CDATA[Window size configuration of modal windows.<br/>
