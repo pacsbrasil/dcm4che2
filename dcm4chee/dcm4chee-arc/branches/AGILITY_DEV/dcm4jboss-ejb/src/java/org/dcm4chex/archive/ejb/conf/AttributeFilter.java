@@ -57,7 +57,9 @@ import org.dcm4chex.archive.exceptions.ConfigurationException;
  */
 public final class AttributeFilter {
     private static final String CONFIG_URL = "resource:dcm4chee-attribute-filter.xml";
+    private static final int MIN_CONTENT_ITEM_TEXT_VALUE_MAX_LENGTH = 250;
     static FuzzyStr soundex = null;
+    static int contentItemTextLength;
     static AttributeFilter patientFilter;
     static AttributeFilter studyFilter;
     static AttributeFilter seriesFilter;
@@ -75,6 +77,7 @@ public final class AttributeFilter {
     private final boolean overwrite;
     private final boolean merge;
     private boolean noFilter = false;
+    private int contentItemTextValueMaxLength;
     
     static {
         reload();
@@ -216,6 +219,16 @@ public final class AttributeFilter {
 
     public final boolean isMerge() {
         return merge;
+    }
+
+    public final int getContentItemTextValueMaxLength() {
+        return contentItemTextValueMaxLength;
+    }
+
+    public final void setContentItemTextValueMaxLength(int len) {
+        if (len < MIN_CONTENT_ITEM_TEXT_VALUE_MAX_LENGTH)
+            throw new IllegalArgumentException();
+        this.contentItemTextValueMaxLength = len;
     }
 
     public Dataset filter(Dataset ds) {

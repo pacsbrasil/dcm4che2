@@ -65,6 +65,7 @@ Minimal descriptor for DICOM Standard Conformance of Query/Retrieve Service:
 <!ATTLIST instance exclude-private (true | false ) "false">
 <!ATTLIST instance update-strategy (overwrite | overwrite-merge |
                                     coerce | coerce-merge) "overwrite">
+<!ATTLIST instance content-item-text-value-max-length CDATA "250">
 
 <!ELEMENT attr EMPTY>
 <!ATTLIST attr tag CDATA #IMPLIED>
