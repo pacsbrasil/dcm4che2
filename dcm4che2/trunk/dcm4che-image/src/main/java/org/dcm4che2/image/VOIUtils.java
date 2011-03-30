@@ -144,15 +144,17 @@ public class VOIUtils {
                 }
             }
         }
-        DicomObject shared = img
-                .getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
-        if (shared != null) {
-            DicomObject mlutObj = shared
-                    .getNestedDicomObject(Tag.PixelValueTransformationSequence);
-            if (mlutObj != null) {
-                log.debug("Found a shared mLut information object ");
-                return mlutObj;
+        try {
+            DicomObject shared = img.getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
+            if (shared != null) {
+                DicomObject mlutObj = shared.getNestedDicomObject(Tag.PixelValueTransformationSequence);
+                if (mlutObj != null) {
+                    log.debug("Found a shared mLut information object ");
+                    return mlutObj;
+                }
             }
+        } catch (UnsupportedOperationException e) {
+            log.warn("Shared functional groups is the wrong VR type:" + e);
         }
         return img;
     }
