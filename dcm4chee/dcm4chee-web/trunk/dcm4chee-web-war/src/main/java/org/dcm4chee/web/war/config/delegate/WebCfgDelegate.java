@@ -93,11 +93,11 @@ public class WebCfgDelegate extends BaseCfgDelegate {
     }
 
     public String getSourceAetsPropertiesFilename() {
-        return getString("sourceAetsPropertiesFilename");
+        return ("NONE".equals(getWebConfigPath()) ? getWebConfigPath() : "") + "source_aets.properties";
     }
 
     public String getStationAetsPropertiesFilename() {
-        return getString("stationAetsPropertiesFilename");
+        return ("NONE".equals(getWebConfigPath()) ? getWebConfigPath() : "") + "station_aets.properties";
     }
 
     public String getWadoBaseURL() {

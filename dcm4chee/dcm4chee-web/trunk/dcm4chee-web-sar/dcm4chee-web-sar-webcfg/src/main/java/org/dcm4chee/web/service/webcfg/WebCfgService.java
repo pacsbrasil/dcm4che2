@@ -741,14 +741,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         return useStudyPermissions;
     }
     
-    public String getSourceAetsPropertiesFilename() {
-        return (NONE.equals(getWebConfigPath()) ? getWebConfigPath() : "") + "source_aets.properties";
-    }
-
-    public String getStationAetsPropertiesFilename() {
-        return (NONE.equals(getWebConfigPath()) ? getWebConfigPath() : "") + "station_aets.properties";
-    }
-
     protected static final long serialVersionUID = 1L;
 
     protected String loginAllowedRolename;
