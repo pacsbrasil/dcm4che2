@@ -83,7 +83,7 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
     @PostConstruct
     private void config() {
         if (this.dicomRolesFile == null) {
-            dicomRolesFile = new File(System.getProperty("dcm4chee-usr.cfg.roles-filename", "conf/dcm4chee-web3/roles.json"));
+            dicomRolesFile = new File(System.getProperty("dcm4chee-web3.cfg.path", "conf/dcm4chee-web3") + "roles.json");
             if (!dicomRolesFile.isAbsolute())
                 dicomRolesFile = new File(ServerConfigLocator.locate().getServerHomeDir(), dicomRolesFile.getPath());
             if (log.isDebugEnabled()) {

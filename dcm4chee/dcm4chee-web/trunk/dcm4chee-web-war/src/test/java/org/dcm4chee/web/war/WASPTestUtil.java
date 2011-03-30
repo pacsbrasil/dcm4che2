@@ -60,7 +60,7 @@ public class WASPTestUtil {
     private static String actionKey;
     private static String hiveKey;
     
-    private static final String ROLE_MAPPING_FILENAME = "conf/roles-test.json";
+    private static final String ROLE_MAPPING_FILENAME = "roles.json";
 
     public static WicketTester getWicketTester(WebApplication testApplicaton) throws URISyntaxException {
         if (actionKey != null) {
@@ -85,10 +85,11 @@ public class WASPTestUtil {
     }
     
     public static void initRolesMappingFile() throws IOException {
-        System.setProperty("dcm4chee-usr.cfg.roles-filename", ROLE_MAPPING_FILENAME);
+        String webConfigPath = ServerConfigLocator.locate().getServerHomeDir().getAbsolutePath() + "/conf/";
+        System.setProperty("dcm4chee-web3.cfg.path", webConfigPath);
         File f = new File(ROLE_MAPPING_FILENAME);
         if (!f.isAbsolute())
-            f = new File(ServerConfigLocator.locate().getServerHomeDir(), f.getPath());
+            f = new File(webConfigPath, f.getPath());
         if (f.exists()) return;
         f.getParentFile().mkdirs();
         FileChannel fos = null;
