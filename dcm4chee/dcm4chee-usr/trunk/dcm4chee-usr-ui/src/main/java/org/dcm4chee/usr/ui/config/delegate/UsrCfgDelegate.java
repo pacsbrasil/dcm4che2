@@ -38,8 +38,6 @@
 
 package org.dcm4chee.usr.ui.config.delegate;
 
-import java.util.List;
-
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
