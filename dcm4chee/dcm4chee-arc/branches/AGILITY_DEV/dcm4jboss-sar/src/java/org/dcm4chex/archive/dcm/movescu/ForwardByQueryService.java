@@ -248,6 +248,17 @@ NotificationListener {
     }
     
     public void handleNotification(Notification notification, Object handback) {
+        if (lastCheckResult == null) {
+            try {
+                checkSQL(sql);
+                if (sqlCmd != null) { 
+                    sqlCmd.close();
+                }
+                sqlCmd = QueryForwardCmd.getInstance(sql, limit, fetchSize);
+            } catch ( Throwable t) {
+                log.error("Check of SQL statement failed!",t);
+            }
+        }
         if (sqlIsValid)
             checkForward();
         else
@@ -306,15 +317,6 @@ NotificationListener {
     }
     
     protected void startService() throws Exception {
-        try {
-            checkSQL(sql);
-            if (sqlCmd != null) { 
-                sqlCmd.close();
-            }
-            sqlCmd = QueryForwardCmd.getInstance(sql, limit, fetchSize);
-        } catch ( Throwable t) {
-            log.error("Check of SQL statement failed!",t);
-        }
         schedulerID = scheduler.startScheduler(timerIDForwardPolling,
                 pollInterval, this);
     }
