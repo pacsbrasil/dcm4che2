@@ -84,11 +84,10 @@ public class LoginContextSecurityHelper {
 
     @SuppressWarnings("unchecked")
     private static Map<String, Set<String>> readRolesFile() throws IOException {
-        String fn = System.getProperty("dcm4chee-usr.cfg.roles-filename");
-        if (fn == null) {
-            throw new FileNotFoundException("Roles file not found! Not specified with System property 'dcm4chee-usr.cfg.roles-filename'");
-        }
-        File mappingFile = new File(fn);
+        String fn = System.getProperty("dcm4chee-web3.cfg.path");
+        if (fn == null) 
+            throw new FileNotFoundException("Web config path not found! Not specified with System property 'dcm4chee-web3.cfg.path'");
+        File mappingFile = new File(fn + "roles.json");
         if (!mappingFile.isAbsolute())
             mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
         Map<String, Set<String>> mappings = new HashMap<String, Set<String>>();
