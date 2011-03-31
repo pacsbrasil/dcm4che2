@@ -122,6 +122,11 @@
             <version>2.3</version>
             <classifier>jdk15</classifier>
         </dependency>
+        <dependency>
+            <groupId>dcm4che.dcm4chee</groupId>
+            <artifactId>dcm4chee-web-urlprovider</artifactId>
+            <version>3.0.0</version>
+        </dependency>
     </dependencies>
     <build>
 	    <plugins>
