@@ -38,8 +38,6 @@
 
 package org.dcm4chee.usr.ui.usermanagement.role;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -60,12 +58,12 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.usr.dao.UserAccess;
-import org.dcm4chee.usr.model.Group;
 import org.dcm4chee.usr.model.Role;
+import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
-import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
+import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 /**
@@ -106,11 +104,18 @@ public class WebPermissionsPage extends SecureWebPage {
         addOrReplace(principalRows);
         
         Map<String, String> principalsAndKeys = ((SecureSession) getSession()).getAllSwarmPrincipals();
-        
         Iterator<String> principals = principalsAndKeys.keySet().iterator();
+
+        boolean manageStudyPermissions = UsrCfgDelegate.getInstance().getManageStudyPermissions();
+        String studyPermissionsAll = UsrCfgDelegate.getInstance().getStudyPermissionsAllRolename();
+        String studyPermissionsOwn = UsrCfgDelegate.getInstance().getStudyPermissionsOwnRolename();
+
         int i = 0;
         while(principals.hasNext()) {
             String principal = principals.next();
+
+            if (!manageStudyPermissions && (principal.equals(studyPermissionsAll) || principal.equals(studyPermissionsOwn)))
+                continue;
             
             WebMarkupContainer rowParent;
             String key = principalsAndKeys.get(principal);
