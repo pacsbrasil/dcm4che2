@@ -40,8 +40,6 @@
 package org.dcm4chex.archive.hsm.module;
 
 import java.io.File;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -176,6 +174,10 @@ public class HSMFileBasedModule extends AbstractHSMModule {
         if (fsID.startsWith("tar:"))
             fsID=fsID.substring(4);
         return FileUtils.toFile(fsID, filePath);
+    }
+
+    @Override
+    public void fetchHSMFileFinished(String fsID, String filePath, File file) throws HSMException {
     }
 
     @Override

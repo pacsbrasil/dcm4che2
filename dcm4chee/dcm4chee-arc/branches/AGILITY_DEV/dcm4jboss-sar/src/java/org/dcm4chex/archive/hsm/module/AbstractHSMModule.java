@@ -91,6 +91,7 @@ public abstract class AbstractHSMModule extends ServiceMBeanSupport {
      * @return
      */
     public abstract File fetchHSMFile(String fsID, String filePath) throws HSMException;
+    public abstract void fetchHSMFileFinished(String fsID, String filePath, File file) throws HSMException;
     
     public abstract Integer queryStatus(String fsID, String filePath, String userInfo) throws HSMException;
     

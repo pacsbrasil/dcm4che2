@@ -235,7 +235,11 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         File tarFile = hsmModuleServicename == null ? 
                 FileUtils.toFile(fsID.substring(4), tarPath) :
                 fetchHSMFile(fsID, tarPath);
-        extractTar(tarFile, cacheDir);
+        try { 
+            extractTar(tarFile, cacheDir);
+        } finally {
+            fetchHSMFileFinished(fsID, tarPath, tarFile);
+        }
     }
     
     private File fetchHSMFile(String fsID, String tarPath) throws IOException {
@@ -247,6 +251,17 @@ public class TarRetrieverService extends ServiceMBeanSupport {
             IOException iox = new IOException("Fetch of HSMFile failed!");
             iox.initCause(x);
             throw iox;
+        }
+    }
+
+    private void fetchHSMFileFinished(String fsID, String tarPath, File tarFile) throws IOException {
+        if (hsmModuleServicename != null) {
+            try {
+                server.invoke(hsmModuleServicename, "fetchHSMFileFinished", new Object[]{fsID, tarPath, tarFile}, 
+                    new String[]{String.class.getName(),String.class.getName(),File.class.getName()});
+            } catch (Exception x) {
+                log.warn("fetchHSMFileFinished! fsID:"+fsID+" tarPath:"+tarPath+" tarFile:"+tarFile, x);
+            }
         }
     }
 
