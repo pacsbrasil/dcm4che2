@@ -70,7 +70,6 @@ public interface UserAccess {
     public void assignRole(UserRoleAssignment ura);
     public void unassignRole(UserRoleAssignment ura);
 
-    public List<String> getAllRolenames();
     public List<Role> getAllRoles();
     public void addRole(Role role);
     public void updateRole(Role role);

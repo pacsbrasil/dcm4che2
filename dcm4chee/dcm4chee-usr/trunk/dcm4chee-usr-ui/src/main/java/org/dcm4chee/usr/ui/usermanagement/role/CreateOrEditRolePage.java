@@ -49,6 +49,7 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.Radio;
 import org.apache.wicket.markup.html.form.RadioGroup;
@@ -103,7 +104,8 @@ public class CreateOrEditRolePage extends SecureWebPage {
         private static final long serialVersionUID = 1L;
 
         private Model<String> rolename = new Model<String>();
-        private Model<String> description= new Model<String>();
+        private Model<String> description = new Model<String>();
+        private Model<Boolean> superuser = new Model<Boolean>();
         
         private TextField<String> rolenameTextField= new TextField<String>("rolelist.add-role-form.rolename.input", rolename);
         private TextField<String> descriptionTextField= new TextField<String>("rolelist.add-role-form.description.input", description);
@@ -125,6 +127,10 @@ public class CreateOrEditRolePage extends SecureWebPage {
                     .add(new RoleValidator(allRolenames, (role == null ? null : role.getRolename())))
             );
             add(descriptionTextField);
+
+            final CheckBox superuserCheckbox;
+            superuser.setObject(role.isSuperuser());
+            add(superuserCheckbox = new CheckBox("superuser-checkbox", superuser));
 
             if (role != null) {
                 rolenameTextField.setModelObject(role.getRolename());
@@ -163,6 +169,7 @@ public class CreateOrEditRolePage extends SecureWebPage {
                         if (role == null) {
                             Role newRole = new Role(rolename.getObject());
                             newRole.setDescription(description.getObject());
+                            newRole.setSuperuser(superuserCheckbox.getModelObject());
                             newRole.setGroupUuid(groupUuid);
                             newRole.setWebRole(groupRadioGroup.getModelObject().toString().equalsIgnoreCase("Web"));
                             newRole.setDicomRole(groupRadioGroup.getModelObject().toString().equalsIgnoreCase("Dicom"));
@@ -174,6 +181,7 @@ public class CreateOrEditRolePage extends SecureWebPage {
                         } else {
                             role.setRolename(rolename.getObject());
                             role.setDescription(description.getObject());
+                            role.setSuperuser(superuserCheckbox.getModelObject());
                             role.setGroupUuid(groupUuid);
                             role.setWebRole(groupRadioGroup.getModelObject().toString().equalsIgnoreCase("Web"));
                             role.setDicomRole(groupRadioGroup.getModelObject().toString().equalsIgnoreCase("Dicom"));

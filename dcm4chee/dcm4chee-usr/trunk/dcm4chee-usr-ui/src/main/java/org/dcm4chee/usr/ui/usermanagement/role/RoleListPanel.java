@@ -194,7 +194,8 @@ public class RoleListPanel extends Panel {
                     .add(new Label("rolename", role.getRolename())
                     .add(new AttributeModifier("title", true, new Model<String>(role.getDescription()))))
             );
-
+            if (role.isSuperuser())
+                rowParent.add(new SecurityBehavior(getModuleName() + ":superuserRoleRow"));
             if (role.getGroupUuid() != null && 
                     !role.getGroupUuid().equals("") && 
                     allGroups.get(role.getGroupUuid()) != null) {

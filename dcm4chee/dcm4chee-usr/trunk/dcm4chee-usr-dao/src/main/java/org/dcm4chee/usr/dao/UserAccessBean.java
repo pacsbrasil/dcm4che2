@@ -221,14 +221,6 @@ public class UserAccessBean implements UserAccess {
         .executeUpdate();
     }
 
-    public List<String> getAllRolenames() {
-        List<Role> roles = getAllRoles();
-        List<String> rolenameList = new ArrayList<String>(roles.size());
-        for (int i=0,len=roles.size(); i < len ; i++)
-            rolenameList.add(roles.get(i).getRolename());
-        return rolenameList;
-    }
-
     public List<Role> getAllRoles() {
         BufferedReader reader = null;
         try {

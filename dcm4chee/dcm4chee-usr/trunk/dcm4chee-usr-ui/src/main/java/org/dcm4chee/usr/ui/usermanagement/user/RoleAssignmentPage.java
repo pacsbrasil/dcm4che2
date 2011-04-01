@@ -41,6 +41,7 @@ package org.dcm4chee.usr.ui.usermanagement.user;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.wicket.AttributeModifier;
@@ -103,18 +104,22 @@ public class RoleAssignmentPage extends SecureWebPage {
             )
         );
 
+        List<Role> allRoles = userAccess.getAllRoles();
         RepeatingView roleRows = new RepeatingView("role-rows");
         addOrReplace(roleRows);
         int i = 0;
-        for (String rolename : userAccess.getAllRolenames()) {
+        for (Role role : allRoles) {
             WebMarkupContainer rowParent;
             roleRows.add((rowParent = new WebMarkupContainer(roleRows.newChildId()))
-                    .add(new Label("rolename", rolename)
-                    .add(new AttributeModifier("title", true, new Model<String>(rolename))))
+                    .add(new Label("rolename", role.getRolename())
+                    .add(new AttributeModifier("title", true, new Model<String>(role.getRolename()))))
             );
+            if (role.isSuperuser())
+                rowParent.add(new SecurityBehavior(getModuleName() + ":superuserRoleRow"));
+
             rowParent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i++))));
 
-            AjaxCheckBox roleCheckbox = new AjaxCheckBox("role-checkbox", new HasRoleModel(user, rolename)) {
+            AjaxCheckBox roleCheckbox = new AjaxCheckBox("role-checkbox", new HasRoleModel(user, role.getRolename())) {
 
                 private static final long serialVersionUID = 1L;
 

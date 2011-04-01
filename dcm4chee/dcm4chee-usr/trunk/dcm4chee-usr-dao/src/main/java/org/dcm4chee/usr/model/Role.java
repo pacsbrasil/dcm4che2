@@ -55,6 +55,7 @@ public class Role implements Serializable, Comparable<Role> {
     private String uuid;
     private String rolename;
     private String description;
+    private boolean superuser;
     private String groupUuid;
     private boolean isWebRole;
     private boolean isDicomRole;
@@ -97,6 +98,14 @@ public class Role implements Serializable, Comparable<Role> {
 
     public String getDescription() {
         return description;
+    }
+
+    public void setSuperuser(boolean superuser) {
+        this.superuser = superuser;
+    }
+
+    public boolean isSuperuser() {
+        return superuser;
     }
 
     public void setGroupUuid(String groupUuid) {
