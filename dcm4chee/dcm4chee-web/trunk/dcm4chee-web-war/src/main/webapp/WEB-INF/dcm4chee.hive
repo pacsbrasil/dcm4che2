@@ -145,6 +145,13 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:grouplist:removeGroupLink", "render, enable";
 };
 
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "Superuser"
+{
+// KEY: swarm.principal.Superuser
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:rolelist:superuserRoleRow", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.user.RoleAssignmentPage:roleassignment:superuserRoleRow", "render, enable";
+};
+
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "Dashboard"
 {
 // KEY: swarm.principal.Dashboard

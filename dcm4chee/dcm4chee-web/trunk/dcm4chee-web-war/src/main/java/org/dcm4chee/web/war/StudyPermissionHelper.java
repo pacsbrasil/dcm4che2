@@ -274,6 +274,6 @@ public class StudyPermissionHelper implements Serializable {
     }
     
     public enum StudyPermissionRight {
-        NONE, OWN, ALL 
+        NONE, OWN, ALL
     }
 }
