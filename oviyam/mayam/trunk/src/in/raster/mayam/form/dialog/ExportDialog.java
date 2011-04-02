@@ -101,7 +101,7 @@ public class ExportDialog extends javax.swing.JDialog {
         cancelButton = new javax.swing.JButton();
         singleImage = new javax.swing.JRadioButton();
         allImageRadio = new javax.swing.JRadioButton();
-        jLabel1 = new javax.swing.JLabel();
+        formatLabel = new javax.swing.JLabel();
         dicomRadio = new javax.swing.JRadioButton();
         jpgRadio = new javax.swing.JRadioButton();
 
@@ -134,7 +134,7 @@ public class ExportDialog extends javax.swing.JDialog {
         buttonGroup1.add(allImageRadio);
         allImageRadio.setText("All images of the series");
 
-        jLabel1.setText("Format");
+        formatLabel.setText("Format");
 
         formatGroup.add(dicomRadio);
         dicomRadio.setSelected(true);
@@ -163,7 +163,7 @@ public class ExportDialog extends javax.swing.JDialog {
                 .addContainerGap(272, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(31, 31, 31)
-                .add(jLabel1)
+                .add(formatLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(dicomRadio)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -178,7 +178,7 @@ public class ExportDialog extends javax.swing.JDialog {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(40, 40, 40)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
+                    .add(formatLabel)
                     .add(dicomRadio)
                     .add(jpgRadio))
                 .add(26, 26, 26)
@@ -257,7 +257,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JButton cancelButton;
     private javax.swing.JRadioButton dicomRadio;
     private javax.swing.ButtonGroup formatGroup;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel formatLabel;
     private javax.swing.JRadioButton jpgRadio;
     private javax.swing.JButton okButton;
     private javax.swing.JRadioButton singleImage;

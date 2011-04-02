@@ -70,15 +70,15 @@ public class SendReceivePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        receiveLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         receiveTable = new javax.swing.JTable();
 
-        jLabel1.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(250, 138, 0));
-        jLabel1.setText("  Receive");
-        jLabel1.setOpaque(true);
+        receiveLabel.setBackground(new java.awt.Color(0, 0, 0));
+        receiveLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
+        receiveLabel.setForeground(new java.awt.Color(250, 138, 0));
+        receiveLabel.setText("  Receive");
+        receiveLabel.setOpaque(true);
 
         receiveTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -106,21 +106,21 @@ public class SendReceivePanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 719, Short.MAX_VALUE)
+            .add(receiveLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 719, Short.MAX_VALUE)
             .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 719, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(receiveLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel receiveLabel;
     public javax.swing.JTable receiveTable;
     // End of variables declaration//GEN-END:variables
 }

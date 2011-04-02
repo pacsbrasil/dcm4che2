@@ -89,10 +89,10 @@ public class WadoInformation extends javax.swing.JDialog {
 
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
+        wadoURLLabel = new javax.swing.JLabel();
+        wadoPort = new javax.swing.JLabel();
+        encryptionLabel = new javax.swing.JLabel();
+        retrieveSyntaxLabel = new javax.swing.JLabel();
         wadoURLText = new javax.swing.JTextField();
         wadoPortText = new javax.swing.JTextField();
         wadoProtocolCheckBox = new javax.swing.JCheckBox();
@@ -118,13 +118,13 @@ public class WadoInformation extends javax.swing.JDialog {
             }
         });
 
-        jLabel1.setText("WADO url");
+        wadoURLLabel.setText("WADO url");
 
-        jLabel2.setText("WADO Port");
+        wadoPort.setText("WADO Port");
 
-        jLabel3.setText("Encryption");
+        encryptionLabel.setText("Encryption");
 
-        jLabel4.setText("Retrieve Syntax");
+        retrieveSyntaxLabel.setText("Retrieve Syntax");
 
         wadoProtocolCheckBox.setText("https");
 
@@ -144,10 +144,10 @@ public class WadoInformation extends javax.swing.JDialog {
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel4)
-                            .add(jLabel1)
-                            .add(jLabel2)
-                            .add(jLabel3))
+                            .add(retrieveSyntaxLabel)
+                            .add(wadoURLLabel)
+                            .add(wadoPort)
+                            .add(encryptionLabel))
                         .add(18, 18, 18)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(wadoPortText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 102, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -164,19 +164,19 @@ public class WadoInformation extends javax.swing.JDialog {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
+                    .add(wadoURLLabel)
                     .add(wadoURLText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
+                    .add(wadoPort)
                     .add(wadoPortText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
+                    .add(encryptionLabel)
                     .add(wadoProtocolCheckBox))
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel4)
+                    .add(retrieveSyntaxLabel)
                     .add(retrieveSyntaxCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 13, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -227,14 +227,14 @@ public class WadoInformation extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel encryptionLabel;
     private javax.swing.JButton okButton;
     private javax.swing.JComboBox retrieveSyntaxCombo;
+    private javax.swing.JLabel retrieveSyntaxLabel;
+    private javax.swing.JLabel wadoPort;
     private javax.swing.JTextField wadoPortText;
     private javax.swing.JCheckBox wadoProtocolCheckBox;
+    private javax.swing.JLabel wadoURLLabel;
     private javax.swing.JTextField wadoURLText;
     // End of variables declaration//GEN-END:variables
 

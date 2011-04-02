@@ -265,7 +265,7 @@ public class MainScreen extends javax.swing.JFrame {
 
         container = new javax.swing.JPanel();
         contentArea = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        localDatabaseLabel = new javax.swing.JLabel();
         jSplitPane1 = new javax.swing.JSplitPane();
         studyTableScroll = new javax.swing.JScrollPane();
         studyListTable = new javax.swing.JTable();
@@ -273,7 +273,7 @@ public class MainScreen extends javax.swing.JFrame {
         windowingPanelCanvas = new javax.swing.JPanel();
         thumbnailScroll = new javax.swing.JScrollPane();
         thumbnailDisplay = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
+        seriesLabel = new javax.swing.JLabel();
         headerPanel = new javax.swing.JPanel();
         importButton = new javax.swing.JButton();
         exportButton = new javax.swing.JButton();
@@ -285,36 +285,36 @@ public class MainScreen extends javax.swing.JFrame {
         viewerButton = new javax.swing.JButton();
         queueButton = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
+        fileMenu = new javax.swing.JMenu();
         importMenuItem = new javax.swing.JMenuItem();
         exportMenuItem = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JSeparator();
         deleteExamMenuItem = new javax.swing.JMenuItem();
-        jMenuItem8 = new javax.swing.JMenuItem();
+        anonymizeMenuItem = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JSeparator();
         resetMenuItem = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JSeparator();
         exitMenuItem = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
+        toolsMenu = new javax.swing.JMenu();
         preferenceMenuItem = new javax.swing.JMenuItem();
-        jMenu3 = new javax.swing.JMenu();
+        networkMenu = new javax.swing.JMenu();
         queueMenuItem = new javax.swing.JMenuItem();
         sendMenuItem = new javax.swing.JMenuItem();
         QRMenuItem1 = new javax.swing.JMenuItem();
-        jMenu5 = new javax.swing.JMenu();
+        themeMenu = new javax.swing.JMenu();
         nimrodLFMenu = new javax.swing.JMenuItem();
         motifLFMenu = new javax.swing.JMenuItem();
         systemLFmenu = new javax.swing.JMenuItem();
-        jMenu4 = new javax.swing.JMenu();
+        helpMenu = new javax.swing.JMenu();
         userManualItem = new javax.swing.JMenuItem();
-        aboutMenu = new javax.swing.JMenuItem();
+        aboutMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Mayam");
         setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/in/raster/mayam/form/images/fav_mayam.png")));
 
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
-        jLabel1.setText(" Local Database");
+        localDatabaseLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
+        localDatabaseLabel.setText(" Local Database");
 
         jSplitPane1.setDividerLocation(256);
         jSplitPane1.setDividerSize(4);
@@ -362,11 +362,11 @@ public class MainScreen extends javax.swing.JFrame {
         thumbnailDisplay.setMinimumSize(new java.awt.Dimension(13, 2));
         thumbnailScroll.setViewportView(thumbnailDisplay);
 
-        jLabel2.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel2.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(255, 138, 0));
-        jLabel2.setText("Series ");
-        jLabel2.setOpaque(true);
+        seriesLabel.setBackground(new java.awt.Color(0, 0, 0));
+        seriesLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
+        seriesLabel.setForeground(new java.awt.Color(255, 138, 0));
+        seriesLabel.setText("Series ");
+        seriesLabel.setOpaque(true);
 
         org.jdesktop.layout.GroupLayout studyAndSeriesDisplayPanelLayout = new org.jdesktop.layout.GroupLayout(studyAndSeriesDisplayPanel);
         studyAndSeriesDisplayPanel.setLayout(studyAndSeriesDisplayPanelLayout);
@@ -375,14 +375,14 @@ public class MainScreen extends javax.swing.JFrame {
             .add(studyAndSeriesDisplayPanelLayout.createSequentialGroup()
                 .add(studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, seriesLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE))
         );
         studyAndSeriesDisplayPanelLayout.setVerticalGroup(
             studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(studyAndSeriesDisplayPanelLayout.createSequentialGroup()
-                .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(seriesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE))
             .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
@@ -398,13 +398,13 @@ public class MainScreen extends javax.swing.JFrame {
                 .addContainerGap()
                 .add(contentAreaLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 985, Short.MAX_VALUE)
-                    .add(jLabel1))
+                    .add(localDatabaseLabel))
                 .addContainerGap())
         );
         contentAreaLayout.setVerticalGroup(
             contentAreaLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(contentAreaLayout.createSequentialGroup()
-                .add(jLabel1)
+                .add(localDatabaseLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 782, Short.MAX_VALUE))
         );
@@ -414,7 +414,7 @@ public class MainScreen extends javax.swing.JFrame {
         importButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         importButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/import.png"))); // NOI18N
         importButton.setText("Import");
-        importButton.setToolTipText("Import");
+        importButton.setToolTipText("");
         importButton.setBorderPainted(false);
         importButton.setContentAreaFilled(false);
         importButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -429,7 +429,7 @@ public class MainScreen extends javax.swing.JFrame {
         exportButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         exportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/export_study.png"))); // NOI18N
         exportButton.setText("Export");
-        exportButton.setToolTipText("Export");
+        exportButton.setToolTipText("");
         exportButton.setBorderPainted(false);
         exportButton.setContentAreaFilled(false);
         exportButton.setDefaultCapable(false);
@@ -445,7 +445,7 @@ public class MainScreen extends javax.swing.JFrame {
         cdImportButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         cdImportButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/cd_import.png"))); // NOI18N
         cdImportButton.setText("CD-Rom");
-        cdImportButton.setToolTipText("CD-Rom");
+        cdImportButton.setToolTipText("");
         cdImportButton.setBorderPainted(false);
         cdImportButton.setContentAreaFilled(false);
         cdImportButton.setDefaultCapable(false);
@@ -461,7 +461,7 @@ public class MainScreen extends javax.swing.JFrame {
         deleteButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         deleteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/delete_study.png"))); // NOI18N
         deleteButton.setText("Delete");
-        deleteButton.setToolTipText("Delete");
+        deleteButton.setToolTipText("");
         deleteButton.setBorderPainted(false);
         deleteButton.setContentAreaFilled(false);
         deleteButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -477,7 +477,7 @@ public class MainScreen extends javax.swing.JFrame {
         metaDataButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         metaDataButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/metadata_mainpage.png"))); // NOI18N
         metaDataButton.setText("Meta Data");
-        metaDataButton.setToolTipText("Meta Data");
+        metaDataButton.setToolTipText("");
         metaDataButton.setBorderPainted(false);
         metaDataButton.setContentAreaFilled(false);
         metaDataButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -493,7 +493,7 @@ public class MainScreen extends javax.swing.JFrame {
         sendButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         sendButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/send.png"))); // NOI18N
         sendButton.setText("Send");
-        sendButton.setToolTipText("Send");
+        sendButton.setToolTipText("");
         sendButton.setBorderPainted(false);
         sendButton.setContentAreaFilled(false);
         sendButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -509,7 +509,7 @@ public class MainScreen extends javax.swing.JFrame {
         queryRetrieveButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         queryRetrieveButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/query.png"))); // NOI18N
         queryRetrieveButton.setText("Query");
-        queryRetrieveButton.setToolTipText("Query");
+        queryRetrieveButton.setToolTipText("");
         queryRetrieveButton.setBorderPainted(false);
         queryRetrieveButton.setContentAreaFilled(false);
         queryRetrieveButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -525,7 +525,7 @@ public class MainScreen extends javax.swing.JFrame {
         viewerButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         viewerButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/viewer.png"))); // NOI18N
         viewerButton.setText("Viewer");
-        viewerButton.setToolTipText("Viewer");
+        viewerButton.setToolTipText("");
         viewerButton.setBorderPainted(false);
         viewerButton.setContentAreaFilled(false);
         viewerButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -541,7 +541,7 @@ public class MainScreen extends javax.swing.JFrame {
         queueButton.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
         queueButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/queue.png"))); // NOI18N
         queueButton.setText("Queue");
-        queueButton.setToolTipText("Queue");
+        queueButton.setToolTipText("");
         queueButton.setBorderPainted(false);
         queueButton.setContentAreaFilled(false);
         queueButton.setFocusPainted(false);
@@ -615,7 +615,7 @@ public class MainScreen extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jMenu1.setText("File");
+        fileMenu.setText("File");
 
         importMenuItem.setText("Import");
         importMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -623,7 +623,7 @@ public class MainScreen extends javax.swing.JFrame {
                 importMenuItemActionPerformed(evt);
             }
         });
-        jMenu1.add(importMenuItem);
+        fileMenu.add(importMenuItem);
 
         exportMenuItem.setText("Export");
         exportMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -631,8 +631,8 @@ public class MainScreen extends javax.swing.JFrame {
                 exportMenuItemActionPerformed(evt);
             }
         });
-        jMenu1.add(exportMenuItem);
-        jMenu1.add(jSeparator2);
+        fileMenu.add(exportMenuItem);
+        fileMenu.add(jSeparator2);
 
         deleteExamMenuItem.setText("Delete Selected Exam");
         deleteExamMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -640,12 +640,12 @@ public class MainScreen extends javax.swing.JFrame {
                 deleteExamMenuItemActionPerformed(evt);
             }
         });
-        jMenu1.add(deleteExamMenuItem);
+        fileMenu.add(deleteExamMenuItem);
 
-        jMenuItem8.setText("Anonymize");
-        jMenuItem8.setEnabled(false);
-        jMenu1.add(jMenuItem8);
-        jMenu1.add(jSeparator3);
+        anonymizeMenuItem.setText("Anonymize");
+        anonymizeMenuItem.setEnabled(false);
+        fileMenu.add(anonymizeMenuItem);
+        fileMenu.add(jSeparator3);
 
         resetMenuItem.setText("Reset DB");
         resetMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -653,8 +653,8 @@ public class MainScreen extends javax.swing.JFrame {
                 resetMenuItemActionPerformed(evt);
             }
         });
-        jMenu1.add(resetMenuItem);
-        jMenu1.add(jSeparator4);
+        fileMenu.add(resetMenuItem);
+        fileMenu.add(jSeparator4);
 
         exitMenuItem.setText("Exit");
         exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -662,11 +662,11 @@ public class MainScreen extends javax.swing.JFrame {
                 exitMenuItemActionPerformed(evt);
             }
         });
-        jMenu1.add(exitMenuItem);
+        fileMenu.add(exitMenuItem);
 
-        menuBar.add(jMenu1);
+        menuBar.add(fileMenu);
 
-        jMenu2.setText("Tools");
+        toolsMenu.setText("Tools");
 
         preferenceMenuItem.setText("Preferences");
         preferenceMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -674,11 +674,11 @@ public class MainScreen extends javax.swing.JFrame {
                 preferenceMenuItemActionPerformed(evt);
             }
         });
-        jMenu2.add(preferenceMenuItem);
+        toolsMenu.add(preferenceMenuItem);
 
-        menuBar.add(jMenu2);
+        menuBar.add(toolsMenu);
 
-        jMenu3.setText("Network");
+        networkMenu.setText("Network");
 
         queueMenuItem.setText("Queue");
         queueMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -686,7 +686,7 @@ public class MainScreen extends javax.swing.JFrame {
                 queueMenuItemActionPerformed(evt);
             }
         });
-        jMenu3.add(queueMenuItem);
+        networkMenu.add(queueMenuItem);
 
         sendMenuItem.setText("Send");
         sendMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -694,7 +694,7 @@ public class MainScreen extends javax.swing.JFrame {
                 sendMenuItemActionPerformed(evt);
             }
         });
-        jMenu3.add(sendMenuItem);
+        networkMenu.add(sendMenuItem);
 
         QRMenuItem1.setText("Query/Retrieve");
         QRMenuItem1.addActionListener(new java.awt.event.ActionListener() {
@@ -702,11 +702,11 @@ public class MainScreen extends javax.swing.JFrame {
                 QRMenuItem1ActionPerformed(evt);
             }
         });
-        jMenu3.add(QRMenuItem1);
+        networkMenu.add(QRMenuItem1);
 
-        menuBar.add(jMenu3);
+        menuBar.add(networkMenu);
 
-        jMenu5.setText("Theme");
+        themeMenu.setText("Theme");
 
         nimrodLFMenu.setText("Nimrod");
         nimrodLFMenu.addActionListener(new java.awt.event.ActionListener() {
@@ -714,7 +714,7 @@ public class MainScreen extends javax.swing.JFrame {
                 nimrodLFMenuActionPerformed(evt);
             }
         });
-        jMenu5.add(nimrodLFMenu);
+        themeMenu.add(nimrodLFMenu);
 
         motifLFMenu.setText("Motif");
         motifLFMenu.addActionListener(new java.awt.event.ActionListener() {
@@ -722,7 +722,7 @@ public class MainScreen extends javax.swing.JFrame {
                 motifLFMenuActionPerformed(evt);
             }
         });
-        jMenu5.add(motifLFMenu);
+        themeMenu.add(motifLFMenu);
 
         systemLFmenu.setText("System L&F");
         systemLFmenu.addActionListener(new java.awt.event.ActionListener() {
@@ -730,24 +730,24 @@ public class MainScreen extends javax.swing.JFrame {
                 systemLFmenuActionPerformed(evt);
             }
         });
-        jMenu5.add(systemLFmenu);
+        themeMenu.add(systemLFmenu);
 
-        menuBar.add(jMenu5);
+        menuBar.add(themeMenu);
 
-        jMenu4.setText("Help");
+        helpMenu.setText("Help");
 
         userManualItem.setText("User Manual");
-        jMenu4.add(userManualItem);
+        helpMenu.add(userManualItem);
 
-        aboutMenu.setText("About");
-        aboutMenu.addActionListener(new java.awt.event.ActionListener() {
+        aboutMenuItem.setText("About");
+        aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                aboutMenuActionPerformed(evt);
+                aboutMenuItemActionPerformed(evt);
             }
         });
-        jMenu4.add(aboutMenu);
+        helpMenu.add(aboutMenuItem);
 
-        menuBar.add(jMenu4);
+        menuBar.add(helpMenu);
 
         setJMenuBar(menuBar);
 
@@ -936,11 +936,11 @@ public class MainScreen extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }//GEN-LAST:event_metaDataButtonActionPerformed
-    private void aboutMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuActionPerformed
+    private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
         About about = new About(null, true);
         about.setLocationRelativeTo(this);
         about.setVisible(true);
-    }//GEN-LAST:event_aboutMenuActionPerformed
+    }//GEN-LAST:event_aboutMenuItemActionPerformed
     private void importMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importMenuItemActionPerformed
         importHandler();
     }//GEN-LAST:event_importMenuItemActionPerformed
@@ -1165,7 +1165,8 @@ public class MainScreen extends javax.swing.JFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem QRMenuItem1;
-    private javax.swing.JMenuItem aboutMenu;
+    private javax.swing.JMenuItem aboutMenuItem;
+    private javax.swing.JMenuItem anonymizeMenuItem;
     private javax.swing.JButton cdImportButton;
     private javax.swing.JPanel container;
     private javax.swing.JPanel contentArea;
@@ -1174,24 +1175,20 @@ public class MainScreen extends javax.swing.JFrame {
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JButton exportButton;
     private javax.swing.JMenuItem exportMenuItem;
+    private javax.swing.JMenu fileMenu;
     private javax.swing.JPanel headerPanel;
+    private javax.swing.JMenu helpMenu;
     private javax.swing.JButton importButton;
     private javax.swing.JMenuItem importMenuItem;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenu jMenu3;
-    private javax.swing.JMenu jMenu4;
-    private javax.swing.JMenu jMenu5;
-    private javax.swing.JMenuItem jMenuItem8;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JLabel localDatabaseLabel;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JButton metaDataButton;
     private javax.swing.JMenuItem motifLFMenu;
+    private javax.swing.JMenu networkMenu;
     private javax.swing.JMenuItem nimrodLFMenu;
     private javax.swing.JMenuItem preferenceMenuItem;
     private javax.swing.JButton queryRetrieveButton;
@@ -1200,12 +1197,15 @@ public class MainScreen extends javax.swing.JFrame {
     private javax.swing.JMenuItem resetMenuItem;
     private javax.swing.JButton sendButton;
     private javax.swing.JMenuItem sendMenuItem;
+    private javax.swing.JLabel seriesLabel;
     private javax.swing.JPanel studyAndSeriesDisplayPanel;
     public static javax.swing.JTable studyListTable;
     private javax.swing.JScrollPane studyTableScroll;
     private javax.swing.JMenuItem systemLFmenu;
+    private javax.swing.JMenu themeMenu;
     private javax.swing.JPanel thumbnailDisplay;
     private javax.swing.JScrollPane thumbnailScroll;
+    private javax.swing.JMenu toolsMenu;
     private javax.swing.JMenuItem userManualItem;
     private javax.swing.JButton viewerButton;
     private javax.swing.JPanel windowingPanelCanvas;

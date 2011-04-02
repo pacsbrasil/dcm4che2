@@ -176,13 +176,13 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
         fromSpinner = new javax.swing.JSpinner();
         toSpinner = new javax.swing.JSpinner();
         jPanel10 = new javax.swing.JPanel();
-        jLabel5 = new javax.swing.JLabel();
+        dobLabel = new javax.swing.JLabel();
         birthDateSpinner = new javax.swing.JSpinner();
-        jLabel2 = new javax.swing.JLabel();
+        patientNameLabel = new javax.swing.JLabel();
         patientNameText = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
+        patientIDLabel = new javax.swing.JLabel();
         patientIDText = new javax.swing.JTextField();
-        jLabel4 = new javax.swing.JLabel();
+        accessionLabel = new javax.swing.JLabel();
         jTextField3 = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
         ctCheckBox = new javax.swing.JCheckBox();
@@ -212,7 +212,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
         studyListTable = new javax.swing.JTable();
         serverNameLabel = new javax.swing.JLabel();
         headerLabel = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
+        queryFilterLabel = new javax.swing.JLabel();
 
         setTitle("Query/Retrieve");
         setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/in/raster/mayam/form/images/fav_mayam.png")));
@@ -292,15 +292,15 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
 
         jPanel10.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
-        jLabel5.setText("Date Of Birth");
+        dobLabel.setText("Date Of Birth");
 
         birthDateSpinner.setEnabled(false);
 
-        jLabel2.setText("Patient Name");
+        patientNameLabel.setText("Patient Name");
 
-        jLabel3.setText("Patient ID");
+        patientIDLabel.setText("Patient ID");
 
-        jLabel4.setText("Accession #");
+        accessionLabel.setText("Accession #");
 
         org.jdesktop.layout.GroupLayout jPanel10Layout = new org.jdesktop.layout.GroupLayout(jPanel10);
         jPanel10.setLayout(jPanel10Layout);
@@ -309,10 +309,10 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
             .add(jPanel10Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel5)
-                    .add(jLabel4)
-                    .add(jLabel3)
-                    .add(jLabel2))
+                    .add(dobLabel)
+                    .add(accessionLabel)
+                    .add(patientIDLabel)
+                    .add(patientNameLabel))
                 .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(jPanel10Layout.createSequentialGroup()
                         .add(18, 18, 18)
@@ -331,19 +331,19 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
             .add(jPanel10Layout.createSequentialGroup()
                 .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(patientNameText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel2))
+                    .add(patientNameLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(patientIDText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel3))
+                    .add(patientIDLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jTextField3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel4))
+                    .add(accessionLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(birthDateSpinner)
-                    .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 28, Short.MAX_VALUE))
+                    .add(dobLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 28, Short.MAX_VALUE))
                 .add(20, 20, 20))
         );
 
@@ -541,25 +541,25 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
         jScrollPane2.setViewportView(studyListTable);
 
         serverNameLabel.setBackground(new java.awt.Color(0, 0, 0));
-        serverNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        serverNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         serverNameLabel.setForeground(new java.awt.Color(255, 138, 0));
         serverNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         serverNameLabel.setText(" Server Name");
         serverNameLabel.setOpaque(true);
 
         headerLabel.setBackground(new java.awt.Color(0, 0, 0));
-        headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         headerLabel.setForeground(new java.awt.Color(255, 138, 0));
         headerLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         headerLabel.setText(" DICOM Nodes ");
         headerLabel.setOpaque(true);
 
-        jLabel1.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 138, 0));
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Query Filter");
-        jLabel1.setOpaque(true);
+        queryFilterLabel.setBackground(new java.awt.Color(0, 0, 0));
+        queryFilterLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
+        queryFilterLabel.setForeground(new java.awt.Color(255, 138, 0));
+        queryFilterLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        queryFilterLabel.setText("Query Filter");
+        queryFilterLabel.setOpaque(true);
 
         org.jdesktop.layout.GroupLayout jPanel9Layout = new org.jdesktop.layout.GroupLayout(jPanel9);
         jPanel9.setLayout(jPanel9Layout);
@@ -576,7 +576,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
                             .add(headerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(queryFilterLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 618, Short.MAX_VALUE)
                             .add(jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
         );
@@ -585,7 +585,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
             .add(jPanel9Layout.createSequentialGroup()
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(headerLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(queryFilterLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(serverlistScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE)
@@ -983,20 +983,17 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel accessionLabel;
     private javax.swing.JRadioButton anydateRadio;
     private javax.swing.JRadioButton betweenRadio;
     private javax.swing.JSpinner birthDateSpinner;
     private javax.swing.JCheckBox crCheckBox;
     private javax.swing.JCheckBox ctCheckBox;
+    private javax.swing.JLabel dobLabel;
     private javax.swing.JCheckBox drCheckBox;
     private javax.swing.JCheckBox dxCheckBox;
     private javax.swing.JSpinner fromSpinner;
     private javax.swing.JLabel headerLabel;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
@@ -1014,10 +1011,13 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
     private javax.swing.JCheckBox mrCheckBox;
     private javax.swing.JCheckBox nmCheckBox;
     private javax.swing.JCheckBox otCheckBox;
+    private javax.swing.JLabel patientIDLabel;
     private javax.swing.JTextField patientIDText;
+    private javax.swing.JLabel patientNameLabel;
     private javax.swing.JTextField patientNameText;
     private javax.swing.JCheckBox pxCheckBox;
     private javax.swing.JButton queryButton;
+    private javax.swing.JLabel queryFilterLabel;
     private javax.swing.JButton retrieveButton;
     private javax.swing.JCheckBox rfCheckBox;
     private javax.swing.JCheckBox rgCheckBox;

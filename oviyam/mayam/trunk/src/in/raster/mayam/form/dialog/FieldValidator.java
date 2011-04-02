@@ -76,7 +76,7 @@ public class FieldValidator extends javax.swing.JDialog {
     private void initComponents() {
 
         okButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
+        fieldValidator = new javax.swing.JLabel();
 
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -92,7 +92,7 @@ public class FieldValidator extends javax.swing.JDialog {
             }
         });
 
-        jLabel1.setText("Fields should not be blank");
+        fieldValidator.setText("Fields should not be blank");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -100,7 +100,7 @@ public class FieldValidator extends javax.swing.JDialog {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(109, Short.MAX_VALUE)
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 198, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(fieldValidator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 198, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(107, 107, 107))
             .add(layout.createSequentialGroup()
                 .add(155, 155, 155)
@@ -111,7 +111,7 @@ public class FieldValidator extends javax.swing.JDialog {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(27, 27, 27)
-                .add(jLabel1)
+                .add(fieldValidator)
                 .add(18, 18, 18)
                 .add(okButton)
                 .addContainerGap())
@@ -153,7 +153,7 @@ public class FieldValidator extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel fieldValidator;
     private javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables
 

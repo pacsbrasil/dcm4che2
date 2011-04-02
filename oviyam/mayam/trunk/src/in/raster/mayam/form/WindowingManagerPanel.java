@@ -86,20 +86,20 @@ public class WindowingManagerPanel extends javax.swing.JPanel implements KeyList
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        presetLabel = new javax.swing.JLabel();
+        modalityLabel = new javax.swing.JLabel();
         jComboBox1 = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         addButton = new javax.swing.JButton();
 
-        jLabel1.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 138, 0));
-        jLabel1.setText("Preset");
-        jLabel1.setOpaque(true);
+        presetLabel.setBackground(new java.awt.Color(0, 0, 0));
+        presetLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
+        presetLabel.setForeground(new java.awt.Color(255, 138, 0));
+        presetLabel.setText("Preset");
+        presetLabel.setOpaque(true);
 
-        jLabel2.setText("Modality");
+        modalityLabel.setText("Modality");
 
         jComboBox1.setModel(new ModalityComboModel(ApplicationContext.databaseRef.getModalities()));
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {
@@ -136,10 +136,10 @@ public class WindowingManagerPanel extends javax.swing.JPanel implements KeyList
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
+            .add(presetLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel2)
+                .add(modalityLabel)
                 .addContainerGap(378, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
@@ -157,9 +157,9 @@ public class WindowingManagerPanel extends javax.swing.JPanel implements KeyList
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(presetLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jLabel2)
+                .add(modalityLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jComboBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(13, 13, 13)
@@ -185,10 +185,10 @@ public class WindowingManagerPanel extends javax.swing.JPanel implements KeyList
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JComboBox jComboBox1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
+    private javax.swing.JLabel modalityLabel;
+    private javax.swing.JLabel presetLabel;
     // End of variables declaration//GEN-END:variables
 
     public void keyTyped(KeyEvent e) {

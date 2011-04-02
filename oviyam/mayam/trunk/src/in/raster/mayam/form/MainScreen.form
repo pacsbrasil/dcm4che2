@@ -4,7 +4,7 @@
   <NonVisualComponents>
     <Menu class="javax.swing.JMenuBar" name="menuBar">
       <SubComponents>
-        <Menu class="javax.swing.JMenu" name="jMenu1">
+        <Menu class="javax.swing.JMenu" name="fileMenu">
           <Properties>
             <Property name="text" type="java.lang.String" value="File"/>
           </Properties>
@@ -35,7 +35,7 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteExamMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem8">
+            <MenuItem class="javax.swing.JMenuItem" name="anonymizeMenuItem">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Anonymize"/>
                 <Property name="enabled" type="boolean" value="false"/>
@@ -63,7 +63,7 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="jMenu2">
+        <Menu class="javax.swing.JMenu" name="toolsMenu">
           <Properties>
             <Property name="text" type="java.lang.String" value="Tools"/>
           </Properties>
@@ -78,7 +78,7 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="jMenu3">
+        <Menu class="javax.swing.JMenu" name="networkMenu">
           <Properties>
             <Property name="text" type="java.lang.String" value="Network"/>
           </Properties>
@@ -109,7 +109,7 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="jMenu5">
+        <Menu class="javax.swing.JMenu" name="themeMenu">
           <Properties>
             <Property name="text" type="java.lang.String" value="Theme"/>
           </Properties>
@@ -140,7 +140,7 @@
             </MenuItem>
           </SubComponents>
         </Menu>
-        <Menu class="javax.swing.JMenu" name="jMenu4">
+        <Menu class="javax.swing.JMenu" name="helpMenu">
           <Properties>
             <Property name="text" type="java.lang.String" value="Help"/>
           </Properties>
@@ -150,12 +150,12 @@
                 <Property name="text" type="java.lang.String" value="User Manual"/>
               </Properties>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="aboutMenu">
+            <MenuItem class="javax.swing.JMenuItem" name="aboutMenuItem">
               <Properties>
                 <Property name="text" type="java.lang.String" value="About"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="aboutMenuActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="aboutMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
@@ -229,7 +229,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jSplitPane1" alignment="0" pref="985" max="32767" attributes="0"/>
-                          <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="localDatabaseLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -238,7 +238,7 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                      <Component id="localDatabaseLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jSplitPane1" pref="782" max="32767" attributes="0"/>
                   </Group>
@@ -246,7 +246,7 @@
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JLabel" name="jLabel1">
+            <Component class="javax.swing.JLabel" name="localDatabaseLabel">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Lucida Grande" size="14" style="1"/>
@@ -312,7 +312,7 @@
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="thumbnailScroll" pref="330" max="32767" attributes="1"/>
-                                  <Component id="jLabel2" alignment="1" pref="330" max="32767" attributes="1"/>
+                                  <Component id="seriesLabel" alignment="1" pref="330" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="windowingPanelCanvas" pref="641" max="32767" attributes="0"/>
@@ -322,7 +322,7 @@
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="1">
-                              <Component id="jLabel2" min="-2" pref="20" max="-2" attributes="0"/>
+                              <Component id="seriesLabel" min="-2" pref="20" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="thumbnailScroll" pref="492" max="32767" attributes="0"/>
                           </Group>
@@ -383,7 +383,7 @@
                         </Container>
                       </SubComponents>
                     </Container>
-                    <Component class="javax.swing.JLabel" name="jLabel2">
+                    <Component class="javax.swing.JLabel" name="seriesLabel">
                       <Properties>
                         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="0" green="0" red="0" type="rgb"/>
@@ -471,7 +471,7 @@
                   <Image iconType="3" name="/in/raster/mayam/form/images/import.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Import"/>
-                <Property name="toolTipText" type="java.lang.String" value="Import"/>
+                <Property name="toolTipText" type="java.lang.String" value=""/>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -493,7 +493,7 @@
                   <Image iconType="3" name="/in/raster/mayam/form/images/export_study.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Export"/>
-                <Property name="toolTipText" type="java.lang.String" value="Export"/>
+                <Property name="toolTipText" type="java.lang.String" value=""/>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="defaultCapable" type="boolean" value="false"/>
@@ -516,7 +516,7 @@
                   <Image iconType="3" name="/in/raster/mayam/form/images/cd_import.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="CD-Rom"/>
-                <Property name="toolTipText" type="java.lang.String" value="CD-Rom"/>
+                <Property name="toolTipText" type="java.lang.String" value=""/>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="defaultCapable" type="boolean" value="false"/>
@@ -539,7 +539,7 @@
                   <Image iconType="3" name="/in/raster/mayam/form/images/delete_study.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Delete"/>
-                <Property name="toolTipText" type="java.lang.String" value="Delete"/>
+                <Property name="toolTipText" type="java.lang.String" value=""/>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -564,7 +564,7 @@
                   <Image iconType="3" name="/in/raster/mayam/form/images/metadata_mainpage.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Meta Data"/>
-                <Property name="toolTipText" type="java.lang.String" value="Meta Data"/>
+                <Property name="toolTipText" type="java.lang.String" value=""/>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -589,7 +589,7 @@
                   <Image iconType="3" name="/in/raster/mayam/form/images/send.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Send"/>
-                <Property name="toolTipText" type="java.lang.String" value="Send"/>
+                <Property name="toolTipText" type="java.lang.String" value=""/>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -614,7 +614,7 @@
                   <Image iconType="3" name="/in/raster/mayam/form/images/query.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Query"/>
-                <Property name="toolTipText" type="java.lang.String" value="Query"/>
+                <Property name="toolTipText" type="java.lang.String" value=""/>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -639,7 +639,7 @@
                   <Image iconType="3" name="/in/raster/mayam/form/images/viewer.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Viewer"/>
-                <Property name="toolTipText" type="java.lang.String" value="Viewer"/>
+                <Property name="toolTipText" type="java.lang.String" value=""/>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -664,7 +664,7 @@
                   <Image iconType="3" name="/in/raster/mayam/form/images/queue.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Queue"/>
-                <Property name="toolTipText" type="java.lang.String" value="Queue"/>
+                <Property name="toolTipText" type="java.lang.String" value=""/>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="focusPainted" type="boolean" value="false"/>

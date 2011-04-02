@@ -73,7 +73,7 @@ public class SendingProgress extends javax.swing.JDialog {
     private void initComponents() {
 
         okButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
+        sendingLabel = new javax.swing.JLabel();
         jProgressBar1 = new javax.swing.JProgressBar();
 
         setResizable(false);
@@ -90,8 +90,8 @@ public class SendingProgress extends javax.swing.JDialog {
             }
         });
 
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Sending files...");
+        sendingLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        sendingLabel.setText("Sending files...");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -100,13 +100,13 @@ public class SendingProgress extends javax.swing.JDialog {
             .add(layout.createSequentialGroup()
                 .add(122, 122, 122)
                 .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(153, Short.MAX_VALUE))
+                .addContainerGap(181, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
+                .add(sendingLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(55, Short.MAX_VALUE)
+                .addContainerGap(83, Short.MAX_VALUE)
                 .add(jProgressBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 256, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(31, 31, 31))
         );
@@ -114,7 +114,7 @@ public class SendingProgress extends javax.swing.JDialog {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(15, 15, 15)
-                .add(jLabel1)
+                .add(sendingLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jProgressBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -169,9 +169,9 @@ public class SendingProgress extends javax.swing.JDialog {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JButton okButton;
+    private javax.swing.JLabel sendingLabel;
     // End of variables declaration//GEN-END:variables
     
     private int returnStatus = RET_CANCEL;

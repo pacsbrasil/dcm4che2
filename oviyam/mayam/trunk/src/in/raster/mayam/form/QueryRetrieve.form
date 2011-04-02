@@ -66,7 +66,7 @@
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="jLabel1" alignment="0" max="32767" attributes="1"/>
+                              <Component id="queryFilterLabel" alignment="0" max="32767" attributes="1"/>
                               <Component id="jPanel7" alignment="0" pref="618" max="32767" attributes="1"/>
                               <Component id="jPanel8" alignment="0" max="32767" attributes="1"/>
                           </Group>
@@ -80,7 +80,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="headerLabel" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
-                      <Component id="jLabel1" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                      <Component id="queryFilterLabel" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
@@ -271,10 +271,10 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="dobLabel" min="-2" max="-2" attributes="0"/>
+                              <Component id="accessionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="patientIDLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="patientNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="103" groupAlignment="1" attributes="0">
                               <Group type="102" attributes="0">
@@ -301,22 +301,22 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="patientNameText" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="patientNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="patientIDText" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="patientIDLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="jTextField3" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="accessionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="birthDateSpinner" max="32767" attributes="1"/>
-                              <Component id="jLabel5" alignment="0" pref="28" max="32767" attributes="1"/>
+                              <Component id="dobLabel" alignment="0" pref="28" max="32767" attributes="1"/>
                           </Group>
                           <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                       </Group>
@@ -324,7 +324,7 @@
                 </DimensionLayout>
               </Layout>
               <SubComponents>
-                <Component class="javax.swing.JLabel" name="jLabel5">
+                <Component class="javax.swing.JLabel" name="dobLabel">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Date Of Birth"/>
                   </Properties>
@@ -334,21 +334,21 @@
                     <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
                 </Component>
-                <Component class="javax.swing.JLabel" name="jLabel2">
+                <Component class="javax.swing.JLabel" name="patientNameLabel">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Patient Name"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="patientNameText">
                 </Component>
-                <Component class="javax.swing.JLabel" name="jLabel3">
+                <Component class="javax.swing.JLabel" name="patientIDLabel">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Patient ID"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="patientIDText">
                 </Component>
-                <Component class="javax.swing.JLabel" name="jLabel4">
+                <Component class="javax.swing.JLabel" name="accessionLabel">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Accession #"/>
                   </Properties>
@@ -663,7 +663,7 @@
             <Property name="opaque" type="boolean" value="true"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="jLabel1">
+        <Component class="javax.swing.JLabel" name="queryFilterLabel">
           <Properties>
             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
               <Color blue="0" green="0" red="0" type="rgb"/>
