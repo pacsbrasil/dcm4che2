@@ -67,7 +67,7 @@ public class NumberFormatValidator extends javax.swing.JDialog {
 
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
+        messageLabel = new javax.swing.JLabel();
 
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -90,7 +90,7 @@ public class NumberFormatValidator extends javax.swing.JDialog {
             }
         });
 
-        jLabel1.setText("Number Format Error");
+        messageLabel.setText("Number Format Error");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -104,7 +104,7 @@ public class NumberFormatValidator extends javax.swing.JDialog {
                 .addContainerGap(113, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(171, Short.MAX_VALUE)
-                .add(jLabel1)
+                .add(messageLabel)
                 .add(145, 145, 145))
         );
 
@@ -114,7 +114,7 @@ public class NumberFormatValidator extends javax.swing.JDialog {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
+                .add(messageLabel)
                 .add(28, 28, 28)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(cancelButton)
@@ -171,7 +171,7 @@ public class NumberFormatValidator extends javax.swing.JDialog {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel messageLabel;
     private javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables
     

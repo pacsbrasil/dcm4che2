@@ -86,7 +86,7 @@ public class ConfirmDelete extends javax.swing.JDialog {
 
         okButton = new javax.swing.JButton();
         status = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
 
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -105,10 +105,10 @@ public class ConfirmDelete extends javax.swing.JDialog {
         status.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         status.setText("Are you sure you want to delete the selected study?");
 
-        jButton1.setText("Cancel");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                cancelButtonActionPerformed(evt);
             }
         });
 
@@ -125,11 +125,11 @@ public class ConfirmDelete extends javax.swing.JDialog {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton1)
+                        .add(cancelButton)
                         .add(133, 133, 133))))
         );
 
-        layout.linkSize(new java.awt.Component[] {jButton1, okButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(new java.awt.Component[] {cancelButton, okButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -139,7 +139,7 @@ public class ConfirmDelete extends javax.swing.JDialog {
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(okButton)
-                    .add(jButton1))
+                    .add(cancelButton))
                 .addContainerGap())
         );
 
@@ -181,9 +181,9 @@ public class ConfirmDelete extends javax.swing.JDialog {
         doClose(RET_CANCEL);
     }//GEN-LAST:event_closeDialog
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         doClose(RET_CANCEL);
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void doClose(int retStatus) {
         returnStatus = retStatus;
@@ -221,7 +221,7 @@ public class ConfirmDelete extends javax.swing.JDialog {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton cancelButton;
     private javax.swing.JButton okButton;
     public javax.swing.JLabel status;
     // End of variables declaration//GEN-END:variables

@@ -139,18 +139,18 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        serverLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         serverListTable = new javax.swing.JTable();
         addButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
-        DeleteButton = new javax.swing.JButton();
+        verifyButton = new javax.swing.JButton();
+        deleteButton = new javax.swing.JButton();
 
-        jLabel1.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 138, 0));
-        jLabel1.setText("Servers");
-        jLabel1.setOpaque(true);
+        serverLabel.setBackground(new java.awt.Color(0, 0, 0));
+        serverLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
+        serverLabel.setForeground(new java.awt.Color(255, 138, 0));
+        serverLabel.setText("Servers");
+        serverLabel.setOpaque(true);
 
         serverListTable.setModel(new PresetTableModel());
         serverListTable.setDefaultRenderer(Object.class, new CellRenderer());
@@ -175,20 +175,20 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
             }
         });
 
-        jButton1.setText("Verify");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        verifyButton.setText("Verify");
+        verifyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                verifyButtonActionPerformed(evt);
             }
         });
 
-        DeleteButton.setText("Delete");
-        DeleteButton.setFocusable(false);
-        DeleteButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        DeleteButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        DeleteButton.addActionListener(new java.awt.event.ActionListener() {
+        deleteButton.setText("Delete");
+        deleteButton.setFocusable(false);
+        deleteButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        deleteButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        deleteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                DeleteButtonActionPerformed(evt);
+                deleteButtonActionPerformed(evt);
             }
         });
 
@@ -196,14 +196,14 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)
+            .add(serverLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(261, Short.MAX_VALUE)
-                .add(jButton1)
+                .add(verifyButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(addButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(DeleteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 89, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(deleteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 89, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
@@ -211,17 +211,17 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
                 .addContainerGap())
         );
 
-        layout.linkSize(new java.awt.Component[] {DeleteButton, addButton, jButton1}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(new java.awt.Component[] {addButton, deleteButton, verifyButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(serverLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(30, 30, 30)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(DeleteButton)
+                    .add(deleteButton)
                     .add(addButton)
-                    .add(jButton1))
+                    .add(verifyButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
                 .addContainerGap())
@@ -298,7 +298,7 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
 
 }//GEN-LAST:event_addButtonActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void verifyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verifyButtonActionPerformed
         try {
             String serverName = ((ServerTableModel) serverListTable.getModel()).getValueAt(serverListTable.getSelectedRow(), 0);
             AEModel ae = ApplicationContext.databaseRef.getServerDetail(serverName);
@@ -322,9 +322,9 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_verifyButtonActionPerformed
 
-    private void DeleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DeleteButtonActionPerformed
+    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         if (serverListTable.getSelectedRow() != -1) {
             int canDelete = 0;
             canDelete = JOptionPane.showConfirmDialog(null, "Are you sure want to delete the server", "Delete Confirmation", JOptionPane.YES_NO_OPTION);
@@ -335,14 +335,14 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
                 addOrDeleteServerNotification();
             }
         }
-    }//GEN-LAST:event_DeleteButtonActionPerformed
+    }//GEN-LAST:event_deleteButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton DeleteButton;
     private javax.swing.JButton addButton;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JButton deleteButton;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel serverLabel;
     private javax.swing.JTable serverListTable;
+    private javax.swing.JButton verifyButton;
     // End of variables declaration//GEN-END:variables
 
     public void keyTyped(KeyEvent e) {

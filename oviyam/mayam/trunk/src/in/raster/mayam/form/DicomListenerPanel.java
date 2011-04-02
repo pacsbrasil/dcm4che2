@@ -86,33 +86,33 @@ public class DicomListenerPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        listenerLabel = new javax.swing.JLabel();
+        aeTitleLabel = new javax.swing.JLabel();
         aetitleText = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
+        portLabel = new javax.swing.JLabel();
         portText = new javax.swing.JTextField();
 
-        jLabel1.setBackground(new java.awt.Color(0, 0, 0));
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 138, 0));
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel1.setText("DICOM Listener");
-        jLabel1.setOpaque(true);
+        listenerLabel.setBackground(new java.awt.Color(0, 0, 0));
+        listenerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
+        listenerLabel.setForeground(new java.awt.Color(255, 138, 0));
+        listenerLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        listenerLabel.setText("DICOM Listener");
+        listenerLabel.setOpaque(true);
 
-        jLabel2.setText("AE Title");
+        aeTitleLabel.setText("AE Title");
 
-        jLabel3.setText("Port");
+        portLabel.setText("Port");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
+            .add(listenerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(155, 155, 155)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel3)
-                    .add(jLabel2)
+                    .add(portLabel)
+                    .add(aeTitleLabel)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, portText)
                         .add(org.jdesktop.layout.GroupLayout.LEADING, aetitleText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 131, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
@@ -121,13 +121,13 @@ public class DicomListenerPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(listenerLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(41, 41, 41)
-                .add(jLabel2)
+                .add(aeTitleLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(aetitleText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(29, 29, 29)
-                .add(jLabel3)
+                .add(portLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(portText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(130, Short.MAX_VALUE))
@@ -136,10 +136,10 @@ public class DicomListenerPanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel aeTitleLabel;
     private javax.swing.JTextField aetitleText;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel listenerLabel;
+    private javax.swing.JLabel portLabel;
     private javax.swing.JTextField portText;
     // End of variables declaration//GEN-END:variables
     
