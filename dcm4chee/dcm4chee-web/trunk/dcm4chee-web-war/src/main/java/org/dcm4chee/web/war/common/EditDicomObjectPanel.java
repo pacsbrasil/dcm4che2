@@ -56,6 +56,7 @@ import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.validation.validator.PatternValidator;
@@ -90,15 +91,23 @@ public class EditDicomObjectPanel extends Panel {
     private MessageWindow mw = new MessageWindow("mw");
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("dicom.");
     private Model<String> resultMessage;
+    private EditableDicomAttributes editable;
     
-    public EditDicomObjectPanel(String id, final ModalWindow window, DicomObject dcmObj, String title) {
+    public EditDicomObjectPanel(String id, final ModalWindow window, DicomObject dcmObj, String attrModelName) {
         super(id);
+        editable = new EditableDicomAttributes(attrModelName);
         
         if (EditDicomObjectPanel.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(EditDicomObjectPanel.BaseCSS));
         
         add(mw);
-        add(new Label("title", new ResourceModel("dicom.edit.title."+title)));
+        IModel<String> title = new ResourceModel("dicom.edit.title."+attrModelName).wrapOnAssignment(this);
+        try {
+            title.getObject();
+        } catch (Exception x) {
+            title = new Model<String>("DICOM Edit");
+        }
+        add(new Label("title", title));
         this.dcmObj = new BasicDicomObject();
         dcmObj.copyTo(this.dcmObj);
         Form<?> form = new Form<Object>("form");
@@ -241,8 +250,8 @@ public class EditDicomObjectPanel extends Panel {
             add(new TextField<String>("value", el.hasItems() ? 
                                                 new Model<String>("") 
                                               : new DicomElementModel(el, cs, tagPath))
-                .setVisible(!el.hasItems()));
-            add(new AjaxFallbackLink<Object>("remove"){
+                .setVisible(!el.hasItems()).setEnabled(editable.isEditable(tagPath)));
+            AjaxFallbackLink removeLink = new AjaxFallbackLink<Object>("remove"){
                 
                 private static final long serialVersionUID = 1L;
 
@@ -254,8 +263,11 @@ public class EditDicomObjectPanel extends Panel {
                     }
                 }
 
-            }.add(new Image("img-remove", ImageManager.IMAGE_COMMON_REMOVE)
-            .add(new ImageSizeBehaviour())));
+            };
+            removeLink.add(new Image("img-remove", ImageManager.IMAGE_COMMON_REMOVE)
+            .add(new ImageSizeBehaviour()));
+            removeLink.setVisible(editable.isEditable(tagPath));
+            add(removeLink);
         }
      }
 
@@ -280,13 +292,19 @@ public class EditDicomObjectPanel extends Panel {
                 public void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     String s = tagModel.getObject();
                     int tag = parseTag(s);
-                    if (!TagUtils.isGroupLengthElement(tag)) {
-                        EditDicomObjectPanel.this.dcmObj
-                                .getNestedDicomObject(itemPath)
-                                .putNull(tag, null);
-                    } else {
+                    if (TagUtils.isGroupLengthElement(tag)) {
                         mw.setTitle(new ResourceModel(MessageWindow.TITLE_WARNING));
                         mw.show(target, this.getString("msgwindow.msg.GroupLengthElementNotAllowed"));
+                    } else {
+                        int[] tagPath = new int[itemPath.length+1];
+                        System.arraycopy(itemPath, 0, tagPath, 0, itemPath.length);
+                        tagPath[itemPath.length] = tag;
+                        if (editable.isEditable(tagPath)) {
+                            EditDicomObjectPanel.this.dcmObj.getNestedDicomObject(itemPath).putNull(tag, null);
+                        } else {
+                            mw.setTitle(new ResourceModel(MessageWindow.TITLE_WARNING));
+                            mw.show(target, this.getString("msgwindow.msg.EditNotAllowed"));
+                        }
                     }
                     if (target != null) {
                         target.addComponent(table);
