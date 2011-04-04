@@ -262,21 +262,21 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
 
     private final NotificationListener scheduleStudiesForDeletionOnSeriesStoredListener =
             new NotificationListener() {
-    public void handleNotification(Notification notif, Object handback) {
-        if (scheduleStudiesForDeletionOnSeriesStored) {
-            startScheduleStudiesForDeletion();
+	    public void handleNotification(Notification notif, Object handback) {
+            if (scheduleStudiesForDeletionOnSeriesStored) {
+                startScheduleStudiesForDeletion();
+            }
         }
-    }
-};
+    };
 
     private final NotificationListener deleteOrphanedPrivateFilesListener =
             new NotificationListener() {
         private Thread thread;
 
-        public void handleNotification(Notification notif, Object handback) {
+		public void handleNotification(Notification notif, Object handback) {
             if (thread == null) {
                 thread = new Thread(new Runnable(){
-                    public void run() {
+					public void run() {
                         try {
                             deleteOrphanedPrivateFiles();
                         } catch (Exception e) {
@@ -572,8 +572,9 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         while ((next = tmp.getNext()) != null &&
                 next != storageFileSystem.getDirectoryPath()) {
             tmp = fsMgt.getFileSystemOfGroup(getFileSystemGroupID(), next);
-            if (tmp.getStatus() == FileSystemStatus.RW
-                    && checkFreeDiskSpace(tmp)) {
+            if (tmp.getStatus() == FileSystemStatus.RW && 
+            		tmp.getAvailability() == Availability.toInt(getDefAvailability()) &&
+                    checkFreeDiskSpace(tmp)) {
                 storageFileSystem = fsMgt.updateFileSystemStatus(
                         tmp.getPk(), FileSystemStatus.DEF_RW);
                 log.info("Switch storage file system from " + fsDTO + " to "
