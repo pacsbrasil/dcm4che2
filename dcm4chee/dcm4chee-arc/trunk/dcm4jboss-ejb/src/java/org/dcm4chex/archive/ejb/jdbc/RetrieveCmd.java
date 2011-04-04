@@ -376,6 +376,18 @@ public class RetrieveCmd extends BaseReadCmd {
         return cacheEntry.fileInfo;
     }
 
+    public static void removeCachedSeriesAttrs(String seriesIUID) {
+        SeriesAttrsCacheEntry cacheEntry = seriesAttrsCache.get(seriesIUID);
+        if (cacheEntry == null) {
+            return;
+        }
+        if ( log.isDebugEnabled()) {
+        	log.debug("Remove Series attributes for Series "
+                    + seriesIUID + " from cache");
+        }
+        seriesAttrsCache.remove(seriesIUID);
+    }
+
     private void addFileInfoWithEagerFetchSeriesAttrs(Map result)
             throws SQLException {
         FileInfo info = new FileInfo();
