@@ -204,8 +204,7 @@ public class MPPS extends BaseEntity implements Serializable {
             this.accessionNumber = attrs.getString(Tag.AccessionNumber);
         this.status = PPSStatus.valueOf(attrs.getString(
                 Tag.PerformedProcedureStepStatus).replace(' ', '_'));
-        this.encodedAttributes = DicomObjectUtils.encode(AttributeFilter
-                .exludePatientAttributes(attrs),
+        this.encodedAttributes = DicomObjectUtils.encode(AttributeFilter.getExcludePatientAttributeFilter().filter(attrs),
                 UID.DeflatedExplicitVRLittleEndian);
     }
 }

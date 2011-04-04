@@ -160,8 +160,7 @@ public class GPPPS extends BaseEntity implements Serializable {
                 Tag.PerformedProcedureStepStartTime);
         this.status = PPSStatus.valueOf(attrs.getString(
                 Tag.GeneralPurposePerformedProcedureStepStatus).replace(' ', '_'));
-        this.encodedAttributes = DicomObjectUtils.encode(AttributeFilter
-                .exludePatientAttributes(attrs),
+        this.encodedAttributes = DicomObjectUtils.encode(AttributeFilter.getExcludePatientAttributeFilter().filter(attrs),
                 UID.DeflatedExplicitVRLittleEndian);
     }
 }

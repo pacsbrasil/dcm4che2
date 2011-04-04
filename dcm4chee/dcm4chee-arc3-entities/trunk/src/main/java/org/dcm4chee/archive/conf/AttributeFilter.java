@@ -45,7 +45,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.PersonName;
+import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chee.archive.exceptions.ConfigurationException;
 
 /**
@@ -56,14 +57,11 @@ import org.dcm4chee.archive.exceptions.ConfigurationException;
 public final class AttributeFilter {
     private static final String CONFIG_URL =
             "resource:dcm4chee-attribute-filter.xml";
-    private static final int[] PATIENT_TAGS = {
-        Tag.ReferencedPatientSequence,
-        Tag.PatientName,
-        Tag.PatientID,
-        Tag.IssuerOfPatientID,
-        Tag.PatientBirthDate,
-        Tag.PatientSex,
-    };
+    private static final int MIN_CONTENT_ITEM_TEXT_VALUE_MAX_LENGTH = 250;
+    static FuzzyStr soundex = null;
+    static boolean soundexWithTrailingWildCard;
+    static int contentItemTextLength;
+    static AttributeFilter excludePatientFilter;
     static AttributeFilter patientFilter;
     static AttributeFilter studyFilter;
     static AttributeFilter seriesFilter;
@@ -71,16 +69,32 @@ public final class AttributeFilter {
             new HashMap<String,AttributeFilter>();
     private int[] tags = {};
     private int[] noCoercion = {};
-    private int[] fieldTags;
+    private int[] iCase = {};
+    private int[] vrs = {};
+    private int[] fieldTags = {};
     private String[] fields = {};
-    private String tsuid;
-    private boolean overwrite;
-    private boolean merge;
+    private final String tsuid;
+    private final boolean exclude;
+    private final boolean excludePrivate;
+    private final boolean overwrite;
+    private final boolean merge;
+    private boolean noFilter = false;
+    private int contentItemTextValueMaxLength;
 
     static {
-        AttributeFilterLoader.loadFrom(CONFIG_URL);
+        reload();
     }
 
+    public static void reload() {
+        AttributeFilter.soundex = null;
+        AttributeFilter.excludePatientFilter = null;
+        AttributeFilter.patientFilter = null;
+        AttributeFilter.studyFilter = null;
+        AttributeFilter.seriesFilter = null;
+        AttributeFilter.instanceFilters.clear();
+        AttributeFilterLoader.loadFrom(CONFIG_URL);
+    }
+    
     public static long lastModified() {
         URLConnection conn;
         try {
@@ -91,8 +105,8 @@ public final class AttributeFilter {
         return conn.getLastModified();
     }
 
-    public static DicomObject exludePatientAttributes(DicomObject ds) {
-        return ds.exclude(PATIENT_TAGS);
+    public static AttributeFilter getExcludePatientAttributeFilter()  {
+        return excludePatientFilter;
     }
 
     public static AttributeFilter getPatientAttributeFilter() {
@@ -109,67 +123,185 @@ public final class AttributeFilter {
 
     public static AttributeFilter getInstanceAttributeFilter(String cuid) {
         AttributeFilter filter = (AttributeFilter) instanceFilters.get(cuid);
-        if (filter == null) {
-            filter = (AttributeFilter) instanceFilters.get(null);
-        }
-        return filter;
+        return filter == null ? instanceFilters.get(null) : filter;
     }
 
+    AttributeFilter(String tsuid, boolean exclude, boolean excludePrivate,
+            boolean overwrite, boolean merge) {
+        this.tsuid = tsuid;
+        this.exclude = exclude;
+        this.excludePrivate = excludePrivate;
+        this.overwrite = overwrite;
+        this.merge = merge;
+    }
+    
     final void setNoCoercion(int[] noCoercion) {
         this.noCoercion = noCoercion;
+    }
+
+    final void setICase(int[] iCase) {
+        this.iCase = iCase;
     }
 
     final void setTags(int[] tags) {
         this.tags = tags;
     }
 
+    final int[] getTags() {
+        return this.tags;
+    }
+    
     final void setFields(String[] fields) {
-        this.fields = fields;
+        if (!exclude) {
+            this.fields = fields;
+        }
+    }
+
+    final String[] getFields() {
+        return this.fields;
+    }
+    
+    public boolean hasTag(int tag) {
+        int index = Arrays.binarySearch(tags,tag);
+        return index>=0;
     }
 
     final void setFieldTags(int[] fieldTags) {
-        this.fieldTags = fieldTags;
+        this.fieldTags = fieldTags;        
     }
-
-    public final int[] getFieldTags() {
+    
+    public final int[] getFieldTags() {        
         return this.fieldTags;
     }
-
+    
     public String getField(int tag) {
-        int index = Arrays.binarySearch(fieldTags, tag);
-        return index < 0 ? null : fields[index];
+        for (int i = 0; i < fieldTags.length; i++) {
+            if (fieldTags[i] == tag) {
+                return fields[i];
+            }
+        }
+        return null;
     }
-
+    
+    public final boolean isNoFilter() {
+        return noFilter;
+    }
+         
+    final void setNoFilter(boolean noFilter) {
+        this.noFilter = noFilter;
+    }
+    
+    final boolean isExclude() {
+        return exclude;
+    }
+    
     public boolean isCoercionForbidden(int tag) {
         return Arrays.binarySearch(noCoercion, tag) >= 0;
+    }
+
+    public boolean isICase(int tag) {
+        return Arrays.binarySearch(iCase, tag) >= 0;
     }
 
     public final String getTransferSyntaxUID() {
         return tsuid;
     }
 
-    final void setTransferSyntaxUID(String tsuid) {
-        this.tsuid = tsuid;
-    }
-
     public final boolean isOverwrite() {
         return overwrite;
-    }
-
-    final void setOverwrite(boolean overwrite) {
-        this.overwrite = overwrite;
     }
 
     public final boolean isMerge() {
         return merge;
     }
 
-    final void setMerge(boolean merge) {
-        this.merge = merge;
+    public final int getContentItemTextValueMaxLength() {
+        return contentItemTextValueMaxLength;
+    }
+
+    public final void setContentItemTextValueMaxLength(int len) {
+        if (len < MIN_CONTENT_ITEM_TEXT_VALUE_MAX_LENGTH)
+            throw new IllegalArgumentException();
+        this.contentItemTextValueMaxLength = len;
     }
 
     public DicomObject filter(DicomObject ds) {
-        return ds.subSet(tags);
+        DicomObject ds1 = exclude ? ds.exclude(tags) : ds.subSet(tags);
+        return excludePrivate ? ds1.excludePrivate() : ds1;
     }
 
+    public String[] getStrings(DicomObject ds, int tag) {
+        return getStrings(ds, tag, tag);
+    }
+
+    public String[] getStrings(DicomObject ds, int tag, int icasetag) {
+        String[] ss = ds.getStrings(tag);
+        if (ss != null && isICase(icasetag))
+            for (int i = 0; i < ss.length; i++)
+                ss[i] = toUpperCase(ss[i]);
+        return ss;
+    }
+
+    public String getString(DicomObject ds, int tag) {
+        return toUpperCase(ds.getString(tag), tag);
+    }
+
+    public String toUpperCase(String s, int tag) {
+        return s != null && isICase(tag) ? s.toUpperCase() : s;
+    }
+
+    public static String toUpperCase(String s) {
+        return s != null ? s.toUpperCase() : s;
+    }
+
+    public static boolean isSoundexEnabled()  {
+        return soundex != null;
+    }
+
+    public static boolean isSoundexWithTrailingWildCardEnabled() {
+        return soundexWithTrailingWildCard;
+    }
+
+    public static String toSoundex(PersonName pn, int field, String defval) {
+        if (soundex == null)
+            throw new IllegalStateException("Soundex disabled");
+        if (pn != null) {
+            String fuzzy = soundex.toFuzzy(pn.get(field));
+            if (fuzzy.length() > 0)
+                return fuzzy;
+        }
+        return defval;
+    }
+
+    public static String toSoundexWithLike(PersonName pn, int field) {
+        if (soundex == null)
+            throw new IllegalStateException("Soundex disabled");
+        if (pn != null) {
+            String s = pn.get(field);
+            if (s != null) {
+                if (s.indexOf('?') != -1)
+                    throw new IllegalArgumentException(
+                            "Unsupported Wildcard with fuzzy matching");
+
+                int wc = s.indexOf('*');
+                if (wc != -1) {
+                    int endIndex = s.length()-1;
+                    if (!soundexWithTrailingWildCard || wc != endIndex)
+                        throw new IllegalArgumentException(
+                                "Unsupported Wildcard with fuzzy matching");
+
+                    String fuzzy = soundex.toFuzzy(s.substring(0, endIndex));
+                    if (fuzzy.length() > 0)
+                        return fuzzy + '%';
+                    
+                } else {
+                    String fuzzy = soundex.toFuzzy(s);
+                    if (fuzzy.length() > 0)
+                        return fuzzy;
+                }
+            }
+        }
+        return null;
+    }
+    
 }

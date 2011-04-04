@@ -287,8 +287,7 @@ public class GPSPS extends BaseEntity implements Serializable {
                 .getString(Tag.GeneralPurposeScheduledProcedureStepPriority));
         this.inputAvailability = InputAvailabilityFlag.valueOf(attrs
                 .getString(Tag.InputAvailabilityFlag));
-        this.encodedAttributes = DicomObjectUtils.encode(AttributeFilter
-                .exludePatientAttributes(attrs),
+        this.encodedAttributes = DicomObjectUtils.encode(AttributeFilter.getExcludePatientAttributeFilter().filter(attrs),
                 UID.DeflatedExplicitVRLittleEndian);
     }
 }
