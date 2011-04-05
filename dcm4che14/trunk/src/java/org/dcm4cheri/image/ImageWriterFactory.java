@@ -73,10 +73,10 @@ public class ImageWriterFactory {
         final String formatName = s.substring(0, delim);
         final String className = s.substring(delim+1);
         for (Iterator it = ImageIO.getImageWritersByFormatName(formatName);
-        		it.hasNext();) {
-		    ImageWriter r = (ImageWriter) it.next();
-		    if (className.equals(r.getClass().getName()))
-		            return r;
+                it.hasNext();) {
+            ImageWriter r = (ImageWriter) it.next();
+            if (className.equals(r.getClass().getName()))
+                return r;
         }
         throw new ConfigurationException("No Image Writer of class " + className
                 + " available for format:" + formatName); 
