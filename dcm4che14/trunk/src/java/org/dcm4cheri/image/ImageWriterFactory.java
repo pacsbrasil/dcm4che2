@@ -81,4 +81,8 @@ public class ImageWriterFactory {
         throw new ConfigurationException("No Image Writer of class " + className
                 + " available for format:" + formatName); 
     }
+
+    public boolean patchJAIJpegLS() {
+        return map.containsKey("patchJAIJpegLS");
+    }
 }

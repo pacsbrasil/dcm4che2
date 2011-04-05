@@ -43,58 +43,12 @@ import java.io.IOException;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 
-import org.apache.log4j.Logger;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date:: xxxx-xx-xx $
  * @since Nov 4, 2010
  */
 public class PatchJpegLSImageInputStream extends ImageInputStreamImpl {
-
-    private static final Logger log =
-            Logger.getLogger(PatchJpegLSImageInputStream.class);
-
-    private static final int SOI = 0xffd8;
-    private static final int SOF55 = 0xfff7;
-    private static final int LSE = 0xfff8;
-    private static final int SOS = 0xffda;
-    private static final byte[] LSE_13 = {
-        (byte) 0xff, (byte) 0xf8, (byte) 0x00, (byte) 0x0D,
-        (byte) 0x01, 
-        (byte) 0x1f, (byte) 0xff,
-        (byte) 0x00, (byte) 0x22,  // T1 = 34
-        (byte) 0x00, (byte) 0x83,  // T2 = 131
-        (byte) 0x02, (byte) 0x24,  // T3 = 548
-        (byte) 0x00, (byte) 0x40,
-    };
-    private static final byte[] LSE_14 = {
-        (byte) 0xff, (byte) 0xf8, (byte) 0x00, (byte) 0x0D,
-        (byte) 0x01, 
-        (byte) 0x3f, (byte) 0xff,
-        (byte) 0x00, (byte) 0x42, // T1 = 66
-        (byte) 0x01, (byte) 0x03, // T2 = 259
-        (byte) 0x04, (byte) 0x44, // T3 = 1092
-        (byte) 0x00, (byte) 0x40,
-    };
-    private static final byte[] LSE_15 = {
-        (byte) 0xff, (byte) 0xf8, (byte) 0x00, (byte) 0x0D,
-        (byte) 0x01, 
-        (byte) 0x7f, (byte) 0xff,
-        (byte) 0x00, (byte) 0x82, // T1 = 130
-        (byte) 0x02, (byte) 0x03, // T2 = 515
-        (byte) 0x08, (byte) 0x84, // T3 = 2180
-        (byte) 0x00, (byte) 0x40,
-    };
-    private static final byte[] LSE_16 = {
-        (byte) 0xff, (byte) 0xf8, (byte) 0x00, (byte) 0x0D,
-        (byte) 0x01, 
-        (byte) 0xff, (byte) 0xff,
-        (byte) 0x01, (byte) 0x02, // T1 = 258
-        (byte) 0x04, (byte) 0x03, // T2 = 1027
-        (byte) 0x11, (byte) 0x04, // T3 = 4356
-        (byte) 0x00, (byte) 0x40,
-    };
 
     private final ImageInputStream iis;
     private final long patchPos;
@@ -111,61 +65,9 @@ public class PatchJpegLSImageInputStream extends ImageInputStreamImpl {
         byte[] jpegheader = new byte[17];
         iis.readFully(jpegheader);
         iis.seek(streamPos);
-        this.patch = selectPatch(jpegheader);
+        this.patch = PatchJpegLS.selectPatch(jpegheader);
     }
 
-    private byte[] selectPatch(byte[] jpegheader) {
-        if (toInt(jpegheader, 0) != SOI) {
-            log.warn("SOI marker is missing - do not patch JPEG LS");
-            return null;
-        }
-        int marker = toInt(jpegheader, 2);
-        if (marker != SOF55) {
-            log.warn(marker == LSE
-                    ? "contains already LSE marker segment "
-                            + "- do not patch JPEG LS"
-                    : "SOI marker is not followed by JPEG-LS SOF marker "
-                            + "- do not patch JPEG LS");
-            return null;
-        }
-        if (toInt(jpegheader, 4) != 11) {
-            log.warn("unexpected length of JPEG-LS SOF marker segment "
-                    + "- do not patch JPEG LS");
-            return null;
-        }
-        marker = toInt(jpegheader, 15);
-        if (marker != SOS) {
-            log.warn(marker == LSE
-                ? "contains already LSE marker segment "
-                    + "- do not patch JPEG LS"
-                : "JPEG-LS SOF marker segment is not followed by SOS marker "
-                    + "- do not patch JPEG LS");
-            return null;
-        }
-        switch (jpegheader[6]) {
-        case 13:
-            log.info("Patch JPEG LS 13-bit with "
-                    + "LSE segment(T1=34, T2=131, T3=548)");
-            return LSE_13;
-        case 14:
-            log.info("Patch JPEG LS 14-bit with "
-                    + "LSE segment(T1=66, T2=259, T3=1092)");
-            return LSE_14;
-        case 15:
-            log.info("Patch JPEG LS 15-bit with "
-                    + "LSE segment(T1=130, T2=515, T3=2180)");
-            return LSE_15;
-        case 16:
-            log.info("Patch JPEG LS 16-bit with "
-                    + "LSE segment(T1=258, T2=1027, T3=4356)");
-            return LSE_16;
-        }
-        return null;
-    }
-
-    private static int toInt(byte[] b, int off) {
-        return (b[off] & 0xff) << 8 | (b[off+1] & 0xff);
-    }
 
     public void close() throws IOException {
         super.close();
