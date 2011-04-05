@@ -77,6 +77,7 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4cheri.image.ImageWriterFactory;
+import org.dcm4cheri.imageio.plugins.PatchJpegLSImageOutputStream;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 
@@ -84,7 +85,7 @@ import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
 
 /**
  * @author gunter.zeilinter@tiani.com
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date::            $
  * @since 11.06.2004
  * 
  */
@@ -447,6 +448,9 @@ public abstract class CompressCmd extends CodecCmd {
             ios.setByteOrder(ByteOrder.LITTLE_ENDIAN);
             ImageWriterFactory f = ImageWriterFactory.getInstance();
             w = f.getWriterForTransferSyntax(tsuid);
+            boolean patchJpegLS = bitsAllocated == 16
+                    && UIDs.JPEGLSLossless.equals(tsuid)
+                    && f.patchJAIJpegLS();
             ImageWriteParam wParam = w.getDefaultWriteParam();
             initWriteParam(wParam);
             bi = getBufferedImage();
@@ -472,7 +476,9 @@ public abstract class CompressCmd extends CodecCmd {
                 default:
                     throw new RuntimeException("dataType:" + db.getDataType());
                 }
-                w.setOutput(ios);
+                w.setOutput(patchJpegLS
+                        ? new PatchJpegLSImageOutputStream(ios)
+                        : ios);
                 w.write(null, new IIOImage(bi, null, null), wParam);
                 end = ios.getStreamPosition();
                 if ((end & 1) != 0) {
