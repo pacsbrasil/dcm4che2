@@ -67,9 +67,8 @@ public class BaseWicketApplication extends SwarmWebApplication {
 
     private Class<? extends Page> homePage;
     private Class<? extends Page> signinPage;
-    private Class<? extends Page> accessDeniedPage;
-    private Class<? extends Page> pageExpiredPage;
-    private Class<? extends Page> internalErrorPage;
+    
+    private boolean containerAuthenticated;
     
     private final static Logger log = LoggerFactory.getLogger(BaseWicketApplication.class);
 
@@ -82,12 +81,9 @@ public class BaseWicketApplication extends SwarmWebApplication {
         
         signinPage = (Class<? extends Page>) getPageClass(getInitParameter("signinPageClass"), LoginPage.class);
         homePage = getPageClass(getInitParameter("homePageClass"), null);
-        accessDeniedPage = (Class<? extends Page>) getPageClass(getInitParameter("accessDeniedPageClass"), AccessDeniedPage.class);
-        pageExpiredPage = (Class<? extends Page>) getPageClass(getInitParameter("pageExpiredPageClass"), signinPage);
-        internalErrorPage = getPageClass(getInitParameter("internalErrorPageClass"), InternalErrorPage.class);
-        
-        getApplicationSettings().setAccessDeniedPage(accessDeniedPage);
-        getApplicationSettings().setPageExpiredErrorPage(pageExpiredPage);
+        Class<? extends Page> internalErrorPage = getPageClass(getInitParameter("internalErrorPageClass"), InternalErrorPage.class);
+        getApplicationSettings().setAccessDeniedPage(getPageClass(getInitParameter("accessDeniedPageClass"), AccessDeniedPage.class));
+        getApplicationSettings().setPageExpiredErrorPage(getPageClass(getInitParameter("pageExpiredPageClass"), signinPage));
         if ( internalErrorPage != null ) {
             getApplicationSettings().setInternalErrorPage(internalErrorPage);
             this.getExceptionSettings().setUnexpectedExceptionDisplay(IExceptionSettings.SHOW_INTERNAL_ERROR_PAGE);
@@ -144,8 +140,21 @@ public class BaseWicketApplication extends SwarmWebApplication {
         });
     }
 
+    public boolean isContainerAuthenticated() {
+        return containerAuthenticated;
+    }
+
+    public void setContainerAuthenticated() {
+        if (!containerAuthenticated) {
+            getApplicationSettings().setPageExpiredErrorPage(getHomePage());
+        }
+        this.containerAuthenticated = true;
+    }
+
     public Class<? extends Page> getLoginPage() {
-        return LoginPage.class;
+        Class<? extends Page> p = containerAuthenticated ? this.getHomePage() :
+            signinPage == null ? LoginPage.class : signinPage;
+        return p;
     }
     
     @Override
