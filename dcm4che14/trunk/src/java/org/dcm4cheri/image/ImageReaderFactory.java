@@ -73,10 +73,10 @@ public class ImageReaderFactory {
         final String formatName = s.substring(0, delim);
         final String className = s.substring(delim+1);
         for (Iterator it = ImageIO.getImageReadersByFormatName(formatName);
-        		it.hasNext();) {
-		    ImageReader r = (ImageReader) it.next();
-		    if (className.equals(r.getClass().getName()))
-		            return r;
+                it.hasNext();) {
+            ImageReader r = (ImageReader) it.next();
+            if (className.equals(r.getClass().getName()))
+                return r;
         }
         throw new ConfigurationException("No Image Reader of class " + className
                 + " available for format:" + formatName); 
