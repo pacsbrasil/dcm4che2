@@ -23,7 +23,6 @@ public final class TranscoderMain
     public static void main(String[] args)
     {
         int c;
-        String arg;
         LongOpt[] longopts =
             {
                 new LongOpt("trunc-post-pixeldata", LongOpt.NO_ARGUMENT, null, 't'),
