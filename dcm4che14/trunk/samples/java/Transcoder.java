@@ -78,6 +78,7 @@ import org.dcm4cheri.image.ImageReaderFactory;
 import org.dcm4cheri.image.ImageWriterFactory;
 import org.dcm4cheri.image.ItemParser;
 import org.dcm4cheri.imageio.plugins.PatchJpegLSImageInputStream;
+import org.dcm4cheri.imageio.plugins.PatchJpegLSImageOutputStream;
 
 import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
@@ -122,7 +123,8 @@ public class Transcoder {
     private int frameIndex = 0;
     private boolean truncatePostPixelData = false;
     private ItemParser itemParser;
-    private boolean patchJpegLS;
+    private boolean patchInputJpegLS;
+    private boolean patchOutputJpegLS;
 
     /**
      * if true, input stream is directly copied into output stream without pixel
@@ -262,6 +264,9 @@ public class Transcoder {
             dsIn.writeHeader(ios, encodeParam, Tags.Item, VRs.NONE, 0);
             ImageWriterFactory f = ImageWriterFactory.getInstance();
             writer = f.getWriterForTransferSyntax(encodeTS);
+            patchOutputJpegLS = pixelDataParam.getBitsAllocated() == 16
+                    && UIDs.JPEGLSLossless.equals(encodeTS)
+                    && f.patchJAIJpegLS();
         } else {
             dsIn.writeHeader(ios, encodeParam, Tags.PixelData, VRs.OW,
                     pixelDataParam.getPixelDataLength());
@@ -278,12 +283,12 @@ public class Transcoder {
                     pixelDataParam.getNumberOfFrames(), tsuid);
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(tsuid);
-            patchJpegLS = false;
+            patchInputJpegLS = false;
             if (pixelDataParam.getBitsAllocated() == 16
                     && UIDs.JPEGLSLossless.equals(tsuid)) {
                 String patchJAIJpegLS = f.patchJAIJpegLS();
                 if (patchJAIJpegLS != null)
-                    patchJpegLS = patchJAIJpegLS.length() == 0 
+                    patchInputJpegLS = patchJAIJpegLS.length() == 0 
                             || patchJAIJpegLS.equals(
                                     fmi.getImplementationClassUID());
             }
@@ -519,7 +524,7 @@ public class Transcoder {
             SegmentedImageInputStream siis = 
                     new SegmentedImageInputStream(iis, itemParser);
             itemParser.seekFrame(siis, frameIndex);
-            reader.setInput(patchJpegLS 
+            reader.setInput(patchInputJpegLS 
                     ? new PatchJpegLSImageInputStream(siis)
                     : (ImageInputStream) siis);
             bi = reader.read(0, param);
@@ -579,7 +584,9 @@ public class Transcoder {
             long itemPos = ios.getStreamPosition();
             ios.flushBefore(itemPos);
             dsIn.writeHeader(ios, encodeParam, Tags.Item, VRs.NONE, -1);
-            writer.setOutput(ios);
+            writer.setOutput(patchOutputJpegLS 
+                    ? new PatchJpegLSImageOutputStream(ios)
+                    : ios);
             writer.write(null, new IIOImage(bi, null, null), getWriteParam());
             long endPos = ios.length();
             int itemLen = (int) (endPos - itemPos - 8);
