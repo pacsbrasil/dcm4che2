@@ -76,6 +76,7 @@ public class WicketApplication extends BaseWicketApplication {
         if (jaasSubject != null) {
             try {
                 session.login(new SSOLoginContext(session, jaasSubject));
+                this.setContainerAuthenticated();
             } catch (LoginException x) {
                 log.error(getClass().getName() + ": Failed login", x);
             }
