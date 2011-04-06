@@ -343,6 +343,7 @@ public class FileCopyService extends AbstractFileCopyService {
                 VerifyTar.verify(tarFile, new byte[bufferSize]);
             }
         } catch (Exception e) {
+            log.error("M-DELETE tar file due to an error! "+tarFile);
             tarFile.delete();
             throw e;
         }
@@ -387,6 +388,11 @@ public class FileCopyService extends AbstractFileCopyService {
             String tarEntryName) 
     throws IOException, FileNotFoundException {
         File file = FileUtils.toFile(fileInfo.basedir, fileInfo.fileID);
+        if (file.length() != fileInfo.size) {
+            log.error("Filesize doesn't match for file entry:"+fileInfo+"!("+
+                    file.length()+" vs. "+fileInfo.size+") skipped!");
+            throw new IOException("Filesize doesn't match! file:"+file);
+        }
         TarEntry entry = new TarEntry(tarEntryName);
         entry.setSize(fileInfo.size);
         tar.putNextEntry(entry);
