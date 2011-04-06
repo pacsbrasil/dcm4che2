@@ -21,7 +21,7 @@
 	    </init-param>
 	    <init-param>
 	      <param-name>DashboardServiceName</param-name>
-	      <param-value>dcm4chee.dashboard:service=DashboardService</param-value>
+	      <param-value>dcm4chee.web:service=DashboardService</param-value>
 	    </init-param>
 		<init-param>
 	      <param-name>UserAccessServiceName</param-name>
