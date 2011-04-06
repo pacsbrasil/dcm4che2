@@ -659,7 +659,7 @@
       <name>manageStudyPermissions</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true"/>
+         <value value="false"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -670,7 +670,7 @@
       <name>useStudyPermissions</name>
       <type>boolean</type>
       <descriptors>
-         <value value="true"/>
+         <value value="false"/>
       </descriptors>
    </attribute>
    

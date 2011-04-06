@@ -35,6 +35,10 @@
 	      <param-name>internalErrorPageClass</param-name>
 	      <param-value>org.dcm4chee.web.common.base.InternalErrorPage</param-value>
 	    </init-param> 
+	    <init-param>
+	      <param-name>pageExpiredPageClass</param-name>
+	      <param-value>org.dcm4chee.web.war.MainPage</param-value>
+	    </init-param> 
  	</filter>
     <filter-mapping>
         <filter-name>wicket.dcm4chee-web</filter-name>
@@ -84,4 +88,8 @@
         <realm-name>dcm4chee</realm-name>
     </login-config>
     -->
+	<session-config>
+		<session-timeout>30</session-timeout>
+	</session-config>
+    
 </web-app>
