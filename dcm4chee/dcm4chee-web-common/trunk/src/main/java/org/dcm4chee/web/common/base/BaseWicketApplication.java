@@ -68,8 +68,6 @@ public class BaseWicketApplication extends SwarmWebApplication {
     private Class<? extends Page> homePage;
     private Class<? extends Page> signinPage;
     
-    private boolean containerAuthenticated;
-    
     private final static Logger log = LoggerFactory.getLogger(BaseWicketApplication.class);
 
     public BaseWicketApplication() {
@@ -83,7 +81,7 @@ public class BaseWicketApplication extends SwarmWebApplication {
         homePage = getPageClass(getInitParameter("homePageClass"), null);
         Class<? extends Page> internalErrorPage = getPageClass(getInitParameter("internalErrorPageClass"), InternalErrorPage.class);
         getApplicationSettings().setAccessDeniedPage(getPageClass(getInitParameter("accessDeniedPageClass"), AccessDeniedPage.class));
-        getApplicationSettings().setPageExpiredErrorPage(getPageClass(getInitParameter("pageExpiredPageClass"), signinPage));
+        getApplicationSettings().setPageExpiredErrorPage(getPageClass(getInitParameter("pageExpiredPageClass"), getHomePage()));
         if ( internalErrorPage != null ) {
             getApplicationSettings().setInternalErrorPage(internalErrorPage);
             this.getExceptionSettings().setUnexpectedExceptionDisplay(IExceptionSettings.SHOW_INTERNAL_ERROR_PAGE);
@@ -140,21 +138,8 @@ public class BaseWicketApplication extends SwarmWebApplication {
         });
     }
 
-    public boolean isContainerAuthenticated() {
-        return containerAuthenticated;
-    }
-
-    public void setContainerAuthenticated() {
-        if (!containerAuthenticated) {
-            getApplicationSettings().setPageExpiredErrorPage(getHomePage());
-        }
-        this.containerAuthenticated = true;
-    }
-
     public Class<? extends Page> getLoginPage() {
-        Class<? extends Page> p = containerAuthenticated ? this.getHomePage() :
-            signinPage == null ? LoginPage.class : signinPage;
-        return p;
+        return signinPage;
     }
     
     @Override
