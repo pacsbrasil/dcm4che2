@@ -129,7 +129,7 @@ public class CreateOrEditRolePage extends SecureWebPage {
             add(descriptionTextField);
 
             final CheckBox superuserCheckbox;
-            superuser.setObject(role.isSuperuser());
+            superuser.setObject(role != null && role.isSuperuser());
             add(superuserCheckbox = new CheckBox("superuser-checkbox", superuser));
 
             if (role != null) {
