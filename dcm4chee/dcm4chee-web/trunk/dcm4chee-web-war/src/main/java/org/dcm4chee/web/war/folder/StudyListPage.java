@@ -38,6 +38,8 @@
 
 package org.dcm4chee.web.war.folder;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -97,6 +99,7 @@ import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
+import org.dcm4che2.io.DicomInputStream;
 import org.dcm4chee.archive.common.PrivateTag;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
@@ -125,6 +128,7 @@ import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.StudyPermissionHelper.StudyPermissionRight;
 import org.dcm4chee.web.war.ajax.MaskingAjaxCallDecorator;
+import org.dcm4chee.web.war.common.DisplayDicomObjectPanel;
 import org.dcm4chee.web.war.common.EditDicomObjectPanel;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
@@ -147,7 +151,7 @@ public class StudyListPage extends Panel {
 
     private static final ResourceReference CSS = new CompressedResourceReference(StudyListPage.class, "folder-style.css");
     
-    private ModalWindow modalWindow;
+    private static ModalWindow modalWindow;
     
     private IModel<Integer> pagesize = new IModel<Integer>() {
 
@@ -1622,7 +1626,7 @@ public class StudyListPage extends Panel {
         }
     }
 
-    private final static class FileListView extends PropertyListView<Object> {
+    private final class FileListView extends PropertyListView<Object> {
 
         private static final long serialVersionUID = 1L;
         
@@ -1662,6 +1666,7 @@ public class StudyListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
             .add(tooltip)));
+            item.add(getFileDisplayLink(modalWindow, fileModel, tooltip));
             item.add(new AjaxCheckBox("selected") {
                 private static final long serialVersionUID = 1L;
 
@@ -1725,6 +1730,40 @@ public class StudyListPage extends Panel {
         if (tooltip != null) image.add(tooltip);
         editLink.add(image);
         return editLink;
+    }
+
+    private Link<Object> getFileDisplayLink(final ModalWindow modalWindow, final FileModel fileModel, TooltipBehaviour tooltip) {
+
+        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("dcmFileDisplay");
+        final File file = new File(
+                fileModel.getFileObject().getFileSystem().getDirectoryPath() + 
+                "/" + 
+                fileModel.getFileObject().getFilePath());
+        ModalWindowLink displayLink = new ModalWindowLink("displayFile", modalWindow, winSize[0], winSize[1]) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                try {
+                    modalWindow.setContent(new DisplayDicomObjectPanel(
+                            "content", 
+                            modalWindow, 
+                            new DicomInputStream(file).readDicomObject(), 
+                            fileModel.getClass().getSimpleName()
+                    ));
+                } catch (IOException e) {
+                    log.error("Error requesting dicom object: ", e);
+                }
+                modalWindow.show(target);
+                super.onClick(target);
+            }            
+        };
+        Image image = new Image("displayFileImg",ImageManager.IMAGE_FOLDER_DICOM_FILE);
+        image.add(new ImageSizeBehaviour("vertical-align: middle;"));
+        if (tooltip != null) image.add(tooltip);
+        displayLink.add(image);
+        displayLink.setVisible(file.exists());
+        return displayLink;
     }
 
     private Link<Object> getStudyPermissionLink(final ModalWindow modalWindow, final AbstractEditableDicomModel model, TooltipBehaviour tooltip) {

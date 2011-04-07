@@ -236,6 +236,7 @@
       	<dd>default:   default size</dd>
       	<dd>export:    Export window in Folder</dd>
       	<dd>dcmEdit:   Dicom Edit window in Folder</dd>
+      	<dd>dcmFileDisplay:   Dicom object from file window in Folder</dd>
       	<dd>addStudy:  Add new Study window in Folder</dd>
       	<dd>addSeries: Add new Series window in Folder</dd>
       	<dd>imgSelect: Image selection window</dd>

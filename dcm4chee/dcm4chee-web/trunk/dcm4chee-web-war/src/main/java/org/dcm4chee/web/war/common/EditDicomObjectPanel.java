@@ -251,7 +251,7 @@ public class EditDicomObjectPanel extends Panel {
                                                 new Model<String>("") 
                                               : new DicomElementModel(el, cs, tagPath))
                 .setVisible(!el.hasItems()).setEnabled(editable.isEditable(tagPath)));
-            AjaxFallbackLink removeLink = new AjaxFallbackLink<Object>("remove"){
+            AjaxFallbackLink<?> removeLink = new AjaxFallbackLink<Object>("remove"){
                 
                 private static final long serialVersionUID = 1L;
 
