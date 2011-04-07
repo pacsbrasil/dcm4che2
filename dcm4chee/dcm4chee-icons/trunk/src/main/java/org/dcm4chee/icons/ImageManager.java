@@ -85,6 +85,8 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "folder/delete.png");
     public static final ResourceReference IMAGE_FOLDER_EXPORT = 
         new ResourceReference(ImageManager.class, "folder/export.png");
+    public static final ResourceReference IMAGE_FOLDER_DICOM_FILE = 
+        new ResourceReference(ImageManager.class, "folder/dicom_file.png");
     public static final ResourceReference IMAGE_FOLDER_MOVE = 
         new ResourceReference(ImageManager.class, "folder/move.png");
     public static final ResourceReference IMAGE_FOLDER_UNLINK = 
