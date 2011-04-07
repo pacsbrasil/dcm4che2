@@ -221,11 +221,13 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                         /*
                          * XDS Repository is already sending a document. So the message is will be in MTOM/XOP.
                          * Therefore there is no need to force MTOM response using a DUMMY.
+                         * 
+                         * Temporarily comments out as it causes some JBoss ClassLoading error.
                          */
-                        CommonMessageContext ctx = MessageContextAssociation.peekMessageContext();
+                        /* CommonMessageContext ctx = MessageContextAssociation.peekMessageContext();
                         if (ctx != null) {
                             ctx.put("DISABLE_FORCE_MTOM_RESPONSE", "true");
-                        }
+                        } */
                     } catch (IOException e) {
                         log.error("Error in building DocumentResponse for document:"+doc);
                     }
