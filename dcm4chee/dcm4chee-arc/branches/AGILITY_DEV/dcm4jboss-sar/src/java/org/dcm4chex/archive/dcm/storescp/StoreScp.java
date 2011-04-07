@@ -676,17 +676,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             checkPatientIdAndName(ds, callingAET);
             Storage store = getStorage(assoc);
-            String seriuid = ds.getString(Tags.SeriesInstanceUID);
-            SeriesStored seriesStored = (SeriesStored) assoc.getProperty(SERIES_STORED);
-            if (seriesStored != null
-                    && !seriuid.equals(seriesStored.getSeriesInstanceUID())) {
-                service.logInstancesStoredAndUpdateDerivedFields(store,
-                        assoc.getSocket(), seriesStored);
-                doAfterSeriesIsStored(store, assoc, seriesStored);
-                seriesStored = null;
-            }
+            SeriesStored seriesStored = handleSeriesStored(assoc, store, ds);
             boolean newSeries = seriesStored == null;
             boolean newStudy = false;
+            String seriuid = ds.getString(Tags.SeriesInstanceUID);
             if (newSeries) {
                 Dataset mwlFilter = service.getCoercionAttributesFor(callingAET,
                         STORE2MWL_XSL, ds, assoc);
@@ -764,6 +757,19 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
+    }
+
+    protected SeriesStored handleSeriesStored(Association assoc, Storage store, Dataset ds) throws FinderException,
+            RemoteException, Exception {
+        String seriuid = ds.getString(Tags.SeriesInstanceUID);
+        SeriesStored seriesStored = (SeriesStored) assoc.getProperty(SERIES_STORED);
+        if (seriesStored != null && !seriuid.equals(seriesStored.getSeriesInstanceUID())) {
+            service.logInstancesStoredAndUpdateDerivedFields(store,
+                    assoc.getSocket(), seriesStored);
+            doAfterSeriesIsStored(store, assoc, seriesStored);
+            seriesStored = null;
+        }
+        return seriesStored;
     }
 
     private void logCoercion(Dataset ds, Dataset coerced) {
