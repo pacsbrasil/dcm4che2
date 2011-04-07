@@ -51,7 +51,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.ejb.Stateful;
+import javax.ejb.PostActivate;
+import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -72,7 +73,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since 19.08.2009
  */
-@Stateful
+@Stateless
 @LocalBinding(jndiBinding=UserAccess.JNDI_NAME)
 public class UserAccessBean implements UserAccess {
 
@@ -89,6 +90,7 @@ public class UserAccessBean implements UserAccess {
     
     @SuppressWarnings("unused")
     @PostConstruct
+    @PostActivate
     private void config() {
         if (this.rolesMappingFile == null) {
             userRoleName = System.getProperty("dcm4chee-usr.cfg.userrole", "+WebUser");
