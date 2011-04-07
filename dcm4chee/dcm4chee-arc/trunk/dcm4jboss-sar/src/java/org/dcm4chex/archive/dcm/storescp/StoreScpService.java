@@ -786,7 +786,7 @@ public class StoreScpService extends AbstractScpService {
         return fileDTO;
     }
 
-    private void logInstancesStored(Socket s, SeriesStored seriesStored) {
+    public void logInstancesStored(Socket s, SeriesStored seriesStored) {
         try {
             InstanceSorter sorter = new InstanceSorter();
             Dataset ian = seriesStored.getIAN();
@@ -884,7 +884,7 @@ public class StoreScpService extends AbstractScpService {
         sendSeriesStoredNotification(store, seriesStored);
     }
 
-    void logInstancesStoredAndUpdateDerivedFields(Storage store,
+    public void logInstancesStoredAndUpdateDerivedFields(Storage store,
             Socket s, SeriesStored seriesStored)
             throws FinderException, RemoteException {
         logInstancesStored(s, seriesStored);
