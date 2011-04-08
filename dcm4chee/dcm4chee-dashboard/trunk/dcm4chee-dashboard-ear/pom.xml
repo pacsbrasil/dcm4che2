@@ -6,31 +6,31 @@
     <parent>
 	    <groupId>dcm4che.dcm4chee</groupId>
 	    <artifactId>dcm4chee-dashboard</artifactId>
-	    <version>3.0.0</version>
+	    <version>3.0.1</version>
     </parent>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-dashboard-ear</artifactId>
     <packaging>ear</packaging>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
     <name>Assemble EAR for DASHBOARD</name>
     <dependencies>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-dashboard-sar-config</artifactId>
             <type>sar</type>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-dashboard-sar-webcfg</artifactId>
             <type>sar</type>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-dashboard-war</artifactId>
             <type>war</type>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>net.sf.json-lib</groupId>
