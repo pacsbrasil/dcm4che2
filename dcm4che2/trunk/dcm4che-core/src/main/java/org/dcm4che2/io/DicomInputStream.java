@@ -611,12 +611,12 @@ public class DicomInputStream extends FilterInputStream implements
         byte[] val = new byte[allocLen];
         readFully(val, 0, allocLen);
         while (allocLen < vallen) {
-            int prevAllocLen = allocLen;
-            allocLen = Math.min(vallen, allocLen + ALLOC_BYTES_INC);
-            byte[] copy = new byte[allocLen];
-            System.arraycopy(val, 0, copy, 0, prevAllocLen);
+            int newLength = Math.min(vallen, allocLen + ALLOC_BYTES_INC);
+            byte[] copy = new byte[newLength];
+            System.arraycopy(val, 0, copy, 0, allocLen);
             val = copy;
-            readFully(val, prevAllocLen, allocLen - prevAllocLen);
+            readFully(val, allocLen, newLength - allocLen);
+            allocLen = newLength;
         }
         return val;
     }
