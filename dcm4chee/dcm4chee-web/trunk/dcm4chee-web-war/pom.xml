@@ -5,13 +5,13 @@
     <parent>
         <artifactId>dcm4chee-web</artifactId>
         <groupId>dcm4che.dcm4chee</groupId>
-        <version>3.0.0</version>
+        <version>3.0.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-web-war</artifactId>
     <packaging>war</packaging>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
     <name>WAR for dcm4chee-web</name>
     <description></description>
     <dependencies>
@@ -36,61 +36,61 @@
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-icons</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-common</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-urlprovider</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
         
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-arc-entities</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
             <classifier>${db}</classifier>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-usr-entity</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
             <classifier>${db}</classifier>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-ejb</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-usr-dao</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-common</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-usr-ui</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-dashboard-ui</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
