@@ -34,14 +34,20 @@
     <attr tag="00100030" vr="DA" len="0"></attr>
     <!--Patient's Sex-->
     <attr tag="00100040" vr="CS" len="0"></attr>
+    <!--Series Description-->
+    <attr tag="0008103E" vr="LO" len="0"></attr>
+    <!-- Body Part Examined -->
+    <attr tag="00180015" vr="CS" len="0"></attr>
     <!--Study ID-->
     <attr tag="00200010" vr="SH" len="0"/>
     <!--Series Number-->
-    <attr tag="00200011" vr="IS" len="2">3</attr>
+    <attr tag="00200011" vr="IS" len="2"></attr>
     <!--Acquisition Number-->
-    <attr tag="00200012" vr="IS" len="2">2</attr>
+    <attr tag="00200012" vr="IS" len="2"></attr>
     <!--Instance Number-->
     <attr tag="00200013" vr="IS" len="0"></attr>
+    <!-- Laterality -->
+    <attr tag="00200060" vr="CS" len="0"></attr>   
     <!--Value Type-->
     <attr tag="0040A040" vr="CS" len="0"></attr>
     <!--Concept Name Code Sequence-->
