@@ -5,13 +5,13 @@
     <parent>
 	    <groupId>dcm4che.dcm4chee</groupId>
 	    <artifactId>dcm4chee-usr</artifactId>
-	    <version>3.0.0</version>
+	    <version>3.0.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-usr-ear</artifactId>
     <packaging>ear</packaging>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
     <name>Assemble ear for dcm4chee application</name>
     <dependencies>
         <dependency>
@@ -19,25 +19,25 @@
             <artifactId>dcm4chee-usr-entity</artifactId>
             <type>ejb</type>
             <classifier>${db}</classifier>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-usr-dao</artifactId>
             <type>ejb</type>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-usr-war</artifactId>
             <type>war</type>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-usr-sar-webcfg</artifactId>
             <type>sar</type>
-            <version>3.0.0</version>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>net.sf.json-lib</groupId>
@@ -64,7 +64,7 @@
                         <ejbModule>
                             <groupId>dcm4che.dcm4chee</groupId>
                             <artifactId>dcm4chee-usr-dao</artifactId>
-                            <uri>dcm4chee-usr-dao-3.0.0.jar</uri>
+                            <uri>dcm4chee-usr-dao-3.0.1.jar</uri>
                         </ejbModule>
                         <webModule>
                             <groupId>dcm4che.dcm4chee</groupId>

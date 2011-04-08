@@ -5,13 +5,13 @@
     <parent>
 	    <groupId>dcm4che.dcm4chee</groupId>
 	    <artifactId>dcm4chee-usr</artifactId>
-	    <version>3.0.0</version>
+	    <version>3.0.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <name>Entity components for dcm4chee</name>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-usr-entity</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
     <packaging>ejb</packaging>
     <properties>
 	    <ds>java:/pacsDS</ds>
