@@ -38,6 +38,8 @@
 * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
+import in.raster.mayam.context.ApplicationContext;
+
 /**
  *
  * @author  BabuHussain
@@ -68,7 +70,8 @@ public class SendingProgress extends javax.swing.JFrame  {
         setUndecorated(true);
 
         sendingLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        sendingLabel.setText("Sending ...");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
+        sendingLabel.setText(bundle.getString("SendingProgress.sendingLabel.text_1")); // NOI18N
 
         jProgressBar1.setValue(1);
 

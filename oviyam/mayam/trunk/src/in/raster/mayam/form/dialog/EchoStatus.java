@@ -38,6 +38,8 @@
 * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form.dialog;
 
+import in.raster.mayam.context.ApplicationContext;
+
 
 /**
  *
@@ -83,7 +85,8 @@ public class EchoStatus extends javax.swing.JDialog {
             }
         });
 
-        okButton.setText("OK");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
+        okButton.setText(bundle.getString("EchoStatus.okButton.text_1")); // NOI18N
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -91,7 +94,7 @@ public class EchoStatus extends javax.swing.JDialog {
         });
 
         status.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        status.setText("status");
+        status.setText(bundle.getString("EchoStatus.status.text_1")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

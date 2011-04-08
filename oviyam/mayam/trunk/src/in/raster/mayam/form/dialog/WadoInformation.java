@@ -38,6 +38,7 @@
 * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form.dialog;
 
+import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.model.ServerModel;
 import in.raster.mayam.model.combo.TransferSyntaxModel;
 
@@ -104,29 +105,30 @@ public class WadoInformation extends javax.swing.JDialog {
             }
         });
 
-        okButton.setText("OK");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
+        okButton.setText(bundle.getString("WadoInformation.okButton.text_1")); // NOI18N
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText(bundle.getString("WadoInformation.cancelButton.text_1")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
 
-        wadoURLLabel.setText("WADO url");
+        wadoURLLabel.setText(bundle.getString("WadoInformation.wadoURLLabel.text_1")); // NOI18N
 
-        wadoPort.setText("WADO Port");
+        wadoPort.setText(bundle.getString("WadoInformation.wadoPort.text_1")); // NOI18N
 
-        encryptionLabel.setText("Encryption");
+        encryptionLabel.setText(bundle.getString("WadoInformation.encryptionLabel.text_1")); // NOI18N
 
-        retrieveSyntaxLabel.setText("Retrieve Syntax");
+        retrieveSyntaxLabel.setText(bundle.getString("WadoInformation.retrieveSyntaxLabel.text_1")); // NOI18N
 
-        wadoProtocolCheckBox.setText("https");
+        wadoProtocolCheckBox.setText(bundle.getString("WadoInformation.wadoProtocolCheckBox.text_1")); // NOI18N
 
         retrieveSyntaxCombo.setModel(new TransferSyntaxModel(getRetrieveTransferSyntaxArray()));
 

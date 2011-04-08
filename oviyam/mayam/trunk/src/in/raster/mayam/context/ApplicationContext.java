@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.dcm4che.util.DcmURL;
@@ -86,6 +87,8 @@ public class ApplicationContext {
     public static SendingProgress sendingProgress;
 
     public static String applicationName="Mayam";
+
+    public static Locale currentLocale=null;
 
     private ApplicationContext() {
     }
@@ -164,5 +167,11 @@ public class ApplicationContext {
                 ex.printStackTrace();
             }
         }
+    }
+    public static void setAppLocale()
+    {
+        openOrCreateDB();
+        String appLocale[]=databaseRef.getActiveLanguageAndCountry();     
+        currentLocale=new Locale(appLocale[0],appLocale[1]);       
     }
 }

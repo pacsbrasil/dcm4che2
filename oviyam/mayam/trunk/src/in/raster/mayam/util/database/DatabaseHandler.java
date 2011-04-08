@@ -49,8 +49,12 @@ import in.raster.mayam.model.ServerModel;
 import in.raster.mayam.model.Study;
 import in.raster.mayam.model.StudyModel;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.derby.jdbc.EmbeddedSimpleDataSource;
@@ -59,6 +63,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.Vector;
 import javax.swing.SwingUtilities;
 import org.dcm4che.dict.Tags;
@@ -83,6 +88,7 @@ public class DatabaseHandler {
     private static final String seriesTable = "series";
     private static final String instanceTable = "image";
     private static final String aeTitleTable = "aetitles";
+    private static final String localeTable = "locale";
     //Named Constants for username and password of Database 
     private static final String username = "mayam";
     private static final String password = "mayam";
@@ -148,7 +154,9 @@ public class DatabaseHandler {
                 insertDefaultPresets();
                 insertDefaultThemes();
                 insertDefaultPropertiesDetail();
+                insertDefaultLocales();
             }
+            //parseLocalePropertiesFile();
             conn.setAutoCommit(false);
         } catch (SQLException e) {
             StringWriter str = new StringWriter();
@@ -201,6 +209,7 @@ public class DatabaseHandler {
         insertDefaultListenerDetail();
         insertDefaultLayoutDetail();
         insertDefaultPresets();
+        insertDefaultLocales();
     }
 
     /**
@@ -364,6 +373,9 @@ public class DatabaseHandler {
 
             sql = "create table properties (pk integer primary key GENERATED ALWAYS AS IDENTITY,property varchar(255),value varchar(255))";
             statement.executeUpdate(sql);
+
+            sql = "create table " + localeTable + "(pk integer primary key GENERATED ALWAYS AS IDENTITY,country varchar(255),countrycode varchar(10),language varchar(255),languagecode varchar(10),localeid varchar(255),status varchar(155))";
+            statement.executeUpdate(sql);
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -483,6 +495,197 @@ public class DatabaseHandler {
             e.printStackTrace();
 
         }
+    }
+
+    private void insertDefaultLocales() {
+        try {
+            String sql1 = "insert into " + localeTable + "(countrycode,country,languagecode,language,localeid,status) values('US','United States','en','English','en_US','active')";
+            conn.createStatement().execute(sql1);
+            addNewLocale("es_ES");
+            addNewLocale("ca_ES");
+            addNewLocale("it_IT");
+            addNewLocale("ja_JP");
+            conn.commit();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void addNewLocale(String localeid) {
+        String languagecode = "", countrycode = "";
+        String languageAndCountry[] = localeid.split("_");
+        if (languageAndCountry.length >= 2) {
+            languagecode = languageAndCountry[0];
+            countrycode = languageAndCountry[1];
+        }
+        Locale locale = new Locale(languagecode, countrycode);
+        String language = locale.getDisplayLanguage();
+        String country = locale.getDisplayCountry();
+
+        insertLocale(language, country, languagecode, countrycode, localeid);
+
+    }
+
+    public void parseLocalePropertiesFile() {
+        try {
+            File file = new File(this.getClass().getResource("/in/raster/mayam/form/i18n").toURI());
+            System.out.println("file name" + file.getAbsolutePath());
+            FilenameFilter filenameFilter = new FilenameFilter() {
+
+                public boolean accept(File dir, String name) {
+                    if (name.endsWith(".properties")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            };
+            String localeFileNameList[] = file.list(filenameFilter);
+            for (int i = 0; i < localeFileNameList.length; i++) {
+                String tmp = localeFileNameList[i].replace("Bundle_", "");
+                String localeid = tmp.replace(".properties", "");
+                if (!localeid.equalsIgnoreCase("") && !isLocaleIDPresent(localeid)) {
+                    addNewLocale(localeid);
+                }
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private boolean isLocaleIDPresent(String localeid) {
+        boolean result = false;
+        try {
+            String sql = "select count(*) from locale where localeid='" + localeid + "'";
+            ResultSet rscount = conn.createStatement().executeQuery(sql);
+            rscount.next();
+            int count = rscount.getInt(1);
+            if (count > 0) {
+                result = true;
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    private void insertLocale(String language, String country, String languagecode, String countrycode, String localeid) {
+        try {
+            String sql1 = "insert into " + localeTable + "(countrycode,country,languagecode,language,localeid,status) values('" + countrycode + "','" + country + "','" + languagecode + "','" + language + "','" + localeid + "','idle')";
+            conn.createStatement().execute(sql1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateDefaultLocale(String localeName) {
+        try {
+            String str = "select localeid from " + localeTable + " where status='active'";
+            ResultSet rs = conn.createStatement().executeQuery(str);
+            rs.next();
+            int n = conn.createStatement().executeUpdate("update " + localeTable + " set status='idle' where localeid='" + rs.getString("localeid") + "'");
+            int m = conn.createStatement().executeUpdate("update " + localeTable + " set status='active' where localeid='" + localeName + "'");
+            conn.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String[] getActiveLanguageAndCountry() {
+        String returnval[] = null;
+        try {
+            String sql = "Select * from locale where status='active'";
+            ResultSet resultSet = conn.createStatement().executeQuery(sql);
+            while (resultSet.next()) {
+                String countrycode = resultSet.getString("countrycode");
+                String languagecode = resultSet.getString("languagecode");
+                String localeid = resultSet.getString("localeid");
+                String country = resultSet.getString("country");
+                String language = resultSet.getString("language");
+
+                returnval = new String[5];
+                returnval[0] = languagecode;
+                returnval[1] = countrycode;
+                returnval[2] = country;
+                returnval[3] = language;
+                returnval[4] = localeid;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return returnval;
+    }
+
+    public String[] getCountryListForLocale() {
+        String returnval[] = null;
+        try {
+            String sql = "Select distinct country from locale ";
+            String sql1 = "select count(distinct country) from locale";
+            ResultSet rscount = conn.createStatement().executeQuery(sql1);
+            ResultSet resultSet = conn.createStatement().executeQuery(sql);
+            rscount.next();
+            int count = rscount.getInt(1);
+            returnval = new String[count];
+            int index = 0;
+            while (resultSet.next()) {
+                String country = resultSet.getString("country");
+                returnval[index] = country;
+                index++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return returnval;
+    }
+
+    public String[] getLanguageListForSelectedCountry(String country) {
+        String returnval[] = null;
+        try {
+            String sql = "Select distinct language from locale where country='" + country + "'";
+            String sql1 = "select count(distinct language) from locale where country='" + country + "'";
+            ResultSet rscount = conn.createStatement().executeQuery(sql1);
+            ResultSet resultSet = conn.createStatement().executeQuery(sql);
+            rscount.next();
+            int count = rscount.getInt(1);
+            returnval = new String[count];
+            int index = 0;
+            while (resultSet.next()) {
+                String language = resultSet.getString("language");
+                returnval[index] = language;
+                index++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return returnval;
+    }
+
+    public String[] getLocaleIDForSelectedCountryAndlanguage(String country, String language) {
+        String returnval[] = null;
+        try {
+            String sql = "Select localeid from locale where country= '" + country + "' and language='" + language + "'";
+            String sql1 = "Select count(localeid) from locale where country= '" + country + "' and language='" + language + "'";
+            ResultSet rscount = conn.createStatement().executeQuery(sql1);
+            ResultSet resultSet = conn.createStatement().executeQuery(sql);
+            rscount.next();
+            int count = rscount.getInt(1);
+            returnval = new String[count];
+            int index = 0;
+            while (resultSet.next()) {
+                String localeID = resultSet.getString("localeid");
+                returnval[index] = localeID;
+                index++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return returnval;
     }
 
     private void insertDefaultThemes() {

@@ -1,12 +1,13 @@
 <?xml version="1.1" encoding="UTF-8" ?>
 
-<Form version="1.3" maxVersion="1.5" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.5" maxVersion="1.5" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
-    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_formBundle" type="java.lang.String" value="in/raster/mayam/form/i18n/Bundle"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
@@ -63,13 +64,17 @@
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="0" green="8a" red="ff" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Layout"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="LayoutManagerPanel.layoutLabel.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+        </Property>
         <Property name="opaque" type="boolean" value="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="modalityLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Modality"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="LayoutManagerPanel.modalityLabel.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="jComboBox1">
@@ -86,7 +91,9 @@
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-            <TitledBorder title="Tile"/>
+            <TitledBorder title="Tile">
+              <ResourceString PropertyName="titleX" bundle="in/raster/mayam/form/i18n/Bundle.properties" key="LayoutManagerPanel.jPanel1.border.title_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+            </TitledBorder>
           </Border>
         </Property>
       </Properties>
@@ -130,12 +137,16 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="rowsLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Rows"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="LayoutManagerPanel.rowsLabel.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="columnsLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Columns"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="LayoutManagerPanel.columnsLabel.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
         </Component>
         <Component class="javax.swing.JSpinner" name="jSpinner1">
@@ -146,7 +157,9 @@
     </Container>
     <Component class="javax.swing.JCheckBox" name="multiframe">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Show multiframe instances as series"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="LayoutManagerPanel.multiframe.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="multiframeItemStateChanged"/>

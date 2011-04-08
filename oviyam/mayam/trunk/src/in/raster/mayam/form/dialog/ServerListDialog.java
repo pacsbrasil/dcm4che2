@@ -126,7 +126,8 @@ public class ServerListDialog extends javax.swing.JDialog {
         jScrollPane1 = new javax.swing.JScrollPane();
         serversInfoTree = new javax.swing.JTree();
 
-        setTitle("Dicom Nodes");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
+        setTitle(bundle.getString("ServerListDialog.title_1")); // NOI18N
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -134,14 +135,14 @@ public class ServerListDialog extends javax.swing.JDialog {
             }
         });
 
-        okButton.setText("OK");
+        okButton.setText(bundle.getString("ServerListDialog.okButton.text_1")); // NOI18N
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText(bundle.getString("ServerListDialog.cancelButton.text_1")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);

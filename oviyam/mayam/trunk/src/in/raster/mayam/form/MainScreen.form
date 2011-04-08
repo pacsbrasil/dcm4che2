@@ -6,12 +6,16 @@
       <SubComponents>
         <Menu class="javax.swing.JMenu" name="fileMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="File"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.fileMenu.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="importMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Import"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.importMenuItem.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="importMenuItemActionPerformed"/>
@@ -19,7 +23,9 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="exportMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Export"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.exportMenuItem.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exportMenuItemActionPerformed"/>
@@ -29,7 +35,9 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="deleteExamMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Delete Selected Exam"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.deleteExamMenuItem.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteExamMenuItemActionPerformed"/>
@@ -37,7 +45,9 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="anonymizeMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Anonymize"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.anonymizeMenuItem.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
             </MenuItem>
@@ -45,7 +55,9 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="resetMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Reset DB"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.resetMenuItem.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resetMenuItemActionPerformed"/>
@@ -55,7 +67,9 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="exitMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Exit"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.exitMenuItem.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="exitMenuItemActionPerformed"/>
@@ -65,12 +79,16 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="toolsMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Tools"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.toolsMenu.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="preferenceMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Preferences"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.preferenceMenuItem.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="preferenceMenuItemActionPerformed"/>
@@ -80,12 +98,16 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="networkMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Network"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.networkMenu.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="queueMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Queue"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.queueMenuItem.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="queueMenuItemActionPerformed"/>
@@ -93,7 +115,9 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="sendMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Send"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.sendMenuItem.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sendMenuItemActionPerformed"/>
@@ -101,7 +125,9 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="QRMenuItem1">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Query/Retrieve"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.QRMenuItem1.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="QRMenuItem1ActionPerformed"/>
@@ -111,12 +137,16 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="themeMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Theme"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.themeMenu.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="nimrodLFMenu">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Nimrod"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.nimrodLFMenu.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="nimrodLFMenuActionPerformed"/>
@@ -124,7 +154,9 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="motifLFMenu">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Motif"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.motifLFMenu.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="motifLFMenuActionPerformed"/>
@@ -132,7 +164,9 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="systemLFmenu">
               <Properties>
-                <Property name="text" type="java.lang.String" value="System L&amp;F"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.systemLFmenu.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="systemLFmenuActionPerformed"/>
@@ -142,17 +176,23 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="helpMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Help"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.helpMenu.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="userManualItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="User Manual"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.userManualItem.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="aboutMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="About"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.aboutMenuItem.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="aboutMenuItemActionPerformed"/>
@@ -165,7 +205,9 @@
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
-    <Property name="title" type="java.lang.String" value="Mayam"/>
+    <Property name="title" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.title_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+    </Property>
     <Property name="iconImage" type="java.awt.Image" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
       <Connection code="Toolkit.getDefaultToolkit().getImage(getClass().getResource(&quot;/in/raster/mayam/form/images/fav_mayam.png&quot;))" type="code"/>
     </Property>
@@ -175,11 +217,12 @@
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
   </SyntheticProperties>
   <AuxValues>
-    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_formBundle" type="java.lang.String" value="in/raster/mayam/form/i18n/Bundle"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
@@ -204,8 +247,8 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
+              <Component id="headerPanel" alignment="0" min="0" pref="1274" max="32767" attributes="1"/>
               <Component id="contentArea" alignment="0" max="32767" attributes="1"/>
-              <Component id="headerPanel" alignment="0" pref="1025" max="32767" attributes="1"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -228,7 +271,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jSplitPane1" alignment="0" pref="985" max="32767" attributes="0"/>
+                          <Component id="jSplitPane1" alignment="0" pref="1234" max="32767" attributes="0"/>
                           <Component id="localDatabaseLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -251,7 +294,9 @@
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                   <Font name="Lucida Grande" size="14" style="1"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value=" Local Database"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.localDatabaseLabel.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
             </Component>
             <Container class="javax.swing.JSplitPane" name="jSplitPane1">
@@ -315,7 +360,7 @@
                                   <Component id="seriesLabel" alignment="1" pref="330" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="windowingPanelCanvas" pref="641" max="32767" attributes="0"/>
+                              <Component id="windowingPanelCanvas" pref="890" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -345,7 +390,7 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <EmptySpace min="0" pref="641" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="890" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                         <DimensionLayout dim="1">
@@ -394,7 +439,9 @@
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="0" green="8a" red="ff" type="rgb"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Series "/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.seriesLabel.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                        </Property>
                         <Property name="opaque" type="boolean" value="true"/>
                       </Properties>
                     </Component>
@@ -420,24 +467,24 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                      <Component id="importButton" min="-2" pref="79" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="exportButton" min="-2" pref="79" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="cdImportButton" min="-2" pref="85" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="deleteButton" min="-2" pref="78" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="metaDataButton" min="-2" pref="114" max="-2" attributes="0"/>
+                      <Component id="importButton" linkSize="3" min="-2" pref="83" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="sendButton" min="-2" pref="69" max="-2" attributes="0"/>
+                      <Component id="exportButton" linkSize="3" min="-2" pref="85" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="cdImportButton" linkSize="3" min="-2" pref="52" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="deleteButton" linkSize="3" min="-2" pref="83" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="metaDataButton" linkSize="3" min="-2" pref="100" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="sendButton" linkSize="3" min="-2" pref="69" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="queryRetrieveButton" min="-2" pref="78" max="-2" attributes="0"/>
+                      <Component id="queryRetrieveButton" linkSize="3" min="-2" pref="82" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="viewerButton" min="-2" pref="79" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="queueButton" min="-2" pref="78" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="277" max="-2" attributes="0"/>
+                      <Component id="viewerButton" linkSize="3" min="-2" pref="77" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="queueButton" linkSize="3" min="-2" pref="72" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="558" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -446,15 +493,15 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="queueButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="viewerButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="queryRetrieveButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="sendButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="metaDataButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="deleteButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cdImportButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="exportButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="importButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="deleteButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="sendButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="queryRetrieveButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="viewerButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="queueButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="cdImportButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="32767" attributes="0"/>
                   </Group>
@@ -470,8 +517,9 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/in/raster/mayam/form/images/import.png"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Import"/>
-                <Property name="toolTipText" type="java.lang.String" value=""/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.importButton.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -492,8 +540,9 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/in/raster/mayam/form/images/export_study.png"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Export"/>
-                <Property name="toolTipText" type="java.lang.String" value=""/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.exportButton.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="defaultCapable" type="boolean" value="false"/>
@@ -515,8 +564,9 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/in/raster/mayam/form/images/cd_import.png"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="CD-Rom"/>
-                <Property name="toolTipText" type="java.lang.String" value=""/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.cdImportButton.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="defaultCapable" type="boolean" value="false"/>
@@ -538,8 +588,9 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/in/raster/mayam/form/images/delete_study.png"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Delete"/>
-                <Property name="toolTipText" type="java.lang.String" value=""/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.deleteButton.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -563,8 +614,9 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/in/raster/mayam/form/images/metadata_mainpage.png"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Meta Data"/>
-                <Property name="toolTipText" type="java.lang.String" value=""/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.metaDataButton.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -588,8 +640,9 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/in/raster/mayam/form/images/send.png"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Send"/>
-                <Property name="toolTipText" type="java.lang.String" value=""/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.sendButton.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -613,8 +666,9 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/in/raster/mayam/form/images/query.png"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Query"/>
-                <Property name="toolTipText" type="java.lang.String" value=""/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.queryRetrieveButton.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -638,8 +692,9 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/in/raster/mayam/form/images/viewer.png"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Viewer"/>
-                <Property name="toolTipText" type="java.lang.String" value=""/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.viewerButton.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="horizontalTextPosition" type="int" value="0"/>
@@ -663,8 +718,9 @@
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                   <Image iconType="3" name="/in/raster/mayam/form/images/queue.png"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Queue"/>
-                <Property name="toolTipText" type="java.lang.String" value=""/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="MainScreen.queueButton.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="contentAreaFilled" type="boolean" value="false"/>
                 <Property name="focusPainted" type="boolean" value="false"/>

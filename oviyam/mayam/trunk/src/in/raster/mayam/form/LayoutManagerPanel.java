@@ -82,10 +82,11 @@ public class LayoutManagerPanel extends javax.swing.JPanel {
         layoutLabel.setBackground(new java.awt.Color(0, 0, 0));
         layoutLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         layoutLabel.setForeground(new java.awt.Color(255, 138, 0));
-        layoutLabel.setText("Layout");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
+        layoutLabel.setText(bundle.getString("LayoutManagerPanel.layoutLabel.text_1")); // NOI18N
         layoutLabel.setOpaque(true);
 
-        modalityLabel.setText("Modality");
+        modalityLabel.setText(bundle.getString("LayoutManagerPanel.modalityLabel.text_1")); // NOI18N
 
         jComboBox1.setModel(new ModalityComboModel(ApplicationContext.databaseRef.getModalities()));
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {
@@ -94,11 +95,11 @@ public class LayoutManagerPanel extends javax.swing.JPanel {
             }
         });
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Tile"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("LayoutManagerPanel.jPanel1.border.title_1"))); // NOI18N
 
-        rowsLabel.setText("Rows");
+        rowsLabel.setText(bundle.getString("LayoutManagerPanel.rowsLabel.text_1")); // NOI18N
 
-        columnsLabel.setText("Columns");
+        columnsLabel.setText(bundle.getString("LayoutManagerPanel.columnsLabel.text_1")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -129,7 +130,7 @@ public class LayoutManagerPanel extends javax.swing.JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        multiframe.setText("Show multiframe instances as series");
+        multiframe.setText(bundle.getString("LayoutManagerPanel.multiframe.text_1")); // NOI18N
         multiframe.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 multiframeItemStateChanged(evt);

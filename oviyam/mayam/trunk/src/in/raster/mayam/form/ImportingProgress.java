@@ -38,6 +38,8 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
+import in.raster.mayam.context.ApplicationContext;
+
 /**
  *
  * @author  BabuHussain
@@ -68,7 +70,8 @@ public class ImportingProgress extends javax.swing.JFrame {
         setUndecorated(true);
 
         importingLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        importingLabel.setText("Importing ...");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
+        importingLabel.setText(bundle.getString("ImportingProgress.importingLabel.text_1")); // NOI18N
 
         jProgressBar1.setValue(1);
 

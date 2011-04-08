@@ -8,7 +8,9 @@
     </Component>
   </NonVisualComponents>
   <Properties>
-    <Property name="title" type="java.lang.String" value="Query/Retrieve"/>
+    <Property name="title" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.title_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+    </Property>
     <Property name="iconImage" type="java.awt.Image" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
       <Connection code="Toolkit.getDefaultToolkit().getImage(getClass().getResource(&quot;/in/raster/mayam/form/images/fav_mayam.png&quot;))" type="code"/>
     </Property>
@@ -17,11 +19,12 @@
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
   </SyntheticProperties>
   <AuxValues>
-    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_formBundle" type="java.lang.String" value="in/raster/mayam/form/i18n/Bundle"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
@@ -201,7 +204,9 @@
                       <ComponentRef name="searchDaysGroup"/>
                     </Property>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="Any date"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.anydateRadio.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="todayRadio">
@@ -209,7 +214,9 @@
                     <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                       <ComponentRef name="searchDaysGroup"/>
                     </Property>
-                    <Property name="text" type="java.lang.String" value="Today"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.todayRadio.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="yesterdayRadio">
@@ -217,7 +224,9 @@
                     <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                       <ComponentRef name="searchDaysGroup"/>
                     </Property>
-                    <Property name="text" type="java.lang.String" value="Yesterday"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.yesterdayRadio.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="lastweekRadio">
@@ -225,7 +234,9 @@
                     <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                       <ComponentRef name="searchDaysGroup"/>
                     </Property>
-                    <Property name="text" type="java.lang.String" value="Last week"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.lastweekRadio.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="lastmonthRadio">
@@ -233,7 +244,9 @@
                     <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                       <ComponentRef name="searchDaysGroup"/>
                     </Property>
-                    <Property name="text" type="java.lang.String" value="Last month"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.lastmonthRadio.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="betweenRadio">
@@ -241,7 +254,9 @@
                     <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                       <ComponentRef name="searchDaysGroup"/>
                     </Property>
-                    <Property name="text" type="java.lang.String" value="Between"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.betweenRadio.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JSpinner" name="fromSpinner">
@@ -326,7 +341,9 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="dobLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Date Of Birth"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.dobLabel.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JSpinner" name="birthDateSpinner">
@@ -336,21 +353,27 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="patientNameLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Patient Name"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.patientNameLabel.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="patientNameText">
                 </Component>
                 <Component class="javax.swing.JLabel" name="patientIDLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Patient ID"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.patientIDLabel.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="patientIDText">
                 </Component>
                 <Component class="javax.swing.JLabel" name="accessionLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Accession #"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.accessionLabel.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="jTextField3">
@@ -450,77 +473,107 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="ctCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="CT"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.ctCheckBox.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="mrCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="MR"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.mrCheckBox.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="xaCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="XA"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.xaCheckBox.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="crCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="CR"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.crCheckBox.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="scCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="SC"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.scCheckBox.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="nmCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="NM"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.nmCheckBox.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="rfCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="RF"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.rfCheckBox.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="dxCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="DX"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.dxCheckBox.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="pxCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="PX"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.pxCheckBox.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="usCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="US"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.usCheckBox.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="otCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="OT"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.otCheckBox.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="drCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="DR"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.drCheckBox.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="srCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="SR"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.srCheckBox.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="mgCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="MG"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.mgCheckBox.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="rgCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="RG"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.rgCheckBox.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="modalityText">
@@ -579,7 +632,9 @@
           <SubComponents>
             <Component class="javax.swing.JButton" name="verifyButton">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Verify"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.verifyButton.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="verifyButtonActionPerformed"/>
@@ -587,7 +642,9 @@
             </Component>
             <Component class="javax.swing.JButton" name="queryButton">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Query"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.queryButton.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="queryButtonActionPerformed"/>
@@ -595,7 +652,9 @@
             </Component>
             <Component class="javax.swing.JButton" name="retrieveButton">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Retrieve"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.retrieveButton.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="retrieveButtonActionPerformed"/>
@@ -643,7 +702,9 @@
               <Color blue="0" green="8a" red="ff" type="rgb"/>
             </Property>
             <Property name="horizontalAlignment" type="int" value="0"/>
-            <Property name="text" type="java.lang.String" value=" Server Name"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.serverNameLabel.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+            </Property>
             <Property name="opaque" type="boolean" value="true"/>
           </Properties>
         </Component>
@@ -659,7 +720,9 @@
               <Color blue="0" green="8a" red="ff" type="rgb"/>
             </Property>
             <Property name="horizontalAlignment" type="int" value="0"/>
-            <Property name="text" type="java.lang.String" value=" DICOM Nodes "/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.headerLabel.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+            </Property>
             <Property name="opaque" type="boolean" value="true"/>
           </Properties>
         </Component>
@@ -675,7 +738,9 @@
               <Color blue="0" green="8a" red="ff" type="rgb"/>
             </Property>
             <Property name="horizontalAlignment" type="int" value="0"/>
-            <Property name="text" type="java.lang.String" value="Query Filter"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.queryFilterLabel.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+            </Property>
             <Property name="opaque" type="boolean" value="true"/>
           </Properties>
         </Component>

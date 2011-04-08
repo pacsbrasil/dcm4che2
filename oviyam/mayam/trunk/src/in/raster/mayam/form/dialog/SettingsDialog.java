@@ -82,7 +82,8 @@ public class SettingsDialog extends javax.swing.JDialog {
         serverManager = new ServerManager();
         serverManager.addServerChangeListener(m.getQueryScreen());
         jPanel4.add(serverManager, "card7");
-
+        InternationalizationForm internationalizationForm=new InternationalizationForm();
+        jPanel4.add(internationalizationForm, "card8");
 
     }
 
@@ -106,10 +107,12 @@ public class SettingsDialog extends javax.swing.JDialog {
         DefaultMutableTreeNode node4 = new DefaultMutableTreeNode("Window Configuration");
         DefaultMutableTreeNode node5 = new DefaultMutableTreeNode("Preset");
         DefaultMutableTreeNode node6 = new DefaultMutableTreeNode("Servers");
+        DefaultMutableTreeNode node7 = new DefaultMutableTreeNode("Language");
         rootNode.add(node2);
         rootNode.add(node3);
         rootNode.add(node6);
         rootNode.add(node5);
+        rootNode.add(node7);
         return rootNode;
 
     }
@@ -144,7 +147,8 @@ public class SettingsDialog extends javax.swing.JDialog {
         dateFormatPanel1 = new in.raster.mayam.form.DateFormatPanel();
         windowConfigurationPanel1 = new in.raster.mayam.form.WindowConfigurationPanel();
 
-        setTitle("Mayam Preferences");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
+        setTitle(bundle.getString("SettingsDialog.title_1_1")); // NOI18N
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -175,14 +179,14 @@ public class SettingsDialog extends javax.swing.JDialog {
 
         jSplitPane1.setLeftComponent(jPanel1);
 
-        okButton.setText("OK");
+        okButton.setText(bundle.getString("SettingsDialog.okButton.text_1_1")); // NOI18N
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText(bundle.getString("SettingsDialog.cancelButton.text_1_1")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -285,6 +289,10 @@ public class SettingsDialog extends javax.swing.JDialog {
 
         } else if (node.getUserObject().toString().equalsIgnoreCase("Servers")) {
             ((CardLayout) jPanel4.getLayout()).show(jPanel4, "card7");
+
+        }
+        else if (node.getUserObject().toString().equalsIgnoreCase("Language")) {
+            ((CardLayout) jPanel4.getLayout()).show(jPanel4, "card8");
 
         }
     }//GEN-LAST:event_jTree1ValueChanged

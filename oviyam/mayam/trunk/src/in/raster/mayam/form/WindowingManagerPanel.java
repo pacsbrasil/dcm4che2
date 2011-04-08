@@ -96,10 +96,11 @@ public class WindowingManagerPanel extends javax.swing.JPanel implements KeyList
         presetLabel.setBackground(new java.awt.Color(0, 0, 0));
         presetLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         presetLabel.setForeground(new java.awt.Color(255, 138, 0));
-        presetLabel.setText("Preset");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
+        presetLabel.setText(bundle.getString("WindowingManagerPanel.presetLabel.text_1")); // NOI18N
         presetLabel.setOpaque(true);
 
-        modalityLabel.setText("Modality");
+        modalityLabel.setText(bundle.getString("WindowingManagerPanel.modalityLabel.text_1")); // NOI18N
 
         jComboBox1.setModel(new ModalityComboModel(ApplicationContext.databaseRef.getModalities()));
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {
@@ -122,7 +123,7 @@ public class WindowingManagerPanel extends javax.swing.JPanel implements KeyList
         jTable1.getTableHeader().setBackground(new Color(0,0,0));
         jScrollPane1.setViewportView(jTable1);
 
-        addButton.setText("Add");
+        addButton.setText(bundle.getString("WindowingManagerPanel.addButton.text_1")); // NOI18N
         addButton.setFocusable(false);
         addButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         addButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);

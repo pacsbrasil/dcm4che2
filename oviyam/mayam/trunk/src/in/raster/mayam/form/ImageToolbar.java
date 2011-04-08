@@ -235,10 +235,10 @@ public class ImageToolbar extends javax.swing.JPanel {
         toolsButtonGroup.add(windowing);
         windowing.setFocusPainted(false);
         windowing.setFocusable(false);
-        windowing.setHorizontalTextPosition(0);
+        windowing.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         windowing.setPreferredSize(new java.awt.Dimension(45, 45));
         windowing.setRequestFocusEnabled(false);
-        windowing.setVerticalTextPosition(3);
+        windowing.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         windowing.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 windowingActionPerformed(evt);
@@ -370,10 +370,10 @@ public class ImageToolbar extends javax.swing.JPanel {
         panButton.setToolTipText("Pan");
         toolsButtonGroup.add(panButton);
         panButton.setFocusable(false);
-        panButton.setHorizontalTextPosition(0);
+        panButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         panButton.setPreferredSize(new java.awt.Dimension(45, 45));
         panButton.setRequestFocusEnabled(false);
-        panButton.setVerticalTextPosition(3);
+        panButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         panButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 panButtonActionPerformed(evt);
@@ -400,10 +400,10 @@ public class ImageToolbar extends javax.swing.JPanel {
         rulerButton.setActionCommand("ruler");
         toolsButtonGroup.add(rulerButton);
         rulerButton.setFocusable(false);
-        rulerButton.setHorizontalTextPosition(0);
+        rulerButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         rulerButton.setPreferredSize(new java.awt.Dimension(45, 45));
         rulerButton.setRequestFocusEnabled(false);
-        rulerButton.setVerticalTextPosition(3);
+        rulerButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         rulerButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rulerButtonActionPerformed(evt);
@@ -416,10 +416,10 @@ public class ImageToolbar extends javax.swing.JPanel {
         rectangleButton.setActionCommand("rectangle");
         toolsButtonGroup.add(rectangleButton);
         rectangleButton.setFocusable(false);
-        rectangleButton.setHorizontalTextPosition(0);
+        rectangleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         rectangleButton.setPreferredSize(new java.awt.Dimension(45, 45));
         rectangleButton.setRequestFocusEnabled(false);
-        rectangleButton.setVerticalTextPosition(3);
+        rectangleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         rectangleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rectangleButtonActionPerformed(evt);
@@ -432,10 +432,10 @@ public class ImageToolbar extends javax.swing.JPanel {
         ellipseButton.setActionCommand("ellipse");
         toolsButtonGroup.add(ellipseButton);
         ellipseButton.setFocusable(false);
-        ellipseButton.setHorizontalTextPosition(0);
+        ellipseButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         ellipseButton.setPreferredSize(new java.awt.Dimension(45, 45));
         ellipseButton.setRequestFocusEnabled(false);
-        ellipseButton.setVerticalTextPosition(3);
+        ellipseButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         ellipseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ellipseButtonActionPerformed(evt);
@@ -460,10 +460,10 @@ public class ImageToolbar extends javax.swing.JPanel {
         deleteMeasurement.setActionCommand("deleteMeasurement");
         toolsButtonGroup.add(deleteMeasurement);
         deleteMeasurement.setFocusable(false);
-        deleteMeasurement.setHorizontalTextPosition(0);
+        deleteMeasurement.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         deleteMeasurement.setPreferredSize(new java.awt.Dimension(45, 45));
         deleteMeasurement.setRequestFocusEnabled(false);
-        deleteMeasurement.setVerticalTextPosition(3);
+        deleteMeasurement.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         deleteMeasurement.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteMeasurementActionPerformed(evt);
@@ -477,10 +477,10 @@ public class ImageToolbar extends javax.swing.JPanel {
         toolsButtonGroup.add(moveMeasurement);
         moveMeasurement.setDoubleBuffered(true);
         moveMeasurement.setFocusable(false);
-        moveMeasurement.setHorizontalTextPosition(0);
+        moveMeasurement.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         moveMeasurement.setPreferredSize(new java.awt.Dimension(45, 45));
         moveMeasurement.setRequestFocusEnabled(false);
-        moveMeasurement.setVerticalTextPosition(3);
+        moveMeasurement.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         moveMeasurement.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moveMeasurementActionPerformed(evt);
@@ -557,9 +557,9 @@ public class ImageToolbar extends javax.swing.JPanel {
         stackButton.setToolTipText("Stack");
         toolsButtonGroup.add(stackButton);
         stackButton.setFocusable(false);
-        stackButton.setHorizontalTextPosition(0);
+        stackButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         stackButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        stackButton.setVerticalTextPosition(3);
+        stackButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         stackButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 stackButtonActionPerformed(evt);
@@ -571,9 +571,9 @@ public class ImageToolbar extends javax.swing.JPanel {
         scoutButton.setToolTipText("ScoutLine");
         toolsButtonGroup.add(scoutButton);
         scoutButton.setFocusable(false);
-        scoutButton.setHorizontalTextPosition(0);
+        scoutButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         scoutButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        scoutButton.setVerticalTextPosition(3);
+        scoutButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         scoutButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 scoutButtonActionPerformed(evt);
@@ -603,9 +603,9 @@ public class ImageToolbar extends javax.swing.JPanel {
         synchronizeButton.setToolTipText("Synchronize");
         toolsButtonGroup.add(synchronizeButton);
         synchronizeButton.setFocusable(false);
-        synchronizeButton.setHorizontalTextPosition(0);
+        synchronizeButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         synchronizeButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        synchronizeButton.setVerticalTextPosition(3);
+        synchronizeButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         synchronizeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 synchronizeButtonActionPerformed(evt);

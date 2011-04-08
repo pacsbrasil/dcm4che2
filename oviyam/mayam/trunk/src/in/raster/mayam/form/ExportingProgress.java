@@ -38,6 +38,8 @@
 * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
+import in.raster.mayam.context.ApplicationContext;
+
 /**
  *
  * @author  BabuHussain
@@ -68,7 +70,8 @@ public class ExportingProgress extends javax.swing.JFrame  {
         setUndecorated(true);
 
         exportingLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        exportingLabel.setText("Exporting ...");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
+        exportingLabel.setText(bundle.getString("ExportingProgress.exportingLabel.text_1")); // NOI18N
 
         jProgressBar1.setValue(1);
 

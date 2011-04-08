@@ -38,6 +38,8 @@
 * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form.dialog;
 
+import in.raster.mayam.context.ApplicationContext;
+
 
 /**
  *
@@ -85,14 +87,15 @@ public class FieldValidator extends javax.swing.JDialog {
             }
         });
 
-        okButton.setText("OK");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
+        okButton.setText(bundle.getString("FieldValidator.okButton.text_1")); // NOI18N
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
 
-        fieldValidator.setText("Fields should not be blank");
+        fieldValidator.setText(bundle.getString("FieldValidator.fieldValidator.text_1")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

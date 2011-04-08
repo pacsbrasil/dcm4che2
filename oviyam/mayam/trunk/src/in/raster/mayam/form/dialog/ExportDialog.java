@@ -105,7 +105,8 @@ public class ExportDialog extends javax.swing.JDialog {
         dicomRadio = new javax.swing.JRadioButton();
         jpgRadio = new javax.swing.JRadioButton();
 
-        setTitle("Export");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
+        setTitle(bundle.getString("ExportDialog.title_1")); // NOI18N
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -113,14 +114,14 @@ public class ExportDialog extends javax.swing.JDialog {
             }
         });
 
-        okButton.setText("OK");
+        okButton.setText(bundle.getString("ExportDialog.okButton.text_1")); // NOI18N
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText(bundle.getString("ExportDialog.cancelButton.text_1")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -129,19 +130,19 @@ public class ExportDialog extends javax.swing.JDialog {
 
         buttonGroup1.add(singleImage);
         singleImage.setSelected(true);
-        singleImage.setText("Current image only");
+        singleImage.setText(bundle.getString("ExportDialog.singleImage.text_1")); // NOI18N
 
         buttonGroup1.add(allImageRadio);
-        allImageRadio.setText("All images of the series");
+        allImageRadio.setText(bundle.getString("ExportDialog.allImageRadio.text_1")); // NOI18N
 
-        formatLabel.setText("Format");
+        formatLabel.setText(bundle.getString("ExportDialog.formatLabel.text_1")); // NOI18N
 
         formatGroup.add(dicomRadio);
         dicomRadio.setSelected(true);
-        dicomRadio.setText("DICOM");
+        dicomRadio.setText(bundle.getString("ExportDialog.dicomRadio.text_1")); // NOI18N
 
         formatGroup.add(jpgRadio);
-        jpgRadio.setText("Jpg");
+        jpgRadio.setText(bundle.getString("ExportDialog.jpgRadio.text_1")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

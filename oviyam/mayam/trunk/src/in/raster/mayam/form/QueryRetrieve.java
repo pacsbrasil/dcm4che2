@@ -214,7 +214,8 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
         headerLabel = new javax.swing.JLabel();
         queryFilterLabel = new javax.swing.JLabel();
 
-        setTitle("Query/Retrieve");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
+        setTitle(bundle.getString("QueryRetrieve.title_1")); // NOI18N
         setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/in/raster/mayam/form/images/fav_mayam.png")));
 
         jPanel9.setMaximumSize(new java.awt.Dimension(1200, 1400));
@@ -225,22 +226,22 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
 
         searchDaysGroup.add(anydateRadio);
         anydateRadio.setSelected(true);
-        anydateRadio.setText("Any date");
+        anydateRadio.setText(bundle.getString("QueryRetrieve.anydateRadio.text_1")); // NOI18N
 
         searchDaysGroup.add(todayRadio);
-        todayRadio.setText("Today");
+        todayRadio.setText(bundle.getString("QueryRetrieve.todayRadio.text_1")); // NOI18N
 
         searchDaysGroup.add(yesterdayRadio);
-        yesterdayRadio.setText("Yesterday");
+        yesterdayRadio.setText(bundle.getString("QueryRetrieve.yesterdayRadio.text_1")); // NOI18N
 
         searchDaysGroup.add(lastweekRadio);
-        lastweekRadio.setText("Last week");
+        lastweekRadio.setText(bundle.getString("QueryRetrieve.lastweekRadio.text_1")); // NOI18N
 
         searchDaysGroup.add(lastmonthRadio);
-        lastmonthRadio.setText("Last month");
+        lastmonthRadio.setText(bundle.getString("QueryRetrieve.lastmonthRadio.text_1")); // NOI18N
 
         searchDaysGroup.add(betweenRadio);
-        betweenRadio.setText("Between");
+        betweenRadio.setText(bundle.getString("QueryRetrieve.betweenRadio.text_1")); // NOI18N
 
         fromSpinner.setEnabled(false);
 
@@ -292,15 +293,15 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
 
         jPanel10.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
-        dobLabel.setText("Date Of Birth");
+        dobLabel.setText(bundle.getString("QueryRetrieve.dobLabel.text_1")); // NOI18N
 
         birthDateSpinner.setEnabled(false);
 
-        patientNameLabel.setText("Patient Name");
+        patientNameLabel.setText(bundle.getString("QueryRetrieve.patientNameLabel.text_1")); // NOI18N
 
-        patientIDLabel.setText("Patient ID");
+        patientIDLabel.setText(bundle.getString("QueryRetrieve.patientIDLabel.text_1")); // NOI18N
 
-        accessionLabel.setText("Accession #");
+        accessionLabel.setText(bundle.getString("QueryRetrieve.accessionLabel.text_1")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel10Layout = new org.jdesktop.layout.GroupLayout(jPanel10);
         jPanel10.setLayout(jPanel10Layout);
@@ -349,35 +350,35 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
-        ctCheckBox.setText("CT");
+        ctCheckBox.setText(bundle.getString("QueryRetrieve.ctCheckBox.text_1")); // NOI18N
 
-        mrCheckBox.setText("MR");
+        mrCheckBox.setText(bundle.getString("QueryRetrieve.mrCheckBox.text_1")); // NOI18N
 
-        xaCheckBox.setText("XA");
+        xaCheckBox.setText(bundle.getString("QueryRetrieve.xaCheckBox.text_1")); // NOI18N
 
-        crCheckBox.setText("CR");
+        crCheckBox.setText(bundle.getString("QueryRetrieve.crCheckBox.text_1")); // NOI18N
 
-        scCheckBox.setText("SC");
+        scCheckBox.setText(bundle.getString("QueryRetrieve.scCheckBox.text_1")); // NOI18N
 
-        nmCheckBox.setText("NM");
+        nmCheckBox.setText(bundle.getString("QueryRetrieve.nmCheckBox.text_1")); // NOI18N
 
-        rfCheckBox.setText("RF");
+        rfCheckBox.setText(bundle.getString("QueryRetrieve.rfCheckBox.text_1")); // NOI18N
 
-        dxCheckBox.setText("DX");
+        dxCheckBox.setText(bundle.getString("QueryRetrieve.dxCheckBox.text_1")); // NOI18N
 
-        pxCheckBox.setText("PX");
+        pxCheckBox.setText(bundle.getString("QueryRetrieve.pxCheckBox.text_1")); // NOI18N
 
-        usCheckBox.setText("US");
+        usCheckBox.setText(bundle.getString("QueryRetrieve.usCheckBox.text_1")); // NOI18N
 
-        otCheckBox.setText("OT");
+        otCheckBox.setText(bundle.getString("QueryRetrieve.otCheckBox.text_1")); // NOI18N
 
-        drCheckBox.setText("DR");
+        drCheckBox.setText(bundle.getString("QueryRetrieve.drCheckBox.text_1")); // NOI18N
 
-        srCheckBox.setText("SR");
+        srCheckBox.setText(bundle.getString("QueryRetrieve.srCheckBox.text_1")); // NOI18N
 
-        mgCheckBox.setText("MG");
+        mgCheckBox.setText(bundle.getString("QueryRetrieve.mgCheckBox.text_1")); // NOI18N
 
-        rgCheckBox.setText("RG");
+        rgCheckBox.setText(bundle.getString("QueryRetrieve.rgCheckBox.text_1")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -482,21 +483,21 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
         serverListTable.getTableHeader().setBackground(new Color(0,0,0));
         serverlistScroll.setViewportView(serverListTable);
 
-        verifyButton.setText("Verify");
+        verifyButton.setText(bundle.getString("QueryRetrieve.verifyButton.text_1")); // NOI18N
         verifyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 verifyButtonActionPerformed(evt);
             }
         });
 
-        queryButton.setText("Query");
+        queryButton.setText(bundle.getString("QueryRetrieve.queryButton.text_1")); // NOI18N
         queryButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 queryButtonActionPerformed(evt);
             }
         });
 
-        retrieveButton.setText("Retrieve");
+        retrieveButton.setText(bundle.getString("QueryRetrieve.retrieveButton.text_1")); // NOI18N
         retrieveButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 retrieveButtonActionPerformed(evt);
@@ -544,21 +545,21 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
         serverNameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         serverNameLabel.setForeground(new java.awt.Color(255, 138, 0));
         serverNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        serverNameLabel.setText(" Server Name");
+        serverNameLabel.setText(bundle.getString("QueryRetrieve.serverNameLabel.text_1")); // NOI18N
         serverNameLabel.setOpaque(true);
 
         headerLabel.setBackground(new java.awt.Color(0, 0, 0));
         headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         headerLabel.setForeground(new java.awt.Color(255, 138, 0));
         headerLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        headerLabel.setText(" DICOM Nodes ");
+        headerLabel.setText(bundle.getString("QueryRetrieve.headerLabel.text_1")); // NOI18N
         headerLabel.setOpaque(true);
 
         queryFilterLabel.setBackground(new java.awt.Color(0, 0, 0));
         queryFilterLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         queryFilterLabel.setForeground(new java.awt.Color(255, 138, 0));
         queryFilterLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        queryFilterLabel.setText("Query Filter");
+        queryFilterLabel.setText(bundle.getString("QueryRetrieve.queryFilterLabel.text_1")); // NOI18N
         queryFilterLabel.setOpaque(true);
 
         org.jdesktop.layout.GroupLayout jPanel9Layout = new org.jdesktop.layout.GroupLayout(jPanel9);

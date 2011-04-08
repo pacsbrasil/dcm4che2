@@ -38,6 +38,7 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
+import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.model.table.renderer.CellRenderer;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -77,7 +78,8 @@ public class SendReceivePanel extends javax.swing.JPanel {
         receiveLabel.setBackground(new java.awt.Color(0, 0, 0));
         receiveLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         receiveLabel.setForeground(new java.awt.Color(250, 138, 0));
-        receiveLabel.setText("  Receive");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
+        receiveLabel.setText(bundle.getString("SendReceivePanel.receiveLabel.text_1")); // NOI18N
         receiveLabel.setOpaque(true);
 
         receiveTable.setModel(new javax.swing.table.DefaultTableModel(
