@@ -73,6 +73,8 @@ public class DicomInputStream extends FilterInputStream implements
 
     private static final int ZLIB_HEADER = 0x789c;
 
+    private static final int ALLOC_BYTES_INC = 0x4000000; // 64MiB
+
     private static final byte[] EMPTY_BYTES = {};
 
     private DicomInputHandler handler = this;
@@ -603,8 +605,19 @@ public class DicomInputStream extends FilterInputStream implements
     public byte[] readBytes(int vallen) throws IOException {
         if (vallen == 0)
             return EMPTY_BYTES;
-        byte[] val = new byte[vallen];
-        readFully(val, 0, vallen);
+        if (vallen < 0)
+            throw new EOFException(); // assume InputStream length < 2 GiB
+        int allocLen = Math.min(vallen, ALLOC_BYTES_INC);
+        byte[] val = new byte[allocLen];
+        readFully(val, 0, allocLen);
+        while (allocLen < vallen) {
+            int prevAllocLen = allocLen;
+            allocLen = Math.min(vallen, allocLen + ALLOC_BYTES_INC);
+            byte[] copy = new byte[allocLen];
+            System.arraycopy(val, 0, copy, 0, prevAllocLen);
+            val = copy;
+            readFully(val, prevAllocLen, allocLen - prevAllocLen);
+        }
         return val;
     }
 }
