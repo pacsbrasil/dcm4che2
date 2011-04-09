@@ -123,6 +123,9 @@ public class Instance extends BaseEntity implements Serializable {
 
     @Column(name = "inst_status", nullable = false)
     private StorageStatus storageStatus;
+    
+    @Column(name = "archived", nullable = false)
+    private boolean archived;
 
     @Column(name = "all_attrs", nullable = false)
     private boolean allAttributes;
@@ -226,6 +229,14 @@ public class Instance extends BaseEntity implements Serializable {
 
     public void setStorageStatus(StorageStatus storageStatus) {
         this.storageStatus = storageStatus;
+    }
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
     }
 
     public boolean isAllAttributes() {

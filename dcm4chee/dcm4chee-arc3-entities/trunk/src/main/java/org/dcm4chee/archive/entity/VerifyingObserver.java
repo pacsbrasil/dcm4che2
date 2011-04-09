@@ -69,6 +69,12 @@ public class VerifyingObserver extends BaseEntity implements Serializable {
 
     // JPA definition in orm.xml
     private String verifyingObserverName;
+    
+    @Column(name = "observer_fn_sx")
+    private String verifyingObserverFamilyNameSoundex;
+    
+    @Column(name = "observer_gn_sx")
+    private String verifyingObserverGivenNameSoundex;
 
     // JPA definition in orm.xml
     private String verifyingObserverIdeographicName;
@@ -86,6 +92,24 @@ public class VerifyingObserver extends BaseEntity implements Serializable {
 
     public String getVerifyingObserverName() {
         return verifyingObserverName;
+    }
+
+    public String getVerifyingObserverFamilyNameSoundex() {
+        return verifyingObserverFamilyNameSoundex;
+    }
+
+    public void setVerifyingObserverFamilyNameSoundex(
+            String verifyingObserverFamilyNameSoundex) {
+        this.verifyingObserverFamilyNameSoundex = verifyingObserverFamilyNameSoundex;
+    }
+    
+    public String getVerifyingObserverGivenNameSoundex() {
+        return verifyingObserverGivenNameSoundex;
+    }
+
+    public void setVerifyingObserverGivenNameSoundex(
+            String verifyingObserverGivenNameSoundex) {
+        this.verifyingObserverGivenNameSoundex = verifyingObserverGivenNameSoundex;
     }
 
     public String getVerifyingObserverIdeographicName() {

@@ -39,6 +39,7 @@ package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -64,6 +65,12 @@ public class GPSPSPerformer extends BaseEntity implements Serializable {
 
     // JPA definition in orm.xml
     private String humanPerformerName;
+    
+    @Column(name = "hum_perf_fn_sx")
+    private String humanPerformerFamilyNameSoundex;
+    
+    @Column(name = "hum_perf_gn_sx")
+    private String humanPerformerGivenNameSoundex;
 
     // JPA definition in orm.xml
     private String humanPerformerIdeographicName;
@@ -81,6 +88,24 @@ public class GPSPSPerformer extends BaseEntity implements Serializable {
 
     public String getHumanPerformerName() {
         return humanPerformerName;
+    }
+
+    public String getHumanPerformerFamilyNameSoundex() {
+        return humanPerformerFamilyNameSoundex;
+    }
+
+    public void setHumanPerformerFamilyNameSoundex(
+            String humanPerformerFamilyNameSoundex) {
+        this.humanPerformerFamilyNameSoundex = humanPerformerFamilyNameSoundex;
+    }
+
+    public String getHumanPerformerGivenNameSoundex() {
+        return humanPerformerGivenNameSoundex;
+    }
+
+    public void setHumanPerformerGivenNameSoundex(
+            String humanPerformerGivenNameSoundex) {
+        this.humanPerformerGivenNameSoundex = humanPerformerGivenNameSoundex;
     }
 
     public String getHumanPerformerIdeographicName() {

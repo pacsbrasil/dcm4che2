@@ -61,7 +61,6 @@ import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.conf.AttributeFilter;
 import org.dcm4chee.archive.exceptions.ConfigurationException;
 import org.dcm4chee.archive.util.DicomObjectUtils;
-import org.hibernate.annotations.BatchSize;
 
 /**
  * @author Damien Evans <damien.daddy@gmail.com>
@@ -96,6 +95,12 @@ public class Study extends BaseEntity implements Serializable {
 
     // JPA definition in orm.xml
     private String referringPhysicianName;
+    
+    @Column(name = "ref_phys_fn_sx")
+    private String referringPhysicianFamilyNameSoundex;
+    
+    @Column(name = "ref_phys_gn_sx")
+    private String referringPhysicianGivenNameSoundex;
 
     // JPA definition in orm.xml
     private String referringPhysicianIdeographicName;
@@ -163,6 +168,10 @@ public class Study extends BaseEntity implements Serializable {
                 @JoinColumn(name="pcode_fk", referencedColumnName="pk")
         )
     private Set<Code> procedureCodes;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "accno_issuer_fk")
+    private Issuer issuerOfAccessionNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_fk")
@@ -220,6 +229,24 @@ public class Study extends BaseEntity implements Serializable {
         return referringPhysicianName;
     }
     
+    public String getReferringPhysicianFamilyNameSoundex() {
+        return referringPhysicianFamilyNameSoundex;
+    }
+
+    public void setReferringPhysicianFamilyNameSoundex(
+            String referringPhysicianFamilyNameSoundex) {
+        this.referringPhysicianFamilyNameSoundex = referringPhysicianFamilyNameSoundex;
+    }
+
+    public String getReferringPhysicianGivenNameSoundex() {
+        return referringPhysicianGivenNameSoundex;
+    }
+
+    public void setReferringPhysicianGivenNameSoundex(
+            String referringPhysicianGivenNameSoundex) {
+        this.referringPhysicianGivenNameSoundex = referringPhysicianGivenNameSoundex;
+    }
+
     public String getReferringPhysicianIdeographicName() {
         return referringPhysicianIdeographicName;
     }
@@ -371,6 +398,14 @@ public class Study extends BaseEntity implements Serializable {
 
     public void setProcedureCodes(Set<Code> procedureCodes) {
         this.procedureCodes = procedureCodes;
+    }
+
+    public Issuer getIssuerOfAccessionNumber() {
+        return issuerOfAccessionNumber;
+    }
+
+    public void setIssuerOfAccessionNumber(Issuer issuerOfAccessionNumber) {
+        this.issuerOfAccessionNumber = issuerOfAccessionNumber;
     }
 
     public Patient getPatient() {

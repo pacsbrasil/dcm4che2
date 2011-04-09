@@ -87,6 +87,12 @@ public class Patient extends BaseEntity implements Serializable {
 
     // JPA definition in orm.xml
     private String patientName;
+    
+    @Column(name = "pat_fn_sx")
+    private String patientFamilyNameSoundex;
+    
+    @Column(name = "pat_gn_sx")
+    private String patientGivenNameSoundex;
 
     // JPA definition in orm.xml
     private String patientIdeographicName;
@@ -172,6 +178,22 @@ public class Patient extends BaseEntity implements Serializable {
     
     public void setPatientName(String name) {
         this.patientName = name;
+    }
+
+    public String getPatientFamilyNameSoundex() {
+        return patientFamilyNameSoundex;
+    }
+
+    public void setPatientFamilyNameSoundex(String patientFamilyNameSoundex) {
+        this.patientFamilyNameSoundex = patientFamilyNameSoundex;
+    }
+
+    public String getPatientGivenNameSoundex() {
+        return patientGivenNameSoundex;
+    }
+
+    public void setPatientGivenNameSoundex(String patientGivenNameSoundex) {
+        this.patientGivenNameSoundex = patientGivenNameSoundex;
     }
 
     public String getPatientIdeographicName() {

@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Accurate Software Design, LLC.
- * Portions created by the Initial Developer are Copyright (C) 2006-2008
+ * itMD, LLC.
+ * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -38,7 +38,6 @@
 package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -48,69 +47,72 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * @author Damien Evans <damien.daddy@gmail.com>
- * @author Justin Falk <jfalkmu@gmail.com>
+ * @author Damien Evans <damien.evans@itmd.net>
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Mar 3, 2008
+ * @since Apr 8, 2011
  */
 @Entity
-@Table(name = "study_on_fs")
-public class StudyOnFileSystem extends BaseEntity implements Serializable {
-
-    private static final long serialVersionUID = -4529151202029255741L;
-
-    @Column(name = "access_time", nullable = false)
-    private Date accessTime;
+@Table(name = "content_item")
+public class ContentItem extends BaseEntity implements Serializable {
     
-    @Column(name = "mark_to_delete", nullable = false)
-    private boolean markedForDeletion;
+    private static final long serialVersionUID = 5112343805141490749L;
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name = "study_fk")
-    private Study study;
+    @Column(name = "rel_type")
+    private String relationshipType;
+    
+    @Column(name = "text_value")
+    private String textValue;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "name_fk")
+    private Code conceptName;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "code_fk")
+    private Code conceptCode;
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name = "filesystem_fk")
-    private FileSystem fileSystem;
-
-    public Date getAccessTime() {
-        return accessTime;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "instance_fk")
+    private Instance instance;
+    
+    public String getRelationshipType() {
+        return relationshipType;
     }
 
-    public void setAccessTime(Date accessTime) {
-        this.accessTime = accessTime;
+    public void setRelationshipType(String relationshipType) {
+        this.relationshipType = relationshipType;
     }
 
-    public boolean isMarkedForDeletion() {
-        return markedForDeletion;
+    public String getTextValue() {
+        return textValue;
     }
 
-    public void setMarkedForDeletion(boolean markedForDeletion) {
-        this.markedForDeletion = markedForDeletion;
+    public void setTextValue(String textValue) {
+        this.textValue = textValue;
     }
 
-    public Study getStudy() {
-        return study;
+    public Code getConceptName() {
+        return conceptName;
     }
 
-    public void setStudy(Study study) {
-        this.study = study;
+    public void setConceptName(Code conceptName) {
+        this.conceptName = conceptName;
     }
 
-    public FileSystem getFileSystem() {
-        return fileSystem;
+    public Code getConceptCode() {
+        return conceptCode;
     }
 
-    public void setFileSystem(FileSystem fileSystem) {
-        this.fileSystem = fileSystem;
+    public void setConceptCode(Code conceptCode) {
+        this.conceptCode = conceptCode;
     }
 
-    @Override
-    public String toString() {
-        return "StudyOnFileSystem[pk=" + pk
-            + ", lastaccess=" + accessTime
-            + "]";
+    public Instance getInstance() {
+        return instance;
     }
 
+    public void setInstance(Instance instance) {
+        this.instance = instance;
+    }
 }

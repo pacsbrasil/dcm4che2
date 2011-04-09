@@ -101,6 +101,12 @@ public class MWLItem extends BaseEntity implements Serializable {
     // JPA definition in orm.xml
     private String scheduledPerformingPhysicianName;
     
+    @Column(name = "perf_phys_fn_sx")
+    private String scheduledPerformingFamilyNameSoundex;
+    
+    @Column(name = "perf_phys_gn_sx")
+    private String scheduledPerformingGivenNameSoundex;
+    
     // JPA definition in orm.xml
     private String scheduledPerformingPhysicianIdeographicName;
 
@@ -159,6 +165,24 @@ public class MWLItem extends BaseEntity implements Serializable {
 
     public String getScheduledPerformingPhysicianName() {
         return scheduledPerformingPhysicianName;
+    }
+
+    public String getScheduledPerformingFamilyNameSoundex() {
+        return scheduledPerformingFamilyNameSoundex;
+    }
+
+    public void setScheduledPerformingFamilyNameSoundex(
+            String scheduledPerformingFamilyNameSoundex) {
+        this.scheduledPerformingFamilyNameSoundex = scheduledPerformingFamilyNameSoundex;
+    }
+
+    public String getScheduledPerformingGivenNameSoundex() {
+        return scheduledPerformingGivenNameSoundex;
+    }
+
+    public void setScheduledPerformingGivenNameSoundex(
+            String scheduledPerformingGivenNameSoundex) {
+        this.scheduledPerformingGivenNameSoundex = scheduledPerformingGivenNameSoundex;
     }
 
     public String getScheduledPerformingPhysicianIdeographicName() {

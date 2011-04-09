@@ -15,8 +15,8 @@
  * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
  *
  * The Initial Developer of the Original Code is
- * Accurate Software Design, LLC.
- * Portions created by the Initial Developer are Copyright (C) 2006-2008
+ * itMD, LLC.
+ * Portions created by the Initial Developer are Copyright (C) 2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -38,79 +38,52 @@
 package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * @author Damien Evans <damien.daddy@gmail.com>
- * @author Justin Falk <jfalkmu@gmail.com>
+ * @author Damien Evans <damien.evans@itmd.net>
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
- * @since Mar 3, 2008
+ * @since Apr 8, 2011
  */
 @Entity
-@Table(name = "study_on_fs")
-public class StudyOnFileSystem extends BaseEntity implements Serializable {
+@Table(name = "issuer")
+public class Issuer extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 9039944370063590531L;
 
-    private static final long serialVersionUID = -4529151202029255741L;
+    @Column(name = "entity_id")
+    private String entityId;
 
-    @Column(name = "access_time", nullable = false)
-    private Date accessTime;
-    
-    @Column(name = "mark_to_delete", nullable = false)
-    private boolean markedForDeletion;
+    @Column(name = "entity_uid")
+    private String entityUid;
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name = "study_fk")
-    private Study study;
+    @Column(name = "entity_uid_type")
+    private String entityUidType;
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name = "filesystem_fk")
-    private FileSystem fileSystem;
-
-    public Date getAccessTime() {
-        return accessTime;
+    public String getEntityId() {
+        return entityId;
     }
 
-    public void setAccessTime(Date accessTime) {
-        this.accessTime = accessTime;
+    public void setEntityId(String entityId) {
+        this.entityId = entityId;
     }
 
-    public boolean isMarkedForDeletion() {
-        return markedForDeletion;
+    public String getEntityUid() {
+        return entityUid;
     }
 
-    public void setMarkedForDeletion(boolean markedForDeletion) {
-        this.markedForDeletion = markedForDeletion;
+    public void setEntityUid(String entityUid) {
+        this.entityUid = entityUid;
     }
 
-    public Study getStudy() {
-        return study;
+    public String getEntityUidType() {
+        return entityUidType;
     }
 
-    public void setStudy(Study study) {
-        this.study = study;
+    public void setEntityUidType(String entityUidType) {
+        this.entityUidType = entityUidType;
     }
-
-    public FileSystem getFileSystem() {
-        return fileSystem;
-    }
-
-    public void setFileSystem(FileSystem fileSystem) {
-        this.fileSystem = fileSystem;
-    }
-
-    @Override
-    public String toString() {
-        return "StudyOnFileSystem[pk=" + pk
-            + ", lastaccess=" + accessTime
-            + "]";
-    }
-
 }

@@ -63,6 +63,9 @@ public class RequestAttributes extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -5693026277386978780L;
 
+    @Column(name = "accession_no")
+    private String accessionNumber;
+    
     @Column(name = "study_iuid")
     private String studyInstanceUID;
 
@@ -77,6 +80,12 @@ public class RequestAttributes extends BaseEntity implements Serializable {
 
     // JPA definition in orm.xml
     private String requestingPhysician;
+    
+    @Column(name = "req_phys_fn_sx")
+    private String requestingPhysicianFamilyNameSoundex;
+    
+    @Column(name = "req_phys_gn_sx")
+    private String requestingPhysicianGivenNameSoundex;
 
     // JPA definition in orm.xml
     private String requestingPhysicianIdeographicName;
@@ -87,6 +96,10 @@ public class RequestAttributes extends BaseEntity implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "series_fk")
     private Series series;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "accno_issuer_fk")
+    private Issuer issuerOfAccessionNumber;
 
     public String getStudyInstanceUID() {
         return studyInstanceUID;
@@ -114,6 +127,40 @@ public class RequestAttributes extends BaseEntity implements Serializable {
 
     public String getRequestingPhysicianPhoneticName() {
         return requestingPhysicianPhoneticName;
+    }
+
+    public String getAccessionNumber() {
+        return accessionNumber;
+    }
+
+    public void setAccessionNumber(String accessionNumber) {
+        this.accessionNumber = accessionNumber;
+    }
+
+    public String getRequestingPhysicianFamilyNameSoundex() {
+        return requestingPhysicianFamilyNameSoundex;
+    }
+
+    public void setRequestingPhysicianFamilyNameSoundex(
+            String requestingPhysicianFamilyNameSoundex) {
+        this.requestingPhysicianFamilyNameSoundex = requestingPhysicianFamilyNameSoundex;
+    }
+
+    public String getRequestingPhysicianGivenNameSoundex() {
+        return requestingPhysicianGivenNameSoundex;
+    }
+
+    public void setRequestingPhysicianGivenNameSoundex(
+            String requestingPhysicianGivenNameSoundex) {
+        this.requestingPhysicianGivenNameSoundex = requestingPhysicianGivenNameSoundex;
+    }
+
+    public Issuer getIssuerOfAccessionNumber() {
+        return issuerOfAccessionNumber;
+    }
+
+    public void setIssuerOfAccessionNumber(Issuer issuerOfAccessionNumber) {
+        this.issuerOfAccessionNumber = issuerOfAccessionNumber;
     }
 
     public Series getSeries() {

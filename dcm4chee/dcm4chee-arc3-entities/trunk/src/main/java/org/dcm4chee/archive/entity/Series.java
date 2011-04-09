@@ -113,6 +113,21 @@ public class Series extends BaseEntity implements Serializable {
 
     // JPA definition in orm.xml
     private String performingPhysicianName;
+    
+    public String getPerformingPhysicianFamilyNameSoundex() {
+        return performingPhysicianFamilyNameSoundex;
+    }
+
+    public void setPerformingPhysicianFamilyNameSoundex(
+            String performingPhysicianFamilyNameSoundex) {
+        this.performingPhysicianFamilyNameSoundex = performingPhysicianFamilyNameSoundex;
+    }
+
+    @Column(name = "perf_phys_fn_sx")
+    private String performingPhysicianFamilyNameSoundex;
+    
+    @Column(name = "perf_phys_gn_sx")
+    private String performingPhysicianGivenNameSoundex;
 
     // JPA definition in orm.xml
     private String performingPhysicianIdeographicName;
@@ -161,6 +176,10 @@ public class Series extends BaseEntity implements Serializable {
 
     @Column(name = "series_status", nullable = false)
     private StorageStatus storageStatus;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inst_code_fk")
+    private Code institutionCode;
 
     @OneToMany(mappedBy = "series", fetch = FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<RequestAttributes> requestAttributes;
@@ -222,6 +241,15 @@ public class Series extends BaseEntity implements Serializable {
 
     public String getPerformingPhysicianName() {
         return performingPhysicianName;
+    }
+
+    public String getPerformingPhysicianGivenNameSoundex() {
+        return performingPhysicianGivenNameSoundex;
+    }
+
+    public void setPerformingPhysicianGivenNameSoundex(
+            String performingPhysicianGivenNameSoundex) {
+        this.performingPhysicianGivenNameSoundex = performingPhysicianGivenNameSoundex;
     }
 
     public String getPerformingPhysicianIdeographicName() {
@@ -311,6 +339,14 @@ public class Series extends BaseEntity implements Serializable {
 
     public void setStorageStatus(StorageStatus storageStatus) {
         this.storageStatus = storageStatus;
+    }
+
+    public Code getInstitutionCode() {
+        return institutionCode;
+    }
+
+    public void setInstitutionCode(Code institutionCode) {
+        this.institutionCode = institutionCode;
     }
 
     public byte[] getEncodedAttributes() {

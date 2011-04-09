@@ -344,4 +344,16 @@
     </attributes>
   </entity>
   
+  <entity class="org.dcm4chee.archive.entity.Issuer"
+      access="FIELD" metadata-complete="false">
+    <sequence-generator name="seq" sequence-name="issuer_pk_seq"
+        allocation-size="1" />
+  </entity>
+    
+  <entity class="org.dcm4chee.archive.entity.ContentItem"
+      access="FIELD" metadata-complete="false">
+    <sequence-generator name="seq" sequence-name="content_item_pk_seq"
+        allocation-size="1" />
+  </entity>
+  
 </entity-mappings>
