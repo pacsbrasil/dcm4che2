@@ -41,18 +41,22 @@ package org.dcm4chee.web.common.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.Serializable;
+import java.security.Principal;
+import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
+import javax.security.auth.Subject;
+import javax.security.jacc.PolicyContext;
+
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.authorization.strategies.role.Roles;
-import org.apache.wicket.security.hive.authorization.Principal;
-import org.apache.wicket.security.swarm.strategies.SwarmStrategy;
+import org.apache.wicket.protocol.http.WebApplication;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.slf4j.Logger;
@@ -140,26 +144,20 @@ public class GroupedChoices implements Serializable {
     }
     
     public List<String> getChoices(List<String> availableChoices) {
-        Set<Principal> principals = ((SwarmStrategy) SwarmStrategy.get()).getSubject().getPrincipals();
         List<String> choices = new ArrayList<String>(availableChoices.size()+groups.size());
-        if (principals != null && principals.size() > 0) {
-            Roles roles = new Roles();
-            Iterator<Principal> i = principals.iterator();
-            while (i.hasNext())
-                roles.add(i.next().getName());
-            if (universalMatchRoles == null || roles.hasAnyRole(universalMatchRoles)) {
-                choices.add("*");
+        Roles roles = this.getUserRoles();
+        if (universalMatchRoles == null || roles.hasAnyRole(universalMatchRoles)) {
+            choices.add("*");
+        }
+        Roles r;
+        for (String grp : groups.keySet()) {
+            r = this.groupRoles.get(grp);
+            if (r == null || roles.hasAnyRole(r)) {
+                choices.add(grp);
             }
-            Roles r;
-            for (String grp : groups.keySet()) {
-                r = this.groupRoles.get(grp);
-                if (r == null || roles.hasAnyRole(r)) {
-                    choices.add(grp);
-                }
-            }
-            if (availableChoicesRoles == null || roles.hasAnyRole(availableChoicesRoles)) {
-                choices.addAll(availableChoices);
-            }
+        }
+        if (availableChoicesRoles == null || roles.hasAnyRole(availableChoicesRoles)) {
+            choices.addAll(availableChoices);
         }
         return choices;
     }
@@ -170,5 +168,30 @@ public class GroupedChoices implements Serializable {
     
     public List<String> getGroupMembers(String groupName) {
         return groups.get(groupName);
+    }
+    
+    private Roles getUserRoles() {
+        WebApplication app = (WebApplication) RequestCycle.get().getApplication();
+        String rolesGroupName = app.getInitParameter("rolesGroupName");
+        if (rolesGroupName == null) rolesGroupName = "Roles";
+        Roles roles = new Roles();
+        Subject jaasSubject = null;
+        try {
+            jaasSubject = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
+            if (jaasSubject != null) {
+                for (Principal principal : jaasSubject.getPrincipals()) {
+                    if ((principal instanceof Group) && (rolesGroupName.equalsIgnoreCase(principal.getName()))) {
+                        Enumeration<? extends Principal> members = ((Group) principal).members();                    
+                        while (members.hasMoreElements()) {
+                            roles.add(members.nextElement().getName());
+                        }
+                    }
+                }
+            }
+        } catch (Exception x) {
+            log.error("Failed to get jaas subject from javax.security.auth.Subject.container", x);
+        }
+        log.debug("User roles: {}",roles);
+        return roles;
     }
 }
