@@ -118,9 +118,24 @@ public class DicomObjectPanel extends Panel {
             for (int i = 0; i < numitems; i++) {
                 WebMarkupContainer itemrow = new WebMarkupContainer(rv.newChildId());
                 rv.add(itemrow);
-                DicomObject item = el.getDicomObject(i);
-                itemrow.add(new ItemFragment("fragment", i, nesting1));
-                addDicomObject(rv, item, nesting1);
+                if (el.hasDicomObjects()) {
+                    DicomObject item = el.getDicomObject(i);
+                    itemrow.add(new ItemFragment("fragment", i, nesting1, null));
+                    addDicomObject(rv, item, nesting1);
+                } else {
+                    byte[] ba = el.getFragment(i);
+                    String data = null;
+                    if (ba != null && ba.length > 0) {
+                        if (ba.length > 16) {
+                            byte[] ba1 = new byte[16];
+                            System.arraycopy(ba, 0, ba1, 0, 16);
+                            data = el.vr().toString(ba1, el.bigEndian(), null)+" ...";
+                        } else {
+                            data = el.vr().toString(ba, el.bigEndian(), null);
+                        }
+                    }
+                    itemrow.add(new ItemFragment("fragment", i, nesting1, data));
+                }
             }
         }
     }
@@ -146,9 +161,13 @@ public class DicomObjectPanel extends Panel {
 
         private static final long serialVersionUID = 1L;
 
-        public ItemFragment(String id, int itemIndex, String nestingLevel) {
+        public ItemFragment(String id, int itemIndex, String nestingLevel, String data) {
             super(id, "item", DicomObjectPanel.this);
-            add(new Label("name", nestingLevel + "Item #" + (itemIndex + 1)));
+            if (data == null) {
+                add(new Label("name", nestingLevel + "Item #" + (itemIndex + 1)));
+            } else {
+                add(new Label("name", nestingLevel + "Fragment #" + (itemIndex + 1)+": "+data));
+            }
         }
      }
 }

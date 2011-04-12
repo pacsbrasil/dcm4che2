@@ -587,6 +587,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTarRetrieveServiceName"
+      setMethod="setTarRetrieveServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>tarRetrieveServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.archive:service=TarRetriever"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getLoginAllowedRolename"
       setMethod="setLoginAllowedRolename">
       <description><![CDATA[Rolename for which login is allowed.

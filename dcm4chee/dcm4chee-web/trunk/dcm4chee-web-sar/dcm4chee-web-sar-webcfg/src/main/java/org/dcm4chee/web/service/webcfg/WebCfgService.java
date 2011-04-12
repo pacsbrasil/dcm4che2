@@ -97,6 +97,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private ObjectName contentEditServiceName;
     private ObjectName storeBridgeServiceName;
     private ObjectName mppsEmulatorServiceName;
+    private ObjectName tarRetrieveServiceName;
     private ObjectName timerServiceName;
         
     private Map<String, String> imageCUIDS = new LinkedHashMap<String, String>();
@@ -507,6 +508,14 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         this.mppsEmulatorServiceName = mppsEmulatorServiceName;
     }
 
+    public ObjectName getTarRetrieveServiceName() {
+        return tarRetrieveServiceName;
+    }
+
+    public void setTarRetrieveServiceName(ObjectName name) {
+        this.tarRetrieveServiceName = name;
+    }
+    
     public int checkCUID(String cuid) {
         if (isInCuids(cuid, imageCUIDS)) {
             return 0;

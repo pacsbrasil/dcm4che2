@@ -128,7 +128,6 @@ import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.StudyPermissionHelper.StudyPermissionRight;
 import org.dcm4chee.web.war.ajax.MaskingAjaxCallDecorator;
-import org.dcm4chee.web.war.common.DisplayDicomObjectPanel;
 import org.dcm4chee.web.war.common.EditDicomObjectPanel;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
@@ -137,6 +136,7 @@ import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.delegate.ContentEditDelegate;
 import org.dcm4chee.web.war.folder.delegate.MppsEmulateDelegate;
+import org.dcm4chee.web.war.folder.delegate.TarRetrieveDelegate;
 import org.dcm4chee.web.war.folder.model.FileModel;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
@@ -1735,34 +1735,44 @@ public class StudyListPage extends Panel {
     private Link<Object> getFileDisplayLink(final ModalWindow modalWindow, final FileModel fileModel, TooltipBehaviour tooltip) {
 
         int[] winSize = WebCfgDelegate.getInstance().getWindowSize("dcmFileDisplay");
-        final File file = new File(
-                fileModel.getFileObject().getFileSystem().getDirectoryPath() + 
-                "/" + 
-                fileModel.getFileObject().getFilePath());
+        final String fsID = fileModel.getFileObject().getFileSystem().getDirectoryPath();
+        final String fileID = fileModel.getFileObject().getFilePath();
         ModalWindowLink displayLink = new ModalWindowLink("displayFile", modalWindow, winSize[0], winSize[1]) {
             private static final long serialVersionUID = 1L;
 
             @Override
             public void onClick(AjaxRequestTarget target) {
+                DicomInputStream dis = null;
                 try {
-                    modalWindow.setContent(new DisplayDicomObjectPanel(
-                            "content", 
-                            modalWindow, 
-                            new DicomInputStream(file).readDicomObject(), 
-                            fileModel.getClass().getSimpleName()
-                    ));
-                } catch (IOException e) {
-                    log.error("Error requesting dicom object: ", e);
+                    final File file = fsID.startsWith("tar:") ? TarRetrieveDelegate.getInstance().retrieveFileFromTar(fsID, fileID) :
+                        new File(fsID, fileID);
+                    dis =new DicomInputStream(file);
+                    modalWindow.setContent(new DicomObjectPanel("content", dis.readDicomObject(), true));
+                    modalWindow.setTitle(new StringResourceModel("folder.dcmfileview.title", 
+                            new AbstractReadOnlyModel<String>(){
+                                private static final long serialVersionUID = 1L;
+                                @Override
+                                public String getObject() {
+                                    return file.getAbsolutePath().replace('\\', '/');
+                                }}));
+                    modalWindow.show(target);
+                    super.onClick(target);
+                } catch (Exception e) {
+                    log.error("Error requesting dicom object from file: ", e);
+                    msgWin.show(target, getString("folder.message.dcmFileError"));
+                } finally {
+                    if (dis != null)
+                        try {
+                            dis.close();
+                        } catch (IOException ignore) {}
                 }
-                modalWindow.show(target);
-                super.onClick(target);
             }            
         };
         Image image = new Image("displayFileImg",ImageManager.IMAGE_FOLDER_DICOM_FILE);
         image.add(new ImageSizeBehaviour("vertical-align: middle;"));
         if (tooltip != null) image.add(tooltip);
         displayLink.add(image);
-        displayLink.setVisible(file.exists());
+        displayLink.setVisible(fsID.startsWith("tar:") || new File(fsID, fileID).exists());
         return displayLink;
     }
 
