@@ -75,21 +75,22 @@ public class MainPage extends SecureWicketPage {
     public MainPage() {
         super();
         
-        add (new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected void onTimer(AjaxRequestTarget arg0) {
-                try {
-                    StudyPermissionHelper.get().doDicomAuthentication();
-                } catch (Exception e) {
-                    log.error(getClass().getName() + ": error doing dicom authentication: ", e);
-                } finally {
-                    this.stop();
+        if (StudyPermissionHelper.get().isSSO())
+            add (new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
+    
+                private static final long serialVersionUID = 1L;
+    
+                @Override
+                protected void onTimer(AjaxRequestTarget arg0) {
+                    try {
+                        StudyPermissionHelper.get().doDicomAuthentication();
+                    } catch (Exception e) {
+                        log.error(getClass().getName() + ": error doing dicom authentication: ", e);
+                    } finally {
+                        this.stop();
+                    }
                 }
-            }
-        });
+            });
 
         addModules(getModuleSelectorPanel());        
         add(JavascriptPackageResource.getHeaderContribution(MainPage.class, "mainpage.js"));

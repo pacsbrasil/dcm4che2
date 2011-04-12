@@ -172,7 +172,7 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
             reader = new BufferedReader(new FileReader(dicomRolesFile));
             while ((line = reader.readLine()) != null) {
                 Role role = (Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class);
-                if (role.isDicomRole())
+                if (role.isDicomRole()) 
                     roleList.add(role);
             }
             Collections.sort(roleList);

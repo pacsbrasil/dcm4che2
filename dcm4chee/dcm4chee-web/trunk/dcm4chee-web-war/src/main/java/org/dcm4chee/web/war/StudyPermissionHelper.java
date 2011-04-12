@@ -91,6 +91,8 @@ public class StudyPermissionHelper implements Serializable {
     
     private boolean manageStudyPermissions;
     private boolean useStudyPermissions;
+    
+    private boolean SSO = false;
 
 
     public static StudyPermissionHelper get() {
@@ -100,11 +102,13 @@ public class StudyPermissionHelper implements Serializable {
     public StudyPermissionHelper(org.apache.wicket.security.hive.authentication.Subject webSubject) {
         setStudyPermissionParameters();
         setStudyPermissionRight(webSubject);
+        SSO = true;
     }
     
     public StudyPermissionHelper(String username, String password, org.apache.wicket.security.hive.authentication.Subject webSubject) throws AttributeNotFoundException, InstanceNotFoundException, MalformedObjectNameException, MBeanException, ReflectionException, NullPointerException, IOException {
 
-        this(webSubject);
+        setStudyPermissionParameters();
+        setStudyPermissionRight(webSubject);
         try {
             javax.security.auth.Subject dicomSubject = new javax.security.auth.Subject();
             WebCfgDelegate.getInstance().getMBeanServer().invoke(
@@ -222,6 +226,14 @@ public class StudyPermissionHelper implements Serializable {
         return studyPermissionRight;
     }
     
+    public void setSSO(boolean sSO) {
+        SSO = sSO;
+    }
+
+    public boolean isSSO() {
+        return SSO;
+    }
+
     public boolean checkPermission(Set<? extends AbstractDicomModel> c, String action) {
         if (!isUseStudyPermissions()
         || (dicomRoles == null))
