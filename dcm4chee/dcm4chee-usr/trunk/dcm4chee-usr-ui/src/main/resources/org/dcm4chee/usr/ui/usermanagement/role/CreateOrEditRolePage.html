@@ -33,19 +33,15 @@
                             <div class="edit-desc">
                                 <wicket:message key="rolelist.add-role-form.superuser.label" />
                             </div>
-                         <input wicket:id="superuser-checkbox" class="edit-value" type="checkbox" />
+                            <input wicket:id="superuser-checkbox" class="edit-value" type="checkbox" />
                         </div>
-                        <div wicket:id="groupChoiceGroup">
-	                        <div wicket:id="group-rows">
-		                        <div class="edit-table-row">
-		                            <div wicket:id="groupname" class="edit-desc">
-		                                [Groupname]
-		                            </div>
-		                            <div>
-		                                <input wicket:id="group-radioChoice" class="edit-value" type="radio" />
-		                            </div>
-		                        </div>
-	                        </div>
+                        <div wicket:id="group-rows" class="edit-table-row">
+                               <div class="edit-desc">
+                                   <div wicket:id="groupname">
+                                       [Groupname]
+                                   </div>
+                               </div>
+                               <input wicket:id="group-checkbox" class="edit-value" type="checkbox" />
                         </div>
 					</div>
 					<div class="edit-buttons">

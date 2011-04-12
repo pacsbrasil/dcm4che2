@@ -47,7 +47,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -236,15 +235,7 @@ public class UserAccessBean implements UserAccess {
             final List<String> groupUuidList = new ArrayList<String>(allGroups.size());
             for (Group group : allGroups)
                 groupUuidList.add(group.getUuid());
-            Collections.sort(roleList, new Comparator<Role>() {
-
-                @Override
-                public int compare(Role role1, Role role2) {
-                    return (role1.getGroupUuid().equals(role2.getGroupUuid())) ? 
-                            role1.getRolename().compareToIgnoreCase(role2.getRolename()) : 
-                                groupUuidList.indexOf(role1.getGroupUuid()) - groupUuidList.indexOf(role2.getGroupUuid());
-                }
-            });
+            Collections.sort(roleList);
             return roleList;
         } catch (Exception e) {
             log.error("Can't get roles from roles mapping file!", e);
@@ -410,8 +401,10 @@ public class UserAccessBean implements UserAccess {
     public void removeGroup(Group group) {
         List<Role> roles = getAllRoles();
         for (Role role : roles)
-            if (role.getGroupUuid().equals(group.getUuid())) 
-                role.setGroupUuid(null);
+            if (role.getRoleGroups().contains(role.getUuid()))
+                role.getRoleGroups().remove(role.getUuid());
+//            if (role.getGroupUuid().equals(group.getUuid())) 
+//                role.setGroupUuid(null);
         List<Group> groups = getAllGroups();
         if (groups.remove(group)) {
             saveGroups(groups);

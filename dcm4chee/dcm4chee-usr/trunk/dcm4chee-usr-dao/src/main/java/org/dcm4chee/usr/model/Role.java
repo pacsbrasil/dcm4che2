@@ -55,11 +55,13 @@ public class Role implements Serializable, Comparable<Role> {
     private String uuid;
     private String rolename;
     private String description;
-    private boolean superuser;
-    private String groupUuid;
+    private boolean superuser;   
     private boolean isWebRole;
     private boolean isDicomRole;
-    private List<String> roleTypes;
+    
+    // list of group uuids
+    private List<String> roleGroups;
+
     private Set<String> swarmPrincipals;
 
     public Role() {
@@ -69,11 +71,6 @@ public class Role implements Serializable, Comparable<Role> {
     public Role(String rolename) {
         this();
         this.rolename = rolename;
-    }
-
-    public Role(String rolename, String groupUuid) {
-        this(rolename);
-        this.groupUuid = groupUuid;
     }
 
     public void setUuid(String uuid) {
@@ -108,14 +105,6 @@ public class Role implements Serializable, Comparable<Role> {
         return superuser;
     }
 
-    public void setGroupUuid(String groupUuid) {
-        this.groupUuid = groupUuid;
-    }
-
-    public String getGroupUuid() {
-        return groupUuid;
-    }
-
     public void setWebRole(boolean isWebRole) {
         this.isWebRole = isWebRole;
     }
@@ -132,12 +121,12 @@ public class Role implements Serializable, Comparable<Role> {
         return isDicomRole;
     }
 
-    public void setRoleTypes(List<String> roleTypes) {
-        this.roleTypes = roleTypes;
+    public void setRoleGroups(List<String> roleGroups) {
+        this.roleGroups = roleGroups;
     }
 
-    public List<String> getRoleTypes() {
-        return roleTypes;
+    public List<String> getRoleGroups() {
+        return roleGroups;
     }
 
     public void setSwarmPrincipals(Set<String> swarmPrincipals) {

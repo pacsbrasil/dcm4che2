@@ -109,6 +109,9 @@ public class RoleListPanel extends Panel {
     private ModalWindow webroleWindow;
     private Map<String,int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
     
+    private String webRoleColor;
+    private String dicomRoleColor;   
+    
     public RoleListPanel(String id) {
         super(id);
 
@@ -175,6 +178,16 @@ public class RoleListPanel extends Panel {
         this.allGroups = getAllGroups();
         this.roleGroups = userAccess.getAllGroups();
         
+        Iterator<String> k = this.allGroups.keySet().iterator();
+        while (k.hasNext()) {
+            String uuid = k.next();
+            Group group = this.allGroups.get(uuid); 
+            if (group.getGroupname().equals("Web"))
+                webRoleColor = group.getColor();
+            if (group.getGroupname().equals("Dicom"))
+                dicomRoleColor = group.getColor();
+        }
+        
         RepeatingView roleRows = new RepeatingView("role-rows");
         addOrReplace(roleRows);
         
@@ -194,15 +207,10 @@ public class RoleListPanel extends Panel {
                     .add(new Label("rolename", role.getRolename())
                     .add(new AttributeModifier("title", true, new Model<String>(role.getDescription()))))
             );
+            
             if (role.isSuperuser())
                 rowParent.add(new SecurityBehavior(getModuleName() + ":superuserRoleRow"));
-            if (role.getGroupUuid() != null && 
-                    !role.getGroupUuid().equals("") && 
-                    allGroups.get(role.getGroupUuid()) != null) {
-                Group group = allGroups.get(role.getGroupUuid());
-                rowParent.add(new AttributeModifier("style", true, new Model<String>("background-color: " + group.getColor())));
-            }
-
+            
             int[] winSize = windowsizeMap.get("editRole");
             rowParent.add((new ModalWindowLink("edit-role-link", roleWindow, winSize[0], winSize[1]) {
                 private static final long serialVersionUID = 1L;
@@ -246,7 +254,8 @@ public class RoleListPanel extends Panel {
             .add(new SecurityBehavior(getModuleName() + ":removeRoleLink")));
 
             winSize = windowsizeMap.get("webPermissions");
-            rowParent.add((new ModalWindowLink("webrole-link", webroleWindow, winSize[0], winSize[1]) {
+            rowParent.add((new WebMarkupContainer("webrole-cell")
+            .add((new ModalWindowLink("webrole-link", webroleWindow, winSize[0], winSize[1]) {
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -270,16 +279,23 @@ public class RoleListPanel extends Panel {
                 .add(new TooltipBehaviour("rolelist.", "webrole-link", new Model<String>(role.getRolename()))))
                 .setVisible(role.isWebRole())
                 .add(new SecurityBehavior(getModuleName() + ":webroleLink"))
-            );
-                    
-            rowParent.add((new AjaxCheckBox("dicomrole-checkbox", new Model<Boolean>(role.isDicomRole())) {
+            )
+            .add(new AttributeModifier("style", true, new Model<String>("background-color: " + 
+                    (role.isWebRole() ? webRoleColor : "white")
+            )))));
+
+            rowParent.add((new WebMarkupContainer("dicomrole-cell")
+            .add((new AjaxCheckBox("dicomrole-checkbox", new Model<Boolean>(role.isDicomRole())) {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
                 }}.setEnabled(false))
-            );
+            )
+            .add(new AttributeModifier("style", true, new Model<String>("background-color: " + 
+                    (role.isDicomRole() ? dicomRoleColor : "white")
+            )))));
 
             RepeatingView groupContentCells = new RepeatingView("group-content-cells");
             rowParent.add(groupContentCells);
@@ -289,10 +305,14 @@ public class RoleListPanel extends Panel {
                     continue;
                 CheckBox groupCheckbox = new CheckBox("group-checkbox");
                 groupCheckbox.setEnabled(false);
-                groupCheckbox.setModel(new Model<Boolean>(role.getRoleTypes().contains(group.getGroupname())));
+                groupCheckbox.setModel(new Model<Boolean>(role.getRoleGroups().contains(group.getUuid())));
                 groupContentCells
                     .add(new WebMarkupContainer(groupContentCells.newChildId())
-                    .add(groupCheckbox));
+                    .add(groupCheckbox)
+                    .add(new AttributeModifier("style", true, new Model<String>("background-color: " + 
+                            (role.getRoleGroups().contains(group.getUuid()) ? group.getColor() : "white")
+                            )))
+                    );
             }
         }
     }
