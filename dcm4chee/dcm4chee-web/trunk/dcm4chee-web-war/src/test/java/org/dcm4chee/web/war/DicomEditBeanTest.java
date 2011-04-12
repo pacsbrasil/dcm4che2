@@ -14,6 +14,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.entity.Code;
+import org.dcm4chee.archive.entity.ContentItem;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.FileSystem;
 import org.dcm4chee.archive.entity.GPPPS;
@@ -21,6 +22,7 @@ import org.dcm4chee.archive.entity.GPSPS;
 import org.dcm4chee.archive.entity.GPSPSPerformer;
 import org.dcm4chee.archive.entity.GPSPSRequest;
 import org.dcm4chee.archive.entity.Instance;
+import org.dcm4chee.archive.entity.Issuer;
 import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.entity.Media;
@@ -53,7 +55,8 @@ public class DicomEditBeanTest extends BaseSessionBeanFixture<DicomEditBean>
         Media.class, MPPS.class, GPSPS.class, GPPPS.class, GPSPSRequest.class, GPSPSPerformer.class,
         MWLItem.class, 
         PrivatePatient.class, PrivateStudy.class, PrivateSeries.class, PrivateInstance.class, PrivateFile.class,
-        OtherPatientID.class, AE.class, RequestAttributes.class, Code.class, User.class, UserRoleAssignment.class};
+        OtherPatientID.class, AE.class, RequestAttributes.class, Code.class, User.class, UserRoleAssignment.class,
+        Issuer.class, ContentItem.class};
     
     static {
         URL.setURLStreamHandlerFactory(new URLStreamHandlerFactory());

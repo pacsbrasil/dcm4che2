@@ -15,6 +15,7 @@ import org.apache.wicket.util.tester.FormTester;
 import org.apache.wicket.util.tester.WicketTester;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.entity.Code;
+import org.dcm4chee.archive.entity.ContentItem;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.FileSystem;
 import org.dcm4chee.archive.entity.GPPPS;
@@ -22,6 +23,7 @@ import org.dcm4chee.archive.entity.GPSPS;
 import org.dcm4chee.archive.entity.GPSPSPerformer;
 import org.dcm4chee.archive.entity.GPSPSRequest;
 import org.dcm4chee.archive.entity.Instance;
+import org.dcm4chee.archive.entity.Issuer;
 import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.entity.Media;
@@ -55,7 +57,8 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
         File.class, FileSystem.class, StudyOnFileSystem.class, VerifyingObserver.class,
         Media.class, MPPS.class, GPSPS.class, GPPPS.class, GPSPSRequest.class, GPSPSPerformer.class,
         MWLItem.class,  
-        OtherPatientID.class, AE.class, RequestAttributes.class, Code.class, User.class, UserRoleAssignment.class};
+        OtherPatientID.class, AE.class, RequestAttributes.class, Code.class, User.class, UserRoleAssignment.class,
+        Issuer.class, ContentItem.class};
     public WicketApplicationTest() throws Exception {
         super(StudyListBean.class, usedBeans);
     }
