@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-dashboard-sar-config</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
     <packaging>jboss-sar</packaging>
     <name>Service Components for DASHBOARD</name>
     <dependencies>
