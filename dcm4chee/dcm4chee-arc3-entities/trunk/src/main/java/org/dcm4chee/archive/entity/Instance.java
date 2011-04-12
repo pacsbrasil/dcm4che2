@@ -152,6 +152,9 @@ public class Instance extends BaseEntity implements Serializable {
     @OneToMany(mappedBy = "instance", fetch = FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<File> files;
 
+    @OneToMany(mappedBy = "instance", fetch = FetchType.LAZY, cascade=CascadeType.REMOVE)
+    private Set<ContentItem> contentItems;
+    
     public Date getCreatedTime() {
         return createdTime;
     }
@@ -301,6 +304,10 @@ public class Instance extends BaseEntity implements Serializable {
         return files;
     }
 
+    public Set<ContentItem> getContentItems() {
+        return contentItems;
+    }
+    
     @Override
     public String toString() {
         return "Instance[pk=" + pk
