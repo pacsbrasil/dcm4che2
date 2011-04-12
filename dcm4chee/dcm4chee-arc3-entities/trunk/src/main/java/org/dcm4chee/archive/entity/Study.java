@@ -38,6 +38,7 @@
 package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
@@ -497,8 +498,7 @@ public class Study extends BaseEntity implements Serializable {
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             try {
-                Study.class.getField(filter.getField(fieldTags[i])).set(this,
-                        attrs.getString(fieldTags[i], ""));
+                setField(filter.getField(fieldTags[i]), attrs.getString(fieldTags[i], ""));
             } catch (Exception e) {
                 throw new ConfigurationException(e);
             }
@@ -507,6 +507,17 @@ public class Study extends BaseEntity implements Serializable {
                 filter.getTransferSyntaxUID());
     }
 
+    private void setField(String field, String value ) {
+        try {
+            Method m = Study.class.getMethod("set" 
+                    + Character.toUpperCase(field.charAt(0))
+                    + field.substring(1), new Class[]{String.class});
+            m.invoke(this, new Object[] { value });
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }       
+    }
+    
     public Long getPatientFk() {
         return patientFk;
     }

@@ -38,6 +38,7 @@
 package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.Set;
 
@@ -271,13 +272,22 @@ public class Series extends BaseEntity implements Serializable {
     public String getSeriesCustomAttribute1() {
         return seriesCustomAttribute1;
     }
+    public void setSeriesCustomAttribute1(String value) {
+        seriesCustomAttribute1 = value;
+    }
 
     public String getSeriesCustomAttribute2() {
         return seriesCustomAttribute2;
     }
+    public void setSeriesCustomAttribute2(String value) {
+        seriesCustomAttribute2 = value;
+    }
 
     public String getSeriesCustomAttribute3() {
         return seriesCustomAttribute3;
+    }
+    public void setSeriesCustomAttribute3(String value) {
+        seriesCustomAttribute3 = value;
     }
 
     public int getNumberOfSeriesRelatedInstances() {
@@ -470,14 +480,24 @@ public class Series extends BaseEntity implements Serializable {
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             try {
-                Series.class.getField(filter.getField(fieldTags[i])).set(this,
-                        attrs.getString(fieldTags[i], ""));
+                setField(filter.getField(fieldTags[i]), attrs.getString(fieldTags[i], ""));
             } catch (Exception e) {
                 throw new ConfigurationException(e);
             }
         }
         this.encodedAttributes = DicomObjectUtils.encode(filter.filter(attrs),
                 filter.getTransferSyntaxUID());
+    }
+    
+    private void setField(String field, String value ) {
+        try {
+            Method m = Series.class.getMethod("set" 
+                    + Character.toUpperCase(field.charAt(0))
+                    + field.substring(1), new Class[]{String.class});
+            m.invoke(this, new Object[] { value });
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }       
     }
 
 }
