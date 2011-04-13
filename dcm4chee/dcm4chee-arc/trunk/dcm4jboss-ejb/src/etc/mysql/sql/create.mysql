@@ -17,7 +17,7 @@ CREATE TABLE ae (
     installed         BIT NOT NULL,
     vendor_data       LONGBLOB
 ) ENGINE=INNODB;
-CREATE UNIQUE INDEX aet ON ae(aet(16));
+CREATE UNIQUE INDEX aet ON ae(aet(64));
 CREATE INDEX hostname ON ae(hostname(16));
 
 CREATE TABLE code (
