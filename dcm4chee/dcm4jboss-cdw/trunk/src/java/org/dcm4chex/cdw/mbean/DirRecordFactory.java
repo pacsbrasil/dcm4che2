@@ -136,7 +136,7 @@ class DirRecordFactory {
             if (dstSq.isEmpty()) keys.remove(Tags.ContentSeq);
         }
         if (type.equals(DirRecord.PRIVATE)) {
-        	keys.putUI(Tags.PrivateRecordUID, privateRecordUID);
+            keys.putUI(Tags.PrivateRecordUID, privateRecordUID);
         }
         return keys;
     }
