@@ -65,14 +65,14 @@ class DirRecordFactory {
 
     private HashMap filterForType = new HashMap();
 
-	private String privateRecordUID;
+    private String privateRecordUID;
 
     private class MyHandler extends DefaultHandler {
 
-		private static final String TYPE = "type";
-        
-		private static final String PRIVATE_RECORD_UID = "privateRecordUID";
-		
+        private static final String TYPE = "type";
+
+        private static final String PRIVATE_RECORD_UID = "privateRecordUID";
+
         private static final String RECORD = "record";
 
         private static final String TAG = "tag";
@@ -90,7 +90,7 @@ class DirRecordFactory {
             } else if (qName.equals(RECORD)) {
                 type = attributes.getValue(TYPE);
                 if (type.equals(DirRecord.PRIVATE)) {
-                	privateRecordUID = attributes.getValue(PRIVATE_RECORD_UID);
+                    privateRecordUID = attributes.getValue(PRIVATE_RECORD_UID);
                 }
             }
         }
