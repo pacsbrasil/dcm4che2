@@ -2816,7 +2816,7 @@
   <uid value="1.2.840.10008.5.1.4.1.1.88.65" name="Chest CAD SR" key="ChestCADSR" dirrecord="SR DOCUMENT" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.67" name="X-Ray Radiation Dose SR" key="XRayRadiationDoseSR" dirrecord="SR DOCUMENT" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.69" name="Colon CAD SR" key="ColonCADSR" dirrecord="SR DOCUMENT" />
-  <uid value="1.2.840.10008.5.1.4.1.1.104.1" name="Encapsulated PDF Storage" key="EncapsulatedPDFStorage" dirrecord="ENCAP DOCS" />
+  <uid value="1.2.840.10008.5.1.4.1.1.104.1" name="Encapsulated PDF Storage" key="EncapsulatedPDFStorage" dirrecord="ENCAP DOC" />
   <uid value="1.2.840.10008.5.1.4.1.1.104.2" name="Encapsulated CDA Storage" key="EncapsulatedCDAStorage" dirrecord="HL7 STRUC DOC" />
   <uid value="1.2.840.10008.5.1.4.1.1.128" name="Positron Emission Tomography Image Storage" key="PositronEmissionTomographyImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.129" name="Standalone PET Curve Storage" key="StandalonePETCurveStorage" dirrecord="CURVE" />
