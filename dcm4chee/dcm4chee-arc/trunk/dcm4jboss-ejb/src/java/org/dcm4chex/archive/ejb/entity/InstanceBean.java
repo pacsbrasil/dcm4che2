@@ -750,7 +750,8 @@ public abstract class InstanceBean implements EntityBean {
         }
         setSrCompletionFlag(filter.getString(ds, Tags.CompletionFlag));
         setSrVerificationFlag(filter.getString(ds, Tags.VerificationFlag));
-        byte[] b = DatasetUtils.toByteArray(ds, filter.getTransferSyntaxUID());
+        byte[] b = DatasetUtils.toByteArray(filter.filter(ds),
+                filter.getTransferSyntaxUID());
         if (log.isDebugEnabled()) {
             log.debug("setEncodedAttributes(byte[" + b.length + "])");
         }
