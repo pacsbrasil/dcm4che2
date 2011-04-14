@@ -7,13 +7,7 @@
 -->
 
 <web-app>
-	<display-name>dcm4chee Archive Console</display-name>
-	
-	<!-- Session timeout in minutes. 30 is default timeout of tomcat -->
-	<session-config>
-		<session-timeout>30</session-timeout>
-	</session-config>
-
+	<display-name>dcm4chee Archive Console</display-name>	
 
 	<servlet>
 		<servlet-name>dispatcher</servlet-name>
@@ -344,6 +338,11 @@
 		<url-pattern>*.m</url-pattern>
 	</servlet-mapping>
 
+	<!-- Session timeout in minutes. 30 is default timeout of tomcat -->
+	<session-config>
+		<session-timeout>30</session-timeout>
+	</session-config>
+	
 	<welcome-file-list>
 		<welcome-file>default.jsp</welcome-file>
 	</welcome-file-list>
