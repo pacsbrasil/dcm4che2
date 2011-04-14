@@ -142,19 +142,20 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
         
     public final void setModalityAETitles(String s) {
         StringTokenizer stk = new StringTokenizer(s, "\r\n");
-        stationAETs = new String[stk.countTokens()];
-        delays = new long[stationAETs.length];
+        String[] newStationAETs = new String[stk.countTokens()];
+        delays = new long[newStationAETs.length];
         int endAET;
-        for (int i = 0; i < stationAETs.length; i++) {
-            stationAETs[i] = stk.nextToken().trim();
+        for (int i = 0; i < newStationAETs.length; i++) {
+            newStationAETs[i] = stk.nextToken().trim();
             delays[i] = FIVE_MINUTES;
-            endAET = stationAETs[i].indexOf(':');
+            endAET = newStationAETs[i].indexOf(':');
             if (endAET >= 0) {
                 delays[i] = RetryIntervalls.parseInterval(
-                        stationAETs[i].substring(endAET+1));
-                stationAETs[i] = stationAETs[i].substring(0, endAET);
+                        newStationAETs[i].substring(endAET+1));
+                newStationAETs[i] = newStationAETs[i].substring(0, endAET);
             }
         }
+        stationAETs = newStationAETs;
     }
     
     public final String getPollInterval() {
