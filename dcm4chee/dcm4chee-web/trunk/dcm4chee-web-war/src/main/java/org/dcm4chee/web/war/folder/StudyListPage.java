@@ -151,7 +151,7 @@ public class StudyListPage extends Panel {
 
     private static final ResourceReference CSS = new CompressedResourceReference(StudyListPage.class, "folder-style.css");
     
-    private static ModalWindow modalWindow;
+    private ModalWindow modalWindow;
     
     private IModel<Integer> pagesize = new IModel<Integer>() {
 

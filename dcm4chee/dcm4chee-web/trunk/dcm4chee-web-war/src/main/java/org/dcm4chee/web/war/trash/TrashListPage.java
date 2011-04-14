@@ -56,6 +56,7 @@ import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
@@ -96,6 +97,7 @@ import org.dcm4chee.web.dao.trash.TrashListFilter;
 import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.service.common.FileImportOrder;
+import org.dcm4chee.web.war.MainPage;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.ajax.MaskingAjaxCallDecorator;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
@@ -143,7 +145,6 @@ public class TrashListPage extends Panel {
 
         if (TrashListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(TrashListPage.CSS));
-       
         final TrashListFilter filter = viewport.getFilter();
         final BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
         form.setResourceIdPrefix("trash.");
@@ -338,6 +339,11 @@ public class TrashListPage extends Panel {
             @Override
             protected void onError(AjaxRequestTarget target) {
             }
+            
+            @Override
+            protected IAjaxCallDecorator getAjaxCallDecorator() {
+                return new MaskingAjaxCallDecorator();
+            }
         });
 
         form.add(new Link<Object>("prev") {
@@ -429,13 +435,14 @@ public class TrashListPage extends Panel {
             
             @Override
             public void onConfirmation(AjaxRequestTarget target, final PrivSelectedEntities selected) {
-
+log.info("###### onConfirmation");
                 this.setStatus(new StringResourceModel("trash.message.restore.running", TrashListPage.this, null));
                 okBtn.setVisible(false);
                 
                 try {
                     FileImportOrder fio = new FileImportOrder();
                     List<PrivateFile> files = getFilesToRestore();
+                    log.info("###### files:"+files);
                     Collections.sort(files, new Comparator<PrivateFile>() {
                         public int compare(PrivateFile f1, PrivateFile f2) {
                             return f2.getFileSystem().getAvailability().compareTo(f1.getFileSystem().getAvailability());
@@ -455,6 +462,7 @@ public class TrashListPage extends Panel {
                     }
                     StoreBridgeDelegate.getInstance().importFile(fio);
                     removeRestoredEntries();                            
+                    log.info("###### before setStatus done");
 
                     setStatus(new StringResourceModel("trash.message.restoreDone", TrashListPage.this,null));
                     if (selected.hasPatients()) {
@@ -466,10 +474,12 @@ public class TrashListPage extends Panel {
                     setStatus(new StringResourceModel("trash.message.restoreFailed", TrashListPage.this,null));
                     log.error("Exception restoring entry:"+t.getMessage(), t);
                 }
+                log.info("###### onConfirmation doLAST");
                 target.addComponent(msgLabel);
                 target.addComponent(okBtn);
             }
         };
+        confirmRestore.setConfirmAjaxCallDecorator(new MaskingAjaxCallDecorator());
         confirmRestore.setInitialHeight(150);
         form.add(confirmRestore);
         
