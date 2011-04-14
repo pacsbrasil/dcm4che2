@@ -134,11 +134,6 @@ public class StudyPermissionsPage extends SecureWebPage {
             }
 
             @Override
-            protected boolean needAutoOpen() {
-                return false;
-            }
-
-            @Override
             public void onDecline(AjaxRequestTarget target, Role role) {
             }
         });
