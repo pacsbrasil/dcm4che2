@@ -40,12 +40,15 @@ package org.dcm4chee.web.common.markup.modal;
 
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
@@ -58,7 +61,7 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
  * @version $Revision$ $Date$
  * @since Dec 11, 2009
  */
-public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
+public abstract class ConfirmationWindow<T> extends ModalWindow {
     
     private static final long serialVersionUID = 1L;
     
@@ -78,6 +81,8 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     protected Label msgLabel;
     protected Label remarkLabel;
     protected AjaxFallbackLink<Object> okBtn;
+    
+    private IAjaxCallDecorator confirmAjaxCallDecorator;
 
     public ConfirmationWindow(String id, String titleResource) {
         this(id);
@@ -86,7 +91,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     
     public ConfirmationWindow(String id) {
         this(id, new ResourceModel("yesBtn"), new ResourceModel("noBtn"), new ResourceModel("cancelBtn"));
-        
+
         setCloseButtonCallback(new CloseButtonCallback() {
 
             private static final long serialVersionUID = 1L;
@@ -120,16 +125,18 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
     protected void initContent() {
         setInitialWidth(400);
         setInitialHeight(300);
-        setPageCreator(new ModalWindow.PageCreator() {
-            
-            private static final long serialVersionUID = 1L;
-
-            public WebPage createPage() {
-                return new MessageWindowPage("content");
-            }
-        });
+        setContent(new MessageWindowPanel("content"));
     }
     
+    public IAjaxCallDecorator getConfirmAjaxCallDecorator() {
+        return confirmAjaxCallDecorator;
+    }
+
+    public void setConfirmAjaxCallDecorator(
+            IAjaxCallDecorator confirmAjaxCallDecorator) {
+        this.confirmAjaxCallDecorator = confirmAjaxCallDecorator;
+    }
+
     public abstract void onConfirmation(AjaxRequestTarget target, T userObject);
     public void onDecline(AjaxRequestTarget target, T userObject) {}
     public void onCancel(AjaxRequestTarget target, T userObject) {}
@@ -166,26 +173,17 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
         hasStatus = true;
     }
 
-    @Override
-    protected boolean needAutoOpen() {
-        return msg != null;
-    }
-    
     public void setRemark(IModel<?> remark) {
         this.remark = remark;
     }
 
-    public class MessageWindowPage extends WebPage {
+    public class MessageWindowPanel extends Panel {
         
         private static final long serialVersionUID = 1L;
+        private IndicatingAjaxFallbackLink<Object> confirmBtn;
+        public MessageWindowPanel(String id) {
+            super(id);
 
-        public MessageWindowPage(String id) {
-            super();
-
-            ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-            if (BaseCSS != null)
-                add(CSSPackageResource.getHeaderContribution(BaseCSS));
-            
             add((msgLabel = new Label("msg", new AbstractReadOnlyModel<Object>() {
 
                 private static final long serialVersionUID = 1L;
@@ -206,7 +204,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                 }
             })).setOutputMarkupId(true));
 
-            IndicatingAjaxFallbackLink<Object> confirmBtn = new IndicatingAjaxFallbackLink<Object>("confirm") {
+            confirmBtn = new IndicatingAjaxFallbackLink<Object>("confirm") {
 
                 private static final long serialVersionUID = 1L;
 
@@ -214,7 +212,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                 public void onClick(AjaxRequestTarget target) {
                     onConfirmation(target, userObject);
                     if (hasStatus) {
-                        target.addComponent(MessageWindowPage.this);
+                        target.addComponent(MessageWindowPanel.this);
                     } else {
                         msg = null;
                         close(target);
@@ -224,6 +222,24 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                 @Override
                 public boolean isVisible() {
                     return !hasStatus;
+                }
+
+                @Override
+                protected IAjaxCallDecorator getAjaxCallDecorator() {
+                    return new IAjaxCallDecorator(){
+                        public final CharSequence decorateScript(CharSequence script) {
+                            return "showMask();"+script;
+                        }
+
+                        public final CharSequence decorateOnSuccessScript(CharSequence script) {
+                            return "hideMask();"+script;
+                        }
+
+                        public final CharSequence decorateOnFailureScript(CharSequence script) {
+                            return "hideMask();"+script;
+                        }
+
+                    };
                 }
             };
             confirmBtn.add(new Label("confirmLabel", confirm));
@@ -238,7 +254,7 @@ public abstract class ConfirmationWindow<T> extends AutoOpenModalWindow {
                 public void onClick(AjaxRequestTarget target) {
                     onDecline(target, userObject);
                     if (hasStatus) {
-                        target.addComponent(MessageWindowPage.this);
+                        target.addComponent(MessageWindowPanel.this);
                     } else {
                         msg = null;
                         close(target);
