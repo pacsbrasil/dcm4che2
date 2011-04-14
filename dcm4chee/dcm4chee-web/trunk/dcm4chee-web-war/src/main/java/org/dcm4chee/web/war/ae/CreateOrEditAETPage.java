@@ -51,6 +51,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
@@ -122,7 +123,7 @@ public class CreateOrEditAETPage extends SecureWebPage {
         form.addLabeledTextField("institution"); 
         form.addLabeledTextField("department"); 
         form.add(new Label("installed.label", new ResourceModel("ae.installed") ) );
-        form.add(new AjaxCheckBox("installed"){
+        form.add(new AjaxCheckBox("installed") {
 
             private static final long serialVersionUID = 1L;
 
@@ -130,6 +131,38 @@ public class CreateOrEditAETPage extends SecureWebPage {
             protected void onUpdate(AjaxRequestTarget target) {
             }
         });
+
+        final TextField<String> emulateMPPSTime = 
+            new TextField<String>("emulateMPPSTime") {
+
+                private static final long serialVersionUID = 1L;
+                
+            };
+        ae.setEmulateMPPSTime(AEDelegate.getInstance().getSchedule(ae.getTitle()));
+        ae.setEmulateMPPS(ae.getEmulateMPPSTime() != null);
+
+        emulateMPPSTime.add(new MPPSEmulatorDelayTimeValidator());
+        emulateMPPSTime.setRequired(true);
+        form.add(emulateMPPSTime
+                .setOutputMarkupId(true)
+                .setOutputMarkupPlaceholderTag(true)
+                .setVisible(ae.getEmulateMPPSTime() != null)
+        );
+        form.add(new Label("emulateMPPS.label", new ResourceModel("ae.emulateMPPS") ) );
+        form.add(new AjaxCheckBox("emulateMPPS") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                emulateMPPSTime.setVisible(this.getModelObject());
+                if (this.getModelObject() && ae.getEmulateMPPSTime() == null)
+                    ae.setEmulateMPPSTime("5m");
+                target.addComponent(emulateMPPSTime);
+            }
+        }
+        .setOutputMarkupId(true));
+        
         form.add(new AjaxFallbackButton("submit", new ResourceModel("saveBtn"), form) {
 
             private static final long serialVersionUID = 1L;

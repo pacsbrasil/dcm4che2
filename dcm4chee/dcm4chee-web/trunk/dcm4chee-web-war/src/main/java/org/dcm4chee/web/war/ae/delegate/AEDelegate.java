@@ -41,6 +41,8 @@ package org.dcm4chee.web.war.ae.delegate;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import javax.management.Attribute;
+import javax.management.ObjectName;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.wicket.RequestCycle;
@@ -49,6 +51,7 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.slf4j.Logger;
@@ -65,8 +68,18 @@ public class AEDelegate extends BaseMBeanDelegate {
     private static Logger auditLog = LoggerFactory.getLogger("auditlog");
     private static AEDelegate singleton;
     
+    private static String newline = System.getProperty("line.separator");
+    
+    private ObjectName mppsEmulatorServiceObjectName;
+    
     private AEDelegate() {
         super();
+        try {
+            mppsEmulatorServiceObjectName = BaseCfgDelegate.getInstance().getObjectName("mppsEmulatorServiceName", null);
+            log.info("MBeanDelegate initialized! serviceName:"+mppsEmulatorServiceObjectName);
+        } catch (Exception e) {
+            log.error( "Failed to set ObjectName for MBeanService! serviceNameCfgAttribute:mppsEmulatorServiceName",e );
+        }
     }
     
     public static AEDelegate getInstance() {
@@ -87,6 +100,7 @@ public class AEDelegate extends BaseMBeanDelegate {
         }
         String updOrCreate = ae.getPk() == -1 ? "Create new AE:" : "Update AE:";
         ((AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME)).updateOrCreateAET(ae);
+        setSchedule(ae.getTitle(), (ae.isEmulateMPPS() ? ae.getEmulateMPPSTime() : null));
         logActorConfig(updOrCreate + ae);
     }
     
@@ -147,5 +161,42 @@ public class AEDelegate extends BaseMBeanDelegate {
     @Override
     public String getDefaultServiceObjectName() {
         return "dcm4chee.archive:service=AE";
+    }
+    
+    public String getSchedule(String aet) {
+        log.debug("Getting schedule for " + aet + ".");
+        try {
+            String[] schedule = ((String) server.getAttribute(mppsEmulatorServiceObjectName, "ModalityAETitles"))
+                .split(newline);
+            for (String entry : schedule)
+                if (entry.startsWith(aet))
+                    if (entry.contains(":"))
+                        return entry.split(":")[1];
+                    else
+                        return null;
+        } catch (Exception e) {
+            log.error("Getting schedule for " + aet + " failed!", e);
+        }
+        return null;
+    }
+    
+    private void setSchedule(String aet, String delay) {
+        log.debug("Setting schedule for " + aet + ".");
+        try {
+            StringBuffer scheduleBuffer = new StringBuffer();
+            String[] schedule = ((String) server.getAttribute(mppsEmulatorServiceObjectName, "ModalityAETitles"))
+                .split(newline);
+            for (String entry : schedule) {
+                if (!entry.startsWith(aet))
+                    scheduleBuffer
+                        .append(entry)
+                        .append(newline);
+            }
+            if (delay != null)
+                scheduleBuffer.append(aet).append(":").append(delay);
+            server.setAttribute(mppsEmulatorServiceObjectName, new Attribute("ModalityAETitles", scheduleBuffer.toString()));
+        } catch (Exception e) {
+            log.error("Getting schedule for " + aet + " failed!", e);
+        }       
     }
 }
