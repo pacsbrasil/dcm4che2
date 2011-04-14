@@ -52,6 +52,7 @@ import org.dcm4chee.usr.ui.usermanagement.ChangePasswordPanel;
 import org.dcm4chee.usr.ui.usermanagement.role.RolePanel;
 import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.base.ModuleSelectorPanel;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecureWicketPage;
@@ -93,7 +94,7 @@ public class MainPage extends SecureWicketPage {
             });
 
         addModules(getModuleSelectorPanel());        
-        add(JavascriptPackageResource.getHeaderContribution(MainPage.class, "mainpage.js"));
+        add(JavascriptPackageResource.getHeaderContribution(BaseWicketPage.class, "mainpage.js"));
     }
 
     private void addModules(ModuleSelectorPanel selectorPanel) {
