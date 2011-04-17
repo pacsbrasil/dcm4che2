@@ -699,18 +699,17 @@ public abstract class InstanceBean implements EntityBean {
      * @ejb.interface-method
      */
     public Dataset getAttributes(boolean supplement) {
-        Dataset ds;
-        try {
-            ds = DatasetUtils.fromByteArray(getEncodedAttributes());
-        } catch (IllegalArgumentException x) {
-            // BLOB size not sufficient to store Attributes
-            log
-                    .warn("Instance (pk:"
-                            + getPk()
-                            + ") Attributes truncated in database! (BLOB size not sufficient to store Attributes correctly) !");
+        Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
+        if (ds.isEmpty()) {
+            log.warn("Empty Dataset in Instance BLOB (pk:"+getPk()+")! Use Dataset with DB values");
             ds = DcmObjectFactory.getInstance().newDataset();
             ds.putUI(Tags.SOPInstanceUID, this.getSopIuid());
             ds.putUI(Tags.SOPClassUID, this.getSopCuid());
+            ds.putIS(Tags.InstanceNumber, this.getInstanceNumber());
+            ds.putDA(Tags.ContentDate, this.getContentDateTime());
+            ds.putTM(Tags.ContentTime, this.getContentDateTime());
+            ds.putCS(Tags.CompletionFlag, this.getSrCompletionFlag());
+            ds.putCS(Tags.VerificationFlag, this.getSrVerificationFlag());
         }
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);

@@ -49,6 +49,7 @@ import java.io.StringReader;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
@@ -67,6 +68,8 @@ import org.xml.sax.SAXException;
 
 public class DatasetUtils {
 
+    private static final Logger log = Logger.getLogger(DatasetUtils.class);
+            
     public static void putRetrieveAET(Dataset ds, String iAETs, String eAET) {
         if (iAETs != null) {
             ds.putAE(Tags.RetrieveAET, StringUtils.split(eAET != null ? iAETs
@@ -82,7 +85,7 @@ public class DatasetUtils {
 
     public static Dataset fromByteArray(byte[] data, Dataset ds) {
         if (data == null)
-            return null;
+            return DcmObjectFactory.getInstance().newDataset();
         ByteArrayInputStream bin = new ByteArrayInputStream(data);
         if (ds == null)
             ds = DcmObjectFactory.getInstance().newDataset();
@@ -91,7 +94,7 @@ public class DatasetUtils {
             // reset File Meta Information for Serialisation
             ds.setFileMetaInfo(null);
         } catch (IOException e) {
-            throw new IllegalArgumentException("" + e);
+            log.warn("Attributes truncated! (Maybe BLOB size not sufficient to store Attributes correctly)! Return empty dataset", e);
         }
         return ds;
     }

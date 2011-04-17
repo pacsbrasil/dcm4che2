@@ -1105,6 +1105,21 @@ public abstract class SeriesBean implements EntityBean {
      */
     public Dataset getAttributes(boolean supplement) {
         Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
+        if (ds.isEmpty()) {
+            log.warn("Empty Dataset in Series BLOB (pk:"+getPk()+")! Use Dataset with DB values");
+            ds.putUI(Tags.SeriesInstanceUID, this.getSeriesIuid());
+            ds.putIS(Tags.SeriesNumber, this.getSeriesNumber());
+            ds.putCS(Tags.Modality, this.getModality());
+            ds.putCS(Tags.BodyPartExamined, this.getBodyPartExamined());
+            ds.putCS(Tags.Laterality, this.getLaterality());
+            ds.putLO(Tags.SeriesDescription, this.getSeriesDescription());
+            ds.putLO(Tags.InstitutionName, this.getInstitutionName());
+            ds.putLO(Tags.InstitutionalDepartmentName, this.getInstitutionalDepartmentName());
+            ds.putSH(Tags.StationName, this.getStationName());
+            ds.putPN(Tags.PerformingPhysicianName, this.getPerformingPhysicianName());
+            ds.putDA(Tags.PPSStartDate, this.getPpsStartDateTime());
+            ds.putTM(Tags.PPSStartTime, this.getPpsStartDateTime());
+        }
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putOB(PrivateTags.SeriesPk, Convert.toBytes(getPk().longValue()));

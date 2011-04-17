@@ -912,6 +912,17 @@ public abstract class StudyBean implements EntityBean {
      */
     public Dataset getAttributes(boolean supplement) {
         Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
+        if (ds.isEmpty()) {
+            log.warn("Empty Dataset in Study BLOB (pk:"+getPk()+")! Use Dataset with DB values");
+            ds.putUI(Tags.StudyInstanceUID, this.getStudyIuid());
+            ds.putSH(Tags.StudyID, this.getStudyId());
+            ds.putCS(Tags.StudyStatusID, this.getStudyStatusId());
+            ds.putDA(Tags.StudyDate, this.getStudyDateTime());
+            ds.putTM(Tags.StudyTime, this.getStudyDateTime());
+            ds.putSH(Tags.AccessionNumber, this.getAccessionNumber());
+            ds.putPN(Tags.ReferringPhysicianName, this.getReferringPhysicianName());
+            ds.putLO(Tags.StudyDescription, this.getStudyDescription());
+        }
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putOB(PrivateTags.StudyPk, Convert.toBytes(getPk().longValue()));

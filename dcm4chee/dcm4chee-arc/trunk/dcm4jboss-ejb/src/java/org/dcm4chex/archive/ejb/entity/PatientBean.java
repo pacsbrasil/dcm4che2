@@ -742,6 +742,14 @@ public abstract class PatientBean implements EntityBean {
      */
     public Dataset getAttributes(boolean supplement) {
         Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
+        if (ds.isEmpty()) {
+            log.warn("Empty Dataset in Patient BLOB (pk:"+getPk()+")! Use Dataset with DB values");
+            ds.putLO(Tags.PatientID, this.getPatientId());
+            ds.putLO(Tags.IssuerOfPatientID, this.getIssuerOfPatientId());
+            ds.putPN(Tags.PatientName, this.getPatientName());
+            ds.putDA(Tags.PatientBirthDate, this.getPatientBirthDate());
+            ds.putCS(Tags.PatientSex, this.getPatientSex());
+        }
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putOB(PrivateTags.PatientPk, Convert.toBytes(getPk().longValue()));
