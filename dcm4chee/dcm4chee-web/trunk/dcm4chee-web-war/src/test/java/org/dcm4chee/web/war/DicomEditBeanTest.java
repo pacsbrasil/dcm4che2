@@ -37,6 +37,11 @@ import org.dcm4chee.archive.entity.RequestAttributes;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyOnFileSystem;
+import org.dcm4chee.archive.entity.UPS;
+import org.dcm4chee.archive.entity.UPSRelatedPS;
+import org.dcm4chee.archive.entity.UPSReplacedPS;
+import org.dcm4chee.archive.entity.UPSRequest;
+import org.dcm4chee.archive.entity.UPSSubscription;
 import org.dcm4chee.archive.entity.VerifyingObserver;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
 import org.dcm4chee.usr.entity.User;
@@ -56,7 +61,8 @@ public class DicomEditBeanTest extends BaseSessionBeanFixture<DicomEditBean>
         MWLItem.class, 
         PrivatePatient.class, PrivateStudy.class, PrivateSeries.class, PrivateInstance.class, PrivateFile.class,
         OtherPatientID.class, AE.class, RequestAttributes.class, Code.class, User.class, UserRoleAssignment.class,
-        Issuer.class, ContentItem.class};
+        Issuer.class, ContentItem.class, UPS.class, UPSRequest.class, UPSSubscription.class, UPSRelatedPS.class,
+        UPSReplacedPS.class};
     
     static {
         URL.setURLStreamHandlerFactory(new URLStreamHandlerFactory());

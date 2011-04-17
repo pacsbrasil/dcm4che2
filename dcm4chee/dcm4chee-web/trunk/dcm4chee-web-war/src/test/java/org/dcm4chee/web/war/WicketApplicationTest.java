@@ -33,6 +33,11 @@ import org.dcm4chee.archive.entity.RequestAttributes;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyOnFileSystem;
+import org.dcm4chee.archive.entity.UPS;
+import org.dcm4chee.archive.entity.UPSRelatedPS;
+import org.dcm4chee.archive.entity.UPSReplacedPS;
+import org.dcm4chee.archive.entity.UPSRequest;
+import org.dcm4chee.archive.entity.UPSSubscription;
 import org.dcm4chee.archive.entity.VerifyingObserver;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
@@ -58,7 +63,8 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
         Media.class, MPPS.class, GPSPS.class, GPPPS.class, GPSPSRequest.class, GPSPSPerformer.class,
         MWLItem.class,  
         OtherPatientID.class, AE.class, RequestAttributes.class, Code.class, User.class, UserRoleAssignment.class,
-        Issuer.class, ContentItem.class};
+        Issuer.class, ContentItem.class, UPS.class, UPSRequest.class, UPSSubscription.class, UPSRelatedPS.class,
+        UPSReplacedPS.class};
     public WicketApplicationTest() throws Exception {
         super(StudyListBean.class, usedBeans);
     }
