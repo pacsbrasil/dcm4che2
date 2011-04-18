@@ -109,9 +109,6 @@ public class AE extends BaseEntity implements Serializable {
     @Column(name = "wado_url")
     private String wadoURL;
 
-    private transient boolean emulateMPPS;
-    private transient String emulateMPPSTime;
-    
     public String getTitle() {
         return title;
     }
@@ -223,22 +220,6 @@ public class AE extends BaseEntity implements Serializable {
 
     public String getWadoURL() {
         return wadoURL;
-    }
-
-    public void setEmulateMPPS(boolean emulateMPPS) {
-        this.emulateMPPS = emulateMPPS;
-    }
-
-    public boolean isEmulateMPPS() {
-        return emulateMPPS;
-    }
-
-    public void setEmulateMPPSTime(String emulateMPPSTime) {
-        this.emulateMPPSTime = emulateMPPSTime;
-    }
-
-    public String getEmulateMPPSTime() {
-        return emulateMPPSTime;
     }
 
     public String getStationName() {
