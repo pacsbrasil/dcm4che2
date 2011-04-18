@@ -53,7 +53,7 @@ public class MPPSEmulatorDelayTimeValidator extends StringValidator {
     @Override
     protected void onValidate(IValidatable<String> validatable) {
         if (!(validatable == null || validatable.getValue().trim().length() == 0 ||
-                validatable.getValue().matches("^[0-9]{1,2}[sm]$")))
+                validatable.getValue().matches("^[0-9]{1,2}[smhdw]$")))
             error(validatable);
     }
 }
