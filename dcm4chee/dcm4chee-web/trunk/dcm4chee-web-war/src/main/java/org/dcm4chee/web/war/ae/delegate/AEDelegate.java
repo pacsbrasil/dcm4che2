@@ -40,6 +40,8 @@ package org.dcm4chee.web.war.ae.delegate;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.management.Attribute;
 import javax.management.ObjectName;
@@ -71,6 +73,7 @@ public class AEDelegate extends BaseMBeanDelegate {
     private static String newline = System.getProperty("line.separator");
     
     private ObjectName mppsEmulatorServiceObjectName;
+    private Map<String, String> mppsEmulatedAETs;
     
     private AEDelegate() {
         super();
@@ -100,7 +103,7 @@ public class AEDelegate extends BaseMBeanDelegate {
         }
         String updOrCreate = ae.getPk() == -1 ? "Create new AE:" : "Update AE:";
         ((AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME)).updateOrCreateAET(ae);
-        setSchedule(ae.getTitle(), (ae.isEmulateMPPS() ? ae.getEmulateMPPSTime() : null));
+        updateSchedule(ae.getTitle());
         logActorConfig(updOrCreate + ae);
     }
     
@@ -157,46 +160,64 @@ public class AEDelegate extends BaseMBeanDelegate {
     public String getServiceNameCfgAttribute() {
         return "aeServiceName";
     }
+
+    public Map<String, String> getEmulatedAETs() {
+        this.mppsEmulatedAETs = new HashMap<String, String>();
+        try {
+            String[] schedule = ((String) server.getAttribute(mppsEmulatorServiceObjectName, "ModalityAETitles"))
+                .split(newline);
+            int pos;
+            for (String entry : schedule) { 
+                pos = entry.indexOf(':');
+                if (pos == -1) {
+                    mppsEmulatedAETs.put(entry, null);
+                } else {
+                    mppsEmulatedAETs.put(entry.substring(0, pos), entry.substring(++pos));
+                }
+            }
+        } catch (Exception e) {
+            log.error("Getting mppsEmulatedAETs failed!", e);
+        }
+        return mppsEmulatedAETs;
+    }
     
     @Override
     public String getDefaultServiceObjectName() {
         return "dcm4chee.archive:service=AE";
     }
     
-    public String getSchedule(String aet) {
-        log.debug("Getting schedule for " + aet + ".");
-        try {
-            String[] schedule = ((String) server.getAttribute(mppsEmulatorServiceObjectName, "ModalityAETitles"))
-                .split(newline);
-            for (String entry : schedule)
-                if (entry.startsWith(aet))
-                    if (entry.contains(":"))
-                        return entry.split(":")[1];
-                    else
-                        return null;
-        } catch (Exception e) {
-            log.error("Getting schedule for " + aet + " failed!", e);
-        }
-        return null;
-    }
-    
-    private void setSchedule(String aet, String delay) {
+    private void updateSchedule(String aet) {
         log.debug("Setting schedule for " + aet + ".");
         try {
+            boolean newSchedule = true;
             StringBuffer scheduleBuffer = new StringBuffer();
             String[] schedule = ((String) server.getAttribute(mppsEmulatorServiceObjectName, "ModalityAETitles"))
                 .split(newline);
             for (String entry : schedule) {
-                if (!entry.startsWith(aet))
-                    scheduleBuffer
-                        .append(entry)
-                        .append(newline);
+                if (entry.startsWith(aet)) {
+                    appendSchedule(aet, scheduleBuffer);
+                    newSchedule = false;
+                } else {
+                    scheduleBuffer.append(entry).append(newline);
+                }
             }
-            if (delay != null)
-                scheduleBuffer.append(aet).append(":").append(delay);
+            if (newSchedule)
+                appendSchedule(aet, scheduleBuffer);
             server.setAttribute(mppsEmulatorServiceObjectName, new Attribute("ModalityAETitles", scheduleBuffer.toString()));
         } catch (Exception e) {
             log.error("Getting schedule for " + aet + " failed!", e);
         }       
+    }
+
+    private boolean appendSchedule(String aet, StringBuffer scheduleBuffer) {
+        if (this.mppsEmulatedAETs.containsKey(aet)) {
+            scheduleBuffer.append(aet);
+            String delay = mppsEmulatedAETs.get(aet);
+            if (delay != null) {
+                scheduleBuffer.append(':').append(delay);
+            }
+            return true;
+        }
+        return false;
     }
 }

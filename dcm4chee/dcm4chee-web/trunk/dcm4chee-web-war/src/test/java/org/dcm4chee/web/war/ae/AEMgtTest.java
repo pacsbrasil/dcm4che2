@@ -90,7 +90,7 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
         wicketTester.startPage(AETestPage.class);
         doLogin("aemgr","aemgr");
         wicketTester.assertRenderedPage(AETestPage.class);
-        wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE(), null));
+        wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE(), new AEListPanel("dummy")));
         wicketTester.assertRenderedPage(CreateOrEditAETPage.class);
         wicketTester.getComponentFromLastRenderedPage("form").getSession().setLocale(new Locale("en"));
         FormTester formTester = wicketTester.newFormTester("form");
@@ -109,7 +109,7 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
         wicketTester.startPage(AETestPage.class);
         doLogin("aemgr","aemgr");
         wicketTester.assertRenderedPage(AETestPage.class);
-        wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE(), null));
+        wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE(), new AEListPanel("dummy")));
         wicketTester.getComponentFromLastRenderedPage("form").getSession().setLocale(new Locale("en"));
         FormTester formTester = wicketTester.newFormTester("form");
         formTester.setValue("title", "AE_TEST_TO_LONGLONG");
@@ -130,7 +130,7 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
         doLogin("aemgr","aemgr");
         wicketTester.assertRenderedPage(AETestPage.class);
         for ( AE ae : aeList ) {
-            wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE(), null));
+            wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE(), new AEListPanel("dummy")));
             FormTester formTester = wicketTester.newFormTester("form");
             formTester.setValue("title", ae.getTitle());
             formTester.setValue("hostName", ae.getHostName());

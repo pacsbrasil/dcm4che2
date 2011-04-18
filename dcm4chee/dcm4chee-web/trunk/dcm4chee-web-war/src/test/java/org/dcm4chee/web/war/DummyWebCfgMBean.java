@@ -49,6 +49,8 @@ import javax.management.InvalidAttributeValueException;
 import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
 import org.jboss.system.ServiceMBeanSupport;
@@ -66,6 +68,10 @@ public class DummyWebCfgMBean extends ServiceMBeanSupport implements DynamicMBea
         if ("loginAllowedRolename".equals(attribute)) return "LoginAllowed";
         if ("sourceAetsPropertiesFilename".equals(attribute)) return "source_aets.properties";
         if ("stationAetsPropertiesFilename".equals(attribute)) return "station_aets.properties";
+        if ("mppsEmulatorServiceName".equals(attribute)) {
+            return this.getServiceName();
+        }
+        if ("ModalityAETitles".equals(attribute)) return "TEST_AET";
         
         return null;
     }
@@ -99,5 +105,4 @@ public class DummyWebCfgMBean extends ServiceMBeanSupport implements DynamicMBea
     public AttributeList setAttributes(AttributeList attributes) {
         return null;
     }
-
 }

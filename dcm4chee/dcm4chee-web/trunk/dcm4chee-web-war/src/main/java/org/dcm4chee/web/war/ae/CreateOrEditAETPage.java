@@ -48,12 +48,14 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClo
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.CompoundPropertyModel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
@@ -63,6 +65,7 @@ import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.validators.UrlValidator1;
 import org.dcm4chee.web.dao.fs.FileSystemHomeLocal;
@@ -133,35 +136,56 @@ public class CreateOrEditAETPage extends SecureWebPage {
         });
 
         final TextField<String> emulateMPPSTime = 
-            new TextField<String>("emulateMPPSTime") {
-
+            new TextField<String>("emulateMPPSTime", new IModel<String>(){
                 private static final long serialVersionUID = 1L;
-                
-            };
-        ae.setEmulateMPPSTime(AEDelegate.getInstance().getSchedule(ae.getTitle()));
-        ae.setEmulateMPPS(ae.getEmulateMPPSTime() != null);
 
+                public void detach() {}
+
+                public String getObject() {
+                    return panel.getMppsEmulatedAETs().get(ae.getTitle());
+                }
+
+                public void setObject(String object) {
+                    panel.getMppsEmulatedAETs().put(ae.getTitle(), object);
+                }
+            }) {
+                private static final long serialVersionUID = 1L;
+                @Override
+                public boolean isVisible() {
+                    return panel.getMppsEmulatedAETs().containsKey(ae.getTitle());
+                }
+            };
         emulateMPPSTime.add(new MPPSEmulatorDelayTimeValidator());
-        emulateMPPSTime.setRequired(true);
         form.add(emulateMPPSTime
                 .setOutputMarkupId(true)
                 .setOutputMarkupPlaceholderTag(true)
-                .setVisible(ae.getEmulateMPPSTime() != null)
+                .add(new TooltipBehaviour("ae."))
         );
         form.add(new Label("emulateMPPS.label", new ResourceModel("ae.emulateMPPS") ) );
-        form.add(new AjaxCheckBox("emulateMPPS") {
-
+        form.add(new AjaxCheckBox("emulateMPPS", new IModel<Boolean>() {
             private static final long serialVersionUID = 1L;
 
+            public void detach() {}
+
+            public Boolean getObject() {
+                return panel.getMppsEmulatedAETs().containsKey(ae.getTitle());
+            }
+
+            public void setObject(Boolean object) {
+                if (object) {
+                    panel.getMppsEmulatedAETs().put(ae.getTitle(), null);
+                } else {
+                    panel.getMppsEmulatedAETs().remove(ae.getTitle());
+                }
+            }
+        }){
+            private static final long serialVersionUID = 1L;
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
-                emulateMPPSTime.setVisible(this.getModelObject());
-                if (this.getModelObject() && ae.getEmulateMPPSTime() == null)
-                    ae.setEmulateMPPSTime("5m");
+                target.addComponent(this);
                 target.addComponent(emulateMPPSTime);
             }
-        }
-        .setOutputMarkupId(true));
+        }.setOutputMarkupId(true).add(new TooltipBehaviour("ae.")));
         
         form.add(new AjaxFallbackButton("submit", new ResourceModel("saveBtn"), form) {
 

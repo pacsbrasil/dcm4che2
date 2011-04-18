@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.ae;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
@@ -57,6 +58,7 @@ import org.apache.wicket.markup.html.list.OddEvenListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
@@ -89,6 +91,7 @@ public class AEListPanel extends Panel {
     private ConfirmationWindow<AE> confirm; 
     
     PropertyListView<AE> list;
+    private Map<String, String> mppsEmulatedAETs;
     
     public AEListPanel(String id) {
         super(id);
@@ -159,6 +162,7 @@ public class AEListPanel extends Panel {
         add( new Label("portHdr.label", new ResourceModel("ae.portHdr.label")));
         add( new Label("descriptionHdr.label", new ResourceModel("ae.descriptionHdr.label")));        
         add( new Label("cipherHdr.label", new ResourceModel("ae.cipherHdr.label")));
+        add( new Label("emulatedHdr.label", new ResourceModel("ae.emulatedHdr.label")));
         add( new Label("stationHdr.label", new ResourceModel("ae.stationHdr.label")));
         add( new Label("institutionHdr.label", new ResourceModel("ae.institutionHdr.label")));
         add( new Label("departmentHdr.label", new ResourceModel("ae.departmentHdr.label")));
@@ -182,6 +186,13 @@ public class AEListPanel extends Panel {
                 cipherSuites.setModel(new Model<Boolean>(item.getModelObject().getCipherSuites().size() > 0));
                 cipherSuites.setEnabled(false);
                 item.add(cipherSuites);
+                item.add(new CheckBox("emulated", new AbstractReadOnlyModel<Boolean>(){
+                    private static final long serialVersionUID = 1L;
+                    @Override
+                    public Boolean getObject() {
+                        return getMppsEmulatedAETs().containsKey(item.getModelObject().getTitle());
+                    }
+                }).setEnabled(false));
                 item.add(new Label("stationName"));
                 item.add(new Label("institution"));
                 item.add(new Label("department"));
@@ -257,7 +268,8 @@ public class AEListPanel extends Panel {
         AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
         List<AE> updatedList = new ArrayList<AE>();
         updatedList.addAll(aeHome.findAll());
-        list.setModelObject(updatedList);      
+        list.setModelObject(updatedList);
+        mppsEmulatedAETs = AEDelegate.getInstance().getEmulatedAETs();
     }
     
     private void removeAE(AE ae) {
@@ -275,5 +287,12 @@ public class AEListPanel extends Panel {
 
     public static String getModuleName() {
         return "ae";
+    }
+
+    public Map<String, String> getMppsEmulatedAETs() {
+        if (this.mppsEmulatedAETs == null) {
+            mppsEmulatedAETs = AEDelegate.getInstance().getEmulatedAETs();
+        }
+        return mppsEmulatedAETs;
     }
 }
