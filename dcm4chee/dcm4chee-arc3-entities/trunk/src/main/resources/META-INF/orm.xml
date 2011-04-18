@@ -344,16 +344,45 @@
     </attributes>
   </entity>
   
-  <entity class="org.dcm4chee.archive.entity.Issuer"
+  <entity class="Issuer"
       access="FIELD" metadata-complete="false">
     <sequence-generator name="seq" sequence-name="issuer_pk_seq"
         allocation-size="1" />
   </entity>
     
-  <entity class="org.dcm4chee.archive.entity.ContentItem"
+  <entity class="ContentItem"
       access="FIELD" metadata-complete="false">
     <sequence-generator name="seq" sequence-name="content_item_pk_seq"
         allocation-size="1" />
+  </entity>
+
+  <entity class="UPS" access="FIELD" metadata-complete="false">
+    <table name="ups" />
+    <sequence-generator name="seq" sequence-name="ups_pk_seq" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+    <attributes>
+      <basic name="encodedAttributes">
+        <column name="ups_attrs" column-definition="@blob@" />
+      </basic>
+    </attributes>
+  </entity>
+  
+  <entity class="UPSRequest" access="FIELD" metadata-complete="false">
+    <table name="ups_req" />
+    <sequence-generator name="seq" sequence-name="ups_req_pk_seq" />
+  </entity>
+  <entity class="UPSRelatedPS" access="FIELD" metadata-complete="false">
+    <table name="ups_rel_ps" />
+    <sequence-generator name="seq" sequence-name="ups_rel_ps_pk_seq" />
+  </entity>
+  <entity class="UPSReplacedPS" access="FIELD" metadata-complete="false">
+    <table name="ups_repl_ps" />
+    <sequence-generator name="seq" sequence-name="ups_repl_ps_pk_seq" />
+  </entity>
+  <entity class="UPSSubscription" access="FIELD" metadata-complete="false">
+    <table name="ups_subscr" />
+    <sequence-generator name="seq" sequence-name="ups_subscr_pk_seq" />
   </entity>
   
 </entity-mappings>

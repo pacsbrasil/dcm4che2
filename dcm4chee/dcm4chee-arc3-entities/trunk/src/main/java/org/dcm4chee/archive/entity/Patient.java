@@ -149,6 +149,9 @@ public class Patient extends BaseEntity implements Serializable {
     @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<GPPPS> generalPurposePerformedProcedureSteps;
 
+    @OneToMany(mappedBy = "patient", fetch=FetchType.LAZY, cascade=CascadeType.REMOVE)
+    private Set<UPS> unifiedProcedureSteps;
+    
     public Date getCreatedTime() {
         return createdTime;
     }
@@ -321,6 +324,10 @@ public class Patient extends BaseEntity implements Serializable {
         this.generalPurposePerformedProcedureSteps = gppps;
     }
 
+    public Set<UPS> getUnifiedProcedureSteps() {
+        return unifiedProcedureSteps;
+    }
+    
     @Override
     public String toString() {
         return "Patient[pk=" + pk
