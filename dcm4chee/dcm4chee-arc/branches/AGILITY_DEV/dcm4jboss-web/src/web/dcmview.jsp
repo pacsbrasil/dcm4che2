@@ -24,7 +24,7 @@
 	if ( ds != null ) {
 		TagDictionary dict = DictionaryFactory.getInstance().getDefaultTagDictionary();
 		SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
-		Templates stylesheet = tf.newTemplates(new StreamSource("resource:dicom_html.xsl"));
+		Templates stylesheet = tf.newTemplates(new StreamSource(application.getRealPath("dicom_html.xsl")));
 		TransformerHandler th = tf.newTransformerHandler(stylesheet);
 		String title = (String) request.getSession().getAttribute("titleOfdataset2view");
 		if ( title != null )
