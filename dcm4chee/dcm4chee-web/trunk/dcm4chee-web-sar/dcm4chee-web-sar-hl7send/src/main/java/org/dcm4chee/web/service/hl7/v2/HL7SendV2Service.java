@@ -623,7 +623,7 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
                 return false;
             }
         } else {
-            log.warn("Unsupport response message type: " + fields.get(6)
+            log.warn("Unsupported response message type: " + fields.get(6)
                     + ". Assume message is sent successful.");
         }
         return true;
