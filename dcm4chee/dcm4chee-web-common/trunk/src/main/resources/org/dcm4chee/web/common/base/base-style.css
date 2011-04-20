@@ -57,6 +57,7 @@ table.search-table tr.search-table-footer { height: 30px; }
 table.search-table tr.search-table-extended { background-color: #A0D8C4; }
 table.search-table span.toggle-text { vertical-align: middle; }
 table.search-table div.search-header { text-decoration: underline; }
+table.search-table .yui-skin-sam div.calheader { width: 14em; }
 
 /*
     table.content-table
