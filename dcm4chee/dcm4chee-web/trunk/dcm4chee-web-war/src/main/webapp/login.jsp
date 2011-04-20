@@ -9,23 +9,25 @@
      Cookie[] cookies = request.getCookies();
      String userName = "";
      String focus = "self.focus();document.login.j_username.focus()";
-     int count = 0;
-     for (int i = 0; i < cookies.length; i++) {
-         if (cookies[i].getName().equals("WEB3LOCALE")) {
-             login.setLocale(cookies[i].getValue());
-             count++;
-             if (count==2)
-             	break;
-         }
-         if (cookies[i].getName().equals("signInPanel.signInForm.username")) {
-             userName = cookies[i].getValue();
-             if (userName!=null && userName.length()>0)
-                 focus = "self.focus();document.login.j_username.value='"+userName+
-                 	"';document.login.j_password.focus()";
-             count++;
-             if (count==2)
-             	break;
-         }
+     if (cookies != null) {
+	     int count = 0;
+	     for (int i = 0; i < cookies.length; i++) {
+	         if (cookies[i].getName().equals("WEB3LOCALE")) {
+	             login.setLocale(cookies[i].getValue());
+	             count++;
+	             if (count==2)
+	             	break;
+	         }
+	         if (cookies[i].getName().equals("signInPanel.signInForm.username")) {
+	             userName = cookies[i].getValue();
+	             if (userName!=null && userName.length()>0)
+	                 focus = "self.focus();document.login.j_username.value='"+userName+
+	                 	"';document.login.j_password.focus()";
+	             count++;
+	             if (count==2)
+	             	break;
+	         }
+	     }
      }
     %>
     <head>
