@@ -76,6 +76,8 @@ public class WicketApplication extends BaseWicketApplication {
         if (jaasSubject != null) {
             try {
                 session.login(new SSOLoginContext(session, jaasSubject));
+                log.debug("Container authenticated session login done! Unbind session '{}' from SessionStore!",session.getId());
+                this.getSessionStore().unbind(session.getId());
             } catch (LoginException x) {
                 log.error(getClass().getName() + ": Failed login", x);
             }
