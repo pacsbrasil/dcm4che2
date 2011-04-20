@@ -340,6 +340,7 @@ public class ExportPage extends SecureWebPage {
         try {
             ExportDelegate.getInstance().export(destAET, patID, studyIUIDs, seriesIUIDs, sopIUIDs, rq );
         } catch (Exception e) {
+            log.error("Export failed!", e);
             rq.reqDescr += " failed. Reason: ";
             String lastException = null;
             Throwable cause = e;
