@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -170,7 +171,7 @@ public class StudyListBean implements StudyListLocal {
             for (Object[] element: result) {
                 if (!patientList.contains((Patient) element[0])) {
                     patient = (Patient) element[0];
-                    patient.setStudies(new HashSet<Study>());
+                    patient.setStudies(new LinkedHashSet<Study>());
                     patientList.add(patient);
                 }
                 patient.getStudies().add((Study) element[1]);
