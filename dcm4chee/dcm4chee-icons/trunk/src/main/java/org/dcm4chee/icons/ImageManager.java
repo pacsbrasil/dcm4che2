@@ -115,6 +115,12 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "user/user_add.png");
     public static ResourceReference IMAGE_USER_WEB_PERMISSIONS = 
         new ResourceReference(ImageManager.class, "user/web_permissions.png");
+    public static final ResourceReference IMAGE_USER_AET_PERMISSIONS = 
+        new ResourceReference(ImageManager.class, "user/aet_group_assignment.png");
+    public static final ResourceReference IMAGE_USER_AET_GROUP_ADD = 
+        new ResourceReference(ImageManager.class, "user/aet_group_add.png");
+    public static final ResourceReference IMAGE_USER_AET_GROUP_AETS = 
+        new ResourceReference(ImageManager.class, "user/aet_group_aets.png");
     
     public static final ResourceReference IMAGE_DASHBOARD_FILESYSTEM_GROUP = 
         new ResourceReference(ImageManager.class, "dashboard/filesystem/filesystem_group.png");
