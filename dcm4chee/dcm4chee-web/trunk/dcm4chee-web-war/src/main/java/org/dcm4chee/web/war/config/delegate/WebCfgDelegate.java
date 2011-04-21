@@ -38,7 +38,6 @@
 
 package org.dcm4chee.web.war.config.delegate;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -194,17 +193,6 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         } catch (Exception x) {
             log.warn("Cant invoke checkCUID! Ignored by return -1!", x);
             return -1;
-        }
-    }
-    
-    @SuppressWarnings("unchecked")
-    private List<String> getStringList(String name) {
-        if (server == null) return new ArrayList<String>();
-        try {
-            return (List<String>) server.invoke(serviceObjectName, name, new Object[] {}, new String[] {});
-        } catch (Exception e) {
-            log.warn("Cant invoke '" + name + "', returning empty list.", e);
-            return new ArrayList<String>();
         }
     }
     
