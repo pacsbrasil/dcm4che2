@@ -77,6 +77,8 @@ import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.model.Group;
 import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
+import org.dcm4chee.usr.ui.usermanagement.role.assignment.AETGroupAssignmentPage;
+import org.dcm4chee.usr.ui.usermanagement.role.assignment.WebPermissionsPage;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
@@ -107,10 +109,12 @@ public class RoleListPanel extends Panel {
     private ConfirmationWindow<Role> confirmationWindow;
     private ModalWindow roleWindow;
     private ModalWindow webroleWindow;
+    private ModalWindow aetroleWindow;
     private Map<String,int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
     
     private String webRoleColor;
-    private String dicomRoleColor;   
+    private String dicomRoleColor;
+    private String aetRoleColor;
     
     public RoleListPanel(String id) {
         super(id);
@@ -120,6 +124,7 @@ public class RoleListPanel extends Panel {
 
         windowsizeMap.put("editRole", UsrCfgDelegate.getInstance().getWindowSize("editRole"));
         windowsizeMap.put("webPermissions", UsrCfgDelegate.getInstance().getWindowSize("webPermissions"));
+        windowsizeMap.put("aetGroupAssignment", UsrCfgDelegate.getInstance().getWindowSize("aetGroupAssignment"));
         
         userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);        
         setOutputMarkupId(true);
@@ -142,6 +147,7 @@ public class RoleListPanel extends Panel {
 
         add(roleWindow = new ModalWindow("role-window"));
         add(webroleWindow = new ModalWindow("webrole-window"));
+        add(aetroleWindow = new ModalWindow("aetrole-window"));
 
         int[] winSize = windowsizeMap.get("editRole");
         add(new ModalWindowLink("toggle-role-form-link", roleWindow, winSize[0], winSize[1]) {
@@ -186,6 +192,8 @@ public class RoleListPanel extends Panel {
                 webRoleColor = group.getColor();
             if (group.getGroupname().equals("Dicom"))
                 dicomRoleColor = group.getColor();
+            if (group.getGroupname().equals("AET"))
+                aetRoleColor = group.getColor();
         }
         
         RepeatingView roleRows = new RepeatingView("role-rows");
@@ -297,11 +305,43 @@ public class RoleListPanel extends Panel {
                     (role.isDicomRole() ? dicomRoleColor : "white")
             )))));
 
+            winSize = windowsizeMap.get("aetGroupAssignment");
+            rowParent.add((new WebMarkupContainer("aetrole-cell")
+            .add((new ModalWindowLink("aetrole-link", aetroleWindow, winSize[0], winSize[1]) {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    aetroleWindow
+                        .setPageCreator(new ModalWindow.PageCreator() {
+                      
+                            private static final long serialVersionUID = 1L;
+                        
+                                @Override
+                                public Page createPage() {
+                                    return new AETGroupAssignmentPage(
+                                            aetroleWindow, 
+                                            role
+                                    );
+                                }
+                        });
+                    super.onClick(target);
+                }
+            }).add(new Image("rolelist.aetrole.image", ImageManager.IMAGE_USER_AET_PERMISSIONS)
+                .add(new TooltipBehaviour("rolelist.", "aetrole-link", new Model<String>(role.getRolename()))))
+                .setVisible(role.isAETRole())
+                .add(new SecurityBehavior(getModuleName() + ":aetroleLink"))
+            )
+            .add(new AttributeModifier("style", true, new Model<String>("background-color: " + 
+                    (role.isAETRole() ? aetRoleColor : "white")
+            )))));
+
             RepeatingView groupContentCells = new RepeatingView("group-content-cells");
             rowParent.add(groupContentCells);
             for (Group group : this.roleGroups) {
                 if (group.getGroupname().equalsIgnoreCase("Web")
-                        ||group.getGroupname().equalsIgnoreCase("Dicom"))
+                        ||group.getGroupname().equalsIgnoreCase("Dicom")
+                        ||group.getGroupname().equalsIgnoreCase("AET"))
                     continue;
                 CheckBox groupCheckbox = new CheckBox("group-checkbox");
                 groupCheckbox.setEnabled(false);

@@ -16,7 +16,7 @@
  *
  * The Initial Developer of the Original Code is
  * Agfa-Gevaert AG.
- * Portions created by the Initial Developer are Copyright (C) 2002-2005
+ * Portions created by the Initial Developer are Copyright (C) 2008
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -36,54 +36,45 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.dao;
+package org.dcm4chee.usr.ui.validator;
 
-import java.util.List;
-
-import javax.ejb.Local;
-
-import org.dcm4chee.usr.entity.User;
-import org.dcm4chee.usr.entity.UserRoleAssignment;
+import org.apache.wicket.model.util.ListModel;
+import org.apache.wicket.validation.IValidatable;
+import org.apache.wicket.validation.validator.AbstractValidator;
 import org.dcm4chee.usr.model.AETGroup;
-import org.dcm4chee.usr.model.Role;
-import org.dcm4chee.usr.model.Group;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * @author Robert David <robert.david@agfa.com>
- * @version $Revision$ $Date$
- * @since 19.08.2009
- */
-@Local
-public interface UserAccess {
-    String JNDI_NAME = "dcm4chee-usr-dao/UserAccess/local";
+* @author Robert David <robert.david@agfa.com>
+* @version $Revision$ $Date$
+* @since Apr. 20, 2011
+*/
+public class AETGroupValidator extends AbstractValidator<String> {
 
-    public String getUserRoleName();
-    public String getAdminRoleName();
-    
-    public List<User> getAllUsers();
-    public User getUser(String userId);
-    public void createUser(User user);
-    public void updateUser(String userId, String password);
-    public void deleteUser(String userId);
-    public Boolean userExists(String username);
-    public Boolean hasPassword(String username, String password);
+    private static final long serialVersionUID = 1L;
 
-    public void assignRole(UserRoleAssignment ura);
-    public void unassignRole(UserRoleAssignment ura);
+    private static Logger log = LoggerFactory.getLogger(AETGroupValidator.class);
+    
+    private ListModel<AETGroup> allAETGroups;
+    private String ignoreName;
+    
+    public AETGroupValidator(ListModel<AETGroup> allAETGroups, String ignoreName) {
+        this.allAETGroups = allAETGroups;
+        this.ignoreName = ignoreName;
+    }
 
-    public List<Role> getAllRoles();
-    public void addRole(Role role);
-    public void updateRole(Role role);
-    public void removeRole(Role role);
-    public Boolean roleExists(String rolename);
-    
-    public List<Group> getAllGroups();
-    public void addGroup(Group group);
-    public void updateGroup(Group group);
-    public void removeGroup(Group group);
-    
-    public List<AETGroup> getAllAETGroups();
-    public void addAETGroup(AETGroup aetGroup);
-    public void updateAETGroup(AETGroup aetGroup);
-    public void removeAETGroup(AETGroup aetGroup);
+    @Override
+    protected void onValidate(IValidatable<String> validatable) {
+        try {
+            for (AETGroup anAETGroup : this.allAETGroups.getObject()) {
+                if (anAETGroup.getGroupname().equalsIgnoreCase(validatable.getValue())) 
+                    if (!validatable.getValue().equalsIgnoreCase(ignoreName))
+                        error(validatable);
+            }
+        } catch (Exception e) {
+            log.error(this.getClass().toString() + ": " + "onValidate: " + e.getMessage());
+            log.debug("Exception: ", e);
+        }
+    }
 }

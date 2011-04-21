@@ -38,6 +38,8 @@
 
 package org.dcm4chee.usr.ui.config.delegate;
 
+import java.util.List;
+
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,5 +76,13 @@ public class UsrCfgDelegate extends BaseCfgDelegate {
     
     public String getStudyPermissionsOwnRolename() {
         return getString("studyPermissionsOwnRolename");
+    }
+    
+    public List<String> getSourceAETList() {
+        return getStringList("getSourceAETList"); 
+    }
+    
+    public List<String> getStationAETList() {
+        return getStringList("getStationAETList"); 
     }
 }

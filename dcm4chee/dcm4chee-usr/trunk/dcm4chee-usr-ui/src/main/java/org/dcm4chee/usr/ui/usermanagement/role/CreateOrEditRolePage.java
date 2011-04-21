@@ -138,7 +138,8 @@ public class CreateOrEditRolePage extends SecureWebPage {
             
             final StringBuffer webRoleUuid = new StringBuffer();
             final StringBuffer dicomRoleUuid = new StringBuffer();
-
+            final StringBuffer aetRoleUuid = new StringBuffer();
+            
             groupCheckboxList = new ArrayList<CheckBox>(groups.size());
             RepeatingView groupRows = new RepeatingView("group-rows");
             add(groupRows);
@@ -150,7 +151,8 @@ public class CreateOrEditRolePage extends SecureWebPage {
                         new Model<Boolean>(role != null ? 
                                 group.getGroupname().equals("Web") ? role.isWebRole() : 
                                     group.getGroupname().equals("Dicom") ? role.isDicomRole() : 
-                                        role.getRoleGroups().contains(group.getUuid()) : false)))                          
+                                        group.getGroupname().equals("AET") ? role.isAETRole() :
+                                            role.getRoleGroups().contains(group.getUuid()) : false)))                          
                         .setLabel(new Model<String>(group.getUuid()))
                         .add(new SecurityBehavior(getModuleName() + ":changeGroupAssignmentCheckbox")));
                 rowParent.add(new Label("groupname", new Model<String>(group.getGroupname())));
@@ -161,6 +163,8 @@ public class CreateOrEditRolePage extends SecureWebPage {
                     webRoleUuid.append(group.getUuid());
                 else if (group.getGroupname().equals("Dicom"))
                     dicomRoleUuid.append(group.getUuid());
+                else if (group.getGroupname().equals("AET"))
+                    aetRoleUuid.append(group.getUuid());
             }
 
             add(new AjaxFallbackButton("add-role-submit", CreateOrEditRoleForm.this) {
@@ -182,6 +186,7 @@ public class CreateOrEditRolePage extends SecureWebPage {
                             newRole.setRoleGroups(groupList);
                             newRole.setWebRole(groupList.contains(webRoleUuid.toString()));
                             newRole.setDicomRole(groupList.contains(dicomRoleUuid.toString()));
+                            newRole.setAETRole(groupList.contains(aetRoleUuid.toString()));
                             userAccess.addRole(newRole);
                         } else {
                             role.setRolename(rolename.getObject());
@@ -190,6 +195,7 @@ public class CreateOrEditRolePage extends SecureWebPage {
                             role.setRoleGroups(groupList);
                             role.setWebRole(groupList.contains(webRoleUuid.toString()));
                             role.setDicomRole(groupList.contains(dicomRoleUuid.toString()));
+                            role.setAETRole(groupList.contains(aetRoleUuid.toString()));
                             userAccess.updateRole(role);
                         }
                         allRolenames.setObject(userAccess.getAllRoles());

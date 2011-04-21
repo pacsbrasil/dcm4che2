@@ -10,6 +10,7 @@
 	<wicket:panel>
 		<div wicket:id="role-window" />
         <div wicket:id="webrole-window" />
+        <div wicket:id="aetrole-window" />
 		<div wicket:id="confirmation-window" />
 		<div style="clear: both; margin-top: 5px;" />
 		<button wicket:id="toggle-role-form-link">
@@ -54,6 +55,11 @@
                 </td>
                 <td wicket:id="dicomrole-cell" style="text-align: center;">
                     <input wicket:id="dicomrole-checkbox" type="checkbox" />
+                </td>
+                <td wicket:id="aetrole-cell" style="text-align: center;">
+                    <a wicket:id="aetrole-link" href="#">
+                        <img wicket:id="rolelist.aetrole.image" />
+                    </a>
                 </td>
                 <td wicket:id="group-content-cells" style="text-align: center;">
                     <input wicket:id="group-checkbox" type="checkbox" />

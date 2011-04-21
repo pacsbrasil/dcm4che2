@@ -60,6 +60,7 @@ import net.sf.json.JSONObject;
 
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
+import org.dcm4chee.usr.model.AETGroup;
 import org.dcm4chee.usr.model.Group;
 import org.dcm4chee.usr.model.Role;
 import org.jboss.annotation.ejb.LocalBinding;
@@ -83,6 +84,7 @@ public class UserAccessBean implements UserAccess {
 
     private File rolesMappingFile;
     private File groupsFile;
+    private File aetGroupsFile;
     private String userRoleName;
     private String adminRoleName;
     private boolean ensureUserAndAdminRole;
@@ -113,23 +115,8 @@ public class UserAccessBean implements UserAccess {
                 }
             }
         }
-        if (this.groupsFile == null) {
-            groupsFile = new File(System.getProperty("dcm4chee-web3.cfg.path", "conf/dcm4chee-web3") + "groups.json");
-            if (!groupsFile.isAbsolute())
-                groupsFile = new File(ServerConfigLocator.locate().getServerHomeDir(), groupsFile.getPath());
-            if (log.isDebugEnabled()) {
-                log.debug("groupsFile:"+groupsFile);
-            }
-            if (!groupsFile.exists()) {
-                try {
-                    if (groupsFile.getParentFile().mkdirs())
-                        log.info("M-WRITE dir:" + groupsFile.getParent());
-                    groupsFile.createNewFile();
-                } catch (IOException e) {
-                    log.error("Groups file doesn't exist and can't be created!", e);
-                }
-            }
-        }
+        this.groupsFile = checkFile(this.groupsFile, "groups.json");
+        this.aetGroupsFile = checkFile(this.aetGroupsFile, "aet-groups.json");
         List<Role> roles = null;
         if (userRoleName.charAt(0)=='+') {
             userRoleName = userRoleName.substring(1);
@@ -151,6 +138,27 @@ public class UserAccessBean implements UserAccess {
         }
     }
 
+    private File checkFile(File file, String jsonFilename) {
+        if (file == null) {
+            file = new File(System.getProperty("dcm4chee-web3.cfg.path", "conf/dcm4chee-web3") + jsonFilename);
+            if (!file.isAbsolute())
+                file = new File(ServerConfigLocator.locate().getServerHomeDir(), file.getPath());
+            if (log.isDebugEnabled()) {
+                log.debug(jsonFilename + ":" + file);
+            }
+            if (!file.exists()) {
+                try {
+                    if (file.getParentFile().mkdirs())
+                        log.info("M-WRITE dir:" + file.getParent());
+                    file.createNewFile();
+                } catch (IOException e) {
+                    log.error(jsonFilename + " file doesn't exist and can't be created!", e);
+                }
+            }
+        }
+        return file;
+    }
+    
     public String getUserRoleName() {
         return userRoleName;
     }
@@ -332,14 +340,27 @@ public class UserAccessBean implements UserAccess {
             
             int webPos = -1;
             int dicomPos = -1;
+            int aetPos = -1;
 
             for (int i = 0; i < groupList.size(); i++) {
                 if (groupList.get(i).getGroupname().equalsIgnoreCase("Web")) 
                     webPos = i;
                 if (groupList.get(i).getGroupname().equalsIgnoreCase("Dicom")) 
                     dicomPos = i;
+                if (groupList.get(i).getGroupname().equalsIgnoreCase("AET")) 
+                    aetPos = i;
             }
             
+            if (aetPos > 0) {
+                Group aetGroup = groupList.get(aetPos);
+                groupList.remove(aetPos);
+                groupList.add(0, aetGroup);
+            } else if (aetPos == -1) {
+                Group group = new Group();
+                group.setGroupname("AET");
+                addGroup(group);
+                groupList.add(0, group);
+            }
             if (dicomPos > 0) {
                 Group dicomGroup = groupList.get(dicomPos);
                 groupList.remove(dicomPos);
@@ -403,8 +424,6 @@ public class UserAccessBean implements UserAccess {
         for (Role role : roles)
             if (role.getRoleGroups().contains(role.getUuid()))
                 role.getRoleGroups().remove(role.getUuid());
-//            if (role.getGroupUuid().equals(group.getUuid())) 
-//                role.setGroupUuid(null);
         List<Group> groups = getAllGroups();
         if (groups.remove(group)) {
             saveGroups(groups);
@@ -431,7 +450,89 @@ public class UserAccessBean implements UserAccess {
         } catch (IOException e) {
             log.error("Can't save groups in groups file!", e);
         } finally {
-            close(writer, "Temporary types file (in finally block)");
+            close(writer, "Temporary groups file (in finally block)");
+        }
+    }
+
+    public List<AETGroup> getAllAETGroups() {
+        BufferedReader reader = null;
+        try {
+            List<AETGroup> aetGroupList = new ArrayList<AETGroup>();
+            String line;
+            reader = new BufferedReader(new FileReader(aetGroupsFile));
+            while ((line = reader.readLine()) != null)
+                aetGroupList.add((AETGroup) JSONObject.toBean(JSONObject.fromObject(line), AETGroup.class));
+            Collections.sort(aetGroupList);            
+            return aetGroupList;
+        } catch (Exception e) {
+            log.error("Can't get aet groups from aet groups file!", e);
+            return null;
+        } finally {
+            close(reader, "aet groups file reader");
+        }
+    }
+
+    public void addAETGroup(AETGroup aetGroup) {
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(aetGroupsFile, true));
+            JSONObject jsonObject = JSONObject.fromObject(aetGroup);
+            writer.write(jsonObject.toString());
+            writer.newLine();
+        } catch (IOException e) {
+            log.error("Can't add aet group to aet groups file!", e);
+        } finally {
+            close(writer, "aet groups file reader");
+        }
+    }
+
+    public void updateAETGroup(AETGroup aetGroup) {
+        AETGroup oldAetGroup = null;
+        List<AETGroup> aetGroups = getAllAETGroups();
+        for(AETGroup current : aetGroups)
+            if (aetGroup.getUuid().equals(current.getUuid()))
+                oldAetGroup = current;
+        if (oldAetGroup != null) {
+            aetGroups.set(aetGroups.indexOf(oldAetGroup), aetGroup);
+            saveAETGroups(aetGroups);
+        } else {
+            log.warn("Update AET Group "+aetGroup+" failed! Removed from aet groups file!");
+        }
+    }
+
+    public void removeAETGroup(AETGroup aetGroup) {
+        // TODO: 
+//        List<Role> roles = getAllRoles();
+//        for (Role role : roles)
+//            if (role.getRoleGroups().contains(role.getUuid()))
+//                role.getRoleGroups().remove(role.getUuid());
+        List<AETGroup> aetGroups = getAllAETGroups();
+        if (aetGroups.remove(aetGroup)) {
+            saveAETGroups(aetGroups);
+        } else {
+            log.warn("AET Group "+aetGroup+" already removed from aet groups file!");
+        }
+    }
+    
+    private void saveAETGroups(List<AETGroup> aetGroups) {
+        BufferedWriter writer = null;
+        try {
+            File tmpFile = File.createTempFile(aetGroupsFile.getName(), null, aetGroupsFile.getParentFile());
+            writer = new BufferedWriter(new FileWriter(tmpFile, true));
+            JSONObject jsonObject;
+            for (int i=0,len=aetGroups.size() ; i < len ; i++) {
+                jsonObject = JSONObject.fromObject(aetGroups.get(i));
+                writer.write(jsonObject.toString());
+                writer.newLine();
+            }
+            if (close(writer, "Temporary aet groups file"))
+                writer = null;
+            aetGroupsFile.delete();
+            tmpFile.renameTo(aetGroupsFile);
+        } catch (IOException e) {
+            log.error("Can't save aet groups in aet groups file!", e);
+        } finally {
+            close(writer, "Temporary aet groups file (in finally block)");
         }
     }
 

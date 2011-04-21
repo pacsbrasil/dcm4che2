@@ -87,7 +87,10 @@
         <dd>manageRoles: Manage roles in User Management</dd>
         <dd>editRole: New role and edit role in User Management</dd>
         <dd>webPermissions: Web permissions in User Management</dd>
+        <dd>aetGroupAssignment: AET group assignment in User Management</dd>
         <dd>editGroup: Edit group in User Management</dd>
+        <dd>editAETGroup: Edit AET group in User Management</dd>
+        <dd>aetAssignment: Assign AETs to AET group in User Management</dd>
       ]]></description>
       <name>WindowSizeConfig</name>
       <type>java.lang.String</type>
@@ -104,7 +107,9 @@
             manageRoles:300x700
             editRole:570x350
             webPermissions:300x700
+            aetGroupAssignment:300x700
             editGroup:600x350
+            aetAssignment:300x700
             "/>
       </descriptors>
    </attribute>

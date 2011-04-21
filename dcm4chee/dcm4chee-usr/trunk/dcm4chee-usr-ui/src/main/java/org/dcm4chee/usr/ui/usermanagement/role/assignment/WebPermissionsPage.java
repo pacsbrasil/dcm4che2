@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.usr.ui.usermanagement.role;
+package org.dcm4chee.usr.ui.usermanagement.role.assignment;
 
 import java.util.Iterator;
 import java.util.Map;

@@ -58,11 +58,12 @@ public class Role implements Serializable, Comparable<Role> {
     private boolean superuser;   
     private boolean isWebRole;
     private boolean isDicomRole;
+    private boolean isAETRole;
     
     // list of group uuids
     private List<String> roleGroups;
-
     private Set<String> swarmPrincipals;
+    private Set<String> aetGroups;
 
     public Role() {
         this.uuid = UUID.randomUUID().toString();
@@ -121,6 +122,14 @@ public class Role implements Serializable, Comparable<Role> {
         return isDicomRole;
     }
 
+    public void setAETRole(boolean isAETRole) {
+        this.isAETRole = isAETRole;
+    }
+
+    public boolean isAETRole() {
+        return isAETRole;
+    }
+
     public void setRoleGroups(List<String> roleGroups) {
         this.roleGroups = roleGroups;
     }
@@ -135,6 +144,14 @@ public class Role implements Serializable, Comparable<Role> {
 
     public Set<String> getSwarmPrincipals() {
         return swarmPrincipals;
+    }
+
+    public void setAETGroups(Set<String> aetGroups) {
+        this.aetGroups = aetGroups;
+    }
+
+    public Set<String> getAETGroups() {
+        return aetGroups;
     }
 
     @Override
