@@ -38,6 +38,7 @@
 
 package org.dcm4chee.web.common.delegate;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.management.MBeanServerConnection;
@@ -166,5 +167,16 @@ public class BaseCfgDelegate {
 
     public MBeanServerConnection getMBeanServer() {
         return server;
+    }
+    
+    @SuppressWarnings("unchecked")
+    protected List<String> getStringList(String name) {
+        if (server == null) return new ArrayList<String>();
+        try {
+            return (List<String>) server.invoke(serviceObjectName, name, new Object[] {}, new String[] {});
+        } catch (Exception e) {
+            log.warn("Cant invoke '" + name + "', returning empty list.", e);
+            return new ArrayList<String>();
+        }
     }
 }
