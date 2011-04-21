@@ -342,11 +342,10 @@ public class ExportPage extends SecureWebPage {
         } catch (Exception e) {
             log.error("Export failed!", e);
             rq.reqDescr += " failed. Reason: ";
-            String lastException = null;
             Throwable cause = e;
-            while ((cause = cause.getCause()) != null) 
-                lastException = cause.getClass().getCanonicalName() + ": " + cause.getLocalizedMessage();
-            rq.reqDescr += lastException;
+            for ( ; cause.getCause() != null ; cause = cause.getCause()) {}
+            rq.reqDescr += cause.getMessage() == null ? cause.getClass().getCanonicalName() :
+                    cause.getLocalizedMessage();
             result.requestDone(rq, false);
         }
     }

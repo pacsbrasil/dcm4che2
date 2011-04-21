@@ -216,7 +216,13 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
     }
     
     public Association open(String aet) throws IOException, GeneralSecurityException {
-        return open(lookupAEHome().findByTitle(aet));
+        AE ae;
+        try {
+            ae = lookupAEHome().findByTitle(aet);
+        } catch (Exception x) {
+            throw new RuntimeException("AET not found:"+aet);
+        }
+        return open(ae);
     }
     
     public Association open(AE ae) throws IOException, GeneralSecurityException {
