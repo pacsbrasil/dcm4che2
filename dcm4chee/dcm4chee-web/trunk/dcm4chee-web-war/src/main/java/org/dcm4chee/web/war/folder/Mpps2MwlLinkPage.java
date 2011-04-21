@@ -120,8 +120,8 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         ppsModels  = toList(ppsModel);
         ppsModelForInfo = ppsModels.get(0);
         ppsPatModelForInfo = ppsModelForInfo.getStudy().getPatient();
-        panel.presetSearchfields();
         panel.getViewPort().clear();
+        panel.presetSearchfields();
         comp = c;
         if (WebCfgDelegate.getInstance().isMpps2mwlAutoQuery() ) {
             target.appendJavascript("hideMask();document.getElementById('" + panel.getSearchButton().getMarkupId() +
