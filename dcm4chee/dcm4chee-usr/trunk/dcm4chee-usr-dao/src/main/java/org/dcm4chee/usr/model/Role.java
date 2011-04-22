@@ -55,7 +55,10 @@ public class Role implements Serializable, Comparable<Role> {
     private String uuid;
     private String rolename;
     private String description;
+    
     private boolean superuser;   
+    private boolean universalMatch;
+    
     private boolean isWebRole;
     private boolean isDicomRole;
     private boolean isAETRole;
@@ -104,6 +107,14 @@ public class Role implements Serializable, Comparable<Role> {
 
     public boolean isSuperuser() {
         return superuser;
+    }
+
+    public void setUniversalMatch(boolean universalMatch) {
+        this.universalMatch = universalMatch;
+    }
+
+    public boolean isUniversalMatch() {
+        return universalMatch;
     }
 
     public void setWebRole(boolean isWebRole) {

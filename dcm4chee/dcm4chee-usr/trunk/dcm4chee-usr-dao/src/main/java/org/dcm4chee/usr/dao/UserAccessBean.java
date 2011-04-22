@@ -47,7 +47,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.PostActivate;
@@ -501,11 +503,10 @@ public class UserAccessBean implements UserAccess {
     }
 
     public void removeAETGroup(AETGroup aetGroup) {
-        // TODO: 
-//        List<Role> roles = getAllRoles();
-//        for (Role role : roles)
-//            if (role.getRoleGroups().contains(role.getUuid()))
-//                role.getRoleGroups().remove(role.getUuid());
+        List<Role> roles = getAllRoles();
+        for (Role role : roles)
+            if (role.getAETGroups().contains(aetGroup.getUuid())) 
+                role.getAETGroups().remove(aetGroup.getUuid());
         List<AETGroup> aetGroups = getAllAETGroups();
         if (aetGroups.remove(aetGroup)) {
             saveAETGroups(aetGroups);
@@ -513,6 +514,29 @@ public class UserAccessBean implements UserAccess {
             log.warn("AET Group "+aetGroup+" already removed from aet groups file!");
         }
     }
+    
+    public List<AETGroup> getAETGroups(String username) {
+        // TODO: optimize
+        Set<String> roles = new HashSet<String>();
+        Set<String> aetGroupUuids = new HashSet<String>();
+        User user = getUser(username);
+        for (UserRoleAssignment ura : user.getRoles())
+            roles.add(ura.getRole());
+        for (Role role : getAllRoles())
+            if (roles.contains(role.getRolename()))
+                aetGroupUuids.addAll(role.getAETGroups());
+        List<AETGroup> aetGroups = getAllAETGroups();
+        for (int i = 0; i < aetGroups.size(); i++) {
+            AETGroup aetGroup = aetGroups.get(i);
+            if (!aetGroupUuids.contains(aetGroup.getUuid())) { 
+                aetGroups.remove(aetGroup);
+                i--;
+            }
+        }
+        Collections.sort(aetGroups);
+        return aetGroups;
+    }
+    
     
     private void saveAETGroups(List<AETGroup> aetGroups) {
         BufferedWriter writer = null;

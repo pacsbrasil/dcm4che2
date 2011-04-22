@@ -91,6 +91,29 @@ public class AETGroupAssignmentPage extends SecureWebPage {
         userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);        
         this.role = role;
         setOutputMarkupId(true);
+
+        WebMarkupContainer universalmatchRow;
+        add(universalmatchRow = new WebMarkupContainer("universalmatch-row"));
+        universalmatchRow.add((new Label("universalmatch-name", new ResourceModel("aetgroupassignment.universalmatch.label"))
+            .add(new AttributeModifier("title", true, new ResourceModel("aetgroupassignment.universalmatch.description"))))
+            .add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(0))))
+        );
+        universalmatchRow.add(new AjaxCheckBox("universalmatch-checkbox", new HasAETGroupModel(role)) {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                target.addComponent(this);
+            }
+              
+            @Override
+            protected void onComponentTag(ComponentTag tag) {
+                super.onComponentTag(tag);
+                tag.put("title", new ResourceModel(((HasAETGroupModel) this.getModel()).getObject().booleanValue() ? "aetgroupassignment.has-aet-group-checkbox.remove.tooltip" : "aetgroupassignment.has-aet-group-checkbox.add.tooltip").wrapOnAssignment(this).getObject());
+            }
+        })
+        .add(new SecurityBehavior(getModuleName() + ":changeAETGroupAssignmentCheckbox"));
     }
 
     @Override
@@ -106,7 +129,7 @@ public class AETGroupAssignmentPage extends SecureWebPage {
         addOrReplace(aetGroupRows);
         
         List<AETGroup> aetGroups = userAccess.getAllAETGroups();
-        int i = 0;
+        int i = 1;
         for (AETGroup aetGroup : aetGroups) {
             WebMarkupContainer rowParent;
             aetGroupRows.add((rowParent = new WebMarkupContainer(aetGroupRows.newChildId()))
@@ -146,19 +169,27 @@ public class AETGroupAssignmentPage extends SecureWebPage {
             this.role = role;
             this.aetGroup = aetGroup;
         }
-        
+
+        public HasAETGroupModel(Role role) {
+            this.role = role;
+            this.aetGroup = null;
+        }
+
         @Override
         public Boolean getObject() {
-            return role.getAETGroups().contains(aetGroup.getUuid());
+            return aetGroup == null ? 
+                    role.getAETGroups().contains("*") :
+                    role.getAETGroups().contains(aetGroup.getUuid());
         }
         
         @Override
         public void setObject(Boolean hasAETGroup) {
+            String uuid = aetGroup == null ? "*" : aetGroup.getUuid();
             Set<String> aetGroups = role.getAETGroups();
             if (hasAETGroup) 
-                aetGroups.add(aetGroup.getUuid());
+                aetGroups.add(uuid);
             else 
-                aetGroups.remove(aetGroup.getUuid());
+                aetGroups.remove(uuid);
             role.setAETGroups(aetGroups);
             userAccess.updateRole(role);
         }

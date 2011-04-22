@@ -45,8 +45,8 @@ import javax.ejb.Local;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
 import org.dcm4chee.usr.model.AETGroup;
-import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.model.Group;
+import org.dcm4chee.usr.model.Role;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -86,4 +86,6 @@ public interface UserAccess {
     public void addAETGroup(AETGroup aetGroup);
     public void updateAETGroup(AETGroup aetGroup);
     public void removeAETGroup(AETGroup aetGroup);
+    
+    public List<AETGroup> getAETGroups(String username);
 }

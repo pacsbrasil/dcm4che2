@@ -164,6 +164,11 @@ public class AETGroupListPanel extends Panel {
       .add(new TooltipBehaviour("aetgrouplist."))
       .add(new SecurityBehavior(getModuleName() + ":newAETGroupLink"))
       );
+        
+        add((new Label("groupname", new ResourceModel("aetgrouplist.universalmatch.label"))
+            .add(new AttributeModifier("title", true, new ResourceModel("aetgrouplist.universalmatch.description"))))
+        );
+        add(new Label("assigned-aets", new ResourceModel("aetgrouplist.universalmatch.text")));
     }
 
     @Override
@@ -174,11 +179,11 @@ public class AETGroupListPanel extends Panel {
         
         RepeatingView aetGroupRows = new RepeatingView("aet-group-rows");
         addOrReplace(aetGroupRows);
-        
+
+        WebMarkupContainer rowParent;
         for (int i = 0; i < this.allAETGroups.getObject().size(); i++) {
             final AETGroup aetGroup = this.allAETGroups.getObject().get(i);
 
-            WebMarkupContainer rowParent;
             aetGroupRows.add((rowParent = new WebMarkupContainer(aetGroupRows.newChildId()))
                     .add(new Label("groupname", aetGroup.getGroupname())
                     .add(new AttributeModifier("title", true, new Model<String>(aetGroup.getDescription()))))
