@@ -516,14 +516,13 @@ public class UserAccessBean implements UserAccess {
     }
     
     public List<AETGroup> getAETGroups(String username) {
-        // TODO: optimize
         Set<String> roles = new HashSet<String>();
         Set<String> aetGroupUuids = new HashSet<String>();
         User user = getUser(username);
         for (UserRoleAssignment ura : user.getRoles())
             roles.add(ura.getRole());
         for (Role role : getAllRoles())
-            if (roles.contains(role.getRolename()))
+            if (role.isAETRole() && roles.contains(role.getRolename()))
                 aetGroupUuids.addAll(role.getAETGroups());
         List<AETGroup> aetGroups = getAllAETGroups();
         for (int i = 0; i < aetGroups.size(); i++) {
@@ -534,6 +533,8 @@ public class UserAccessBean implements UserAccess {
             }
         }
         Collections.sort(aetGroups);
+        if (aetGroupUuids.contains("*"))
+            aetGroups.add(0, new AETGroup("*"));
         return aetGroups;
     }
     
