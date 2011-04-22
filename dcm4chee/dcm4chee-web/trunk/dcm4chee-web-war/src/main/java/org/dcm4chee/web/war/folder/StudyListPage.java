@@ -335,9 +335,16 @@ public class StudyListPage extends Panel {
         
         form.addDropDownChoice("modality", null, WebCfgDelegate.getInstance().getModalityList(), 
                 enabledModel, false).setModelObject("*");
-        form.addDropDownChoice("sourceAET", null, viewport.getSourceAetChoices(
-                WebCfgDelegate.getInstance().getSourceAETList()), enabledModel, false).setModelObject("*");
+        
+        DropDownChoice sourceAETDropDownChoice = 
+            form.addDropDownChoice("sourceAET", null, viewport.getSourceAetChoices(
+                WebCfgDelegate.getInstance().getSourceAETList()), enabledModel, false);
+        if (sourceAETDropDownChoice.getChoices().size() > 0)
+            sourceAETDropDownChoice.setModelObject(sourceAETDropDownChoice.getChoices().get(0));
+        else
+            sourceAETDropDownChoice.setNullValid(true);
 
+        
         final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
 
             private static final long serialVersionUID = 1L;

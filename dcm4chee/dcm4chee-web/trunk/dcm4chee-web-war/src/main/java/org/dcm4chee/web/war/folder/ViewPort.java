@@ -40,8 +40,16 @@ package org.dcm4chee.web.war.folder;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.wicket.RequestCycle;
+import org.dcm4chee.usr.dao.UserAccess;
+import org.dcm4chee.usr.model.AETGroup;
+import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
+import org.dcm4chee.usr.util.JNDIUtils;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.util.GroupedChoices;
 import org.dcm4chee.web.dao.folder.StudyListFilter;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
@@ -99,7 +107,19 @@ public class ViewPort implements Serializable {
     }
   
     public List<String> getSourceAetChoices(List<String> availableChoices) {
-        return GroupedChoices.get(WebCfgDelegate.getInstance().getSourceAetsPropertiesFilename())
-            .getChoices(availableChoices);
+        List<AETGroup> aetGroups = ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME))
+            .getAETGroups(((SecureSession) RequestCycle.get().getSession()).getUsername());
+        List<String> groupChoices = new ArrayList<String>();
+        Set<String> aetChoices = new HashSet<String>();
+        for (AETGroup aetGroup : aetGroups) {
+            if (aetGroup.getGroupname().equals("*")) {
+                groupChoices.add(aetGroup.getGroupname());
+                continue;
+            }
+            groupChoices.add("(" + aetGroup.getGroupname() + ")");
+            aetChoices.addAll(aetGroup.getAets());
+        }
+        groupChoices.addAll(aetChoices);
+        return groupChoices;
     }
 }
