@@ -87,6 +87,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 import org.dcm4che.image.ColorModelFactory;
 import org.xml.sax.ContentHandler;
+import org.xml.sax.helpers.LocatorImpl;
 
 /**
  *  Implementation of <code>Dataset</code> container objects.
@@ -475,6 +476,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
        } catch (Exception e) {
            throw new ConfigurationError("Failed to initialize XSLT", e);
        }
+       th.setDocumentLocator(new LocatorImpl());
        th.setResult(result);
        writeDataset2(th, getTagDictionary(), null, excludeValueLengthLimit, null);
    }
