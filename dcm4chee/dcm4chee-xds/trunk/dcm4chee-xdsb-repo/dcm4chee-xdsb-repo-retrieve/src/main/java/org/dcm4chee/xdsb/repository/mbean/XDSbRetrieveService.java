@@ -53,6 +53,7 @@ import javax.activation.DataHandler;
 import javax.management.ObjectName;
 import javax.xml.bind.JAXBException;
 import javax.xml.ws.addressing.AddressingBuilder;
+import javax.xml.ws.handler.MessageContext;
 
 import org.apache.log4j.Logger;
 import org.dcm4che2.audit.message.AuditEvent;
@@ -186,7 +187,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
         docStoreDelegate.setDocumentStoreService(name);
     }
 
-    public RetrieveDocumentSetResponseType retrieveDocumentSet(RetrieveDocumentSetRequestType req, String repositoryUniqueId) throws XDSException {
+    public RetrieveDocumentSetResponseType retrieveDocumentSet(RetrieveDocumentSetRequestType req, String repositoryUniqueId, MessageContext msgCtx) throws XDSException {
         if ( logRequestMessage) {
             try {
                 log.info("RetrieveDocumentSetRequest:"+InfoSetUtil.marshallObject(
@@ -222,9 +223,8 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                          * XDS Repository is already sending a document. So the message is will be in MTOM/XOP.
                          * Therefore there is no need to force MTOM response using a DUMMY.
                          */
-                        CommonMessageContext ctx = MessageContextAssociation.peekMessageContext();
-                        if (ctx != null) {
-                            ctx.put("DISABLE_FORCE_MTOM_RESPONSE", "true");
+                        if (msgCtx != null) {
+                            msgCtx.put("DISABLE_FORCE_MTOM_RESPONSE", "true");
                         }
                     } catch (IOException e) {
                         log.error("Error in building DocumentResponse for document:"+doc);

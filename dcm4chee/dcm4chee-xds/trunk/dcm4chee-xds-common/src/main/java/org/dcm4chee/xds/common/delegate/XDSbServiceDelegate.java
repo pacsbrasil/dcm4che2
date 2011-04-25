@@ -44,6 +44,7 @@ import java.util.List;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.xml.bind.JAXBException;
+import javax.xml.ws.handler.MessageContext;
 
 import org.dcm4chee.xds.common.XDSConstants;
 import org.dcm4chee.xds.common.exception.XDSException;
@@ -129,12 +130,12 @@ public  class XDSbServiceDelegate {
     }
 
     public RetrieveDocumentSetResponseType retrieveDocumentSetFromXDSbRepositoryService(
-            RetrieveDocumentSetRequestType req) throws XDSException {
+            RetrieveDocumentSetRequestType req, MessageContext msgCtx) throws XDSException {
         try {
             return (RetrieveDocumentSetResponseType) server.invoke(xdsRepositoryServiceName,
                     "retrieveDocumentSet",
-                    new Object[] { req },
-                    new String[] { RetrieveDocumentSetRequestType.class.getName() } );
+                    new Object[] { req, msgCtx },
+                    new String[] { RetrieveDocumentSetRequestType.class.getName(), MessageContext.class.getName() } );
         } catch ( Exception x ) {
             if ( x instanceof XDSException ) {
                 throw (XDSException)x;
@@ -147,12 +148,12 @@ public  class XDSbServiceDelegate {
     }
 
     public RetrieveDocumentSetResponseType retrieveDocumentSetFromXDSbRetrieveService(
-            RetrieveDocumentSetRequestType req, String repoUID) throws XDSException {
+            RetrieveDocumentSetRequestType req, String repoUID, MessageContext msgCtx) throws XDSException {
         try {
             return (RetrieveDocumentSetResponseType) server.invoke(xdsRetrieveServiceName,
                     "retrieveDocumentSet",
-                    new Object[] { req, repoUID },
-                    new String[] { RetrieveDocumentSetRequestType.class.getName(), String.class.getName() } );
+                    new Object[] { req, repoUID, msgCtx },
+                    new String[] { RetrieveDocumentSetRequestType.class.getName(), String.class.getName(), MessageContext.class.getName() } );
         } catch ( Exception x ) {
             if ( x instanceof XDSException ) {
                 throw (XDSException)x;

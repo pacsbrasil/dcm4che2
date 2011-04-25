@@ -215,6 +215,7 @@
       </parameter>
       <return-type>org.dcm4chee.xds.infoset.v30.RegistryResponseType</return-type>
    </operation>
+
    <operation impact="ACTION">
       <description><![CDATA[ Retrieve Document Set.<br/>
       		]]> </description>
@@ -223,6 +224,23 @@
         <description>The RetrieveDocumentSetRequestType Object</description>
         <name>RetrieveDocumentSetRequestType</name>
         <type>org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetRequestType</type>
+      </parameter>
+      <return-type>org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetResponseType</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Retrieve Document Set.<br/>
+      		]]> </description>
+      <name>retrieveDocumentSet</name>
+      <parameter>
+        <description>The RetrieveDocumentSetRequestType Object</description>
+        <name>RetrieveDocumentSetRequestType</name>
+        <type>org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetRequestType</type>
+      </parameter>
+      <parameter>
+        <description>The MessageContext Object</description>
+        <name>MessageContext</name>
+        <type>javax.xml.ws.handler.MessageContext</type>
       </parameter>
       <return-type>org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetResponseType</return-type>
    </operation>

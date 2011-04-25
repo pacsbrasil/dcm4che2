@@ -76,7 +76,7 @@ public class DocumentRepository implements DocumentRepositoryPortType {
             RetrieveDocumentSetRequestType req) {
         RetrieveDocumentSetResponseType rsp =  null;
         try {
-            rsp = delegate.retrieveDocumentSetFromXDSbRepositoryService(req);
+            rsp = delegate.retrieveDocumentSetFromXDSbRepositoryService(req, wsCtx.getMessageContext());
         } catch (XDSException x) {
             log.error("ProvideAndRegisterDocumentSet failed!Reason:"+x,x);
             try {
