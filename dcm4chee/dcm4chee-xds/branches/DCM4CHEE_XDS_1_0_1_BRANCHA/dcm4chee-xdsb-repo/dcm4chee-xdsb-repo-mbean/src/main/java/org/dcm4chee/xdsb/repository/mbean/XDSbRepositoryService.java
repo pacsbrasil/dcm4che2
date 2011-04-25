@@ -64,6 +64,7 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.addressing.AddressingBuilder;
+import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.soap.SOAPBinding;
 
 import org.apache.log4j.Logger;
@@ -391,11 +392,16 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
     }
 
     public RetrieveDocumentSetResponseType retrieveDocumentSet(RetrieveDocumentSetRequestType req) throws XDSException {
-        return retrieveDocumentSet(req, repositoryUniqueId);
+        return retrieveDocumentSet(req, repositoryUniqueId, null);
     }
-    private RetrieveDocumentSetResponseType retrieveDocumentSet(RetrieveDocumentSetRequestType req, String repoUID) throws XDSException {
+    
+    public RetrieveDocumentSetResponseType retrieveDocumentSet(RetrieveDocumentSetRequestType req, MessageContext msgCtx) throws XDSException {
+        return retrieveDocumentSet(req, repositoryUniqueId, msgCtx);
+    }
+    
+    private RetrieveDocumentSetResponseType retrieveDocumentSet(RetrieveDocumentSetRequestType req, String repoUID, MessageContext msgCtx) throws XDSException {
         try {
-            return xdsbServiceDelegate.retrieveDocumentSetFromXDSbRetrieveService(req, repoUID);
+            return xdsbServiceDelegate.retrieveDocumentSetFromXDSbRetrieveService(req, repoUID, msgCtx);
         } catch ( Exception x ) {
             if ( x instanceof XDSException ) {
                 throw (XDSException)x;
@@ -621,7 +627,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         while ( st.hasMoreTokens()) {
             rq.getDocumentRequest().add( createDocRequest(st.nextToken(), repositoryUID, homeUid) );
         }
-        return retrieveDocumentSet(rq, useLocalRepo ? repositoryUniqueId : null);
+        return retrieveDocumentSet(rq, useLocalRepo ? repositoryUniqueId : null, null);
     }
 
     public String saveDocumentSet(String docUids, String repositoryUID, String homeUid, String baseDir, boolean useLocalRepo) throws XDSException, IOException {
@@ -630,7 +636,7 @@ public class XDSbRepositoryService extends ServiceMBeanSupport {
         while ( st.hasMoreTokens()) {
             rq.getDocumentRequest().add( createDocRequest(st.nextToken(), repositoryUID, homeUid) );
         }
-        rsp = retrieveDocumentSet(rq, useLocalRepo ? repositoryUniqueId : null);
+        rsp = retrieveDocumentSet(rq, useLocalRepo ? repositoryUniqueId : null, null);
         saveDocuments(baseDir, rsp.getDocumentResponse());
         return rsp.getRegistryResponse().getStatus();
     }

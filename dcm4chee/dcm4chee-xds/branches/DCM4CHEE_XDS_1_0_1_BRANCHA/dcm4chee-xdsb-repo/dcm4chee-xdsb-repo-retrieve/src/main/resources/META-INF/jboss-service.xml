@@ -145,6 +145,11 @@
         <name>RepositoryUID</name>
         <type>java.lang.String</type>
       </parameter>
+      <parameter>
+        <description>The MessageContext Object</description>
+        <name>MessageContext</name>
+        <type>javax.xml.ws.handler.MessageContext</type>
+      </parameter>
       <return-type>org.dcm4chee.xds.infoset.v30.RetrieveDocumentSetResponseType</return-type>
    </operation>
 
