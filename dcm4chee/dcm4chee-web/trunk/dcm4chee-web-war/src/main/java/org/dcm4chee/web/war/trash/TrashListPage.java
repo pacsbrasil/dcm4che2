@@ -225,9 +225,14 @@ public class TrashListPage extends Panel {
                 WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModelPat, false);
         form.addTextField("patientID", enabledModelPat, true);
         form.addTextField("issuerOfPatientID", enabledModelPat, true);
-        form.addTextField("accessionNumber", enabledModel, false);       
-        form.addDropDownChoice("sourceAET", null, viewport.getSourceAetChoices(
-                WebCfgDelegate.getInstance().getSourceAETList()), enabledModel, false).setModelObject("*");
+        form.addTextField("accessionNumber", enabledModel, false);
+        
+        DropDownChoice sourceAETDropDownChoice = 
+            form.addDropDownChoice("sourceAET", null, viewport.getAetChoices(), enabledModel, false);
+        if (sourceAETDropDownChoice.getChoices().size() > 0)
+            sourceAETDropDownChoice.setModelObject(sourceAETDropDownChoice.getChoices().get(0));
+        else
+            sourceAETDropDownChoice.setNullValid(true);
 
         searchTableComponents.add(form.createAjaxParent("searchFooter"));
     }
@@ -261,7 +266,11 @@ public class TrashListPage extends Panel {
 
                 form.clearInput();
                 viewport.clear();
-                ((DropDownChoice) ((WebMarkupContainer) form.get("searchFields")).get("sourceAET")).setModelObject("*");
+                DropDownChoice sourceAETDropDownChoice = ((DropDownChoice) ((WebMarkupContainer) form.get("searchFields")).get("sourceAET"));
+                if (sourceAETDropDownChoice.getChoices().size() > 0)
+                    sourceAETDropDownChoice.setModelObject(sourceAETDropDownChoice.getChoices().get(0));
+                else
+                    sourceAETDropDownChoice.setNullValid(true);
                 pagesize.setObject(WebCfgDelegate.getInstance().getDefaultFolderPagesize());
                 notSearched = true;
                 form.setOutputMarkupId(true);

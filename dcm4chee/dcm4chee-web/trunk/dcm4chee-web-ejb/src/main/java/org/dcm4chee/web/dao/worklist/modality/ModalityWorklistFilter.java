@@ -40,8 +40,13 @@ package org.dcm4chee.web.dao.worklist.modality;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+
+import org.dcm4chee.usr.dao.UserAccess;
+import org.dcm4chee.usr.model.AETGroup;
+import org.dcm4chee.usr.util.JNDIUtils;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -62,16 +67,16 @@ public class ModalityWorklistFilter implements Serializable {
     private String studyInstanceUID;
     private String modality;
     private String scheduledStationAET;
-    private Map<String,List<String>> stationAetGroups;
     private String scheduledStationName;
     private boolean latestItemsFirst;
     private String SPSStatus;
-    
     private Date startDateMin;
     private Date startDateMax;
+    private String username;
     
-    public ModalityWorklistFilter(Map<String,List<String>> stationAetGroups) {
-        this.stationAetGroups = stationAetGroups;
+    public ModalityWorklistFilter(String forUsername) {
+        this.username = forUsername;
+        clear();
     }
 
     public void clear() {
@@ -171,13 +176,19 @@ public class ModalityWorklistFilter implements Serializable {
     }
 
     public String[] getScheduledStationAETs() {
-        if (stationAetGroups != null) {
-            List<String> l = stationAetGroups.get(scheduledStationAET);
-            if (l != null) {
-                return l.toArray(new String[l.size()]);
-            }
+        Set<String> aetStringSet = new HashSet<String>();
+        if (scheduledStationAET != null) {
+            if (scheduledStationAET.startsWith("(") && scheduledStationAET.endsWith(")")) {
+                String groupName = scheduledStationAET.substring(1, scheduledStationAET.length() - 1);
+                List<AETGroup> aetGroups = ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME))
+                .getAETGroups(username);
+                for (AETGroup aetGroup : aetGroups)
+                    if (aetGroup.getGroupname().equals(groupName))
+                            aetStringSet.addAll(aetGroup.getAets());
+            } else                
+                return new String[] { scheduledStationAET };
         }
-        return new String[]{scheduledStationAET};
+        return aetStringSet.toArray(new String[aetStringSet.size()]);
     }
     
     public String getScheduledStationName() {

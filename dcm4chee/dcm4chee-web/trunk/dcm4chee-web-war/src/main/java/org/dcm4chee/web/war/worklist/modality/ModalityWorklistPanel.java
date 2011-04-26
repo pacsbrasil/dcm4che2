@@ -244,8 +244,13 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
         form.addDropDownChoice("modality", null, WebCfgDelegate.getInstance().getModalityList(), 
                 enabledModel, false).setModelObject("*");
-        form.addDropDownChoice("scheduledStationAET", null, viewport.getStationAetChoices(
-                WebCfgDelegate.getInstance().getStationAETList()), enabledModel, false).setModelObject("*");
+        
+        DropDownChoice scheduledStationAETDropDownChoice = 
+            form.addDropDownChoice("scheduledStationAET", null, viewport.getAetChoices(), enabledModel, false);
+        if (scheduledStationAETDropDownChoice.getChoices().size() > 0)
+            scheduledStationAETDropDownChoice.setModelObject(scheduledStationAETDropDownChoice.getChoices().get(0));
+        else
+            scheduledStationAETDropDownChoice.setNullValid(true);
         form.addDropDownChoice("scheduledStationName", null, WebCfgDelegate.getInstance().getStationNameList(), enabledModel, false).setModelObject("*");
         form.addDropDownChoice("SPSStatus", null, getSpsStatusChoices(), enabledModel, false).setModelObject("*");
 
@@ -326,7 +331,11 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 form.clearInput();
                 viewport.clear();
                 ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("modality")).setModelObject("*");
-                ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("scheduledStationAET")).setModelObject("*");
+                DropDownChoice scheduledStationAETDropDownChoice = ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("scheduledStationAET"));
+                if (scheduledStationAETDropDownChoice.getChoices().size() > 0)
+                    scheduledStationAETDropDownChoice.setModelObject(scheduledStationAETDropDownChoice.getChoices().get(0));
+                else
+                    scheduledStationAETDropDownChoice.setNullValid(true);
                 ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("scheduledStationName")).setModelObject("*");
                 ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("SPSStatus")).setModelObject("*");
                 pagesize.setObject(WebCfgDelegate.getInstance().getDefaultMWLPagesize());

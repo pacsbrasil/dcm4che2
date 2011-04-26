@@ -337,14 +337,12 @@ public class StudyListPage extends Panel {
                 enabledModel, false).setModelObject("*");
         
         DropDownChoice sourceAETDropDownChoice = 
-            form.addDropDownChoice("sourceAET", null, viewport.getSourceAetChoices(
-                WebCfgDelegate.getInstance().getSourceAETList()), enabledModel, false);
+            form.addDropDownChoice("sourceAET", null, viewport.getAetChoices(), enabledModel, false);
         if (sourceAETDropDownChoice.getChoices().size() > 0)
             sourceAETDropDownChoice.setModelObject(sourceAETDropDownChoice.getChoices().get(0));
         else
             sourceAETDropDownChoice.setNullValid(true);
 
-        
         final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
 
             private static final long serialVersionUID = 1L;
@@ -457,7 +455,11 @@ public class StudyListPage extends Panel {
                 form.clearInput();
                 viewport.clear();
                 ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("modality")).setModelObject("*");
-                ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("sourceAET")).setModelObject("*");
+                DropDownChoice sourceAETDropDownChoice = ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("sourceAET"));
+                if (sourceAETDropDownChoice.getChoices().size() > 0)
+                    sourceAETDropDownChoice.setModelObject(sourceAETDropDownChoice.getChoices().get(0));
+                else
+                    sourceAETDropDownChoice.setNullValid(true);
                 pagesize.setObject(WebCfgDelegate.getInstance().getDefaultFolderPagesize());
                 notSearched = true;
                 form.setOutputMarkupId(true);

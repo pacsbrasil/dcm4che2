@@ -38,47 +38,30 @@
 
 package org.dcm4chee.web.war.worklist.modality;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dcm4chee.web.common.util.GroupedChoices;
+import org.apache.wicket.RequestCycle;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
-import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
+import org.dcm4chee.web.war.common.AbstractViewPort;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since 20.04.2010
+ * @since Apr. 20, 2010
  */
-public class ViewPort implements Serializable {
+public class ViewPort extends AbstractViewPort {
 
     private static final long serialVersionUID = 1L;
 
-    private int offset = 0;
-    private int total = 0;
-    private final ModalityWorklistFilter filter = new ModalityWorklistFilter(
-            GroupedChoices.get(WebCfgDelegate.getInstance().getStationAetsPropertiesFilename()).getAllGroups());
+    private ModalityWorklistFilter filter;
     private final List<MWLItemModel> mwlItemModels = new ArrayList<MWLItemModel>();
 
-    public int getOffset() {
-        return offset;
-    }
-
-    public void setOffset(int offset) {
-        this.offset = offset;
-    }
-
-    public int getTotal() {
-        return total;
-    }
-
-    public void setTotal(int total) {
-        this.total = total;
-    }
-
     public ModalityWorklistFilter getFilter() {
+        if (filter == null) 
+            filter = new ModalityWorklistFilter(((SecureSession) RequestCycle.get().getSession()).getUsername()); 
         return filter;
     }
 
@@ -87,13 +70,8 @@ public class ViewPort implements Serializable {
     }
     
     public void clear() {
-        offset = total = 0;
+        super.clear();
         filter.clear();
         mwlItemModels.clear();
-    }
-
-    public List<String> getStationAetChoices(List<String> availableChoices) {
-        return GroupedChoices.get(WebCfgDelegate.getInstance().getStationAetsPropertiesFilename())
-            .getChoices(availableChoices);
     }
 }

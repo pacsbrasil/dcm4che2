@@ -40,8 +40,13 @@ package org.dcm4chee.web.dao.folder;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+
+import org.dcm4chee.usr.dao.UserAccess;
+import org.dcm4chee.usr.model.AETGroup;
+import org.dcm4chee.usr.util.JNDIUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -64,14 +69,14 @@ public class StudyListFilter implements Serializable {
     private String studyInstanceUID;
     private String modality;
     private String sourceAET;
-    private Map<String,List<String>> sourceAetGroups;
     private String seriesInstanceUID;
     private boolean patientQuery;
     private boolean latestStudiesFirst;
     private boolean ppsWithoutMwl;
-
-    public StudyListFilter(Map<String, List<String>> sourceAetGroups) {
-        this.sourceAetGroups = sourceAetGroups;
+    private String username;
+    
+    public StudyListFilter(String forUsername) {
+        this.username = forUsername;
         clear();
     }
 
@@ -190,13 +195,19 @@ public class StudyListFilter implements Serializable {
     }
 
     public String[] getSourceAETs() {
-        if (sourceAetGroups != null) {
-            List<String> l = sourceAetGroups.get(sourceAET);
-            if (l != null) {
-                return l.toArray(new String[l.size()]);
-            }
+        Set<String> aetStringSet = new HashSet<String>();
+        if (sourceAET != null) {
+            if (sourceAET.startsWith("(") && sourceAET.endsWith(")")) {
+                String groupName = sourceAET.substring(1, sourceAET.length() - 1);
+                List<AETGroup> aetGroups = ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME))
+                .getAETGroups(username);
+                for (AETGroup aetGroup : aetGroups)
+                    if (aetGroup.getGroupname().equals(groupName))
+                            aetStringSet.addAll(aetGroup.getAets());
+            } else                
+                return new String[] { sourceAET };
         }
-        return new String[]{sourceAET};
+        return aetStringSet.toArray(new String[aetStringSet.size()]);
     }
     
     public String getSeriesInstanceUID() {

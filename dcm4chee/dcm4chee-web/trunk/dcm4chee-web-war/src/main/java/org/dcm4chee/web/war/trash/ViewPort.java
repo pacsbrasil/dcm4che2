@@ -38,13 +38,13 @@
 
 package org.dcm4chee.web.war.trash;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dcm4chee.web.common.util.GroupedChoices;
+import org.apache.wicket.RequestCycle;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.dao.trash.TrashListFilter;
-import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
+import org.dcm4chee.web.war.common.AbstractViewPort;
 import org.dcm4chee.web.war.trash.model.PrivPatientModel;
 
 /**
@@ -52,32 +52,16 @@ import org.dcm4chee.web.war.trash.model.PrivPatientModel;
  * @version $Revision$ $Date$
  * @since Jan 14, 2009
  */
-public class ViewPort implements Serializable {
+public class ViewPort extends AbstractViewPort {
 
     private static final long serialVersionUID = 1L;
     
-    private int offset = 0;
-    private int total = 0;
-    private final TrashListFilter filter = new TrashListFilter();
+    private TrashListFilter filter;
     private final List<PrivPatientModel> patients = new ArrayList<PrivPatientModel>();
 
-    public int getOffset() {
-        return offset;
-    }
-
-    public void setOffset(int offset) {
-        this.offset = offset;
-    }
-
-    public int getTotal() {
-        return total;
-    }
-
-    public void setTotal(int total) {
-        this.total = total;
-    }
-
     public TrashListFilter getFilter() {
+        if (filter == null) 
+            filter = new TrashListFilter(((SecureSession) RequestCycle.get().getSession()).getUsername()); 
         return filter;
     }
 
@@ -86,13 +70,8 @@ public class ViewPort implements Serializable {
     }
     
     public void clear() {
-        offset = total = 0;
+        super.clear();
         filter.clear();
         patients.clear();
-    }
-    
-    public List<String> getSourceAetChoices(List<String> availableChoices) {
-        return GroupedChoices.get(WebCfgDelegate.getInstance().getSourceAetsPropertiesFilename())
-            .getChoices(availableChoices);
     }
 }

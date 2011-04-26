@@ -36,42 +36,66 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-package org.dcm4chee.web.war.folder;
+package org.dcm4chee.web.war.common;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.wicket.RequestCycle;
+import org.dcm4chee.usr.dao.UserAccess;
+import org.dcm4chee.usr.model.AETGroup;
+import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.secure.SecureSession;
-import org.dcm4chee.web.dao.folder.StudyListFilter;
-import org.dcm4chee.web.war.common.AbstractViewPort;
-import org.dcm4chee.web.war.folder.model.PatientModel;
 
 /**
- * @author Gunter Zeilinger <gunterze@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
- * @since Jan 14, 2009
+ * @since Apr. 26, 2011
  */
-public class ViewPort extends AbstractViewPort {
+public abstract class AbstractViewPort implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
-    private StudyListFilter filter;
-    private List<PatientModel> patients = new ArrayList<PatientModel>();
-    
-    public StudyListFilter getFilter() {
-        if (filter == null) 
-            filter = new StudyListFilter(((SecureSession) RequestCycle.get().getSession()).getUsername()); 
-        return filter;
+
+    int offset = 0;
+    int total = 0;
+
+    public int getOffset() {
+        return offset;
     }
 
-    public List<PatientModel> getPatients() {
-        return patients;
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+
+    public int getTotal() {
+        return total;
+    }
+
+    public void setTotal(int total) {
+        this.total = total;
+    }
+
+    public void clear() {
+        offset = total = 0;
     }
     
-    public void clear() {
-        super.clear();
-        filter.clear();
-        patients.clear();
+    public List<String> getAetChoices() {
+        List<AETGroup> aetGroups = ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME))
+            .getAETGroups(((SecureSession) RequestCycle.get().getSession()).getUsername());
+        List<String> groupChoices = new ArrayList<String>();
+        Set<String> aetChoices = new HashSet<String>();
+        for (AETGroup aetGroup : aetGroups) {
+            if (aetGroup.getGroupname().equals("*")) {
+                groupChoices.add(aetGroup.getGroupname());
+                continue;
+            }
+            groupChoices.add("(" + aetGroup.getGroupname() + ")");
+            aetChoices.addAll(aetGroup.getAets());
+        }
+        groupChoices.addAll(aetChoices);
+        return groupChoices;
     }
 }
