@@ -204,8 +204,8 @@ public class StudyListPage extends Panel {
     StudyPermissionHelper studyPermissionHelper;
     
     public StudyListPage(final String id) {
-        super(id);        
-        
+        super(id);
+
         if (StudyListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
 

@@ -47,6 +47,7 @@ import java.util.Set;
 import org.apache.wicket.RequestCycle;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.AETGroup;
+import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.secure.SecureSession;
 
@@ -90,6 +91,8 @@ public abstract class AbstractViewPort implements Serializable {
         for (AETGroup aetGroup : aetGroups) {
             if (aetGroup.getGroupname().equals("*")) {
                 groupChoices.add(aetGroup.getGroupname());
+                aetChoices.addAll(UsrCfgDelegate.getInstance().getSourceAETList());
+                aetChoices.addAll(UsrCfgDelegate.getInstance().getStationAETList());
                 continue;
             }
             groupChoices.add("(" + aetGroup.getGroupname() + ")");

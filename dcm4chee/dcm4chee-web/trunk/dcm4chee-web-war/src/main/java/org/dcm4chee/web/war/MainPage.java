@@ -93,14 +93,14 @@ public class MainPage extends SecureWicketPage {
                 }
             });
 
-        addModules(getModuleSelectorPanel());        
+        addModules(getModuleSelectorPanel());
         add(JavascriptPackageResource.getHeaderContribution(BaseWicketPage.class, "mainpage.js"));
     }
 
     private void addModules(ModuleSelectorPanel selectorPanel) {
         selectorPanel.addModule(StudyListPage.class);
         selectorPanel.addModule(TrashListPage.class);
-        selectorPanel.addModule(AEListPanel.class);       
+        selectorPanel.addModule(AEListPanel.class);
         selectorPanel.addModule(ModalityWorklistPanel.class);
         selectorPanel.addModule(DashboardPanel.class);
         selectorPanel.addModule(RolePanel.class, null);
@@ -118,5 +118,5 @@ public class MainPage extends SecureWicketPage {
                             + ": "
                             + (properties.getProperty("Implementation-Build") == null ? "" : properties.getProperty("Implementation-Build"))))));            
         } catch (Exception ignore) {}
-    }
+    }    
 }
