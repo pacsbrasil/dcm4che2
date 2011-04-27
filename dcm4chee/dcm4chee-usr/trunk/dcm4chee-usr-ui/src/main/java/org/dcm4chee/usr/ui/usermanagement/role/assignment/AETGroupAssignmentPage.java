@@ -191,6 +191,7 @@ public class AETGroupAssignmentPage extends SecureWebPage {
             else 
                 aetGroups.remove(uuid);
             role.setAETGroups(aetGroups);
+            role.setAETRole((aetGroups.size() > 0));
             userAccess.updateRole(role);
         }
 

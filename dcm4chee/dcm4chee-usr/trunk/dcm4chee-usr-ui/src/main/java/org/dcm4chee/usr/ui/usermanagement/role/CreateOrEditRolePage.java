@@ -39,8 +39,10 @@
 package org.dcm4chee.usr.ui.usermanagement.role;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -179,6 +181,8 @@ public class CreateOrEditRolePage extends SecureWebPage {
                             if (checkbox.getModelObject())
                                 groupList.add(checkbox.getLabel().getObject());
                         
+                        Set<String> aetGroups = new HashSet<String>();
+                        aetGroups.add("*");
                         if (role == null) {
                             Role newRole = new Role(rolename.getObject());
                             newRole.setDescription(description.getObject());
@@ -187,6 +191,8 @@ public class CreateOrEditRolePage extends SecureWebPage {
                             newRole.setWebRole(groupList.contains(webRoleUuid.toString()));
                             newRole.setDicomRole(groupList.contains(dicomRoleUuid.toString()));
                             newRole.setAETRole(groupList.contains(aetRoleUuid.toString()));
+                            if (newRole.isAETRole())
+                                newRole.setAETGroups(aetGroups);
                             userAccess.addRole(newRole);
                         } else {
                             role.setRolename(rolename.getObject());
@@ -196,6 +202,8 @@ public class CreateOrEditRolePage extends SecureWebPage {
                             role.setWebRole(groupList.contains(webRoleUuid.toString()));
                             role.setDicomRole(groupList.contains(dicomRoleUuid.toString()));
                             role.setAETRole(groupList.contains(aetRoleUuid.toString()));
+                            if (role.isAETRole() && (role.getAETGroups() == null || role.getAETGroups().size() == 0))
+                                role.setAETGroups(aetGroups);
                             userAccess.updateRole(role);
                         }
                         allRolenames.setObject(userAccess.getAllRoles());
