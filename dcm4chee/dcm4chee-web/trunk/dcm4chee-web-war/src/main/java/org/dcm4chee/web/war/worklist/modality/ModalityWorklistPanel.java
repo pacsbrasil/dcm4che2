@@ -245,12 +245,14 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         form.addDropDownChoice("modality", null, WebCfgDelegate.getInstance().getModalityList(), 
                 enabledModel, false).setModelObject("*");
         
-        DropDownChoice scheduledStationAETDropDownChoice = 
-            form.addDropDownChoice("scheduledStationAET", null, viewport.getAetChoices(), enabledModel, false);
-        if (scheduledStationAETDropDownChoice.getChoices().size() > 0)
-            scheduledStationAETDropDownChoice.setModelObject(scheduledStationAETDropDownChoice.getChoices().get(0));
+        List<String> aetChoices = viewport.getAetChoices();
+        if (aetChoices.size() > 0)
+            form.addDropDownChoice("scheduledStationAET", null, aetChoices, enabledModel, false)
+            .setModelObject(aetChoices.get(0));
         else
-            scheduledStationAETDropDownChoice.setNullValid(true);
+            form.addDropDownChoice("scheduledStationAET", null, aetChoices, new Model<Boolean>(false), false)
+            .setNullValid(true);
+
         form.addDropDownChoice("scheduledStationName", null, WebCfgDelegate.getInstance().getStationNameList(), enabledModel, false).setModelObject("*");
         form.addDropDownChoice("SPSStatus", null, getSpsStatusChoices(), enabledModel, false).setModelObject("*");
 

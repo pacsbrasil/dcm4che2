@@ -227,12 +227,13 @@ public class TrashListPage extends Panel {
         form.addTextField("issuerOfPatientID", enabledModelPat, true);
         form.addTextField("accessionNumber", enabledModel, false);
         
-        DropDownChoice sourceAETDropDownChoice = 
-            form.addDropDownChoice("sourceAET", null, viewport.getAetChoices(), enabledModel, false);
-        if (sourceAETDropDownChoice.getChoices().size() > 0)
-            sourceAETDropDownChoice.setModelObject(sourceAETDropDownChoice.getChoices().get(0));
+        List<String> aetChoices = viewport.getAetChoices();
+        if (aetChoices.size() > 0)
+            form.addDropDownChoice("sourceAET", null, aetChoices, enabledModel, false)
+            .setModelObject(aetChoices.get(0));
         else
-            sourceAETDropDownChoice.setNullValid(true);
+            form.addDropDownChoice("sourceAET", null, aetChoices, new Model<Boolean>(false), false)
+            .setNullValid(true);
 
         searchTableComponents.add(form.createAjaxParent("searchFooter"));
     }
