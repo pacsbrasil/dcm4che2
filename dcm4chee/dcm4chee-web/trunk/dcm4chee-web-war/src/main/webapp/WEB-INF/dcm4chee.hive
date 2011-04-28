@@ -19,7 +19,6 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.WadoImagePage", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.studypermissions.CreateDicomRolePage", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:mpps2MwlLinkWindow", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:imageSelectionWindow", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:wadoImageWindow", "render, enable";
 // Permissions for edit patient
@@ -31,8 +30,6 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerStudyLink", "render, enable";
 // Permissions for edit pps
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:editPPSLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:linkPPSLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:unlinkPPSLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:emulatePPSLink", "render, enable";
 // Permissions for edit series
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:editSeriesLink", "render, enable";
@@ -42,6 +39,14 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:editInstanceLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerInstanceLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:wadoImageInstanceLink", "render, enable";
+};
+
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "Mpps2MwlLink"
+{
+// KEY: swarm.principal.Mpps2MwlLink
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:mpps2MwlLinkWindow", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:linkPPSLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:unlinkPPSLink", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "StudyPermissionsAll"
