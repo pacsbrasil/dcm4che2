@@ -39,17 +39,26 @@
 package org.dcm4chee.web.war.common;
 
 import java.io.Serializable;
+import java.security.Principal;
+import java.security.acl.Group;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.security.auth.Subject;
+import javax.security.jacc.PolicyContext;
+
 import org.apache.wicket.RequestCycle;
+import org.apache.wicket.authorization.strategies.role.Roles;
+import org.apache.wicket.protocol.http.WebApplication;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.AETGroup;
 import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.secure.SecureSession;
+import org.jfree.util.Log;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -85,7 +94,7 @@ public abstract class AbstractViewPort implements Serializable {
     
     public List<String> getAetChoices() {
         List<AETGroup> aetGroups = ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME))
-            .getAETGroups(((SecureSession) RequestCycle.get().getSession()).getUsername());
+            .getAETGroups(getAssignedRoles());
         List<String> groupChoices = new ArrayList<String>();
         Set<String> aetChoices = new HashSet<String>();
         for (AETGroup aetGroup : aetGroups) {
@@ -100,5 +109,23 @@ public abstract class AbstractViewPort implements Serializable {
         }
         groupChoices.addAll(aetChoices);
         return groupChoices;
+    }
+    
+    private List<String> getAssignedRoles() {
+        List<String> roles = new ArrayList<String>();
+        String rolesGroupName = ((WebApplication) RequestCycle.get().getApplication()).getInitParameter("rolesGroupName");
+        if (rolesGroupName == null) rolesGroupName = "Roles";
+        try {
+            for (Principal principal : ((Subject) PolicyContext.getContext("javax.security.auth.Subject.container")).getPrincipals()) {
+                if ((principal instanceof Group) && rolesGroupName.equalsIgnoreCase(principal.getName())) {
+                    Enumeration<? extends Principal> members = ((Group) principal).members();
+                    while (members.hasMoreElements()) 
+                        roles.add(members.nextElement().getName());
+                }
+            }
+        } catch (Exception e) {
+            Log.error("Failed to get jaas subject from javax.security.auth.Subject.container", e);
+        }
+        return roles;
     }
 }

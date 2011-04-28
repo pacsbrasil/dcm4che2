@@ -41,7 +41,6 @@ package org.dcm4chee.web.dao.worklist.modality;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.dcm4chee.usr.dao.UserAccess;
@@ -72,10 +71,8 @@ public class ModalityWorklistFilter implements Serializable {
     private String SPSStatus;
     private Date startDateMin;
     private Date startDateMax;
-    private String username;
     
     public ModalityWorklistFilter(String forUsername) {
-        this.username = forUsername;
         clear();
     }
 
@@ -180,9 +177,7 @@ public class ModalityWorklistFilter implements Serializable {
         if (scheduledStationAET != null) {
             if (scheduledStationAET.startsWith("(") && scheduledStationAET.endsWith(")")) {
                 String groupName = scheduledStationAET.substring(1, scheduledStationAET.length() - 1);
-                List<AETGroup> aetGroups = ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME))
-                .getAETGroups(username);
-                for (AETGroup aetGroup : aetGroups)
+                for (AETGroup aetGroup : ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getAllAETGroups())
                     if (aetGroup.getGroupname().equals(groupName))
                             aetStringSet.addAll(aetGroup.getAets());
             } else                

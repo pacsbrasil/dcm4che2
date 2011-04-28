@@ -40,7 +40,6 @@ package org.dcm4chee.web.dao.trash;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.dcm4chee.usr.dao.UserAccess;
@@ -63,10 +62,8 @@ public class TrashListFilter implements Serializable {
     private String studyInstanceUID;
     private String sourceAET;
     private boolean patientQuery;
-    private String username;
 
     public TrashListFilter(String forUsername) {
-        this.username = forUsername;
         clear();
     }
 
@@ -129,9 +126,7 @@ public class TrashListFilter implements Serializable {
         if (sourceAET != null) {
             if (sourceAET.startsWith("(") && sourceAET.endsWith(")")) {
                 String groupName = sourceAET.substring(1, sourceAET.length() - 1);
-                List<AETGroup> aetGroups = ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME))
-                .getAETGroups(username);
-                for (AETGroup aetGroup : aetGroups)
+                for (AETGroup aetGroup : ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getAllAETGroups())
                     if (aetGroup.getGroupname().equals(groupName))
                             aetStringSet.addAll(aetGroup.getAets());
             } else                
