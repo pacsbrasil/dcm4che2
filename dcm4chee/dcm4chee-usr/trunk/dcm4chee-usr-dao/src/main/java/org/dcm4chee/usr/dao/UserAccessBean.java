@@ -515,12 +515,8 @@ public class UserAccessBean implements UserAccess {
         }
     }
     
-    public List<AETGroup> getAETGroups(String username) {
-        Set<String> roles = new HashSet<String>();
+    public List<AETGroup> getAETGroups(List<String> roles) {
         Set<String> aetGroupUuids = new HashSet<String>();
-        User user = getUser(username);
-        for (UserRoleAssignment ura : user.getRoles())
-            roles.add(ura.getRole());
         for (Role role : getAllRoles())
             if (role.isAETRole() && roles.contains(role.getRolename()))
                 aetGroupUuids.addAll(role.getAETGroups());
