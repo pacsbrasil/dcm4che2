@@ -593,16 +593,17 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         }
                         fileDS.putAll(ds, Dataset.REPLACE_ITEMS);
                         ds = fileDS;
-                    } else {
-                        ds.setPrivateCreatorID(PrivateTags.CreatorID);
-                        String tsuid = ds.getString(
-                                PrivateTags.Dcm4cheURIReferencedTransferSyntaxUID,
-                                UIDs.ImplicitVRLittleEndian);
-                        ds.setPrivateCreatorID(null);
-                        ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
-                                .getAffectedSOPClassUID(), rqCmd
-                                .getAffectedSOPInstanceUID(), tsuid));
                     }
+                }
+                if (ds.getFileMetaInfo() == null) {
+                    ds.setPrivateCreatorID(PrivateTags.CreatorID);
+                    String tsuid = ds.getString(
+                            PrivateTags.Dcm4cheURIReferencedTransferSyntaxUID,
+                            UIDs.ImplicitVRLittleEndian);
+                    ds.setPrivateCreatorID(null);
+                    ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
+                            .getAffectedSOPClassUID(), rqCmd
+                            .getAffectedSOPInstanceUID(), tsuid));
                 }
             } else {
                 String fsgrpid = service.selectFileSystemGroup(callingAET, ds);
