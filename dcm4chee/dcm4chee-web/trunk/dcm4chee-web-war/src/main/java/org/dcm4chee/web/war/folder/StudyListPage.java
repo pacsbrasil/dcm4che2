@@ -1160,10 +1160,12 @@ public class StudyListPage extends Panel {
                 }
             }
                 .add(new Image("selectImg",ImageManager.IMAGE_COMMON_SEARCH)
-                .add(new ImageSizeBehaviour()))
+                .add(new ImageSizeBehaviour())
+                .add(tooltip))
                 .setVisible(studyPermissionHelper.checkPermission(studyModel, StudyPermission.READ_ACTION))
                 .add(new SecurityBehavior(getModuleName() + ":imageSelectionStudyLink"))
             );
+            
             item.add( new AjaxCheckBox("selected") {
 
                 private static final long serialVersionUID = 1L;

@@ -51,13 +51,11 @@ import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 
 import org.apache.wicket.RequestCycle;
-import org.apache.wicket.authorization.strategies.role.Roles;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.AETGroup;
 import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
 import org.dcm4chee.usr.util.JNDIUtils;
-import org.dcm4chee.web.common.secure.SecureSession;
 import org.jfree.util.Log;
 
 /**
