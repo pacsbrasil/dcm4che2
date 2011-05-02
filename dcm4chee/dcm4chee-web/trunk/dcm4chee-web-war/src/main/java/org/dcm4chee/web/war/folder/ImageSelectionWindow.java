@@ -89,7 +89,10 @@ public class ImageSelectionWindow extends ModalWindow {
     private int numCols = 5;
     private int numRows;
     private Model<Integer> imgSizeModel = new Model<Integer>(128);
-    private boolean selectionChanged;
+    private int selectionChanged = 0;
+    
+    private StudyModel study;
+    private SeriesModel series;
     
     private static Logger log = LoggerFactory.getLogger(ImageSelectionWindow.class);
 
@@ -116,6 +119,7 @@ public class ImageSelectionWindow extends ModalWindow {
     }
     
     public void show(final AjaxRequestTarget target, StudyModel study) {
+        this.study = study;
         seriesList.clear();
         if (study.isCollapsed())
             study.expand();
@@ -145,6 +149,7 @@ public class ImageSelectionWindow extends ModalWindow {
     }
     
     public void show(final AjaxRequestTarget target, SeriesModel series) {
+        this.series = series;
         if (series.isCollapsed())
             series.expand();
         seriesList.clear();
@@ -155,7 +160,7 @@ public class ImageSelectionWindow extends ModalWindow {
     @Override
     public void show(final AjaxRequestTarget target) {
         this.calcNumRows();
-        selectionChanged = false;
+        selectionChanged = 0;
         super.show(target);
     }
     
@@ -279,7 +284,7 @@ public class ImageSelectionWindow extends ModalWindow {
                     @Override
                     protected void onUpdate(AjaxRequestTarget target) {
                         log.info("selectionChanged!");
-                        selectionChanged = true;
+                        selectionChanged += (getModelObject() ? 1 : -1);                        
                         target.addComponent(this);
                     }}.setOutputMarkupId(true));
                 item.add(new AbstractBehavior(){
@@ -297,14 +302,17 @@ public class ImageSelectionWindow extends ModalWindow {
             DicomObject attrs = im.getDataset();
             DicomElement codeSq = attrs.get(Tag.ConceptNameCodeSequence);
             if (codeSq != null) {
-                DicomObject item = codeSq.getDicomObject(0);
-                if (item.containsValue(Tag.CodeMeaning)) {
-                    sb.append(codeSq.getDicomObject(0).getString(Tag.CodeMeaning));
-                } else {
-                    sb.append(codeSq.getDicomObject(0).getString(Tag.CodeValue));
-                }
+                if (!codeSq.isEmpty()) {
+                    DicomObject item = codeSq.getDicomObject(0);
+                    if (item.containsValue(Tag.CodeMeaning)) {
+                        sb.append(codeSq.getDicomObject(0).getString(Tag.CodeMeaning));
+                    } else {
+                        sb.append(codeSq.getDicomObject(0).getString(Tag.CodeValue));
+                    }
+                } else 
+                    log.warn("Code sequence may not be empty!");
             } else {
-                if (!attrs.containsValue(Tag.ContentDescription))
+                if (attrs.containsValue(Tag.ContentDescription))
                     sb.append(attrs.getString(Tag.ContentDescription));
             }
             return sb.toString();
@@ -312,6 +320,12 @@ public class ImageSelectionWindow extends ModalWindow {
     }
 
     public boolean isSelectionChanged() {
-        return selectionChanged;
-    }        
+        if (selectionChanged == 0) {
+            if (study != null)
+                study.collapse();
+            if (series != null)
+                series.collapse();
+        }
+        return selectionChanged > 0;
+    }
 }
