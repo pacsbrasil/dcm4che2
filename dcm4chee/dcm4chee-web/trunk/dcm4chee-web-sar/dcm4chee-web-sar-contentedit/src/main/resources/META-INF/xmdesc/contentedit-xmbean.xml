@@ -202,7 +202,15 @@
       <name>StoreScpServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-   
+   <attribute access="read-write"
+      getMethod="getAttrModificationScuServiceName"
+      setMethod="setAttrModificationScuServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>AttributesModificationScuServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
    &defaultAttributes;
    
    <!-- Operations -->
@@ -545,6 +553,37 @@
         <type>long</type>
       </parameter>
       <return-type>int</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Create Audit log and send 'Attributes Modification Notification' C-STORE request after Edit DICOM attributes.
+      		]]> </description>
+      <name>doAfterDicomEdit</name>
+      <parameter>
+        <description>Patient ID</description>
+        <name>patId</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Patient Name</description>
+        <name>patName</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Study Instance UIDs</description>
+        <name>studyIUIDs</name>
+        <type>[Ljava.lang.String;</type>
+      </parameter>
+      <parameter>
+        <description>Patient primary key</description>
+        <name>patPk</name>
+        <type>org.dcm4che2.data.DicomObject</type>
+      </parameter>
+      <parameter>
+        <description>QueryRetrieve Level (PATIENT, STUDY, SERIES, INSTANCE or MPPS)</description>
+        <name>qrLevel</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>void</return-type>
    </operation>
 
 </mbean>

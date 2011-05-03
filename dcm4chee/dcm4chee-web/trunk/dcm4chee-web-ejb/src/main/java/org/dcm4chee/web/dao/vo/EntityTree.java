@@ -156,6 +156,12 @@ public class EntityTree implements Serializable {
         }
     }
     
+    public void addPatient(Patient pat) {
+        if (entityTreeMap.get(pat) == null) {
+            entityTreeMap.put(pat, new HashMap<Study, Map<Series, Set<Instance>>>());
+        }
+    }
+    
     public boolean isEmpty() {
         return allInstances.isEmpty();
     }

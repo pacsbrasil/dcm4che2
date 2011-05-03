@@ -12,6 +12,7 @@
     <depends optional-attribute-name="MoveScuServiceName">dcm4chee.web:service=MoveScu</depends>
     <depends optional-attribute-name="TemplatesServiceName">dcm4chee.archive:service=Templates</depends>
     <depends optional-attribute-name="StoreScpServiceName">dcm4chee.web:service=StoreBridge</depends>
+    <depends optional-attribute-name="AttributesModificationScuServiceName">dcm4chee.web:service=AttributesModificationSCU</depends>
 
   </mbean>
 </server>

@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.folder.delegate;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -57,10 +58,12 @@ import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
 import org.dcm4chee.web.common.exceptions.SelectionException;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 import org.dcm4chee.web.war.folder.MoveEntitiesPage;
 import org.dcm4chee.web.war.folder.SelectedEntities;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
+import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
@@ -77,6 +80,8 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
     private static ContentEditDelegate delegate;
 
     private static Logger log = LoggerFactory.getLogger(ContentEditDelegate.class);
+    
+    public static final String[] LEVELS = {"PATIENT", "STUDY", "PPS", "SERIES", "IMAGE"};
 
     private ContentEditDelegate() {
         super();
@@ -268,7 +273,37 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         mpps.getStudy().expand();
         return status;
     }
+
+    public void doAfterDicomEdit(AbstractEditableDicomModel model) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+        PatientModel pat;
+        String[] studyIUIDs;
+        DicomObject obj = model.getDataset();
+        if (model.levelOfModel() == AbstractDicomModel.PATIENT_LEVEL) {
+            pat = (PatientModel) model;
+            List<StudyModel> studies = pat.getStudies();
+            studyIUIDs = new String[studies.size()];
+            for (int i = 0 ; i < studyIUIDs.length ; i++) {
+                studyIUIDs[i] = studies.get(i).getStudyInstanceUID();
+            }
+        } else {
+            StudyModel study = (StudyModel) getModelOfLevel(model, AbstractDicomModel.STUDY_LEVEL);
+            studyIUIDs = new String[]{study.getStudyInstanceUID()};
+            pat = study.getPatient();
+        }
+        server.invoke(serviceObjectName, "doAfterDicomEdit", 
+                new Object[]{pat.getId(), pat.getName(), studyIUIDs, obj, LEVELS[model.levelOfModel()]}, 
+                new String[]{String.class.getName(), String.class.getName(), String[].class.getName(), 
+                DicomObject.class.getName(), String.class.getName()});
+    }
     
+    private AbstractDicomModel getModelOfLevel(AbstractDicomModel m, int level) {
+        if (m.levelOfModel() < level) 
+            return null;
+        while (m.levelOfModel() > level) 
+            m = m.getParent();
+        return m;
+    }
+
     private long[] toPks(Collection<? extends AbstractDicomModel> models) {
         long[] pks = new long[models.size()];
         int i=0;

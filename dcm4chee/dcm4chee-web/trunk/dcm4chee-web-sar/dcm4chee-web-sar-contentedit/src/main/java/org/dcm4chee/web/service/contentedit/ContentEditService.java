@@ -63,6 +63,7 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.InstancesAccessedMessage;
 import org.dcm4che2.audit.message.ParticipantObject;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
+import org.dcm4che2.audit.message.PatientRecordMessage;
 import org.dcm4che2.audit.message.ProcedureRecordMessage;
 import org.dcm4che2.audit.message.StudyDeletedMessage;
 import org.dcm4che2.audit.message.AuditEvent.ActionCode;
@@ -89,6 +90,7 @@ import org.dcm4chee.web.dao.common.DicomEditLocal;
 import org.dcm4chee.web.dao.folder.MppsToMwlLinkLocal;
 import org.dcm4chee.web.dao.vo.EntityTree;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
+import org.dcm4chee.web.service.common.DicomActionNotification;
 import org.dcm4chee.web.service.common.FileImportOrder;
 import org.dcm4chee.web.service.common.HttpUserInfo;
 import org.dcm4chee.web.service.common.delegate.TemplatesDelegate;
@@ -125,6 +127,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     private ObjectName ianScuServiceName;
     private ObjectName moveScuServiceName;
     private ObjectName storeScpServiceName;
+    private ObjectName attrModScuServiceName;
 
     private boolean processIAN;
     private boolean processRejNote;
@@ -239,6 +242,14 @@ public class ContentEditService extends ServiceMBeanSupport {
         storeScpServiceName = name;
     }
     
+    public ObjectName getAttrModificationScuServiceName() {
+        return this.attrModScuServiceName;
+    }
+
+    public void setAttrModificationScuServiceName(ObjectName name) {
+        attrModScuServiceName = name;
+    }
+    
     public final ObjectName getTemplatesServiceName() {
         return templates.getTemplatesServiceName();
     }
@@ -276,68 +287,29 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public DicomObject moveInstanceToTrash(String iuid) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree entityTree = lookupDicomEditLocal().moveInstanceToTrash(iuid);
-        if (entityTree.isEmpty()) 
-            return null;
-        DicomObject kos = getRejectionNotes(entityTree)[0];
-        logInstancesAccessed(kos, InstancesAccessedMessage.DELETE, true, "Referenced Series of deleted Instances:");
-        processRejectionNote(kos);
-        processIANs(entityTree, Availability.UNAVAILABLE);
-        return kos;
+        DicomObject[] rejNotes = processInstancesDeleted(lookupDicomEditLocal().moveInstanceToTrash(iuid), "Referenced Series of deleted Instances:");
+        return rejNotes == null ? null : rejNotes[0];
     }
 
     public DicomObject[] moveInstancesToTrash(long[] pks) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree entityTree = lookupDicomEditLocal().moveInstancesToTrash(pks);
-        if (entityTree.isEmpty())
-            return null;
-        DicomObject[] rejNotes = getRejectionNotes(entityTree);
-        for (DicomObject kos : rejNotes) {
-            logInstancesAccessed(kos, InstancesAccessedMessage.DELETE, true, "Referenced Series of deleted Instances:");
-            processRejectionNote(kos);
-        }
-        processIANs(entityTree, Availability.UNAVAILABLE);
-        return rejNotes;
+        return processInstancesDeleted(lookupDicomEditLocal().moveInstancesToTrash(pks), "Referenced Series of deleted Instances:");
     }
+
     public DicomObject moveSeriesToTrash(String iuid) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree entityTree = lookupDicomEditLocal().moveSeriesToTrash(iuid);
-        if (entityTree.isEmpty())
-            return null;
-        DicomObject kos = getRejectionNotes(entityTree)[0];
-        logInstancesAccessed(kos, InstancesAccessedMessage.DELETE, true, "Deleted Series:");
-        processRejectionNote(kos);
-        processIANs(entityTree, Availability.UNAVAILABLE);
-        return kos;
+        DicomObject[] rejNotes = processInstancesDeleted(lookupDicomEditLocal().moveSeriesToTrash(iuid), "Deleted Series:");
+        return rejNotes == null ? null : rejNotes[0];
     }
+    
     public DicomObject[] moveSeriesToTrash(long[] pks) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree entityTree = lookupDicomEditLocal().moveSeriesToTrash(pks);
-        if (entityTree.isEmpty())
-            return null;
-        DicomObject[] rejNotes = getRejectionNotes(entityTree);
-        for (DicomObject kos : rejNotes) {
-            logInstancesAccessed(kos, InstancesAccessedMessage.DELETE, true, "Deleted Series:");
-            processRejectionNote(kos);
-        }
-        processIANs(entityTree, Availability.UNAVAILABLE);
-        return rejNotes;
+        return processInstancesDeleted(lookupDicomEditLocal().moveSeriesToTrash(pks), "Deleted Series:");
     }
 
     public DicomObject[] moveSeriesOfPpsToTrash(long[] pks) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree entityTree = lookupDicomEditLocal().moveSeriesOfPpsToTrash(pks);
-        if (entityTree.isEmpty())
-            return null;
-        DicomObject[] rejNotes = getRejectionNotes(entityTree);
-        for (DicomObject kos : rejNotes) {
-            logInstancesAccessed(kos, InstancesAccessedMessage.DELETE, true, "Deleted Series:");
-            processRejectionNote(kos);
-        }
-        processIANs(entityTree, Availability.UNAVAILABLE);
-        return rejNotes;
+        return processInstancesDeleted(lookupDicomEditLocal().moveSeriesOfPpsToTrash(pks), "Deleted Series:");
     }
     
     public List<MPPS> deletePps(long[] ppsPks) {
-        log.info("********* nrOf ppsPks:"+ppsPks.length);
         List<MPPS> mppss = lookupDicomEditLocal().deletePps(ppsPks);
-        log.info("********* nrOf pps deleted:"+mppss.size());
         for (MPPS mpps : mppss) {
             logProcedureRecord(mpps.getPatient().getAttributes(), 
                 mpps.getAttributes().getString(new int[]{Tag.ScheduledStepAttributesSequence,0,Tag.StudyInstanceUID}),
@@ -348,49 +320,23 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
     
     public DicomObject moveStudyToTrash(String iuid) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree entityTree = lookupDicomEditLocal().moveStudyToTrash(iuid);
-        if (entityTree.isEmpty())
-            return null;
-        DicomObject kos = getRejectionNotes(entityTree)[0];
-        logStudyDeleted(kos);
-        processRejectionNote(kos);
-        processIANs(entityTree, Availability.UNAVAILABLE);
-        return kos;
+        DicomObject[] rejNotes = processStudyDeleted(lookupDicomEditLocal().moveStudyToTrash(iuid));
+        return rejNotes == null ? null : rejNotes[0];
     }
     public DicomObject[] moveStudiesToTrash(long[] pks) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree entityTree = lookupDicomEditLocal().moveStudiesToTrash(pks);
-        if (entityTree.isEmpty())
-            return null;
-        DicomObject[] rejNotes = getRejectionNotes(entityTree);
-        for (DicomObject kos : rejNotes) {
-            logStudyDeleted(kos);
-            processRejectionNote(kos);
-        }
-        processIANs(entityTree, Availability.UNAVAILABLE);
-        return rejNotes;
+        return processStudyDeleted(lookupDicomEditLocal().moveStudiesToTrash(pks));
     }
+
     public DicomObject[] movePatientToTrash(String pid, String issuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
         EntityTree entityTree = lookupDicomEditLocal().movePatientToTrash(pid, issuer);
-        if (entityTree.isEmpty())
-            return null;
-        DicomObject[] rejNotes = getRejectionNotes(entityTree);
-        for (DicomObject kos : rejNotes) {
-            logStudyDeleted(kos);
-            processRejectionNote(kos);
-        }
-        processIANs(entityTree, Availability.UNAVAILABLE);
+        DicomObject[] rejNotes = processStudyDeleted(entityTree);
+        logPatientDeleted(entityTree);
         return rejNotes;
     }
     public DicomObject[] movePatientsToTrash(long[] pks) throws InstanceNotFoundException, MBeanException, ReflectionException {
         EntityTree entityTree = lookupDicomEditLocal().movePatientsToTrash(pks);
-        if (entityTree.isEmpty())
-            return null;
-        DicomObject[] rejNotes = getRejectionNotes(entityTree);
-        for (DicomObject kos : rejNotes) {
-            logStudyDeleted(kos);
-            processRejectionNote(kos);
-        }
-        processIANs(entityTree, Availability.UNAVAILABLE);
+        DicomObject[] rejNotes = processStudyDeleted(entityTree);
+        logPatientDeleted(entityTree);
         return rejNotes;
     }
 
@@ -458,11 +404,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     private void processAfterMoveEntities(EntityTree entityTree, DicomObject targetAttrs, int[] excludeTagsForImport)
         throws InstanceNotFoundException, MBeanException,ReflectionException {
         if (!entityTree.isEmpty()) { 
-            DicomObject[] rejNotes = getRejectionNotes(entityTree);
-            for (DicomObject kos : rejNotes) {
-                logInstancesAccessed(kos, InstancesAccessedMessage.DELETE, true, "Deleted Instances for move entities:");
-                processRejectionNote(kos);
-            }
+            processRejectionNotes(entityTree, false, "Deleted Instances for move entities:");
             processIANs(entityTree, Availability.UNAVAILABLE);
             importFiles(entityTree, targetAttrs, excludeTagsForImport);
         }
@@ -648,7 +590,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         DicomObject[] rejNotes = new DicomObject[entityTreeMap.size()];
         int i = 0;
         for ( Map<Study, Map<Series, Set<Instance>>> studies : entityTreeMap.values()) {
-            rejNotes[i] = toRejectionNote(studies);
+            rejNotes[i] = studies.isEmpty() ? null : toRejectionNote(studies);
             log.info("Rejection Note! KOS:"+rejNotes[i++]);
         }
         return rejNotes;
@@ -810,6 +752,67 @@ public class ContentEditService extends ServiceMBeanSupport {
                     + ") failed:", x);
         }
     }
+    private void logDicomObjectUpdated(String patId, String patName, String[] studyIUIDs, DicomObject obj, String detailMessage) {
+        if (!auditEnabled )
+            return;
+        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+        log.debug("Audit log 'Instances Accessed' for DICOM Object updated! patient:"+patName+" ("+patId+"):"+detailMessage);
+        try {
+            InstancesAccessedMessage msg = new InstancesAccessedMessage(InstancesAccessedMessage.UPDATE);
+            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo
+                    .getHostName(), true);
+            msg.addPatient(patId, patName);
+            ParticipantObject study;
+            for ( int i = 0; i < studyIUIDs.length ; i++ ) {
+                study = msg.addStudy(studyIUIDs[i], getStudyDescription(obj));
+                if ( detailMessage != null )
+                    study.addParticipantObjectDetail("Description", detailMessage);
+            }
+            msg.validate();
+            LoggerFactory.getLogger("auditlog").info(msg.toString());
+        } catch (Exception x) {
+            log.warn("Audit Log 'Instances Accessed' (actionCode:U) failed:", x);
+        }
+    }
+    
+    private void logPatientDeleted(EntityTree entityTree) {
+        Set<Patient> pats = entityTree.getEntityTreeMap().keySet();
+        for (Patient pat : pats) {
+            logPatientRecord(pat.getPatientID(), pat.getPatientName(), PatientRecordMessage.DELETE);
+        }
+    }
+
+    private void logPatientRecord(String patId, String patName, AuditEvent.ActionCode actionCode) {
+        if (!auditEnabled )
+            return;
+        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+        log.debug("log Patient Record! actionCode:" + actionCode);
+        try {
+            PatientRecordMessage msg = new PatientRecordMessage(actionCode);
+            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo
+                    .getHostName(), true);
+            msg.addPatient(patId, patName);
+            msg.validate();
+            LoggerFactory.getLogger("auditlog").info(msg.toString());
+        } catch (Exception x) {
+            log.warn("Audit Log 'Patient Record' (actionCode:" + actionCode
+                    + ") failed:", x);
+        }
+    }
+
+    private ParticipantObjectDescription getStudyDescription(DicomObject obj) {
+        ParticipantObjectDescription desc = new ParticipantObjectDescription();
+        if (obj.containsValue(Tag.AccessionNumber)) {
+            desc.addAccession(obj.getString(Tag.AccessionNumber));
+        }
+        if (obj.containsValue(Tag.SOPClassUID)) {
+            ParticipantObjectDescription.SOPClass sopClass = 
+                new ParticipantObjectDescription.SOPClass(obj.getString(Tag.SOPClassUID));
+            sopClass.addInstance(obj.getString(Tag.SOPInstanceUID));
+            desc.addSOPClass(sopClass);
+        }
+        return desc;
+    }
 
     public void logMppsLinkRecord(MppsToMwlLinkResult result ) {
         MWLItem mwl = result.getMwl();
@@ -931,6 +934,38 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
     
+    private DicomObject[] processStudyDeleted(EntityTree entityTree) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        if (entityTree.isEmpty())
+            return null;
+        DicomObject[] rejNotes = processRejectionNotes(entityTree, true, null);
+        processIANs(entityTree, Availability.UNAVAILABLE);
+        return rejNotes;
+    }
+
+    private DicomObject[] processInstancesDeleted(EntityTree entityTree, String auditDetail) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        if (entityTree.isEmpty())
+            return null;
+        DicomObject[] rejNotes = this.processRejectionNotes(entityTree, false, auditDetail);
+        processIANs(entityTree, Availability.UNAVAILABLE);
+        return rejNotes;
+    }
+    
+    private DicomObject[] processRejectionNotes(EntityTree entityTree, boolean study, String auditDetails) 
+                throws InstanceNotFoundException, MBeanException, ReflectionException {
+        DicomObject[] rejNotes = getRejectionNotes(entityTree);
+        for (DicomObject kos : rejNotes) {
+            if (kos == null)
+                continue;
+            if (study) {
+                logStudyDeleted(kos);
+            } else {
+                logInstancesAccessed(kos, InstancesAccessedMessage.DELETE, true, auditDetails);
+            }
+            processRejectionNote(kos);
+        }
+        return rejNotes;
+    }
+    
     private void processRejectionNote(DicomObject rejNote) throws InstanceNotFoundException, MBeanException, ReflectionException {
         if (processRejNote) {
             log.info("RejectionNote KOS:"+rejNote);
@@ -971,6 +1006,32 @@ public class ContentEditService extends ServiceMBeanSupport {
                 eventID);
         notif.setUserData(o);
         super.sendNotification(notif);
+    }
+    
+    private void sendDicomActionNotification(DicomObject obj, String action, String level) {
+        DicomActionNotification notif = new DicomActionNotification(this, obj, action, level, getNextNotificationSequenceNumber());
+        log.debug("Send JMX Notification:"+notif);
+        super.sendNotification(notif);
+    }
+    
+    public void doAfterDicomEdit(String patId, String patName, String[] studyIUIDs, DicomObject obj, String qrLevel) {
+        sendDicomActionNotification(obj, "UPDATE", qrLevel);
+        if ("PATIENT".equals(qrLevel)) {
+            logPatientRecord(patId, patName, PatientRecordMessage.UPDATE);
+       } else {
+            logDicomObjectUpdated(patId, patName, studyIUIDs, obj, "Dicom Attributes updated on "+qrLevel+" level!");
+            if ("STUDY".equals(qrLevel) || "SERIES".equals(qrLevel) || "IMAGE".equals(qrLevel)) {
+                obj.putString(Tag.QueryRetrieveLevel, VR.CS, qrLevel);
+                try {
+                    server.invoke(attrModScuServiceName, "scheduleModification", 
+                            new Object[]{obj}, new String[]{DicomObject.class.getName()});
+                } catch (Exception e) {
+                    log.error("Scheduling Attributes Modification Notification failed!", e);
+                }
+            } else {
+                log.debug("No further action after Dicom Edit defined for level "+qrLevel+"!");
+            }
+        }        
     }
 
 }

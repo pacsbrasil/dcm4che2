@@ -65,16 +65,6 @@
             <name>ejb3unit repository</name>
             <url>http://ejb3unit.sourceforge.net/maven2</url>
         </repository>
-        <repository>
-            <id>wicketstuff</id>
-            <url>http://wicketstuff.org/maven/repository</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>

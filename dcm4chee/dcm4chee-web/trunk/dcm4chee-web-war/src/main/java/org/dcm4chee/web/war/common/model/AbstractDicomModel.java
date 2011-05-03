@@ -39,7 +39,6 @@
 package org.dcm4chee.web.war.common.model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -175,16 +174,5 @@ public abstract class AbstractDicomModel implements Serializable {
         int hashCode = 1;
         hashCode = 31 * hashCode + (int) (+pk ^ (pk >>> 32));
         return hashCode;
-    }
-    
-    public class NonWriteArrayList<E> extends ArrayList<E> {
-        private static final long serialVersionUID = 1L;
-        public NonWriteArrayList() {
-            super();
-        }
-        private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException{
-            log.warn("############################ We dont serialize this list!");
-        }
-
     }
 }

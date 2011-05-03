@@ -1726,6 +1726,11 @@ public class StudyListPage extends Panel {
                    @Override
                    protected void onSubmit() {
                        model.update(getDicomObject());
+                       try {
+                           ContentEditDelegate.getInstance().doAfterDicomEdit(model);
+                       } catch (Exception x) {
+                           log.warn("doAfterDicomEdit failed!", x);
+                       }
                        super.onCancel();
                    }
                 });

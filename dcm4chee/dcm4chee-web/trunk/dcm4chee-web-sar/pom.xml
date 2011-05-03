@@ -23,8 +23,12 @@
         <module>dcm4chee-web-sar-hl7send</module>
         <module>dcm4chee-web-sar-echo</module>
         <module>dcm4chee-web-sar-bridge</module>
+        <module>dcm4chee-web-sar-modify</module>
     </modules>
     <name>JMX services for dcm4chee-web</name>
+  <properties>
+    <db>mysql</db>
+  </properties>
     <dependencies>
     </dependencies>
     <build>

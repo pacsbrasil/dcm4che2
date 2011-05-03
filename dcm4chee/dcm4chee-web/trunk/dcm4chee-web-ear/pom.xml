@@ -117,6 +117,12 @@
             <version>3.0.1</version>
         </dependency>
         <dependency>
+            <groupId>dcm4che.dcm4chee</groupId>
+            <artifactId>dcm4chee-web-sar-modify</artifactId>
+            <type>sar</type>
+            <version>3.0.1</version>
+        </dependency>
+        <dependency>
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
             <version>2.3</version>
@@ -206,6 +212,10 @@
 		                <sarModule>
 		                    <groupId>dcm4che.dcm4chee</groupId>
 		                    <artifactId>dcm4chee-web-sar-webcfg</artifactId>
+		                </sarModule>
+		                <sarModule>
+		                    <groupId>dcm4che.dcm4chee</groupId>
+		                    <artifactId>dcm4chee-web-sar-modify</artifactId>
 		                </sarModule>
 		            </modules>
 		            <jboss>

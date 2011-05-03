@@ -250,19 +250,23 @@ public class DicomEditBean implements DicomEditLocal {
     }
     
     private EntityTree movePatientsToTrash(Collection<Patient> patients, EntityTree entityTree) {
+        if (entityTree == null) {
+            entityTree = new EntityTree();
+        }
         Set<Study> studies;
         for (Patient p : patients) {
             studies = p.getStudies();
             if (studies == null || studies.isEmpty()) {
                 log.debug("move empty patient to trash:"+p.getPatientID()+"^^^"+p.getIssuerOfPatientID()+":"+p.getPatientName());
                 this.movePatientToTrash(p);
+                entityTree.addPatient(p);
             } else {
                 entityTree = moveStudiesToTrash(studies, entityTree);
                 studies.clear();
             }
             deletePatient(p);
         }
-        return entityTree == null ? new EntityTree() : entityTree;
+        return entityTree;
     }
 
     private void moveInstanceToTrash(Instance instance) {
