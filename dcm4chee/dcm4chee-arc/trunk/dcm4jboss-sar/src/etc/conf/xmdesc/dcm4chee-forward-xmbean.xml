@@ -106,6 +106,19 @@ between 8am and 4pm to SCP4 is delayed until 4 pm.]]>
          <value value="false"/>
       </descriptors>
    </attribute>
+  <attribute access="read-write" getMethod="isIgnoreNotLocalRetrievable" setMethod="setIgnoreNotLocalRetrievable">
+      <description><![CDATA[Disable forward of Series that are not local retrievable.<br />
+      		i.e.:<tt>SeriesStored</tt> notification with no RetrieveAET will be ignored by this service. <br />
+      		Such a SeriesStored notification is sent if instances are received with private TransferSyntax 
+      		'Dcm4che URI Referenced' (1.2.40.0.13.1.1.2.4.94) and a (external) RetrieveAET instead of RetrieveURI is given.<br />
+		]]>
+      </description>
+      <name>IgnoreNotLocalRetrievable</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getForwardModifiedToAETs" setMethod="setForwardModifiedToAETs">
       <description><![CDATA[Comma separated list of AE titles to which objects modified
           by using the web application are re-forwarded.<br> <tt>NONE</tt> = do not forward

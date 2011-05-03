@@ -115,6 +115,7 @@ public class ForwardService2 extends ServiceMBeanSupport {
 
     private TemplatesDelegate templates = new TemplatesDelegate(this);
     private boolean logForwardPriorXML = true;
+    private boolean ignoreNotLocalRetrievable;
 
     public static final SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
 
@@ -180,6 +181,15 @@ public class ForwardService2 extends ServiceMBeanSupport {
         this.logForwardPriorXML = logForwardPriorXML;
     }
 
+    public boolean isIgnoreNotLocalRetrievable() {
+        return ignoreNotLocalRetrievable;
+    }
+
+    public void setIgnoreNotLocalRetrievable(boolean ignoreNotLocalRetrievable) {
+        this.ignoreNotLocalRetrievable = ignoreNotLocalRetrievable;
+    }
+
+    
     protected void startService() throws Exception {
         server.addNotificationListener(storeScpServiceName,
                 seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
@@ -191,6 +201,10 @@ public class ForwardService2 extends ServiceMBeanSupport {
     }
     
     private void onSeriesStored(final SeriesStored stored) {
+        if (stored.getRetrieveAET() == null && ignoreNotLocalRetrievable) {
+            log.warn("Ignore SeriesStored notification! Reason: Series is not locally retrievable.");
+            return;
+        }
         Templates tpl = templates.getTemplatesForAET(
                 stored.getSourceAET(), FORWARD_XSL);
         if (tpl != null) {

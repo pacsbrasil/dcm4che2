@@ -75,6 +75,10 @@ public class ForwardService extends ServiceMBeanSupport {
             new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             SeriesStored seriesStored = (SeriesStored) notif.getUserData();
+            if (seriesStored.getRetrieveAET() == null && ignoreNotLocalRetrievable) {
+                log.warn("Ignore SeriesStored notification! Reason: Series is not locally retrievable.");
+                return;
+            }
             Map<String, String[]> param = new HashMap<String, String[]>();
             param.put("calling", new String[] { seriesStored.getSourceAET() });
             String[] destAETs = forwardingRules
@@ -148,6 +152,8 @@ public class ForwardService extends ServiceMBeanSupport {
     private int forwardPriority = 0;
 
     private ForwardingRules forwardingRules = new ForwardingRules("");
+    
+    private boolean ignoreNotLocalRetrievable;
 
     public final String getForwardingRules() {
         return forwardingRules.toString();
@@ -266,6 +272,14 @@ public class ForwardService extends ServiceMBeanSupport {
     public void setForwardModifiedToAETs(String s) {
         forwardModifiedToAETs = NONE.equals(s) ? EMPTY
                 : StringUtils.split(s, ',');
+    }
+
+    public boolean isIgnoreNotLocalRetrievable() {
+        return ignoreNotLocalRetrievable;
+    }
+
+    public void setIgnoreNotLocalRetrievable(boolean ignoreNotLocalRetrievable) {
+        this.ignoreNotLocalRetrievable = ignoreNotLocalRetrievable;
     }
 
     protected void startService() throws Exception {

@@ -235,6 +235,10 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
             return;
         }
         SeriesStored seriesStored = (SeriesStored) notif.getUserData();
+        if (seriesStored.getRetrieveAET() == null) {
+            log.warn("Ignore SeriesStored notification! Reason: Series is not locally retrievable.");
+            return;
+        }
         if (condition != null) {
             Map param = new HashMap();
             param.put("calling", new String[] { seriesStored.getSourceAET() });

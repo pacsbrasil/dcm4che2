@@ -343,11 +343,11 @@ public abstract class StorageBean implements SessionBean {
             String[] retrieveAETs = StringUtils.split(
                     inst.getRetrieveAETs(), '\\');
             if ( retrieveAETs == null ) {
-                log.warn("Failed SeriesStored for series "+series.getSeriesIuid()+" (pk="+series.getPk()+
+                log.debug("Use SeriesStored without local file for series "+series.getSeriesIuid()+" (pk="+series.getPk()+
                         ") Reason: Found Instance with status RECEIVED but without Retrieve AET! iuid:"+inst.getSopIuid());
-                return null;
-            }
-            if (commonRetrieveAETs == null) {
+                if (commonRetrieveAETs == null)
+                    commonRetrieveAETs = new HashSet();
+            } else if (commonRetrieveAETs == null) {
                 commonRetrieveAETs = new HashSet();
                 commonRetrieveAETs.addAll(Arrays.asList(retrieveAETs));
             } else {

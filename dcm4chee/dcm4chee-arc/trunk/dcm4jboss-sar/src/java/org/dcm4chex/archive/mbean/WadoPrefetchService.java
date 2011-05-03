@@ -179,6 +179,10 @@ public class WadoPrefetchService extends ServiceMBeanSupport implements MessageL
     }
     
     private void onSeriesStored(final SeriesStored stored) {
+        if (stored.getRetrieveAET() == null) {
+            log.warn("Ignore SeriesStored notification! Reason: Series is not locally retrievable.");
+            return;
+        }
         log.info("Handle SeriesStored Notification! stored:"+stored);
         Templates tpl = null;
         try {
