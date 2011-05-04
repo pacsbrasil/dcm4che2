@@ -16,21 +16,21 @@ p,ul,ol,li,dl,dt,dd,div,td,th { font-size: 12px; }
 
 img { border: none; }
 
-div.signin { height: 400px; text-align: center; padding: 160 0 0 0; }
-div.signin table { width: 100%; padding: 60 90 10 0; background-color: #A0D8C4; }
+div.signin { height: 400px; text-align: center; padding: 160px 0px 0px 0px; }
+div.signin table { width: 100%; padding: 60px 90px 10px 0px; background-color: #A0D8C4; }
 div.signin tr, div.signin td { width: 50%; height: 35px; border-style: none; }
-div.signin span.login-desc { font-size:20px; font-weight: bold; }
+div.signin span.login-desc { font-size: 20px; font-weight: bold; }
 
-div.module-selector { width: 100%; height: 43px; background: #FFF url("images/menu-bg.gif") top left repeat-x; font-weight: bold; list-style-type: none; margin: 0; padding: 0; z-index: 1; }
-div.module-selector span.login-desc { margin: 13 0 0 0; padding: 0 10 0 10; float: left; font-size: 16px; }
-div.module-selector div.tab-logo { margin: 13 0 0 0; padding: 0 10 0 10; height: 43px; float: right; }
-div.module-selector div.tab-lang { margin: 13 0 0 0; height: 43px; float: right; }
+div.module-selector { width: 100%; height: 43px; background: #FFF url("images/menu-bg.gif") top left repeat-x; font-weight: bold; list-style-type: none; margin: 0px; padding: 0px; z-index: 1; }
+div.module-selector span.login-desc { margin: 13px 0px 0px 0px; padding: 0px 10px 0px 10px; float: left; font-size: 16px; }
+div.module-selector div.tab-logo { margin: 13px 0px 0px 0px; padding: 0px 10px 0px 10px; height: 43px; float: right; }
+div.module-selector div.tab-lang { margin: 13px 0px 0px 0px; height: 43px; float: right; }
 div.module-selector div.tab-lang img { border: none; }
 div.module-selector div.tab-lang a { color: #666;}
 
-div.tabpanel div.tab-row li { margin: 0 0 0 0; display: block; float: left; list-style-type: none; }
+div.tabpanel div.tab-row li { margin: 0px; display: block; float: left; list-style-type: none; }
 div.tabpanel div.tab-row a:link, div.tabpanel div.tab-row a:visited {
-    float: left; padding: 5px 15px 0; 
+    float: left; padding: 5px 15px 0px; 
     background: #FFF url("images/menu-bg.gif") top left repeat-x;
     font-size: 12px;
     line-height: 38px;
@@ -38,13 +38,13 @@ div.tabpanel div.tab-row a:link, div.tabpanel div.tab-row a:visited {
     color: #666;
 }
 div.tabpanel div.tab-row li.selected a:link, div.tabpanel div.tab-row a:visited.active {
-    float: left; height: 38px; color: #FFF; background: #FFF url("images/current-bg.gif") top left repeat-x; padding: 5px 15px 0; 
+    float: left; height: 38px; color: #FFF; background: #FFF url("images/current-bg.gif") top left repeat-x; padding: 5px 15px 0px; 
 }
 div.tabpanel div.tab-row a:hover { background: #aaa; }
 
 div.module-panel { width: 100%; background: none #E1E0DE; }
 
-div.viewport-and-actions { margin-top: 20px; margin-bottom: 5px; padding: 5; }
+div.viewport-and-actions { margin-top: 20px; margin-bottom: 5px; padding: 5px; }
 div.viewport { float: left; margin-right: 40px; }
 img.hourglass { float: left; margin-left: 20%; }
 div.actions { text-align: right; }
