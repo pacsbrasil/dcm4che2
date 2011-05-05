@@ -42,9 +42,12 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.IHeaderContributor;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -54,6 +57,7 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.markup.ModalWindowLink.DisableDefaultConfirmBehavior;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -126,6 +130,7 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         setInitialWidth(400);
         setInitialHeight(300);
         setContent(new MessageWindowPanel("content"));
+        add(new DisableDefaultConfirmBehavior());
     }
     
     public IAjaxCallDecorator getConfirmAjaxCallDecorator() {
@@ -310,6 +315,16 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         @Override
         public boolean isVisible() {
             return true;
+        }
+    }
+    
+    public class DisableDefaultConfirmBehavior extends AbstractBehavior implements IHeaderContributor {
+
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void renderHead(IHeaderResponse response) {
+            response.renderOnDomReadyJavascript ("Wicket.Window.unloadConfirmation = false");
         }
     }
 }
