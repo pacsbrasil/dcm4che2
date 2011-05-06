@@ -198,7 +198,7 @@ public class StudyListBean implements StudyListLocal {
             } else {
                 appendPatFilter(ql, filter);
                 QueryUtil.appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
-                QueryUtil.appendPpsWithoutMwlFilter(ql, filter.isPpsWithoutMwl());
+                QueryUtil.appendPpsWithoutMwlFilter(ql, filter.isWithoutPps(), filter.isPpsWithoutMwl());
                 QueryUtil.appendStudyDateMinFilter(ql, filter.getStudyDateMin());
                 QueryUtil.appendStudyDateMaxFilter(ql, filter.getStudyDateMax());
                 QueryUtil.appendModalityFilter(ql, filter.getModality());

@@ -293,10 +293,17 @@ public class QueryUtil {
         setTextQueryParameter(query, "accessionNumber", accessionNumber);
     }
 
-    public static void appendPpsWithoutMwlFilter(StringBuilder ql, boolean ppsWithoutMwl) {
-        if (ppsWithoutMwl) {
-            ql.append(" AND EXISTS (SELECT ser FROM s.series ser WHERE "+
-                    "ser.modalityPerformedProcedureStep IS NOT NULL AND ser.modalityPerformedProcedureStep.accessionNumber IS NULL)");
+    public static void appendPpsWithoutMwlFilter(StringBuilder ql, boolean withoutPps, boolean ppsWithoutMwl) {
+        if (withoutPps || ppsWithoutMwl) {
+            ql.append(" AND (");
+            if (withoutPps) {
+                ql.append("EXISTS (SELECT ser FROM s.series ser WHERE ser.modalityPerformedProcedureStep IS NULL)")
+                .append(ppsWithoutMwl ? " OR " : ")");
+            }
+            if (ppsWithoutMwl) {
+                ql.append("EXISTS (SELECT ser FROM s.series ser WHERE ser.modalityPerformedProcedureStep")
+                .append(" IS NOT NULL AND ser.modalityPerformedProcedureStep.accessionNumber IS NULL))");
+            }
         }
     }
     

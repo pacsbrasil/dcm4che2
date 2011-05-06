@@ -72,6 +72,7 @@ public class StudyListFilter implements Serializable {
     private boolean patientQuery;
     private boolean latestStudiesFirst;
     private boolean ppsWithoutMwl;
+    private boolean withoutPps;
     
     public StudyListFilter(String forUsername) {
         clear();
@@ -143,6 +144,14 @@ public class StudyListFilter implements Serializable {
         this.accessionNumber = accessionNumber;
     }
 
+    public boolean isWithoutPps() {
+        return withoutPps;
+    }
+
+    public void setWithoutPps(boolean withoutPps) {
+        this.withoutPps = withoutPps;
+    }
+    
     public boolean isPpsWithoutMwl() {
         return ppsWithoutMwl;
     }

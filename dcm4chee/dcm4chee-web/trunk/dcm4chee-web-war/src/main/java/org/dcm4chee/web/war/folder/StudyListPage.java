@@ -423,6 +423,7 @@ public class StudyListPage extends Panel {
 
         final CheckBox chkLatestStudyFirst = form.addLabeledCheckBox("latestStudiesFirst", null);
         final CheckBox chkPpsWoMwl = form.addLabeledCheckBox("ppsWithoutMwl", null);
+        final CheckBox chkWoPps = form.addLabeledCheckBox("withoutPps", null);
         
         final List<String> searchOptions = new ArrayList<String>(2);
         searchOptions.add(new ResourceModel("folder.searchOptions.patient").wrapOnAssignment(this).getObject());
@@ -439,6 +440,7 @@ public class StudyListPage extends Panel {
                             viewport.getFilter().setPatientQuery(b);
                             chkLatestStudyFirst.setEnabled(!b);
                             chkPpsWoMwl.setEnabled(!b);
+                            chkWoPps.setEnabled(!b);
                             header.expandToLevel(b ? PatientModel.PATIENT_LEVEL : PatientModel.STUDY_LEVEL);
                             BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
                         }
@@ -932,15 +934,22 @@ public class StudyListPage extends Panel {
             }
         }
         StudyModel m = new StudyModel(study, patient, studyPermissionActions);
-        if (viewport.getFilter().isPpsWithoutMwl()) {
+        boolean woMwl = viewport.getFilter().isPpsWithoutMwl();
+        boolean woPps = viewport.getFilter().isWithoutPps();
+        if (woMwl || woPps) {
             m.expand();
             PPSModel pps;
             for (Iterator<PPSModel> it = m.getPPSs().iterator() ; it.hasNext() ; ) {
                 pps = it.next();
-                if (pps.getDataset() == null || pps.getAccessionNumber()!=null) {
-                    it.remove();
-                } else {
+                if (pps.getDataset() == null) {
+                    if (woPps)
+                        pps.collapse();
+                    else
+                        it.remove();
+                } else if (woMwl && pps.getAccessionNumber()==null) {
                     pps.collapse();
+                } else {
+                    it.remove();
                 }
             }
         }
