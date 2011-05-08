@@ -37,6 +37,7 @@ import org.weasis.launcher.wado.Patient;
 import org.weasis.launcher.wado.WadoParameters;
 import org.weasis.launcher.wado.WadoQuery;
 import org.weasis.launcher.wado.WadoQueryException;
+import org.weasis.launcher.wado.xml.FileUtil;
 
 public class Weasis_Launcher extends HttpServlet {
     private static final long serialVersionUID = 8946852726380985736L;
@@ -116,6 +117,11 @@ public class Weasis_Launcher extends HttpServlet {
             logRequestInfo(request);
             response.setContentType(JNLP_MIME_TYPE);
 
+            String baseURL = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+            System.setProperty("server.base.url", baseURL);
+            String key = "pacs.wado.url";
+            pacsProperties.setProperty(key,
+                FileUtil.substVars(pacsProperties.getProperty(key), key, null, pacsProperties));
             String wadoQueriesURL = pacsProperties.getProperty("pacs.wado.url", "http://localhost:8080/wado");
             String pacsAET = pacsProperties.getProperty("pacs.aet", "DCM4CHEE");
             String pacsHost = pacsProperties.getProperty("pacs.host", "localhost");
@@ -161,6 +167,7 @@ public class Weasis_Launcher extends HttpServlet {
 
                 // response.setContentLength(launcherStr.length());
 
+                String codebase = baseURL + "/weasis";
                 PrintWriter outWriter = response.getWriter();
                 String s;
                 while ((s = dis.readLine()) != null) {
@@ -170,7 +177,7 @@ public class Weasis_Launcher extends HttpServlet {
                         outWriter.print("</argument>");
                     } else {
                         // TODO set in properties
-                        s = s.replaceAll("--cdb--", "http://localhost:8080/weasis");
+                        s = s.replaceAll("--cdb--", codebase);
                         outWriter.println(s);
                     }
                 }
