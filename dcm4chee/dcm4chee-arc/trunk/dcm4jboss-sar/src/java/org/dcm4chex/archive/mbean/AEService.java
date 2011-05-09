@@ -467,7 +467,7 @@ public class AEService extends ServiceMBeanSupport {
         }
     }
 
-    private void logActorConfig(String desc, AuditEvent.TypeCode eventTypeCode) {
+    protected void logActorConfig(String desc, AuditEvent.TypeCode eventTypeCode) {
         log.info(desc);
         try {
             HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
