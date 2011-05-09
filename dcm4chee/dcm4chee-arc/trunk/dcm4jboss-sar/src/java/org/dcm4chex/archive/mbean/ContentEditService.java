@@ -886,7 +886,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         return contentMgr;
     }
 
-    private PrivateManager lookupPrivateManager() throws HomeFactoryException,
+    protected PrivateManager lookupPrivateManager() throws HomeFactoryException,
     RemoteException, CreateException {
         if (privateMgr != null)
             return privateMgr;
@@ -932,7 +932,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                 String.class.getName(), boolean.class.getName() });
     }
 
-    private void logPatientRecord(Dataset ds, AuditEvent.ActionCode actionCode) {
+    protected void logPatientRecord(Dataset ds, AuditEvent.ActionCode actionCode) {
         if (!auditEnabled)
             return;
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
@@ -953,13 +953,13 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
 
-    private void logInstancesAccessed(Dataset ds,AuditEvent.ActionCode actionCode, boolean addIUID, String detailMessage) {
+    protected void logInstancesAccessed(Dataset ds,AuditEvent.ActionCode actionCode, boolean addIUID, String detailMessage) {
         ArrayList<Dataset> l = new ArrayList<Dataset>();
         l.add(ds);
         logInstancesAccessed(l, actionCode, addIUID, detailMessage);
     }
 
-    private void logInstancesAccessed(Collection<Dataset> studies,
+    protected void logInstancesAccessed(Collection<Dataset> studies,
             AuditEvent.ActionCode actionCode, boolean addIUID, String detailMessage) {
         if (!auditEnabled)
             return;
@@ -992,7 +992,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
 
-    private String getStudySeriesDetail(String detailMessage, Dataset studyMgtDs) {
+    protected String getStudySeriesDetail(String detailMessage, Dataset studyMgtDs) {
         DcmElement refSeries = studyMgtDs.get(Tags.RefSeriesSeq);
         StringBuffer sb = new StringBuffer();
         sb.append(detailMessage);
@@ -1006,7 +1006,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         return sb.toString();
     }
 
-    private void logStudyDeleted(Dataset studyMgtDs) {
+    protected void logStudyDeleted(Dataset studyMgtDs) {
         if (!auditEnabled)
             return;
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
@@ -1027,7 +1027,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
 
-    private ParticipantObjectDescription getStudyDescription(Dataset studyMgtDs, boolean addIUID) {
+    protected ParticipantObjectDescription getStudyDescription(Dataset studyMgtDs, boolean addIUID) {
         ParticipantObjectDescription desc = new ParticipantObjectDescription();
         String accNr = studyMgtDs.getString(Tags.AccessionNumber);
         if (accNr != null)
@@ -1036,7 +1036,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         return desc;
     }
 
-    private void addSOPClassInfo(ParticipantObjectDescription desc,
+    protected void addSOPClassInfo(ParticipantObjectDescription desc,
             Dataset studyMgtDs, boolean addIUID) {
         DcmElement refSeries = studyMgtDs.get(Tags.RefSeriesSeq);
         if (refSeries == null)
