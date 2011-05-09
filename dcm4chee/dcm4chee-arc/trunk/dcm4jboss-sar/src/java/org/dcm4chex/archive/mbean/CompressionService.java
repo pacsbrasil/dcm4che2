@@ -356,6 +356,9 @@ public class CompressionService extends ServiceMBeanSupport {
                     }
                 }
             }
+        } catch (ExceptionInInitializerError e) {
+          log.error("Error initializing compression libraries!", e); 
+          throw e;
         } finally {
             isRunning = false;
         }
