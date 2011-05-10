@@ -95,6 +95,7 @@ import org.dcm4chee.web.service.common.delegate.JMSDelegate;
 import org.dcm4chee.web.service.common.RetryIntervalls;
 import org.dcm4chee.web.service.common.delegate.TemplatesDelegate;
 import org.dcm4chee.web.service.common.XSLTUtils;
+import org.dcm4chee.web.service.common.DicomActionNotification;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXContentHandler;
@@ -159,12 +160,34 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
             }
         }
     };
+    private final NotificationListener dicomActionListener = new NotificationListener() {
+        public void handleNotification(Notification notif, Object handback) {
+            try {
+                if (notif instanceof DicomActionNotification) {
+                    log.info("handle DicomAction notification:"+notif);
+                    if ("PATIENT".equals(((DicomActionNotification) notif).getLevel())) {
+                        HL7SendV2Service.this.schedulePatientUpdate((DicomObject) notif.getUserData());
+                    }
+                }
+            } catch (Throwable t) {
+                log.error("Can not handle 'DicomActionNotification' Notification! Ignored!");
+            }
+        }
+    };
     public static final NotificationFilter MPPS_LINKED_FILTER =
         new NotificationFilter() {          
         private static final long serialVersionUID = 7625954422409724162L;
 
         public boolean isNotificationEnabled(Notification notif) {
             return MppsToMwlLinkResult.class.getName().equals(notif.getType());
+        }
+    };
+    public static final NotificationFilter DICOM_ACTION_FILTER = 
+        new NotificationFilter() {          
+        private static final long serialVersionUID = 7625954422409724162L;
+
+        public boolean isNotificationEnabled(Notification notif) {
+            return DicomActionNotification.NOTIFICATION_TYPE.equals(notif.getType());
         }
     };
     
@@ -359,9 +382,11 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
     public void startService() throws Exception {
         jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(contentEditServiceName, mppsLinkedListener, MPPS_LINKED_FILTER, null);
+        server.addNotificationListener(contentEditServiceName, dicomActionListener, DICOM_ACTION_FILTER, null);
     }
 
     public void stopService() throws Exception {
+        server.removeNotificationListener(contentEditServiceName, dicomActionListener, DICOM_ACTION_FILTER, null);
         server.removeNotificationListener(contentEditServiceName, mppsLinkedListener, MPPS_LINKED_FILTER, null);
         jmsDelegate.stopListening(queueName);
     }
