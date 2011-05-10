@@ -76,6 +76,7 @@ import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
 import org.dcm4chee.web.common.behaviours.CheckOneDayBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
@@ -88,7 +89,6 @@ import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
-import org.dcm4chee.web.war.ajax.MaskingAjaxCallDecorator;
 import org.dcm4chee.web.war.common.EditDicomObjectPanel;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
@@ -134,12 +134,16 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     protected boolean ajaxDone = false;
     protected Image hourglassImage;
 
+    final MaskingAjaxCallBehavior macb = new MaskingAjaxCallBehavior();
+
     public ModalityWorklistPanel(final String id) {
         super(id);
 
         if (ModalityWorklistPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(ModalityWorklistPanel.CSS));
 
+        add(macb);
+        
         add(modalWindow = new ModalWindow("modal-window"));
         modalWindow.setWindowClosedCallback(new WindowClosedCallback() {
             private static final long serialVersionUID = 1L;
@@ -380,7 +384,12 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             
             @Override
             protected IAjaxCallDecorator getAjaxCallDecorator() {
-                return new MaskingAjaxCallDecorator();
+                try {
+                    return macb.getAjaxCallDecorator();
+                } catch (Exception e) {
+                    log.error("Failed to get IAjaxCallDecorator: ", e);
+                }
+                return null;
             }
 
             @Override

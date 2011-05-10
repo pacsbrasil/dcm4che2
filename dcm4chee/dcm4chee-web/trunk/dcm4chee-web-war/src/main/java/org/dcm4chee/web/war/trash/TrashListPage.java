@@ -99,7 +99,7 @@ import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.service.common.FileImportOrder;
 import org.dcm4chee.web.war.MainPage;
 import org.dcm4chee.web.war.StudyPermissionHelper;
-import org.dcm4chee.web.war.ajax.MaskingAjaxCallDecorator;
+import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
@@ -140,11 +140,16 @@ public class TrashListPage extends Panel {
     
     TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
     
+    final MaskingAjaxCallBehavior macb = new MaskingAjaxCallBehavior();
+
     public TrashListPage(final String id) {
         super(id);
 
         if (TrashListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(TrashListPage.CSS));
+
+        add(macb);
+        
         final TrashListFilter filter = viewport.getFilter();
         final BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
         form.setResourceIdPrefix("trash.");
@@ -309,7 +314,12 @@ public class TrashListPage extends Panel {
 
             @Override
             protected IAjaxCallDecorator getAjaxCallDecorator() {
-                return new MaskingAjaxCallDecorator();
+                try {
+                    return macb.getAjaxCallDecorator();
+                } catch (Exception e) {
+                    log.error("Failed to get IAjaxCallDecorator: ", e);
+                }
+                return null;
             }
         };
         searchBtn.setOutputMarkupId(true);
@@ -352,7 +362,12 @@ public class TrashListPage extends Panel {
             
             @Override
             protected IAjaxCallDecorator getAjaxCallDecorator() {
-                return new MaskingAjaxCallDecorator();
+                try {
+                    return macb.getAjaxCallDecorator();
+                } catch (Exception e) {
+                    log.error("Failed to get IAjaxCallDecorator: ", e);
+                }
+                return null;
             }
         });
 
@@ -445,9 +460,9 @@ public class TrashListPage extends Panel {
             
             @Override
             public void onConfirmation(AjaxRequestTarget target, final PrivSelectedEntities selected) {
-log.info("###### onConfirmation");
+
                 this.setStatus(new StringResourceModel("trash.message.restore.running", TrashListPage.this, null));
-                okBtn.setVisible(false);
+                messageWindowPanel.getOkBtn().setVisible(false);
                 
                 try {
                     FileImportOrder fio = new FileImportOrder();
@@ -485,11 +500,10 @@ log.info("###### onConfirmation");
                     log.error("Exception restoring entry:"+t.getMessage(), t);
                 }
                 log.info("###### onConfirmation doLAST");
-                target.addComponent(msgLabel);
-                target.addComponent(okBtn);
+                target.addComponent(messageWindowPanel.getMsgLabel());
+                target.addComponent(messageWindowPanel.getOkBtn());
             }
         };
-        confirmRestore.setConfirmAjaxCallDecorator(new MaskingAjaxCallDecorator());
         confirmRestore.setInitialHeight(150);
         form.add(confirmRestore);
         
@@ -535,7 +549,7 @@ log.info("###### onConfirmation");
             public void onConfirmation(AjaxRequestTarget target, final PrivSelectedEntities selected) {
            
                 this.setStatus(new StringResourceModel("trash.message.delete.running", TrashListPage.this, null));
-                okBtn.setVisible(false);
+                messageWindowPanel.getOkBtn().setVisible(false);
            
                 try {
                     if (selected == null ? removeTrashAll() : removeTrashItems(selected)) {
@@ -550,8 +564,8 @@ log.info("###### onConfirmation");
                 } catch (Throwable t) {
                     log.error((selected == null ? "removeTrashAll" : "removeTrashItems") + " failed: ", t);
                 }
-                target.addComponent(msgLabel);
-                target.addComponent(okBtn);
+                target.addComponent(messageWindowPanel.getMsgLabel());
+                target.addComponent(messageWindowPanel.getOkBtn());
             }
         };
         confirmDelete.setInitialHeight(150);

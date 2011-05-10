@@ -129,7 +129,7 @@ import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.StudyPermissionHelper.StudyPermissionRight;
-import org.dcm4chee.web.war.ajax.MaskingAjaxCallDecorator;
+import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
 import org.dcm4chee.web.war.common.EditDicomObjectPanel;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
@@ -205,6 +205,8 @@ public class StudyListPage extends Panel {
     
     StudyPermissionHelper studyPermissionHelper;
     
+    final MaskingAjaxCallBehavior macb = new MaskingAjaxCallBehavior();
+    
     public StudyListPage(final String id) {
         super(id);
 
@@ -212,7 +214,9 @@ public class StudyListPage extends Panel {
             add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
 
         studyPermissionHelper = StudyPermissionHelper.get();
-        
+
+        add(macb);
+
         add(modalWindow = new ModalWindow("modal-window"));
         modalWindow.setWindowClosedCallback(new WindowClosedCallback() {
             private static final long serialVersionUID = 1L;
@@ -501,7 +505,12 @@ public class StudyListPage extends Panel {
             }
             @Override
             protected IAjaxCallDecorator getAjaxCallDecorator() {
-                return new MaskingAjaxCallDecorator();
+                try {
+                    return macb.getAjaxCallDecorator();
+                } catch (Exception e) {
+                    log.error("Failed to get IAjaxCallDecorator: ", e);
+                }
+                return null;
             }
 
         };
@@ -545,7 +554,12 @@ public class StudyListPage extends Panel {
             
             @Override
             protected IAjaxCallDecorator getAjaxCallDecorator() {
-                return new MaskingAjaxCallDecorator();
+                try {
+                    return macb.getAjaxCallDecorator();
+                } catch (Exception e) {
+                    log.error("Failed to get IAjaxCallDecorator: ", e);
+                }
+                return null;
             }
         });
 
@@ -649,8 +663,8 @@ public class StudyListPage extends Panel {
             public void onConfirmation(AjaxRequestTarget target, final SelectedEntities selected) {
                 
                 this.setStatus(new StringResourceModel("folder.message.delete.running", StudyListPage.this, null));
-                okBtn.setVisible(false);
-                remarkLabel.setVisible(false);
+                messageWindowPanel.getOkBtn().setVisible(false);
+                messageWindowPanel.getRemarkLabel().setVisible(false);
                 
                 try {
                     if (getDelegate().moveToTrash(selected)) {
@@ -665,8 +679,8 @@ public class StudyListPage extends Panel {
                 } catch (Throwable t) {
                     log.error("moveToTrash failed: ", t);
                 }
-                target.addComponent(msgLabel);
-                target.addComponent(okBtn);
+                target.addComponent(messageWindowPanel.getMsgLabel());
+                target.addComponent(messageWindowPanel.getOkBtn());
             }
             
             @Override
@@ -806,7 +820,7 @@ public class StudyListPage extends Panel {
             public void onConfirmation(AjaxRequestTarget target, final PPSModel ppsModel) {
                            
                 this.setStatus(new StringResourceModel("folder.message.unlink.running", StudyListPage.this, null));
-                okBtn.setVisible(false);
+                messageWindowPanel.getOkBtn().setVisible(false);
 
                 try {
                     if (ContentEditDelegate.getInstance().unlink(ppsModel)) {
@@ -821,8 +835,8 @@ public class StudyListPage extends Panel {
                 } catch (Throwable t) {
                     log.error("Unlink of MPPS failed:"+ppsModel, t);
                 }
-                target.addComponent(msgLabel);
-                target.addComponent(okBtn);
+                target.addComponent(messageWindowPanel.getMsgLabel());
+                target.addComponent(messageWindowPanel.getOkBtn());
             }
         };
         confirmUnlinkMpps.setInitialHeight(150);
@@ -1165,7 +1179,12 @@ public class StudyListPage extends Panel {
                 }
                 @Override
                 protected IAjaxCallDecorator getAjaxCallDecorator() {
-                    return new MaskingAjaxCallDecorator();
+                    try {
+                        return macb.getAjaxCallDecorator();
+                    } catch (Exception e) {
+                        log.error("Failed to get IAjaxCallDecorator: ", e);
+                    }
+                    return null;
                 }
             }
                 .add(new Image("selectImg",ImageManager.IMAGE_COMMON_SEARCH)
@@ -1316,7 +1335,12 @@ public class StudyListPage extends Panel {
 
                 @Override
                 protected IAjaxCallDecorator getAjaxCallDecorator() {
-                    return new MaskingAjaxCallDecorator();
+                    try {
+                        return macb.getAjaxCallDecorator();
+                    } catch (Exception e) {
+                        log.error("Failed to get IAjaxCallDecorator: ", e);
+                    }
+                    return null;
                 }
                 @Override
                 public boolean isVisible() {
@@ -1484,7 +1508,12 @@ public class StudyListPage extends Panel {
                 }
                 @Override
                 protected IAjaxCallDecorator getAjaxCallDecorator() {
-                    return new MaskingAjaxCallDecorator();
+                    try {
+                        return macb.getAjaxCallDecorator();
+                    } catch (Exception e) {
+                        log.error("Failed to get IAjaxCallDecorator: ", e);
+                    }
+                    return null;
                 }
             }
                 .add(new Image("selectImg",ImageManager.IMAGE_COMMON_SEARCH)

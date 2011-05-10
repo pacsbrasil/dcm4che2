@@ -92,9 +92,7 @@ public class MainPage extends SecureWicketPage {
                     }
                 }
             });
-
         addModules(getModuleSelectorPanel());
-        add(JavascriptPackageResource.getHeaderContribution(BaseWicketPage.class, "mainpage.js"));
     }
 
     private void addModules(ModuleSelectorPanel selectorPanel) {

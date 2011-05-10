@@ -58,6 +58,7 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.CloseButt
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
@@ -137,27 +138,6 @@ public class StudyPermissionsPage extends SecureWebPage {
             public void onDecline(AjaxRequestTarget target, Role role) {
             }
         });
-        confirmationWindow
-        .setCloseButtonCallback(new CloseButtonCallback() {
-
-            private static final long serialVersionUID = 1L;
-
-            public boolean onCloseButtonClicked(AjaxRequestTarget target) {
-                return true;
-            }
-        });
-        confirmationWindow
-        .setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
-            
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClose(AjaxRequestTarget target) {
-                confirmationWindow.getPage().setOutputMarkupId(true);
-                target.addComponent(confirmationWindow.getPage());
-            }
-        });
-
 
         final ModalWindow addRoleModalWindow = new ModalWindow("modal-window");
         add(addRoleModalWindow);
@@ -262,7 +242,7 @@ public class StudyPermissionsPage extends SecureWebPage {
                     .add(new Label("rolename", role.getRolename()))
             );
 
-            rowParent.add((new AjaxFallbackLink<Object>("remove-dicom-role-link") {
+            rowParent.add((new ModalWindowLink("remove-dicom-role-link", confirmationWindow, 400, 300) {
 
                 private static final long serialVersionUID = 1L;
 
@@ -273,7 +253,19 @@ public class StudyPermissionsPage extends SecureWebPage {
                 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
+
+                    confirmationWindow
+                    .setPageCreator(new ModalWindow.PageCreator() {
+                        
+                        private static final long serialVersionUID = 1L;
+                          
+                        @Override
+                        public Page createPage() {
+                            return new ConfirmationWrapperPage(confirmationWindow);
+                        }
+                    });
                     confirmationWindow.confirm(target, new Model<String>(new ResourceModel("studypermission.remove-dicom-role-link.confirmation").wrapOnAssignment(this.getParent()).getObject()), role);
+                    super.onClick(target);
                 }
             }
             .add(new Image("studypermission.table.delete.image", ImageManager.IMAGE_COMMON_REMOVE)
@@ -396,6 +388,18 @@ public class StudyPermissionsPage extends SecureWebPage {
         ArrayList<Role> allDicomRoles = new ArrayList<Role>();
         allDicomRoles.addAll(((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).getAllDicomRoles());
         return allDicomRoles;
+    }
+    
+    public class ConfirmationWrapperPage extends WebPage {
+        
+        private final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+
+        public ConfirmationWrapperPage(ConfirmationWindow<?> confirmationWindow) {
+            if (BaseCSS != null)
+                add(CSSPackageResource.getHeaderContribution(BaseCSS));
+
+            add(confirmationWindow.getMessageWindowPanel());
+        }
     }
     
     public static String getModuleName() {
