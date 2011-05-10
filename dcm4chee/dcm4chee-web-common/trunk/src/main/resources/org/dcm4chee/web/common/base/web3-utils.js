@@ -63,7 +63,7 @@ Wicket.MainPage.Mask.prototype = {
 	 */
 	show: function() {				
 		
-		// if the mask is not alrady shown...
+		// if the mask is not already shown...
 		if (typeof(Wicket.MainPage.Mask.element) == "undefined" ||
 			Wicket.MainPage.Mask.element == null) {		
 		

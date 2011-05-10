@@ -5,6 +5,7 @@ import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.CloseButtonCallback;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.form.Form;
@@ -28,6 +29,14 @@ public class ModalWindowLink extends AjaxFallbackLink<Object> {
     
     @Override
     public void onClick(AjaxRequestTarget target) {
+        modalWindow.setCloseButtonCallback(new CloseButtonCallback() {
+
+            private static final long serialVersionUID = 1L;
+
+            public boolean onCloseButtonClicked(AjaxRequestTarget target) {
+                return true;
+            }
+        });
         modalWindow.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
             
             private static final long serialVersionUID = 1L;

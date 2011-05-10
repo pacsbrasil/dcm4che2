@@ -38,26 +38,22 @@
 
 package org.dcm4chee.web.common.markup.modal;
 
-import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
-import org.apache.wicket.markup.html.JavascriptPackageResource;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
-import org.dcm4chee.web.common.base.BaseWicketPage;
-import org.dcm4chee.web.common.markup.ModalWindowLink.DisableDefaultConfirmBehavior;
+import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -68,26 +64,21 @@ import org.dcm4chee.web.common.markup.ModalWindowLink.DisableDefaultConfirmBehav
 public abstract class ConfirmationWindow<T> extends ModalWindow {
     
     private static final long serialVersionUID = 1L;
-    
+
     public static final String FOCUS_ON_CONFIRM = "content:confirm";
     public static final String FOCUS_ON_DECLINE = "content:decline";
     public static final String FOCUS_ON_CANCEL = "content:cancel";
 
     private T userObject;
     private String focusElementId;
-    public IModel<?> msg;
 
-    protected IModel<?> remark, confirm, decline, cancel;
+    private IModel<?> remark, confirm, decline, cancel;
     
     protected boolean hasStatus;
     private boolean showCancel = false;
     
-    protected Label msgLabel;
-    protected Label remarkLabel;
-    protected AjaxFallbackLink<Object> okBtn;
+    public MessageWindowPanel<T> messageWindowPanel;
     
-    private IAjaxCallDecorator confirmAjaxCallDecorator;
-
     public ConfirmationWindow(String id, String titleResource) {
         this(id);
         setTitle(new ResourceModel(titleResource));
@@ -101,7 +92,7 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
             private static final long serialVersionUID = 1L;
 
             public boolean onCloseButtonClicked(AjaxRequestTarget target) {
-                msg = null;
+                messageWindowPanel.msg = null;
                 close(target);
                 return true;
             }
@@ -129,17 +120,10 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
     protected void initContent() {
         setInitialWidth(400);
         setInitialHeight(300);
-        setContent(new MessageWindowPanel("content"));
+        
+        messageWindowPanel = new MessageWindowPanel<T>("content");
+        setContent(messageWindowPanel);
         add(new DisableDefaultConfirmBehavior());
-    }
-    
-    public IAjaxCallDecorator getConfirmAjaxCallDecorator() {
-        return confirmAjaxCallDecorator;
-    }
-
-    public void setConfirmAjaxCallDecorator(
-            IAjaxCallDecorator confirmAjaxCallDecorator) {
-        this.confirmAjaxCallDecorator = confirmAjaxCallDecorator;
     }
 
     public abstract void onConfirmation(AjaxRequestTarget target, T userObject);
@@ -162,7 +146,7 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         confirm(target, msg, userObject, focusElementId, false);
     }
     public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject, String focusElementId, boolean showCancel) {
-        this.msg = msg;
+        this.messageWindowPanel.msg = msg;
         this.userObject = userObject;
         this.focusElementId = focusElementId;
         this.showCancel = showCancel;
@@ -174,7 +158,7 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
     }
     
     public void setStatus(IModel<?> statusMsg) {
-        msg = statusMsg;
+        messageWindowPanel.msg = statusMsg;
         hasStatus = true;
     }
 
@@ -182,13 +166,26 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         this.remark = remark;
     }
 
-    public class MessageWindowPanel extends Panel {
+    @SuppressWarnings("hiding")
+    public class MessageWindowPanel<T> extends Panel {
         
         private static final long serialVersionUID = 1L;
+        
+        private final Logger log = LoggerFactory.getLogger(MessageWindowPanel.class);
+        
         private IndicatingAjaxFallbackLink<Object> confirmBtn;
+        private AjaxFallbackLink<Object> okBtn;
+        
+        private IModel<?> msg;
+        private Label msgLabel;
+        private Label remarkLabel;
+        
         public MessageWindowPanel(String id) {
             super(id);
-
+            
+            final MaskingAjaxCallBehavior macb = new MaskingAjaxCallBehavior();
+            add(macb);
+            
             add((msgLabel = new Label("msg", new AbstractReadOnlyModel<Object>() {
 
                 private static final long serialVersionUID = 1L;
@@ -231,20 +228,12 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
 
                 @Override
                 protected IAjaxCallDecorator getAjaxCallDecorator() {
-                    return new IAjaxCallDecorator(){
-                        public final CharSequence decorateScript(CharSequence script) {
-                            return "showMask();"+script;
-                        }
-
-                        public final CharSequence decorateOnSuccessScript(CharSequence script) {
-                            return "hideMask();"+script;
-                        }
-
-                        public final CharSequence decorateOnFailureScript(CharSequence script) {
-                            return "hideMask();"+script;
-                        }
-
-                    };
+                    try {
+                        return macb.getAjaxCallDecorator();
+                    } catch (Exception e) {
+                        log.error("Failed to get IAjaxCallDecorator: ", e);
+                    }
+                    return null;
                 }
             };
             confirmBtn.add(new Label("confirmLabel", confirm));
@@ -302,8 +291,8 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
                     return hasStatus;
                 }
             });
-            okBtn.add(new Label("okLabel", new ResourceModel("okBtn")));
-            okBtn
+            getOkBtn().add(new Label("okLabel", new ResourceModel("okBtn")));
+            getOkBtn()
             .setOutputMarkupId(true)
             .setOutputMarkupPlaceholderTag(true);
             this.setOutputMarkupId(true);
@@ -316,8 +305,24 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         public boolean isVisible() {
             return true;
         }
+
+        public AjaxFallbackLink<Object> getOkBtn() {
+            return okBtn;
+        }
+
+        public Label getMsgLabel() {
+            return msgLabel;
+        }
+
+        public Label getRemarkLabel() {
+            return remarkLabel;
+        }
     }
     
+    public MessageWindowPanel<T> getMessageWindowPanel() {
+        return messageWindowPanel;
+    }    
+
     public class DisableDefaultConfirmBehavior extends AbstractBehavior implements IHeaderContributor {
 
         private static final long serialVersionUID = 1L;
@@ -326,5 +331,5 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         public void renderHead(IHeaderResponse response) {
             response.renderOnDomReadyJavascript ("Wicket.Window.unloadConfirmation = false");
         }
-    }
+    }    
 }
