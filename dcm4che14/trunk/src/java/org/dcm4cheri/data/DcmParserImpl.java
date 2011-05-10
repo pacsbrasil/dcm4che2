@@ -764,6 +764,11 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     }
     
     private String decodeUID(byte[] data, int rlen1) {
+        if (data.length == 0) {
+            log.warn("Empty Transfer Syntax UID");
+            return "";
+        }
+        
         while (rlen1 >= 0 && data[rlen1] == 0 || data[rlen1] == ' ')
             rlen1--;
         if (rlen1 < 0) {
