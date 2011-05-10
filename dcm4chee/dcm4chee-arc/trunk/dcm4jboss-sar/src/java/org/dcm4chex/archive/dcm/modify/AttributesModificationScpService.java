@@ -68,6 +68,8 @@ public class AttributesModificationScpService extends AbstractScpService {
 
     private int entityNotFoundErrorCode;
 
+    private boolean createPatientOnMoveStudy;
+    
     private AttributesModificationScp scp = new AttributesModificationScp(this);
 
     public final void setUpdateOriginalAttributesSeq(boolean enable) {
@@ -92,6 +94,14 @@ public class AttributesModificationScpService extends AbstractScpService {
 
     public final int getEntityNotFoundErrorCode() {
         return entityNotFoundErrorCode;
+    }
+
+    public boolean isCreatePatientOnMoveStudy() {
+        return createPatientOnMoveStudy;
+    }
+
+    public void setCreatePatientOnMoveStudy(boolean createPatientOnMoveStudy) {
+        this.createPatientOnMoveStudy = createPatientOnMoveStudy;
     }
 
     protected void bindDcmServices(DcmServiceRegistry services) {

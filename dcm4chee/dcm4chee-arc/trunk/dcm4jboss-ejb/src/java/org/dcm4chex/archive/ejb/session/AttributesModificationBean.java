@@ -37,12 +37,16 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.ejb.session;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
+import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
+import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.naming.Context;
@@ -56,12 +60,18 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.MPPSLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.MWLItemLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
+import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
+import org.dcm4chex.archive.exceptions.NonUniquePatientException;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -70,9 +80,12 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  *
  * @ejb.bean name="AttributesModification" type="Stateless" view-type="remote"
  *           jndi-name="ejb/AttributesModification"
+ * @ejb.ejb-ref ejb-name="Patient" view-type="local" ref-name="ejb/Patient"
  * @ejb.ejb-ref ejb-name="Study"  view-type="local" ref-name="ejb/Study"
  * @ejb.ejb-ref ejb-name="Series" view-type="local" ref-name="ejb/Series"
  * @ejb.ejb-ref ejb-name="Instance" view-type="local" ref-name="ejb/Instance"
+ * @ejb.ejb-ref ejb-name="MPPS" view-type="local" ref-name="ejb/MPPS" 
+ * @ejb.ejb-ref ejb-name="MWLItem" view-type="local" ref-name="ejb/MWLItem"
  * 
  * @ejb.transaction-type type="Container"
  * @ejb.transaction type="Required"
@@ -81,22 +94,29 @@ public abstract class AttributesModificationBean implements SessionBean {
 
     private static Logger log = Logger.getLogger(StorageBean.class);
 
+    private PatientLocalHome patHome;
     private StudyLocalHome studyHome;
-
     private SeriesLocalHome seriesHome;
-
     private InstanceLocalHome instHome;
+    private MPPSLocalHome mppsHome;
+    private MWLItemLocalHome mwlHome;
 
     public void setSessionContext(SessionContext ctx) {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
+            patHome = (PatientLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/Patient");
             studyHome = (StudyLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/Study");
             seriesHome = (SeriesLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/Series");
             instHome = (InstanceLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/Instance");
+            mppsHome = (MPPSLocalHome) jndiCtx
+            .lookup("java:comp/env/ejb/MPPS");
+            mwlHome = (MWLItemLocalHome) jndiCtx
+            .lookup("java:comp/env/ejb/MWLItem");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -110,6 +130,7 @@ public abstract class AttributesModificationBean implements SessionBean {
     }
 
     public void unsetSessionContext() {
+        patHome = null;
         studyHome = null;
         seriesHome = null;
         instHome = null;
@@ -203,6 +224,29 @@ public abstract class AttributesModificationBean implements SessionBean {
             updateOriginalAttributesSeq(inst, time, system, reason, origAttrs);
         return true;
     }
+    
+    /**
+     * @throws CreateException 
+     * @throws RemoveException 
+     * @ejb.interface-method
+     */
+    public boolean moveStudyToPatient(Dataset attrs, PatientMatching matching, boolean create) throws FinderException, RemoveException, CreateException {
+        String[] suids = attrs.getStrings(Tags.StudyInstanceUID);
+        if (suids == null || suids.length == 0) {
+            throw new IllegalArgumentException("Missing Study Instance UID for moveStudyToPatient");
+        }
+        StudyLocal study = studyHome.findByStudyIuid(suids[0]);
+        PatientLocal pat = this.getPatient(attrs, matching, create);
+        if (pat != null && !pat.isIdentical(study.getPatient())) {
+            for (int i = 0 ; i < suids.length ; i++) {
+                pat.getMpps().addAll(mppsHome.findByStudyIuid(suids[i]));
+                pat.getMwlItems().addAll(mwlHome.findByStudyIuid(suids[i]));
+                pat.getStudies().add(i==0 ? study : studyHome.findByStudyIuid(suids[i]));
+            }
+            return true;
+        }
+        return false;
+    }
 
     private void updateOriginalAttributesSeq(StudyLocal study,
             Date time, String system, String reason, Dataset origAttrs) {
@@ -231,6 +275,48 @@ public abstract class AttributesModificationBean implements SessionBean {
         origAttrsItem.putCS(Tags.ReasonForTheAttributeModification, reason);
         origAttrsItem.putSQ(Tags.ModifiedAttributesSeq).addItem(origAttrs);
         inst.setAttributes(attrs);
+    }
+    
+    
+    private PatientLocal getPatient(Dataset attrs, PatientMatching matching, boolean create) 
+            throws FinderException, NonUniquePatientException, RemoveException, CreateException {
+        PatientLocal pat;
+        try {
+            return patHome.selectPatient(attrs, matching, true);
+        } catch (ObjectNotFoundException onfe) {
+            if (create) {
+                try {
+                    pat = patHome.create(attrs);
+                    // Check if patient record was also inserted by concurrent thread
+                    try {
+                        return patHome.selectPatient(attrs, matching, true);
+                    } catch (NonUniquePatientException nupe) {
+                        pat.remove();
+                        pat = patHome.selectPatient(attrs, matching, true);
+                    } catch (ObjectNotFoundException onfe2) {
+                        // Just inserted Patient not found because of missing value
+                        // of attribute configured as required for Patient Matching
+                        return pat;
+                    }
+                 } catch (CreateException ce) {
+                    // Check if patient record was inserted by concurrent thread
+                    // with unique index on (pat_id, pat_id_issuer)
+                     try {
+                         pat = patHome.selectPatient(attrs, matching, true);
+                     } catch (ObjectNotFoundException onfe2) {
+                         throw ce;
+                     }
+                }
+            } else {
+                throw onfe;
+            }
+        } catch (NonUniquePatientException nupe) {
+            if (create)
+                return patHome.create(attrs);
+            else
+                throw nupe;
+        }
+        return pat;
     }
 
 }

@@ -79,7 +79,11 @@ public class AttributesModificationScp extends DcmServiceBase {
                     ds.getString(Tags.ModifyingSystem, callingAET);
             String reason = 
                     ds.getString(Tags.ReasonForTheAttributeModification, "COERCE");
-            if (getAttributesModification().modifyAttributes(
+            if ("PATIENT".equals(ds.getString(Tags.QueryRetrieveLevel))) {
+                if (getAttributesModification().moveStudyToPatient(ds, 
+                        service.patientMatching(), service.isCreatePatientOnMoveStudy()))
+                    service.sendAttributesModificationNotification(ds);
+            } else if (getAttributesModification().modifyAttributes(
                     ds, new Date(), modifyingSystem, reason,
                     service.isUpdateOriginalAttributesSeq(),
                     service.getEntityNotFoundErrorCode()))
