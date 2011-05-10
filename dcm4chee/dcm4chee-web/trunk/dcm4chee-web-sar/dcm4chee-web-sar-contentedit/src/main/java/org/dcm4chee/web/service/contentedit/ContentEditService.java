@@ -43,6 +43,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -376,14 +377,36 @@ public class ContentEditService extends ServiceMBeanSupport {
         if (!entityTree.isEmpty()) {
             DicomObject kos = getRejectionNotes(entityTree)[0];
             logInstancesAccessed(kos, InstancesAccessedMessage.UPDATE, true, "Studies moved to patient:");
+            scheduleMoveStudyToPatient(entityTree);
         }
         return entityTree.getAllInstances().size();
+    }
+
+    private void scheduleMoveStudyToPatient(EntityTree entityTree) {
+        try {
+            DicomObject obj = new BasicDicomObject();
+            obj.putString(Tag.QueryRetrieveLevel, VR.CS, "PATIENT");
+            Set<Study> studies = entityTree.getEntityTreeMap().values().iterator().next().keySet();
+            String[] suids = new String[studies.size()];
+            int i = 0;
+            for (Iterator<Study> it = studies.iterator() ; it.hasNext() ; ) {
+                suids[i++] = it.next().getStudyInstanceUID();
+            }
+            studies.iterator().next().getPatient().getAttributes().copyTo(obj);
+            obj.putStrings(Tag.StudyInstanceUID, VR.UI, suids);
+            log.info("Schedule PATIENT level Attributes Modification Notification (Move Study To Patient)");
+            server.invoke(attrModScuServiceName, "scheduleModification", 
+                    new Object[]{obj}, new String[]{DicomObject.class.getName()});
+        } catch (Exception e) {
+            log.error("Scheduling Attributes Modification Notification (Move Study To Patient) failed!", e);
+        }
     }
     public int moveStudyToPatient(String studyIUID, String patId, String issuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
         EntityTree entityTree = lookupDicomEditLocal().moveStudyToPatient(studyIUID, patId, issuer);
         if (!entityTree.isEmpty()) {
             DicomObject kos = getRejectionNotes(entityTree)[0];
             logInstancesAccessed(kos, InstancesAccessedMessage.UPDATE, true, "Studies moved to patient:");
+            scheduleMoveStudyToPatient(entityTree);
         }
         return entityTree.getAllInstances().size();
     }
