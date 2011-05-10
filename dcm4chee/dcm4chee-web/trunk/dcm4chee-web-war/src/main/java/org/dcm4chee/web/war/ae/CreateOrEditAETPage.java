@@ -135,6 +135,7 @@ public class CreateOrEditAETPage extends SecureWebPage {
             }
         });
 
+        form.add(new Label("emulateMPPSTime.label", new ResourceModel("ae.emulateMPPSTime") ) );
         final TextField<String> emulateMPPSTime = 
             new TextField<String>("emulateMPPSTime", new IModel<String>(){
                 private static final long serialVersionUID = 1L;
@@ -151,7 +152,7 @@ public class CreateOrEditAETPage extends SecureWebPage {
             }) {
                 private static final long serialVersionUID = 1L;
                 @Override
-                public boolean isVisible() {
+                public boolean isEnabled() {
                     return panel.getMppsEmulatedAETs().containsKey(ae.getTitle());
                 }
             };
