@@ -928,6 +928,7 @@ public class NetworkApplicationEntity {
                         continue;
                     }
                     if (as.isReadyForDataTransfer()
+                            && as.isAvailableOps()
                             && (as.isRequestor() ? reuseAssocationToAETitle
                                     : reuseAssocationFromAETitle)
                                     .contains(remoteAET))

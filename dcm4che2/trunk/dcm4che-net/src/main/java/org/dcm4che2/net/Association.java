@@ -207,16 +207,24 @@ public class Association implements Runnable {
     public final boolean isReadyForDataTransfer() {
         return state.isReadyForDataTransfer();
     }
+    
+    /** Returns true if there are available operations left to run */
+    public boolean isAvailableOps() {
+        if( maxOpsInvoked==0 ) return true;
+        synchronized(rspHandlerForMsgId) {
+            return rspHandlerForMsgId.size() < maxOpsInvoked;
+        }
+    }
 
     private boolean isReadyForDataReceive() {
         return state.isReadyForDataReceive();
     }
 
     void setState(State state) {
-        if (this.state == state)
-            return;
-
         synchronized (this) {
+            if (this.state == state)
+                return;
+
             log.debug("{} enter state: {}", this, state);
             this.state = state;
             notifyAll();
