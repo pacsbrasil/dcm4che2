@@ -248,10 +248,20 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
                             e);
                     return null;
                 }
+                checkUID(ds, Tags.SOPInstanceUID, "SOP", fileInfo.sopIUID);
+                checkUID(ds, Tags.SeriesInstanceUID, "Series", fileInfo.seriesIUID);
+                checkUID(ds, Tags.StudyInstanceUID, "Study", fileInfo.studyIUID);
                 return ds;
             }
         }
         return null;
+    }
+
+    private void checkUID(Dataset ds, int tag, String name, String uid) {
+        if (!uid.equals(ds.getString(tag))) {
+            log.info("Different "+name+" Instance UIDs! File:"+ds.getString(tag)+"\n DB:"+uid);
+            ds.putUI(tag, uid);
+        }
     }
 
     public String updateMatchingSeriesShowElapsedTime() throws Exception {
