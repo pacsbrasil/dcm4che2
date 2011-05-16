@@ -145,7 +145,7 @@ public class ReportPanel extends Panel {
 
             ReportTreeTable reportTreeTable = new ReportTreeTable("report-tree-table", 
                     new DefaultTreeModel(rootNode), new IColumn[] {
-                        new PropertyTreeColumn(new ColumnLocation(Alignment.LEFT, 45, Unit.PERCENT), 
+                        new PropertyTreeColumn(new ColumnLocation(Alignment.LEFT, 44, Unit.PERCENT), 
                                 new ResourceModel("dashboard.report.table.title_title").wrapOnAssignment(this).getObject(),  
                                 "userObject.title")
                         ,
@@ -209,7 +209,7 @@ public class ReportPanel extends Panel {
                             ((((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroupUuid() == null) ? 
                                     getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT_FOLDER) 
                                     : getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT))
-                                    + "')"
+                                    +"')"
                     );                    
                     tag.put("title", ((ReportModel) ((DefaultMutableTreeNode) node).getUserObject()).getStatement());
                 }

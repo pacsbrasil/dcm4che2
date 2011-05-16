@@ -194,7 +194,7 @@ public class FileSystemPanel extends Panel {
             FileSystemTreeTable fileSystemTreeTable = new FileSystemTreeTable("filesystem-tree-table", 
                     new DefaultTreeModel(rootNode), new IColumn[] {
                 new PropertyTreeColumn(new ColumnLocation(
-                        Alignment.LEFT, 17, Unit.PERCENT), 
+                        Alignment.LEFT, 16, Unit.PERCENT), 
                         new ResourceModel(
                                 "dashboard.filesystem.table.column.name").wrapOnAssignment(this).getObject(), 
                                 "userObject.directoryPath"),

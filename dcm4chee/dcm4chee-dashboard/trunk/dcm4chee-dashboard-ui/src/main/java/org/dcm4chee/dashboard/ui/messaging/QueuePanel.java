@@ -142,7 +142,7 @@ public class QueuePanel extends Panel {
                 QueueTreeTable queueTreeTable = new QueueTreeTable("queue-tree-table", 
                        new DefaultTreeModel(rootNode), new IColumn[] {
                    new PropertyTreeColumn(new ColumnLocation(
-                           Alignment.LEFT, 40, Unit.PERCENT), 
+                           Alignment.LEFT, 39, Unit.PERCENT), 
                            new ResourceModel(
                                    "dashboard.queue.table.column.name").wrapOnAssignment(this).getObject(), 
                                    "userObject.jndiName"),
