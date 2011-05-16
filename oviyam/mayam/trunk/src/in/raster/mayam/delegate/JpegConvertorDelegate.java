@@ -285,7 +285,7 @@ public class JpegConvertorDelegate {
         }
         for (int i = 0; i < nFrames; i++) {
             outputJpegFile = new File(outputPath, outputFileName + i + ".jpg");
-            if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+            if (dataset.getString(Tags.SOPClassUID)!=null&&dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
                 //This condition used to check whether the input file is a encapsulated pdf dicom file
                 //following lines of codes are used to create the jpeg image from the encapsulated pdf
                 int k = 1;

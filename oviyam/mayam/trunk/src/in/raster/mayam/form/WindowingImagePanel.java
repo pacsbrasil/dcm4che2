@@ -349,13 +349,13 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
     }
 
     private void nextofEncapsulatedDocument() {
-        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+        if (dataset.getString(Tags.SOPClassUID)!=null&&dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
             forceGotoPage(curpage + 1);
         }
     }
 
     private void previousofEncapsulatedDocument() {
-        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+        if (dataset.getString(Tags.SOPClassUID)!=null&&dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
             forceGotoPage(curpage - 1);
         }
     }
@@ -414,7 +414,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
                     Graphics2D g2 = image.createGraphics();
                     g2.drawImage(loadedImage, 0, 0, null);
                 }
-                if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+                if (dataset.getString(Tags.SOPClassUID)!=null&&dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
                     readDicom(selFile);
                 }
                 repaint();
@@ -535,7 +535,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             originalWidth = this.getSize().width;
             firstTime = false;
         }
-        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+        if (dataset.getString(Tags.SOPClassUID)!=null&&dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
             calculateResolutionForPdfDicom(loadedImage.getWidth(null), loadedImage.getHeight(null));
             this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(curpage);
             this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(totalInstance));
@@ -832,7 +832,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
             currentInstanceNo = 0;
         }
-        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+        if (dataset.getString(Tags.SOPClassUID)!=null&&dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
             totalInstance = curFile.getNumPages();
             currentInstanceNo = 0;
         }

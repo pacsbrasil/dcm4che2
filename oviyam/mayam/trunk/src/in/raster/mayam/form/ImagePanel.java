@@ -518,7 +518,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                     Graphics2D g2 = image.createGraphics();
                     g2.drawImage(loadedImage, 0, 0, null);
                 }
-                if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+                if (dataset.getString(Tags.SOPClassUID)!=null&&dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
                     readDicom(selFile);
                 }
                 repaint();
@@ -1135,7 +1135,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 }
             }
         }
-        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+        if (dataset.getString(Tags.SOPClassUID)!=null&&dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
             calculateResolutionForPdfDicom(loadedImage.getWidth(null), loadedImage.getHeight(null));
             this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(curpage);
             this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(totalInstance));
@@ -1600,7 +1600,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             totalInstance = ApplicationContext.databaseRef.getSeriesLevelInstance(this.studyUID, this.seriesUID);
             currentInstanceNo = 0;
         }
-        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+        if (dataset.getString(Tags.SOPClassUID)!=null&&dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
             totalInstance = curFile.getNumPages();
             currentInstanceNo = 0;
         }
@@ -1619,13 +1619,13 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     }
 
     private void nextofEncapsulatedDocument() {
-        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+        if (dataset.getString(Tags.SOPClassUID)!=null&&dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
             forceGotoPage(curpage + 1);
         }
     }
 
     private void previousofEncapsulatedDocument() {
-        if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+        if (dataset.getString(Tags.SOPClassUID)!=null&&dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
             forceGotoPage(curpage - 1);
         }
     }
