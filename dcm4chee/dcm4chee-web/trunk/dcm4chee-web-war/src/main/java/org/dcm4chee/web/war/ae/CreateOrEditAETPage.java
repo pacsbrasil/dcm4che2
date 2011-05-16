@@ -162,6 +162,8 @@ public class CreateOrEditAETPage extends SecureWebPage {
                 .setOutputMarkupPlaceholderTag(true)
                 .add(new TooltipBehaviour("ae."))
         );
+
+        final String originalTime = panel.getMppsEmulatedAETs().get(ae.getTitle());
         form.add(new Label("emulateMPPS.label", new ResourceModel("ae.emulateMPPS") ) );
         form.add(new AjaxCheckBox("emulateMPPS", new IModel<Boolean>() {
             private static final long serialVersionUID = 1L;
@@ -174,7 +176,7 @@ public class CreateOrEditAETPage extends SecureWebPage {
 
             public void setObject(Boolean object) {
                 if (object) {
-                    panel.getMppsEmulatedAETs().put(ae.getTitle(), null);
+                    panel.getMppsEmulatedAETs().put(ae.getTitle(), originalTime);
                 } else {
                     panel.getMppsEmulatedAETs().remove(ae.getTitle());
                 }
