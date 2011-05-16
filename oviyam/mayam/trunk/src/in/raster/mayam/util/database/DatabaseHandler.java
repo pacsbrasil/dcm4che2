@@ -1148,7 +1148,7 @@ public class DatabaseHandler {
                 String multiframe = "false";
                 int totalFrame = 0;
                 boolean encapsulatedPDF = false;
-                if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+                if (dataset.getString(Tags.SOPClassUID)!=null && dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
                     encapsulatedPDF = true;
                 }
                 if (dataset.getString(Tags.NumberOfFrames) != null && Integer.parseInt(dataset.getString(Tags.NumberOfFrames)) > 1) {
@@ -1176,7 +1176,7 @@ public class DatabaseHandler {
                 String multiframe = "false";
                 int totalFrame = 0;
                 boolean encapsulatedPDF = false;
-                if (dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
+                if (dataset.getString(Tags.SOPClassUID)!=null && dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
                     encapsulatedPDF = true;
                 }
                 if (dataset.getString(Tags.NumberOfFrames) != null && Integer.parseInt(dataset.getString(Tags.NumberOfFrames)) > 1) {
