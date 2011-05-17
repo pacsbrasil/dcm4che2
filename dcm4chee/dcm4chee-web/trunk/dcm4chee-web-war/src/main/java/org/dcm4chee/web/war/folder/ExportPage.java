@@ -47,14 +47,17 @@ import java.util.List;
 
 import org.apache.wicket.MetaDataKey;
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
+import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.link.PopupCloseLink.ClosePopupPage;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
@@ -76,6 +79,9 @@ import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.model.ProgressProvider;
+import org.dcm4chee.web.common.secure.SecureSession;
+import org.dcm4chee.web.common.util.CloseRequestSupport;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.StudyPermissionHelper;
@@ -94,7 +100,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Jan 11, 2010
  */
-public class ExportPage extends SecureWebPage {
+public class ExportPage extends SecureWebPage implements CloseRequestSupport {
     
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(ExportPage.class, "export-style.css");
@@ -112,6 +118,8 @@ public class ExportPage extends SecureWebPage {
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss,SSS");
     private AE destinationAET;
     private boolean closeOnFinished;
+    private boolean closeRequest;
+    private boolean isClosed;
     private static int id_count = 0;
     private static int id_req_count = 0;
 
@@ -153,7 +161,7 @@ public class ExportPage extends SecureWebPage {
             getSession().setMetaData(EXPORT_RESULTS, results);
         }
         resultId = id_count++;
-        ExportResult result = new ExportResult(resultId);
+        ExportResult result = new ExportResult(resultId, getPage().getNumericId());
         results.put(resultId, result);
         destinationAET = getSession().getMetaData(LAST_DESTINATION_AET_ATTRIBUTE);
         add(CSSPackageResource.getHeaderContribution(ExportPage.class, "folder-style.css"));
@@ -235,30 +243,29 @@ public class ExportPage extends SecureWebPage {
             }
         }.setOutputMarkupId(true));
         
-        form.add( new Button("export", new ResourceModel("export.exportBtn.text")){
+        form.add( new AjaxButton("export", new ResourceModel("export.exportBtn.text")){
 
             private static final long serialVersionUID = 1L;
             
             @Override
-            public void onSubmit() {
-                getSession().setMetaData(LAST_DESTINATION_AET_ATTRIBUTE, destinationAET);
-                exportSelected();
-            }
-            @Override
             public boolean isEnabled() {
                 return exportInfo.hasSelection() && isExportInactive();
             }
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                getSession().setMetaData(LAST_DESTINATION_AET_ATTRIBUTE, destinationAET);
+                exportSelected();
+            }
         }.setOutputMarkupId(true));
-        form.add(new Button("close", new ResourceModel("export.closeBtn.text")){
+        form.add(new AjaxButton("close", new ResourceModel("export.closeBtn.text")){
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onSubmit() {
-                getExportResults().remove(resultId);
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                removeProgressProvider(getExportResults().remove(resultId), true);
                 getPage().getPageMap().remove(ExportPage.this);
-                // Web page closes window using javascript code in PopupCloseLink$1.html
-                setResponsePage(ClosePopupPage.class);
+                target.appendJavascript("javascript:self.close()");
             }
         });
         form.add(new AjaxCheckBox("closeOnFinished", new IModel<Boolean>(){
@@ -290,22 +297,32 @@ public class ExportPage extends SecureWebPage {
 
             @Override
             protected void onTimer(AjaxRequestTarget target) {
-                ExportResult result = getExportResults().get(resultId);
-                if (result != null && !result.isRendered) {
-                    target.addComponent(form.get("exportResult"));
-                    if (result.nrOfMoverequests == 0) {
-                        target.addComponent(form.get("export"));
-                        target.addComponent(form.get("destinationAETs"));
-                        if (  closeOnFinished && result.failedRequests.isEmpty() ) {
-                            getExportResults().remove(resultId);
-                            getPage().getPageMap().remove(ExportPage.this);
-                            target.appendJavascript("javascript:self.close()");
+                if (closeRequest) {
+                    removeProgressProvider(getExportResults().remove(resultId), true);
+                    getPage().getPageMap().remove(ExportPage.this);
+                    // Web page closes window using javascript code in PopupCloseLink$1.html
+                    //setResponsePage(ClosePopupPage.class);
+                    target.appendJavascript("javascript:self.close()");
+                    isClosed = true;
+                } else {
+                    ExportResult result = getExportResults().get(resultId);
+                    if (result != null && !result.isRendered) {
+                        target.addComponent(form.get("exportResult"));
+                        if (result.nrOfMoverequests == 0) {
+                            target.addComponent(form.get("export"));
+                            target.addComponent(form.get("destinationAETs"));
+                            if (  closeOnFinished && result.failedRequests.isEmpty() ) {
+                                removeProgressProvider(getExportResults().remove(resultId), false);
+                                getPage().getPageMap().remove(ExportPage.this);
+                                target.appendJavascript("javascript:self.close()");
+                            }
                         }
+                        result.isRendered = true;
                     }
-                    result.isRendered = true;
                 }
             }
         });
+        add(JavascriptPackageResource.getHeaderContribution(ExportPage.class, "popupcloser.js"));
     }
 
     private void initDestinationAETs() {
@@ -325,7 +342,7 @@ public class ExportPage extends SecureWebPage {
     private void exportSelected() {
         ExportResult result = getExportResults().get(resultId);
         if ( result == null ) {
-            result = new ExportResult(resultId);
+            result = new ExportResult(resultId, getPage().getNumericId());
             getExportResults().put(resultId, result);
         } else {
             getExportResults().get(resultId).clear();
@@ -366,6 +383,26 @@ public class ExportPage extends SecureWebPage {
     private boolean isExportInactive() {
         ExportResult r = getExportResults().get(resultId);
         return r == null || r.nrOfMoverequests==0;
+    }
+    
+    private boolean removeProgressProvider(ProgressProvider p, boolean onlyInactive) {
+        if (p == null || (onlyInactive && p.inProgress()))
+            return false;
+        Session s = getSession();
+        if ( s instanceof SecureSession) {
+            return ((SecureSession) s).removeProgressProvider(p);
+        }
+        return false;
+    }
+
+    public void setCloseRequest() {
+        closeRequest = true;
+    }
+    public boolean isCloseRequested() {
+        return closeRequest;
+    }
+    public boolean isClosed() {
+        return isClosed;
     }
 
     private class ExportInfo implements Serializable {
@@ -540,18 +577,27 @@ public class ExportPage extends SecureWebPage {
                 requests.add( new MoveRequest().setInstanceMoveRequest(null, studyIUID, seriesIUID, toArray(uids)));
             }
         }
-        
     }
     
-    private class ExportResult implements Serializable {
+    private class ExportResult implements ProgressProvider, Serializable {
         private static final long serialVersionUID = 1L;
         private long start, end;
         private List<ExportResponseHandler> moveRequests = new ArrayList<ExportResponseHandler>(); 
         private List<ExportResponseHandler> failedRequests = new ArrayList<ExportResponseHandler>();
         private int nrOfMoverequests;
         private boolean isRendered = true;
+        private int pageID;
         
-        public ExportResult(int id) {
+        public ExportResult(int id, int pageID) {
+            this.pageID = pageID;
+            Session s = getSession();
+            if ( s instanceof SecureSession) {
+                ((SecureSession) s).addProgressProvider(this);
+            }
+        }
+        
+        public String getName() {
+            return "DICOM Export";
         }
 
         public int[] calcTotal() {
@@ -614,6 +660,49 @@ public class ExportPage extends SecureWebPage {
                 }
                 return sb.toString();
             }
+        }
+
+        public boolean inProgress() {
+            return moveRequests.size() > 0 && nrOfMoverequests > 0;
+        }
+
+        public int getStatus() {
+            return moveRequests.size() == 0 ? ProgressProvider.NOT_STARTED :
+                nrOfMoverequests == 0 ? ProgressProvider.FINISHED : ProgressProvider.BUSY;
+        }
+
+        public long getTotal() {
+            return moveRequests.size();
+        }
+
+        public long getSuccessful() {
+            return calcTotal()[0];
+        }
+
+        public long getWarnings() {
+            return calcTotal()[1];
+        }
+
+        public long getFailures() {
+            return calcTotal()[2];
+        }
+
+        public long getRemaining() {
+            return calcTotal()[3];
+        }
+
+        public long getStartTimeInMillis() {
+            return start;
+        }
+
+        public long getEndTimeInMillis() {
+            return end;
+        }
+        public Integer getPopupPageId() {
+            return pageID;
+        }
+        public String getPageClassName() {
+            return ExportPage.class.getName();
         }
     }
 
