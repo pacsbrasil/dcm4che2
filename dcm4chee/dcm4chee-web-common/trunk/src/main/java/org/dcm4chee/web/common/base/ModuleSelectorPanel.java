@@ -84,6 +84,8 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
     public boolean showLogout = true;
     
     private static Logger log = LoggerFactory.getLogger(ModuleSelectorPanel.class);
+    
+    private static final long LAST_REFRESHED_TIMEOUT = 10000l;
 
     ConfirmationWindow<List<ProgressProvider>> confirmLogout = new ConfirmationWindow<List<ProgressProvider>>("confirmLogout") {
 
@@ -239,7 +241,9 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
                     if (pageID != null) {
                         Page p = ModuleSelectorPanel.this.getSession().getPage(pageID, 0);
                         if (p != null && (p instanceof CloseRequestSupport) && !((CloseRequestSupport)p).isClosed()) {
-                            return true;
+                            //check refresh timeout in case popup is closed without removing page in pagemap.(e.g. window close button)
+                            if (System.currentTimeMillis() - providers.get(i).getLastRefreshedTimeInMillis() > LAST_REFRESHED_TIMEOUT)
+                                return true;
                         }
                     }
                 }

@@ -85,5 +85,8 @@ public interface ProgressProvider extends Serializable {
      * @return
      */
     String getPageClassName();
+    
+    void updateRefreshed();
+    long getLastRefreshedTimeInMillis();
 }
 
