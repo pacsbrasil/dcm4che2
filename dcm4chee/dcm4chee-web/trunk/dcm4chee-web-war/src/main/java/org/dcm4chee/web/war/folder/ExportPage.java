@@ -300,12 +300,11 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                 if (closeRequest) {
                     removeProgressProvider(getExportResults().remove(resultId), true);
                     getPage().getPageMap().remove(ExportPage.this);
-                    // Web page closes window using javascript code in PopupCloseLink$1.html
-                    //setResponsePage(ClosePopupPage.class);
                     target.appendJavascript("javascript:self.close()");
                     isClosed = true;
                 } else {
                     ExportResult result = getExportResults().get(resultId);
+                    result.updateRefreshed();
                     if (result != null && !result.isRendered) {
                         target.addComponent(form.get("exportResult"));
                         if (result.nrOfMoverequests == 0) {
@@ -581,7 +580,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
     
     private class ExportResult implements ProgressProvider, Serializable {
         private static final long serialVersionUID = 1L;
-        private long start, end;
+        private long start, end, lastRefreshed;
         private List<ExportResponseHandler> moveRequests = new ArrayList<ExportResponseHandler>(); 
         private List<ExportResponseHandler> failedRequests = new ArrayList<ExportResponseHandler>();
         private int nrOfMoverequests;
@@ -594,6 +593,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             if ( s instanceof SecureSession) {
                 ((SecureSession) s).addProgressProvider(this);
             }
+            lastRefreshed = System.currentTimeMillis();
         }
         
         public String getName() {
@@ -703,6 +703,14 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         }
         public String getPageClassName() {
             return ExportPage.class.getName();
+        }
+
+        public void updateRefreshed() {
+            lastRefreshed = System.currentTimeMillis();
+        }
+        public long getLastRefreshedTimeInMillis() {
+            return lastRefreshed;
+
         }
     }
 
