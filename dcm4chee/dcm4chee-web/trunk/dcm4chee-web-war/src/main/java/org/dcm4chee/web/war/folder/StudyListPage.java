@@ -1862,6 +1862,7 @@ public class StudyListPage extends Panel {
                     @Override
                     public void onClose(AjaxRequestTarget target) {
                         updateStudyPermissions();
+                        queryStudies(); 
 
                         modalWindow.getPage().setOutputMarkupId(true);
                         target.addComponent(modalWindow.getPage());
