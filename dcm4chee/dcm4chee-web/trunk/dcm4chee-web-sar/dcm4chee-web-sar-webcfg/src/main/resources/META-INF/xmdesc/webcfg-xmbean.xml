@@ -772,9 +772,4 @@
       <description>Synchronize the role table with the assigned dicom roles of the dicom context</description>
       <name>updateDicomRoles</name>
    </operation>
-   <operation impact="ACTION">
-      <description>Get List of role types</description>
-      <name>getRoleTypeList</name>
-      <return-type>java.util.List</return-type>
-   </operation>
 </mbean>
