@@ -38,6 +38,7 @@
 
 package org.dcm4chee.web.common.base;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -62,6 +63,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebRequest;
 import org.apache.wicket.protocol.http.WebResponse;
+import org.apache.wicket.security.swarm.SwarmWebApplication;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.model.ProgressProvider;
 import org.dcm4chee.web.common.secure.SecureAjaxTabbedPanel;
@@ -69,6 +71,10 @@ import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.util.CloseRequestSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -122,6 +128,31 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
         }
         
         add(confirmLogout);
+
+        try {
+            InputStream is = ((SwarmWebApplication) getApplication()).getServletContext().getResourceAsStream("/WEB-INF/web.xml");
+            XMLReader parser = org.xml.sax.helpers.XMLReaderFactory.createXMLReader();
+            
+            DefaultHandler dh = new DefaultHandler() {
+                
+                private StringBuffer current;
+    
+                @Override
+                public void characters (char ch[], int start, int length) throws SAXException {
+                    current = new StringBuffer().append(ch, start, length);
+                }
+    
+                @Override
+                public void endElement (String uri, String localName, String qName) throws SAXException {
+                    if(qName.equals("auth-method"))
+                        if (current.toString().equals("BASIC")) 
+                            showLogout = false;
+                }
+            };
+            parser.setContentHandler(dh);
+            parser.parse(new InputSource(is));
+        } catch (Exception ignore) {
+        }
 
         add(new AjaxFallbackLink<Object>("logout") {
             
