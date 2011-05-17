@@ -38,6 +38,8 @@
 
 package org.dcm4chee.web.common.secure;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.Cookie;
@@ -47,6 +49,7 @@ import org.apache.wicket.RequestCycle;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.apache.wicket.security.WaspApplication;
 import org.apache.wicket.security.WaspSession;
+import org.dcm4chee.web.common.model.ProgressProvider;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -59,6 +62,7 @@ public class SecureSession extends WaspSession {
     
     private String username;
     private Map<String, String> allSwarmPrincipals;
+    private List<ProgressProvider> progressProviders = new ArrayList<ProgressProvider>();
     private boolean manageUsers;
     
     public SecureSession(WaspApplication application, Request request) {
@@ -94,5 +98,16 @@ public class SecureSession extends WaspSession {
 
     public boolean getManageUsers() {
         return manageUsers;
+    }
+
+    public List<ProgressProvider> getProgressProviders() {
+        return progressProviders;
+    }
+
+    public boolean addProgressProvider(ProgressProvider provider) {
+        return progressProviders.add(provider);
+    }
+    public boolean removeProgressProvider(ProgressProvider provider) {
+        return progressProviders.remove(provider);
     }
 }

@@ -50,6 +50,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
 import org.slf4j.Logger;
@@ -212,12 +213,17 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    onConfirmation(target, userObject);
-                    if (hasStatus) {
+                    try {
+                        onConfirmation(target, userObject);
+                        if (hasStatus) {
+                            target.addComponent(MessageWindowPanel.this);
+                        } else {
+                            msg = null;
+                            close(target);
+                        }
+                    } catch (Exception x) {
+                        messageWindowPanel.msg =new Model<String>(x.getMessage());
                         target.addComponent(MessageWindowPanel.this);
-                    } else {
-                        msg = null;
-                        close(target);
                     }
                 }
                 

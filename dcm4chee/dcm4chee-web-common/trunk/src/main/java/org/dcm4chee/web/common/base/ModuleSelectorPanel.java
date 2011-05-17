@@ -44,8 +44,10 @@ import java.util.Locale;
 
 import javax.servlet.http.Cookie;
 
+import org.apache.wicket.Page;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
@@ -60,7 +62,13 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebRequest;
 import org.apache.wicket.protocol.http.WebResponse;
+import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
+import org.dcm4chee.web.common.model.ProgressProvider;
 import org.dcm4chee.web.common.secure.SecureAjaxTabbedPanel;
+import org.dcm4chee.web.common.secure.SecureSession;
+import org.dcm4chee.web.common.util.CloseRequestSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -74,10 +82,27 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
     private static final long serialVersionUID = 1L;
     
     public boolean showLogout = true;
+    
+    private static Logger log = LoggerFactory.getLogger(ModuleSelectorPanel.class);
+
+    ConfirmationWindow<List<ProgressProvider>> confirmLogout = new ConfirmationWindow<List<ProgressProvider>>("confirmLogout") {
+
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void onConfirmation(AjaxRequestTarget target,
+                List<ProgressProvider> providers) {
+            if (closePopups(providers)) {
+                throw new IllegalStateException(ModuleSelectorPanel.this.getString("logout.logout"));
+            } else if (isPopupOpen(providers)) {
+                throw new IllegalStateException(ModuleSelectorPanel.this.getString("logout.waiting"));
+            }
+            doLogout();
+        }
+    };
 
     public ModuleSelectorPanel(String id) {
         super(id);
-
         boolean found = false;
         Cookie[] cs = ((WebRequest) RequestCycle.get().getRequest()).getHttpServletRequest().getCookies();
         if (cs != null)
@@ -93,6 +118,8 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
             ((WebResponse) RequestCycle.get().getResponse()).addCookie(new Cookie("WEB3LOCALE", "en"));
             getSession().setLocale(new Locale("en"));
         }
+        
+        add(confirmLogout);
 
         add(new AjaxFallbackLink<Object>("logout") {
             
@@ -100,8 +127,17 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
             
             @Override
             public void onClick(final AjaxRequestTarget target) {
-                getSession().invalidate();
-                setResponsePage(getApplication().getHomePage());
+                List<ProgressProvider> providers = null;
+                Session s = getSession();
+                if (s instanceof SecureSession) {
+                    providers = ((SecureSession) s).getProgressProviders();
+                    if (providers.size() > 0) {
+                        confirmLogout.confirm(target, 
+                                new ResourceModel("logout.confirmPendingTasks").wrapOnAssignment(this), providers);
+                        return;
+                    }
+                }
+                doLogout();
             }
             @Override
             public boolean isVisible() {
@@ -169,5 +205,51 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
     public ModuleSelectorPanel setShowLogoutLink(boolean show) {
         showLogout = show;
         return this;
+    }
+    private boolean closePopups(List<ProgressProvider> providers) {
+        boolean b = false;
+        if (providers != null) {
+            synchronized (providers) {
+                Integer pageID;
+                for (int i = 0, len = providers.size() ; i < len ; i++) {
+                    pageID = providers.get(i).getPopupPageId();
+                    if (pageID != null) {
+                        Page p = ModuleSelectorPanel.this.getSession().getPage(pageID, 0);
+                        log.info("Found open popup page:"+p);
+                        if (p != null && (p instanceof CloseRequestSupport)) {
+                            log.debug("Set close request for popup page:"+p);
+                            if (!((CloseRequestSupport) p).isCloseRequested()) {
+                                ((CloseRequestSupport) p).setCloseRequest();
+                                b = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return b;
+    }
+    
+    private boolean isPopupOpen(List<ProgressProvider> providers) {
+        if (providers != null) {
+            synchronized (providers) {
+                Integer pageID;
+                for (int i = 0, len = providers.size() ; i < len ; i++) {
+                    pageID = providers.get(i).getPopupPageId();
+                    if (pageID != null) {
+                        Page p = ModuleSelectorPanel.this.getSession().getPage(pageID, 0);
+                        if (p != null && (p instanceof CloseRequestSupport) && !((CloseRequestSupport)p).isClosed()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    private void doLogout() {
+        getSession().invalidate();
+        setResponsePage(getApplication().getHomePage());
     }
 }
