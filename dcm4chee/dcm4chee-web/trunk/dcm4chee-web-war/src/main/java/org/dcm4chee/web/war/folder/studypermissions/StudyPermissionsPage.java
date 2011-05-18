@@ -73,6 +73,7 @@ import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.usr.model.Role;
+import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
@@ -242,7 +243,8 @@ public class StudyPermissionsPage extends SecureWebPage {
                     .add(new Label("rolename", role.getRolename()))
             );
 
-            rowParent.add((new ModalWindowLink("remove-dicom-role-link", confirmationWindow, 400, 300) {
+            int[] winSize = UsrCfgDelegate.getInstance().getWindowSize("confirmation");
+            rowParent.add((new ModalWindowLink("remove-dicom-role-link", confirmationWindow, winSize[0], winSize[1]) {
 
                 private static final long serialVersionUID = 1L;
 
