@@ -38,7 +38,11 @@
 
 package org.dcm4chee.dashboard.ui.report;
 
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.management.AttributeNotFoundException;
@@ -61,6 +65,7 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
@@ -71,6 +76,7 @@ import org.dcm4chee.dashboard.ui.report.display.DynamicDisplayPage;
 import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.markup.SimpleDateTimeField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -146,23 +152,55 @@ public class ConfigureReportPage extends SecureWebPage {
             add(variableRows);
 
             for (final String parameterName : DatabaseUtils.getParameterSet(report.getStatement())) {
+                
+                WebMarkupContainer parameterRow = new WebMarkupContainer(parameterName);
+                parameterRow.add(new Label("variable-name", parameterName.toString()));
+                variableRows.add(parameterRow);                        
 
-                TextField<String> textField;
-                variableRows.add(
-                        (((new WebMarkupContainer(parameterName)
-                        .add(new Label("variable-name", parameterName.toString())))
-                        .add((textField = new TextField<String>("variable-value", new Model<String>() {
-
-                            private static final long serialVersionUID = 1L;
-
-                            @Override
-                            public void setObject(String value) {
-                                parameters.put(parameterName, value != null ? value : "");
-                            }                            
-                        })))))
-                );
-                if (parameterName.toString().startsWith("date"))
-                    textField.add(new DatePicker());
+                if (parameterName.toString().startsWith("date")) {
+                    parameterRow
+                            .add(new SimpleDateTimeField("date-variable-value", new IModel<Date>() {
+        
+                                private static final long serialVersionUID = 1L;
+        
+                                @Override
+                                public void setObject(Date value) {
+                                    parameters.put(parameterName, value != null ? 
+                                            DateFormat.getDateTimeInstance(
+                                            DateFormat.SHORT,
+                                            DateFormat.SHORT, 
+                                            getSession().getLocale())
+                                            .format(value) 
+                                            : "");
+                                }
+        
+                                @Override
+                                public Date getObject() {
+                                    return null;
+                                }
+        
+                                @Override
+                                public void detach() {
+                                }
+                            })
+                    );
+                    parameterRow.add(new TextField<String>("variable-value").setVisible(false));
+                    
+                } else {
+                    parameterRow
+                            .add((new TextField<String>("variable-value", new Model<String>() {
+    
+                                private static final long serialVersionUID = 1L;
+    
+                                @Override
+                                public void setObject(String value) {
+                                    parameters.put(parameterName, value != null ? value : "");
+                                }                            
+                            }))
+                            .setVisible(!parameterName.toString().startsWith("date"))
+                    );
+                    parameterRow.add(new Label("date-variable-value").setVisible(false));
+                }
             }
 
             add(new AjaxFallbackButton("form-submit", ConfigureReportForm.this) {
