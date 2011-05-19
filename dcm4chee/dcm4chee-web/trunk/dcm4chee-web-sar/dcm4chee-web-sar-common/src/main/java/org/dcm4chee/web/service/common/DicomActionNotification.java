@@ -39,6 +39,7 @@
 package org.dcm4chee.web.service.common;
 
 import javax.management.Notification;
+import javax.management.NotificationFilter;
 
 import org.dcm4che2.data.DicomObject;
 
@@ -53,6 +54,16 @@ public class DicomActionNotification extends Notification {
     private static final long serialVersionUID = 0L;
 
     private String action, level;
+ 
+    public static final NotificationFilter NOTIF_FILTER = new NotificationFilter() {          
+        private static final long serialVersionUID = 7625954422409724162L;
+
+        public boolean isNotificationEnabled(Notification notif) {
+            return NOTIFICATION_TYPE.equals(notif.getType());
+        }
+    };
+    
+    public static final String UPDATE = "UPDATE";
     
     public DicomActionNotification(Object src, DicomObject obj, String action, String level, long sqNr) {
         super(NOTIFICATION_TYPE, src, sqNr);

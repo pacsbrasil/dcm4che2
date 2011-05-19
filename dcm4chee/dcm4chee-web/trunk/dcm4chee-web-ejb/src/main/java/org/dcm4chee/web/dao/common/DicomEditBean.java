@@ -53,6 +53,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -62,11 +63,8 @@ import org.dcm4chee.archive.common.PrivateTag;
 import org.dcm4chee.archive.common.StorageStatus;
 import org.dcm4chee.archive.entity.BaseEntity;
 import org.dcm4chee.archive.entity.File;
-import org.dcm4chee.archive.entity.GPPPS;
-import org.dcm4chee.archive.entity.GPSPS;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
-import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.PrivateFile;
 import org.dcm4chee.archive.entity.PrivateInstance;
@@ -550,7 +548,6 @@ public class DicomEditBean implements DicomEditLocal {
         return study;
     }
     
-    @SuppressWarnings("deprecation")
     public Study createStudy(DicomObject studyAttrs, long patPk) {
         Patient patient = em.find(Patient.class, patPk);
         Study study = new Study();
@@ -558,7 +555,6 @@ public class DicomEditBean implements DicomEditLocal {
         study.setAvailability(Availability.ONLINE);
         study.setNumberOfStudyRelatedInstances(0);
         study.setNumberOfStudyRelatedSeries(0);
-        study.setStudyStatus(0);
         study.setPatient(patient);
         em.persist(study);
         return study;
@@ -567,6 +563,60 @@ public class DicomEditBean implements DicomEditLocal {
     public void removeStudy(long studyPk) {
         Study study = em.find(Study.class, studyPk);
         em.remove(study);
+    }
+    
+    public DicomObject getIanForForwardModifiedObject(DicomObject obj, String level) {
+        Instance instance = null;
+        if ("IMAGE".equals(level)) {
+            instance = findFirstOnlineInstance("SELECT OBJECT(i) FROM Instance i WHERE sopInstanceUID = :iuid", 
+                    obj.getString(Tag.SOPInstanceUID));
+        } else if ("SERIES".equals(level)) {
+            instance = findFirstOnlineInstance("SELECT OBJECT(i) FROM Instance i WHERE i.series.seriesInstanceUID = :iuid", 
+                    obj.getString(Tag.SeriesInstanceUID));
+        } else if ("STUDY".equals(level)) {
+            instance = findFirstOnlineInstance("SELECT OBJECT(i) FROM Instance i WHERE i.series.study.studyInstanceUID = :iuid", 
+                    obj.getString(Tag.StudyInstanceUID));
+        } else {
+            throw new IllegalArgumentException("Illegal QR Level! (must be STUDY, SERIES or IMAGE):"+level);
+        }
+        if (instance == null)
+            return null;
+        Series series = instance.getSeries();
+        Study study = series.getStudy();
+        Patient pat = study.getPatient();
+        DicomObject ian = new BasicDicomObject();
+        ian.putString(Tag.StudyInstanceUID, VR.UI, study.getStudyInstanceUID());
+        ian.putString(Tag.AccessionNumber, VR.SH, study.getAccessionNumber());
+        ian.putString(Tag.PatientID, VR.LO, pat.getPatientID());
+        ian.putString(Tag.IssuerOfPatientID, VR.LO, pat.getIssuerOfPatientID());
+        ian.putString(Tag.PatientName, VR.PN, pat.getPatientName());
+        DicomElement refSeriesSeq = ian.putSequence(Tag.ReferencedSeriesSequence);
+        DicomObject refSerItem = new BasicDicomObject();
+        refSerItem.putString(Tag.SeriesInstanceUID, VR.UI, series.getSeriesInstanceUID());
+        refSeriesSeq.addDicomObject(refSerItem);
+        DicomElement refSopSeq = refSerItem.putSequence(Tag.ReferencedSOPSequence);
+        DicomObject refSopItem = new BasicDicomObject();
+        refSopSeq.addDicomObject(refSopItem);
+        refSopItem.putString(Tag.RetrieveAETitle, VR.AE, instance.getRetrieveAETs());
+        refSopItem.putString(Tag.InstanceAvailability, VR.CS, Availability.ONLINE.name());
+        refSopItem.putString(Tag.ReferencedSOPClassUID, VR.UI, instance.getSOPClassUID());
+        refSopItem.putString(Tag.ReferencedSOPInstanceUID, VR.UI, instance.getSOPInstanceUID());
+        return ian;
+    }
+    @SuppressWarnings("unchecked")
+    private Instance findFirstOnlineInstance(String query, String uid) {
+        Query q = em.createQuery(query);
+        q.setParameter("iuid", uid);
+        List<Instance> l = (List<Instance>) q.getResultList();
+        log.debug("findFirstOnlineInstance with query:{} with iuid:{}", query, uid);
+        log.debug("Found instances: {}", l.size());
+        for (int i = 0, len=l.size() ; i < len ; i++) {
+            if (l.get(i).getAvailability() == Availability.ONLINE) {
+                return l.get(i);
+            }
+        }
+        log.debug("No instance (ONLINE) found!");
+        return null;
     }
  
     private void removeSeriesFromMPPS(MPPS mpps, String seriesIUID) {

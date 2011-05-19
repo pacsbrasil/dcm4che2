@@ -76,6 +76,7 @@ import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
+import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.PrivateTag;
@@ -109,6 +110,7 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     private static Logger log = LoggerFactory.getLogger(ContentEditService.class);
     
+    private static final String NONE ="NONE";
     private static final String MWL2STORE_XSL = "mwl-cfindrsp2cstorerq.xsl";
 
     private static final int[] EXCLUDE_PPS_ATTRS = new int[]{
@@ -133,6 +135,8 @@ public class ContentEditService extends ServiceMBeanSupport {
     private boolean processIAN;
     private boolean processRejNote;
     private boolean dcm14Stylesheet;
+    
+    private String[] forwardModifiedToAETs;
     
     private String modifyingSystem;
     private String modifyReason;
@@ -174,6 +178,14 @@ public class ContentEditService extends ServiceMBeanSupport {
         this.processRejNote = processRejNote;
     }
     
+    public String getForwardModifiedToAETs() {
+        return forwardModifiedToAETs == null ? NONE : StringUtils.join(forwardModifiedToAETs, '\\');
+    }
+
+    public void setForwardModifiedToAETs(String aets) {
+        this.forwardModifiedToAETs = NONE.equals(aets) ? null : StringUtils.split(aets, '\\');
+    }
+
     public boolean isAuditEnabled() {
         return auditEnabled;
     }
@@ -1038,7 +1050,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
     
     public void doAfterDicomEdit(String patId, String patName, String[] studyIUIDs, DicomObject obj, String qrLevel) {
-        sendDicomActionNotification(obj, "UPDATE", qrLevel);
+        sendDicomActionNotification(obj, DicomActionNotification.UPDATE, qrLevel);
         if ("PATIENT".equals(qrLevel)) {
             logPatientRecord(patId, patName, PatientRecordMessage.UPDATE);
        } else {
@@ -1051,10 +1063,32 @@ public class ContentEditService extends ServiceMBeanSupport {
                 } catch (Exception e) {
                     log.error("Scheduling Attributes Modification Notification failed!", e);
                 }
+                if (forwardModifiedToAETs != null) {
+                    scheduleForward(obj, qrLevel);
+                }
             } else {
                 log.debug("No further action after Dicom Edit defined for level "+qrLevel+"!");
             }
         }        
+    }
+
+    private void scheduleForward(DicomObject obj, String qrLevel) {
+        DicomObject fwdIan = lookupDicomEditLocal().getIanForForwardModifiedObject(obj, qrLevel);
+        log.info("fwdIan:"+fwdIan);
+        if (fwdIan == null) {
+            log.warn("Forward of modified Object ignored! Reason: No instance found. Q/R level:"+qrLevel+" obj:\n"+obj);
+        } else {
+            for (int i = 0 ; i < forwardModifiedToAETs.length ; i++) {
+                try {
+                    log.info("Scheduling forward of modified object to {}", forwardModifiedToAETs[i]);
+                    server.invoke(moveScuServiceName, "scheduleMoveInstances", 
+                            new Object[]{fwdIan, forwardModifiedToAETs[i], null}, 
+                            new String[]{DicomObject.class.getName(), String.class.getName(), Integer.class.getName()});
+                } catch (Exception e) {
+                    log.error("Scheduling forward of modified object to "+forwardModifiedToAETs[i]+" failed!", e);
+                }
+            }
+        }
     }
 
 }

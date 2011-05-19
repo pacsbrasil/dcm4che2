@@ -76,6 +76,18 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getForwardModifiedToAETs"
+      setMethod="setForwardModifiedToAETs">
+      <description>List of AETs to forward modified objects to system that doesn't support Attribute Modification Notification.
+      		Use NONE to disable this feature. 
+      </description>
+      <name>ForwardModifiedToAETs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isAuditEnabled"
       setMethod="setAuditEnabled">
       <description>Enable/Disable Audit logging.

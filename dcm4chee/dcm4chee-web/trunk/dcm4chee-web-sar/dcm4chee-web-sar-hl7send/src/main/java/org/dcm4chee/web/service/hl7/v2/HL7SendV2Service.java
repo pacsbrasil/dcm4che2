@@ -162,10 +162,12 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
     };
     private final NotificationListener dicomActionListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
+            log.info("handle DicomAction notification:"+notif);
             try {
-                if (notif instanceof DicomActionNotification) {
-                    log.info("handle DicomAction notification:"+notif);
+                DicomActionNotification dcmNotif = (DicomActionNotification) notif;
+                if (DicomActionNotification.UPDATE.equals(dcmNotif.getAction())) {
                     if ("PATIENT".equals(((DicomActionNotification) notif).getLevel())) {
+                        log.info("schedule patient update via HL7 ADT message");
                         HL7SendV2Service.this.schedulePatientUpdate((DicomObject) notif.getUserData());
                     }
                 }
@@ -180,14 +182,6 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
 
         public boolean isNotificationEnabled(Notification notif) {
             return MppsToMwlLinkResult.class.getName().equals(notif.getType());
-        }
-    };
-    public static final NotificationFilter DICOM_ACTION_FILTER = 
-        new NotificationFilter() {          
-        private static final long serialVersionUID = 7625954422409724162L;
-
-        public boolean isNotificationEnabled(Notification notif) {
-            return DicomActionNotification.NOTIFICATION_TYPE.equals(notif.getType());
         }
     };
     
@@ -382,11 +376,11 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
     public void startService() throws Exception {
         jmsDelegate.startListening(queueName, this, concurrency);
         server.addNotificationListener(contentEditServiceName, mppsLinkedListener, MPPS_LINKED_FILTER, null);
-        server.addNotificationListener(contentEditServiceName, dicomActionListener, DICOM_ACTION_FILTER, null);
+        server.addNotificationListener(contentEditServiceName, dicomActionListener, DicomActionNotification.NOTIF_FILTER, null);
     }
 
     public void stopService() throws Exception {
-        server.removeNotificationListener(contentEditServiceName, dicomActionListener, DICOM_ACTION_FILTER, null);
+        server.removeNotificationListener(contentEditServiceName, dicomActionListener, DicomActionNotification.NOTIF_FILTER, null);
         server.removeNotificationListener(contentEditServiceName, mppsLinkedListener, MPPS_LINKED_FILTER, null);
         jmsDelegate.stopListening(queueName);
     }
