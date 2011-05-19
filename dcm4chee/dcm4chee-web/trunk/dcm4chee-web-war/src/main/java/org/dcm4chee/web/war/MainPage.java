@@ -50,6 +50,7 @@ import org.apache.wicket.util.time.Duration;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordPanel;
 import org.dcm4chee.usr.ui.usermanagement.role.RolePanel;
+import org.dcm4chee.usr.ui.usermanagement.role.aet.AETGroupListPanel;
 import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
@@ -57,6 +58,7 @@ import org.dcm4chee.web.common.base.ModuleSelectorPanel;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecureWicketPage;
 import org.dcm4chee.web.war.ae.AEListPanel;
+import org.dcm4chee.web.war.ae.AEPanel;
 import org.dcm4chee.web.war.folder.StudyListPage;
 import org.dcm4chee.web.war.trash.TrashListPage;
 import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
@@ -98,7 +100,7 @@ public class MainPage extends SecureWicketPage {
     private void addModules(ModuleSelectorPanel selectorPanel) {
         selectorPanel.addModule(StudyListPage.class);
         selectorPanel.addModule(TrashListPage.class);
-        selectorPanel.addModule(AEListPanel.class);
+        selectorPanel.addModule(AEPanel.class);
         selectorPanel.addModule(ModalityWorklistPanel.class);
         selectorPanel.addModule(DashboardPanel.class);
         selectorPanel.addModule(RolePanel.class, null);

@@ -286,7 +286,7 @@ public class AEListPanel extends Panel {
     }
 
     public static String getModuleName() {
-        return "ae";
+        return "aelist";
     }
 
     public Map<String, String> getMppsEmulatedAETs() {
