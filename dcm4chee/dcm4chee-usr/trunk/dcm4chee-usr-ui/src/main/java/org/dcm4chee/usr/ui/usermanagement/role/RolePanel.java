@@ -38,7 +38,6 @@
 
 package org.dcm4chee.usr.ui.usermanagement.role;
 
-import org.dcm4chee.usr.ui.usermanagement.role.aet.AETGroupListPanel;
 import org.dcm4chee.usr.ui.usermanagement.role.group.GroupListPanel;
 import org.dcm4chee.web.common.secure.SecureAjaxTabbedPanel;
 
@@ -56,7 +55,6 @@ public class RolePanel extends SecureAjaxTabbedPanel {
         
         addModule(RoleListPanel.class, null);
         addModule(GroupListPanel.class, null);
-        addModule(AETGroupListPanel.class, null);
     }
     
     public static String getModuleName() {
