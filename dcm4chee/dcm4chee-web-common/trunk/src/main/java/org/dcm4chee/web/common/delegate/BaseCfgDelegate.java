@@ -127,7 +127,17 @@ public class BaseCfgDelegate {
             return defVal;
         }
     }
-    
+
+    protected Integer getInteger(String attrName, int defVal) {
+        if (server == null) return null;
+        try {
+            return (Integer) server.getAttribute(serviceObjectName, attrName);
+        } catch (Exception x) {
+            log.warn("Cant get "+attrName+" attribute! return "+defVal+" as default!", x);
+            return null;
+        }
+    }
+
     public Object invoke(String opName, Object[] args, Object defVal) {
         try {
             if (args == null) {
