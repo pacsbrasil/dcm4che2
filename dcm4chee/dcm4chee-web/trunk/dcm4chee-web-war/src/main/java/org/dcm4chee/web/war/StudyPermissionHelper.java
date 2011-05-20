@@ -92,6 +92,8 @@ public class StudyPermissionHelper implements Serializable {
     private boolean manageStudyPermissions;
     private boolean useStudyPermissions;
     
+    private boolean ignoreEditTimeLimit;
+    
     private boolean SSO = false;
 
 
@@ -102,6 +104,7 @@ public class StudyPermissionHelper implements Serializable {
     public StudyPermissionHelper(org.apache.wicket.security.hive.authentication.Subject webSubject) {
         setStudyPermissionParameters();
         setStudyPermissionRight(webSubject);
+        setIgnoreEditTimeLimit(webSubject);
         SSO = true;
     }
     
@@ -226,6 +229,10 @@ public class StudyPermissionHelper implements Serializable {
         return studyPermissionRight;
     }
     
+    public boolean ignoreEditTimeLimit() {
+        return ignoreEditTimeLimit;
+    }
+
     public void setSSO(boolean sSO) {
         SSO = sSO;
     }
@@ -281,6 +288,19 @@ public class StudyPermissionHelper implements Serializable {
                     break;
                 } else if (rolename.equals(studyPermissionsOwn))
                     studyPermissionRight = StudyPermissionRight.OWN;
+            }
+        }
+    }
+    
+    private void setIgnoreEditTimeLimit(org.apache.wicket.security.hive.authentication.Subject webSubject) {
+        ignoreEditTimeLimit = false;
+        String ignoreEditTimeLimitRolename = WebCfgDelegate.getInstance().getIgnoreEditTimeLimitRolename();
+        Iterator<org.apache.wicket.security.hive.authorization.Principal> i = webSubject.getPrincipals().iterator();
+        while (i.hasNext()) {
+            String rolename = i.next().getName();    
+            if (rolename.equals(ignoreEditTimeLimitRolename)) {
+                ignoreEditTimeLimit = true;
+                break;
             }
         }
     }

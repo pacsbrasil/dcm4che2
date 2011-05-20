@@ -70,13 +70,15 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
     private String availability;
     private int numberOfSeriesRelatedInstances;
 
-    public SeriesModel(Series series, PPSModel ppsModel) {
+    public SeriesModel(Series series, PPSModel ppsModel, Date createdTime) {
         if (series == null) {
             setPk(-1);
             dataset = new BasicDicomObject();
             dataset.putString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
+            this.createdTime = new Date();
         } else {
             setPk(series.getPk());
+            this.createdTime = createdTime;
             updateModel(series);
         }
         setParent(ppsModel);
@@ -204,7 +206,7 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         for (Instance inst : dao.findInstancesOfSeries(getPk())) 
-            this.instances.add(new InstanceModel(inst, this));
+            this.instances.add(new InstanceModel(inst, this, inst.getCreatedTime()));
     }
 
     @Override

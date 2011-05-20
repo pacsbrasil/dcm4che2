@@ -38,6 +38,8 @@
 
 package org.dcm4chee.web.war.common.model;
 
+import java.util.Date;
+
 import org.dcm4che2.data.DicomObject;
 
 /**
@@ -49,6 +51,12 @@ public abstract class AbstractEditableDicomModel extends AbstractDicomModel {
 
     private static final long serialVersionUID = 1L;
 
+    protected Date createdTime;
+    
     public abstract void update(DicomObject dicomObject);
     public abstract AbstractEditableDicomModel refresh();
+    
+    public Date getCreatedTime() {
+        return createdTime;
+    }
 }

@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
+import org.dcm4chee.web.service.common.RetryIntervalls;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,6 +74,18 @@ public class WebCfgDelegate extends BaseCfgDelegate {
 
     public boolean getManageUsers() {
         return getBoolean("manageUsers", true);
+    }
+
+    public String getLoginAllowedRolename() {
+        return getString("LoginAllowed");
+    }
+
+    public long getTooOldLimit() {
+        return RetryIntervalls.parseIntervalOrNever(getString("tooOldLimit"));
+    }
+
+    public String getIgnoreEditTimeLimitRolename() {
+        return getString("ignoreEditTimeLimitRolename");
     }
 
     public String getStudyPermissionsAllRolename() {

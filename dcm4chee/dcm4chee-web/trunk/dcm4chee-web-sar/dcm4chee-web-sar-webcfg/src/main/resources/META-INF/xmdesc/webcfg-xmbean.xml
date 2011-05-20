@@ -692,7 +692,31 @@
          <value value="false"/>
       </descriptors>
    </attribute>
-   
+   <attribute access="read-write"
+      getMethod="getTooOldLimit"
+      setMethod="setTooOldLimit">
+      <description><![CDATA[The time limit it is possible to edit dicom objects.
+      <br>Can be specified in weeks (##w) or days (##d).
+      <br>If set to NEVER the feature will not be used.
+      ]]></description>
+      <name>tooOldLimit</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NEVER"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getIgnoreEditTimeLimitRolename"
+      setMethod="setIgnoreEditTimeLimitRolename">
+      <description><![CDATA[Rolename which may ignore the configured edit time limit (tooOldLimit) for dicom objects.
+      ]]></description>
+      <name>ignoreEditTimeLimitRolename</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="IgnoreEditTimeLimit"/>
+      </descriptors>
+   </attribute>
+
    &defaultAttributes;
    
    <!-- Operations -->

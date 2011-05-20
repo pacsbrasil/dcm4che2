@@ -136,6 +136,9 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     private boolean forcePatientExpandableForPatientQuery;
     
+    private String tooOldLimit;
+    protected String ignoreEditTimeLimitRolename;
+    
     public WebCfgService() {
     }
     
@@ -775,6 +778,22 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public boolean isManageUsers() {
         return manageUsers;
+    }
+
+    public void setTooOldLimit(String tooOldLimit) {
+        this.tooOldLimit = tooOldLimit;
+    }
+
+    public String getTooOldLimit() {
+        return tooOldLimit;
+    }
+
+    public String getIgnoreEditTimeLimitRolename() {
+        return ignoreEditTimeLimitRolename;
+    }
+
+    public void setIgnoreEditTimeLimitRolename(String ignoreEditTimeLimitRolename) {
+        this.ignoreEditTimeLimitRolename = ignoreEditTimeLimitRolename;
     }
 
     public String getWebConfigPath() {

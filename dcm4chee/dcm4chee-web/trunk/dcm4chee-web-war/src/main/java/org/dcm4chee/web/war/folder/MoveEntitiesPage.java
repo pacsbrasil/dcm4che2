@@ -352,8 +352,8 @@ public class MoveEntitiesPage extends SecureWebPage {
 
     private void needNewSeries(InstanceModel srcInstance, final StudyModel study) {
         missingState = missingState | MISSING_SERIES;
-        seriesModel = new SeriesModel(null, null);
-        new PPSModel(null, seriesModel, study);
+        seriesModel = new SeriesModel(null, null, null);
+        new PPSModel(null, seriesModel, study, null);
         newSeriesPanel = 
             new SimpleEditDicomObjectPanel(
                     "content", 

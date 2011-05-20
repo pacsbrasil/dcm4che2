@@ -199,7 +199,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                             hideLinkedPpsInFolder(viewport);
                             if (!hideLinkedPps) {
                                 List<PatientModel> pats = viewport.getPatients();
-                                PatientModel patModel = new PatientModel(result.getMwl().getPatient(), new Model<Boolean>(false));
+                                PatientModel patModel = new PatientModel(result.getMwl().getPatient(), new Model<Boolean>(false), result.getMwl().getPatient().getCreatedTime());
                                 int pos = pats.indexOf(patModel);
                                 if (pos == -1) {
                                     pats.add(patModel);
@@ -209,7 +209,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                                 StudyModel sm;
                                 List<StudyModel> studies = patModel.getStudies();
                                 for (Study s : result.getStudiesToMove()) {
-                                    sm = new StudyModel(s, patModel, 
+                                    sm = new StudyModel(s, patModel, s.getCreatedTime(), 
                                             dao.findStudyPermissionActions(s.getStudyInstanceUID(), 
                                                     StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
                                                             null : StudyPermissionHelper.get().getDicomRoles()));

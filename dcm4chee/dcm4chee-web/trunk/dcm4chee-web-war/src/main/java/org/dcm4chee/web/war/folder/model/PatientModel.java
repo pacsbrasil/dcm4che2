@@ -69,10 +69,11 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
 
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
 
-    public PatientModel(Patient patient, IModel<Boolean> latestStudyFirst) {
+    public PatientModel(Patient patient, IModel<Boolean> latestStudyFirst, Date createdTime) {
         setPk(patient.getPk());
         this.dataset = patient.getAttributes();
         this.latestStudyFirst = latestStudyFirst;
+        this.createdTime = createdTime;
         expandable = null;
     }
 
@@ -145,8 +146,9 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
         List<String> dicomSecurityRoles = StudyPermissionHelper.get().applyStudyPermissions() ? 
                 StudyPermissionHelper.get().getDicomRoles() : null;
         for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst.getObject(), dicomSecurityRoles))     
-            this.studies.add(new StudyModel(study, this, dao.findStudyPermissionActions(study.getStudyInstanceUID(), 
-                    StudyPermissionHelper.get().getDicomRoles())));
+            this.studies.add(new StudyModel(study, this, study.getCreatedTime(), 
+                    dao.findStudyPermissionActions(study.getStudyInstanceUID(), 
+                            StudyPermissionHelper.get().getDicomRoles())));
     }
 
     @Override

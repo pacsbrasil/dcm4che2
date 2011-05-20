@@ -73,6 +73,11 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:exportButton", "render, enable";
 };
 
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "IgnoreEditTimeLimit"
+{
+// KEY: swarm.principal.IgnoreEditTimeLimit
+};
+
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "TrashRead"
 {
 // KEY: swarm.principal.TrashRead

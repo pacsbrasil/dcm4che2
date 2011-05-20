@@ -63,9 +63,10 @@ public class InstanceModel extends AbstractEditableDicomModel implements Seriali
     
     private List<FileModel> files = new ArrayList<FileModel>();
 
-    public InstanceModel(Instance inst, SeriesModel seriesModel) {
+    public InstanceModel(Instance inst, SeriesModel seriesModel, Date createdTime) {
         setPk(inst.getPk());
         this.dataset = inst.getAttributes(true);
+        this.createdTime = createdTime;
         setSeries(seriesModel);
     }
 

@@ -74,7 +74,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     private int numberOfStudyRelatedInstances;
     private List<String> studyPermissionActions = new ArrayList<String>();
     
-    public StudyModel(Study study, PatientModel patModel) {
+    public StudyModel(Study study, PatientModel patModel, Date createdTime) {
         if (study == null) {
             setPk(-1);
             dataset = new BasicDicomObject();
@@ -83,11 +83,12 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
             setPk(study.getPk());
             updateModel(study);
         }
+        this.createdTime = createdTime;
         setPatient(patModel);
     }
     
-    public StudyModel(Study study, PatientModel patModel, List<String> studyPermissionActions) {
-        this(study, patModel);
+    public StudyModel(Study study, PatientModel patModel, Date createdTime, List<String> studyPermissionActions) {
+        this(study, patModel, createdTime);
         setStudyPermissionActions(studyPermissionActions);
     }
 
@@ -212,7 +213,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     
     private void add(Series series) {
         MPPS mpps = series.getModalityPerformedProcedureStep();
-        SeriesModel seriesModel = new SeriesModel(series,null);
+        SeriesModel seriesModel = new SeriesModel(series, null, series.getCreatedTime());
         for (PPSModel pps : ppss) {
             if (mpps != null ? mpps.getPk() == pps.getPk()
                     : pps.getDataset() == null 
@@ -222,7 +223,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
                 return;
             }
         }
-        PPSModel pps = new PPSModel(mpps, seriesModel, this);
+        PPSModel pps = new PPSModel(mpps, seriesModel, this, mpps.getCreatedTime());
         ppss.add(pps);
     }
 

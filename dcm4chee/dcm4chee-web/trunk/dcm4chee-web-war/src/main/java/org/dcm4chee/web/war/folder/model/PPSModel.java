@@ -69,10 +69,11 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
     private int numberOfSeries;
     private Boolean hasForeignPpsInfo;
     
-    public PPSModel(MPPS mpps, SeriesModel series1, StudyModel studyModel) {
+    public PPSModel(MPPS mpps, SeriesModel series1, StudyModel studyModel, Date createdTime) {
         if (mpps != null) {
             setPk(mpps.getPk());
             this.dataset = mpps.getAttributes();
+            this.createdTime = createdTime == null ? new Date() : createdTime;
             hasForeignPpsInfo = false;
         }
         setParent(studyModel);
@@ -265,7 +266,7 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
             StudyListLocal dao = (StudyListLocal)
                     JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
             for (Series ser : dao.findSeriesOfMpps(uid)) 
-                seriess.add(new SeriesModel(ser, this));
+                seriess.add(new SeriesModel(ser, this, ser.getCreatedTime()));
         }
     }
 
@@ -294,7 +295,7 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
         } else {
             ArrayList<SeriesModel> currentSeries = new ArrayList<SeriesModel>();
             for (Series s : dao.findSeriesOfStudy(getStudy().getPk())) {
-                SeriesModel seriesModel = new SeriesModel(s,null);
+                SeriesModel seriesModel = new SeriesModel(s, null, s.getCreatedTime());
                 MPPS mpps = s.getModalityPerformedProcedureStep();
                 if (mpps == null && seriesModel.containedBySamePPS(getSeries1())) {
                     currentSeries.add(seriesModel);

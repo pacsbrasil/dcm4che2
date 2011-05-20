@@ -41,12 +41,18 @@ package org.dcm4chee.web.war.folder;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Map.Entry;
+
+import javax.security.auth.Subject;
+import javax.security.jacc.PolicyContext;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
@@ -95,7 +101,10 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.protocol.http.WebRequestCycle;
+import org.apache.wicket.security.hive.authentication.DefaultSubject;
 import org.apache.wicket.security.hive.authorization.Principal;
+import org.apache.wicket.security.hive.authorization.SimplePrincipal;
 import org.apache.wicket.security.swarm.strategies.SwarmStrategy;
 import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.data.DicomObject;
@@ -111,6 +120,7 @@ import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.CheckOneDayBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
@@ -935,7 +945,7 @@ public class StudyListPage extends Panel {
                 return patientModel;
             }
         }
-        PatientModel patientModel = new PatientModel(patient, latestStudyFirst);
+        PatientModel patientModel = new PatientModel(patient, latestStudyFirst, patient.getCreatedTime());
         viewport.getPatients().add(patientModel);
         return patientModel;
     }
@@ -947,7 +957,7 @@ public class StudyListPage extends Panel {
                 return false;
             }
         }
-        StudyModel m = new StudyModel(study, patient, studyPermissionActions);
+        StudyModel m = new StudyModel(study, patient, study.getCreatedTime(), studyPermissionActions);
         boolean woMwl = viewport.getFilter().isPpsWithoutMwl();
         boolean woPps = viewport.getFilter().isWithoutPps();
         if (woMwl || woPps) {
@@ -1252,6 +1262,9 @@ public class StudyListPage extends Panel {
             item.setOutputMarkupId(true);
             
             final PPSModel ppsModel = (PPSModel) item.getModelObject();
+            final boolean tooOld = !StudyPermissionHelper.get().ignoreEditTimeLimit() 
+                                    && tooOld(ppsModel);
+            
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
                 private static final long serialVersionUID = 1L;
@@ -1310,7 +1323,7 @@ public class StudyListPage extends Panel {
             IndicatingAjaxFallbackLink<?> linkBtn = new IndicatingAjaxFallbackLink<Object>("linkBtn") {
                 
                 private static final long serialVersionUID = 1L;
-                
+
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     log.debug("#### linkBtn clicked!");
@@ -1342,14 +1355,25 @@ public class StudyListPage extends Panel {
                     }
                     return null;
                 }
+                
                 @Override
                 public boolean isVisible() {
                     return ppsModel.getDataset() != null && ppsModel.getAccessionNumber()==null;
                 }
+                
+                @Override
+                public boolean isEnabled() {
+                    return !tooOld;
+                }
             };
-            linkBtn.add(new Image("linkImg", ImageManager.IMAGE_COMMON_LINK)
-            .add(new ImageSizeBehaviour())
-            .add(tooltip));
+            linkBtn.add(tooOld ? 
+                    (new Image("linkImg", ImageManager.IMAGE_COMMON_CLOCK) 
+                        .add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.tooltip"))))
+                        : 
+                    (new Image("linkImg", ImageManager.IMAGE_COMMON_LINK)
+                        .add(new ImageSizeBehaviour())
+                        .add(tooltip))
+            ) ;
             item.add(linkBtn);
             linkBtn.setVisible(studyPermissionHelper.checkPermission(ppsModel, StudyPermission.UPDATE_ACTION));
             linkBtn.add(new SecurityBehavior(getModuleName() + ":linkPPSLink"));
@@ -1367,11 +1391,20 @@ public class StudyListPage extends Panel {
                 public boolean isVisible() {
                     return ppsModel.getDataset() != null && ppsModel.getAccessionNumber()!=null;
                 }
+                
+                @Override
+                public boolean isEnabled() {
+                    return !tooOld;
+                }
             }
-		.add(new Image("unlinkImg",ImageManager.IMAGE_FOLDER_UNLINK)
-            	.add(new ImageSizeBehaviour()).add(tooltip))
-            	.setVisible(studyPermissionHelper.checkPermission(ppsModel, StudyPermission.UPDATE_ACTION))
-            	.add(new SecurityBehavior(getModuleName() + ":unlinkPPSLink"))
+            .add(tooOld ? 
+                (new Image("linkImg", ImageManager.IMAGE_COMMON_CLOCK) 
+                    .add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.tooltip"))))
+    		        :
+		        (new Image("unlinkImg",ImageManager.IMAGE_FOLDER_UNLINK)
+                	.add(new ImageSizeBehaviour()).add(tooltip))
+                	.setVisible(studyPermissionHelper.checkPermission(ppsModel, StudyPermission.UPDATE_ACTION))
+                	.add(new SecurityBehavior(getModuleName() + ":unlinkPPSLink")))
             );
             
             item.add(new AjaxFallbackLink<Object>("emulateBtn") {
@@ -1746,7 +1779,10 @@ public class StudyListPage extends Panel {
     }
     
     private Link<Object> getEditLink(final ModalWindow modalWindow, final AbstractEditableDicomModel model, TooltipBehaviour tooltip) {
-       
+
+        final boolean tooOld = !StudyPermissionHelper.get().ignoreEditTimeLimit() 
+                                && tooOld(model);
+        
         int[] winSize = WebCfgDelegate.getInstance().getWindowSize("dcmEdit");
         ModalWindowLink editLink = new ModalWindowLink("edit", modalWindow, winSize[0], winSize[1]) {
             private static final long serialVersionUID = 1L;
@@ -1781,10 +1817,20 @@ public class StudyListPage extends Panel {
                 return model.getDataset()!= null && (!studyPermissionHelper.isUseStudyPermissions() 
                     || checkEditStudyPermission(model));
             }
+            
+            @Override
+            public boolean isEnabled() {
+                return !tooOld;
+
+            }
         };
-        Image image = new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT);
+        Image image = tooOld ? new Image("editImg", ImageManager.IMAGE_COMMON_CLOCK) : 
+                new Image("editImg", ImageManager.IMAGE_COMMON_DICOM_EDIT);
         image.add(new ImageSizeBehaviour("vertical-align: middle;"));
-        if (tooltip != null) image.add(tooltip);
+        if (tooOld)
+            image.add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.tooltip")));
+        else
+            if (tooltip != null) image.add(tooltip);            
         editLink.add(image);
         return editLink;
     }
@@ -1928,4 +1974,21 @@ public class StudyListPage extends Panel {
             }
         }
     }
+
+    private boolean tooOld(final AbstractEditableDicomModel model) {
+        try {
+            if (model.getCreatedTime() != null) {
+                Calendar then = Calendar.getInstance();
+                then.setTime(model.getCreatedTime());
+                long tooOldLimit = WebCfgDelegate.getInstance().getTooOldLimit();
+                return tooOldLimit == 0 ? 
+                        false 
+                        : (Calendar.getInstance().getTimeInMillis() - then.getTimeInMillis()) 
+                            > tooOldLimit;
+            }
+        } catch (Exception e) {
+            log.error("Error obtaining time difference", e);
+        }
+        return true;
+    } 
 }
