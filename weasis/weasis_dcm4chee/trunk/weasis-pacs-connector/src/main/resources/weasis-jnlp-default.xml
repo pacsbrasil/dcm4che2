@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.6+" codebase="--cdb--">
+<jnlp spec="1.6+" codebase="${weasis.base.url}/weasis">
 	<information>
 		<title>Weasis</title>
 		<vendor>Weasis Team</vendor>
@@ -41,10 +41,10 @@
 			Required parameter. Define the location of config.properties (the
 			OSGI configuration and the list of plug-ins to install/start)
 		-->
-		<property name="felix.config.properties" value="--cdb--/conf/config.properties" />
+		<property name="felix.config.properties" value="${weasis.base.url}/weasis/conf/config.properties" />
 
 		<!-- Required parameter. Define the code base of Weasis for the JNLP-->
-		<property name="weasis.codebase.url" value="--cdb--" />
+		<property name="weasis.codebase.url" value="${weasis.base.url}/weasis" />
 
 		<!-- Required parameter. Start OSGI console on the port 17179-->
 		<property name="gosh.args" value="-sc telnetd -p 17179 start" />
@@ -54,10 +54,7 @@
 		<property name="apple.laf.useScreenMenuBar" value="true" />
       
 		<!-- Optional parameter. Allows to get plug-ins translations -->
-		<property name="weasis.i18n" value="--cdb--/weasis-i18n" />
+		<property name="weasis.i18n" value="${weasis.base.url}/weasis-i18n" />
 	</resources>
 
-	<application-desc main-class="org.weasis.launcher.WebstartLauncher">
-**arg-xml**
-	</application-desc>
 </jnlp>

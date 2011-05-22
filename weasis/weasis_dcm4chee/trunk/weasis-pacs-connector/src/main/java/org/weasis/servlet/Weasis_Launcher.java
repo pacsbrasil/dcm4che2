@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
@@ -76,15 +77,28 @@ public class Weasis_Launcher extends HttpServlet {
         logger.debug("init() - getRealPath : {}", getServletConfig().getServletContext().getRealPath("/"));
         try {
             URL config = this.getClass().getResource("/weasis-pacs-connector.properties");
-            logger.info("External configuration file : {}", config);
             if (config == null) {
                 config = this.getClass().getResource("/weasis-connector-default.properties");
                 logger.info("Default configuration file : {}", config);
+            } else {
+                logger.info("External configuration file : {}", config);
             }
             if (config != null) {
                 pacsProperties.load(config.openStream());
             } else {
                 logger.error("Cannot find  a configuration file for weasis-pacs-connector");
+            }
+            URL jnlpTemplate = this.getClass().getResource("/weasis-jnlp.xml");
+            if (jnlpTemplate == null) {
+                jnlpTemplate = this.getClass().getResource("/weasis-jnlp-default.xml");
+                logger.info("Default  Weasis template  : {}", jnlpTemplate);
+            } else {
+                logger.info("External Weasis template : {}", jnlpTemplate);
+            }
+            if (jnlpTemplate == null) {
+                logger.error("Cannot find  JNLP template");
+            } else {
+                pacsProperties.put("weasis.jnlp", jnlpTemplate.toString());
             }
 
         } catch (Exception e) {
@@ -112,16 +126,37 @@ public class Weasis_Launcher extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
+        // Test if this client is allowed
+        String hosts = pacsProperties.getProperty("hosts.allow");
+        if (hosts != null && !hosts.trim().equals("")) {
+            String clintHost = request.getRemoteHost();
+            String clientIP = request.getRemoteAddr();
+            boolean accept = false;
+            for (String host : hosts.split(",")) {
+                if (host.equals(clintHost) || host.equals(clientIP)) {
+                    accept = true;
+                    break;
+                }
+            }
+            if (!accept) {
+                logger.warn("The request from {} is not allowed.", clintHost);
+                return;
+            }
+        }
         try {
             logRequestInfo(request);
             response.setContentType(JNLP_MIME_TYPE);
 
             String baseURL = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
             System.setProperty("server.base.url", baseURL);
-            String key = "pacs.wado.url";
-            pacsProperties.setProperty(key,
-                FileUtil.substVars(pacsProperties.getProperty(key), key, null, pacsProperties));
+
+            // Perform variable substitution for system properties.
+            for (Enumeration e = pacsProperties.propertyNames(); e.hasMoreElements();) {
+                String name = (String) e.nextElement();
+                pacsProperties.setProperty(name,
+                    FileUtil.substVars(pacsProperties.getProperty(name), name, null, pacsProperties));
+            }
+
             String wadoQueriesURL = pacsProperties.getProperty("pacs.wado.url", "http://localhost:8080/wado");
             String pacsAET = pacsProperties.getProperty("pacs.aet", "DCM4CHEE");
             String pacsHost = pacsProperties.getProperty("pacs.host", "localhost");
@@ -162,22 +197,24 @@ public class Weasis_Launcher extends HttpServlet {
 
             InputStream is = null;
             try {
-                is = getClass().getResourceAsStream("/launcher.xml");
+                URL jnlpTemplate = new URL((String) pacsProperties.get("weasis.jnlp"));
+                is = jnlpTemplate.openStream();
                 BufferedReader dis = new BufferedReader(new InputStreamReader(is));
-
                 // response.setContentLength(launcherStr.length());
+                String weasisBaseURL = pacsProperties.getProperty("weasis.base.url", baseURL);
 
-                String codebase = baseURL + "/weasis";
                 PrintWriter outWriter = response.getWriter();
                 String s;
                 while ((s = dis.readLine()) != null) {
-                    if (s.startsWith("**arg-xml**")) {
-                        outWriter.print("<argument>$dicom:get -i ");
+                    if (s.trim().equals("</resources>")) {
+                        outWriter.println(s);
+                        outWriter.println("\t<application-desc main-class=\"org.weasis.launcher.WebstartLauncher\">");
+                        outWriter.print("\t\t<argument>$dicom:get -i ");
                         outWriter.print(wadoQueryFile);
-                        outWriter.print("</argument>");
+                        outWriter.println("</argument>");
+                        outWriter.println("\t</application-desc>");
                     } else {
-                        // TODO set in properties
-                        s = s.replaceAll("--cdb--", codebase);
+                        s = s.replace("${weasis.base.url}", weasisBaseURL);
                         outWriter.println(s);
                     }
                 }
