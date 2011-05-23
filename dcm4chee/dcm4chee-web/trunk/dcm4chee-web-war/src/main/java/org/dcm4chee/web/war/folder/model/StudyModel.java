@@ -223,7 +223,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
                 return;
             }
         }
-        PPSModel pps = new PPSModel(mpps, seriesModel, this, mpps.getCreatedTime());
+        PPSModel pps = new PPSModel(mpps, seriesModel, this, mpps != null ? mpps.getCreatedTime() : null);
         ppss.add(pps);
     }
 
