@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.common;
 
 import java.util.Iterator;
 
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
@@ -250,7 +251,11 @@ public class EditDicomObjectPanel extends Panel {
             add(new TextField<String>("value", el.hasItems() ? 
                                                 new Model<String>("") 
                                               : new DicomElementModel(el, cs, tagPath))
-                .setVisible(!el.hasItems()).setEnabled(editable.isEditable(tagPath)));
+                                              .add(new AttributeModifier("title", true, 
+                                                      new DicomElementModel(el, cs, tagPath)))
+                                              .setVisible(!el.hasItems())
+                                              .setEnabled(editable.isEditable(tagPath)));
+            
             AjaxFallbackLink<?> removeLink = new AjaxFallbackLink<Object>("remove"){
                 
                 private static final long serialVersionUID = 1L;
