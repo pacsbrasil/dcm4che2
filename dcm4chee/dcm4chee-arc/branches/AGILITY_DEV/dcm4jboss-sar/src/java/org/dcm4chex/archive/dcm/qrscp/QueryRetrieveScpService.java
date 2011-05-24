@@ -991,7 +991,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 		return moveScp;
 	}
 
-    protected void bindDcmServices(DcmServiceRegistry services) {
+    	protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelFIND,
                 dicomFindScp);
         services.bind(UIDs.StudyRootQueryRetrieveInformationModelFIND,
@@ -1023,7 +1023,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         dcmHandler.addAssociationListener(moveScp);
     }
 
-    protected void unbindDcmServices(DcmServiceRegistry services) {
+    	protected void unbindDcmServices(DcmServiceRegistry services) {
         services.unbind(UIDs.PatientRootQueryRetrieveInformationModelFIND);
         services.unbind(UIDs.StudyRootQueryRetrieveInformationModelFIND);
         services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND);
@@ -1073,7 +1073,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         putPresContexts(policy, valuesToStringArray(standardCuidMap), null);
     }
 
-    protected void putPresContexts(AcceptorPolicy policy, String[] cuids,
+	protected void putPresContexts(AcceptorPolicy policy, String[] cuids,
             String[] tsuids) {
         super.putPresContexts(policy, cuids, tsuids);
         ExtNegotiator neg = tsuids != null ? extNegotiator : null;
@@ -1442,8 +1442,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
             throws Exception {
         File f = getFile(fsID, fileID);
         if (f.length() < fileSize)
-            throw new IOException("File " + f + " truncated at "
-                    + (fileSize - f.length()) + " bytes");
+            throw new IOException("File is of unexpected size it was truncated at "
+                    + (fileSize - f.length()) + " bytes, please check file: " + f);
         return f;
     }
 
