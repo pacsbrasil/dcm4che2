@@ -1556,8 +1556,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
             throws Exception {
         File f = getFile(fsID, fileID);
         if (f.length() < fileSize)
-            throw new IOException("File " + f + " truncated at "
-                    + (fileSize - f.length()) + " bytes");
+            throw new IOException("File is of unexpected size it was truncated at "
+                    + (fileSize - f.length()) + " bytes, please check file: " + f);
         return f;
     }
 
