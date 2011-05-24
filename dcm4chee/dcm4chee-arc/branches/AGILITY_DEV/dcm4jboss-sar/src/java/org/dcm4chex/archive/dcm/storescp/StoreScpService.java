@@ -111,7 +111,7 @@ public class StoreScpService extends AbstractScpService {
             new NotificationFilter() {
         private static final long serialVersionUID = -7557458153348143439L;
 
-        public boolean isNotificationEnabled(Notification notif) {
+		public boolean isNotificationEnabled(Notification notif) {
             return EVENT_TYPE_OBJECT_STORED.equals(notif.getType());
         }
     };
@@ -122,7 +122,7 @@ public class StoreScpService extends AbstractScpService {
             new NotificationFilter() {
         private static final long serialVersionUID = -7557458153348143439L;
     
-        public boolean isNotificationEnabled(Notification notif) {
+    public boolean isNotificationEnabled(Notification notif) {
             return EVENT_TYPE_NEW_STUDY.equals(notif.getType());
         }
     };
@@ -139,9 +139,9 @@ public class StoreScpService extends AbstractScpService {
                 isRunning = true;
             }
             new Thread(new Runnable(){
-                public void run() {
+				public void run() {
                     try {
-                        log.info("Check for Pending Series Stored");
+                        log.debug("Check for Pending Series Stored");
                         checkPendingSeriesStored();
                     } catch (Exception e) {
                         log.error("Check for Pending Series Stored failed:", e);
@@ -685,7 +685,7 @@ public class StoreScpService extends AbstractScpService {
         scp.setPerfMonServiceName(perfMonServiceName);
     }
 
-    protected void startService() throws Exception {
+	protected void startService() throws Exception {
         super.startService();
         startSeriesStoredScheduler();
     }
@@ -696,7 +696,7 @@ public class StoreScpService extends AbstractScpService {
                 checkPendingSeriesStoredListener);
     }
 
-    protected void stopService() throws Exception {
+	protected void stopService() throws Exception {
         stopSeriesStoredScheduler();
         super.stopService();
     }
@@ -706,7 +706,7 @@ public class StoreScpService extends AbstractScpService {
                 checkPendingSeriesStoredListener);
     }
 
-    protected void bindDcmServices(DcmServiceRegistry services) {
+	protected void bindDcmServices(DcmServiceRegistry services) {
         bindAll(valuesToStringArray(imageCUIDS), scp);
         bindAll(valuesToStringArray(videoCUIDS), scp);
         bindAll(valuesToStringArray(srCUIDS), scp);
@@ -715,7 +715,7 @@ public class StoreScpService extends AbstractScpService {
         dcmHandler.addAssociationListener(scp);
     }
 
-    protected void unbindDcmServices(DcmServiceRegistry services) {
+	protected void unbindDcmServices(DcmServiceRegistry services) {
         unbindAll(valuesToStringArray(imageCUIDS));
         unbindAll(valuesToStringArray(videoCUIDS));
         unbindAll(valuesToStringArray(srCUIDS));
@@ -724,7 +724,7 @@ public class StoreScpService extends AbstractScpService {
         dcmHandler.removeAssociationListener(scp);
     }
 
-    protected void enablePresContexts(AcceptorPolicy policy) {
+	protected void enablePresContexts(AcceptorPolicy policy) {
         String[] cuids;
         putPresContexts(policy, cuids = valuesToStringArray(imageCUIDS),
                 valuesToStringArray(imageTSUIDS));
@@ -743,7 +743,7 @@ public class StoreScpService extends AbstractScpService {
         putRoleSelections(policy, cuids, true, true);
     }
 
-    protected void disablePresContexts(AcceptorPolicy policy) {
+	protected void disablePresContexts(AcceptorPolicy policy) {
         String[] cuids;
         putPresContexts(policy, cuids = valuesToStringArray(imageCUIDS), null);
         removeRoleSelections(policy, cuids);
