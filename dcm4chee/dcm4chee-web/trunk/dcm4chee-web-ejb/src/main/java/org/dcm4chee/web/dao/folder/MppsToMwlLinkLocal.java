@@ -38,6 +38,8 @@
 
 package org.dcm4chee.web.dao.folder;
 
+import java.util.Map;
+
 import javax.ejb.Local;
 
 import org.dcm4che2.data.DicomObject;
@@ -57,5 +59,5 @@ public interface MppsToMwlLinkLocal {
     MppsToMwlLinkResult linkMppsToMwl(String mppsIUID, String rpId, String spsId, String modifyingSystem, String reason);
     MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, long mwlPk, String modifyingSystem, String reason);
     MPPS unlinkMpps(long pk, String modifyingSystem, String modifyReason);
-    void updateSeriesAndStudyAttributes(String[] mppsIuids, DicomObject coerce);
+    Map<String, DicomObject> updateSeriesAndStudyAttributes(String[] mppsIuids, DicomObject coerce);
 }

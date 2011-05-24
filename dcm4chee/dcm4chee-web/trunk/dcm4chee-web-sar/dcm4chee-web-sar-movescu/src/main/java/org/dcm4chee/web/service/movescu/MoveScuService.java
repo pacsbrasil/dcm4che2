@@ -262,6 +262,13 @@ public class MoveScuService extends AbstractScuService implements MessageListene
             }
         }
     }
+
+    public void scheduleMoveInstances(String patId, String studyIuid, String seriesIuid, String[] iuids,
+            String retrAet, String moveDestination, Integer prio) throws Exception {
+        schedule(new MoveOrder(retrAet == null ? this.calledAET : retrAet, moveDestination, 
+                prio != null ? prio.intValue() : priority,
+                patId, studyIuid, seriesIuid, iuids));
+    }
     
     public void scheduleMoveInstances(DicomObject ian, String moveDestination, Integer prio) throws Exception {
         String patId = ian.getString(Tag.PatientID);
@@ -294,7 +301,7 @@ public class MoveScuService extends AbstractScuService implements MessageListene
             refSerItem = refSeriesSeq.getDicomObject(i);
             seriesIuid = refSerItem.getString(Tag.SeriesInstanceUID);
             refSopSeq = refSerItem.get(Tag.ReferencedSOPSequence);
-            for ( int j=0, len1= refSopSeq.countItems() ; i < len1 ; i++) {
+            for ( int j=0, len1= refSopSeq.countItems() ; j < len1 ; j++) {
                 refSopItem = refSopSeq.getDicomObject(j);
                 sopIuid = refSopItem.getString(Tag.ReferencedSOPInstanceUID);
                 retrAet = refSopItem.getString(Tag.RetrieveAETitle);

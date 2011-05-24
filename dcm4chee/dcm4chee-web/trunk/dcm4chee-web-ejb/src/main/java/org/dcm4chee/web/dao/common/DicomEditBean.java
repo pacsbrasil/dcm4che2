@@ -590,6 +590,7 @@ public class DicomEditBean implements DicomEditLocal {
         ian.putString(Tag.PatientID, VR.LO, pat.getPatientID());
         ian.putString(Tag.IssuerOfPatientID, VR.LO, pat.getIssuerOfPatientID());
         ian.putString(Tag.PatientName, VR.PN, pat.getPatientName());
+        ian.putSequence(Tag.ReferencedPerformedProcedureStepSequence);
         DicomElement refSeriesSeq = ian.putSequence(Tag.ReferencedSeriesSequence);
         DicomObject refSerItem = new BasicDicomObject();
         refSerItem.putString(Tag.SeriesInstanceUID, VR.UI, series.getSeriesInstanceUID());

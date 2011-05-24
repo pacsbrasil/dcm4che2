@@ -60,6 +60,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditEvent.ActionCode;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.InstancesAccessedMessage;
 import org.dcm4che2.audit.message.ParticipantObject;
@@ -67,7 +68,6 @@ import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.message.PatientRecordMessage;
 import org.dcm4che2.audit.message.ProcedureRecordMessage;
 import org.dcm4che2.audit.message.StudyDeletedMessage;
-import org.dcm4che2.audit.message.AuditEvent.ActionCode;
 import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
@@ -95,8 +95,8 @@ import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.service.common.DicomActionNotification;
 import org.dcm4chee.web.service.common.FileImportOrder;
 import org.dcm4chee.web.service.common.HttpUserInfo;
-import org.dcm4chee.web.service.common.delegate.TemplatesDelegate;
 import org.dcm4chee.web.service.common.XSLTUtils;
+import org.dcm4chee.web.service.common.delegate.TemplatesDelegate;
 import org.jboss.system.ServiceMBeanSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,6 +107,8 @@ import org.slf4j.LoggerFactory;
  * @since Jan 29, 2009
  */
 public class ContentEditService extends ServiceMBeanSupport {
+
+    private static final String STRING = String.class.getName();
 
     private static Logger log = LoggerFactory.getLogger(ContentEditService.class);
     
@@ -506,11 +508,26 @@ public class ContentEditService extends ServiceMBeanSupport {
             reason = this.modifyReason;
         }
         MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsPks, mwlPk, modifyingSystem, reason);
+        doAfterLinkMppsToMwl(result);
+        return result;
+    }
+
+    public void linkMppsToMwl(String mppsIUID, String rpId, String spsId, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        if ( system == null || system.trim().length() < 1) {
+            system = modifyingSystem;
+        }
+        if ( reason == null || reason.trim().length() < 1) {
+            reason = this.modifyReason;
+        }
+        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsIUID, rpId, spsId, system, reason);
+        doAfterLinkMppsToMwl(result);
+    }
+    
+    private void doAfterLinkMppsToMwl(MppsToMwlLinkResult result) throws InstanceNotFoundException, MBeanException, ReflectionException {
         log.info("MppsToMwlLinkResult:"+result);
         logMppsLinkRecord(result);
-        updateSeriesAttributes(result);
+        Map<String,DicomObject> fwdIANs = updateSeriesAttributes(result);
         this.sendJMXNotification(result);
-        log.info("MppsToMwlLinkResult:"+result);
         log.info("MppsToMwlLinkResult: studiesToMove:"+result.getStudiesToMove().size());
         if (result.getStudiesToMove().size() > 0) {
             Patient pat = result.getMwl().getPatient();
@@ -523,31 +540,10 @@ public class ContentEditService extends ServiceMBeanSupport {
             }
             this.moveStudiesToPatient(studyPks, pat.getPk());
         }
-        return result;
-    }
-    
-    public void linkMppsToMwl(String mppsIUID, String rpId, String spsId, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        if ( system == null || system.trim().length() < 1) {
-            system = modifyingSystem;
-        }
-        if ( reason == null || reason.trim().length() < 1) {
-            reason = this.modifyReason;
-        }
-        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsIUID, rpId, spsId, system, reason);
-        log.info("MppsToMwlLinkResult:"+result);
-        logMppsLinkRecord(result);
-        updateSeriesAttributes(result);
-        this.sendJMXNotification(result);
-        if (result.getStudiesToMove().size() > 0) {
-            Patient pat = result.getMwl().getPatient();
-            log.info("Patient of some MPPS are not identical to patient of MWL! Move studies to Patient of MWL:"+
-                    pat.getPatientID());
-            long[] studyPks = new long[result.getStudiesToMove().size()];
-            int i = 0;
-            for ( Study s : result.getStudiesToMove()) {
-                studyPks[i++] = s.getPk();
+        if (this.forwardModifiedToAETs != null && fwdIANs != null) {
+            for (Iterator<DicomObject> it = fwdIANs.values().iterator() ; it.hasNext() ;) {
+                this.scheduleForward(it.next());
             }
-            this.moveStudiesToPatient(studyPks, pat.getPk());
         }
     }
     
@@ -565,16 +561,40 @@ public class ContentEditService extends ServiceMBeanSupport {
             logProcedureRecord(patAttrs, ssaSQ.getDicomObject().getString(Tag.StudyInstanceUID),
                     mpps.getAccessionNumber(), 
                     ProcedureRecordMessage.UPDATE, sb.substring(0,sb.length()-2));
+            if (this.forwardModifiedToAETs != null) {
+                this.scheduleForwardByMpps(mpps.getAttributes());
+            }
             return true;
         }
         return false;
     }
     
+    private void scheduleForwardByMpps(DicomObject mpps) {
+        String patId = mpps.getString(Tag.PatientID);
+        String studyIuid = mpps.getString(Tag.StudyInstanceUID);
+        String seriesIuid, iuid;
+        DicomElement mppsSeriesSq = mpps.get(Tag.PerformedSeriesSequence);
+        for (int i=0, len=mppsSeriesSq.countItems() ; i < len ; i++) {
+            DicomObject mppsSeriesItem = mppsSeriesSq.getDicomObject(i);
+            DicomElement mppsInstanceSq = mppsSeriesItem.get(Tag.ReferencedImageSequence);
+            if (mppsInstanceSq.isEmpty()) 
+                mppsInstanceSq = mppsSeriesItem.get(Tag.ReferencedNonImageCompositeSOPInstanceSequence);
+            if (mppsInstanceSq.isEmpty()) {
+                log.warn("Referenced series ("+mppsSeriesItem.getString(Tag.SeriesInstanceUID)+") in MPPS "
+                        +mpps.getString(Tag.SOPInstanceUID)+" has no instance reference!");
+                continue;
+            }
+            seriesIuid = mppsSeriesItem.getString(Tag.SeriesInstanceUID);
+            iuid = mppsInstanceSq.getDicomObject(0).getString(Tag.ReferencedSOPInstanceUID);
+            scheduleForward(patId, studyIuid, seriesIuid, new String[]{iuid});
+        }
+    }
+
     public int removeForeignPpsInfo(long studyPk) {
         return this.lookupDicomEditLocal().removeForeignPpsInfo(studyPk);
     }
     
-    private void updateSeriesAttributes(MppsToMwlLinkResult result) throws InstanceNotFoundException, MBeanException, ReflectionException {
+    private Map<String,DicomObject> updateSeriesAttributes(MppsToMwlLinkResult result) throws InstanceNotFoundException, MBeanException, ReflectionException {
         DicomObject coerce = getCoercionAttrs(result.getMwl().getAttributes());
         if ( coerce != null && !coerce.isEmpty()) {
             String[] mppsIuids = new String[result.getMppss().size()];
@@ -582,9 +602,10 @@ public class ContentEditService extends ServiceMBeanSupport {
             for (MPPS m : result.getMppss()) {
                 mppsIuids[i++] = m.getSopInstanceUID();
             }
-            this.lookupMppsToMwlLinkLocal().updateSeriesAndStudyAttributes(mppsIuids, coerce);
+            return this.lookupMppsToMwlLinkLocal().updateSeriesAndStudyAttributes(mppsIuids, coerce);
         } else {
             log.warn("No Coercion attributes to update Study and Series Attributes after linking MPPS to MWL! coerce:"+coerce);
+            return null;
         }
     }
     private DicomObject getCoercionAttrs(DicomObject ds) throws InstanceNotFoundException, MBeanException, ReflectionException {
@@ -1064,7 +1085,8 @@ public class ContentEditService extends ServiceMBeanSupport {
                     log.error("Scheduling Attributes Modification Notification failed!", e);
                 }
                 if (forwardModifiedToAETs != null) {
-                    scheduleForward(obj, qrLevel);
+                    DicomObject fwdIan = lookupDicomEditLocal().getIanForForwardModifiedObject(obj, qrLevel);
+                    scheduleForward(fwdIan);
                 }
             } else {
                 log.debug("No further action after Dicom Edit defined for level "+qrLevel+"!");
@@ -1072,21 +1094,32 @@ public class ContentEditService extends ServiceMBeanSupport {
         }        
     }
 
-    private void scheduleForward(DicomObject obj, String qrLevel) {
-        DicomObject fwdIan = lookupDicomEditLocal().getIanForForwardModifiedObject(obj, qrLevel);
+    private void scheduleForward(DicomObject fwdIan) {
         log.info("fwdIan:"+fwdIan);
         if (fwdIan == null) {
-            log.warn("Forward of modified Object ignored! Reason: No instance found. Q/R level:"+qrLevel+" obj:\n"+obj);
+            log.warn("Forward of modified Object ignored! Reason: No ONLINE instance found!");
         } else {
             for (int i = 0 ; i < forwardModifiedToAETs.length ; i++) {
                 try {
                     log.info("Scheduling forward of modified object to {}", forwardModifiedToAETs[i]);
                     server.invoke(moveScuServiceName, "scheduleMoveInstances", 
                             new Object[]{fwdIan, forwardModifiedToAETs[i], null}, 
-                            new String[]{DicomObject.class.getName(), String.class.getName(), Integer.class.getName()});
+                            new String[]{DicomObject.class.getName(), STRING, Integer.class.getName()});
                 } catch (Exception e) {
                     log.error("Scheduling forward of modified object to "+forwardModifiedToAETs[i]+" failed!", e);
                 }
+            }
+        }
+    }
+    private void scheduleForward(String patId, String studyIuid, String seriesIuid, String[] iuids) {
+        for (int i = 0 ; i < forwardModifiedToAETs.length ; i++) {
+            try {
+                server.invoke(moveScuServiceName, "scheduleMoveInstances", 
+                        new Object[]{patId, studyIuid, seriesIuid, iuids, null, forwardModifiedToAETs[i], null}, 
+                        new String[]{STRING, STRING, STRING, String[].class.getName(), 
+                            STRING, STRING, Integer.class.getName()});
+            } catch (Exception e) {
+                log.error("Scheduling forward of modified object to "+forwardModifiedToAETs[i]+" failed!", e);
             }
         }
     }

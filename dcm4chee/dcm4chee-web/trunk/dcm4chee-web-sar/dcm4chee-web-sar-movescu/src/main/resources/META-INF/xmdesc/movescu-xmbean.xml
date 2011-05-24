@@ -312,9 +312,52 @@
       		]]> </description>
       <name>scheduleMoveInstances</name>
       <parameter>
-        <description>Application Entity Title of MOVE SCP (retrieve AET)</description>
+        <description>IAN DicomObject which references the instances to move</description>
         <name>ian</name>
         <type>org.dcm4che2.data.DicomObject</type>
+      </parameter>
+      <parameter>
+        <description>Application Entity Title of MOVE destination</description>
+        <name>destAET</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>DICOM priority for this move request</description>
+        <name>priority</name>
+        <type>java.lang.Integer</type>
+      </parameter>
+      
+      <return-type>void</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description><![CDATA[ Schedule DICOM C-MOVE request to given Destination AET.
+      		]]> </description>
+      <name>scheduleMoveInstances</name>
+      <parameter>
+        <description>Patient ID</description>
+        <name>patId</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Study Instance UID</description>
+        <name>studyIuid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Series Instance UID</description>
+        <name>seriesIuid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>SOP Instance UIDs</description>
+        <name>iuids</name>
+        <type>[Ljava.lang.String;</type>
+      </parameter>
+      <parameter>
+        <description>Application Entity Title of MOVE SCP. (Use configured calledAET if null)</description>
+        <name>destAET</name>
+        <type>java.lang.String</type>
       </parameter>
       <parameter>
         <description>Application Entity Title of MOVE destination</description>

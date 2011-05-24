@@ -39,9 +39,11 @@
 package org.dcm4chee.web.dao.folder;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.Stateless;
@@ -54,6 +56,8 @@ import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
+import org.dcm4chee.archive.common.Availability;
+import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.entity.Patient;
@@ -283,33 +287,74 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
     }
     
     @SuppressWarnings("unchecked")
-    public void updateSeriesAndStudyAttributes(String[] mppsIuids, DicomObject coerce) {
+    public Map<String,DicomObject> updateSeriesAndStudyAttributes(String[] mppsIuids, DicomObject coerce) {
         StringBuilder sb = new StringBuilder("SELECT object(s) FROM Series s WHERE performedProcedureStepInstanceUID");
         QueryUtil.appendIN(sb, mppsIuids.length);
         Query qS = em.createQuery(sb.toString());
         QueryUtil.setParametersForIN(qS, mppsIuids);
         List<Series> seriess = (List<Series>) qS.getResultList();
-        log.info("Coerce SeriesAndStudy: nr of series:"+seriess);
+        log.info("Coerce Series and Study attributes after linking mpps to mwl: nr of series:"+seriess.size());
+        Map<String,DicomObject> result = new HashMap<String, DicomObject>();
         if (seriess.size() > 0) {
             DicomObject seriesAndStudyAttrs = null;
             Study study = null;
             for (Series s : seriess) {
                 seriesAndStudyAttrs = s.getAttributes(true);
                 study = s.getStudy();
+                addToResult(result, s, study);
                 study.getAttributes(true).copyTo(seriesAndStudyAttrs);
                 seriesAndStudyAttrs.remove(Tag.RequestAttributesSequence);
-                log.info("Coerce SeriesAndStudy: orig:"+seriesAndStudyAttrs);
-                log.info("Coerce SeriesAndStudy: coerce:"+coerce);
+                log.debug("Coerce SeriesAndStudy: orig:"+seriesAndStudyAttrs);
+                log.debug("Coerce SeriesAndStudy: coerce:"+coerce);
                 coerceAttributes(seriesAndStudyAttrs, coerce, null);
-                log.info("Set coerced SeriesAndStudy: "+seriesAndStudyAttrs);
+                log.debug("Set coerced SeriesAndStudy: "+seriesAndStudyAttrs);
                 s.setAttributes(seriesAndStudyAttrs);
                 em.merge(s);
-                log.info("new Series Attrs: "+s.getAttributes(true));
+                log.debug("new Series Attrs: "+s.getAttributes(true));
             }
             study.setAttributes(seriesAndStudyAttrs);
             em.merge(study);
-            log.info("new Study Attrs: "+study.getAttributes(true));
+            log.debug("new Study Attrs: "+study.getAttributes(true));
         }
+        return result;
+    }
+
+    private void addToResult(Map<String, DicomObject> result, Series series,
+            Study study) {
+        Instance instance = null;
+        for (Iterator<Instance> it = series.getInstances().iterator() ; it.hasNext();) {
+            instance = it.next();
+            if (instance.getAvailability() == Availability.ONLINE)
+                break;
+        }
+        if (instance.getAvailability() != Availability.ONLINE) {
+            log.warn("No ONLINE instance found for series:"+series.getSeriesInstanceUID()+"!");
+            return;
+        }
+        DicomObject ian = result.get(study.getStudyInstanceUID());
+        if (ian == null) {
+            ian = new BasicDicomObject();
+            ian.putString(Tag.StudyInstanceUID, VR.UI, study.getStudyInstanceUID());
+            ian.putString(Tag.AccessionNumber, VR.SH, study.getAccessionNumber());
+            Patient pat = study.getPatient();
+            ian.putString(Tag.PatientID, VR.LO, pat.getPatientID());
+            ian.putString(Tag.IssuerOfPatientID, VR.LO, pat.getIssuerOfPatientID());
+            ian.putString(Tag.PatientName, VR.PN, pat.getPatientName());
+            result.put(study.getStudyInstanceUID(), ian);
+        }
+        DicomElement refSeriesSeq = ian.get(Tag.ReferencedSeriesSequence);
+        if (refSeriesSeq == null)
+            refSeriesSeq = ian.putSequence(Tag.ReferencedSeriesSequence);
+        DicomObject refSerItem = new BasicDicomObject();
+        refSerItem.putString(Tag.SeriesInstanceUID, VR.UI, series.getSeriesInstanceUID());
+        refSeriesSeq.addDicomObject(refSerItem);
+        DicomElement refSopSeq = refSerItem.putSequence(Tag.ReferencedSOPSequence);
+        DicomObject refSopItem = new BasicDicomObject();
+        refSopSeq.addDicomObject(refSopItem);
+        refSopItem.putString(Tag.RetrieveAETitle, VR.AE, instance.getRetrieveAETs());
+        refSopItem.putString(Tag.InstanceAvailability, VR.CS, Availability.ONLINE.name());
+        refSopItem.putString(Tag.ReferencedSOPClassUID, VR.UI, instance.getSOPClassUID());
+        refSopItem.putString(Tag.ReferencedSOPInstanceUID, VR.UI, instance.getSOPInstanceUID());
     }
 
     private void updateOriginalAttributeSequence(DicomObject attrs,
