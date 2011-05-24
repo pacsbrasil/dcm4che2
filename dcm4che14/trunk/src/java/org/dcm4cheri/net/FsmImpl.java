@@ -878,7 +878,7 @@ final class FsmImpl
         void write(AAssociateRQ rq)
             throws IOException
         {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Error writing. Current state is: " + state.toString());
         }
 
 
@@ -891,7 +891,7 @@ final class FsmImpl
         void write(AAssociateAC ac)
             throws IOException
         {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Error writing. Current state is: " + state.toString());
         }
 
 
@@ -904,7 +904,7 @@ final class FsmImpl
         void write(AAssociateRJ rj)
             throws IOException
         {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Error writing. Current state is: " + state.toString());
         }
 
 
@@ -917,7 +917,8 @@ final class FsmImpl
         void write(PDataTF data)
             throws IOException
         {
-            throw new IllegalStateException();
+        	
+            throw new IllegalStateException("Error writing. Current state is: " + state.toString());
         }
 
 
@@ -930,7 +931,7 @@ final class FsmImpl
         void write(AReleaseRQ rq)
             throws IOException
         {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Error writing. Current state is: " + state.toString());
         }
 
 
@@ -943,7 +944,7 @@ final class FsmImpl
         void write(AReleaseRP rp)
             throws IOException
         {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Error writing. Current state is: " + state.toString());
         }
 
 
