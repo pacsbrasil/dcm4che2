@@ -142,7 +142,7 @@ public class StoreScpService extends AbstractScpService {
             new Thread(new Runnable(){
                 public void run() {
                     try {
-                        log.info("Check for Pending Series Stored");
+                        log.debug("Check for Pending Series Stored");
                         checkPendingSeriesStored();
                     } catch (Exception e) {
                         log.error("Check for Pending Series Stored failed:", e);
