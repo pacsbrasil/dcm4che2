@@ -116,12 +116,16 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return noneAsNull(getString("WadoBaseURL"));
     }
 
-    public String getWebviewerName() {
-        return noneAsNull(getString("WebviewerName"));
+    public List<String> getInstalledWebViewerNameList() {
+        return getStringList("getInstalledWebViewerNameList");
     }
 
-    public String getWebviewerBaseUrl() {
-        return noneAsNull(getString("WebviewerBaseUrl"));
+    public List<String> getWebviewerNameList() {
+        return getStringList("getWebviewerNameList");
+    }
+
+    public List<String> getWebviewerBaseUrlList() {
+        return getStringList("getWebviewerBaseUrlList");
     }
    
     public List<String> getModalityList() {

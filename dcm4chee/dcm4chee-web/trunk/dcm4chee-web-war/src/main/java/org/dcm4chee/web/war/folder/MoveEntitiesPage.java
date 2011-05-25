@@ -260,17 +260,17 @@ public class MoveEntitiesPage extends SecureWebPage {
             return true;
         String action = (selected.getPatients().size() > 0) ? StudyPermission.DELETE_ACTION : StudyPermission.APPEND_ACTION;
         if (selected.getStudies().size() > 0) {
-            if (!sph.checkPermission(selected.getStudies(), action))
+            if (!sph.checkPermission(selected.getStudies(), action, true))
                 return false;
             action = StudyPermission.DELETE_ACTION;
         }
         if (selected.getSeries().size() > 0) {
-            if (!sph.checkPermission(selected.getSeries(), action))
+            if (!sph.checkPermission(selected.getSeries(), action, true))
                 return false;
             action = StudyPermission.DELETE_ACTION;
         }
         if (selected.getInstances().size() > 0) {
-            if (!sph.checkPermission(selected.getInstances(), action))
+            if (!sph.checkPermission(selected.getInstances(), action, true))
                 return false;
         }
         return true;

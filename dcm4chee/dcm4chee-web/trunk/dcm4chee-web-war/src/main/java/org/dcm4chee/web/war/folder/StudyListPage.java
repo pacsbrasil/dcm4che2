@@ -156,6 +156,7 @@ import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage;
+import org.dcm4chee.web.war.folder.webviewer.Webviewer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -207,7 +208,7 @@ public class StudyListPage extends Panel {
     private ImageSelectionWindow imageSelectionWindow = new ImageSelectionWindow("imgSelection");
     private ModalWindow wadoImageWindow = new ModalWindow("wadoImageWindow");
     
-    private WebviewerLinkProvider webviewerLinkProvider;
+    private WebviewerLinkProvider[] webviewerLinkProviders;
     
     private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
      
@@ -236,8 +237,7 @@ public class StudyListPage extends Panel {
                 target.addComponent(getPage());
             }            
         });
-        webviewerLinkProvider = new WebviewerLinkProvider(WebCfgDelegate.getInstance().getWebviewerName());
-        webviewerLinkProvider.setBaseUrl(WebCfgDelegate.getInstance().getWebviewerBaseUrl());
+        initWebviewerLinkProvider();
         
         final StudyListFilter filter = viewport.getFilter();
         add(form = new BaseForm("form", new CompoundPropertyModel<Object>(filter)));
@@ -300,6 +300,26 @@ public class StudyListPage extends Panel {
         imageSelectionWindow.add(new SecurityBehavior(getModuleName() + ":imageSelectionWindow"));
         add(wadoImageWindow);
         wadoImageWindow.add(new SecurityBehavior(getModuleName() + ":wadoImageWindow"));
+    }
+
+    private void initWebviewerLinkProvider() {
+        List<String> names = WebCfgDelegate.getInstance().getWebviewerNameList();
+        if (names == null) {
+            names = WebCfgDelegate.getInstance().getInstalledWebViewerNameList();
+        } 
+        if (names == null || names.isEmpty()) {
+            webviewerLinkProviders = null;
+        } else {
+            webviewerLinkProviders = new WebviewerLinkProvider[names.size()];
+            List<String> baseUrls = WebCfgDelegate.getInstance().getWebviewerBaseUrlList();
+            for (int i = 0 ; i < webviewerLinkProviders.length ; i++) {
+                webviewerLinkProviders[i] = new WebviewerLinkProvider(names.get(i));
+                if (i < baseUrls.size()) {
+                    String url = baseUrls.get(i);
+                    webviewerLinkProviders[i].setBaseUrl("NONE".equals(url) ? null : url);
+                }
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -1077,21 +1097,10 @@ public class StudyListPage extends Panel {
                     .add(tooltip));
             item.add(getStudyPermissionLink(modalWindow, patModel, tooltip)
                     .add(new SecurityBehavior(getModuleName() + ":studyPermissionsPatientLink"))
-                    .add(tooltip));    
-            item.add(new ExternalLink("webview", webviewerLinkProvider.getUrlForPatient(patModel.getId(), patModel.getIssuer())) {
-                private static final long serialVersionUID = 1L;
-                @Override
-                public boolean isVisible() {
-                    return !studyPermissionHelper.isUseStudyPermissions() 
-                        && webviewerLinkProvider.supportPatientLevel();
-                }
-            }
-            .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
-                    PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-            .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
-                    .add(tooltip))
-                    .add(new SecurityBehavior(getModuleName() + ":webviewerPatientLink"))
-            );
+                    .add(tooltip));
+            item.add(Webviewer.getLink(patModel, webviewerLinkProviders, studyPermissionHelper)
+                    .add(tooltip)
+                    ).add(new SecurityBehavior(getModuleName() + ":webviewerPatientLink"));
             item.add(new AjaxCheckBox("selected") {
 
                 private static final long serialVersionUID = 1L;
@@ -1222,21 +1231,9 @@ public class StudyListPage extends Panel {
                     return studyModel.isDetails();
                 }
             };
-            item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForStudy(studyModel.getStudyInstanceUID())) {
-                private static final long serialVersionUID = 1L;
-                @Override
-                public boolean isVisible() {
-                    return !studyPermissionHelper.isUseStudyPermissions() 
-                        && webviewerLinkProvider.supportStudyLevel();
-                }
-            }
-            .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
-                    PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-                .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
-                .add(tooltip))
-                .setVisible(studyPermissionHelper.checkPermission(studyModel, StudyPermission.READ_ACTION))
-                .add(new SecurityBehavior(getModuleName() + ":webviewerStudyLink"))
-            );
+            item.add( Webviewer.getLink(studyModel, webviewerLinkProviders, studyPermissionHelper)
+                    .add(tooltip)
+                    ).add(new SecurityBehavior(getModuleName() + ":webviewerStudyLink"));
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", studyModel, false));
             details.setVisible(studyPermissionHelper.checkPermission(studyModel, StudyPermission.QUERY_ACTION));
@@ -1564,21 +1561,9 @@ public class StudyListPage extends Panel {
                     return seriesModel.isDetails();
                 }
             };
-            item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForSeries(seriesModel.getSeriesInstanceUID())) {
-                private static final long serialVersionUID = 1L;
-                @Override
-                public boolean isVisible() {
-                    return !studyPermissionHelper.isUseStudyPermissions() 
-                        && webviewerLinkProvider.supportSeriesLevel();
-                }
-            }
-                .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
-                    PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-                    .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
-                            .add(tooltip))
-                 .setVisible(studyPermissionHelper.checkPermission(seriesModel, StudyPermission.READ_ACTION))
-                .add(new SecurityBehavior(getModuleName() + ":webviewerSeriesLink"))
-            );
+            item.add(Webviewer.getLink(seriesModel, webviewerLinkProviders, studyPermissionHelper)
+                .add(tooltip)
+                ).add(new SecurityBehavior(getModuleName() + ":webviewerSeriesLink"));
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", seriesModel, false));
             details.setVisible(studyPermissionHelper.checkPermission(seriesModel, StudyPermission.QUERY_ACTION));
@@ -1643,22 +1628,9 @@ public class StudyListPage extends Panel {
                     .setVisible(studyPermissionHelper.checkPermission(instModel, StudyPermission.UPDATE_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":editInstanceLink"))
             );
-            item.add( new ExternalLink("webview", webviewerLinkProvider.getUrlForInstance(instModel.getSOPInstanceUID())) {
-                private static final long serialVersionUID = 1L;
-                @Override
-                public boolean isVisible() {
-                    return !studyPermissionHelper.isUseStudyPermissions() 
-                        && webviewerLinkProvider.supportInstanceLevel();
-                }
-            }
-                .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
-                        PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-                .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour())
-                        .add(tooltip)
-                )
-                .setVisible(studyPermissionHelper.checkPermission(instModel, StudyPermission.READ_ACTION))
-                .add(new SecurityBehavior(getModuleName() + ":webviewerInstanceLink"))
-            );
+            item.add(Webviewer.getLink(instModel, webviewerLinkProviders, studyPermissionHelper)
+                    .add(tooltip)
+                ).add(new SecurityBehavior(getModuleName() + ":webviewerInstanceLink"));
 
             item.add(new AjaxLink<Object>("wado") {
                 private static final long serialVersionUID = 1L;

@@ -49,10 +49,10 @@ import java.security.Principal;
 import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
@@ -241,7 +241,7 @@ public class StudyPermissionHelper implements Serializable {
         return SSO;
     }
 
-    public boolean checkPermission(Set<? extends AbstractDicomModel> c, String action) {
+    public boolean checkPermission(Collection<? extends AbstractDicomModel> c, String action, boolean all) {
         if (!isUseStudyPermissions()
         || (dicomRoles == null))
             return true;
@@ -251,10 +251,14 @@ public class StudyPermissionHelper implements Serializable {
             return true;
         for (AbstractDicomModel m : c) {
             if (!checkStudyPermission(m, action)) {
-                return false;
+                if (all)
+                    return false;
+            } else {
+                if (!all)
+                    return true;
             }
         }
-        return true;
+        return all;
     }
     
     public boolean checkPermission(AbstractDicomModel m, String action) {

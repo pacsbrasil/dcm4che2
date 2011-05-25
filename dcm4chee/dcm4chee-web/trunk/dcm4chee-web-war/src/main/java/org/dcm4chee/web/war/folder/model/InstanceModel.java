@@ -200,4 +200,9 @@ public class InstanceModel extends AbstractEditableDicomModel implements Seriali
         dataset = dao.getInstance(getPk()).getAttributes(true);
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "Instance: "+getSOPInstanceUID();
+    }
 }

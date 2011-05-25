@@ -257,4 +257,9 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
         numberOfStudyRelatedSeries = s.getNumberOfStudyRelatedSeries();
         numberOfStudyRelatedInstances = s.getNumberOfStudyRelatedInstances();
     }
+    
+    @Override
+    public String toString() {
+        return "Study: "+getStudyInstanceUID();
+    }
 }

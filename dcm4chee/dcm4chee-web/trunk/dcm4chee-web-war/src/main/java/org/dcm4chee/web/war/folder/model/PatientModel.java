@@ -184,4 +184,9 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
         }
         return expandable;
     }
+    
+    @Override
+    public String toString() {
+        return "Patient: "+getName()+" (ID:"+getId()+")";
+    }
 }

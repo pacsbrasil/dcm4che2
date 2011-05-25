@@ -77,6 +77,10 @@ public class WebviewerLinkProvider implements Serializable {
         log.debug("Selected WebviewerLinkProvider: {}",provider.getName());
     }
     
+    public String getName() {
+        return provider.getName();
+    }
+    
     public void setBaseUrl(String baseUrl) {
         provider.setBaseURL(baseUrl);
     }
