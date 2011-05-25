@@ -42,17 +42,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.wicket.Component;
-import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.MarkupStream;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.parser.XmlTag;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.util.string.AppendingStringBuffer;
-import org.apache.wicket.util.string.Strings;
+import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
-import org.dcm4chee.web.war.folder.StudyListPage;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -67,42 +67,48 @@ public class SelectAllLink extends AjaxFallbackLink<Object> {
     private boolean selectState;
     private int selectLevel;
     private boolean selectChilds;
-    private ResourceReference selectImg;
+    private Image selectImg;
     
     public SelectAllLink(String id, List<? extends AbstractDicomModel> models, 
-            int selectLevel, boolean select) {
+            int selectLevel, final boolean select) {
         super(id);
         this.models = models;
         this.selectLevel = selectLevel;
         this.selectState = select;
-        selectImg = select ? 
-                new ResourceReference(StudyListPage.class, "images/select.png") : 
-                    new ResourceReference(StudyListPage.class, "images/deselect.png");
+        
+        add(selectImg = new Image("selectImg", new AbstractReadOnlyModel<ResourceReference>() {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public ResourceReference getObject() {
+                return select ? 
+                        ImageManager.IMAGE_FOLDER_SELECT_ALL :
+                            ImageManager.IMAGE_FOLDER_DESELECT_ALL;
+            }
+        }));
     }
+    
     public SelectAllLink(String id, List<? extends AbstractDicomModel> models, 
             int selectLevel, boolean select, Component updateComponent) {
         this(id, models, selectLevel, select);
         this.addUpdateComponent(updateComponent);
     }
+    
     public SelectAllLink(String id, List<? extends AbstractDicomModel> models, 
             int selectLevel, boolean select, Component updateComponent, boolean selectChilds) {
         this(id, models, selectLevel, select);
         this.addUpdateComponent(updateComponent);
         this.selectChilds = selectChilds;
     }
+    
     public SelectAllLink(String id, List<? extends AbstractDicomModel> models) {
         this(id, models, models.get(0).levelOfModel(), true);
     }
     
     public SelectAllLink addUpdateComponent(Component c) {
-        if (!c.getOutputMarkupId())
-            c.setOutputMarkupId(true);
+        c.setOutputMarkupId(true);
         updateComponents.add(c);
-        return this;
-    }
-    
-    public SelectAllLink setImage(ResourceReference img) {
-        this.selectImg = img;
         return this;
     }
     
@@ -126,23 +132,20 @@ public class SelectAllLink extends AjaxFallbackLink<Object> {
         }
         super.onComponentTag(tag);
     }
+
     @Override
     protected void onComponentTagBody(final MarkupStream markupStream, final ComponentTag openTag) {
         if (selectImg != null) {
             final AppendingStringBuffer buffer = new AppendingStringBuffer();
-            buffer.append("\n<img src=\"")
-            .append(getImageUrl())
-            .append("\" alt=\"(")
-            .append(this.selectState ? '+' : '-').append(")\" />\n");
-            replaceComponentTagBody(markupStream, openTag, buffer);
+            buffer.append("\n<img src=\"resources/" 
+                    + ((ResourceReference) selectImg.getDefaultModelObject()).getSharedResourceKey()
+                    + "\" alt=\"(" 
+                    + (this.selectState ? '+' : '-') 
+                    + ")\" />\n");
+            replaceComponentTagBody(markupStream, openTag, buffer);            
         }
     }
-    private CharSequence getImageUrl() {
-        CharSequence url = RequestCycle.get().urlFor(selectImg, null);
-        return RequestCycle.get().getOriginalResponse().encodeURL(
-                Strings.replaceAll(url, "&", "&amp;"));
-    }
-
+    
     private void setSelected(AbstractDicomModel m) {
         if (selectChilds) {
             if (selectState) {
@@ -176,5 +179,4 @@ public class SelectAllLink extends AjaxFallbackLink<Object> {
             target.addComponent(updateComponents.get(i));
         }
     }
-
 }
