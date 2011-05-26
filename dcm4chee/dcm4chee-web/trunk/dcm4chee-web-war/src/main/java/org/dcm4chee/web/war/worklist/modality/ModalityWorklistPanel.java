@@ -279,7 +279,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         extendedFilter.add(dtfB);
         extendedFilter.add(dtfBEnd);
         extendedFilter.add( new Label("studyInstanceUID.label", new ResourceModel("mw.extendedFilter.studyInstanceUID.label")));
-        extendedFilter.add( new TextField<String>("studyInstanceUID").add(new UIDValidator()));
+        extendedFilter.add( new TextField<String>("studyInstanceUID").add(new UIDValidator(true)));
         extendedFilter.setOutputMarkupId(true);
         extendedFilter.setOutputMarkupPlaceholderTag(true);
         form.add(extendedFilter);

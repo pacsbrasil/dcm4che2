@@ -405,7 +405,7 @@ public class StudyListPage extends Panel {
             public boolean isEnabled() {
                 return !filter.isPatientQuery();
             }            
-        }.add(new UIDValidator()));
+        }.add(new UIDValidator(true)));
 
         extendedFilter.add( new Label("seriesInstanceUID.label", new ResourceModel("folder.extendedFilter.seriesInstanceUID.label")));
         extendedFilter.add( new TextField<String>("seriesInstanceUID") {
@@ -415,7 +415,7 @@ public class StudyListPage extends Panel {
             public boolean isEnabled() {
                 return !filter.isPatientQuery() && QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
             }
-        }.add(new UIDValidator()));
+        }.add(new UIDValidator(true)));
         form.add(extendedFilter);
         
         searchTableComponents.add(form.createAjaxParent("searchFooter"));
