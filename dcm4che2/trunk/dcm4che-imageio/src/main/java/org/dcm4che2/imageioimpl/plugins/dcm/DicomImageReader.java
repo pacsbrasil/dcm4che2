@@ -557,7 +557,7 @@ public class DicomImageReader extends ImageReader {
      * overlay. Otherwise, the imageIndex must be in the range
      * 0..numberOfFrames-1, or 0 for a single frame image. Overlays can be read
      * from PR objects or other types of objects in addition to image objects.
-     * param can be used to sepecify GSPS to apply to the image, or to override
+     * param can be used to specify GSPS to apply to the image, or to override
      * the default window level values, or to return the raw image.
      */
     @Override
@@ -707,6 +707,38 @@ public class DicomImageReader extends ImageReader {
         return ret;
     }
 
+    /**
+     * Before read image stream, seek the right frame position first.
+     * Note this method is called ONLY if you want to read the data directly
+     * from ImageInputStream from yourself. 
+     * @param imageIndex
+     * @param param
+     * @return The length of image data that will be read from stream
+     */
+    private int seekFrameBeforeForReadStream(
+            int imageIndex, ImageReadParam param)throws IOException {
+        initImageReader(imageIndex);
+        if (compressed) {
+            return itemParser.seekImageFrameBeforeReadStream(siis, imageIndex);
+        }
+        int frameLen = calculateFrameLength();
+        long offset = pixelDataPos + imageIndex * (long) frameLen;
+        iis.seek(offset);
+        return frameLen;
+    }
+    /**
+     * Get the ImageInputStream to read. 
+     * @return
+     */
+    public ImageInputStream getImageInputStream(int imageIndex, ImageReadParam param)
+    throws IOException {
+        seekFrameBeforeForReadStream(imageIndex, param);
+        if (compressed) {
+            return siis;
+        }
+        return iis;
+    }
+    
     protected void copyReadParam(ImageReadParam src, ImageReadParam dst) {
         dst.setDestination(src.getDestination());
         dst.setSourceRegion(src.getSourceRegion());
