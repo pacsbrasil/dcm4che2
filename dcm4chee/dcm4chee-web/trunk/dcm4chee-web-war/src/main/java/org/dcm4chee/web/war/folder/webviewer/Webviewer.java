@@ -47,6 +47,7 @@ import org.apache.wicket.markup.html.link.PopupSettings;
 import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
@@ -68,7 +69,7 @@ public class Webviewer  {
     private static Logger log = LoggerFactory.getLogger(Webviewer.class);
 
     public static AbstractLink getLink(final AbstractDicomModel model, final WebviewerLinkProvider[] providers,
-            final StudyPermissionHelper studyPermissionHelper) {
+            final StudyPermissionHelper studyPermissionHelper, TooltipBehaviour tooltip) {
         if (providers == null || providers.length < 2) {
             String url = isModelSupported(model, providers) ? getUrlForModel(model, providers[0]) : null;
             ExternalLink link = new ExternalLink(WEBVIEW_ID, url == null ? "http://dummy" : url);
@@ -82,7 +83,7 @@ public class Webviewer  {
                 }
             }
             link.setVisible(visible);
-            return prepareLink(link);
+            return prepareLink(link, tooltip);
         } else {
             return getWebviewerSelectionPageLink(model, providers, studyPermissionHelper);
         }
@@ -115,10 +116,10 @@ public class Webviewer  {
         return link;
     }
 
-    private static ExternalLink prepareLink(ExternalLink link) {
+    private static ExternalLink prepareLink(ExternalLink link, TooltipBehaviour tooltip) {
         link.setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                 PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-        .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour()));
+        .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour()).add(tooltip));
         return link;
     }
     

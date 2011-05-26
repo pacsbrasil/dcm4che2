@@ -1098,8 +1098,7 @@ public class StudyListPage extends Panel {
             item.add(getStudyPermissionLink(modalWindow, patModel, tooltip)
                     .add(new SecurityBehavior(getModuleName() + ":studyPermissionsPatientLink"))
                     .add(tooltip));
-            item.add(Webviewer.getLink(patModel, webviewerLinkProviders, studyPermissionHelper)
-                    .add(tooltip)
+            item.add(Webviewer.getLink(patModel, webviewerLinkProviders, studyPermissionHelper, tooltip)
                     ).add(new SecurityBehavior(getModuleName() + ":webviewerPatientLink"));
             item.add(new AjaxCheckBox("selected") {
 
@@ -1231,8 +1230,7 @@ public class StudyListPage extends Panel {
                     return studyModel.isDetails();
                 }
             };
-            item.add( Webviewer.getLink(studyModel, webviewerLinkProviders, studyPermissionHelper)
-                    .add(tooltip)
+            item.add( Webviewer.getLink(studyModel, webviewerLinkProviders, studyPermissionHelper, tooltip)
                     ).add(new SecurityBehavior(getModuleName() + ":webviewerStudyLink"));
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", studyModel, false));
@@ -1561,8 +1559,7 @@ public class StudyListPage extends Panel {
                     return seriesModel.isDetails();
                 }
             };
-            item.add(Webviewer.getLink(seriesModel, webviewerLinkProviders, studyPermissionHelper)
-                .add(tooltip)
+            item.add(Webviewer.getLink(seriesModel, webviewerLinkProviders, studyPermissionHelper, tooltip)
                 ).add(new SecurityBehavior(getModuleName() + ":webviewerSeriesLink"));
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", seriesModel, false));
@@ -1628,8 +1625,7 @@ public class StudyListPage extends Panel {
                     .setVisible(studyPermissionHelper.checkPermission(instModel, StudyPermission.UPDATE_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":editInstanceLink"))
             );
-            item.add(Webviewer.getLink(instModel, webviewerLinkProviders, studyPermissionHelper)
-                    .add(tooltip)
+            item.add(Webviewer.getLink(instModel, webviewerLinkProviders, studyPermissionHelper, tooltip)
                 ).add(new SecurityBehavior(getModuleName() + ":webviewerInstanceLink"));
 
             item.add(new AjaxLink<Object>("wado") {
