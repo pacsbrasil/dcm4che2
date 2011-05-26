@@ -4,12 +4,12 @@
     <parent>
         <artifactId>dcm4che</artifactId>
         <groupId>dcm4che</groupId>
-        <version>2.0.26-SNAPSHOT</version>
+        <version>2.0.26rc-SNAPSHOT</version>
     </parent>
     <groupId>dcm4che</groupId>
     <artifactId>dcm4che-filecache</artifactId>
     <name>dcm4che-filecache</name>
-    <version>2.0.26-SNAPSHOT</version>
+    <version>2.0.26rc-SNAPSHOT</version>
     <description>LRU file cache using journal files for logging last file access</description>
     <dependencies>
         <dependency>
