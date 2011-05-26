@@ -160,10 +160,10 @@ public class StgCmtScuBySeriesStoredService extends ServiceMBeanSupport {
             }
             try {
                 log.info("Queue StgCmt Order! calling:"+callingAet+" called:"+aet);
-                server.invoke(stgCmtServiceName, "queueStgCmtOrder", new Object[] {
-                        callingAet, aet, actionInfo, Boolean.FALSE }, new String[] {
+                server.invoke(stgCmtServiceName, "onInstancesRetrieved", new Object[] {
+                        callingAet, aet, actionInfo }, new String[] {
                         String.class.getName(), String.class.getName(),
-                        Dataset.class.getName(), boolean.class.getName() });
+                        Dataset.class.getName() });
             } catch (Exception x) {
                 log.error("Failed to queue StorageCommit Order! calledAet:"+aet, x);
                 log.debug(actionInfo);
