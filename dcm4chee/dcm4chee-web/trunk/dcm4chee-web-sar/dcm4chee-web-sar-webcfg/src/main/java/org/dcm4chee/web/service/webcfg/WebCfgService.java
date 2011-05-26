@@ -82,14 +82,25 @@ import org.jboss.system.server.ServerConfigLocator;
  */
 public class WebCfgService extends ServiceMBeanSupport implements NotificationListener, NotificationFilter {
 
+    protected static final long serialVersionUID = 1L;
+
+    protected String loginAllowedRolename;
+    protected boolean manageUsers;
+    protected String webConfigPath;
+    
+    protected Map<String,int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
+    
+    protected static final String NONE = "NONE";
+    protected final String NEWLINE = System.getProperty("line.separator", "\n");
+    private static final String ANY = "ANY";
     private static final String DEFAULT_TIMER_SERVICE = "jboss:service=Timer";
     private static final long ONE_DAY_IN_MILLIS = 60000*60*24;
     
     private String dicomSecurityServletUrl;
     
     private String wadoBaseURL;
-    private String webviewerName;
-    private String webviewerBaseUrl;
+    private List<String> webviewerNames;
+    private List<String> webviewerBaseUrls;
     
     private ObjectName aeServiceName;
     private ObjectName echoServiceName;
@@ -165,33 +176,50 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
     
     public String getInstalledWebViewer() {
+        List<String> l = getInstalledWebViewerNameList();
+        if (l == null)
+            return "ERROR";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0, len = l.size() ; i < len ; i++) {
+            sb.append(l.get(i)).append(NEWLINE);
+        }
+        return sb.toString();
+    }
+    
+    public List<String> getInstalledWebViewerNameList() {
         try {
+            ArrayList<String> l = new ArrayList<String>();
             Iterator<WebviewerLinkProviderSPI> iter = ServiceRegistry.lookupProviders(WebviewerLinkProviderSPI.class);
-            StringBuilder sb = new StringBuilder();
             while (iter.hasNext()) {
-                sb.append(iter.next().getName()).append(NEWLINE);
+                l.add(iter.next().getName());
             }
-            return sb.toString();
+            return l;
         } catch (Throwable t) {
             log.error("getInstalledWebViewer failed! reason:"+t, t);
-            return "ERROR";
+            return null;
         }
     }
     
-    public String getWebviewerName() {
-        return webviewerName;
+    public List<String> getWebviewerNameList() {
+        return webviewerNames;
+    }
+    public String getWebviewerNames() {
+        return listAsString(webviewerNames, NEWLINE);
     }
 
-    public void setWebviewerName(String webviewerName) {
-        this.webviewerName = webviewerName;
+    public void setWebviewerNames(String names) {
+        this.webviewerNames = stringAsList(names, NEWLINE);
     }
 
-    public String getWebviewerBaseUrl() {
-        return webviewerBaseUrl;
+    public List<String> getWebviewerBaseUrlList() {
+        return webviewerBaseUrls;
+    }
+    public String getWebviewerBaseUrls() {
+        return listAsString(webviewerBaseUrls, NEWLINE);
     }
 
-    public void setWebviewerBaseUrl(String webviewerBaseUrl) {
-        this.webviewerBaseUrl = webviewerBaseUrl;
+    public void setWebviewerBaseUrls(String urls) {
+        this.webviewerBaseUrls = stringAsList(urls, NEWLINE+"|");
     }
 
     public String getImageCUIDS() {
@@ -235,7 +263,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
 
     public String getModalities() {
-        return listAsString(modalities);
+        return listAsString(modalities, "|");
     }
 
     public List<String> getModalityList() {
@@ -246,7 +274,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
     
     public void setModalities(String s) {
-        updateList(modalities, s);
+        updateList(modalities, s, "|");
     }
     
     public boolean isAutoUpdateModalities() {
@@ -258,7 +286,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
 
     public String getSourceAETs() {
-        return listAsString(sourceAETs);
+        return listAsString(sourceAETs, "|");
     }
     
     public List<String> getSourceAETList() {
@@ -269,7 +297,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
     
     public void setSourceAETs(String s) {
-        updateList(sourceAETs, s);
+        updateList(sourceAETs, s, "|");
     }
     
     public boolean isAutoUpdateSourceAETs() {
@@ -282,7 +310,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
 
     public String getStationAETs() {
-        return listAsString(stationAETs);
+        return listAsString(stationAETs, "|");
     }
     
     public List<String> getStationAETList() {
@@ -293,7 +321,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
     
     public void setStationAETs(String s) {
-        updateList(stationAETs, s);
+        updateList(stationAETs, s, "|");
     }
     
     public boolean isAutoUpdateStationAETs() {
@@ -306,7 +334,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
 
     public String getStationNames() {
-        return listAsString(stationNames);
+        return listAsString(stationNames, "|");
     }
     
     public List<String> getStationNameList() {
@@ -317,7 +345,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
     
     public void setStationNames(String s) {
-        updateList(stationNames, s);
+        updateList(stationNames, s, "|");
     }
     
     public boolean isAutoUpdateStationNames() {
@@ -397,21 +425,29 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         this.forcePatientExpandableForPatientQuery = b;
     }
 
-    private String listAsString(List<String> list) {
-        if (list.isEmpty()) {
+    private String listAsString(List<String> list, String sep) {
+        if (list == null) 
+            return ANY;
+        if (list.isEmpty())
             return NONE;
-        }
         StringBuilder sb = new StringBuilder();
         for (String m : list) {
-            sb.append(m).append('|');
+            sb.append(m).append(sep);
         }
-        return sb.substring(0, sb.length()-1);
+        return sb.toString();
+    }
+    private List<String> stringAsList(String s, String sep) {
+        if (ANY.equals(s))
+            return null;
+        ArrayList<String> l = new ArrayList<String>();
+        updateList(l, s, sep);
+        return l;
     }
     
-    private void updateList(List<String> list, String s) {
+    private void updateList(List<String> list, String s, String sep) {
         list.clear();
         if (!NONE.equals(s)) {
-            StringTokenizer st = new StringTokenizer(s, "|");
+            StringTokenizer st = new StringTokenizer(s, sep);
             while (st.hasMoreTokens()) {
                 list.add(st.nextToken());
             }
@@ -584,7 +620,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         log.info("Update Modality List");
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        String mods= listAsString(dao.selectDistinctModalities());
+        String mods= listAsString(dao.selectDistinctModalities(), "|");
         Attribute attribute = new Attribute("Modalities", mods);
         try {
             server.setAttribute(getServiceName(), attribute );
@@ -598,7 +634,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         log.info("Update SourceAET List");
         StudyListLocal dao = (StudyListLocal)
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        String aets = listAsString(dao.selectDistinctSourceAETs());
+        String aets = listAsString(dao.selectDistinctSourceAETs(), "|");
         Attribute attribute = new Attribute("SourceAETs", aets);
         try {
             server.setAttribute(getServiceName(), attribute );
@@ -611,7 +647,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public void updateStationAETs() {
         log.info("Update StationAET List");
         ModalityWorklistLocal dao = (ModalityWorklistLocal) JNDIUtils.lookup(ModalityWorklistLocal.JNDI_NAME);
-        String aets = listAsString(dao.selectDistinctStationAETs());
+        String aets = listAsString(dao.selectDistinctStationAETs(), "|");
         Attribute attribute = new Attribute("StationAETs", aets);
         try {
             server.setAttribute(getServiceName(), attribute );
@@ -624,7 +660,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public void updateStationNames() {
         log.info("Update Station Name List");
         ModalityWorklistLocal dao = (ModalityWorklistLocal) JNDIUtils.lookup(ModalityWorklistLocal.JNDI_NAME);
-        String names = listAsString(dao.selectDistinctStationNames());
+        String names = listAsString(dao.selectDistinctStationNames(), "|");
         Attribute attribute = new Attribute("StationNames", names);
         try {
             server.setAttribute(getServiceName(), attribute );
@@ -752,18 +788,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public boolean isUseStudyPermissions() {
         return useStudyPermissions;
     }
-    
-    protected static final long serialVersionUID = 1L;
-
-    protected String loginAllowedRolename;
-    protected boolean manageUsers;
-    protected String webConfigPath;
-    
-    protected Map<String,int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
-    
-    protected static final String NONE = "NONE";
-    protected final String NEWLINE = System.getProperty("line.separator", "\n");
-    
+        
     public void setLoginAllowedRolename(String loginAllowedRolename) {
         this.loginAllowedRolename = loginAllowedRolename;
     }

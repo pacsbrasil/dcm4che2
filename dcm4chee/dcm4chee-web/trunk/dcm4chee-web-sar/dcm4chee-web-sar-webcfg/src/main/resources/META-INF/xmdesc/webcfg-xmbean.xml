@@ -63,26 +63,31 @@
       <type>java.lang.String</type>
    </attribute>
    <attribute access="read-write"
-      getMethod="getWebviewerName"
-      setMethod="setWebviewerName">
+      getMethod="getWebviewerNames"
+      setMethod="setWebviewerNames">
       <description><![CDATA[
-        Name of WebViewer that is used to view Dicom Objects.<br/>
-        NONE: Use the first installed Web Viewer.]]>
+        Name(s) of WebViewer that is used to view Dicom Objects separated by newline.<br/>
+        If more than one name is configured, the WebViewer link will open a selection of these WebViewers.<br />
+        NONE: Do not show WebViewer link in folder.<br />
+        ANY:  All installed WebViewers.]]>
       </description>
-      <name>WebviewerName</name>
+      <name>WebviewerNames</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getWebviewerBaseUrl"
-      setMethod="setWebviewerBaseUrl">
+      getMethod="getWebviewerBaseUrls"
+      setMethod="setWebviewerBaseUrls">
       <description><![CDATA[
-        Base URL to open WebViewer.<br/>
-        NONE: use default URL of the Web Viewer.]]>
+        Base URLs to open WebViewer separated by newline or '|'.<br/>
+        The order of URLs must be equivalent to the order of WebviewerNames!<br />
+        NONE: use default URL of the Web Viewer.<br />
+        e.g.: NONE&lt;newline&gt;http://localhost:8080/webviewer&lt;newline&gt;NONE<br />
+        use default URL for first and third webviewer and http://localhost:8080/webviewer for second.]]>
       </description>
-      <name>WebviewerBaseUrl</name>
+      <name>WebviewerBaseUrls</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE"/>
@@ -772,6 +777,25 @@
    <operation impact="ACTION">
       <description>Get List of Page sizes</description>
       <name>getPagesizeList</name>
+      <return-type>java.util.List</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[Get List of WebViewer names<br />
+      	Note: null means ANY and an empty list means NONE
+      ]]></description>
+      <name>getWebviewerNameList</name>
+      <return-type>java.util.List</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[Get List of installed WebViewer names<br />
+      	Note: null indicates an error.
+      ]]></description>
+      <name>getInstalledWebViewerNameList</name>
+      <return-type>java.util.List</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Get List of WebViewer Base URLs</description>
+      <name>getWebviewerBaseUrlList</name>
       <return-type>java.util.List</return-type>
    </operation>
    <operation impact="ACTION">
