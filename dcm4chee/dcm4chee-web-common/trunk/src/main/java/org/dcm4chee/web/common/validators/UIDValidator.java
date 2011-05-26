@@ -56,9 +56,19 @@ public class UIDValidator extends AbstractValidator<String> {
 
     private static final long serialVersionUID = 1L;
 
+    boolean acceptLeadingZero;
+    
+    public UIDValidator() {
+        this(false);
+    }
+    
+    public UIDValidator(boolean acceptLeadingZero) {
+        this.acceptLeadingZero = acceptLeadingZero;
+    }
+    
     @Override
     protected void onValidate(IValidatable<String> validatable) {
-        if (!UIDUtils.isValidUID(validatable.getValue())) {
+        if (!UIDUtils.isValidUID(validatable.getValue(), acceptLeadingZero)) {
             error(validatable);
         }
     }
