@@ -2,13 +2,13 @@
   <parent>
     <artifactId>dcm4che-tool</artifactId>
     <groupId>dcm4che.tool</groupId>
-    <version>2.0.26rc-SNAPSHOT</version>
+    <version>2.0.26hf-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>dcm4che.tool</groupId>
   <artifactId>dcm4che-tool-fixjpegls</artifactId>
   <name>dcm4che-tool-fixjpegls</name>
-  <version>2.0.26rc-SNAPSHOT</version>
+  <version>2.0.26hf-SNAPSHOT</version>
   <description>Patch DICOM JPEG-LS images compressed with faulty JAI-IMAGEIO JPEG-LS encoder</description>
   <dependencies>
     <dependency>
@@ -20,7 +20,7 @@
     <dependency>
       <groupId>dcm4che</groupId>
       <artifactId>dcm4che-core</artifactId>
-      <version>2.0.26rc-SNAPSHOT</version>
+      <version>2.0.26hf-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
