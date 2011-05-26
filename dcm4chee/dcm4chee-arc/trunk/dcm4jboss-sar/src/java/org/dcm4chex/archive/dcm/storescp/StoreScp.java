@@ -1353,9 +1353,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 		store, assoc.getSocket(), seriesStored);
                 doAfterSeriesIsStored(store, assoc, seriesStored);
              } catch (Exception e) {
-                log.error("Clean up on Association close failed:", e);
+                handleClosingFailed(e);
             }
         }
+    }
+
+    // extension point for handling failure of closing actions
+    protected void handleClosingFailed(Exception e) {
+        // default no-op behaviour, just log
+        log.error("Clean up on Association close failed:", e);
     }
 
     public void closed(Association assoc) {
