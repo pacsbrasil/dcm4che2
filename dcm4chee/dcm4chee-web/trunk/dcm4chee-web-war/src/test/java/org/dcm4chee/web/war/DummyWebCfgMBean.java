@@ -64,7 +64,7 @@ public class DummyWebCfgMBean extends ServiceMBeanSupport implements DynamicMBea
         if (attribute.endsWith("Pagesize")) return 10;
         if ("QueryAfterPagesizeChange".equals(attribute)) return true;
         if ("useFamilyAndGivenNameQueryFields".equals(attribute)) return false;
-        if ("roleFilename".equals(attribute)) return "role.json";
+        if ("WebConfigPath".equals(attribute)) return "conf/dcm4chee-web3";
         if ("loginAllowedRolename".equals(attribute)) return "LoginAllowed";
         if ("sourceAetsPropertiesFilename".equals(attribute)) return "source_aets.properties";
         if ("stationAetsPropertiesFilename".equals(attribute)) return "station_aets.properties";

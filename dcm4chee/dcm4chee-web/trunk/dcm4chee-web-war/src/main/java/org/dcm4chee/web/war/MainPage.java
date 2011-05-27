@@ -42,22 +42,21 @@ import java.util.Properties;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.RequestCycle;
-import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.extensions.markup.html.tabs.TabbedPanel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.time.Duration;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordPanel;
 import org.dcm4chee.usr.ui.usermanagement.role.RolePanel;
-import org.dcm4chee.usr.ui.usermanagement.role.aet.AETGroupListPanel;
 import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
-import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.base.ExternalWebAppPanel;
+import org.dcm4chee.web.common.base.ExternalWebApplications;
 import org.dcm4chee.web.common.base.ModuleSelectorPanel;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecureWicketPage;
-import org.dcm4chee.web.war.ae.AEListPanel;
 import org.dcm4chee.web.war.ae.AEPanel;
 import org.dcm4chee.web.war.folder.StudyListPage;
 import org.dcm4chee.web.war.trash.TrashListPage;
@@ -108,7 +107,9 @@ public class MainPage extends SecureWicketPage {
             selectorPanel.addModule(UserListPanel.class, null);
             selectorPanel.addModule(ChangePasswordPanel.class, null);
         }
-
+        for (ExternalWebAppPanel p : new ExternalWebApplications().getExternalWebAppPanels()) {
+            selectorPanel.addModule(p, p.getTitle());
+        }
         try {
             Properties properties = new Properties();
             properties.load(((BaseWicketApplication) getApplication()).getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));

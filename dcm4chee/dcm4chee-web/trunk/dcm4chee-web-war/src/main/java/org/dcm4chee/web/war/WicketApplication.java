@@ -46,6 +46,7 @@ import org.apache.wicket.Request;
 import org.apache.wicket.Response;
 import org.apache.wicket.security.authentication.LoginException;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
+import org.dcm4chee.web.common.login.LoginContextSecurityHelper;
 import org.dcm4chee.web.common.login.SSOLoginContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,12 +67,7 @@ public class WicketApplication extends BaseWicketApplication {
     
     @Override
     public AuthenticatedWebSession newSession(Request request, Response response) {
-        Subject jaasSubject = null;
-        try {
-            jaasSubject = (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
-        } catch (Exception x) {
-            log.error(getClass().getName() + ": Failed to get subject from javax.security.auth.Subject.container", x);
-        }
+        Subject jaasSubject = LoginContextSecurityHelper.getJaasSubject();
         AuthenticatedWebSession session = new AuthenticatedWebSession(this, request);
         if (jaasSubject != null) {
             try {
