@@ -101,7 +101,7 @@ public class WebLoginContext extends UsernamePasswordContext {
 
         DefaultSubject subject;
         try {
-            subject = LoginContextSecurityHelper.mapSwarmSubject(rolesGroupName, context.getSubject(), null);
+            subject = LoginContextSecurityHelper.mapSwarmSubject(context.getSubject(), null);
             if (!LoginContextSecurityHelper.checkLoginAllowed(subject)) {
                 ((SecureSession) RequestCycle.get().getSession()).invalidate();
                 log.warn("Failed to authorize subject for login, denied. See 'LoginAllowed' rolename attribute in Web Config Service.");

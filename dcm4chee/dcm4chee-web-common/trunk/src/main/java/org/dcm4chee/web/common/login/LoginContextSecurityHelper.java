@@ -10,15 +10,18 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.security.Principal;
 import java.security.acl.Group;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.security.auth.Subject;
+import javax.security.jacc.PolicyContext;
 
 import net.sf.json.JSONObject;
 
@@ -33,6 +36,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LoginContextSecurityHelper {
+    
+    private static String rolesGroupName;
     
     protected static Logger log = LoggerFactory.getLogger(LoginContextSecurityHelper.class);
     
@@ -54,7 +59,8 @@ public class LoginContextSecurityHelper {
         return principals;
     }
     
-    static DefaultSubject mapSwarmSubject(String rolesGroupName, Subject jaasSubject, SecureSession session) throws IOException {
+    static DefaultSubject mapSwarmSubject(Subject jaasSubject, SecureSession session) throws IOException {
+        getJaasRolesGroupName();
         DefaultSubject subject = new DefaultSubject();
         Map<String, Set<String>> mappings = null;
         Set<String> swarmPrincipals = new HashSet<String>();
@@ -116,4 +122,44 @@ public class LoginContextSecurityHelper {
     static boolean checkLoginAllowed(DefaultSubject subject) {
         return subject.getPrincipals().contains(new SimplePrincipal(BaseCfgDelegate.getInstance().getLoginAllowedRolename())); 
     }
+
+    public static Subject getJaasSubject() {
+        try {
+            return (Subject) PolicyContext.getContext("javax.security.auth.Subject.container");
+        } catch (Exception x) {
+            log.error("Failed to get subject from javax.security.auth.Subject.container", x);
+            return null;
+        }
+    }
+    
+    public static String getJaasRolesGroupName() {
+        if (rolesGroupName == null) {
+            try {
+                rolesGroupName = ((WebApplication) RequestCycle.get().getApplication()).getInitParameter("rolesGroupName");
+                if (rolesGroupName == null) rolesGroupName = "Roles";
+            } catch (Exception x) {
+                log.error("Can't get InitParameter 'rolesGroupName' from Wicket Application!", x);
+            }
+        }
+        return rolesGroupName;
+    }
+    public static final List<String> getJaasRoles() {
+        getJaasRolesGroupName();
+        List<String> roles = new ArrayList<String>();
+        String rolesGroupName = ((WebApplication) RequestCycle.get().getApplication()).getInitParameter("rolesGroupName");
+        if (rolesGroupName == null) rolesGroupName = "Roles";
+        try {
+            for (Principal principal : ((Subject) PolicyContext.getContext("javax.security.auth.Subject.container")).getPrincipals()) {
+                if ((principal instanceof Group) && rolesGroupName.equalsIgnoreCase(principal.getName())) {
+                    Enumeration<? extends Principal> members = ((Group) principal).members();
+                    while (members.hasMoreElements()) 
+                        roles.add(members.nextElement().getName());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to get jaas subject from javax.security.auth.Subject.container", e);
+        }
+        return roles;
+    }
+
 }

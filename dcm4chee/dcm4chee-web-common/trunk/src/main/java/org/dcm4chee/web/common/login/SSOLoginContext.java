@@ -82,11 +82,6 @@ public class SSOLoginContext extends LoginContext {
     
     protected org.apache.wicket.security.hive.authentication.Subject getSubject(Subject jaasSubject) throws LoginException {
 
-        WebApplication app = (WebApplication) RequestCycle.get().getApplication();
-        String webApplicationPolicy = app.getInitParameter("webApplicationPolicy");
-        if (webApplicationPolicy == null) webApplicationPolicy = "dcm4chee";
-        String rolesGroupName = app.getInitParameter("rolesGroupName");
-        if (rolesGroupName == null) rolesGroupName = "Roles";
         if (session == null) {
             try {
                 session = ((SecureSession) RequestCycle.get().getSession());
@@ -101,7 +96,7 @@ public class SSOLoginContext extends LoginContext {
 
         DefaultSubject subject;
         try {
-            subject = LoginContextSecurityHelper.mapSwarmSubject(rolesGroupName, jaasSubject, session);
+            subject = LoginContextSecurityHelper.mapSwarmSubject(jaasSubject, session);
             if (!LoginContextSecurityHelper.checkLoginAllowed(subject)) {
                 session.invalidate();
                 RequestCycle.get().getResponse().redirect("");

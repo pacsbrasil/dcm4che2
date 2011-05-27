@@ -66,8 +66,15 @@ public class SecureAjaxTabbedPanel extends AjaxTabbedPanel {
     }
     
     public void addModule(Class<? extends Panel> clazz, IModel<String> titleModel) {
-        SecureTab tab = (titleModel == null) ? new SecureTab(clazz) : new SecureTab(clazz, titleModel);
         if (SwarmStrategy.get().isClassAuthorized(clazz, ((BaseWicketApplication) getApplication()).getActionFactory().getAction("RENDER")))  
-            super.getTabs().add(tab);       
+            super.getTabs().add(new SecureTab(clazz, titleModel));       
+    }
+    
+    public void addModule(Panel panel, IModel<String> titleModel) {
+        System.out.println("################### try to add Module panel:"+panel+" with title:"+titleModel.getObject());
+        if (SwarmStrategy.get().isClassAuthorized(panel.getClass(), ((BaseWicketApplication) getApplication()).getActionFactory().getAction("RENDER"))) {
+            System.out.println("################### allowed to add Module panel:"+panel+" with title:"+titleModel.getObject());
+            super.getTabs().add(new SecureTab(panel, titleModel));       
+        }
     }
 }
