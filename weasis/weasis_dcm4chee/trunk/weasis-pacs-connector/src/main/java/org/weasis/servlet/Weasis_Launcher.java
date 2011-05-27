@@ -35,6 +35,8 @@ import org.slf4j.LoggerFactory;
 import org.weasis.dcm4che.dicom.DicomNode;
 import org.weasis.dcm4che.dicom.Manifest;
 import org.weasis.launcher.wado.Patient;
+import org.weasis.launcher.wado.Series;
+import org.weasis.launcher.wado.Study;
 import org.weasis.launcher.wado.WadoParameters;
 import org.weasis.launcher.wado.WadoQuery;
 import org.weasis.launcher.wado.WadoQueryException;
@@ -53,6 +55,7 @@ public class Weasis_Launcher extends HttpServlet {
 
     static final String PatientID = "patientID";
     static final String StudyUID = "studyUID";
+    static final String AccessionNumber = "accessionNumber";
     static final String SeriesUID = "seriesUID";
     static final String ObjectUID = "objectUID";
 
@@ -85,6 +88,14 @@ public class Weasis_Launcher extends HttpServlet {
             }
             if (config != null) {
                 pacsProperties.load(config.openStream());
+                String requests = pacsProperties.getProperty("request.ids", null);
+                if (requests == null) {
+                    logger.error("No request ID is allowed!");
+                } else {
+                    for (String id : requests.split(",")) {
+                        pacsProperties.put(id, "true");
+                    }
+                }
             } else {
                 logger.error("Cannot find  a configuration file for weasis-pacs-connector");
             }
@@ -290,22 +301,73 @@ public class Weasis_Launcher extends HttpServlet {
     private List<Patient> getPatientList(HttpServletRequest request, DicomNode dicomSource, String componentAET) {
         String pat = request.getParameter(PatientID);
         String stu = request.getParameter(StudyUID);
+        String anb = request.getParameter(AccessionNumber);
         String ser = request.getParameter(SeriesUID);
         String obj = request.getParameter(ObjectUID);
         List<Patient> patients = null;
         try {
-            if (obj != null) {
+            if (obj != null && isRequestIDAllowed(ObjectUID)) {
                 patients = Manifest.buildFromSopInstanceUID(dicomSource, componentAET, obj);
-            } else if (ser != null) {
+                if (!isValidateAllIDs(ObjectUID, patients, request))
+                    return null;
+            } else if (ser != null && isRequestIDAllowed(SeriesUID)) {
                 patients = Manifest.buildFromSeriesInstanceUID(dicomSource, componentAET, ser);
-            } else if (stu != null) {
+                if (!isValidateAllIDs(SeriesUID, patients, request))
+                    return null;
+            } else if (anb != null && isRequestIDAllowed(AccessionNumber)) {
+                patients = Manifest.buildFromStudyAccessionNumber(dicomSource, componentAET, anb);
+                if (!isValidateAllIDs(AccessionNumber, patients, request))
+                    return null;
+            } else if (stu != null && isRequestIDAllowed(StudyUID)) {
                 patients = Manifest.buildFromStudyInstanceUID(dicomSource, componentAET, stu);
-            } else if (pat != null) {
+                if (!isValidateAllIDs(StudyUID, patients, request))
+                    return null;
+            } else if (pat != null && isRequestIDAllowed(PatientID)) {
                 patients = Manifest.buildFromPatientID(dicomSource, componentAET, pat);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return patients;
+    }
+
+    private boolean isRequestIDAllowed(String id) {
+        if (id != null)
+            return Boolean.valueOf(pacsProperties.getProperty(id));
+        return false;
+    }
+
+    private boolean isValidateAllIDs(String id, List<Patient> patients, HttpServletRequest request) {
+        if (id != null && patients != null && patients.size() == 1) {
+            Patient patient = patients.get(0);
+            String ids = pacsProperties.getProperty("request." + id);
+            if (ids != null) {
+                for (String val : ids.split(",")) {
+                    if (val.trim().equals(PatientID)) {
+                        if (!patient.getPatientID().equals(request.getParameter(PatientID)))
+                            return false;
+                    } else if (val.trim().equals(StudyUID)) {
+                        for (Study study : patient.getStudies()) {
+                            if (!study.getStudyID().equals(request.getParameter(StudyUID)))
+                                return false;
+                        }
+                    } else if (val.trim().equals(AccessionNumber)) {
+                        for (Study study : patient.getStudies()) {
+                            if (!study.getAccessionNumber().equals(request.getParameter(AccessionNumber)))
+                                return false;
+                        }
+                    } else if (val.trim().equals(SeriesUID)) {
+                        for (Study study : patient.getStudies()) {
+                            for (Series series : study.getSeriesList()) {
+                                if (!series.getSeriesInstanceUID().equals(request.getParameter(SeriesUID)))
+                                    return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 }
