@@ -49,6 +49,7 @@ import javax.persistence.Table;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
+import org.dcm4chee.archive.conf.AttributeFilter;
 
 /**
  * @author Damien Evans <damien.daddy@gmail.com>
@@ -194,6 +195,10 @@ public class RequestAttributes extends BaseEntity implements Serializable {
                 PersonName.IDEOGRAPHIC, false);
         this.requestingPhysicianPhoneticName = pn.componentGroupString(
                 PersonName.PHONETIC, false);
+        if (AttributeFilter.isSoundexEnabled()) {
+            this.requestingPhysicianFamilyNameSoundex = AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*");
+            this.requestingPhysicianGivenNameSoundex = AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*");
+        }
     }
 
 }

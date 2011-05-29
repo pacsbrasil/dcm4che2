@@ -493,6 +493,10 @@ public class Study extends BaseEntity implements Serializable {
                 PersonName.IDEOGRAPHIC, false);
         this.referringPhysicianPhoneticName = pn.componentGroupString(
                 PersonName.PHONETIC, false);
+        if (AttributeFilter.isSoundexEnabled()) {
+            this.referringPhysicianFamilyNameSoundex = AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*");
+            this.referringPhysicianGivenNameSoundex = AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*");
+        }
         this.studyDescription = attrs.getString(Tag.StudyDescription, "");
         AttributeFilter filter = AttributeFilter.getStudyAttributeFilter();
         int[] fieldTags = filter.getFieldTags();

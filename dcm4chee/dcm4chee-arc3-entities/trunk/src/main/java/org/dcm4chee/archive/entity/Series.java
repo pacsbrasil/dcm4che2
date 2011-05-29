@@ -470,6 +470,10 @@ public class Series extends BaseEntity implements Serializable {
                 PersonName.IDEOGRAPHIC, false);
         this.performingPhysicianPhoneticName = pn.componentGroupString(
                 PersonName.PHONETIC, false);
+        if (AttributeFilter.isSoundexEnabled()) {
+            this.performingPhysicianFamilyNameSoundex = AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*");
+            this.performingPhysicianGivenNameSoundex = AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*");
+        }
         this.performedProcedureStepStartDateTime = attrs.getDate(
                 Tag.PerformedProcedureStepStartDate,
                 Tag.PerformedProcedureStepStartTime);

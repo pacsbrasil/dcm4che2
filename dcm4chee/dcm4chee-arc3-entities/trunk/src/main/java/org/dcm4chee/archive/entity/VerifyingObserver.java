@@ -50,6 +50,7 @@ import javax.persistence.Table;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
+import org.dcm4chee.archive.conf.AttributeFilter;
 
 /**
  * @author Damien Evans <damien.daddy@gmail.com>
@@ -146,6 +147,10 @@ public class VerifyingObserver extends BaseEntity implements Serializable {
                 PersonName.IDEOGRAPHIC, false);
         this.verifyingObserverPhoneticName = pn.componentGroupString(
                 PersonName.PHONETIC, false);
+        if (AttributeFilter.isSoundexEnabled()) {
+            this.verifyingObserverFamilyNameSoundex = AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*");
+            this.verifyingObserverGivenNameSoundex = AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*");
+        }
     }
 
 }

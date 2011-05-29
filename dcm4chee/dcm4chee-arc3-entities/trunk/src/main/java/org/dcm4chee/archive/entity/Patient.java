@@ -360,8 +360,11 @@ public class Patient extends BaseEntity implements Serializable {
                 false).toUpperCase();
         this.patientIdeographicName = pn.componentGroupString(
                 PersonName.IDEOGRAPHIC, false);
-        this.patientPhoneticName = pn.componentGroupString(PersonName.PHONETIC,
-                false);
+        this.patientPhoneticName = pn.componentGroupString(PersonName.PHONETIC, false);
+        if (AttributeFilter.isSoundexEnabled()) {
+            this.patientFamilyNameSoundex = AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*");
+            this.patientGivenNameSoundex = AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*");
+        }
         this.patientBirthDate = normalizeDA(attrs.getString(Tag.PatientBirthDate));
         this.patientSex = attrs.getString(Tag.PatientSex, "");
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter();

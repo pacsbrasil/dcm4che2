@@ -265,6 +265,10 @@ public class MWLItem extends BaseEntity implements Serializable {
                 .componentGroupString(PersonName.IDEOGRAPHIC, false);
         this.scheduledPerformingPhysicianPhoneticName = pn
                 .componentGroupString(PersonName.PHONETIC, false);
+        if (AttributeFilter.isSoundexEnabled()) {
+            this.scheduledPerformingFamilyNameSoundex = AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*");
+            this.scheduledPerformingGivenNameSoundex = AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*");
+        }
         String status = spsItem.getString(Tag.ScheduledProcedureStepStatus);
         if (status != null)
             this.status = SPSStatus.valueOf(status);
