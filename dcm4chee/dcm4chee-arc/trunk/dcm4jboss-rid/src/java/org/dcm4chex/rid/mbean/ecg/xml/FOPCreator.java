@@ -188,12 +188,12 @@ public class FOPCreator implements XMLResponseObject{
 			util.addAttribute( attr, "margin-bottom", "0mm" );
 			util.startElement( "fo:simple-page-master", attr );
 			{
-				util.startElement( "fo:region-before", "extent", "1cm" );
-				util.endElement( "fo:region-before" );
-				util.startElement( "fo:region-body", "margin-top", "1cm" );
-				util.endElement( "fo:region-body" );
-				util.startElement( "fo:region-after", "extent", "0.5cm" );
-				util.endElement( "fo:region-after" );
+                            util.startElement( "fo:region-body", "margin-top", "1cm" );
+                            util.endElement( "fo:region-body" );
+                            util.startElement( "fo:region-before", "extent", "1cm" );
+                            util.endElement( "fo:region-before" );
+                            util.startElement( "fo:region-after", "extent", "0.5cm" );
+                            util.endElement( "fo:region-after" );
 			}
 			util.endElement( "fo:simple-page-master" );
 			AttributesImpl attr2 = util.newAttribute( "master-name", "test");
@@ -205,12 +205,12 @@ public class FOPCreator implements XMLResponseObject{
 			util.addAttribute( attr2, "margin-bottom", "0mm" );
 			util.startElement( "fo:simple-page-master", attr2 );
 			{
-				util.startElement( "fo:region-before", "extent", "0cm" );
-				util.endElement( "fo:region-before" );
-				util.startElement( "fo:region-body", "margin-top", "0cm" );
-				util.endElement( "fo:region-body" );
-				util.startElement( "fo:region-after", "extent", "0cm" );
-				util.endElement( "fo:region-after" );
+                            util.startElement( "fo:region-body", "margin-top", "0cm" );
+                            util.endElement( "fo:region-body" );
+                            util.startElement( "fo:region-before", "extent", "0cm" );
+                            util.endElement( "fo:region-before" );
+                            util.startElement( "fo:region-after", "extent", "0cm" );
+                            util.endElement( "fo:region-after" );
 			}
 			util.endElement( "fo:simple-page-master" );
 		}
