@@ -271,7 +271,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jSplitPane1" alignment="0" pref="1234" max="32767" attributes="0"/>
+                          <Component id="jSplitPane1" alignment="0" pref="1254" max="32767" attributes="0"/>
                           <Component id="localDatabaseLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -328,10 +328,10 @@
                         <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                           <Connection code="new StudyListModel()" type="code"/>
                         </Property>
+                        <Property name="autoResizeMode" type="int" value="4"/>
                         <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                           <TableColumnModel selectionModel="0"/>
                         </Property>
-                        <Property name="showGrid" type="boolean" value="true"/>
                       </Properties>
                       <Events>
                         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="studyListTableMouseClicked"/>
@@ -339,6 +339,7 @@
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="studyListTable.setDefaultRenderer(Object.class, new CellRenderer());"/>
                         <AuxValue name="JavaCodeGenerator_ListenersCodePost" type="java.lang.String" value="studyListTable.getTableHeader().setPreferredSize(new Dimension(this.getWidth(), 25));&#xa;studyListTable.getTableHeader().setFont(new Font(&quot;Lucida Grande&quot;,Font.BOLD,12));&#xa;studyListTable.setRowHeight(25);&#xa;studyListTable.getTableHeader().setForeground(new Color(255,138,0));&#xa;studyListTable.getTableHeader().setBackground(new Color(0,0,0));"/>
+                        <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="MainScreen_studyListTable"/>
                         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="9"/>
                       </AuxValues>
                     </Component>
@@ -360,7 +361,7 @@
                                   <Component id="seriesLabel" alignment="1" pref="330" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="windowingPanelCanvas" pref="890" max="32767" attributes="0"/>
+                              <Component id="windowingPanelCanvas" pref="916" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -369,9 +370,9 @@
                           <Group type="102" alignment="0" attributes="1">
                               <Component id="seriesLabel" min="-2" pref="20" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="thumbnailScroll" pref="492" max="32767" attributes="0"/>
+                              <Component id="thumbnailScroll" pref="495" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="windowingPanelCanvas" alignment="0" pref="520" max="32767" attributes="2"/>
+                          <Component id="windowingPanelCanvas" alignment="0" pref="521" max="32767" attributes="2"/>
                       </Group>
                     </DimensionLayout>
                   </Layout>
@@ -390,12 +391,12 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <EmptySpace min="0" pref="890" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="916" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                         <DimensionLayout dim="1">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <EmptySpace min="0" pref="520" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="521" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                       </Layout>

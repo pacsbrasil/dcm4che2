@@ -69,6 +69,7 @@ import javax.swing.SwingUtilities;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import sun.util.calendar.JulianCalendar;
 
 /**
  *
@@ -460,6 +461,30 @@ public class DatabaseHandler {
         }
         return seriesList;
     }
+    public ArrayList<Series> listAllSeriesOfStudy(String siuid,String modality) {
+        ResultSet rs = null;
+        ArrayList<Series> seriesList = new ArrayList<Series>();
+        try {
+            String sql = "Select * from series where StudyInstanceUID='" + siuid + "' and Modality='" + modality + "'";
+            //System.out.println(sql);
+            rs = conn.createStatement().executeQuery(sql);
+            while (rs.next()) {
+                Series series = new Series();
+                series.setSeriesDesc(rs.getString("SeriesDescription"));
+                series.setBodyPartExamined(rs.getString("BodyPartExamined"));
+                series.setSeriesInstanceUID(rs.getString("SeriesInstanceUID"));
+                series.setModality(rs.getString("Modality"));
+                series.setSeriesNumber(rs.getString("SeriesNo"));
+                series.setStudyInstanceUID(rs.getString("StudyInstanceUID"));
+                series.setInstitutionName(rs.getString("InstitutionName"));
+                series.setSeriesRelatedInstance(this.getSeriesLevelInstance(siuid, series.getSeriesInstanceUID()));
+                seriesList.add(series);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return seriesList;
+    }
 
     public void insertModalities() {
         String modality[] = {"CT", "MR", "XA", "CR", "SC", "NM", "RF", "DX", "US", "PX", "OT", "DR", "SR", "MG", "RG"};
@@ -499,12 +524,15 @@ public class DatabaseHandler {
 
     private void insertDefaultLocales() {
         try {
-            String sql1 = "insert into " + localeTable + "(countrycode,country,languagecode,language,localeid,status) values('US','United States','en','English','en_US','active')";
+            String sql1 = "insert into " + localeTable + "(countrycode,country,languagecode,language,localeid,status) values('GB','United Kingdom','en','English','en_GB','active')";
             conn.createStatement().execute(sql1);
             addNewLocale("es_ES");
             addNewLocale("ca_ES");
             addNewLocale("it_IT");
             addNewLocale("ja_JP");
+            addNewLocale("pt_BR");
+            addNewLocale("eu_ES");
+            addNewLocale("ta_IN");
             conn.commit();
 
         } catch (Exception e) {
@@ -612,13 +640,34 @@ public class DatabaseHandler {
                 returnval[3] = language;
                 returnval[4] = localeid;
             }
-        } catch (Exception e) {
+        }//catch(SQLSyntaxErrorException se){
+//            upgradeDataBase();
+//            System.out.println("SQLSyntaxException :\n"+se);
+//        }
+        catch (SQLException e) {
             e.printStackTrace();
         }
-
+        
         return returnval;
     }
-
+    private void upgradeDataBase(){
+        try{
+            backUpDatabase(conn);
+            File temp = new File(ApplicationContext.getAppDirectory());
+            for (int l = 0; l < temp.listFiles().length; l++) {
+                if (!temp.listFiles()[l].getName().equalsIgnoreCase(databasename)) {
+                }
+        }
+        }catch(SQLException se){
+        }
+    }
+    private void backUpDatabase(Connection conn)throws SQLException{
+        String backupdirectory =ApplicationContext.getAppDirectory()+dateFormat.format(Calendar.getInstance().getTime());
+        CallableStatement cs = conn.prepareCall("CALL SYSCS_UTIL.SYSCS_BACKUP_DATABASE(?)"); 
+        cs.setString(1, backupdirectory);
+        cs.execute(); 
+        cs.close();
+    }
     public String[] getCountryListForLocale() {
         String returnval[] = null;
         try {
@@ -1667,6 +1716,20 @@ public class DatabaseHandler {
             e.printStackTrace();
         }
         return size;
+    }
+    public ArrayList<String> getSeriesLevelInstanceUrl(String studyuid,String seriesuid){
+        ArrayList<String> instanceUrlList=new ArrayList<String>();
+        try {
+            String sql1="select * from image where StudyInstanceUID='" + studyuid + "' AND " + "SeriesInstanceUID='" + seriesuid + "'";
+            ResultSet rs = conn.createStatement().executeQuery(sql1);
+            while (rs.next()) {
+                String fileUrl=rs.getString("FileStoreUrl");
+                instanceUrlList.add(fileUrl);
+            }            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return instanceUrlList;
     }
 
     public boolean isSeriesHasInstance(String seriesuid) {

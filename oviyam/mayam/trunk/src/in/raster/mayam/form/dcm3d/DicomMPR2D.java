@@ -44,7 +44,9 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import javax.swing.JOptionPane;
 import vtk.vtkDICOMImageReader;
+import vtk.vtkGlobalJavaHash;
 import vtk.vtkImageActor;
 import vtk.vtkImageMapToColors;
 import vtk.vtkImageReslice;
@@ -216,7 +218,7 @@ public class DicomMPR2D extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        //vtkGlobalJavaHash.DeleteAll();
+        vtkGlobalJavaHash.DeleteAll();
     }//GEN-LAST:event_formWindowClosed
 
     /**
@@ -238,7 +240,7 @@ public class DicomMPR2D extends javax.swing.JFrame {
         reader.UpdateWholeExtent();
         reader.Update();
 
-
+        
         int[] extent = reader.GetOutput().GetWholeExtent();
         double[] spacing = reader.GetOutput().GetSpacing();
         double[] origin = reader.GetOutput().GetOrigin();

@@ -47,9 +47,11 @@ import java.awt.event.MouseMotionListener;
 import java.io.File;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import vtk.vtkCamera;
 import vtk.vtkCanvas;
 import vtk.vtkDICOMImageReader;
+import vtk.vtkGlobalJavaHash;
 import vtk.vtkImageActor;
 import vtk.vtkImageMapToColors;
 import vtk.vtkImageReslice;
@@ -624,7 +626,7 @@ public class DicomMPR3DSlider extends javax.swing.JFrame {
     }//GEN-LAST:event_lblSagittalViewMouseExited
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        //   vtkGlobalJavaHash.DeleteAll();
+        vtkGlobalJavaHash.DeleteAll();
     }//GEN-LAST:event_formWindowClosed
 
     public static void main(String args[]) {
@@ -657,7 +659,7 @@ public class DicomMPR3DSlider extends javax.swing.JFrame {
     public void readDicom(String dirName) {
         reader.SetDirectoryName(dirName);
         reader.Update();
-
+        
         int[] xyminmax = reader.GetOutput().GetWholeExtent();
         xMin = xyminmax[0];
         xMax = xyminmax[1];

@@ -288,15 +288,18 @@ public class SeriesListUpdator extends Thread {
     }
 
     public void setDicomReader() {
+        synchronized(this){
         try{
         ImageIO.scanForPlugins();
         Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
         reader = (ImageReader) iter.next();
         }
         catch(Exception e){}
+        }
     }
 
-    private synchronized void readDicomFile(Instance img) {
+    private void readDicomFile(Instance img) {
+        synchronized(this){
         ImageInputStream iis = null;
         Dataset dataset;
         try {
@@ -305,6 +308,7 @@ public class SeriesListUpdator extends Thread {
                 selFile = new File(img.getFilepath());
             }
             iis = ImageIO.createImageInputStream(selFile);
+            if(reader==null)setDicomReader();
             reader.setInput(iis, false);
             dataset = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
             try {
@@ -325,6 +329,7 @@ public class SeriesListUpdator extends Thread {
                 iis.close();                
             } catch (Exception ex) {//ignore
             }
+        }
         }
     }
 

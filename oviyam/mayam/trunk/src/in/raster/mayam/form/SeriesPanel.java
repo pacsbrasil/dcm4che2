@@ -141,19 +141,20 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
      * This routine used to retrieve the dicom related details
      */
     private void retrieveInfo() {
-
-        studyUID = dataset.getString(Tags.StudyInstanceUID);
-        seriesUID = dataset.getString(Tags.SeriesInstanceUID);
-        if (ApplicationContext.databaseRef.getMultiframeStatus()) {
-            setTotalInstacne();
-        } else {
-            totalInstace = ApplicationContext.databaseRef.getSeriesLevelInstance(studyUID, seriesUID);
+        synchronized (this) {
+            if(dataset==null)readDicomFile(new File(fileUrl));;
+            studyUID = dataset.getString(Tags.StudyInstanceUID);
+            seriesUID = dataset.getString(Tags.SeriesInstanceUID);
+            if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+                setTotalInstacne();
+            } else {
+                totalInstace = ApplicationContext.databaseRef.getSeriesLevelInstance(studyUID, seriesUID);
+            }
+            seriesDesc = dataset.getString(Tags.SeriesDescription);
+            modality = dataset.getString(Tags.Modality);
+            institutionName = dataset.getString(Tags.InstitutionName);
+            instanceUID = dataset.getString(Tags.SOPInstanceUID);
         }
-        seriesDesc = dataset.getString(Tags.SeriesDescription);
-        modality = dataset.getString(Tags.Modality);
-        institutionName = dataset.getString(Tags.InstitutionName);
-        instanceUID = dataset.getString(Tags.SOPInstanceUID);
-
     }
 
     /**

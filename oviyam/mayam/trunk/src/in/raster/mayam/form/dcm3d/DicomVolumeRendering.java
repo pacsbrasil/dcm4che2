@@ -47,11 +47,13 @@ import java.awt.event.MouseMotionListener;
 import java.io.File;
 import javax.swing.JColorChooser;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import vtk.vtkCamera;
 import vtk.vtkCanvas;
 import vtk.vtkColorTransferFunction;
 import vtk.vtkDICOMImageReader;
+import vtk.vtkGlobalJavaHash;
 import vtk.vtkImageShiftScale;
 import vtk.vtkLight;
 import vtk.vtkLightCollection;
@@ -549,7 +551,7 @@ public class DicomVolumeRendering extends javax.swing.JFrame {
     }//GEN-LAST:event_lblResetMouseExited
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        //  vtkGlobalJavaHash.DeleteAll();
+          vtkGlobalJavaHash.DeleteAll();
     }//GEN-LAST:event_formWindowClosed
 
     public static void main(String args[]) {

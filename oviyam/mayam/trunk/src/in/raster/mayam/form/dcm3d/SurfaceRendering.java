@@ -55,6 +55,7 @@ import vtk.vtkCamera;
 import vtk.vtkCellPicker;
 import vtk.vtkDICOMImageReader;
 import vtk.vtkActor;
+import vtk.vtkGlobalJavaHash;
 import vtk.vtkLight;
 import vtk.vtkLightCollection;
 import vtk.vtkMarchingCubes;
@@ -962,7 +963,7 @@ public class SurfaceRendering extends javax.swing.JFrame {
     }//GEN-LAST:event_lblSurfaceZoomInOutMouseExited
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
-        // vtkGlobalJavaHash.DeleteAll();
+        vtkGlobalJavaHash.DeleteAll();
     }//GEN-LAST:event_formWindowClosed
 
     private void setDefaultSettings() {
@@ -1003,7 +1004,7 @@ public class SurfaceRendering extends javax.swing.JFrame {
         }
         reader.Update();
         reader.GetOutput().ReleaseDataFlagOn();
-
+        
         int[] xyminmax = reader.GetOutput().GetWholeExtent();
         xMin = xyminmax[0];
         xMax = xyminmax[1];

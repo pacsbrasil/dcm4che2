@@ -46,6 +46,7 @@ import in.raster.mayam.util.DicomTagsReader;
 import in.raster.mayam.form.display.Display;
 import in.raster.mayam.delegate.CineTimer;
 import in.raster.mayam.delegate.DestinationFinder;
+import in.raster.mayam.facade.Platform;
 import in.raster.mayam.form.dcm3d.DicomMIP;
 import in.raster.mayam.form.dcm3d.DicomMPR2D;
 import in.raster.mayam.form.dcm3d.DicomMPR3DSlider;
@@ -56,6 +57,7 @@ import in.raster.mayam.model.PresetModel;
 import in.raster.mayam.model.Series;
 import in.raster.mayam.model.Study;
 import in.raster.mayam.model.combo.WindowingComboModel;
+import in.raster.mayam.util.core.TranscoderMain;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -81,6 +83,9 @@ import javax.swing.JComboBox;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import org.dcm4che.dict.Tags;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.io.DicomInputStream;
 
 /**
  *
@@ -1021,9 +1026,10 @@ public class ImageToolbar extends javax.swing.JPanel {
         clearAllMeasurement.setEnabled(false);
         deleteMeasurement.setEnabled(false);
         moveMeasurement.setEnabled(false);
-        String actionCommand=null;
-        if(toolsButtonGroup!=null && toolsButtonGroup.getSelection()!=null)
-        actionCommand = toolsButtonGroup.getSelection().getActionCommand();
+        String actionCommand = null;
+        if (toolsButtonGroup != null && toolsButtonGroup.getSelection() != null) {
+            actionCommand = toolsButtonGroup.getSelection().getActionCommand();
+        }
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             if (actionCommand != null) {
                 if (actionCommand.equalsIgnoreCase("ruler") || actionCommand.equalsIgnoreCase("rectangle") || actionCommand.equalsIgnoreCase("ellipse") || actionCommand.equalsIgnoreCase("deleteMeasurement") || actionCommand.equalsIgnoreCase("moveMeasurement")) {
@@ -1485,7 +1491,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     }
 
     public void jb9ActionPerformed(ActionEvent e) {
-        changeLayout(3, 3);
+        changeLayout(4, 3);
     }
     public String seriesDir = "";
     public String studyDir = "";
@@ -1566,6 +1572,18 @@ public class ImageToolbar extends javax.swing.JPanel {
         studyDir = new File(filePath).getParent();
         String seriesUID = ApplicationContext.imgPanel.getSeriesUID();
         String instancePath[] = ApplicationContext.imgPanel.getInstancesFilePath();
+        String transferSyntaxUID = getTransferSyntaxUID(filePath);
+        boolean isCompressed = false;
+        if(transferSyntaxUID!=null){
+            if (!transferSyntaxUID.equalsIgnoreCase("1.2.840.10008.1.2")
+                    || !transferSyntaxUID.equalsIgnoreCase("1.2.840.10008.1.2.1")) {
+                isCompressed = true;
+            }
+        }
+        if(isCompressed && Platform.getCurrentPlatform().equals(Platform.MAC)){
+            JOptionPane.showMessageDialog(this, "Compressed studies are not supported for this operation.");
+            return;
+        }
         DestinationFinder finder = new DestinationFinder();
         for (int i = 0; i < instancePath.length; i++) {
             try {
@@ -1576,8 +1594,18 @@ public class ImageToolbar extends javax.swing.JPanel {
                 if (!seriesFolder.exists()) {
                     seriesFolder.mkdir();
                 }
-                FileOutputStream fout = new FileOutputStream(new File(seriesFolder, sourceFile.getName()));
-                copy(fis, fout);
+                if (!isCompressed) {
+                    FileOutputStream fout = new FileOutputStream(new File(seriesFolder, sourceFile.getName()));
+                    copy(fis, fout);
+                } else {
+                    String destinationPath = seriesDir + File.separator + sourceFile.getName();
+                    String transParam[] = {"--ivle", sourceFile.getAbsolutePath(), destinationPath};
+                    if (sourceFile.isFile()) {
+                        synchronized (this) {
+                            TranscoderMain.main(transParam);
+                        }
+                    }
+                }
             } catch (IOException ex) {
                 Logger.getLogger(ImageToolbar.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception ex) {
@@ -1586,7 +1614,19 @@ public class ImageToolbar extends javax.swing.JPanel {
 
         }
     }
-
+    private String getTransferSyntaxUID(String fileName){
+        String tfsUid=null;
+        try {
+            File tmpFile=new File(fileName);
+            DicomInputStream dis = new DicomInputStream(tmpFile);
+            DicomObject dicomObject=dis.readDicomObject();
+            tfsUid= dicomObject.getString(Tags.TransferSyntaxUID);
+            dis.close();
+            return tfsUid;
+        } catch (Exception e) {
+            return tfsUid;
+        }
+    }
     private void copy(InputStream in, OutputStream out)
             throws IOException {
         byte[] buffer = new byte[8 * 1024];

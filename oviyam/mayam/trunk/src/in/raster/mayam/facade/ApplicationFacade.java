@@ -92,9 +92,9 @@ public class ApplicationFacade {
         JOptionPane.showMessageDialog(null, exitString, "Application Error", JOptionPane.ERROR_MESSAGE);
         System.exit(1);
     }
-
+    
     public static void main(String[] args) {
-        try {           
+        try {
             InputArgumentsParser.parse(args);
             ApplicationFacade facade = new ApplicationFacade();
             facade.setSystemProperties();

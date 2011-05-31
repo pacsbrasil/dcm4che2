@@ -42,12 +42,16 @@ import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.tab.component.ButtonTabComp;
 import in.raster.mayam.form.Canvas;
 import in.raster.mayam.form.LayeredCanvas;
+import in.raster.mayam.model.Series;
 import java.awt.Color;
 import java.awt.GridLayout;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.io.DicomInputStream;
 
 /**
  *
@@ -61,15 +65,17 @@ public class ShowViewerDelegate extends Thread {
     private int gridRowCount;
     private int gridColCount;
     private String studyUID;
+    private String modalitiesInStudy;
 
     public ShowViewerDelegate() {
     }
 
-    public ShowViewerDelegate(String studyUID, ArrayList tempRef, int gridRowCount, int gridColCount) {
+    public ShowViewerDelegate(String studyUID, ArrayList tempRef, int gridRowCount, int gridColCount,String modalitiesInStudy) {
         this.studyUID = studyUID;
         this.tempRef = tempRef;
         this.gridColCount = gridColCount;
         this.gridRowCount = gridRowCount;
+        this.modalitiesInStudy=modalitiesInStudy;
         this.start();
     }
 
@@ -100,8 +106,32 @@ public class ShowViewerDelegate extends Thread {
             }
         }
         setSelectedImagePanel(container);
+//        try{
+//        checkPR();
+//        }catch(IOException ex){
+//            ex.printStackTrace();
+//        }
     }
-
+    /**
+     * This routine used to check whether PR modality exist in the current study.
+     */
+   private void checkPR() throws IOException{
+       int index=modalitiesInStudy.indexOf("PR");
+       if(index==-1)return;
+       System.out.println("PR Found.");
+       ArrayList<Series> series= ApplicationContext.databaseRef.listAllSeriesOfStudy(studyUID, "PR");
+       for (Series series1 : series) {
+           ArrayList<String> fileUrlList=ApplicationContext.databaseRef.getSeriesLevelInstanceUrl(studyUID, series1.getSeriesInstanceUID());
+           for (String files : fileUrlList) {
+               //System.out.println(files);
+               File file=new File(files.trim());
+               System.out.println(file.getAbsolutePath());
+               DicomInputStream dis = new DicomInputStream(file);
+               DicomObject dO=dis.readDicomObject();
+               dis.close();
+           }
+       }
+   }
     /**
      * This routine used to update the selected panel info to ApplicationContext.
      * @param container

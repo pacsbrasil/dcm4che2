@@ -93,6 +93,7 @@ public class SeriesThumbUpdator{
      * This routine used to display the thumbnail images in the thumbnail display area.
      */
     public void showThumbnailDisplay() {
+        synchronized(this){
         int i = 0;
         MainScreen mainScreenRef = ApplicationContext.mainScreen;
         ApplicationContext.mainScreen.getThumbnailDisplay().setLayout(new FlowLayout(FlowLayout.LEFT, 1, 1));
@@ -121,6 +122,7 @@ public class SeriesThumbUpdator{
                 mainScreenRef.getThumbnailDisplay().repaint();
             }
             i++;
+        }
         }
     }
 }

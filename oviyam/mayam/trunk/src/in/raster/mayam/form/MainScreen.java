@@ -77,10 +77,12 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -98,7 +100,7 @@ public class MainScreen extends javax.swing.JFrame {
         initComponents();
         initAppDefaults();
     }
-
+       
     private void initAppDefaults() {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         ApplicationContext.mainScreen = this;
@@ -113,7 +115,7 @@ public class MainScreen extends javax.swing.JFrame {
         setTheme();
         ImportDcmDirDelegate.findAndLoadDcmDirFiles();
         loadStudiesBasedOnInputParameter();
-
+        setPreferredTableColumnWidths(studyListTable,new double[]{0.1,0.3,0.1,0.1,0.1,0.2,0.05,0.05});
     }
 
     private void setTheme() {
@@ -161,8 +163,7 @@ public class MainScreen extends javax.swing.JFrame {
     /**
      * This routine used to set the app specific locale
      */
-    public void setAppLocale()
-    {
+    public void setAppLocale(){
         ApplicationContext.setAppLocale();
     }
 
@@ -331,7 +332,7 @@ public class MainScreen extends javax.swing.JFrame {
 
         studyListTable.setForeground(new java.awt.Color(252, 138, 0));
         studyListTable.setModel(new StudyListModel());
-        studyListTable.setShowGrid(true);
+        studyListTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
         studyListTable.setDefaultRenderer(Object.class, new CellRenderer());
         studyListTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -355,11 +356,11 @@ public class MainScreen extends javax.swing.JFrame {
         windowingPanelCanvas.setLayout(windowingPanelCanvasLayout);
         windowingPanelCanvasLayout.setHorizontalGroup(
             windowingPanelCanvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 890, Short.MAX_VALUE)
+            .add(0, 916, Short.MAX_VALUE)
         );
         windowingPanelCanvasLayout.setVerticalGroup(
             windowingPanelCanvasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 520, Short.MAX_VALUE)
+            .add(0, 521, Short.MAX_VALUE)
         );
 
         thumbnailScroll.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -386,15 +387,15 @@ public class MainScreen extends javax.swing.JFrame {
                     .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, seriesLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 890, Short.MAX_VALUE))
+                .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 916, Short.MAX_VALUE))
         );
         studyAndSeriesDisplayPanelLayout.setVerticalGroup(
             studyAndSeriesDisplayPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(studyAndSeriesDisplayPanelLayout.createSequentialGroup()
                 .add(seriesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 492, Short.MAX_VALUE))
-            .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+                .add(thumbnailScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE))
+            .add(windowingPanelCanvas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE)
         );
 
         jSplitPane1.setRightComponent(studyAndSeriesDisplayPanel);
@@ -406,7 +407,7 @@ public class MainScreen extends javax.swing.JFrame {
             .add(contentAreaLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(contentAreaLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1234, Short.MAX_VALUE)
+                    .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1254, Short.MAX_VALUE)
                     .add(localDatabaseLabel))
                 .addContainerGap())
         );
@@ -832,6 +833,8 @@ public class MainScreen extends javax.swing.JFrame {
 
                 int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
                 String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
+                String modalitiesInStudy = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 6);
+                //System.out.println(modalitiesInStudy);
                 int rowColumnArray[] = new int[2];
                 try {
                     rowColumnArray = ApplicationContext.databaseRef.getRowColumnBasedStudyUID(siuid);
@@ -840,7 +843,7 @@ public class MainScreen extends javax.swing.JFrame {
                     rowColumnArray[1] = 1;
                 }
                 ArrayList tempRef = ApplicationContext.databaseRef.getUrlBasedOnStudyIUID(siuid);
-                openImageView(siuid, tempRef, rowColumnArray[0], rowColumnArray[1]);
+                openImageView(siuid, tempRef, rowColumnArray[0], rowColumnArray[1],modalitiesInStudy);
                 StudyListUpdator studyListUpdator = new StudyListUpdator();
                 studyListUpdator.addStudyToStudyList(siuid, studyList, ((File) tempRef.get(0)).getAbsolutePath());
             }
@@ -915,9 +918,10 @@ public class MainScreen extends javax.swing.JFrame {
             if (studyListTable.getSelectedRow() != -1) {
                 int selection = studyListTable.convertRowIndexToModel(studyListTable.getSelectedRow());
                 String siuid = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 8);
+                String modalitiesInStudy = ((StudyListModel) studyListTable.getModel()).getValueAt(selection, 6);
                 int rowColumnArray[] = ApplicationContext.databaseRef.getRowColumnBasedStudyUID(siuid);
                 ArrayList tempRef = ApplicationContext.databaseRef.getUrlBasedOnStudyIUID(siuid);
-                openImageView(siuid, tempRef, rowColumnArray[0], rowColumnArray[1]);
+                openImageView(siuid, tempRef, rowColumnArray[0], rowColumnArray[1],modalitiesInStudy);
                 StudyListUpdator studyListUpdator = new StudyListUpdator();
                 studyListUpdator.addStudyToStudyList(siuid, studyList, ((File) tempRef.get(0)).getAbsolutePath());
             }
@@ -1095,11 +1099,11 @@ public class MainScreen extends javax.swing.JFrame {
         }
     }
 
-    public void openImageView(String studyUID, ArrayList tempRef, int gridRowCount, int gridColCount) {
+    public void openImageView(String studyUID, ArrayList tempRef, int gridRowCount, int gridColCount,String modalitiesInStudy) {
         if (!ApplicationContext.imageViewExist()) {
             ApplicationContext.createImageView();
         }
-        ShowViewerDelegate showViewer = new ShowViewerDelegate(studyUID, tempRef, gridRowCount, gridColCount);
+        ShowViewerDelegate showViewer = new ShowViewerDelegate(studyUID, tempRef, gridRowCount, gridColCount, modalitiesInStudy);
     }
 
     public void openComparisonView(int numberOfStudies, String[] studies, ArrayList tempRef) {
@@ -1118,7 +1122,25 @@ public class MainScreen extends javax.swing.JFrame {
         }
         thumbnailDisplay.repaint();
     }
+    /**
+     * This routine used to set column widths using percentages
+     * @param table , percentages
+     */
+    private static void setPreferredTableColumnWidths(JTable table, double[] percentages){
+        Dimension tableDim = table.getSize();
+        double total = 0;
+        for(int i = 0; i < table.getColumnModel().getColumnCount(); i++) 
+          total += percentages[i]; 
 
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        for(int i = 0; i < table.getColumnModel().getColumnCount(); i++){ 
+          TableColumn column = table.getColumnModel().getColumn(i);
+          column.setPreferredWidth((int) Math.round(tableDim.width * (percentages[i] / total)));
+          //table.doLayout();
+        }
+        table.doLayout();
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+    }
     /**
      * Getter method for thumbnailDisplay.
      * @return
