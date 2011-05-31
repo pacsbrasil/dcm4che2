@@ -320,8 +320,8 @@
   </operation>
 
   <operation impact="ACTION">
-    <description>Get File Object for Document</description>
-    <name>getDocumentFile</name>
+    <description>Get DataHandler for Document</description>
+    <name>getDocumentDataHandler</name>
     <parameter>
       <description>ObjectUID of Document.</description>
       <name>objectUID</name>
@@ -332,7 +332,7 @@
       <name>contentType</name>
       <type>java.lang.String</type>
     </parameter>
-    <return-type>java.io.File</return-type>
+    <return-type>javax.activation.DataHandler</return-type>
   </operation>
 
 </mbean>
