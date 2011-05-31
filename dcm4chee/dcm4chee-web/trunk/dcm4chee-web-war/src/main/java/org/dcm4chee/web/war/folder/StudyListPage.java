@@ -1641,7 +1641,7 @@ public class StudyListPage extends Panel {
                           
                         @Override
                         public Page createPage() {
-                            return new WadoImagePage(wadoImageWindow, instModel);                        
+                            return new InstanceViewPage(wadoImageWindow, instModel);                        
                         }
                     });
                     wadoImageWindow.show(target);
