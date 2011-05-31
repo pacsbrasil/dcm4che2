@@ -16,7 +16,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
 // KEY: swarm.principal.FolderWrite
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.ExportPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.MoveEntitiesPage", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.folder.WadoImagePage", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.folder.InstanceViewPage", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.studypermissions.CreateDicomRolePage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:imageSelectionWindow", "render, enable";
