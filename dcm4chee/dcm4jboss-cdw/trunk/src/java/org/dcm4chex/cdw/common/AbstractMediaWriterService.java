@@ -61,7 +61,7 @@ public abstract class AbstractMediaWriterService extends ServiceMBeanSupport {
 
     protected boolean keepSpoolFiles = false;
 
-    private final MessageListener listener = new MessageListener() {
+    protected final MessageListener listener = new MessageListener() {
 
         public void onMessage(Message msg) {
             ObjectMessage objmsg = (ObjectMessage) msg;
