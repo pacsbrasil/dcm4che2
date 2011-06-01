@@ -755,6 +755,32 @@
          <value value="IgnoreEditTimeLimit"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getRetentionTime"
+      setMethod="setRetentionTime">
+      <description><![CDATA[Retention time for automized deletion of studies in trash.
+      <br>Can be specified in weeks (##w) or days (##d).
+      <br>If set to NEVER the feature will not be used.
+      ]]></description>
+      <name>retentionTime</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NEVER"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getEmptyTrashInterval"
+      setMethod="setEmptyTrashInterval">
+      <description><![CDATA[Retention time for automized deletion of studies in trash.
+      <br>Can be specified in weeks (##w) or days (##d).
+      <br>If set to NEVER the feature will not be used.
+      ]]></description>
+      <name>emptyTrashInterval</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NEVER"/>
+      </descriptors>
+   </attribute>
 
    &defaultAttributes;
    

@@ -76,6 +76,11 @@
             <classifier>jdk15</classifier>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>jboss</groupId>
+            <artifactId>jboss-j2ee</artifactId>
+            <version>4.0.2</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

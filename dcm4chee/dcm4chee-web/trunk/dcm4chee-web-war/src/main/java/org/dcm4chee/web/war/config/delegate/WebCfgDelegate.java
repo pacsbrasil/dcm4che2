@@ -88,6 +88,14 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return getString("ignoreEditTimeLimitRolename");
     }
 
+    public String getRetentionTime() {
+        return getString("retentionTime");
+    }
+
+    public String getEmptyTrashInterval() {
+        return getString("emptyTrashInterval");
+    }
+
     public String getStudyPermissionsAllRolename() {
         return getString("studyPermissionsAllRolename");
     }

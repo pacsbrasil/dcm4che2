@@ -59,6 +59,8 @@ import java.util.StringTokenizer;
 
 import javax.imageio.spi.ServiceRegistry;
 import javax.management.Attribute;
+import javax.management.InstanceNotFoundException;
+import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
@@ -72,7 +74,10 @@ import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.webview.link.spi.WebviewerLinkProviderSPI;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.folder.StudyPermissionsLocal;
+import org.dcm4chee.web.dao.trash.TrashCleanerLocal;
+import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
+import org.dcm4chee.web.service.common.RetryIntervalls;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerConfigLocator;
 
@@ -153,14 +158,22 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private boolean forcePatientExpandableForPatientQuery;
     
     private String tooOldLimit;
-    protected String ignoreEditTimeLimitRolename;
+    private String ignoreEditTimeLimitRolename;
     
-    public WebCfgService() {
-    }
+    private String retentionTime;
+    private String emptyTrashInterval;
+    private Integer trashCleanerTimerId;
     
-    protected void startService() throws Exception {
+    private int hasNotificationListener;
+    
+    public WebCfgService() throws MalformedObjectNameException {
         timerServiceName = new ObjectName(DEFAULT_TIMER_SERVICE);
-        updateAutoUpdateTimer();
+    }
+
+    @Override
+    public void startService() {
+        this.updateAutoUpdateTimer();
+        this.configureTrashCleaner();
     }
     
     public void setDicomSecurityServletUrl(
@@ -731,52 +744,49 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         return cal.getTime();
     }
 
-    public void handleNotification(Notification notif, Object handback) {
-        new Thread(new Runnable() {
-            public void run() {
-                if(isAutoUpdateModalities()) updateModalities();
-                if(isAutoUpdateSourceAETs()) updateSourceAETs();
-                if(isAutoUpdateStationAETs()) updateStationAETs();
-                if(isAutoUpdateStationNames()) updateStationNames();
-            }
-        }).start();
+    public void handleNotification(Notification notification, Object handback) {
+        Integer id = ((TimerNotification) notification).getNotificationID();
+        if (id.equals(this.autoUpdateTimerId)) {
+            new Thread(new Runnable() {
+                public void run() {
+                    if(isAutoUpdateModalities()) updateModalities();
+                    if(isAutoUpdateSourceAETs()) updateSourceAETs();
+                    if(isAutoUpdateStationAETs()) updateStationAETs();
+                    if(isAutoUpdateStationNames()) updateStationNames();
+                }
+            }).start();
+        } else if (id.equals(this.trashCleanerTimerId)) 
+            ((TrashCleanerLocal) JNDIUtils.lookup(TrashCleanerLocal.JNDI_NAME))
+                .clearTrash(new Date(new Date().getTime() - RetryIntervalls.parseIntervalOrNever(retentionTime)));        
     }
-    
+
     public boolean isNotificationEnabled(Notification notification) {
-        if (autoUpdateTimerId != null && (notification instanceof TimerNotification)) {
-            TimerNotification lTimerNotification = (TimerNotification) notification;
-            return lTimerNotification.getNotificationID().equals(this.autoUpdateTimerId);
-        }
+        if (notification instanceof TimerNotification) 
+            return true;
         return false;
     }
 
     private void updateAutoUpdateTimer() {
-        if (server == null) return;
-        if (autoUpdateModalities || autoUpdateSourceAETs || autoUpdateStationAETs || autoUpdateStationNames) {
-            if (autoUpdateTimerId == null) {
-                log.info("Start AutoUpdate Scheduler with period of 24h at 23:59:59");
-                try {
+        try {
+            if (server == null) return;
+            if (autoUpdateModalities || autoUpdateSourceAETs || autoUpdateStationAETs || autoUpdateStationNames) {
+                if (autoUpdateTimerId == null) {
+                    log.info("Start AutoUpdate Scheduler with period of 24h at 23:59:59");    
                     autoUpdateTimerId = (Integer) server.invoke(timerServiceName, "addNotification",
                             new Object[] { "Schedule", "Scheduler Notification", null,
-                            nextMidnight(), new Long(ONE_DAY_IN_MILLIS) }, new String[] {
+                            nextMidnight(), new Long(ONE_DAY_IN_MILLIS) },
+                            new String[] {
                             String.class.getName(), String.class.getName(),
                             Object.class.getName(), Date.class.getName(),
                             Long.TYPE.getName() });
-                    server.addNotificationListener(timerServiceName, this, this, null);
-                } catch (Exception x) {
-                    log.error("Start AutoUpdate Scheduler failed!", x);
-                }
-            }                
-        } else if (autoUpdateTimerId != null) {
-            try {
-                log.info("Stop AutoUpdate Scheduler");
-                server.removeNotificationListener(timerServiceName, this);
-                server.invoke(timerServiceName, "removeNotification", new Object[] { autoUpdateTimerId },
-                        new String[] { Integer.class.getName() });
+                    addNotificationListener();
+                }                
+            } else if (autoUpdateTimerId != null) {
+                removeNotification(autoUpdateTimerId);
                 autoUpdateTimerId = null;
-            } catch (Exception e) {
-                log.error("operation failed", e);
             }
+        } catch (Exception x) {
+            log.error("Start AutoUpdate Scheduler failed!", x);
         }
     }
 
@@ -784,6 +794,62 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).updateDicomRoles();
     }
 
+    private void configureTrashCleaner() {
+        try {
+            if (server == null) return;
+            long timespan = RetryIntervalls.parseIntervalOrNever(retentionTime);
+            long interval = RetryIntervalls.parseIntervalOrNever(emptyTrashInterval);
+            if (timespan > 0L && interval > 0L) { 
+                if (trashCleanerTimerId == null) {
+                    // TODO: here flies the Exception (NullPointerException)
+                    trashCleanerTimerId = (Integer) server.invoke(timerServiceName, "addNotification",
+                            new Object[] { "TrashCleaner", "TrashCleaner Notification", null,
+                            new Date(), 
+                            interval}, 
+                            new String[] {
+                                String.class.getName(), String.class.getName(),
+                                Object.class.getName(), Date.class.getName(),
+                                Long.TYPE.getName() 
+                            });
+                    addNotificationListener();
+                }
+            } else if (trashCleanerTimerId != null) {
+                removeNotification(trashCleanerTimerId);
+                trashCleanerTimerId = null;
+            }
+        } catch (Exception x) {
+            log.error("Start TrashCleaner Scheduler failed!", x);
+        }
+    }
+
+    private void addNotificationListener() throws InstanceNotFoundException {
+        if (hasNotificationListener == 0) 
+            server.addNotificationListener(timerServiceName, this, this, null);
+        hasNotificationListener++;
+    }
+
+    private void removeNotification(Integer id) {
+        hasNotificationListener--;
+        try {
+            log.info("Stop scheduled notification with id " + id);
+            if (hasNotificationListener == 0)
+                server.removeNotificationListener(timerServiceName, this);
+            server.invoke(timerServiceName, "removeNotification", new Object[] { id }, 
+                    new String[] { Integer.class.getName() });
+            autoUpdateTimerId = null;
+        } catch (Exception e) {
+            log.error("operation failed", e);
+        }
+    }
+    
+    @Override
+    public void stopService() {
+        if (autoUpdateTimerId != null)
+            removeNotification(autoUpdateTimerId);
+        if (trashCleanerTimerId != null)
+            removeNotification(trashCleanerTimerId);
+    }
+    
     public String getUserMgtUserRole() {
         return System.getProperty("dcm4chee-usr.cfg.userrole", NONE);
     }
@@ -872,6 +938,26 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public void setIgnoreEditTimeLimitRolename(String ignoreEditTimeLimitRolename) {
         this.ignoreEditTimeLimitRolename = ignoreEditTimeLimitRolename;
+    }
+
+    public void setRetentionTime(String retentionTime) {
+        this.retentionTime = retentionTime;
+        if (emptyTrashInterval != null)
+            configureTrashCleaner();
+    }
+
+    public String getRetentionTime() {
+        return retentionTime;
+    }
+
+    public void setEmptyTrashInterval(String emptyTrashInterval) {
+        this.emptyTrashInterval = emptyTrashInterval;
+        if (retentionTime != null)
+            configureTrashCleaner();
+    }
+
+    public String getEmptyTrashInterval() {
+        return emptyTrashInterval;
     }
 
     public String getWebConfigPath() {

@@ -248,11 +248,12 @@ public class EditDicomObjectPanel extends Panel {
             add(new Label("tag", TagUtils.toString(tag)));
             add(new Label("vr", el.vr().toString()));
             add(new Label("length", Integer.toString(el.length())));
-            add(new TextField<String>("value", el.hasItems() ? 
-                                                new Model<String>("") 
-                                              : new DicomElementModel(el, cs, tagPath))
-                                              .add(new AttributeModifier("title", true, 
-                                                      new DicomElementModel(el, cs, tagPath)))
+            Model<String> model = 
+                el.hasItems() ? 
+                        new Model<String>("") 
+                      : new DicomElementModel(el, cs, tagPath);
+            add(new TextField<String>("value", model)
+                                              .add(new AttributeModifier("title", true, model))
                                               .setVisible(!el.hasItems())
                                               .setEnabled(editable.isEditable(tagPath)));
             

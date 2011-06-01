@@ -49,7 +49,6 @@
             <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
-        
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-arc-entities</artifactId>
@@ -234,7 +233,6 @@
                     </archive>
                 </configuration>
             </plugin>
-            
             <plugin>
                 <groupId>org.mortbay.jetty</groupId>
                 <artifactId>maven-jetty-plugin</artifactId>
