@@ -38,6 +38,7 @@
 package org.dcm4chee.archive.entity;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -46,6 +47,7 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
 
 import org.dcm4che2.data.DicomObject;
@@ -66,6 +68,9 @@ public class PrivateInstance extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = -7577387511052455446L;
 
+    @Column(name = "created_time")
+    private Date createdTime;
+
     @Column(name = "priv_type", nullable = false)
     private int privateType;
 
@@ -81,6 +86,10 @@ public class PrivateInstance extends BaseEntity implements Serializable {
     
     @OneToMany(mappedBy = "instance", fetch=FetchType.LAZY)
     private Set<PrivateFile> files;
+
+    public Date getCreatedTime() {
+        return createdTime;
+    }
 
     public int getPrivateType() {
         return privateType;
@@ -117,6 +126,11 @@ public class PrivateInstance extends BaseEntity implements Serializable {
                 + "]";
     }
 
+    @PrePersist
+    public void onPrePersist() {
+        createdTime = new Date();
+    }
+
     public DicomObject getAttributes() {
         return DicomObjectUtils.decode(encodedAttributes);
     }
@@ -126,5 +140,4 @@ public class PrivateInstance extends BaseEntity implements Serializable {
         this.encodedAttributes = DicomObjectUtils.encode(attrs,
                 UID.DeflatedExplicitVRLittleEndian);
     }
-
 }
