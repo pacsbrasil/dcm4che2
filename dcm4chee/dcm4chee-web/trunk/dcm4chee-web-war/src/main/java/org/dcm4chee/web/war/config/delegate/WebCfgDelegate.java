@@ -116,6 +116,21 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return noneAsNull(getString("WadoBaseURL"));
     }
 
+    public String getRIDBaseURL() {
+        return noneAsNull(getString("RIDBaseURL"));
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getRIDMimeTypes(String cuid) {
+        try {
+            return (List<String>) server.invoke(serviceObjectName, "getRIDMimeTypesForCuid", 
+                    new Object[]{cuid}, new String[]{String.class.getName()});
+        } catch (Exception x) {
+            log.warn("Cant invoke getRIDMimeTypes! Ignored by return null!", x);
+            return null;
+        }
+    }
+    
     public List<String> getInstalledWebViewerNameList() {
         return getStringList("getInstalledWebViewerNameList");
     }

@@ -38,8 +38,16 @@
 
 package org.dcm4chee.web.war.folder;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
@@ -47,6 +55,8 @@ import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebComponent;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.ChoiceRenderer;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Fragment;
@@ -62,11 +72,15 @@ import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
+import org.dcm4chee.web.war.folder.delegate.RIDDelegate;
 import org.dcm4chee.web.war.folder.delegate.WADODelegate;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -79,25 +93,32 @@ public class InstanceViewPage extends SecureWebPage {
 
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     
+    private InstanceModel instanceModel;
+    private int wadoRenderType;
+    
     private int height = 500;
     private WadoImage wadoImg;
     private boolean largeImg;
     
-    public InstanceViewPage(ModalWindow modalWindow, final InstanceModel instanceModel) {
-        height = modalWindow.getInitialHeight()-50;
+    private static Logger log = LoggerFactory.getLogger(InstanceViewPage.class);
+    
+    public InstanceViewPage(ModalWindow modalWindow, InstanceModel instanceModel) {
+        this.instanceModel = instanceModel;
+        height = modalWindow.getInitialHeight()-100;
         if (InstanceViewPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(InstanceViewPage.BaseCSS));
-        add(new Label("info", new StringResourceModel("folder.instanceview.info", this, null, getInfoParams(instanceModel), null )));
-        if (WADODelegate.getInstance().getRenderType(instanceModel.getSopClassUID()) == WADODelegate.IMAGE) {
-            add(new ImageFragment("fragment", instanceModel, modalWindow.getInitialWidth()-50, height));
+        add(new Label("info", new StringResourceModel("folder.instanceview.info", this, null, getInfoParams(), null )));
+        wadoRenderType = WADODelegate.getInstance().getRenderType(instanceModel.getSopClassUID());
+        if (wadoRenderType == WADODelegate.IMAGE) {
+            add(new ImageFragment("fragment", instanceModel, modalWindow.getInitialWidth()-100, height));
         } else {
-            add(new WadoFragment("fragment", instanceModel));
+            add(new MimeFragment("fragment", instanceModel));
         }
     }
             
-    private Object[] getInfoParams(InstanceModel instance) {
+    private Object[] getInfoParams() {
         Object[] params = new Object[10];
-        SeriesModel series = instance.getSeries();
+        SeriesModel series = instanceModel.getSeries();
         StudyModel study = series.getPPS().getStudy();
         PatientModel pat = study.getPatient();
         params[0] = pat.getName();
@@ -108,19 +129,59 @@ public class InstanceViewPage extends SecureWebPage {
         params[5] = study.getDescription();
         params[6] = series.getSeriesInstanceUID();
         params[7] = study.getDescription();
-        params[8] = instance.getSOPInstanceUID();
-        params[9] = instance.getDescription();
+        params[8] = instanceModel.getSOPInstanceUID();
+        params[9] = instanceModel.getDescription();
+        for (int i = 0 ; i < params.length ; i++) {
+            if (params[i] == null && (params[i] instanceof String))
+                params[i] = "";
+        }
         return params;
     }
 
+    public class ImageFragment extends Fragment {
+        private static final long serialVersionUID = 1L;
+        private ImageController imgCtr;
+        
+        public ImageFragment(String id, InstanceModel instanceModel, int width, int height) {
+            super(id, "image", InstanceViewPage.this);
+            imgCtr = new ImageController("imgCtr", width, height);
+            add(imgCtr);
+            wadoImg = new WadoImage("wadoImg", imgCtr);
+            wadoImg.setOutputMarkupId(true);
+            add(wadoImg);
+        }
+     }
+
+    public class MimeFragment extends Fragment {
+        private static final long serialVersionUID = 1L;
+
+        private MimeController mimeCtr;
+
+        public MimeFragment(String id, final InstanceModel instanceModel) {
+            super(id, "url", InstanceViewPage.this);
+            WebMarkupContainer iframe = new WebMarkupContainer("iframe") {
+                private static final long serialVersionUID = 1L;
+                protected void onComponentTag(ComponentTag tag) {
+                    super.onComponentTag(tag);
+                    log.debug("Set URL for iframe:{}",mimeCtr.getURL());
+                    tag.put("src", mimeCtr.getURL());
+                    tag.put("height", height+"px");
+                }
+            };
+            mimeCtr = new MimeController("mimeCtr", iframe);
+            add(mimeCtr);
+            add(iframe.setOutputMarkupId(true));
+        }
+     }
+    
     private class WadoImage extends WebComponent {
 
         private static final long serialVersionUID = 1L;
         private ImageController imgCtr;
 
-        public WadoImage(String id, ImageController instanceModel) {
+        public WadoImage(String id, ImageController ctrl) {
             super(id);
-            this.imgCtr = instanceModel;
+            this.imgCtr = ctrl;
         }
 
         protected void onComponentTag(ComponentTag tag) {
@@ -142,9 +203,9 @@ public class InstanceViewPage extends SecureWebPage {
         private FrameModel frameModel;
         private Model<Boolean> origSizeModel = new Model<Boolean>(false);
         
-        public ImageController(String id, InstanceModel instance, int width, int height) {
+        public ImageController(String id, int width, int height) {
             super(id);
-            initModels(instance, width, height);
+            initModels(width, height);
             setOutputMarkupId(true);
             add(new Link<Object>("prev") {
                 private static final long serialVersionUID = 1L;
@@ -193,23 +254,23 @@ public class InstanceViewPage extends SecureWebPage {
             }.add(new TooltipBehaviour("folder.instanceview.")).setVisible(largeImg));
         }
 
-        private void initModels(InstanceModel instance, int width, int height) {
-            baseWadoURL = new StringBuilder(WADODelegate.getInstance().getURL(instance));
+        private void initModels(int width, int height) {
+            baseWadoURL = new StringBuilder(WADODelegate.getInstance().getURL(instanceModel));
             baseUrlLength = baseWadoURL.length();
-            DicomObject obj = instance.getDataset();
+            DicomObject obj = instanceModel.getDataset();
             Integer columns = obj.getInt(Tag.Columns);
             Integer rows = obj.getInt(Tag.Rows);
-            if (columns > width || rows > height) {
+            if (columns > width) {
                 largeImg = true;
-                if ( columns - width > rows - height) {
-                    columns = width;
-                    rows = null;
-                } else {
-                    rows = height;
-                    columns = null;
-                }
+                columns = width;
+                rows = (int) ((float)rows * (float)width /(float) columns);
+            }
+            if (rows > height) {
+                rows = height;
+                columns = null;
+                largeImg = true;
             } else {
-                columns = rows = null;
+                rows = null;
             }
             columnsModel = new Model<Integer>(columns);
             rowsModel = new Model<Integer>(rows);
@@ -257,35 +318,47 @@ public class InstanceViewPage extends SecureWebPage {
             return frameNr;
         }
     }
-    
-    public class ImageFragment extends Fragment {
+
+    private class MimeController extends WebMarkupContainer {
+        private static final String MIME_DEFAULT = "<default>";
+
         private static final long serialVersionUID = 1L;
-        private ImageController imgCtr;
         
-        public ImageFragment(String id, InstanceModel instanceModel, int width, int height) {
-            super(id, "image", InstanceViewPage.this);
-            imgCtr = new ImageController("imgCtr", instanceModel, width, height);
-            add(imgCtr);
-            wadoImg = new WadoImage("wadoImg", imgCtr);
-            wadoImg.setOutputMarkupId(true);
-            add(wadoImg);
-        }
-     }
-
-    public class WadoFragment extends Fragment {
-        private static final long serialVersionUID = 1L;
-
-        public WadoFragment(String id, final InstanceModel instanceModel) {
-            super(id, "url", InstanceViewPage.this);
-            add(new WebMarkupContainer("iframe") {
+        private Model<String> mimeModel = new Model<String>(null);
+        
+        public MimeController(String id, final Component iframe) {
+            super(id);
+            List<String> mimeTypes = new ArrayList<String>();
+            mimeTypes.add(MIME_DEFAULT);
+            List<String> ridMimes = WebCfgDelegate.getInstance().getRIDMimeTypes(instanceModel.getSopClassUID());
+            if (ridMimes != null)
+                mimeTypes.addAll(ridMimes);
+            DropDownChoice<String> mimeSelector = new DropDownChoice<String>("mimeTypes", mimeModel, mimeTypes);
+            mimeSelector.setDefaultModelObject(wadoRenderType == WADODelegate.NOT_RENDERABLE && mimeTypes.size() > 1 ? 
+                    mimeTypes.get(1) : MIME_DEFAULT);
+            mimeSelector.add(new AjaxFormComponentUpdatingBehavior("onchange") {
                 private static final long serialVersionUID = 1L;
-                protected void onComponentTag(ComponentTag tag) {
-                    super.onComponentTag(tag);
-                    String wadoUrl = WADODelegate.getInstance().getURL(instanceModel);
-                    tag.put("src", wadoUrl);
-                    tag.put("height", height+"px");
+
+                protected void onUpdate(AjaxRequestTarget target) {
+                     target.addComponent(iframe);
                 }
             });
+            add(new Label("contentTypeLabel", new ResourceModel("folder.instanceview.contentTypeLabel")));
+            add(mimeSelector);
+            setOutputMarkupId(true);
         }
-     }
+
+        public String getURL() {
+            String mime = mimeModel.getObject();
+            if (MIME_DEFAULT.equals(mime)) {
+                return WADODelegate.getInstance().getURL(instanceModel);
+            } else {
+                try {
+                    mime = URLEncoder.encode(mime, "UTF-8");
+                } catch (UnsupportedEncodingException ignore) {}
+                return RIDDelegate.getInstance().getURL(instanceModel, mime);
+            }
+        }
+        
+    }
 }

@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
 import javax.imageio.spi.ServiceRegistry;
@@ -65,6 +66,7 @@ import javax.management.ObjectName;
 import javax.management.timer.TimerNotification;
 
 import org.dcm4che2.data.UID;
+import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.webview.link.spi.WebviewerLinkProviderSPI;
@@ -99,6 +101,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private String dicomSecurityServletUrl;
     
     private String wadoBaseURL;
+    private String ridBaseURL;
     private List<String> webviewerNames;
     private List<String> webviewerBaseUrls;
     
@@ -116,7 +119,9 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private Map<String, String> waveformCUIDS = new LinkedHashMap<String, String>();
     private Map<String, String> videoCUIDS = new LinkedHashMap<String, String>();
     private Map<String, String> encapsulatedCUIDS = new LinkedHashMap<String, String>();
-    
+
+    private Map<String, List<String>> ridMimeTypes = new LinkedHashMap<String, List<String>>();
+
     private List<String> modalities = new ArrayList<String>();
     private List<String> sourceAETs = new ArrayList<String>();
     private List<String> stationAETs = new ArrayList<String>();
@@ -173,6 +178,14 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public void setWadoBaseURL(String wadoBaseURL) {
         this.wadoBaseURL = wadoBaseURL;
+    }
+    
+    public String getRIDBaseURL() {
+        return ridBaseURL;
+    }
+
+    public void setRIDBaseURL(String url) {
+        this.ridBaseURL = url;
     }
     
     public String getInstalledWebViewer() {
@@ -260,6 +273,46 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public void setEncapsulatedCUIDS(String encapsulatedCUIDS) {
         this.encapsulatedCUIDS = parseUIDs(encapsulatedCUIDS);
+    }
+
+    public String getRIDMimeTypes() {
+        if (ridMimeTypes.isEmpty())
+            return NONE;
+        StringBuilder sb = new StringBuilder();
+        Entry<String, List<String>> entry;
+        for ( Iterator<Entry<String, List<String>>> it = ridMimeTypes.entrySet().iterator() ; it.hasNext() ; ) {
+            entry = it.next();
+            sb.append(entry.getKey()).append(':').append(listAsString(entry.getValue(), "|")).append(NEWLINE);
+        }
+        return sb.toString();
+    }
+
+    public void setRIDMimeTypes(String mimes) {
+        Map<String, List<String>> map = new LinkedHashMap<String, List<String>>();
+        if (!NONE.equals(mimes)) {
+            StringTokenizer st = new StringTokenizer(mimes, " \t\r\n;");
+            String line;
+            int pos;
+            while (st.hasMoreTokens()) {
+                line = st.nextToken().trim();
+                pos = line.indexOf(':');
+                if (pos == -1)
+                    throw new IllegalArgumentException("Wrong RidCUIDSwithMime format! Missing ':'!");
+                map.put(line.substring(0, pos++), stringAsList(line.substring(pos), "|"));
+            }
+        }
+        this.ridMimeTypes = map;
+    }
+    
+    public List<String> getRIDMimeTypesForCuid(String cuid) {
+        if (srCUIDS.containsValue(cuid)) {
+            return ridMimeTypes.get("SR");
+        } else if (encapsulatedCUIDS.containsValue(cuid)) {
+            return ridMimeTypes.get("DOC");
+        } else if (waveformCUIDS.containsValue(cuid)) {
+            return ridMimeTypes.get("ECG");
+        }
+        return null;
     }
 
     public String getModalities() {

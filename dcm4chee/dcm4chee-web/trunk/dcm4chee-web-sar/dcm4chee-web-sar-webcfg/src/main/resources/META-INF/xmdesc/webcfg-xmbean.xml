@@ -57,6 +57,19 @@
          <value value="NONE"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getRIDBaseURL"
+      setMethod="setRIDBaseURL">
+      <description><![CDATA[
+        Retrieve Information for Display Base URL if RID Service is not in the same WEB container.<br/>
+        NONE: RID service is in same container.]]>
+      </description>
+      <name>RIDBaseURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-only" getMethod="getInstalledWebViewer" >
       <description>Name(s) of installed WebViewer</description>
       <name>InstalledWebViewer</name>
@@ -230,6 +243,27 @@
            EncapsulatedPDFStorage
            EncapsulatedCDAStorage
            "/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getRIDMimeTypes"
+      setMethod="setRIDMimeTypes">
+      <description><![CDATA[List of mime types for RID retrieve grouped by SOP Class UID groups.<br/>
+      	Format: &lt;grp&gt;:&lt;mimeType&gt;[|&lt;mimeType&gt;[|...]]<br/>
+      	<dl><dt>Following group names can be used:</dt>
+      	<dd>SR :   Structured Report SOP Class UIDs</dd>
+      	<dd>ECG:   Waveform SOP Class UIDs</dd>
+      	<dd>DOC:   Encapsulated Document Storage SOP Class UIDs  </dd>
+      	</dl>
+      ]]></description>
+      <name>RIDMimeTypes</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+         	SR:application/pdf
+         	ECG:application/pdf|image/svg+xml
+         	DOC:application/pdf
+         	"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -743,6 +777,18 @@
         <type>java.lang.String</type>
       </parameter>
       <return-type>int</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Return a list of MIME types that are supported by RID service and viewer according 
+            configured RID MIME types.
+      		]]> </description>
+      <name>getRIDMimeTypesForCuid</name>
+      <parameter>
+        <description>SOP Class UID</description>
+        <name>sopClassUID</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.util.List</return-type>
    </operation>
    <operation impact="ACTION">
       <description>Get window size for given window name. Return an int[] with 0..width and 1..height</description>
