@@ -23,6 +23,22 @@
    </constructor>
 
    <!-- Attributes -->
+  <attribute access="read-write"
+      getMethod="getConfigDir"
+      setMethod="setConfigDir">
+      <description><![CDATA[Path to configuration files: </br> 
+      dicomdir-records.xml (Rules for DICOM DIR Creation), </br>
+      index.xsl (Stylesheet for INDEX.HTM creation), </br>
+      web.xsl (Stylesheet for web content creation), </br>
+      label.xsl (Stylesheet for Media Label creation).
+      ]]>
+      </description>
+      <name>ConfigDirPath</name>
+      <type>java.lang.String</type>      
+     <descriptors>
+         <value value="conf/dcm4chee-cdw" />
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getMediaCapacity"
       setMethod="setMediaCapacity">
@@ -288,6 +304,45 @@ value for <code>Instance Number</code> in the referenced DICOM file.]]>
       <type>boolean</type>      
       <descriptors>
          <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMergeDirPath"
+      setMethod="setMergeDirPath">
+      <description>Path to generic (additional) content
+      to be added to the Media.
+      Relative configured path is resolved towards server's home dir. 
+      </description>
+      <name>MergeDirPath</name>
+      <type>java.lang.String</type>      
+     <descriptors>
+         <value value="data/mergedir" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMergeDirViewerPath"
+      setMethod="setMergeDirViewerPath">
+      <description>Path to CD Viewer Application
+      to be added to the Media.
+      Relative configured path is resolved towards server's home dir.
+      </description>
+      <name>MergeDirViewerPath</name>
+      <type>java.lang.String</type>      
+     <descriptors>
+         <value value="data/mergedir-viewer" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getMergeDirWebPath"
+      setMethod="setMergeDirWebPath">
+      <description>Path to additional Web content
+      to be added to the Media.
+      Relative configured path is resolved towards server's home dir.
+      </description>
+      <name>MergeDirWebPath</name>
+      <type>java.lang.String</type>      
+     <descriptors>
+         <value value="data/mergedir-web" />
       </descriptors>
    </attribute>
    <!-- PutNewestStudyOnFirstMedia -->

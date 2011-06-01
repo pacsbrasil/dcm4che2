@@ -89,20 +89,29 @@ public class MediaComposerService extends ServiceMBeanSupport {
 
     private SpoolDirDelegate spoolDir = new SpoolDirDelegate(this);
 
-    private DirRecordFactory dirRecordFactory = new DirRecordFactory(
-            "resource:dcm4chee-cdw/dicomdir-records.xml");
-
-    private LabelCreator labelCreator = new LabelCreator();
+    private DirRecordFactory dirRecordFactory;
+    
+    private LabelCreator labelCreator;
     
     private ObjectName makeIsoImageServiceName;
 
     private final File xmlFile;
 
-    private final File mergeDir;
+    private File configDir;
+    
+    private File mergeDir;
 
-    private final File mergeDirViewer;
+    private File mergeDirViewer;
 
-    private final File mergeDirWeb;
+    private File mergeDirWeb;
+    
+    private String configDirPath;
+    
+    private String mergeDirPath;
+    
+    private String mergeDirViewerPath;
+    
+    private String mergeDirWebPath;
 
     private long mediaCapacity = 700 * MD5Utils.MEGA;
 
@@ -171,15 +180,68 @@ public class MediaComposerService extends ServiceMBeanSupport {
         }
 
     };
+    
+    private File resolve(File dir) {
+        if (dir.isAbsolute()) return dir;
+        File dataDir = ServerConfigLocator.locate().getServerHomeDir();
+        return new File(dataDir, dir.getPath());
+    }
+    
+    private void checkDir(File dir) {
+        if (dir.mkdirs()) log.debug("M-WRITE " + dir);
+        if (!dir.isDirectory() || !dir.canWrite())
+                throw new IllegalArgumentException(dir
+                        + " is not a writable directory!");
+    }
+    
+    public final String getConfigDir() {
+		return configDirPath;
+        }
 
+    public final void setConfigDir(String path) {
+            File dir = resolve(new File(path));            
+            this.configDir = dir;
+            this.configDirPath = path;          
+           }
+      
+    public final String getMergeDirPath() {
+    	return mergeDirPath;
+    }
+
+    public final void setMergeDirPath(String path) {
+        File dir = resolve(new File(path));
+        checkDir(dir);
+        this.mergeDir = dir;
+        this.mergeDirPath = path;
+    }
+    
+    public final String getMergeDirViewerPath() {
+      	return mergeDirViewerPath;
+    }
+
+    public final void setMergeDirViewerPath(String path) {
+        File dir = resolve(new File(path));
+        checkDir(dir);
+        this.mergeDirViewer = dir;
+        this.mergeDirViewerPath = path;
+    }
+  
+    public final String getMergeDirWebPath() {
+      	return mergeDirWebPath;
+    }
+
+    public final void setMergeDirWebPath(String path) {
+        File dir = resolve(new File(path));
+        checkDir(dir);
+        this.mergeDirWeb = dir;
+        this.mergeDirWebPath = path;
+    }    
+    
     public MediaComposerService() {
         ServerConfig config = ServerConfigLocator.locate();
+        labelCreator = new LabelCreator ();
         File homedir = config.getServerHomeDir();
         xmlFile = new File(homedir, "log" + File.separatorChar + "dicomdir.xml");
-        File datadir = config.getServerDataDir();
-        checkExists(mergeDir = new File(datadir, "mergedir"));
-        checkExists(mergeDirViewer = new File(datadir, "mergedir-viewer"));
-        checkExists(mergeDirWeb = new File(datadir, "mergedir-web"));
         Iterator it = ImageIO.getImageReadersByFormatName("DICOM");
         if (!it.hasNext())
                 throw new ConfigurationException("DICOM Image Reader not found");
@@ -267,7 +329,16 @@ public class MediaComposerService extends ServiceMBeanSupport {
     final DirRecordFactory getDirRecordFactory() {
         return dirRecordFactory;
     }
-
+    
+    final DirRecordFactory setDirRecordFactory() {
+    	
+        return new DirRecordFactory(
+        		new File(configDir.toString() 
+        				+ File.separatorChar 
+        				+ "dicomdir-records.xml").toURI().toString()
+        				);
+    }
+        
     final ImageReader getImageReader() {
         return imageReader;
     }
@@ -496,6 +567,8 @@ public class MediaComposerService extends ServiceMBeanSupport {
     }
 
     protected void process(MediaCreationRequest rq) {
+    	dirRecordFactory = setDirRecordFactory();
+    	labelCreator.setFopBaseURL(configDir.toString());
         boolean cleanup = true;
         Dataset attrs = null;
         try {
@@ -510,10 +583,12 @@ public class MediaComposerService extends ServiceMBeanSupport {
             rq.writeAttributes(attrs, log);
             try {
                 FilesetBuilder builder = new FilesetBuilder(this, rq, attrs);
-                builder.buildFileset();                
+                log.debug("Building Fileset");
+                builder.buildFileset();
+                log.debug("Building DicomDir");
                 DicomDirDOM dom = null;
                 if (isDOMNeeded(builder)) {
-	                dom = new DicomDirDOM(this, rq, attrs);
+	                dom = new DicomDirDOM(this, rq, attrs, configDir.toString());	               
 	                dom.insertModalitiesInStudy();
                 }
                 File fsDir = rq.getFilesetDir();

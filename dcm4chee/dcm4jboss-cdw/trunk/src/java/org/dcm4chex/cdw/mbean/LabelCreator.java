@@ -39,6 +39,7 @@
 package org.dcm4chex.cdw.mbean;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -81,8 +82,12 @@ class LabelCreator {
 
     public LabelCreator() {
         fopFactory = FopFactory.newInstance();
+    }
+    
+    public final void setFopBaseURL(String configpath) {
         try {
-            fopFactory.setBaseURL("resource:dcm4chee-cdw/");
+            fopFactory.setBaseURL(new File(configpath + File.separatorChar).toURL().toString());
+            log.debug("FOP Base URL " + fopFactory.getBaseURL());
         } catch (MalformedURLException e) {
             throw new AssertionError(e);
         }

@@ -97,7 +97,11 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
 
     private boolean sortEnabled = false;
 
-    private final File sortFile;
+    private File sortFile;
+    
+    private File configDir;
+    
+    private String configDirPath;
     
     private SpoolDirDelegate spoolDir = new SpoolDirDelegate(this);
 
@@ -114,11 +118,24 @@ public class MakeIsoImageService extends ServiceMBeanSupport {
         }
 
     };
+    private File resolve(File dir) {
+        if (dir.isAbsolute()) return dir;
+        File dataDir = ServerConfigLocator.locate().getServerHomeDir();
+        return new File(dataDir, dir.getPath());
+    }
+    
+    public final String getConfigDir() {
+        return configDirPath;
+    }
 
+    public final void setConfigDir(String path) {
+        this.configDir = resolve(new File(path));            
+        this.configDirPath = path;
+        sortFile = new File(configDir, "mkisofs.sort");
+    }
+      
     public MakeIsoImageService() {
-        File homedir = ServerConfigLocator.locate().getServerHomeDir();
-        sortFile = new File(homedir, "conf" + File.separatorChar 
-                + "dcm4chee-cdw" + File.separatorChar + "mkisofs.sort");
+        File homedir = ServerConfigLocator.locate().getServerHomeDir();   
         logFile = new File(homedir, "log" + File.separatorChar + "mkisofs.log");
     }
 

@@ -35,6 +35,18 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getConfigDir"
+      setMethod="setConfigDir">
+      <description>Path to configuration file 
+      mkisofs.sort (Sorting rules for files/folders in ISO image)
+      </description>
+      <name>ConfigDirPath</name>
+      <type>java.lang.String</type>      
+     <descriptors>
+         <value value="conf/dcm4chee-cdw" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isKeepSpoolFiles"
       setMethod="setKeepSpoolFiles">
       <description>Keep spool files (for debugging) in failure case.
@@ -115,7 +127,7 @@
       getMethod="isSortEnabled"
       setMethod="setSortEnabled">
       <description>Sort file content locations according to rules in
-      server/default/conf/dcm4chee-cdw/mkisofs.sort.
+      [ConfigDirPath]/mkisofs.sort.
       </description>
       <name>SortEnabled</name>
       <type>boolean</type>      

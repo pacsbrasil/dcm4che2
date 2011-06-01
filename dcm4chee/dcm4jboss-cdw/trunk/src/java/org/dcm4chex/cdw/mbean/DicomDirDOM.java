@@ -126,19 +126,13 @@ class DicomDirDOM {
     private static final TransformerFactory tf = TransformerFactory
             .newInstance();
 
-    private static final DOMImplementation dom;
+    private static DOMImplementation dom;
 
-    private static final String INDEX_XSL_URI = "resource:dcm4chee-cdw/index.xsl";
+    private static Templates indexTpl;
 
-    private static final String WEB_XSL_URI = "resource:dcm4chee-cdw/web.xsl";
+    private static Templates webTpl;
 
-    private static final String LABEL_XSL_URI = "resource:dcm4chee-cdw/label.xsl";
-
-    private static final Templates indexTpl;
-
-    private static final Templates webTpl;
-
-    private static final Templates labelTpl;
+    private static Templates labelTpl;
 
     private final Document doc;
 
@@ -148,13 +142,18 @@ class DicomDirDOM {
     
     private final boolean debug;
     
-    static {
+    public DicomDirDOM(MediaComposerService service, MediaCreationRequest rq,
+            Dataset attrs, String configpath) throws MediaCreationException {
+        this.service = service;
+        this.log = service.getLog();
+        this.debug = log.isDebugEnabled();
+        
         try {
             dom = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-                    .getDOMImplementation();
-            indexTpl = tf.newTemplates(new StreamSource(INDEX_XSL_URI));
-            webTpl = tf.newTemplates(new StreamSource(WEB_XSL_URI));
-            labelTpl = tf.newTemplates(new StreamSource(LABEL_XSL_URI));
+                    .getDOMImplementation();            
+            indexTpl = tf.newTemplates(new StreamSource(new File(configpath + File.separatorChar + "index.xsl").toURI().toString()));           
+            webTpl = tf.newTemplates(new StreamSource(new File(configpath + File.separatorChar + "web.xsl").toURI().toString()));            
+            labelTpl = tf.newTemplates(new StreamSource(new File(configpath + File.separatorChar +  "label.xsl").toURI().toString()));            
         } catch (TransformerConfigurationException e) {
             throw new ConfigurationException(e);
         } catch (ParserConfigurationException e) {
@@ -162,13 +161,7 @@ class DicomDirDOM {
         } catch (FactoryConfigurationError e) {
             throw new ConfigurationException(e);
         }
-    }
 
-    public DicomDirDOM(MediaComposerService service, MediaCreationRequest rq,
-            Dataset attrs) throws MediaCreationException {
-        this.service = service;
-        this.log = service.getLog();
-        this.debug = log.isDebugEnabled();
         this.doc = dom.createDocument(null, ROOT_ELM, null);
         if (debug) {
             service.logMemoryUsage();
@@ -198,7 +191,7 @@ class DicomDirDOM {
             }
         }
     }
-
+   
     public void insertModalitiesInStudy() {
         Element root = doc.getDocumentElement();
         for (Node pat = root.getFirstChild(); pat != null; pat = pat
