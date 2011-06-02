@@ -283,7 +283,7 @@ final class ActiveAssociationImpl implements ActiveAssociation,
                 throw new RuntimeException("Illegal Command: " + cmd);
             }
         } catch (IOException ioe) {
-            log.error(ioe);
+            log.error(ioe.getMessage(), ioe);
             pool.shutdown();
         } finally {
             // ensure readout of data PDVs
