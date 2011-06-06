@@ -92,6 +92,7 @@ public class ReportPanel extends Panel {
 
     private static final ResourceReference DashboardCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
 
+    private ModalWindow createGroupWindow;
     private ModalWindow modalWindow;
     
     public ReportPanel(String id) {
@@ -100,26 +101,28 @@ public class ReportPanel extends Panel {
         if (ReportPanel.DashboardCSS != null)
             add(CSSPackageResource.getHeaderContribution(ReportPanel.DashboardCSS));
 
-        add(modalWindow = new ModalWindow("modal-window")
+        add(createGroupWindow = new ModalWindow("create-group-window")
             .setPageCreator(new ModalWindow.PageCreator() {
                 
                 private static final long serialVersionUID = 1L;
                   
                 @Override
                 public Page createPage() {
-                    return new CreateGroupPage(modalWindow);
+                    return new CreateGroupPage(createGroupWindow);
                 }
             })
         );       
 
         int[] winSize = DashboardCfgDelegate.getInstance().getWindowSize("createGroup");
-        add(new ModalWindowLink("toggle-group-form-link", modalWindow, winSize[0],winSize[1])
+        add(new ModalWindowLink("toggle-group-form-link", createGroupWindow, winSize[0],winSize[1])
         .add(new Image("toggle-group-form-image", ImageManager.IMAGE_COMMON_ADD)
         .add(new ImageSizeBehaviour("vertical-align: middle;")))
         .add(new Label("dashboard.report.add-group-form.title", new ResourceModel("dashboard.report.add-group-form.title")))
         .add(new TooltipBehaviour("dashboard.report."))
         .add(new SecurityBehavior(getModuleName() + ":newGroupLink"))
         );
+        
+        add(modalWindow = new ModalWindow("modal-window"));
     }
     
     @Override
