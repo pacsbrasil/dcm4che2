@@ -202,8 +202,10 @@ public abstract class StorageBean implements SessionBean {
         try {
             Dataset coercedElements = DcmObjectFactory.getInstance().newDataset();
             InstanceLocal instance;
+            int prevAvailability = Availability.UNAVAILABLE;
             try {
                 instance = instHome.findBySopIuid(iuid);
+                prevAvailability = instance.getAvailabilitySafe();
                 coerceInstanceIdentity(instance, ds, coercedElements);
             } catch (ObjectNotFoundException onfe) {
                 instance = instHome.create(ds,
@@ -213,7 +215,7 @@ public abstract class StorageBean implements SessionBean {
                 FileSystemLocal fs = fileSystemHome.findByPrimaryKey(new Long(fspk));
                 FileLocal file = fileHome.create(fileid, tsuid, size, md5, 0,
                         instance, fs);
-                instance.setAvailability(fs.getAvailability());
+                instance.setAvailability(Math.min(fs.getAvailability(), prevAvailability));
                 instance.addRetrieveAET(fs.getRetrieveAET());
                 if (updateStudyAccessTime) {
                     touchStudyOnFileSystem(ds.getString(Tags.StudyInstanceUID), fs);
