@@ -40,6 +40,7 @@ package org.dcm4chee.archive.entity;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -50,6 +51,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 
 import org.dcm4che2.data.DicomObject;
@@ -150,7 +152,7 @@ public class Instance extends BaseEntity implements Serializable {
     private Series series;
 
     @OneToMany(mappedBy = "instance", fetch = FetchType.LAZY, cascade=CascadeType.REMOVE)
-    private Set<File> files;
+    private List<File> files;
 
     @OneToMany(mappedBy = "instance", fetch = FetchType.LAZY, cascade=CascadeType.REMOVE)
     private Set<ContentItem> contentItems;
@@ -300,7 +302,7 @@ public class Instance extends BaseEntity implements Serializable {
         this.series = series;
     }
 
-    public Set<File> getFiles() {
+    public List<File> getFiles() {
         return files;
     }
 
