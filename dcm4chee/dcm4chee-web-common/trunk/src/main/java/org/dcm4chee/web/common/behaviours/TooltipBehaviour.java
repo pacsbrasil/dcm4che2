@@ -122,4 +122,8 @@ public class TooltipBehaviour extends AbstractBehavior {
     public TooltipBehaviour newWithSubstitution(IModel<?> model) {
         return new TooltipBehaviour(prefix, id, model);
     }
+    
+    public String getTooltip(Component c) {
+        return getLocalizer().getStringIgnoreSettings(getResourceKey(c), c, substitutionModel, "");
+    }
 }
