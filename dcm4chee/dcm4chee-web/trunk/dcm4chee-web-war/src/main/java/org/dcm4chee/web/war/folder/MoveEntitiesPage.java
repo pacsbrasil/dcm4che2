@@ -116,6 +116,7 @@ public class MoveEntitiesPage extends SecureWebPage {
     public static final String MSG_ERR_SELECTION_MOVENOT_ONLINE = "Selection for move entities must have ONLINE availability!";
     public static final String MSGID_ERR_SELECTION_MOVE_NOT_ONLINE = "move.message.error.moveNotOnline";
     public static final String MSGID_ERR_SELECTION_MOVE_NOT_ALLOWED = "folder.message.moveNotAllowed";
+    public static final String MSGID_ERR_SELECTION_MOVE_SAME_PARENT = "move.message.error.moveSameParent";
     
     private static final int MISSING_NOTHING = 0;
     private static final int MISSING_STUDY = 1;
@@ -200,11 +201,14 @@ public class MoveEntitiesPage extends SecureWebPage {
                     return MSGID_ERR_SELECTION_MOVE_NO_SOURCE;
                 }
             } else if (selected.hasSeries() || selected.hasInstances()) {
-
+                return MSGID_ERR_SELECTION_MOVE_SOURCE_LEVEL;
             } else {
                 for ( StudyModel m : selected.getStudies()) {
                     if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE) {
                         return MSGID_ERR_SELECTION_MOVE_NOT_ONLINE;
+                    }
+                    if (m.getPatient().equals(patModel)) {
+                        return MSGID_ERR_SELECTION_MOVE_SAME_PARENT;
                     }
                 }
             }
@@ -230,9 +234,13 @@ public class MoveEntitiesPage extends SecureWebPage {
                     return MSGID_ERR_SELECTION_MOVE_NO_SOURCE;
                 }
             } else {
+                StudyModel studyModel= selected.getStudies().iterator().next();
                 for ( SeriesModel m : selected.getSeries()) {
                     if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE) {
                         return MSGID_ERR_SELECTION_MOVE_NOT_ONLINE;
+                    }
+                    if (m.getPPS().getStudy().equals(studyModel)) {
+                        return MSGID_ERR_SELECTION_MOVE_SAME_PARENT;
                     }
                 }
             }
@@ -247,6 +255,15 @@ public class MoveEntitiesPage extends SecureWebPage {
         if( nrOfSeries == 1) {
             if (selected.getInstances().size() < 1) {
                 return MSGID_ERR_SELECTION_MOVE_NO_SOURCE;
+            }
+            SeriesModel seriesModel= selected.getSeries().iterator().next();
+            for ( InstanceModel m : selected.getInstances()) {
+                if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE) {
+                    return MSGID_ERR_SELECTION_MOVE_NOT_ONLINE;
+                }
+                if (m.getSeries().equals(seriesModel)) {
+                    return MSGID_ERR_SELECTION_MOVE_SAME_PARENT;
+                }
             }
             destinationModel = selected.getSeries().iterator().next();
             return null;
