@@ -39,19 +39,26 @@
 package org.dcm4chee.web.war.common;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.MarkupStream;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.parser.XmlTag;
 import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.model.Model;
+import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.util.string.AppendingStringBuffer;
 import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
 /**
@@ -100,6 +107,8 @@ public class SelectAllLink extends AjaxFallbackLink<Object> {
         this(id, models, selectLevel, select);
         this.addUpdateComponent(updateComponent);
         this.selectChilds = selectChilds;
+        
+        selectImg.add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.tooltip")));
     }
     
     public SelectAllLink(String id, List<? extends AbstractDicomModel> models) {
@@ -124,7 +133,7 @@ public class SelectAllLink extends AjaxFallbackLink<Object> {
         }
         addToTarget(target);
     }
-    
+
     @Override
     protected void onComponentTag(final ComponentTag tag) {
         if (selectImg != null && tag.isOpenClose()) {
@@ -135,13 +144,22 @@ public class SelectAllLink extends AjaxFallbackLink<Object> {
 
     @Override
     protected void onComponentTagBody(final MarkupStream markupStream, final ComponentTag openTag) {
+
         if (selectImg != null) {
+            String tooltip = null;
+            for (IBehavior behavior : this.getBehaviors()) 
+                if (behavior instanceof TooltipBehaviour) 
+                    tooltip = ((TooltipBehaviour) behavior).getTooltip(selectImg);
+
             final AppendingStringBuffer buffer = new AppendingStringBuffer();
             buffer.append("\n<img src=\"resources/" 
                     + ((ResourceReference) selectImg.getDefaultModelObject()).getSharedResourceKey()
                     + "\" alt=\"(" 
                     + (this.selectState ? '+' : '-') 
-                    + ")\" />\n");
+                    + ")\""
+                    + " title=\""
+                    + (tooltip != null ? tooltip : "")
+                    + "\" />\n");
             replaceComponentTagBody(markupStream, openTag, buffer);            
         }
     }
