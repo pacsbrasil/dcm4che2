@@ -86,6 +86,7 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
     }
     
     public ConfirmationWindow(String id) {
+        
         this(id, new ResourceModel("yesBtn"), new ResourceModel("noBtn"), new ResourceModel("cancelBtn"));
 
         setCloseButtonCallback(new CloseButtonCallback() {
@@ -195,7 +196,8 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
                 public Object getObject() {
                     return msg == null ? null : msg.getObject();
                 }
-            })).setOutputMarkupId(true));
+            })).setOutputMarkupId(true)
+            .setEscapeModelStrings(false));
             
             add((remarkLabel = new Label("remark", new AbstractReadOnlyModel<Object>() {
 
