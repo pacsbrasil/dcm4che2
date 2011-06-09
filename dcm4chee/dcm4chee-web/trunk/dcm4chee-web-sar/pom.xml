@@ -24,6 +24,7 @@
         <module>dcm4chee-web-sar-echo</module>
         <module>dcm4chee-web-sar-bridge</module>
         <module>dcm4chee-web-sar-modify</module>
+        <module>dcm4chee-web-sar-mwlscu</module>
     </modules>
     <name>JMX services for dcm4chee-web</name>
   <properties>
