@@ -180,6 +180,13 @@ public class UserAccessBean implements UserAccess {
         return this.em.find(User.class, userId);
     }
 
+    public User getUserIgnoreCase(String userId) {
+        return (User)
+            this.em.createQuery("SELECT DISTINCT u FROM User u WHERE UPPER(u.userID) = UPPER(:userID)")
+            .setParameter("userID", userId)
+            .getSingleResult();
+    }
+    
     public void createUser(User user) {
         this.em.persist(user);
     }

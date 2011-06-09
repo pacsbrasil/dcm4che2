@@ -95,11 +95,15 @@ public class ChangePasswordPanel extends Panel {
             
         public ChangePasswordForm(String id, String userId, final User forUser, Model<String> oldPassword, final Model<String> newPassword, final ModalWindow window) {
             super(id);
-            
+
             userToChange = (forUser == null) ? 
                     ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getUser(userId)
                     : forUser;
-                    
+
+            // cope with case-insensitive usernames
+            if (userToChange == null) 
+                userToChange = ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getUserIgnoreCase(userId);
+            
             WebMarkupContainer oldPasswordLabel = new WebMarkupContainer("old-password-label");
             this.add(oldPasswordLabel);
                     
