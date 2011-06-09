@@ -116,6 +116,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private ObjectName contentEditServiceName;
     private ObjectName storeBridgeServiceName;
     private ObjectName mppsEmulatorServiceName;
+    private ObjectName mwlscuServiceName;
     private ObjectName tarRetrieveServiceName;
     private ObjectName timerServiceName;
         
@@ -611,6 +612,14 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public void setMppsEmulatorServiceName(ObjectName mppsEmulatorServiceName) {
         this.mppsEmulatorServiceName = mppsEmulatorServiceName;
+    }
+
+    public ObjectName getMwlScuServiceName() {
+        return mwlscuServiceName;
+    }
+
+    public void setMwlScuServiceName(ObjectName mwlscuServiceName) {
+        this.mwlscuServiceName = mwlscuServiceName;
     }
 
     public ObjectName getTarRetrieveServiceName() {

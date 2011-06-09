@@ -38,9 +38,16 @@
 
 package org.dcm4chee.web.war.worklist.modality;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.ReflectionException;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
@@ -52,7 +59,6 @@ import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.ComponentTag;
-import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
@@ -62,7 +68,6 @@ import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
@@ -70,7 +75,12 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DateRange;
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.common.SPSStatus;
 import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -83,6 +93,7 @@ import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.PatientNameField;
 import org.dcm4chee.web.common.markup.SimpleDateTimeField;
+import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.validators.UIDValidator;
 import org.dcm4chee.web.dao.util.QueryUtil;
@@ -93,6 +104,7 @@ import org.dcm4chee.web.war.common.EditDicomObjectPanel;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
+import org.dcm4chee.web.war.folder.delegate.MwlScuDelegate;
 import org.dcm4chee.web.war.worklist.modality.MWLItemListView.MwlActionProvider;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 import org.slf4j.Logger;
@@ -107,11 +119,10 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
     private static final long serialVersionUID = 1L;
     
-    private static final ResourceReference CSS = new CompressedResourceReference(ModalityWorklistPanel.class, "modality-worklist-style.css");
-
     private static Logger log = LoggerFactory.getLogger(ModalityWorklistPanel.class);
     
     private ModalWindow modalWindow;
+    private MessageWindow msgWin = new MessageWindow("msgWin");
     
     public Model<Integer> pagesize = new Model<Integer>();
 
@@ -139,11 +150,10 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     public ModalityWorklistPanel(final String id) {
         super(id);
 
-        if (ModalityWorklistPanel.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(ModalityWorklistPanel.CSS));
-
         add(macb);
         
+        msgWin.setTitle(new ResourceModel("mw.search.msg.title").wrapOnAssignment(this));
+        add(msgWin);
         add(modalWindow = new ModalWindow("modal-window"));
         modalWindow.setWindowClosedCallback(new WindowClosedCallback() {
             private static final long serialVersionUID = 1L;
@@ -326,7 +336,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     }
 
     protected void addNavigation(final BaseForm form) {
-        
+        addMwlScpAetSelection(form);
         Button resetBtn = new AjaxButton("resetBtn") {
             
             private static final long serialVersionUID = 1L;
@@ -426,12 +436,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             protected void onSubmit(AjaxRequestTarget target) {
                 if (!WebCfgDelegate.getInstance().isQueryAfterPagesizeChange())
                     return;
-                try {
-                    queryMWLItems();
-                } catch (Throwable t) {
-                    log.error("search failed: ", t);
-                }
-                addAfterQueryComponents(target);
+                queryMWLItems(target);
             }
 
             @Override
@@ -446,8 +451,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 viewport.setOffset(Math.max(0, viewport.getOffset() - pagesize.getObject()));
-                queryMWLItems();
-                addAfterQueryComponents(target);
+                queryMWLItems(target);
             }
             
             @Override
@@ -467,8 +471,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 viewport.setOffset(viewport.getOffset() + pagesize.getObject());
-                queryMWLItems();
-                addAfterQueryComponents(target);
+                queryMWLItems(target);
             }
 
             @Override
@@ -491,8 +494,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             @Override
             public Serializable getObject() {
                 return notSearched ? "mw.search.notSearched" :
-                        viewport.getTotal() == 0 ? "mw.search.noMatchingMppsFound" : 
-                            "mw.search.mppsFound";
+                        viewport.getTotal() == 0 ? "mw.search.noMatchingMwlFound" : 
+                            "mw.search.mwlFound";
             }
         };
         form.addComponent(new Label("viewport", new StringResourceModel("${}", ModalityWorklistPanel.this, keySelectModel,new Object[]{"dummy"}){
@@ -501,25 +504,111 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
             @Override
             protected Object[] getParameters() {
+                boolean intern = ViewPort.INTERNAL_WORKLISTPROVIDER.equals(viewport.getWorklistProvider());
                 return new Object[]{viewport.getOffset()+1,
                         Math.min(viewport.getOffset() + pagesize.getObject(), viewport.getTotal()),
-                        viewport.getTotal()};
+                        intern ? String.valueOf(viewport.getTotal()) : "?" };
             }
         }));
         form.clearParent();
     }
 
-    protected void queryMWLItems() {
-        long  t1 = System.currentTimeMillis();
-        log.debug("#### start queryMWLItems");
-        ModalityWorklistLocal dao = lookupMwlDAO();
-        viewport.getMWLItemModels().clear();
-        viewport.setTotal(dao.countMWLItems(viewport.getFilter()));
-        List<MWLItemModel> current = viewport.getMWLItemModels();
-        for (MWLItem mwlItem : dao.findMWLItems(viewport.getFilter(), pagesize.getObject(), viewport.getOffset())) 
-            current.add(new MWLItemModel(mwlItem, new Model<Boolean>(false)));
-        notSearched = false;
-        log.debug("#### queryMWLItems (found "+current.size()+" items) done in "+(System.currentTimeMillis()-t1)+" ms!");
+    private void addMwlScpAetSelection(BaseForm form) {
+        DropDownChoice<String> ch = new DropDownChoice<String>("aetSelect", 
+                viewport.getWorklistProviderModel(), viewport.getWorklistProviderListModel()){
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean isVisible() {
+                return viewport.getWorklistProviderListModel().getObject().size() > 1;
+            }
+        }; 
+        form.addComponent(ch);
+        form.addComponent(new Label("aetSelect.label", new ResourceModel("mw.searchFooter.aetSelect.label")) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean isVisible() {
+                return viewport.getWorklistProviderListModel().getObject().size() > 1;
+            }
+        });
+    }
+
+    protected void queryMWLItems(AjaxRequestTarget target) {
+        try {
+            long  t1 = System.currentTimeMillis();
+            log.debug("#### start queryMWLItems");
+            ModalityWorklistLocal dao = lookupMwlDAO();
+            List<MWLItemModel> current = viewport.getMWLItemModels();
+            current.clear();
+            if (ViewPort.INTERNAL_WORKLISTPROVIDER.equals(viewport.getWorklistProvider())) {
+                viewport.setTotal(dao.countMWLItems(viewport.getFilter()));
+                for (MWLItem mwlItem : dao.findMWLItems(viewport.getFilter(), pagesize.getObject(), viewport.getOffset())) 
+                    current.add(new MWLItemModel(mwlItem));
+            } else {
+                List<DicomObject> result = queryAET(viewport.getWorklistProvider(), viewport.getFilter());
+                if (result != null) {
+                    viewport.setTotal(result.size());
+                    for (DicomObject obj : result) {
+                        current.add(new MWLItemModel(obj));
+                    }
+                    Collections.sort(current, new Comparator<MWLItemModel>() {
+                        public int compare(MWLItemModel o1, MWLItemModel o2) {
+                            int c = o1.getPatientName().compareTo(o2.getPatientName());
+                            if (c == 0) {
+                                if (viewport.getFilter().isLatestItemsFirst()) {
+                                    c = o2.getStartDate().compareTo(o1.getStartDate());
+                                } else {
+                                    c = o1.getStartDate().compareTo(o2.getStartDate());
+                                }
+                            }
+                            return c;
+                        }
+                    });
+                } else {
+                    viewport.setTotal(-1);
+                }
+            }
+            notSearched = false;
+            log.debug("#### queryMWLItems (found "+current.size()+" items) done in "+(System.currentTimeMillis()-t1)+" ms!");
+            addAfterQueryComponents(target);
+        } catch (Exception x) {
+            log.error("Query MWL failed!", x);
+            msgWin.show(target, new ResourceModel("mw.search.msg.queryFailed").wrapOnAssignment(this));
+        }
+    }
+    
+    private List<DicomObject> queryAET(String aet, ModalityWorklistFilter filter) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+        DicomObject searchDS = new BasicDicomObject();
+        searchDS.putString(Tag.PatientName, VR.PN, checkAutoWildcard(filter.getPatientName()));
+        searchDS.putString(Tag.PatientID, VR.LO, filter.getPatientID());
+        searchDS.putString(Tag.IssuerOfPatientID, VR.LO, filter.getIssuerOfPatientID());
+        searchDS.putString(Tag.AccessionNumber, VR.SH, checkAutoWildcard(filter.getAccessionNumber()));
+        DicomElement spsSq = searchDS.putSequence(Tag.ScheduledProcedureStepSequence);
+        DicomObject spsSqItem = new BasicDicomObject();
+        spsSq.addDicomObject(spsSqItem);
+        DateRange drStart = new DateRange(filter.getStartDateMin(), filter.getStartDateMax());
+        spsSqItem.putDateRange(Tag.ScheduledProcedureStepStartDate, VR.DA, drStart);
+        spsSqItem.putDateRange(Tag.ScheduledProcedureStepStartTime, VR.TM, drStart);
+        spsSqItem.putString(Tag.Modality, VR.CS, filter.getModality());
+        spsSqItem.putStrings(Tag.ScheduledStationAETitle, VR.AE, filter.getScheduledStationAETs());
+        spsSqItem.putString(Tag.ScheduledStationName, VR.SH, filter.getScheduledStationName());
+        String status = filter.getSPSStatus();
+        spsSqItem.putString(Tag.ScheduledProcedureStepStatus, VR.CS, "*".equals(status) ? null : status);
+        searchDS.putString(Tag.StudyInstanceUID, VR.UI, filter.getStudyInstanceUID());
+        DateRange drBirth = new DateRange(filter.getBirthDateMin(), filter.getBirthDateMax());
+        searchDS.putDateRange(Tag.PatientBirthDate, VR.DA, drBirth);
+        return MwlScuDelegate.getInstance().queryMWL(aet, searchDS, pagesize.getObject());
+    }
+    
+    private String checkAutoWildcard(String s) {
+        if (s == null || s.length() == 0  || s.equals("*")) {
+            return null;
+        } else if (s.indexOf('*')!=-1 || s.indexOf('?')!=-1 || s.indexOf('^')!=-1) {
+            return s;
+        } else {
+            return s+'*';
+        }
     }
 
     private ModalityWorklistLocal lookupMwlDAO() {
@@ -607,10 +696,14 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                            mwlItemModel.update(getDicomObject());
                            super.onCancel();
                        }                       
-                });
-                modalWindow.show(target);
-                super.onClick(target);
-            }
+                    });
+                    modalWindow.show(target);
+                    super.onClick(target);
+                }
+                @Override
+                public boolean isVisible() {
+                    return mwlItemModel.getPk() != -1;
+                }
         }
             .add(new Image("editImg",ImageManager.IMAGE_COMMON_DICOM_EDIT)
             .add(new ImageSizeBehaviour())
@@ -620,13 +713,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     }
 
     private void doSearch(AjaxRequestTarget target) {
-        try {
-            viewport.setOffset(0);
-            queryMWLItems();
-        } catch (Throwable t) {
-            log.error("search failed: ", t);
-        }
-        addAfterQueryComponents(target);
+        viewport.setOffset(0);
+        queryMWLItems(target);
     }
 
     private void addAfterQueryComponents(final AjaxRequestTarget target) {

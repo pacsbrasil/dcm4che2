@@ -633,6 +633,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getMwlScuServiceName"
+      setMethod="setMwlScuServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>mwlScuServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.web:service=Web3MwlSCU"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getTarRetrieveServiceName"
       setMethod="setTarRetrieveServiceName">
       <description>Used internally. Do NOT modify.

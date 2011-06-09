@@ -12,6 +12,7 @@
 	<body>
 		<wicket:panel>
 			<div wicket:id="modal-window" />
+			<div wicket:id="msgWin" />
 			<form style="clear: both" wicket:id="form">
 				<table rules="groups" class="search-table" style="margin-top: 20px;">
 					<thead>
@@ -118,13 +119,15 @@
 				            	<img wicket:id="showExtendedFilterImg" alt="(+)" />
 							</a>
 						</td>
-						<td colspan="2"/>
 						<td>
 							<input type="checkbox" id="latestItemsFirst" wicket:id="latestItemsFirst" />
 							<label for="latestItemsFirst" wicket:id="latestItemsFirst.label" />
 						</td>
-						<td style="text-align: right;" colspan="2">
+						<td/>
+						<td class="buttonPanel" colspan="3">
 							<input wicket:id="defaultSubmit" type="submit" value="" style="border:0px; width: 0px; height: 0px; visibility: collapse; display: compact;">
+							<span wicket:id="aetSelect.label">MWL SCP AETs:</span>
+							<select wicket:id="aetSelect" style="margin-left: 5px;"/>
 							<button wicket:id="resetBtn" >
 								<img wicket:id="resetImg" alt="Search" />
 								<span wicket:id="resetText" />

@@ -43,13 +43,17 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.wicket.model.IModel;
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4chee.archive.conf.AttributeFilter;
 import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
+import java.util.Iterator;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -60,23 +64,31 @@ public class MWLItemModel extends AbstractEditableDicomModel implements Serializ
 
     private static final long serialVersionUID = 1L;
 
-    private MWLItem mwlItem;
-    
     private DicomObject patAttrs, spsItem;
     
     private boolean collapsed;
 
-    public MWLItem getMwlItem() {
-        return mwlItem;
-    }
-
-    public MWLItemModel(MWLItem mwlItem, IModel<Boolean> latestStudyFirst) {
+    public MWLItemModel(MWLItem mwlItem) {
         this.collapsed = true;
-
         setPk(mwlItem.getPk());
-        this.mwlItem = mwlItem;
         this.dataset = mwlItem.getAttributes();
         patAttrs = mwlItem.getPatient().getAttributes();
+        spsItem = dataset.getNestedDicomObject(Tag.ScheduledProcedureStepSequence);
+    }
+    
+    public MWLItemModel(DicomObject mwl) {
+        this.collapsed = true;
+        setPk(-1);
+        AttributeFilter filter = AttributeFilter.getExcludePatientAttributeFilter();
+        this.dataset = filter.filter(mwl);
+        patAttrs = new BasicDicomObject();
+        DicomElement e;
+        for (Iterator<DicomElement> it = mwl.iterator() ; it.hasNext() ;) {
+            e = it.next();
+            if (filter.hasTag(e.tag())) {
+                patAttrs.add(e);
+            }
+        }
         spsItem = dataset.getNestedDicomObject(Tag.ScheduledProcedureStepSequence);
     }
 

@@ -42,9 +42,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.wicket.RequestCycle;
+import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
 import org.dcm4chee.web.war.common.AbstractViewPort;
+import org.dcm4chee.web.war.folder.delegate.MwlScuDelegate;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
 
 /**
@@ -53,12 +57,22 @@ import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
  * @since Apr. 20, 2010
  */
 public class ViewPort extends AbstractViewPort {
-
+    public static final String INTERNAL_WORKLISTPROVIDER = "<intern>";
     private static final long serialVersionUID = 1L;
 
     private ModalityWorklistFilter filter;
     private final List<MWLItemModel> mwlItemModels = new ArrayList<MWLItemModel>();
+    
+    final List<String> mwlProviders = new ArrayList<String>();
 
+    private IModel<String> worklistProvider = new Model<String>(
+            MwlScuDelegate.getInstance().getDefaultWorklistProvider());
+
+    public ViewPort() {
+        mwlProviders.add(ViewPort.INTERNAL_WORKLISTPROVIDER);
+        mwlProviders.addAll(MwlScuDelegate.getInstance().getWorklistProviders());
+    }
+    
     public ModalityWorklistFilter getFilter() {
         if (filter == null) 
             filter = new ModalityWorklistFilter(((SecureSession) RequestCycle.get().getSession()).getUsername()); 
@@ -69,9 +83,34 @@ public class ViewPort extends AbstractViewPort {
         return mwlItemModels;
     }
     
+    public IModel<List<String>> getWorklistProviderListModel() {
+        return new AbstractReadOnlyModel<List<String>>() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public List<String> getObject() {
+                return mwlProviders;
+            }
+            
+        };
+    }
+
+    public IModel<String> getWorklistProviderModel() {
+        return worklistProvider;
+    }
+    
+    public String getWorklistProvider() {
+        return worklistProvider.getObject();
+    }
+    
     public void clear() {
         super.clear();
         filter.clear();
         mwlItemModels.clear();
+        mwlProviders.clear();
+        mwlProviders.add(ViewPort.INTERNAL_WORKLISTPROVIDER);
+        mwlProviders.addAll(MwlScuDelegate.getInstance().getWorklistProviders());
+        worklistProvider.setObject(MwlScuDelegate.getInstance().getDefaultWorklistProvider());
     }
+
 }
