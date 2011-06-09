@@ -56,6 +56,7 @@ table.search-table { border: thin; border-width: 1px; border-style: solid; borde
 table.search-table th { background-color: #446666; color: white; width: 20px; height: 20px; text-align: left; }
 table.search-table tr { vertical-align: bottom; }
 table.search-table tr.search-table-footer { height: 30px; }
+table.search-table tr.search-table-footer td.buttonPanel{ text-align: right; }
 table.search-table tr.search-table-extended { background-color: #A0D8C4; }
 table.search-table span.toggle-text { vertical-align: middle; }
 table.search-table div.search-header { text-decoration: underline; }
