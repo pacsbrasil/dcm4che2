@@ -60,6 +60,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -221,7 +222,11 @@ public class ImageSelectionWindow extends ModalWindow {
                             int to = from + instListView.getRowsPerPage();
                             to = Math.min(to, sm.getInstances().size());
                             from++;
-                            return "Show "+from+" - "+to+" of "+sm.getInstances().size()+" Instances";
+                            return new StringResourceModel("folder.imageselect.InstancesFound", 
+                                    ImageSelectionWindow.this, 
+                                    null, 
+                                    new Object[] {from, to, sm.getInstances().size()})
+                            .getObject();
                         }
                     }));
                     item.add(new AjaxPagingNavigator("instanceNavigator", instListView){
@@ -243,7 +248,11 @@ public class ImageSelectionWindow extends ModalWindow {
                     int to = from + seriesListView.getRowsPerPage();
                     to = Math.min(to, seriesList.size());
                     from++;
-                    return "Show "+from+" - "+to+" of "+seriesList.size()+" Series";
+                    return new StringResourceModel("folder.imageselect.SeriesFound", 
+                            ImageSelectionWindow.this, 
+                            null, 
+                            new Object[] {from, to, seriesList.size()})
+                    .getObject();
                 }
             }));
             add(new SelectAllLink("selectAll", seriesList,SeriesModel.INSTANCE_LEVEL, true, datacontainer)
@@ -274,6 +283,7 @@ public class ImageSelectionWindow extends ModalWindow {
                     item.add(new WadoImage("wadoimg", im, imgSizeModel).setOutputMarkupId(true));
                     item.add(new Label("sopclass", im.getInstanceNumber()).setOutputMarkupId(true));
                 } else {
+                    // TODO: put image into ImageManager
                     item.add(new Image("wadoimg", new ResourceReference(ImageSelectionWindow.class, "images/no_image.png")).setOutputMarkupId(true));
                     item.add(new Label("sopclass", getNoImageDescription(im)).setOutputMarkupId(true));
                 }
