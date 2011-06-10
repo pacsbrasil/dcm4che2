@@ -39,9 +39,7 @@
 package org.dcm4chee.web.war.common;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
@@ -54,7 +52,6 @@ import org.apache.wicket.markup.MarkupStream;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.parser.XmlTag;
 import org.apache.wicket.model.AbstractReadOnlyModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.util.string.AppendingStringBuffer;
 import org.dcm4chee.icons.ImageManager;

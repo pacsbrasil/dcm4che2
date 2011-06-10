@@ -43,7 +43,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.wicket.Component;
-import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.ajax.markup.html.navigation.paging.AjaxPagingNavigator;
@@ -64,6 +63,7 @@ import org.apache.wicket.model.StringResourceModel;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.war.common.SelectAllLink;
@@ -283,8 +283,7 @@ public class ImageSelectionWindow extends ModalWindow {
                     item.add(new WadoImage("wadoimg", im, imgSizeModel).setOutputMarkupId(true));
                     item.add(new Label("sopclass", im.getInstanceNumber()).setOutputMarkupId(true));
                 } else {
-                    // TODO: put image into ImageManager
-                    item.add(new Image("wadoimg", new ResourceReference(ImageSelectionWindow.class, "images/no_image.png")).setOutputMarkupId(true));
+                    item.add(new Image("wadoimg", ImageManager.IMAGE_FOLDER_NO_IMAGE).setOutputMarkupId(true));
                     item.add(new Label("sopclass", getNoImageDescription(im)).setOutputMarkupId(true));
                 }
                 item.add( new AjaxCheckBox("selected", new PropertyModel<Boolean>(item.getModelObject(), "selected")){
