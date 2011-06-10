@@ -501,26 +501,26 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, long mwlPk, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        if ( system == null || system.trim().length() < 1) {
-            system = modifyingSystem;
-        }
-        if ( reason == null || reason.trim().length() < 1) {
-            reason = this.modifyReason;
-        }
-        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsPks, mwlPk, modifyingSystem, reason);
+        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsPks, mwlPk, 
+                emptyAsDefault(system, modifyingSystem), emptyAsDefault(reason, modifyReason));
+        doAfterLinkMppsToMwl(result);
+        return result;
+    }
+    public MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, DicomObject mwlAttrs, DicomObject patAttrs, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsPks, mwlAttrs, patAttrs,
+                emptyAsDefault(system, modifyingSystem), emptyAsDefault(reason, modifyReason));
         doAfterLinkMppsToMwl(result);
         return result;
     }
 
     public void linkMppsToMwl(String mppsIUID, String rpId, String spsId, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        if ( system == null || system.trim().length() < 1) {
-            system = modifyingSystem;
-        }
-        if ( reason == null || reason.trim().length() < 1) {
-            reason = this.modifyReason;
-        }
-        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsIUID, rpId, spsId, system, reason);
+        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsIUID, rpId, spsId, 
+                emptyAsDefault(system, modifyingSystem), emptyAsDefault(reason, modifyReason));
         doAfterLinkMppsToMwl(result);
+    }
+    
+    private String emptyAsDefault(String value, String def) {
+        return value == null || value.trim().length() < 1 ? def : value;
     }
     
     private void doAfterLinkMppsToMwl(MppsToMwlLinkResult result) throws InstanceNotFoundException, MBeanException, ReflectionException {

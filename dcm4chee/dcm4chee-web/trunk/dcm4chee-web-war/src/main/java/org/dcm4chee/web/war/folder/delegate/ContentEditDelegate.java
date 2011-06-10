@@ -260,10 +260,16 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
     }
     
     public MppsToMwlLinkResult linkMppsToMwl(Collection<PPSModel> ppsModels, MWLItemModel mwl) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
-        MppsToMwlLinkResult result = (MppsToMwlLinkResult) server.invoke(serviceObjectName, "linkMppsToMwl", 
+        if (mwl.getPk() != -1) {
+            return (MppsToMwlLinkResult) server.invoke(serviceObjectName, "linkMppsToMwl", 
                 new Object[]{toPks(ppsModels), mwl.getPk(), null, null}, 
                 new String[]{long[].class.getName(), long.class.getName(), String.class.getName(), String.class.getName()});
-        return result;
+        } else {
+            return (MppsToMwlLinkResult) server.invoke(serviceObjectName, "linkMppsToMwl", 
+                    new Object[]{toPks(ppsModels), mwl.getDataset(), mwl.getPatientAttributes(), null, null}, 
+                    new String[]{long[].class.getName(), DicomObject.class.getName(), DicomObject.class.getName(),
+                                String.class.getName(), String.class.getName()});
+        }
     }
     
     public boolean unlink(PPSModel mpps)  throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {

@@ -105,6 +105,9 @@ public class MWLItemModel extends AbstractEditableDicomModel implements Serializ
     public Date getBirthDate() {
         return patAttrs.getDate(Tag.PatientBirthDate);
     }
+    public DicomObject getPatientAttributes() {
+        return patAttrs;
+    }
     
     public String getSPSModality() {
         return spsItem.getString(Tag.Modality);

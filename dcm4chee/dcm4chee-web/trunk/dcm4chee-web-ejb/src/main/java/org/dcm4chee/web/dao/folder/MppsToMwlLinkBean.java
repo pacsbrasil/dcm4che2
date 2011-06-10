@@ -105,6 +105,30 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         return link(mppss, mwl, modifyingSystem, reason);
     }
 
+    @SuppressWarnings("unchecked")
+    public MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, DicomObject mwlAttrs, DicomObject patAttrs, String modifyingSystem, String reason) {
+        Query qMpps = QueryUtil.getQueryForPks(em,"select object(m) from MPPS m where pk ", mppsPks);
+        List<MPPS> mppss = (List<MPPS>) qMpps.getResultList();
+        MppsToMwlLinkResult result = new MppsToMwlLinkResult();
+        MWLItem mwl = new MWLItem();
+        mwl.setAttributes(mwlAttrs);
+        Patient mwlPat = updateOrCreatePatient(patAttrs);
+        mwl.setPatient(mwlPat);
+        result.setMwl(mwl);
+        Patient mppsPat;
+        for (MPPS mpps : mppss) {
+            log.debug("link MPPS {} with MWL!", mpps);
+            mppsPat = mpps.getPatient();
+            if ( mppsPat.getPk() != mwlPat.getPk()) {
+                log.warn("Patient of MPPS("+mppsPat.getPatientID()+") and MWL("+mwlPat.getPatientID()+") are different!");
+                result.addStudyToMove(mpps.getSeries().iterator().next().getStudy());
+            }
+            link(mpps, mwlAttrs, modifyingSystem, reason);
+            result.addMppsAttributes(mpps);
+        }
+        return result;
+    }
+
     private MppsToMwlLinkResult link(List<MPPS> mppss, MWLItem mwl, String modifyingSystem, String reason) {
         Patient patMpps;
         Patient mwlPat = mwl.getPatient();
@@ -116,17 +140,16 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
                 log.warn("Patient of MPPS("+patMpps.getPatientID()+") and MWL("+mwlPat.getPatientName()+") are different!");
                 result.addStudyToMove(mpps.getSeries().iterator().next().getStudy());
             }
-            link(mpps, mwl, modifyingSystem, reason);
+            link(mpps, mwl.getAttributes(), modifyingSystem, reason);
             result.addMppsAttributes(mpps);
         }
         return result;
     }
     
-    private void link(MPPS mpps, MWLItem mwl, String modifyingSystem, String reason) {
+    private void link(MPPS mpps, DicomObject mwlAttrs, String modifyingSystem, String reason) {
         DicomObject ssa;
         DicomObject mppsAttrs = mpps.getAttributes();
         log.debug("MPPS attrs:{}", mpps);
-        DicomObject mwlAttrs = mwl.getAttributes();
         log.debug("MWL attrs:{}",mwlAttrs);
         String rpid = mwlAttrs.getString(Tag.RequestedProcedureID);
         DicomElement spsSq = mwlAttrs.get(Tag.ScheduledProcedureStepSequence);
@@ -430,5 +453,32 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         }
     }
 
-    
+    @SuppressWarnings("unchecked")
+    private Patient updateOrCreatePatient(DicomObject mwlAttrs) {
+        String patID = mwlAttrs.getString(Tag.PatientID);
+        String issuer = mwlAttrs.getString(Tag.IssuerOfPatientID);
+        Query qPat;
+        if (issuer == null) {
+            qPat = em.createQuery("select object(p) from Patient p where patientID = :patID");
+            qPat.setParameter("patID", patID);
+        } else {
+            qPat = em.createQuery("select object(p) from Patient p where patientID = :patID and issuerOfPatientID = :issuer");
+            qPat.setParameter("patID", patID).setParameter("issuer", issuer);
+        }
+        List<Patient> pats = (List<Patient>) qPat.getResultList();
+        Patient pat;
+        if (pats.size() > 1) {
+            throw new RuntimeException("Patient identifier not unique! patID:"+patID+" Issuer:"+issuer);
+        } else if (pats.size() == 0) {
+            log.info("create new Patient for linking MPPS to external worklist entry! patID:"+patID);
+            pat = new Patient();
+            pat.setAttributes(mwlAttrs);
+            em.persist(pat);
+            log.debug("Patient created:{}",pat.getAttributes());
+        } else {
+            pat = pats.get(0);
+        }
+        log.info("return pat:"+pat);
+        return pat;
+    }
 }

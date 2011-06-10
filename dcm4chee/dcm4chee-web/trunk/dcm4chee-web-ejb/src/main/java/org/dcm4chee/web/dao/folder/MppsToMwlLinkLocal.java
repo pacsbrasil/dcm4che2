@@ -58,6 +58,7 @@ public interface MppsToMwlLinkLocal {
 
     MppsToMwlLinkResult linkMppsToMwl(String mppsIUID, String rpId, String spsId, String modifyingSystem, String reason);
     MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, long mwlPk, String modifyingSystem, String reason);
+    MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, DicomObject mwlAttrs, DicomObject patAttrs, String modifyingSystem, String reason);
     MPPS unlinkMpps(long pk, String modifyingSystem, String modifyReason);
     Map<String, DicomObject> updateSeriesAndStudyAttributes(String[] mppsIuids, DicomObject coerce);
 }
