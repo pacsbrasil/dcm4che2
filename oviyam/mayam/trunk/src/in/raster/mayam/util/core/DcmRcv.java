@@ -1115,7 +1115,7 @@ public class DcmRcv {
 
         DicomObject data = dataStream.readDataset(); //You have one shot to get the data. You can't read twice with readDataset method.
         String suid = data.getString(Tag.StudyInstanceUID);
-
+        
         Calendar today = Calendar.getInstance();
         File struturedDestination = new File(destination.getAbsolutePath() + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + suid);
         String child[] = struturedDestination.list();

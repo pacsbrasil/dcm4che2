@@ -110,6 +110,7 @@ public class SettingsDialog extends javax.swing.JDialog {
         DefaultMutableTreeNode node7 = new DefaultMutableTreeNode("Language");
         rootNode.add(node2);
         rootNode.add(node3);
+        rootNode.add(node4);
         rootNode.add(node6);
         rootNode.add(node5);
         rootNode.add(node7);

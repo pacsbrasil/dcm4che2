@@ -69,11 +69,11 @@ public class SplashScreen extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(splashLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 584, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(splashLabel)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(splashLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(splashLabel)
         );
 
         pack();

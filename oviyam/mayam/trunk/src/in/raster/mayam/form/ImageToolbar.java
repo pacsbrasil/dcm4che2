@@ -1572,11 +1572,12 @@ public class ImageToolbar extends javax.swing.JPanel {
         studyDir = new File(filePath).getParent();
         String seriesUID = ApplicationContext.imgPanel.getSeriesUID();
         String instancePath[] = ApplicationContext.imgPanel.getInstancesFilePath();
-        String transferSyntaxUID = getTransferSyntaxUID(filePath);
+        String transferSyntaxUID = getTransferSyntaxUID(filePath).trim();
         boolean isCompressed = false;
         if(transferSyntaxUID!=null){
-            if (!transferSyntaxUID.equalsIgnoreCase("1.2.840.10008.1.2")
-                    || !transferSyntaxUID.equalsIgnoreCase("1.2.840.10008.1.2.1")) {
+            if (!transferSyntaxUID.equalsIgnoreCase("1.2.840.10008.1.2") &&
+                    !transferSyntaxUID.equalsIgnoreCase("1.2.840.10008.1.2.2") &&
+                    !transferSyntaxUID.equalsIgnoreCase("1.2.840.10008.1.2.1")) {
                 isCompressed = true;
             }
         }

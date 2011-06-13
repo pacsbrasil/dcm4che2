@@ -52,6 +52,7 @@ public class Annotation implements Serializable{
     private ArrayList<AnnotationObj> line;
     private ArrayList<AnnotationObj> rect;
     private ArrayList<AnnotationObj> ellipse;
+    private ArrayList<AnnotationObj> text;
 
     //Construct the Annotation object
     public Annotation() {
@@ -82,5 +83,12 @@ public class Annotation implements Serializable{
 
     public void setRect(ArrayList<AnnotationObj> rect) {
         this.rect = rect;
+    }
+    public ArrayList<AnnotationObj> getText() {
+        return text;
+    }
+
+    public void setText(ArrayList<AnnotationObj> text) {
+        this.text = text;
     }
 }

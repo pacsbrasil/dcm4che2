@@ -2206,8 +2206,66 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         } catch (Exception e) {
             System.out.println("Array index out of bound exception");
         }
-
+        
         return hu;
+    }
+    public double calculateMean(int x, int y, int width, int height) {
+        try {
+            int sum = 0;
+            int pixelCount = 0;
+            //System.out.println("Height, Width : "+height +" "+ width);
+            pixelValueArray = currentbufferedimage.getSampleModel().getPixels(
+                    x, y, width, height, (int[]) null,
+                    currentbufferedimage.getRaster().getDataBuffer());
+            for (int i = 0; i < pixelValueArray.length; i++) {
+                ++pixelCount;
+                int value;
+                try {
+                    value = pixelValueArray[i] * Integer.parseInt(rescaleSlope) + Integer.parseInt(rescaleIntercept);
+                } catch (Exception e) {
+                    value = pixelValueArray[i] * 1 - 1024;
+                }
+                //System.out.println("Value : "+ value);
+                sum += value;
+            }
+            //System.out.println("Pixel Count : "+pixelCount);
+            if (pixelCount == 0) {
+                return 0;
+            }
+            return (double) sum / pixelCount;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    public double calculateStandardDeviation(double mean, int x, int y, int width, int height) {
+        try {
+            double sum = 0;
+            int pixelCount = 0;
+            //System.out.println("Height, Width : "+height +" "+ width);
+            pixelValueArray = currentbufferedimage.getSampleModel().getPixels(
+                    x, y, width, height, (int[]) null,
+                    currentbufferedimage.getRaster().getDataBuffer());
+            for (int i = 0; i < pixelValueArray.length; i++) {
+                ++pixelCount;
+                int value;
+                try {
+                    value = pixelValueArray[i] * Integer.parseInt(rescaleSlope) + Integer.parseInt(rescaleIntercept);
+                } catch (Exception e) {
+                    value = pixelValueArray[i] * 1 - 1024;
+                }
+                double deviation = value - mean;
+                sum += deviation * deviation;
+            }
+            //System.out.println("Pixel Count : "+pixelCount);
+            if (pixelCount == 0) {
+                return 0;
+            }
+            return Math.sqrt(sum / pixelCount);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     public int[] getPixels(int x, int y, int w, int h) {

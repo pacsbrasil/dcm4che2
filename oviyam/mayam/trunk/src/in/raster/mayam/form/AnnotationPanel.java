@@ -44,8 +44,10 @@ import in.raster.mayam.util.measurement.Annotation;
 import in.raster.mayam.util.measurement.AnnotationObj;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Menu;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
@@ -92,6 +94,9 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     private Shape seletedShape = null;
     private String selectedShapeType = "";
     private String selectedShapeDisplayStringValue = "";
+    private String selectedShapeMean = "";
+    private String selectedShapeStandardDevi = "";
+    private double mean,standardDev;
     private Rectangle boundingRect = null;
     private Cursor curCursor;
     private ArrayList<AnnotationObj> lineObj;
@@ -160,6 +165,14 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
 
     public void setMouseLocY2(int mouseLocY2) {
         this.mouseLocY2 = mouseLocY2;
+    }
+    
+    private void setMean(double mean) {
+        this.mean = mean;
+    }
+
+    private void setStandardDev(double standardDevi) {
+        this.standardDev = standardDevi;
     }
 
     /** This method is called from within the constructor to
@@ -354,6 +367,21 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                 seletedShape = test2;
                 selectedShapeType = "rect";
                 selectedShapeDisplayStringValue = t.getArea();
+                calculateMeanDeviation((int) (evt.getX() / this.layeredCanvas.imgpanel.getScaleFactor()),
+                        (int) (evt.getY() / this.layeredCanvas.imgpanel.getScaleFactor()),
+                        (int) (evt.getX() / this.layeredCanvas.imgpanel.getScaleFactor()) + test2.getBounds().width,
+                        (int) (evt.getY() / this.layeredCanvas.imgpanel.getScaleFactor()) + test2.getBounds().height);
+//                selectedShapeMean=t.getMean();
+                NumberFormat nf = NumberFormat.getInstance();
+                nf.setMaximumFractionDigits(3);
+                if (this.layeredCanvas.imgpanel.getPixelSpacingY() == 0 && this.layeredCanvas.imgpanel.getPixelSpacingX() == 0) {
+                    selectedShapeMean = nf.format(mean); //+ " pix";
+                    selectedShapeStandardDevi = nf.format(standardDev); //+ " pix";
+                } else {
+                    selectedShapeMean = nf.format(mean);// + " HU";
+                    //System.out.println("Standard dev: " + standardDev);
+                    selectedShapeStandardDevi = nf.format(standardDev);// + " HU";
+                }
                 rectObj.remove(t);
                 break;
             }
@@ -375,6 +403,21 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                 seletedShape = test2;
                 selectedShapeType = "ellipse";
                 selectedShapeDisplayStringValue = t.getArea();
+                calculateMeanDeviation((int) (evt.getX() / this.layeredCanvas.imgpanel.getScaleFactor()),
+                        (int) (evt.getY() / this.layeredCanvas.imgpanel.getScaleFactor()),
+                        (int) (evt.getX() / this.layeredCanvas.imgpanel.getScaleFactor()) + test2.getBounds().width,
+                        (int) (evt.getY() / this.layeredCanvas.imgpanel.getScaleFactor()) + test2.getBounds().height);
+//                selectedShapeMean=t.getMean();
+                NumberFormat nf = NumberFormat.getInstance();
+                nf.setMaximumFractionDigits(3);
+                if (this.layeredCanvas.imgpanel.getPixelSpacingY() == 0 && this.layeredCanvas.imgpanel.getPixelSpacingX() == 0) {
+                    selectedShapeMean = nf.format(mean); //+ " pix";
+                    selectedShapeStandardDevi = nf.format(standardDev); //+ " pix";
+                } else {
+                    selectedShapeMean = nf.format(mean);// + " HU";
+                    System.out.println("Standard dev: " + standardDev);
+                    selectedShapeStandardDevi = nf.format(standardDev);// + " HU";
+                }
                 ellipseObj.remove(t);
                 break;
             }
@@ -409,6 +452,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                 newRect.setLocation(seletedShape.getBounds().x, seletedShape.getBounds().y, seletedShape.getBounds().x + seletedShape.getBounds().width, seletedShape.getBounds().y + seletedShape.getBounds().height);
                 newRect.setType("rect");
                 newRect.setArea(selectedShapeDisplayStringValue);
+                newRect.setMean(selectedShapeMean);
+                newRect.setStdDev(selectedShapeStandardDevi);
                 rectObj.add(newRect);
                 rectCount++;
                 seletedShape = null;
@@ -420,6 +465,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                 newEllipse.setLocation(seletedShape.getBounds().x, seletedShape.getBounds().y, seletedShape.getBounds().x + seletedShape.getBounds().width, seletedShape.getBounds().y + seletedShape.getBounds().height);
                 newEllipse.setType("ellipse");
                 newEllipse.setArea(selectedShapeDisplayStringValue);
+                newEllipse.setMean(selectedShapeMean);
+                newEllipse.setStdDev(selectedShapeStandardDevi);
                 ellipseObj.add(newEllipse);
                 ellipticalCount++;
                 seletedShape = null;
@@ -938,8 +985,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                 //Draws new string for area,mean,stddev for the current shape
                 ShapeCoordinates shapeCoordinates = new ShapeCoordinates(t.getX1(), t.getY1(), t.getX2(), t.getY2());
                 gs.drawString("Area:" + t.getArea(), shapeCoordinates.getX(), shapeCoordinates.getY() - 60);
-                gs.drawString("Mean:", shapeCoordinates.getX(), shapeCoordinates.getY() - 40);
-                gs.drawString("Std Dev:", shapeCoordinates.getX(), shapeCoordinates.getY() - 20);
+                gs.drawString("Mean:" + t.getMean(), shapeCoordinates.getX(), shapeCoordinates.getY() - 40);
+                gs.drawString("Std Dev:" + t.getStdDev(), shapeCoordinates.getX(), shapeCoordinates.getY() - 20);
                 gs.drawRect(shapeCoordinates.getX(), shapeCoordinates.getY(), shapeCoordinates.getWidth(), shapeCoordinates.getHeight());
             }
             //Condition used to check the current cooridnates and ellipse flag
@@ -958,8 +1005,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                 //Used to draw the area,mean and std dev values in the annotation panel
                 ShapeCoordinates shapeCoordinates = new ShapeCoordinates(t.getX1(), t.getY1(), t.getX2(), t.getY2());
                 gs.drawString("Area:" + t.getArea(), shapeCoordinates.getX(), shapeCoordinates.getY() - 60);
-                gs.drawString("Mean:", shapeCoordinates.getX(), shapeCoordinates.getY() - 40);
-                gs.drawString("Std Dev:", shapeCoordinates.getX(), shapeCoordinates.getY() - 20);
+                gs.drawString("Mean:" + t.getMean(), shapeCoordinates.getX(), shapeCoordinates.getY() - 40);
+                gs.drawString("Std Dev:" + t.getStdDev(), shapeCoordinates.getX(), shapeCoordinates.getY() - 20);
                 gs.drawOval(shapeCoordinates.getX(), shapeCoordinates.getY(), shapeCoordinates.getWidth(), shapeCoordinates.getHeight());
             }
             //Condition used to check the panel is called for the first time
@@ -999,7 +1046,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
 
                 } else {
                     gs.drawString("Area:" + selectedShapeDisplayStringValue, seletedShape.getBounds().x, seletedShape.getBounds().y - 60);
-                    gs.drawString("Mean:", seletedShape.getBounds().x, seletedShape.getBounds().y - 40);
+                    gs.drawString("Mean:" , seletedShape.getBounds().x, seletedShape.getBounds().y - 40);
                     gs.drawString("Std Dev:", seletedShape.getBounds().x, seletedShape.getBounds().y - 20);
                     g.draw(seletedShape);
                 }
@@ -1269,6 +1316,33 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         }
         return returnString;
     }
+    public void calculateMeanDeviation(int mouseLocX1, int mouseLocY1, int mouseLocX2, int mouseLocY2) {
+        int diffY, diffX;
+        //String returnString = "";
+        double width, height;
+        if (mouseLocY2 - mouseLocY1 < 0) {
+            diffY = -(mouseLocY2 - mouseLocY1);
+        } else {
+            diffY = mouseLocY2 - mouseLocY1;
+        }
+        if (mouseLocX2 - mouseLocX1 < 0) {
+            diffX = -(mouseLocX2 - mouseLocX1);
+        } else {
+            diffX = mouseLocX2 - mouseLocX1;
+        }
+        if (this.layeredCanvas.imgpanel.getPixelSpacingY() != 0 && this.layeredCanvas.imgpanel.getPixelSpacingX() != 0) {
+            width = ((diffX / this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * this.layeredCanvas.imgpanel.getPixelSpacingX());
+            height = ((diffY / this.layeredCanvas.imgpanel.getCurrentScaleFactor()) * this.layeredCanvas.imgpanel.getPixelSpacingY());
+        } else {
+            width = ((diffX / this.layeredCanvas.imgpanel.getCurrentScaleFactor()));
+            height = ((diffY / this.layeredCanvas.imgpanel.getCurrentScaleFactor()));
+        }
+        //System.out.println("Height, Width : " + height + " " + width);
+        this.setMean(this.layeredCanvas.imgpanel.calculateMean(mouseLocX1, mouseLocY1, (int) Math.round(width), (int) Math.round(height)));
+        //System.out.println("Mean Value: " + mean);
+        this.setStandardDev(this.layeredCanvas.imgpanel.calculateStandardDeviation(mean, mouseLocX1, mouseLocY1, (int) Math.round(width), (int) Math.round(height)));
+        //System.out.println("Standard Dev Value: " + standardDev);
+    }
 
     public ArrayList<AnnotationObj> getEllipseObj() {
         return ellipseObj;
@@ -1388,6 +1462,16 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                         newRect.setLocation((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (e.getX() / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (e.getY() / this.layeredCanvas.imgpanel.getScaleFactor()));
                         newRect.setType("rect");
                         newRect.setArea(calculateArea((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (e.getX() / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (e.getY() / this.layeredCanvas.imgpanel.getScaleFactor())));
+                        calculateMeanDeviation((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (e.getX() / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (e.getY() / this.layeredCanvas.imgpanel.getScaleFactor()));
+                        NumberFormat nf = NumberFormat.getInstance();
+                        nf.setMaximumFractionDigits(3);
+                        if (this.layeredCanvas.imgpanel.getPixelSpacingY() == 0 && this.layeredCanvas.imgpanel.getPixelSpacingX() == 0) {
+                            newRect.setMean(nf.format(mean) + "");
+                            newRect.setStdDev(nf.format(standardDev) + "");
+                        } else {
+                            newRect.setMean(nf.format(mean) + "");
+                            newRect.setStdDev(nf.format(standardDev) + "");
+                        }
                         rectObj.add(newRect);
                         rectCount++;
                     }
@@ -1398,6 +1482,16 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                         newEllipse.setLocation((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (e.getX() / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (e.getY() / this.layeredCanvas.imgpanel.getScaleFactor()));
                         newEllipse.setType("ellipse");
                         newEllipse.setArea(calculateOvalArea((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (e.getX() / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (e.getY() / this.layeredCanvas.imgpanel.getScaleFactor())));
+                        calculateMeanDeviation((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (e.getX() / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (e.getY() / this.layeredCanvas.imgpanel.getScaleFactor()));
+                        NumberFormat nf = NumberFormat.getInstance();
+                        nf.setMaximumFractionDigits(3);
+                        if (this.layeredCanvas.imgpanel.getPixelSpacingY() == 0 && this.layeredCanvas.imgpanel.getPixelSpacingX() == 0) {
+                            newEllipse.setMean(nf.format(mean) + "");
+                            newEllipse.setStdDev(nf.format(standardDev) + "");
+                        } else {
+                            newEllipse.setMean(nf.format(mean) + "");
+                            newEllipse.setStdDev(nf.format(standardDev) + "");
+                        }
                         ellipseObj.add(newEllipse);
                         ellipticalCount++;
                     }

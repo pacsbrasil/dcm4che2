@@ -69,6 +69,8 @@ public class AnnotationObj implements Serializable{
     private String stdDev;
     // Type of the shape
     private String type = "";
+    //Text assisgned.
+    private String text="";
 
     //Construct the Annotation object
     public AnnotationObj() {
@@ -193,6 +195,13 @@ public class AnnotationObj implements Serializable{
 
     public void setType(String type) {
         this.type = type;
+    }
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
     }
 
     // To set the location of the shape
