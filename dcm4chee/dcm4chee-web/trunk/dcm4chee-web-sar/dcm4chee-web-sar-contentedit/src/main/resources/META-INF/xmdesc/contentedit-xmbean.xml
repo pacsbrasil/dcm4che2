@@ -510,6 +510,38 @@
    </operation>
 
    <operation impact="ACTION">
+      <description><![CDATA[ Link a MPPS to an MWL item.
+      		]]> </description>
+      <name>linkMppsToMwl</name>
+      <parameter>
+        <description>MPPS primary keys</description>
+        <name>mppsPks</name>
+        <type>[J</type>
+      </parameter>
+      <parameter>
+        <description>DicomObject with MWL Attributes</description>
+        <name>mwlAttrs</name>
+        <type>org.dcm4che2.data.DicomObject</type>
+      </parameter>
+      <parameter>
+        <description>DicomObject with Patient Attributes</description>
+        <name>patAttrs</name>
+        <type>org.dcm4che2.data.DicomObject</type>
+      </parameter>
+      <parameter>
+        <description>Name of Modifying System</description>
+        <name>modifyingSystem</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Reason for modifying</description>
+        <name>reason</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>org.dcm4chee.web.dao.vo.MppsToMwlLinkResult</return-type>
+   </operation>
+
+   <operation impact="ACTION">
       <description><![CDATA[ Unlink a MPPS.
       		]]> </description>
       <name>unlinkMpps</name>
