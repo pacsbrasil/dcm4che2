@@ -181,7 +181,7 @@
 			    </wicket:remove>
 			  </thead>
 			  <tbody wicket:id="patients" align="left" valign="top" >
-			    <tr class="patient">
+			    <tr wicket:id="row">
 			      <td wicket:id="cell" rowspan="7" class="expand">
 			        <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="(+)" /></a>
 			      </td>
@@ -203,7 +203,7 @@
 			      </td>
 			    </tr>
 			    <wicket:container wicket:id="studies" >
-			    <tr class="study">
+			    <tr wicket:id="row">
 			      <td wicket:id="cell" rowspan="5" class="expand">
 			        <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="(+)" /></a>
 			      </td>
@@ -227,7 +227,7 @@
 			      </td>
 			    </tr>
 			    <wicket:container wicket:id="series" >
-			    <tr class="series">
+			    <tr wicket:id="row">
 			      <td wicket:id="cell" rowspan="3" class="expand">
 			        <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="(+)" /></a>
 			      </td>
@@ -249,7 +249,7 @@
 			      </td>
 			    </tr>
 			    <wicket:container wicket:id="instances" >
-			    <tr class="instance">
+			    <tr wicket:id="row">
 			      <td wicket:id="datetime" colspan="3">[Content Date/Time]</td>
 			      <td wicket:id="instanceNumber">[No]</td>
 			      <td wicket:id="sopClassUID" colspan="2">[SOP Class UID]</td>

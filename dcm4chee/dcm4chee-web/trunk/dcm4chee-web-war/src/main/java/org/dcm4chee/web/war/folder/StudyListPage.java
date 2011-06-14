@@ -60,6 +60,7 @@ import org.apache.wicket.PageMap;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
+import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
@@ -119,6 +120,7 @@ import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.CheckOneDayBehaviour;
+import org.dcm4chee.web.common.behaviours.SelectableTableRowBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.dcm4chee.web.common.markup.BaseForm;
@@ -1044,8 +1046,19 @@ public class StudyListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
-            
             final PatientModel patModel = (PatientModel) item.getModelObject();
+            WebMarkupContainer row = new WebMarkupContainer("row");
+            AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                    target.addComponent(this);
+                }
+            };
+            row.add(new SelectableTableRowBehaviour(selChkBox, "patient", "patient_selected"));
+            item.add(row);
             WebMarkupContainer cell = new WebMarkupContainer("cell") {
 
                 private static final long serialVersionUID = 1L;
@@ -1058,11 +1071,11 @@ public class StudyListPage extends Panel {
             };
             cell.add(new ExpandCollapseLink("expand", patModel, item)
                 .setVisible(patModel.isExpandable()));
-            item.add(cell);
+            row.add(cell);
             
             TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.patient.");
-            item.add(new Label("name").add(tooltip));        
-            item.add(new Label("id", new AbstractReadOnlyModel<String>(){
+            row.add(new Label("name").add(tooltip));        
+            row.add(new Label("id", new AbstractReadOnlyModel<String>(){
 
                 private static final long serialVersionUID = 1L;
 
@@ -1075,10 +1088,10 @@ public class StudyListPage extends Panel {
             .add(tooltip));
             DateTimeLabel dtl = new DateTimeLabel("birthdate").setWithoutTime(true);
             dtl.add(tooltip.newWithSubstitution(new PropertyModel<String>(dtl, "textFormat")));
-            item.add(dtl);
-            item.add(new Label("sex").add(tooltip));
-            item.add(new Label("comments").add(tooltip));
-            item.add(new AjaxFallbackLink<Object>("toggledetails") {
+            row.add(dtl);
+            row.add(new Label("sex").add(tooltip));
+            row.add(new Label("comments").add(tooltip));
+            row.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
 
@@ -1092,23 +1105,15 @@ public class StudyListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
             .add(tooltip)));
-            item.add(getEditLink(modalWindow, patModel, tooltip)
+            row.add(getEditLink(modalWindow, patModel, tooltip)
                     .add(new SecurityBehavior(getModuleName() + ":editPatientLink"))
                     .add(tooltip));
-            item.add(getStudyPermissionLink(modalWindow, patModel, tooltip)
+            row.add(getStudyPermissionLink(modalWindow, patModel, tooltip)
                     .add(new SecurityBehavior(getModuleName() + ":studyPermissionsPatientLink"))
                     .add(tooltip));
-            item.add(Webviewer.getLink(patModel, webviewerLinkProviders, studyPermissionHelper, tooltip)
+            row.add(Webviewer.getLink(patModel, webviewerLinkProviders, studyPermissionHelper, tooltip)
                     ).add(new SecurityBehavior(getModuleName() + ":webviewerPatientLink"));
-            item.add(new AjaxCheckBox("selected") {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
-                }}.setOutputMarkupId(true)
-                .add(tooltip));
+            row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -1141,6 +1146,18 @@ public class StudyListPage extends Panel {
             item.setOutputMarkupId(true);
 
             final StudyModel studyModel = (StudyModel) item.getModelObject();
+            WebMarkupContainer row = new WebMarkupContainer("row");
+            AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                    target.addComponent(this);
+                }
+            };
+            row.add(new SelectableTableRowBehaviour(selChkBox, "study", "study_selected"));
+            item.add(row);
             WebMarkupContainer cell = new WebMarkupContainer("cell") {
 
                 private static final long serialVersionUID = 1L;
@@ -1152,19 +1169,19 @@ public class StudyListPage extends Panel {
                 }
             };
             cell.add(new ExpandCollapseLink("expand", studyModel, patientListItem));
-            item.add(cell);
+            row.add(cell);
             
             TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.study.");
             
-            item.add(new DateTimeLabel("datetime").add(tooltip));
-            item.add(new Label("id").add(tooltip));            
-            item.add(new Label("accessionNumber").add(tooltip));
-            item.add(new Label("modalities").add(tooltip));
-            item.add(new Label("description").add(tooltip));
-            item.add(new Label("numberOfSeries").add(tooltip));
-            item.add(new Label("numberOfInstances").add(tooltip));
-            item.add(new Label("availability").add(tooltip));
-            item.add(new AjaxFallbackLink<Object>("toggledetails") {
+            row.add(new DateTimeLabel("datetime").add(tooltip));
+            row.add(new Label("id").add(tooltip));            
+            row.add(new Label("accessionNumber").add(tooltip));
+            row.add(new Label("modalities").add(tooltip));
+            row.add(new Label("description").add(tooltip));
+            row.add(new Label("numberOfSeries").add(tooltip));
+            row.add(new Label("numberOfInstances").add(tooltip));
+            row.add(new Label("availability").add(tooltip));
+            row.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
 
@@ -1180,13 +1197,13 @@ public class StudyListPage extends Panel {
                 .add(new ImageSizeBehaviour())
                 .add(tooltip))
             );
-            item.add(getEditLink(modalWindow, studyModel, tooltip)
+            row.add(getEditLink(modalWindow, studyModel, tooltip)
                     .add(new SecurityBehavior(getModuleName() + ":editStudyLink"))
             );
-            item.add(getStudyPermissionLink(modalWindow, studyModel, tooltip)
+            row.add(getStudyPermissionLink(modalWindow, studyModel, tooltip)
                     .add(new SecurityBehavior(getModuleName() + ":studyPermissionsStudyLink"))
                     .add(tooltip));
-            item.add(new IndicatingAjaxLink<Object>("imgSelect") {
+            row.add(new IndicatingAjaxLink<Object>("imgSelect") {
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -1212,14 +1229,7 @@ public class StudyListPage extends Panel {
                 .add(new SecurityBehavior(getModuleName() + ":imageSelectionStudyLink"))
             );
             
-            item.add( new AjaxCheckBox("selected") {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
-                }}.setOutputMarkupId(true).add(tooltip));
+            row.add(selChkBox.add(tooltip));
             
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
@@ -1230,7 +1240,7 @@ public class StudyListPage extends Panel {
                     return studyModel.isDetails();
                 }
             };
-            item.add( Webviewer.getLink(studyModel, webviewerLinkProviders, studyPermissionHelper, tooltip)
+            row.add( Webviewer.getLink(studyModel, webviewerLinkProviders, studyPermissionHelper, tooltip)
                     ).add(new SecurityBehavior(getModuleName() + ":webviewerStudyLink"));
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", studyModel, false));
@@ -1260,6 +1270,23 @@ public class StudyListPage extends Panel {
             final boolean tooOld = !StudyPermissionHelper.get().ignoreEditTimeLimit() 
                                     && tooOld(ppsModel);
             
+            WebMarkupContainer row = new WebMarkupContainer("row");
+            AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public boolean isVisible() {
+                    return ppsModel.getDataset() != null;
+                }
+                
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                    target.addComponent(this);
+                }
+            }; 
+            if (ppsModel.getDataset() != null) 
+                row.add(new SelectableTableRowBehaviour(selChkBox, "pps", "pps_selected"));
+            item.add(row);
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
                 private static final long serialVersionUID = 1L;
@@ -1279,19 +1306,19 @@ public class StudyListPage extends Panel {
                     return ppsModel.getUid() != null;
                 }
             });
-            item.add(cell);
+            row.add(cell);
             
             TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.pps.");
             
-            item.add(new DateTimeLabel("datetime").add(tooltip));
-            item.add(new Label("id").add(tooltip));
-            item.add(new Label("spsid").add(tooltip));
-            item.add(new Label("modality").add(tooltip));
-            item.add(new Label("description").add(tooltip));
-            item.add(new Label("numberOfSeries").add(tooltip));
-            item.add(new Label("numberOfInstances").add(tooltip));
-            item.add(new Label("status").add(tooltip));
-            item.add(new AjaxFallbackLink<Object>("toggledetails") {
+            row.add(new DateTimeLabel("datetime").add(tooltip));
+            row.add(new Label("id").add(tooltip));
+            row.add(new Label("spsid").add(tooltip));
+            row.add(new Label("modality").add(tooltip));
+            row.add(new Label("description").add(tooltip));
+            row.add(new Label("numberOfSeries").add(tooltip));
+            row.add(new Label("numberOfInstances").add(tooltip));
+            row.add(new Label("status").add(tooltip));
+            row.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
 
@@ -1311,7 +1338,7 @@ public class StudyListPage extends Panel {
             .add(new ImageSizeBehaviour())
                 .add(tooltip))
             );
-            item.add(getEditLink(modalWindow, ppsModel, tooltip)
+            row.add(getEditLink(modalWindow, ppsModel, tooltip)
                     .add(new SecurityBehavior(getModuleName() + ":editPPSLink"))
             );
             
@@ -1369,11 +1396,11 @@ public class StudyListPage extends Panel {
                         .add(new ImageSizeBehaviour())
                         .add(tooltip))
             ) ;
-            item.add(linkBtn);
+            row.add(linkBtn);
             linkBtn.setVisible(studyPermissionHelper.checkPermission(ppsModel, StudyPermission.UPDATE_ACTION));
             linkBtn.add(new SecurityBehavior(getModuleName() + ":linkPPSLink"));
 
-            item.add(new AjaxFallbackLink<Object>("unlinkBtn") {
+            row.add(new AjaxFallbackLink<Object>("unlinkBtn") {
 
                 private static final long serialVersionUID = 1L;
 
@@ -1402,7 +1429,7 @@ public class StudyListPage extends Panel {
                 	.add(new SecurityBehavior(getModuleName() + ":unlinkPPSLink")))
             );
             
-            item.add(new AjaxFallbackLink<Object>("emulateBtn") {
+            row.add(new AjaxFallbackLink<Object>("emulateBtn") {
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -1425,19 +1452,7 @@ public class StudyListPage extends Panel {
                 .add(new SecurityBehavior(getModuleName() + ":emulatePPSLink"))
             );
              
-            item.add(new AjaxCheckBox("selected"){
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public boolean isVisible() {
-                    return ppsModel.getDataset() != null;
-                }
-                
-                @Override
-                protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
-                }}.setOutputMarkupId(true)
-                .add(tooltip)
+            row.add(selChkBox.add(tooltip)
             );
             
             WebMarkupContainer details = new WebMarkupContainer("details") {
@@ -1474,6 +1489,18 @@ public class StudyListPage extends Panel {
             item.setOutputMarkupId(true);
             
             final SeriesModel seriesModel = (SeriesModel) item.getModelObject();
+            WebMarkupContainer row = new WebMarkupContainer("row");
+            AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                    target.addComponent(this);
+                }
+            };
+            row.add(new SelectableTableRowBehaviour(selChkBox, "series", "series_selected"));
+            item.add(row);
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
                 private static final long serialVersionUID = 1L;
@@ -1485,18 +1512,18 @@ public class StudyListPage extends Panel {
                 }
             };
             cell.add(new ExpandCollapseLink("expand", seriesModel, patientListItem));
-            item.add(cell);
+            row.add(cell);
             
             TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.series.");
             
-            item.add(new DateTimeLabel("datetime").add(tooltip));
-            item.add(new Label("seriesNumber").add(tooltip));
-            item.add(new Label("sourceAET").add(tooltip));
-            item.add(new Label("modality").add(tooltip));
-            item.add(new Label("description").add(tooltip));
-            item.add(new Label("numberOfInstances").add(tooltip));
-            item.add(new Label("availability").add(tooltip));
-            item.add(new AjaxFallbackLink<Object>("toggledetails") {
+            row.add(new DateTimeLabel("datetime").add(tooltip));
+            row.add(new Label("seriesNumber").add(tooltip));
+            row.add(new Label("sourceAET").add(tooltip));
+            row.add(new Label("modality").add(tooltip));
+            row.add(new Label("description").add(tooltip));
+            row.add(new Label("numberOfInstances").add(tooltip));
+            row.add(new Label("availability").add(tooltip));
+            row.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
 
@@ -1512,20 +1539,11 @@ public class StudyListPage extends Panel {
             .add(new ImageSizeBehaviour())
                 .add(tooltip))
             );
-            item.add(getEditLink(modalWindow, seriesModel, tooltip)
+            row.add(getEditLink(modalWindow, seriesModel, tooltip)
                     .add(new SecurityBehavior(getModuleName() + ":editSeriesLink"))
             );
-            item.add(new AjaxCheckBox("selected") {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
-                }
-            }.setOutputMarkupId(true)
-            .add(tooltip));
-            item.add(new IndicatingAjaxLink<Object>("imgSelect") {
+            row.add(selChkBox.setOutputMarkupId(true).add(tooltip));
+            row.add(new IndicatingAjaxLink<Object>("imgSelect") {
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -1559,7 +1577,7 @@ public class StudyListPage extends Panel {
                     return seriesModel.isDetails();
                 }
             };
-            item.add(Webviewer.getLink(seriesModel, webviewerLinkProviders, studyPermissionHelper, tooltip)
+            row.add(Webviewer.getLink(seriesModel, webviewerLinkProviders, studyPermissionHelper, tooltip)
                 ).add(new SecurityBehavior(getModuleName() + ":webviewerSeriesLink"));
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", seriesModel, false));
@@ -1586,6 +1604,18 @@ public class StudyListPage extends Panel {
             item.setOutputMarkupId(true);
             
             final InstanceModel instModel = (InstanceModel) item.getModelObject();
+            WebMarkupContainer row = new WebMarkupContainer("row");
+            AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                    target.addComponent(this);
+                }
+            };
+            row.add(new SelectableTableRowBehaviour(selChkBox, "instance", "instance_selected"));
+            item.add(row);
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
                 private static final long serialVersionUID = 1L;
@@ -1597,16 +1627,16 @@ public class StudyListPage extends Panel {
                 }
             };
             cell.add(new ExpandCollapseLink("expand", instModel, patientListItem));
-            item.add(cell);
+            row.add(cell);
             
             TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.instance.");
             
-            item.add(new DateTimeLabel("datetime").add(tooltip));
-            item.add(new Label("instanceNumber").add(tooltip));
-            item.add(new Label("sopClassUID").add(tooltip));
-            item.add(new Label("description").add(tooltip));
-            item.add(new Label("availability").add(tooltip));
-            item.add(new AjaxFallbackLink<Object>("toggledetails") {
+            row.add(new DateTimeLabel("datetime").add(tooltip));
+            row.add(new Label("instanceNumber").add(tooltip));
+            row.add(new Label("sopClassUID").add(tooltip));
+            row.add(new Label("description").add(tooltip));
+            row.add(new Label("availability").add(tooltip));
+            row.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
 
@@ -1621,14 +1651,14 @@ public class StudyListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
             .add(tooltip)));
-            item.add(getEditLink(modalWindow, instModel, tooltip)
+            row.add(getEditLink(modalWindow, instModel, tooltip)
                     .setVisible(studyPermissionHelper.checkPermission(instModel, StudyPermission.UPDATE_ACTION))
                     .add(new SecurityBehavior(getModuleName() + ":editInstanceLink"))
             );
-            item.add(Webviewer.getLink(instModel, webviewerLinkProviders, studyPermissionHelper, tooltip)
+            row.add(Webviewer.getLink(instModel, webviewerLinkProviders, studyPermissionHelper, tooltip)
                 ).add(new SecurityBehavior(getModuleName() + ":webviewerInstanceLink"));
 
-            item.add(new AjaxLink<Object>("wado") {
+            row.add(new AjaxLink<Object>("wado") {
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -1654,15 +1684,7 @@ public class StudyListPage extends Panel {
                 .add(new SecurityBehavior(getModuleName() + ":wadoImageInstanceLink"))
             );
 
-            item.add(new AjaxCheckBox("selected"){
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
-                }}.setOutputMarkupId(true)
-                .add(tooltip));
+            row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;

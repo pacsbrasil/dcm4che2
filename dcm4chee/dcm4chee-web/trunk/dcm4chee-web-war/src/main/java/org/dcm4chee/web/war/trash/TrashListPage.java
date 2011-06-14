@@ -86,6 +86,7 @@ import org.dcm4chee.archive.entity.PrivateStudy;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.behaviours.SelectableTableRowBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
@@ -722,6 +723,18 @@ public class TrashListPage extends Panel {
             item.setOutputMarkupId(true);
             
             final PrivPatientModel patModel = (PrivPatientModel) item.getModelObject();
+            WebMarkupContainer row = new WebMarkupContainer("row");
+            AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                    target.addComponent(this);
+                }
+            };
+            row.add(new SelectableTableRowBehaviour(selChkBox, "patient", "patient_selected"));
+            item.add(row);
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
                 private static final long serialVersionUID = 1L;
@@ -734,17 +747,17 @@ public class TrashListPage extends Panel {
             };
             cell.add(new ExpandCollapseLink("expand", patModel, item)
                 .setVisible(patModel.isExpandable()));
-            item.add(cell);
+            row.add(cell);
             
             TooltipBehaviour tooltip = new TooltipBehaviour("trash.content.data.patient.");
             
-            item.add(new Label("name").add(tooltip));
-            item.add(new Label("id").add(tooltip));
-            item.add(new Label("issuer").add(tooltip));
-            item.add(new DateTimeLabel("birthdate").setWithoutTime(true).add(tooltip));
-            item.add(new Label("sex").add(tooltip));
-            item.add(new Label("comments").add(tooltip));
-            item.add(new AjaxFallbackLink<Object>("toggledetails") {
+            row.add(new Label("name").add(tooltip));
+            row.add(new Label("id").add(tooltip));
+            row.add(new Label("issuer").add(tooltip));
+            row.add(new DateTimeLabel("birthdate").setWithoutTime(true).add(tooltip));
+            row.add(new Label("sex").add(tooltip));
+            row.add(new Label("comments").add(tooltip));
+            row.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
 
@@ -758,15 +771,7 @@ public class TrashListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
             .add(tooltip)));
-            item.add(new AjaxCheckBox("selected"){
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
-                }}.setOutputMarkupId(true)
-                .add(tooltip));
+            row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -799,6 +804,18 @@ public class TrashListPage extends Panel {
             item.setOutputMarkupId(true);
             
             final PrivStudyModel studyModel = (PrivStudyModel) item.getModelObject();
+            WebMarkupContainer row = new WebMarkupContainer("row");
+            AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                    target.addComponent(this);
+                }
+            };
+            row.add(new SelectableTableRowBehaviour(selChkBox, "study", "study_selected"));
+            item.add(row);
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
                 private static final long serialVersionUID = 1L;
@@ -810,19 +827,19 @@ public class TrashListPage extends Panel {
                 }
             };
             cell.add(new ExpandCollapseLink("expand", studyModel, patientListItem));
-            item.add(cell);
+            row.add(cell);
             
             TooltipBehaviour tooltip = new TooltipBehaviour("trash.content.data.study.");
             
-            item.add(new DateTimeLabel("datetime").add(tooltip));
-            item.add(new Label("id").add(tooltip));
-            item.add(new Label("accessionNumber").add(tooltip));
-            item.add(new Label("modalities").add(tooltip));
-            item.add(new Label("description").add(tooltip));
-            item.add(new Label("numberOfSeries").add(tooltip));
-            item.add(new Label("numberOfInstances").add(tooltip));
-            item.add(new Label("availability").add(tooltip));
-            item.add(new AjaxFallbackLink<Object>("toggledetails") {
+            row.add(new DateTimeLabel("datetime").add(tooltip));
+            row.add(new Label("id").add(tooltip));
+            row.add(new Label("accessionNumber").add(tooltip));
+            row.add(new Label("modalities").add(tooltip));
+            row.add(new Label("description").add(tooltip));
+            row.add(new Label("numberOfSeries").add(tooltip));
+            row.add(new Label("numberOfInstances").add(tooltip));
+            row.add(new Label("availability").add(tooltip));
+            row.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
 
@@ -836,15 +853,7 @@ public class TrashListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
             .add(tooltip)));
-            item.add( new AjaxCheckBox("selected"){
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
-                }}.setOutputMarkupId(true)
-                .add(tooltip));
+            row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -877,6 +886,18 @@ public class TrashListPage extends Panel {
             item.setOutputMarkupId(true);
             
             final PrivSeriesModel seriesModel = (PrivSeriesModel) item.getModelObject();
+            WebMarkupContainer row = new WebMarkupContainer("row");
+            AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                    target.addComponent(this);
+                }
+            };
+            row.add(new SelectableTableRowBehaviour(selChkBox, "series", "series_selected"));
+            item.add(row);
             WebMarkupContainer cell = new WebMarkupContainer("cell"){
 
                 private static final long serialVersionUID = 1L;
@@ -888,18 +909,18 @@ public class TrashListPage extends Panel {
                 }
             };
             cell.add(new ExpandCollapseLink("expand", seriesModel, patientListItem));
-            item.add(cell);
+            row.add(cell);
             
             TooltipBehaviour tooltip = new TooltipBehaviour("trash.content.data.series.");
             
-            item.add(new DateTimeLabel("datetime").add(tooltip));
-            item.add(new Label("seriesNumber").add(tooltip));
-            item.add(new Label("sourceAET").add(tooltip));
-            item.add(new Label("modality").add(tooltip));
-            item.add(new Label("description").add(tooltip));
-            item.add(new Label("numberOfInstances").add(tooltip));
-            item.add(new Label("availability").add(tooltip));
-            item.add(new AjaxFallbackLink<Object>("toggledetails") {
+            row.add(new DateTimeLabel("datetime").add(tooltip));
+            row.add(new Label("seriesNumber").add(tooltip));
+            row.add(new Label("sourceAET").add(tooltip));
+            row.add(new Label("modality").add(tooltip));
+            row.add(new Label("description").add(tooltip));
+            row.add(new Label("numberOfInstances").add(tooltip));
+            row.add(new Label("availability").add(tooltip));
+            row.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
 
@@ -914,15 +935,7 @@ public class TrashListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
             .add(tooltip)));
-            item.add(new AjaxCheckBox("selected") {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
-                }}.setOutputMarkupId(true)
-                .add(tooltip));
+            row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -956,15 +969,27 @@ public class TrashListPage extends Panel {
             item.setOutputMarkupId(true);
             
             final PrivInstanceModel instModel = (PrivInstanceModel) item.getModelObject();
-            
+            WebMarkupContainer row = new WebMarkupContainer("row");
+            AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                    target.addComponent(this);
+                }
+            };
+            row.add(new SelectableTableRowBehaviour(selChkBox, "instance", "instance_selected"));
+            item.add(row);
+
             TooltipBehaviour tooltip = new TooltipBehaviour("trash.content.data.instance.");
             
-            item.add(new DateTimeLabel("datetime").add(tooltip));
-            item.add(new Label("instanceNumber").add(tooltip));
-            item.add(new Label("sopClassUID").add(tooltip));
-            item.add(new Label("description").add(tooltip));
-            item.add(new Label("availability").add(tooltip));
-            item.add(new AjaxFallbackLink<Object>("toggledetails") {
+            row.add(new DateTimeLabel("datetime").add(tooltip));
+            row.add(new Label("instanceNumber").add(tooltip));
+            row.add(new Label("sopClassUID").add(tooltip));
+            row.add(new Label("description").add(tooltip));
+            row.add(new Label("availability").add(tooltip));
+            row.add(new AjaxFallbackLink<Object>("toggledetails") {
 
                 private static final long serialVersionUID = 1L;
 
@@ -979,15 +1004,7 @@ public class TrashListPage extends Panel {
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
             .add(tooltip)));
-            item.add(new AjaxCheckBox("selected"){
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
-                }}.setOutputMarkupId(true)
-                .add(tooltip));
+            row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
