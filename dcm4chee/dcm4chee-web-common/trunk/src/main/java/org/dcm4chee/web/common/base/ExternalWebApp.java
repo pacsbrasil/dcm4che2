@@ -38,44 +38,16 @@
 
 package org.dcm4chee.web.common.base;
 
-import org.apache.wicket.markup.ComponentTag;
-import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
- * @since May 26, 2011
+ * @since Jun 14, 2011
  */
 
-public class ExternalWebAppPanel extends Panel implements ExternalWebApp {
-    private static final long serialVersionUID = 1L;
-    
-    private IModel<String> title;
-   
-    public ExternalWebAppPanel(String id, String url, IModel<String> title, int height) {
-        this(id, new Model<String>(url), title, height);
-    }
-    public ExternalWebAppPanel(String id, final IModel<String> urlModel, IModel<String> title, final int height) {
-        super(id, urlModel);
-        this.title = title;
-        add(new WebMarkupContainer("iframe") {
-            private static final long serialVersionUID = 1L;
-            protected void onComponentTag(ComponentTag tag) {
-                super.onComponentTag(tag);
-                tag.put("src", urlModel.getObject());
-                tag.put("height", height+"px");
-            }
-        });
-    }
-    
-    public IModel<String> getTitle() {
-        return title;
-    }
-    public Panel getPanel() {
-        return this;
-    }
-
+public interface ExternalWebApp {
+    IModel<String> getTitle();
+    Panel getPanel();
 }

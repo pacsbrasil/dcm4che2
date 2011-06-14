@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.wicket.extensions.markup.html.tabs.TabbedPanel;
@@ -66,7 +67,7 @@ public class ExternalWebApplications implements Serializable {
     private static final String CFG_FILE_NAME = "external_webapps.cfg";
     
     private List<String> jaasRoles;
-    private List<ExternalWebAppPanel> applications = new ArrayList<ExternalWebAppPanel>();
+    private List<ExternalWebApp> applications = new ArrayList<ExternalWebApp>();
     
     private static Logger log = LoggerFactory.getLogger(ExternalWebApplications.class);
    
@@ -74,7 +75,7 @@ public class ExternalWebApplications implements Serializable {
         jaasRoles = LoginContextSecurityHelper.getJaasRoles();
     }
     
-    public List<ExternalWebAppPanel> getExternalWebAppPanels() {
+    public List<ExternalWebApp> getExternalWebAppPanels() {
         File cfgPath = FileUtils.resolve(new File(BaseCfgDelegate.getInstance().getWebConfigPath()));
         File cfgFile = new File(cfgPath, CFG_FILE_NAME);
         if (cfgFile.isFile()) {
@@ -82,12 +83,17 @@ public class ExternalWebApplications implements Serializable {
             try {
                 br =new BufferedReader(new FileReader(cfgFile)); 
                 String line = br.readLine();
-                String appTitle, url;
+                String appTitle, grpTitle,url;
                 int pos1, pos2, height;
+                HashMap<String, ExternalWebAppGroupPanel> grpPanels = new HashMap<String, ExternalWebAppGroupPanel>();
+                Model<String> titleModel;
                 while (line != null) {
                     if (line.charAt(0) != '#') {
                         pos1 = line.indexOf('=');
                         appTitle = line.substring(0, pos1++);
+                        pos2 = line.indexOf('|', pos1);
+                        grpTitle = line.substring(pos1,pos2++);
+                        pos1 = pos2;
                         pos2 = line.indexOf('|', pos1);
                         if (!hasRole(line.substring(pos1, pos2++)))
                                 continue;
@@ -95,8 +101,21 @@ public class ExternalWebApplications implements Serializable {
                         pos2 = line.indexOf('|', pos1);
                         height = Integer.parseInt(line.substring(pos1, pos2++));
                         url = line.substring(pos2);
-                        this.applications.add(new ExternalWebAppPanel(TabbedPanel.TAB_PANEL_ID, url, 
-                                new Model<String>(appTitle), height));
+                        titleModel = new Model<String>(appTitle);
+                        if (grpTitle.length() < 1) {
+                            this.applications.add(new ExternalWebAppPanel(TabbedPanel.TAB_PANEL_ID, url, 
+                                    titleModel, height));
+                        } else {
+                            ExternalWebAppGroupPanel grpPanel = grpPanels.get(grpTitle);
+                            if (grpPanel == null) {
+                                grpPanel = new ExternalWebAppGroupPanel(TabbedPanel.TAB_PANEL_ID,
+                                                new Model<String>(grpTitle));
+                                grpPanels.put(grpTitle, grpPanel);
+                                this.applications.add(grpPanel);
+                            }
+                            grpPanel.addModule(new ExternalWebAppPanel(TabbedPanel.TAB_PANEL_ID, url, 
+                                    titleModel, height), titleModel);
+                        }
                     }
                     line = br.readLine();
                 }
