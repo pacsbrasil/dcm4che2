@@ -52,6 +52,7 @@ import org.dcm4chee.usr.ui.usermanagement.ChangePasswordPanel;
 import org.dcm4chee.usr.ui.usermanagement.role.RolePanel;
 import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
+import org.dcm4chee.web.common.base.ExternalWebApp;
 import org.dcm4chee.web.common.base.ExternalWebAppPanel;
 import org.dcm4chee.web.common.base.ExternalWebApplications;
 import org.dcm4chee.web.common.base.ModuleSelectorPanel;
@@ -107,8 +108,8 @@ public class MainPage extends SecureWicketPage {
             selectorPanel.addModule(UserListPanel.class, null);
             selectorPanel.addModule(ChangePasswordPanel.class, null);
         }
-        for (ExternalWebAppPanel p : new ExternalWebApplications().getExternalWebAppPanels()) {
-            selectorPanel.addModule(p, p.getTitle());
+        for (ExternalWebApp p : new ExternalWebApplications().getExternalWebAppPanels()) {
+            selectorPanel.addModule(p.getPanel(), p.getTitle());
         }
         try {
             Properties properties = new Properties();
