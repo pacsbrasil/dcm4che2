@@ -122,6 +122,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         
     private Map<String, String> imageCUIDS = new LinkedHashMap<String, String>();
     private Map<String, String> srCUIDS = new LinkedHashMap<String, String>();
+    private Map<String, String> psCUIDS = new LinkedHashMap<String, String>();
     private Map<String, String> waveformCUIDS = new LinkedHashMap<String, String>();
     private Map<String, String> videoCUIDS = new LinkedHashMap<String, String>();
     private Map<String, String> encapsulatedCUIDS = new LinkedHashMap<String, String>();
@@ -263,6 +264,14 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public void setSrCUIDS(String srCUIDS) {
         this.srCUIDS = parseUIDs(srCUIDS);
+    }
+
+    public String getPsCUIDS() {
+        return uidsToString(psCUIDS);
+    }
+
+    public void setPsCUIDS(String psCUIDS) {
+        this.psCUIDS = parseUIDs(psCUIDS);
     }
 
     public String getWaveformCUIDS() {
@@ -641,6 +650,8 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             return 3;
         } else if (isInCuids(cuid, waveformCUIDS)) {
             return 4;
+        } else if (isInCuids(cuid, psCUIDS)) {
+            return 5;
         }
         return -1;
     }

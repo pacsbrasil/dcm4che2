@@ -44,6 +44,7 @@ import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.PopupSettings;
+import org.dcm4che2.data.UID;
 import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
@@ -51,6 +52,7 @@ import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
@@ -143,7 +145,18 @@ public class Webviewer  {
                 break;
             case AbstractDicomModel.INSTANCE_LEVEL:
                 if (provider.supportInstanceLevel()) {
-                    return provider.getUrlForInstance(((InstanceModel) model).getSOPInstanceUID());
+                    String iuid = ((InstanceModel) model).getSOPInstanceUID();
+                    String cuid = ((InstanceModel) model).getSopClassUID();
+                    if (UID.KeyObjectSelectionDocumentStorage.equals(cuid) && provider.supportKeySelectionObject()) {
+                        return provider.getUrlForKeyObjectSelection(iuid);
+                    }
+                    int type = WebCfgDelegate.getInstance().checkCUID(cuid);
+                    if (type == 1 && provider.supportStructuredReport()) {
+                        return provider.getUrlForStructuredReport(iuid);
+                    } else if (type == 5 && provider.supportPresentationState()) {
+                        return provider.getUrlForPresentationState(iuid);
+                    }
+                    return provider.getUrlForInstance(iuid);
                 }
                 break;
             default:

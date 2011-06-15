@@ -57,6 +57,8 @@ public class WebviewerLinkProvider implements Serializable {
 
     private WebviewerLinkProviderSPI provider;
     
+    private boolean testDummy;
+    
     private static Logger log = LoggerFactory.getLogger(WebviewerLinkProvider.class);
     
     public WebviewerLinkProvider(String webviewerName) {
@@ -71,6 +73,7 @@ public class WebviewerLinkProvider implements Serializable {
             }
         }
         if (provider == null) {
+            testDummy = "TEST".equals(webviewerName);
             log.warn("No WebviewerLinkProvider found for name: {}", webviewerName);
             provider = new DummyProvider();
         }
@@ -102,6 +105,9 @@ public class WebviewerLinkProvider implements Serializable {
     public boolean supportKeySelectionObject() {
         return provider.supportKeySelectionObject();
     }
+    public boolean supportStructuredReport() {
+        return provider.supportStructuredReport();
+    }
     public String getUrlForPatient(String patientId, String issuer) {
         return provider.getUrlForPatient(patientId, issuer);
     }
@@ -120,6 +126,9 @@ public class WebviewerLinkProvider implements Serializable {
     public String getUrlForKeyObjectSelection(String iuid) {
         return provider.getUrlForKeyObjectSelection(iuid);
     }
+    public String getUrlForStructuredReport(String iuid) {
+        return provider.getUrlForStructuredReport(iuid);
+    }
     
     private class DummyProvider extends WebviewerLinkProviderSPI {
 
@@ -130,40 +139,46 @@ public class WebviewerLinkProvider implements Serializable {
         }
 
         public String getUrlForInstance(String sopIuid) {
-            return null;
+            return testDummy ? "/TEST_WEBVIEWER?instance" : null;
         }
         public String getUrlForKeyObjectSelection(String iuid) {
-            return null;
+            return testDummy ? "/TEST_WEBVIEWER?key_object_selection" : null;
         }
         public String getUrlForPatient(String patientId, String issuer) {
-            return null;
+            return testDummy ? "/TEST_WEBVIEWER?patient" : null;
         }
         public String getUrlForPresentationState(String iuid) {
-            return null;
+            return testDummy ? "/TEST_WEBVIEWER?presentation_state" : null;
+        }
+        public String getUrlForStructuredReport(String iuid) {
+            return testDummy ? "/TEST_WEBVIEWER?structured_report" : null;
         }
         public String getUrlForSeries(String seriesIuid) {
-            return null;
+            return testDummy ? "/TEST_WEBVIEWER?series" : null;
         }
         public String getUrlForStudy(String studyIuid) {
-            return null;
+            return testDummy ? "/TEST_WEBVIEWER?study" : null;
         }
         public boolean supportInstanceLevel() {
-            return false;
+            return testDummy;
         }
         public boolean supportKeySelectionObject() {
-            return false;
+            return testDummy;
         }
         public boolean supportPatientLevel() {
-            return false;
+            return testDummy;
         }
         public boolean supportPresentationState() {
-            return false;
+            return testDummy;
         }
         public boolean supportSeriesLevel() {
-            return false;
+            return testDummy;
         }
         public boolean supportStudyLevel() {
-            return false;
+            return testDummy;
+        }
+        public boolean supportStructuredReport() {
+            return testDummy;
         }
     }
 }

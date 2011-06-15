@@ -63,6 +63,7 @@ public class WADODelegate  {
     public static final int TEXT = 2;
     public static final int VIDEO = 3;
     public static final int ENCAPSULATED = 4;
+    public static final int PRESENTATION_STATE = 5;
     
     private static WADODelegate delegate;
 

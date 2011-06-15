@@ -228,6 +228,27 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getPsCUIDS"
+      setMethod="setPsCUIDS">
+      <description><![CDATA[
+        List of Presentation State SOP Classes.
+        Use either the SOP Class UID value, or the name specified in 
+        DICOM Part 6, Annex A Registry of DICOM unique identifiers,
+        concatenating individual words without spaces.]]>
+      </description>
+      <name>PSSOPClasses</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+           GrayscaleSoftcopyPresentationStateStorageSOPClass
+           ColorSoftcopyPresentationStateStorageSOPClass
+           PseudoColorSoftcopyPresentationStateStorageSOPClass
+           BlendingSoftcopyPresentationStateStorageSOPClass
+           XAXRFGrayscaleSoftcopyPresentationStateStorage
+           "/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getEncapsulatedCUIDS"
       setMethod="setEncapsulatedCUIDS">
       <description><![CDATA[
@@ -805,6 +826,7 @@
       			<dd>2...Video</dd>
       			<dd>3...Encapsulated Document</dd>
       			<dd>4...Waveform</dd>
+      			<dd>5...Presentation State</dd>
       			<dd>-1..Not classified</dd>
       		]]> </description>
       <name>checkCUID</name>

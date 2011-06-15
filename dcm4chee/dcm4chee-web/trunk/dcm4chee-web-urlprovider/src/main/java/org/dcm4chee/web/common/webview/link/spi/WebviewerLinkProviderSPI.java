@@ -60,12 +60,14 @@ public abstract class WebviewerLinkProviderSPI implements Serializable {
     public abstract boolean supportInstanceLevel();
     public abstract boolean supportPresentationState();
     public abstract boolean supportKeySelectionObject();
+    public abstract boolean supportStructuredReport();
     public abstract String getUrlForPatient(String patientId, String issuer);
     public abstract String getUrlForStudy(String studyIuid);
     public abstract String getUrlForSeries(String seriesIuid);
     public abstract String getUrlForInstance(String sopIuid);
     public abstract String getUrlForPresentationState(String iuid);
     public abstract String getUrlForKeyObjectSelection(String iuid);
+    public abstract String getUrlForStructuredReport(String iuid);
     public void setBaseURL(String baseUrl) {
         log.warn("This WebviewerLinkProvider ignores setting of Base Webviewer URL! base URL:"+baseUrl);
     }
