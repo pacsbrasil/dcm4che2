@@ -80,8 +80,6 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "common/reset.png");
     public static final ResourceReference IMAGE_COMMON_CANCEL = 
         new ResourceReference(ImageManager.class, "common/cancel.png");
-    public static final ResourceReference IMAGE_COMMON_CLOCK = 
-        new ResourceReference(ImageManager.class, "common/clock.png");
 
     public static final ResourceReference IMAGE_FOLDER_DELETE = 
         new ResourceReference(ImageManager.class, "folder/delete.png");
@@ -107,6 +105,8 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "folder/deselect_all.png");
     public static ResourceReference IMAGE_FOLDER_NO_IMAGE = 
         new ResourceReference(ImageManager.class, "folder/no_image.png");
+    public static final ResourceReference IMAGE_FOLDER_TIMELIMIT = 
+        new ResourceReference(ImageManager.class, "folder/time_limit.png");
     
     public static final ResourceReference IMAGE_AE_ECHO = 
         new ResourceReference(ImageManager.class, "ae/echo.png");
