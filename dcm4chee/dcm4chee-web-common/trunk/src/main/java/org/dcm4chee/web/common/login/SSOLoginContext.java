@@ -41,7 +41,6 @@ package org.dcm4chee.web.common.login;
 import javax.security.auth.Subject;
 
 import org.apache.wicket.RequestCycle;
-import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.security.authentication.LoginException;
 import org.apache.wicket.security.hive.authentication.DefaultSubject;
 import org.apache.wicket.security.hive.authentication.LoginContext;
