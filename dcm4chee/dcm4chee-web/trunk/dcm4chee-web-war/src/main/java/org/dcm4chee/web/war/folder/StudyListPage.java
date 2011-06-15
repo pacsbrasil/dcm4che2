@@ -207,6 +207,7 @@ public class StudyListPage extends Panel {
     private Mpps2MwlLinkPage mpps2MwlLinkWindow = new Mpps2MwlLinkPage("linkPage");
     private ConfirmationWindow<PPSModel> confirmUnlinkMpps;
     private ConfirmationWindow<PPSModel> confirmEmulateMpps;
+    private ConfirmationWindow<AbstractEditableDicomModel> confirmEdit;
     private ImageSelectionWindow imageSelectionWindow = new ImageSelectionWindow("imgSelection");
     private ModalWindow wadoImageWindow = new ModalWindow("wadoImageWindow");
     
@@ -663,6 +664,40 @@ public class StudyListPage extends Panel {
                         viewport.getTotal()};
             }
         }));
+        
+        confirmEdit = new ConfirmationWindow<AbstractEditableDicomModel>("confirmEdit") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, final AbstractEditableDicomModel model) {
+
+                modalWindow.
+                    setContent(new EditDicomObjectPanel(
+                          "content", 
+                          modalWindow,
+                          (DicomObject) model.getDataset(), 
+                          model.getClass().getSimpleName()
+                  ){
+                        private static final long serialVersionUID = 1L;
+        
+                        @Override
+                        protected void onSubmit() {
+                            model.update(getDicomObject());
+                            try {
+                                ContentEditDelegate.getInstance().doAfterDicomEdit(model);
+                            } catch (Exception x) {
+                                log.warn("doAfterDicomEdit failed!", x);
+                            }
+                            super.onCancel();
+                        }
+                    });
+                modalWindow.show(target);
+                setStatus(new Model<String>(""));
+            }
+        };
+        confirmEdit.setInitialHeight(150);
+        form.add(confirmEdit);
     }
 
     private void addActions(final BaseForm form) {
@@ -1107,7 +1142,7 @@ public class StudyListPage extends Panel {
             .add(tooltip)));
             row.add(getEditLink(modalWindow, patModel, tooltip)
                     .add(new SecurityBehavior(getModuleName() + ":editPatientLink"))
-                    .add(tooltip));
+                    .add(tooltip));           
             row.add(getStudyPermissionLink(modalWindow, patModel, tooltip)
                     .add(new SecurityBehavior(getModuleName() + ":studyPermissionsPatientLink"))
                     .add(tooltip));
@@ -1770,36 +1805,18 @@ public class StudyListPage extends Panel {
     
     private Link<Object> getEditLink(final ModalWindow modalWindow, final AbstractEditableDicomModel model, TooltipBehaviour tooltip) {
 
-        final boolean tooOld = !StudyPermissionHelper.get().ignoreEditTimeLimit() 
-                                && tooOld(model);
-        
+        final boolean tooOld = tooOld(model);
+
         int[] winSize = WebCfgDelegate.getInstance().getWindowSize("dcmEdit");
         ModalWindowLink editLink = new ModalWindowLink("edit", modalWindow, winSize[0], winSize[1]) {
             private static final long serialVersionUID = 1L;
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                modalWindow.setContent(new EditDicomObjectPanel(
-                        "content", 
-                        modalWindow, 
-                        (DicomObject) model.getDataset(), 
-                        model.getClass().getSimpleName()
-                ) {
-                   private static final long serialVersionUID = 1L;
-
-                   @Override
-                   protected void onSubmit() {
-                       model.update(getDicomObject());
-                       try {
-                           ContentEditDelegate.getInstance().doAfterDicomEdit(model);
-                       } catch (Exception x) {
-                           log.warn("doAfterDicomEdit failed!", x);
-                       }
-                       super.onCancel();
-                   }
-                });
-                modalWindow.show(target);
-                super.onClick(target);
+                confirmEdit.confirm(target, 
+                        new StringResourceModel("folder.message.tooOld.edit", this, null), 
+                        model);
+                confirmEdit.show(target);
             }
             
             @Override
@@ -1810,14 +1827,13 @@ public class StudyListPage extends Panel {
             
             @Override
             public boolean isEnabled() {
-                return !tooOld;
-
+                return StudyPermissionHelper.get().ignoreEditTimeLimit() || !tooOld;
             }
         };
         Image image = tooOld ? new Image("editImg", ImageManager.IMAGE_COMMON_CLOCK) : 
                 new Image("editImg", ImageManager.IMAGE_COMMON_DICOM_EDIT);
         image.add(new ImageSizeBehaviour("vertical-align: middle;"));
-        if (tooOld)
+        if (tooOld && !StudyPermissionHelper.get().ignoreEditTimeLimit())
             image.add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.tooltip")));
         else
             if (tooltip != null) image.add(tooltip);            
