@@ -672,26 +672,7 @@ public class StudyListPage extends Panel {
             @Override
             public void onConfirmation(AjaxRequestTarget target, final AbstractEditableDicomModel model) {
 
-                modalWindow.
-                    setContent(new EditDicomObjectPanel(
-                          "content", 
-                          modalWindow,
-                          (DicomObject) model.getDataset(), 
-                          model.getClass().getSimpleName()
-                  ){
-                        private static final long serialVersionUID = 1L;
-        
-                        @Override
-                        protected void onSubmit() {
-                            model.update(getDicomObject());
-                            try {
-                                ContentEditDelegate.getInstance().doAfterDicomEdit(model);
-                            } catch (Exception x) {
-                                log.warn("doAfterDicomEdit failed!", x);
-                            }
-                            super.onCancel();
-                        }
-                    });
+                modalWindow.setContent(getEditDicomObjectPanel(model));
                 modalWindow.show(target);
                 setStatus(new Model<String>(""));
             }
@@ -1424,7 +1405,7 @@ public class StudyListPage extends Panel {
                 }
             };
             linkBtn.add(tooOld ? 
-                    (new Image("linkImg", ImageManager.IMAGE_COMMON_CLOCK) 
+                    (new Image("linkImg", ImageManager.IMAGE_FOLDER_TIMELIMIT) 
                         .add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.tooltip"))))
                         : 
                     (new Image("linkImg", ImageManager.IMAGE_COMMON_LINK)
@@ -1455,7 +1436,7 @@ public class StudyListPage extends Panel {
                 }
             }
             .add(tooOld ? 
-                (new Image("linkImg", ImageManager.IMAGE_COMMON_CLOCK) 
+                (new Image("linkImg", ImageManager.IMAGE_FOLDER_TIMELIMIT) 
                     .add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.tooltip"))))
     		        :
 		        (new Image("unlinkImg",ImageManager.IMAGE_FOLDER_UNLINK)
@@ -1813,10 +1794,16 @@ public class StudyListPage extends Panel {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                confirmEdit.confirm(target, 
-                        new StringResourceModel("folder.message.tooOld.edit", this, null), 
-                        model);
-                confirmEdit.show(target);
+                if (tooOld) {
+                    confirmEdit.confirm(target, 
+                            new StringResourceModel("folder.message.tooOld.edit", this, null), 
+                            model);
+                    confirmEdit.show(target);
+                } else {
+                    modalWindow.setContent(getEditDicomObjectPanel(model));
+                    modalWindow.show(target);
+                    super.onClick(target);
+                }
             }
             
             @Override
@@ -1830,7 +1817,7 @@ public class StudyListPage extends Panel {
                 return StudyPermissionHelper.get().ignoreEditTimeLimit() || !tooOld;
             }
         };
-        Image image = tooOld ? new Image("editImg", ImageManager.IMAGE_COMMON_CLOCK) : 
+        Image image = tooOld ? new Image("editImg", ImageManager.IMAGE_FOLDER_TIMELIMIT) : 
                 new Image("editImg", ImageManager.IMAGE_COMMON_DICOM_EDIT);
         image.add(new ImageSizeBehaviour("vertical-align: middle;"));
         if (tooOld && !StudyPermissionHelper.get().ignoreEditTimeLimit())
@@ -1841,6 +1828,29 @@ public class StudyListPage extends Panel {
         return editLink;
     }
 
+    private Panel getEditDicomObjectPanel(final AbstractEditableDicomModel model) {
+        return
+        new EditDicomObjectPanel(
+                "content", 
+                modalWindow, 
+                (DicomObject) model.getDataset(), 
+                model.getClass().getSimpleName()
+        ) {
+           private static final long serialVersionUID = 1L;
+
+           @Override
+           protected void onSubmit() {
+               model.update(getDicomObject());
+               try {
+                   ContentEditDelegate.getInstance().doAfterDicomEdit(model);
+               } catch (Exception x) {
+                   log.warn("doAfterDicomEdit failed!", x);
+               }
+               super.onCancel();
+           }
+        };
+    }
+    
     private Link<Object> getFileDisplayLink(final ModalWindow modalWindow, final FileModel fileModel, TooltipBehaviour tooltip) {
 
         int[] winSize = WebCfgDelegate.getInstance().getWindowSize("dcmFileDisplay");
