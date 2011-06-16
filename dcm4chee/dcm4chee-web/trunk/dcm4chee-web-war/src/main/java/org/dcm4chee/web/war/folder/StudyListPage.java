@@ -477,7 +477,6 @@ public class StudyListPage extends Panel {
                             chkLatestStudyFirst.setEnabled(!b);
                             chkPpsWoMwl.setEnabled(!b);
                             chkWoPps.setEnabled(!b);
-                            header.expandToLevel(b ? PatientModel.PATIENT_LEVEL : PatientModel.STUDY_LEVEL);
                             BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
                         }
                 });
@@ -578,6 +577,7 @@ public class StudyListPage extends Panel {
                     log.error("search failed: ", t);
                 }
                 target.addComponent(form);
+                target.addComponent(header);
             }
 
             @Override
@@ -946,6 +946,7 @@ public class StudyListPage extends Panel {
                     studyPermissionHelper.getDicomRoles() : null;
         viewport.setTotal(dao.count(viewport.getFilter(), dicomSecurityRoles));
         updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset(), dicomSecurityRoles));
+        updateAutoExpandLevel();
         notSearched = false;
     }
 
@@ -987,6 +988,27 @@ public class StudyListPage extends Panel {
                 i--;
             }
         }
+    }
+    
+    private void updateAutoExpandLevel() {
+        int level = AbstractDicomModel.STUDY_LEVEL;
+        pat: for (PatientModel patient : viewport.getPatients()) {
+           for (StudyModel s : patient.getStudies()) {
+                for (PPSModel p : s.getPPSs()) {
+                    if (level < AbstractDicomModel.PPS_LEVEL)
+                        level = AbstractDicomModel.PPS_LEVEL;
+                    for (SeriesModel se : p.getSeries()) {
+                        if (se.isCollapsed()) {
+                            level = AbstractDicomModel.SERIES_LEVEL;
+                        } else {
+                            level = AbstractDicomModel.INSTANCE_LEVEL;
+                            break pat;
+                        }
+                    }
+                }
+            }
+        }
+        header.setExpandAllLevel(level);
     }
 
     private PatientModel addPatient(Patient patient) {
@@ -1946,9 +1968,9 @@ public class StudyListPage extends Panel {
                     public void onClose(AjaxRequestTarget target) {
                         updateStudyPermissions();
                         queryStudies(); 
-
                         modalWindow.getPage().setOutputMarkupId(true);
                         target.addComponent(modalWindow.getPage());
+                        target.addComponent(header);
                     }
                 });
                 modalWindow.add(new ModalWindowLink.DisableDefaultConfirmBehavior());
