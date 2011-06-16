@@ -33,12 +33,12 @@ Creation Management SCU, to send Media Creation requests to the DICOM
 Creation Management SCP of dcm4chee-cdw.
  
 For image decompression (only needed for web content generation with compressed
-DICOM images), dcm4chee-cdw 2.16.0 utilize Sun's Java Advanced Imaging Image
-I/O Tools 1.2. The binary distribution packages of dcm4chee-cdw 2.16.0 already
+DICOM images), dcm4chee-cdw 2.17.0 utilize Sun's Java Advanced Imaging Image
+I/O Tools 1.2. The binary distribution packages of dcm4chee-cdw 2.17.0 already
 includes necessary JARs and native libraries for Windows and Linux i586. For
 Linux-amd64 or Solaris, you have to download the SW package from Sun
 [https://jai-imageio.dev.java.net/binary-builds.html] yourself and replace the
-Linux version of libclib_jiio.so in dcm4chee-cdw-2.16.0/bin/native from the
+Linux version of libclib_jiio.so in dcm4chee-cdw-2.17.0/bin/native from the
 JAI Image IO package for Linux-amd64 or Solaris.
 
 Installation Procedure:
@@ -50,7 +50,7 @@ Installation Procedure:
    from http://labs.jboss.com/jbossas/downloads and extract it into a different
    directory.
 
-3. Move to the dcm4chee-cdw-2.16.0/bin directory and execute the
+3. Move to the dcm4chee-cdw-2.17.0/bin directory and execute the
    install_jboss.bat or install_jboss.sh script, as appropriate for your
    operating system, with the path of your JBoss AS installation directory as
    parameter.
@@ -59,11 +59,11 @@ Installation Procedure:
 
 5. Adjust maximum allocation of heap memory:
 
-   [Windows]: dcm4chee-cdw-2.16.0/bin/run.bat:
+   [Windows]: dcm4chee-cdw-2.17.0/bin/run.bat:
    rem Sun JVM memory allocation pool parameters. Modify as appropriate.
    set JAVA_OPTS=%JAVA_OPTS% -Xms128m -Xmx512m
 
-   [Linux/Unix]: dcm4chee-cdw-2.16.0/bin/run.conf
+   [Linux/Unix]: dcm4chee-cdw-2.17.0/bin/run.conf
    # Specify options to pass to the Java VM.
    if [ "x$JAVA_OPTS" = "x" ]; then
      JAVA_OPTS="-Xms128m -Xmx512m ..
@@ -73,7 +73,7 @@ Installation Procedure:
    node. E.g.: if only 512 MB RAM are available, you should decrease the default
    value -Xmx512m to (e.g.) -Xmx300.
 
-6. To test your installation, move to the dcm4chee-cdw-2.16.0/bin directory
+6. To test your installation, move to the dcm4chee-cdw-2.17.0/bin directory
    and execute the run.bat or run.sh script, as appropriate for your operating
    system. To enable remote access to jboss services, in particular to the
    JMX console (http://HOST:8080/jmx-console) and the JBoss Web console
@@ -85,16 +85,16 @@ Installation Procedure:
 
     JBoss Bootstrap Environment
 
-    JBOSS_HOME: /home/gunter/dcm4chee-cdw-2.16.0
+    JBOSS_HOME: /home/gunter/dcm4chee-cdw-2.17.0
 
     JAVA: /usr/lib/jvm/java-6-sun/bin/java
 
     JAVA_OPTS: -Dprogram.name=run.sh -server -Xms128m -Xmx256m
      -Dsun.rmi.dgc.client.gcInterval=3600000
      -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.net.preferIPv4Stack=true
-     -Djava.library.path=/home/gunter/dcm4chee-cdw-2.16.0/bin/native
+     -Djava.library.path=/home/gunter/dcm4chee-cdw-2.17.0/bin/native
 
-    CLASSPATH: /home/gunter/dcm4chee-cdw-2.16.0/bin/run.jar:
+    CLASSPATH: /home/gunter/dcm4chee-cdw-2.17.0/bin/run.jar:
      /usr/lib/jvm/java-6-sun/lib/tools.jar
 
   =========================================================================
