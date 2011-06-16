@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.config.delegate;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.dcm4chee.web.service.common.RetryIntervalls;
@@ -147,8 +148,17 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return getStringList("getWebviewerNameList");
     }
 
-    public List<String> getWebviewerBaseUrlList() {
-        return getStringList("getWebviewerBaseUrlList");
+    @SuppressWarnings("unchecked")
+    public Map<String,String> getWebviewerBaseUrlMap() {
+        if (server != null) {
+            try {
+                return (Map<String,String>) server.invoke(serviceObjectName, "getWebviewerBaseUrlMap", 
+                        new Object[]{}, new String[]{});
+            } catch (Exception x) {
+                log.warn("Cant invoke 'getWebviewerBaseUrlMap'! Return null as default!", x);
+            }
+        }
+        return null;
     }
    
     public List<String> getModalityList() {

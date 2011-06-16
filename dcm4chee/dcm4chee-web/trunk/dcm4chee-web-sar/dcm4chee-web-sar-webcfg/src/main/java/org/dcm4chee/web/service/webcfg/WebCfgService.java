@@ -50,6 +50,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -108,7 +109,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private String wadoBaseURL;
     private String ridBaseURL;
     private List<String> webviewerNames;
-    private List<String> webviewerBaseUrls;
+    private Map<String,String> webviewerBaseUrls = new HashMap<String,String>();
     
     private ObjectName aeServiceName;
     private ObjectName echoServiceName;
@@ -239,15 +240,15 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         this.webviewerNames = stringAsList(names, NEWLINE);
     }
 
-    public List<String> getWebviewerBaseUrlList() {
+    public Map<String,String> getWebviewerBaseUrlMap() {
         return webviewerBaseUrls;
     }
     public String getWebviewerBaseUrls() {
-        return listAsString(webviewerBaseUrls, NEWLINE);
+        return mapAsString(webviewerBaseUrls);
     }
 
     public void setWebviewerBaseUrls(String urls) {
-        this.webviewerBaseUrls = stringAsList(urls, NEWLINE+"|");
+        this.webviewerBaseUrls = stringAsMap(urls);
     }
 
     public String getImageCUIDS() {
@@ -529,7 +530,33 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             }
         }
     }
-    
+
+    private String mapAsString(Map<String,String> map) {
+        if (map.isEmpty()) 
+            return NONE;
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> e : map.entrySet()) {
+            sb.append(e.getKey()).append(':').append(e.getValue()).append(NEWLINE);
+        }
+        return sb.toString();
+    }
+    private Map<String,String> stringAsMap(String s) {
+        Map<String,String> m = new HashMap<String,String>();
+        if (!NONE.equals(s)) {
+            StringTokenizer st = new StringTokenizer(s, "\n\r\t");
+            String tk;
+            int pos;
+            while(st.hasMoreTokens()) {
+                tk = st.nextToken();
+                pos = tk.indexOf(':');
+                if (pos==-1)
+                    throw new IllegalArgumentException("Missing ':'");
+                m.put(tk.substring(0,pos++), tk.substring(pos));
+            }
+        }
+        return m;
+    }
+
     public String getMpps2mwlPresetPatientname() {
         return mpps2mwlPresetPatientname;
     }

@@ -47,6 +47,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
@@ -314,13 +315,10 @@ public class StudyListPage extends Panel {
             webviewerLinkProviders = null;
         } else {
             webviewerLinkProviders = new WebviewerLinkProvider[names.size()];
-            List<String> baseUrls = WebCfgDelegate.getInstance().getWebviewerBaseUrlList();
+            Map<String,String> baseUrls = WebCfgDelegate.getInstance().getWebviewerBaseUrlMap();
             for (int i = 0 ; i < webviewerLinkProviders.length ; i++) {
                 webviewerLinkProviders[i] = new WebviewerLinkProvider(names.get(i));
-                if (i < baseUrls.size()) {
-                    String url = baseUrls.get(i);
-                    webviewerLinkProviders[i].setBaseUrl("NONE".equals(url) ? null : url);
-                }
+                webviewerLinkProviders[i].setBaseUrl(baseUrls.get(names.get(i)));
             }
         }
     }
