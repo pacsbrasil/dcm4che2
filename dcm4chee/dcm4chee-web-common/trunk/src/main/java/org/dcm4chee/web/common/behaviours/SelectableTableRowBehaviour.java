@@ -85,7 +85,7 @@ public class SelectableTableRowBehaviour extends AjaxEventBehavior {
     @Override
     protected CharSequence getPreconditionScript()
     {
-            return "var t = (event.target) ? event.target : (event.srcElement) ? event.srcElement : null;"+
+            return "if (event == null) return false;var t = (event.target) ? event.target : (event.srcElement) ? event.srcElement : null;"+
                     "if (t.nodeType == 3) t = t.parentNode;"+ // handle Safari bug (text node)
                     " return t.nodeName == 'TD' || t.nodeName == 'SPAN'";
     }
