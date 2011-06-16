@@ -206,6 +206,7 @@ public class StudyListPage extends Panel {
     private BaseForm form;
     private MessageWindow msgWin = new MessageWindow("msgWin");
     private Mpps2MwlLinkPage mpps2MwlLinkWindow = new Mpps2MwlLinkPage("linkPage");
+    private ConfirmationWindow<PPSModel> confirmLinkMpps;
     private ConfirmationWindow<PPSModel> confirmUnlinkMpps;
     private ConfirmationWindow<PPSModel> confirmEmulateMpps;
     private ConfirmationWindow<AbstractEditableDicomModel> confirmEdit;
@@ -838,6 +839,20 @@ public class StudyListPage extends Panel {
         form.add(exportBtn);
         exportBtn.add(new SecurityBehavior(getModuleName() + ":exportButton"));
 
+        confirmLinkMpps = new ConfirmationWindow<PPSModel>("confirmLink") {
+            
+            private static final long serialVersionUID = 1L;
+            
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, final PPSModel ppsModel) {
+                setMppsLinkWindow().show(target, ppsModel, form);
+                setStatus(new Model<String>(""));
+            }
+        };
+        form.add(confirmLinkMpps
+            .setInitialHeight(150)
+            .setInitialWidth(410));
+        
         confirmUnlinkMpps = new ConfirmationWindow<PPSModel>("confirmUnlink") {
  
             private static final long serialVersionUID = 1L;
@@ -885,8 +900,8 @@ public class StudyListPage extends Panel {
                 target.addComponent(messageWindowPanel.getOkBtn());
             }
         };
-        confirmUnlinkMpps.setInitialHeight(150);
-        form.add(confirmUnlinkMpps);
+        form.add(confirmUnlinkMpps.setInitialHeight(150));
+        
         confirmEmulateMpps = new ConfirmationWindow<PPSModel>("confirmEmulate") {
             private static final long serialVersionUID = 1L;
 
@@ -1279,10 +1294,9 @@ public class StudyListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
-            
+ 
             final PPSModel ppsModel = (PPSModel) item.getModelObject();
-            final boolean tooOld = !StudyPermissionHelper.get().ignoreEditTimeLimit() 
-                                    && tooOld(ppsModel);
+            final boolean tooOld = tooOld(ppsModel);
             
             WebMarkupContainer row = new WebMarkupContainer("row");
             AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
@@ -1355,7 +1369,7 @@ public class StudyListPage extends Panel {
             row.add(getEditLink(modalWindow, ppsModel, tooltip)
                     .add(new SecurityBehavior(getModuleName() + ":editPPSLink"))
             );
-            
+
             IndicatingAjaxFallbackLink<?> linkBtn = new IndicatingAjaxFallbackLink<Object>("linkBtn") {
                 
                 private static final long serialVersionUID = 1L;
@@ -1363,22 +1377,13 @@ public class StudyListPage extends Panel {
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     log.debug("#### linkBtn clicked!");
-                    mpps2MwlLinkWindow.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
-                        
-                        private static final long serialVersionUID = 1L;
-
-                        @Override
-                        public void onClose(AjaxRequestTarget target) {
-                            mpps2MwlLinkWindow.setOutputMarkupId(true);
-                            target.addComponent(mpps2MwlLinkWindow);
-                        }
-                    });
-                    
-                    int[] winSize = WebCfgDelegate.getInstance().getWindowSize("mpps2mwl");
-                    ((Mpps2MwlLinkPage) mpps2MwlLinkWindow
-                            .setInitialWidth(winSize[0]).setInitialHeight(winSize[1])
-                    )
-                    .show(target, ppsModel, form);
+                    if (tooOld) {
+                        confirmLinkMpps.confirm(target, 
+                                new StringResourceModel("folder.message.tooOld.link",this, null), 
+                                ppsModel);
+                    } else {
+                        setMppsLinkWindow().show(target, ppsModel, form);
+                    }
                     log.debug("#### linkBtn onClick finished!");
                 }
 
@@ -1399,12 +1404,12 @@ public class StudyListPage extends Panel {
                 
                 @Override
                 public boolean isEnabled() {
-                    return !tooOld;
+                    return StudyPermissionHelper.get().ignoreEditTimeLimit() || !tooOld;
                 }
             };
             linkBtn.add(tooOld ? 
                     (new Image("linkImg", ImageManager.IMAGE_FOLDER_TIMELIMIT) 
-                        .add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.tooltip"))))
+                        .add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.link.tooltip"))))
                         : 
                     (new Image("linkImg", ImageManager.IMAGE_COMMON_LINK)
                         .add(new ImageSizeBehaviour())
@@ -1419,8 +1424,8 @@ public class StudyListPage extends Panel {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                public void onClick(AjaxRequestTarget target) {
-                    confirmUnlinkMpps.confirm(target, new StringResourceModel("folder.message.confirmUnlink",this, null,new Object[]{ppsModel}), ppsModel);
+                public void onClick(AjaxRequestTarget target) {     
+                    confirmUnlinkMpps.confirm(target, new StringResourceModel((tooOld ? "folder.message.tooOld.unlink" : "folder.message.confirmUnlink"),this, null,new Object[]{ppsModel}), ppsModel);
                 }
 
                 @Override
@@ -1430,12 +1435,12 @@ public class StudyListPage extends Panel {
                 
                 @Override
                 public boolean isEnabled() {
-                    return !tooOld;
+                    return StudyPermissionHelper.get().ignoreEditTimeLimit() || !tooOld;
                 }
             }
             .add(tooOld ? 
                 (new Image("linkImg", ImageManager.IMAGE_FOLDER_TIMELIMIT) 
-                    .add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.tooltip"))))
+                    .add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.unlink.tooltip"))))
     		        :
 		        (new Image("unlinkImg",ImageManager.IMAGE_FOLDER_UNLINK)
                 	.add(new ImageSizeBehaviour()).add(tooltip))
@@ -1819,7 +1824,7 @@ public class StudyListPage extends Panel {
                 new Image("editImg", ImageManager.IMAGE_COMMON_DICOM_EDIT);
         image.add(new ImageSizeBehaviour("vertical-align: middle;"));
         if (tooOld && !StudyPermissionHelper.get().ignoreEditTimeLimit())
-            image.add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.tooltip")));
+            image.add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.edit.tooltip")));
         else
             if (tooltip != null) image.add(tooltip);            
         editLink.add(image);
@@ -1847,6 +1852,24 @@ public class StudyListPage extends Panel {
                super.onCancel();
            }
         };
+    }
+    
+    private Mpps2MwlLinkPage setMppsLinkWindow() {
+        mpps2MwlLinkWindow.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
+            
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClose(AjaxRequestTarget target) {
+                getPage().setOutputMarkupId(true);
+                target.addComponent(getPage());
+            }
+        });
+        
+        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("mpps2mwl");
+        ((Mpps2MwlLinkPage) mpps2MwlLinkWindow)
+                .setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
+        return mpps2MwlLinkWindow;
     }
     
     private Link<Object> getFileDisplayLink(final ModalWindow modalWindow, final FileModel fileModel, TooltipBehaviour tooltip) {
