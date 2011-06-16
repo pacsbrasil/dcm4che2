@@ -1105,7 +1105,7 @@ public class StudyListPage extends Panel {
 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
+                    target.addComponent(this.getParent());
                 }
             };
             row.add(new SelectableTableRowBehaviour(selChkBox, "patient", "patient_selected"));
@@ -1204,7 +1204,7 @@ public class StudyListPage extends Panel {
 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
+                    target.addComponent(this.getParent());
                 }
             };
             row.add(new SelectableTableRowBehaviour(selChkBox, "study", "study_selected"));
@@ -1331,7 +1331,7 @@ public class StudyListPage extends Panel {
                 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
+                    target.addComponent(this.getParent());
                 }
             }; 
             if (ppsModel.getDataset() != null) 
@@ -1537,7 +1537,7 @@ public class StudyListPage extends Panel {
 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
+                    target.addComponent(this.getParent());
                 }
             };
             row.add(new SelectableTableRowBehaviour(selChkBox, "series", "series_selected"));
@@ -1652,7 +1652,7 @@ public class StudyListPage extends Panel {
 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
+                    target.addComponent(this.getParent());
                 }
             };
             row.add(new SelectableTableRowBehaviour(selChkBox, "instance", "instance_selected"));
