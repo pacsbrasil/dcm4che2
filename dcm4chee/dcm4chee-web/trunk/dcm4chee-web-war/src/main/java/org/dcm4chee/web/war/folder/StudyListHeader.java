@@ -19,6 +19,7 @@ import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.common.SelectAllLink;
+import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 
 public class StudyListHeader extends Panel {
@@ -26,7 +27,7 @@ public class StudyListHeader extends Panel {
     private static final long serialVersionUID = 1L;
     
     private int headerExpandLevel = 1;
-    private int expandAllLevel = 5;
+    private int expandAllLevel = 1;
     private IModel<Boolean> autoExpand = new Model<Boolean>(false);
  
     private final class Row extends WebMarkupContainer {
@@ -97,10 +98,8 @@ public class StudyListHeader extends Panel {
 
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
-                if (autoExpand.getObject()) {
-                    headerExpandLevel = expandAllLevel;
-                    target.addComponent(StudyListHeader.this);
-                }
+                headerExpandLevel = autoExpand.getObject() ? expandAllLevel : AbstractDicomModel.STUDY_LEVEL;
+                target.addComponent(StudyListHeader.this);
             }
         }
         .add(new TooltipBehaviour("folder.search.","autoExpand")));

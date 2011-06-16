@@ -13,13 +13,14 @@ import org.apache.wicket.model.Model;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
 public class TrashListHeader extends Panel {
 
     private static final long serialVersionUID = 1L;
     
     private int headerExpandLevel = 1;
-    private int expandAllLevel = 3;
+    private int expandAllLevel = 1;
     private Model<Boolean> autoExpand = new Model<Boolean>(false);
  
     private final class Row extends WebMarkupContainer {
@@ -90,10 +91,8 @@ public class TrashListHeader extends Panel {
 
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
-                if (autoExpand.getObject()) {
-                    headerExpandLevel = expandAllLevel;
-                    target.addComponent(TrashListHeader.this);
-                }
+                headerExpandLevel = autoExpand.getObject() ? expandAllLevel : AbstractDicomModel.STUDY_LEVEL;
+                target.addComponent(TrashListHeader.this);
             }
         }
         .add(new TooltipBehaviour("trash.search.","autoExpand")));

@@ -105,6 +105,10 @@ import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
+import org.dcm4chee.web.war.folder.model.PPSModel;
+import org.dcm4chee.web.war.folder.model.PatientModel;
+import org.dcm4chee.web.war.folder.model.SeriesModel;
+import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.dcm4chee.web.war.trash.delegate.StoreBridgeDelegate;
 import org.dcm4chee.web.war.trash.model.PrivInstanceModel;
 import org.dcm4chee.web.war.trash.model.PrivPatientModel;
@@ -306,6 +310,7 @@ public class TrashListPage extends Panel {
                     log.error("search failed: ", t);
                 }
                 target.addComponent(form);
+                target.addComponent(header);
             }
 
             @Override
@@ -621,6 +626,7 @@ public class TrashListPage extends Panel {
                     StudyPermissionHelper.get().getDicomRoles() : null;
         viewport.setTotal(dao.count(viewport.getFilter(), dicomSecurityRoles));
         updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset(), dicomSecurityRoles));
+        updateAutoExpandLevel();
         notSearched = false;
     }
 
@@ -704,6 +710,25 @@ public class TrashListPage extends Panel {
             }
         }
         return level;
+    }
+    
+    private void updateAutoExpandLevel() {
+        int level = AbstractDicomModel.PATIENT_LEVEL;
+        pat: for (PrivPatientModel patient : viewport.getPatients()) {
+           for (PrivStudyModel s : patient.getStudies()) {
+               if (level < s.levelOfModel())
+                   level = s.levelOfModel();
+                for (PrivSeriesModel se : s.getSeries()) {
+                    if (se.isCollapsed()) {
+                        level = se.levelOfModel();
+                    } else {
+                        level = se.getInstances().get(0).levelOfModel();
+                        break pat;
+                    }
+                }
+            }
+        }
+        header.setExpandAllLevel(level);
     }
     
     public static String getModuleName() {
