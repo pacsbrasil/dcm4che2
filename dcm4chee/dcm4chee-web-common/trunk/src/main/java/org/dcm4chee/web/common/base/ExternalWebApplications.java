@@ -82,12 +82,12 @@ public class ExternalWebApplications implements Serializable {
             BufferedReader br = null;
             try {
                 br =new BufferedReader(new FileReader(cfgFile)); 
-                String line = br.readLine();
+                String line;
                 String appTitle, grpTitle,url;
                 int pos1, pos2, height;
                 HashMap<String, ExternalWebAppGroupPanel> grpPanels = new HashMap<String, ExternalWebAppGroupPanel>();
                 Model<String> titleModel;
-                while (line != null) {
+                while ((line = br.readLine()) != null) {
                     if (line.charAt(0) != '#') {
                         pos1 = line.indexOf('=');
                         appTitle = line.substring(0, pos1++);
@@ -117,7 +117,6 @@ public class ExternalWebApplications implements Serializable {
                                     titleModel, height), titleModel);
                         }
                     }
-                    line = br.readLine();
                 }
             } catch (Exception x) {
                 log.error("Failed to read config file:"+cfgFile, x);
