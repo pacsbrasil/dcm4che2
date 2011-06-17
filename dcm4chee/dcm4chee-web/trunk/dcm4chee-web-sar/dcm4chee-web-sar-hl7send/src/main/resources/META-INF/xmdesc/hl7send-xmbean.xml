@@ -55,6 +55,32 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getLinkMsgType"
+      setMethod="setLinkMsgType">
+      <description><![CDATA[Message type for linking MPPS to MWL.<br />
+      		Use NONE to disable ORM message after linking.<br />
+      		The Stylesheet can use 'linkType=LINK' parameter.
+      ]]></description>
+      <name>LinkMsgType</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="mpps2orm" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getUnlinkMsgType"
+      setMethod="setUnlinkMsgType">
+      <description><![CDATA[Message type for unlinking MPPS and MWL.<br />
+      		Use NONE to disable ORM message after unlink.<br />
+      		The Stylesheet can use 'linkType=UNLINK' parameter.
+      ]]></description>
+      <name>UnlinkMsgType</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="mpps2orm" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getConfigDir"
       setMethod="setConfigDir">
       <description><![CDATA[Directory where configuration (XSL) files for HL7Send service are located.

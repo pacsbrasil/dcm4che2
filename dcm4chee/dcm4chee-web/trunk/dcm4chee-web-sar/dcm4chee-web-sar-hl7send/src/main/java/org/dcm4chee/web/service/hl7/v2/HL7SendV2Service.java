@@ -150,6 +150,9 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
     private boolean logHL7Message;
     private boolean logXMLHL7Message;
     
+    private String linkMsgType;
+    private String unlinkMsgType;
+    
     private final NotificationListener mppsLinkedListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             try {
@@ -210,6 +213,22 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
 
     public void setSendingFacility(String facility) {
         this.sendingFacility = facility;
+    }
+
+    public String getLinkMsgType() {
+        return linkMsgType == null ? NONE : linkMsgType;
+    }
+
+    public void setLinkMsgType(String linkMsgType) {
+        this.linkMsgType = NONE.equals(linkMsgType) ? null : linkMsgType;
+    }
+
+    public String getUnlinkMsgType() {
+        return unlinkMsgType == null ? NONE : unlinkMsgType;
+    }
+
+    public void setUnlinkMsgType(String unlinkMsgType) {
+        this.unlinkMsgType = NONE.equals(unlinkMsgType) ? null : unlinkMsgType;
     }
 
     public final String getConfigDir() {
@@ -676,6 +695,14 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
                             + delay);
                 }
             }
+        } catch (ClassCastException e) {
+            log.warn("ClassCastException:"+e.getMessage());
+            log.warn("ObjectMessage      classname:"+om.getClass().getName());
+            log.warn("HL7SendOrder       classname:"+HL7SendOrder.class.getName());
+            log.warn("ObjectMessage    classloader:"+om.getClass().getClassLoader());
+            log.warn("HL7SendV2Service classloader:"+this.getClass().getClassLoader());
+            log.warn("ObjectMessage    code source:"+om.getClass().getProtectionDomain().getCodeSource().getLocation());
+            log.warn("HL7SendOrder     code source:"+HL7SendOrder.class.getProtectionDomain().getCodeSource().getLocation());
         } catch (JMSException e) {
             log.error("jms error during processing message: " + msg, e);
         } catch (Throwable e) {
@@ -685,13 +712,18 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
 
     public void scheduleMPPS2ORM(MppsToMwlLinkResult result) throws Exception {
         List<MPPS> mppss = result.getMppss();
-        log.info("scheduleMPPS2ORM mppss:"+mppss);
-        for (MPPS mpps : mppss) {
-            scheduleMPPS2ORM( mpps );
+        boolean unlink = result.isUnlinkResult();
+        if ((unlink && unlinkMsgType != null) || (!unlink && linkMsgType != null)) {
+            log.info("scheduleMPPS2ORM mppss:"+mppss);
+            for (MPPS mpps : mppss) {
+                scheduleMPPS2ORM(mpps, unlink);
+            }
+        } else {
+            log.info("Link notification ignored! "+(unlink ? "UNLINK" : "LINK")+" is disabled!");
         }
     }
 
-    private void scheduleMPPS2ORM(MPPS mpps) throws Exception {
+    private void scheduleMPPS2ORM(MPPS mpps, boolean unlink) throws Exception {
         DicomObject mppsAttrs = mpps.getAttributes();
         DicomObject patAttrs = mpps.getPatient().getAttributes(); 
         patAttrs.copyTo(mppsAttrs);
@@ -707,17 +739,20 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
             for (int i = 0, len = ssaSq.countItems() ; i < len ; i++) {
                 sps = ssaSq.getDicomObject(i);
                 mppsAttrs.putSequence(Tag.ScheduledStepAttributesSequence).addDicomObject(sps);
-                scheduleMPPS2ORM(mppsAttrs);
+                scheduleMPPS2ORM(mppsAttrs, unlink);
             }
         } else {
-            scheduleMPPS2ORM(mppsAttrs);
+            scheduleMPPS2ORM(mppsAttrs, unlink);
         }
         
     }
     
-    public void scheduleMPPS2ORM(DicomObject mppsAttrs) throws Exception {
+    public void scheduleMPPS2ORM(DicomObject mppsAttrs, boolean unlink) throws Exception {
         log.info("schedule MPPS to ORM Message. mppsAttrs:"+mppsAttrs);
-        scheduleHL7Message(mppsAttrs, null, "mpps2orm");
+        Map<String,String> params = new HashMap<String,String>();
+        params.put("linkType", unlink ? "UNLINK" : "LINK");
+        String msgType = unlink ? unlinkMsgType : linkMsgType;
+        scheduleHL7Message(mppsAttrs, params, msgType);
     }
 
     private AEHomeLocal lookupAEHome() {
