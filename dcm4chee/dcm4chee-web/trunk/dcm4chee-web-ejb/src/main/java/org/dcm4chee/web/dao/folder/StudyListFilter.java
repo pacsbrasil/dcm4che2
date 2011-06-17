@@ -73,6 +73,7 @@ public class StudyListFilter implements Serializable {
     private boolean latestStudiesFirst;
     private boolean ppsWithoutMwl;
     private boolean withoutPps;
+    private boolean exactModalitiesInStudy;
     
     public StudyListFilter(String forUsername) {
         clear();
@@ -190,6 +191,14 @@ public class StudyListFilter implements Serializable {
 
     public void setModality(String modality) {
         this.modality = modality;
+    }
+
+    public boolean isExactModalitiesInStudy() {
+        return exactModalitiesInStudy;
+    }
+
+    public void setExactModalitiesInStudy(boolean exactModalitiesInStudy) {
+        this.exactModalitiesInStudy = exactModalitiesInStudy;
     }
 
     public String getSourceAET() {

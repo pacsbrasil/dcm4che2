@@ -324,6 +324,12 @@ public class QueryUtil {
         }
     }
 
+    public static void appendModalitiesInStudyExactFilter(StringBuilder ql, String modality) {
+        if (!isUniversalMatch(modality)) {
+            ql.append(" AND s.modalitiesInStudy = :modality)");
+        }
+    }
+
     public static void setModalityQueryParameter(Query query, String modality) {
         if (!isUniversalMatch(modality)) {
             query.setParameter("modality", modality);

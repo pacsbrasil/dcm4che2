@@ -41,7 +41,6 @@ package org.dcm4chee.web.dao.folder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -166,7 +165,7 @@ public class StudyListBean implements StudyListLocal {
             return query.setMaxResults(max).setFirstResult(index).getResultList();
         else {
             List<Object[]> result = query.setMaxResults(max).setFirstResult(index).getResultList();
-            List<Patient> patientList = new ArrayList();
+            List<Patient> patientList = new ArrayList<Patient>();
             Patient patient = null;
             for (Object[] element: result) {
                 if (!patientList.contains((Patient) element[0])) {
@@ -201,7 +200,11 @@ public class StudyListBean implements StudyListLocal {
                 QueryUtil.appendPpsWithoutMwlFilter(ql, filter.isWithoutPps(), filter.isPpsWithoutMwl());
                 QueryUtil.appendStudyDateMinFilter(ql, filter.getStudyDateMin());
                 QueryUtil.appendStudyDateMaxFilter(ql, filter.getStudyDateMax());
-                QueryUtil.appendModalityFilter(ql, filter.getModality());
+                if (filter.isExactModalitiesInStudy()) {
+                    QueryUtil.appendModalitiesInStudyExactFilter(ql, filter.getModality());
+                } else {
+                    QueryUtil.appendModalityFilter(ql, filter.getModality());
+                }
                 QueryUtil.appendSourceAETFilter(ql, filter.getSourceAETs());
             }
             if ((roles != null) && !filter.isPatientQuery())

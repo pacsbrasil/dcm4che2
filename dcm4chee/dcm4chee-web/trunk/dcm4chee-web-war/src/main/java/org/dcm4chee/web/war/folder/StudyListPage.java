@@ -377,7 +377,7 @@ public class StudyListPage extends Panel {
         
         form.addDropDownChoice("modality", null, new Model<ArrayList<String>>(new ArrayList(WebCfgDelegate.getInstance().getModalityList())), 
                 enabledModel, false).setModelObject("*");
-        
+        form.addLabeledCheckBox("exactModalitiesInStudy", null);
         List<String> aetChoices = viewport.getAetChoices();
         if (aetChoices.size() > 0)
             form.addDropDownChoice("sourceAET", null, new Model<ArrayList<String>>(new ArrayList(aetChoices)), enabledModel, false)
