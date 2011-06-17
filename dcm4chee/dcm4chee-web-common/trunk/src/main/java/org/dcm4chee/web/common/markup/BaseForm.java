@@ -241,7 +241,7 @@ public class BaseForm extends Form<Object> {
 
     @SuppressWarnings("unchecked")
     public DropDownChoice addDropDownChoice(String id, final IModel model, IModel<? extends List<? extends Object>> choices, final IModel<Boolean> enabledModel, boolean addLabel) {
-        DropDownChoice ch = model == null ? new DropDownChoice(id, new ArrayList(choices))  {
+        DropDownChoice ch = model == null ? new DropDownChoice(id, choices)  {
 
                                                 private static final long serialVersionUID = 1L;
                                     
@@ -250,7 +250,7 @@ public class BaseForm extends Form<Object> {
                                                     return enabledModel == null ? true : enabledModel.getObject();
                                                 }
                                             } : 
-                                            new DropDownChoice(id, model, new ArrayList(choices)) {
+                                            new DropDownChoice(id, model, choices) {
 
                                                 private static final long serialVersionUID = 1L;
 
