@@ -56,6 +56,7 @@ import javax.security.jacc.PolicyContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageMap;
 import org.apache.wicket.RequestCycle;
@@ -160,6 +161,7 @@ import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage;
 import org.dcm4chee.web.war.folder.webviewer.Webviewer;
+import org.dcm4chee.web.war.trash.TrashListPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -222,6 +224,8 @@ public class StudyListPage extends Panel {
     StudyPermissionHelper studyPermissionHelper;
     
     final MaskingAjaxCallBehavior macb = new MaskingAjaxCallBehavior();
+
+    private Component x;
     
     public StudyListPage(final String id) {
         super(id);
@@ -371,15 +375,15 @@ public class StudyListPage extends Panel {
         form.addInternalLabel("modality");
         form.addInternalLabel("sourceAET");
         
-        form.addDropDownChoice("modality", null, WebCfgDelegate.getInstance().getModalityList(), 
+        form.addDropDownChoice("modality", null, new Model<ArrayList<String>>(new ArrayList(WebCfgDelegate.getInstance().getModalityList())), 
                 enabledModel, false).setModelObject("*");
         
         List<String> aetChoices = viewport.getAetChoices();
         if (aetChoices.size() > 0)
-            form.addDropDownChoice("sourceAET", null, aetChoices, enabledModel, false)
+            form.addDropDownChoice("sourceAET", null, new Model<ArrayList<String>>(new ArrayList(aetChoices)), enabledModel, false)
             .setModelObject(aetChoices.get(0));
         else
-            form.addDropDownChoice("sourceAET", null, aetChoices, new Model<Boolean>(false), false)
+            form.addDropDownChoice("sourceAET", null, new Model<ArrayList<String>>(new ArrayList(aetChoices)), new Model<Boolean>(false), false)
             .setNullValid(true);
         
         final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
@@ -460,11 +464,23 @@ public class StudyListPage extends Panel {
         final CheckBox chkLatestStudyFirst = form.addLabeledCheckBox("latestStudiesFirst", null);
         final CheckBox chkPpsWoMwl = form.addLabeledCheckBox("ppsWithoutMwl", null);
         final CheckBox chkWoPps = form.addLabeledCheckBox("withoutPps", null);
+
+        final Model<String> searchOptionSelected = new Model<String>();
+        final Model<ArrayList<String>> searchOptions = new Model<ArrayList<String>>() {
+
+            private static final long serialVersionUID = 1L;
+
+            public ArrayList<String> getObject() {
+
+                final ArrayList<String> searchOptionsStrings = new ArrayList<String>(2);
+                searchOptionsStrings.add(new StringResourceModel("folder.searchOptions.patient", StudyListPage.this, null).getObject());
+                searchOptionsStrings.add(new StringResourceModel("folder.searchOptions.study", StudyListPage.this, null).getObject());
+                if (!searchOptionsStrings.contains(searchOptionSelected.getObject())) 
+                        searchOptionSelected.setObject(searchOptionsStrings.get(1));
+                return searchOptionsStrings;                
+            }
+        };
         
-        final List<String> searchOptions = new ArrayList<String>(2);
-        searchOptions.add(new ResourceModel("folder.searchOptions.patient").wrapOnAssignment(this).getObject());
-        searchOptions.add(new ResourceModel("folder.searchOptions.study").wrapOnAssignment(this).getObject());
-        final Model<String> searchOptionSelected = new Model<String>(searchOptions.get(1));
         form.addDropDownChoice("queryType", searchOptionSelected, searchOptions, 
                 new Model<Boolean>(true), true)
                 .add(new AjaxFormComponentUpdatingBehavior("onchange") {
@@ -472,7 +488,7 @@ public class StudyListPage extends Panel {
                     private static final long serialVersionUID = 1L;
 
                         protected void onUpdate(AjaxRequestTarget target) {
-                            boolean b = searchOptionSelected.getObject().equals(searchOptions.get(0));
+                            boolean b = searchOptionSelected.getObject().equals(searchOptions.getObject().get(0));
                             viewport.getFilter().setPatientQuery(b);
                             chkLatestStudyFirst.setEnabled(!b);
                             chkPpsWoMwl.setEnabled(!b);
@@ -482,6 +498,7 @@ public class StudyListPage extends Panel {
                 });
     }
 
+    @SuppressWarnings("unchecked")
     private void addNavigation(final BaseForm form) {
 
         Button resetBtn = new AjaxButton("resetBtn") {
@@ -559,7 +576,7 @@ public class StudyListPage extends Panel {
         form.clearParent();
         
         form.addDropDownChoice("pagesize", pagesize, 
-                WebCfgDelegate.getInstance().getPagesizeList(), 
+                new Model<ArrayList<String>>(new ArrayList(WebCfgDelegate.getInstance().getPagesizeList())), 
                 new Model<Boolean>(true), 
                 true)
          .setNullValid(false)
@@ -1461,7 +1478,7 @@ public class StudyListPage extends Panel {
                 }
             }
             .add(tooOld ? 
-                (new Image("linkImg", ImageManager.IMAGE_FOLDER_TIMELIMIT) 
+                (new Image("unlinkImg", ImageManager.IMAGE_FOLDER_TIMELIMIT) 
                     .add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.unlink.tooltip"))))
     		        :
 		        (new Image("unlinkImg",ImageManager.IMAGE_FOLDER_UNLINK)

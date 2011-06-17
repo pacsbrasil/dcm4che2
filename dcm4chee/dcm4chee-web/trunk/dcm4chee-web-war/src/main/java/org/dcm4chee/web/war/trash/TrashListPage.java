@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
@@ -62,6 +63,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -146,6 +148,9 @@ public class TrashListPage extends Panel {
     TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
     
     final MaskingAjaxCallBehavior macb = new MaskingAjaxCallBehavior();
+
+    private TextField<String> accessionNumber;
+    private DropDownChoice<String> sourceAET;
 
     public TrashListPage(final String id) {
         super(id);
@@ -235,36 +240,55 @@ public class TrashListPage extends Panel {
                 WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModelPat, false);
         form.addTextField("patientID", enabledModelPat, true);
         form.addTextField("issuerOfPatientID", enabledModelPat, true);
-        form.addTextField("accessionNumber", enabledModel, false);
+        accessionNumber = form.addTextField("accessionNumber", enabledModel, false);
         
         List<String> aetChoices = viewport.getAetChoices();
         if (aetChoices.size() > 0)
-            form.addDropDownChoice("sourceAET", null, aetChoices, enabledModel, false)
+            (sourceAET = 
+                form.addDropDownChoice("sourceAET", null, new Model<ArrayList<String>>(new ArrayList(aetChoices)), enabledModel, false))
             .setModelObject(aetChoices.get(0));
         else
-            form.addDropDownChoice("sourceAET", null, aetChoices, new Model<Boolean>(false), false)
+            (sourceAET =
+                form.addDropDownChoice("sourceAET", null, new Model<ArrayList<String>>(new ArrayList(aetChoices)), new Model<Boolean>(false), false))
             .setNullValid(true);
 
         searchTableComponents.add(form.createAjaxParent("searchFooter"));
     }
 
-    private void addQueryOptions(BaseForm form) {
-        final List<String> searchOptions = new ArrayList<String>(2);
-        searchOptions.add(new ResourceModel("trash.searchOptions.patient").wrapOnAssignment(this).getObject());
-        searchOptions.add(new ResourceModel("trash.searchOptions.study").wrapOnAssignment(this).getObject());
-        final Model<String> searchOptionSelected = new Model<String>(searchOptions.get(1));
+    private void addQueryOptions(final BaseForm form) {
+
+        final Model<String> searchOptionSelected = new Model<String>();
+        final Model<ArrayList<String>> searchOptions = new Model<ArrayList<String>>() {
+
+            private static final long serialVersionUID = 1L;
+
+            public ArrayList<String> getObject() {
+
+                final ArrayList<String> searchOptionsStrings = new ArrayList<String>(2);
+                searchOptionsStrings.add(new StringResourceModel("trash.searchOptions.patient", TrashListPage.this, null).getObject());
+                searchOptionsStrings.add(new StringResourceModel("trash.searchOptions.study", TrashListPage.this, null).getObject());
+                if (!searchOptionsStrings.contains(searchOptionSelected.getObject())) 
+                        searchOptionSelected.setObject(searchOptionsStrings.get(1));
+                return searchOptionsStrings;                
+            }
+        };
+        
         form.addDropDownChoice("queryType", searchOptionSelected, searchOptions, 
                 new Model<Boolean>(true), true)
-                .add(new AjaxFormComponentUpdatingBehavior("onchange") {
-                    
-                    private static final long serialVersionUID = 1L;
+        .add(new AjaxFormComponentUpdatingBehavior("onchange") {
+            
+            private static final long serialVersionUID = 1L;
 
-                        protected void onUpdate(AjaxRequestTarget target) {
-                            viewport.getFilter().setPatientQuery(searchOptionSelected.getObject().equals(searchOptions.get(0)));
-                        }
-                });
+                protected void onUpdate(AjaxRequestTarget target) {
+                    boolean b = searchOptionSelected.getObject().equals(searchOptions.getObject().get(0));
+                    viewport.getFilter().setPatientQuery(b);
+                    target.addComponent(accessionNumber.setEnabled(!b));
+                    target.addComponent(sourceAET.setEnabled(!b));
+                }
+        });
     }
 
+    @SuppressWarnings("unchecked")
     private void addNavigation(final BaseForm form) {
         
         Button resetBtn = new AjaxButton("resetBtn") {
@@ -342,7 +366,7 @@ public class TrashListPage extends Panel {
 
         pagesize.setObject(WebCfgDelegate.getInstance().getDefaultFolderPagesize());
         form.addDropDownChoice("pagesize", pagesize, 
-                WebCfgDelegate.getInstance().getPagesizeList(), 
+                new Model<ArrayList<String>>(new ArrayList(WebCfgDelegate.getInstance().getPagesizeList())), 
                 new Model<Boolean>(true), 
                 true)
         .setNullValid(false)

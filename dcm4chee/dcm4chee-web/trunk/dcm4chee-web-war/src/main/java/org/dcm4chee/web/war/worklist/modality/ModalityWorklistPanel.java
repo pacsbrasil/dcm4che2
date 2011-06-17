@@ -256,19 +256,19 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         form.addInternalLabel("scheduledStationName");
         form.addInternalLabel("SPSStatus");
 
-        form.addDropDownChoice("modality", null, WebCfgDelegate.getInstance().getModalityList(), 
+        form.addDropDownChoice("modality", null, new Model<ArrayList<String>>(new ArrayList(WebCfgDelegate.getInstance().getModalityList())), 
                 enabledModel, false).setModelObject("*");
         
         List<String> aetChoices = viewport.getAetChoices();
         if (aetChoices.size() > 0)
-            form.addDropDownChoice("scheduledStationAET", null, aetChoices, enabledModel, false)
+            form.addDropDownChoice("scheduledStationAET", null, new Model<ArrayList<String>>(new ArrayList(aetChoices)), enabledModel, false)
             .setModelObject(aetChoices.get(0));
         else
-            form.addDropDownChoice("scheduledStationAET", null, aetChoices, new Model<Boolean>(false), false)
+            form.addDropDownChoice("scheduledStationAET", null, new Model<ArrayList<String>>(new ArrayList(aetChoices)), new Model<Boolean>(false), false)
             .setNullValid(true);
 
-        form.addDropDownChoice("scheduledStationName", null, WebCfgDelegate.getInstance().getStationNameList(), enabledModel, false).setModelObject("*");
-        form.addDropDownChoice("SPSStatus", null, getSpsStatusChoices(), enabledModel, false).setModelObject("*");
+        form.addDropDownChoice("scheduledStationName", null, new Model<ArrayList<String>>(new ArrayList(WebCfgDelegate.getInstance().getStationNameList())), enabledModel, false).setModelObject("*");
+        form.addDropDownChoice("SPSStatus", null, new Model<ArrayList<String>>(new ArrayList(getSpsStatusChoices())), enabledModel, false).setModelObject("*");
 
         final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
 
@@ -419,7 +419,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         navPanel = form.createAjaxParent("navPanel");
         
         pagesize.setObject(WebCfgDelegate.getInstance().getDefaultMWLPagesize());
-        form.addDropDownChoice("pagesize", pagesize, WebCfgDelegate.getInstance().getPagesizeList(), new Model<Boolean>() {
+        form.addDropDownChoice("pagesize", pagesize, new Model<ArrayList<String>>(new ArrayList(WebCfgDelegate.getInstance().getPagesizeList())), new Model<Boolean>() {
                     
             private static final long serialVersionUID = 1L;
 
