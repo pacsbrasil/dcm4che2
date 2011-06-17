@@ -466,7 +466,7 @@ public class StudyListPage extends Panel {
         final CheckBox chkWoPps = form.addLabeledCheckBox("withoutPps", null);
 
         final Model<String> searchOptionSelected = new Model<String>();
-        final Model<ArrayList<String>> searchOptions = new Model<ArrayList<String>>() {
+        form.addDropDownChoice("queryType", searchOptionSelected, new Model<ArrayList<String>>() {
 
             private static final long serialVersionUID = 1L;
 
@@ -479,23 +479,22 @@ public class StudyListPage extends Panel {
                         searchOptionSelected.setObject(searchOptionsStrings.get(1));
                 return searchOptionsStrings;                
             }
-        };
-        
-        form.addDropDownChoice("queryType", searchOptionSelected, searchOptions, 
-                new Model<Boolean>(true), true)
-                .add(new AjaxFormComponentUpdatingBehavior("onchange") {
+        }, new Model<Boolean>(true), true)
+        .add(new AjaxFormComponentUpdatingBehavior("onchange") {
                     
-                    private static final long serialVersionUID = 1L;
+            private static final long serialVersionUID = 1L;
 
-                        protected void onUpdate(AjaxRequestTarget target) {
-                            boolean b = searchOptionSelected.getObject().equals(searchOptions.getObject().get(0));
-                            viewport.getFilter().setPatientQuery(b);
-                            chkLatestStudyFirst.setEnabled(!b);
-                            chkPpsWoMwl.setEnabled(!b);
-                            chkWoPps.setEnabled(!b);
-                            BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
-                        }
-                });
+                @SuppressWarnings("unchecked")
+                protected void onUpdate(AjaxRequestTarget target) {
+                    boolean b = ((DropDownChoice<String>) getComponent())
+                        .getChoices().get(0).equals(searchOptionSelected.getObject());
+                    viewport.getFilter().setPatientQuery(b);
+                    chkLatestStudyFirst.setEnabled(!b);
+                    chkPpsWoMwl.setEnabled(!b);
+                    chkWoPps.setEnabled(!b);
+                    BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
+                }
+        });
     }
 
     @SuppressWarnings("unchecked")

@@ -258,7 +258,8 @@ public class TrashListPage extends Panel {
     private void addQueryOptions(final BaseForm form) {
 
         final Model<String> searchOptionSelected = new Model<String>();
-        final Model<ArrayList<String>> searchOptions = new Model<ArrayList<String>>() {
+        
+        form.addDropDownChoice("queryType", searchOptionSelected, new Model<ArrayList<String>>() {
 
             private static final long serialVersionUID = 1L;
 
@@ -271,16 +272,15 @@ public class TrashListPage extends Panel {
                         searchOptionSelected.setObject(searchOptionsStrings.get(1));
                 return searchOptionsStrings;                
             }
-        };
-        
-        form.addDropDownChoice("queryType", searchOptionSelected, searchOptions, 
-                new Model<Boolean>(true), true)
+        }, new Model<Boolean>(true), true)
         .add(new AjaxFormComponentUpdatingBehavior("onchange") {
             
             private static final long serialVersionUID = 1L;
 
+                @SuppressWarnings("unchecked")
                 protected void onUpdate(AjaxRequestTarget target) {
-                    boolean b = searchOptionSelected.getObject().equals(searchOptions.getObject().get(0));
+                    boolean b = ((DropDownChoice<String>) getComponent())
+                        .getChoices().get(0).equals(searchOptionSelected.getObject());
                     viewport.getFilter().setPatientQuery(b);
                     target.addComponent(accessionNumber.setEnabled(!b));
                     target.addComponent(sourceAET.setEnabled(!b));
