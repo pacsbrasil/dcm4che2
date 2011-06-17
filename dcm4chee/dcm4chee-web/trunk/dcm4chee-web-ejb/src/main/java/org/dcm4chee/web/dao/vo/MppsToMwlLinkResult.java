@@ -84,17 +84,26 @@ public class MppsToMwlLinkResult implements Serializable {
         return this.studiesToMove;
     }
     
+    public boolean isUnlinkResult() {
+        return mwl == null;
+    }
+    
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("MppsToMwlLinkResult:\nMWL Attrs:\n").append(mwl.getAttributes());
-        sb.append("\n\nlinked MPPS: ").append(mppss.size());
-        for (MPPS mpps : mppss) {
-            sb.append("\nMPPS Attributes:").append(mpps).append("\n");
-        }
-        if (studiesToMove.size() > 0) {
-            sb.append("\n Patient(s) of MPPSs was different to MWL patient! need move of studies:");
-            for ( Study s : studiesToMove) {
-                sb.append("\nStudyIuid:").append(s.getStudyInstanceUID());
+        sb.append("MppsToMwlLinkResult:");
+        if (mwl==null) {
+            sb.append("UNLINK\nMPPS Attrs(previous):").append(mppss.get(0).getAttributes());
+        } else {
+            sb.append("LINK\nMWL Attrs:\n").append(mwl.getAttributes());
+            sb.append("\n\nlinked MPPS: ").append(mppss.size());
+            for (MPPS mpps : mppss) {
+                sb.append("\nMPPS Attributes:").append(mpps).append("\n");
+            }
+            if (studiesToMove.size() > 0) {
+                sb.append("\n Patient(s) of MPPSs was different to MWL patient! need move of studies:");
+                for ( Study s : studiesToMove) {
+                    sb.append("\nStudyIuid:").append(s.getStudyInstanceUID());
+                }
             }
         }
         return sb.toString();
