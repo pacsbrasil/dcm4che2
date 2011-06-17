@@ -561,6 +561,9 @@ public class ContentEditService extends ServiceMBeanSupport {
             logProcedureRecord(patAttrs, ssaSQ.getDicomObject().getString(Tag.StudyInstanceUID),
                     mpps.getAccessionNumber(), 
                     ProcedureRecordMessage.UPDATE, sb.substring(0,sb.length()-2));
+            MppsToMwlLinkResult result = new MppsToMwlLinkResult();
+            result.addMppsAttributes(mpps);
+            this.sendJMXNotification(result);
             if (this.forwardModifiedToAETs != null) {
                 this.scheduleForwardByMpps(mpps.getAttributes());
             }
