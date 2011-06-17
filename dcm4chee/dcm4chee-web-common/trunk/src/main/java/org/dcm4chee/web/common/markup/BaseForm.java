@@ -39,6 +39,7 @@
 package org.dcm4chee.web.common.markup;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -239,8 +240,8 @@ public class BaseForm extends Form<Object> {
     }
 
     @SuppressWarnings("unchecked")
-    public DropDownChoice addDropDownChoice(String id, final IModel model, List<? extends Object> values, final IModel<Boolean> enabledModel, boolean addLabel) {
-        DropDownChoice ch = model == null ? new DropDownChoice(id, values)  {
+    public DropDownChoice addDropDownChoice(String id, final IModel model, IModel<? extends List<? extends Object>> choices, final IModel<Boolean> enabledModel, boolean addLabel) {
+        DropDownChoice ch = model == null ? new DropDownChoice(id, new ArrayList(choices))  {
 
                                                 private static final long serialVersionUID = 1L;
                                     
@@ -249,7 +250,7 @@ public class BaseForm extends Form<Object> {
                                                     return enabledModel == null ? true : enabledModel.getObject();
                                                 }
                                             } : 
-                                            new DropDownChoice(id, model, values) {
+                                            new DropDownChoice(id, model, new ArrayList(choices)) {
 
                                                 private static final long serialVersionUID = 1L;
 
