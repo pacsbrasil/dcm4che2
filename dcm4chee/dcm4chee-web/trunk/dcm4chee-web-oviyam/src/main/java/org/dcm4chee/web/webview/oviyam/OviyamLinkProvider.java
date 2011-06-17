@@ -81,6 +81,10 @@ public class OviyamLinkProvider extends WebviewerLinkProviderSPI {
     public boolean supportKeySelectionObject() {
         return false;
     }
+    public boolean supportStructuredReport() {
+        return false;
+    }
+
     public String getUrlForPatient(String patientId, String issuer) {
         return baseUrl+"patientID="+patientId;
     }
@@ -99,4 +103,8 @@ public class OviyamLinkProvider extends WebviewerLinkProviderSPI {
     public String getUrlForKeyObjectSelection(String iuid) {
         return null;
     }
+    public String getUrlForStructuredReport(String iuid) {
+        return null;
+    }
+
 }
