@@ -39,9 +39,6 @@
 package org.dcm4che2.net.pdu;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 
 /**
  * @author gunter zeilinger(gunterze@gmail.com)
@@ -131,16 +128,12 @@ public class UserIdentityRQ {
         }
     }
 
-    private static Charset utf8() {
-        return Charset.forName("UTF-8");
-    }
-    
     private static byte[] toBytes(char[] ca) {
-        return utf8().encode(CharBuffer.wrap(ca)).array();
+        return toBytes(new String(ca));
     }
 
     private static char[] toChars(byte[] b) {
-        return utf8().decode(ByteBuffer.wrap(b)).array();
+        return toString(b).toCharArray();
     }
        
     public int length() {
