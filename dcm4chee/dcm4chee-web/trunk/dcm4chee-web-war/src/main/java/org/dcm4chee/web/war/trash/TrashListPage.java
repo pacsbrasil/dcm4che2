@@ -100,6 +100,7 @@ import org.dcm4chee.web.dao.trash.TrashListFilter;
 import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.service.common.FileImportOrder;
+import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.MainPage;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
@@ -135,7 +136,7 @@ public class TrashListPage extends Panel {
     
     private static final String MODULE_NAME = "trash";
     private static final long serialVersionUID = 1L;
-    private ViewPort viewport = new ViewPort();
+    private ViewPort viewport = ((AuthenticatedWebSession) AuthenticatedWebSession.get()).getTrashViewPort();
     private TrashListHeader header = new TrashListHeader("thead");
     private PrivSelectedEntities selected = new PrivSelectedEntities();
     
@@ -739,15 +740,18 @@ public class TrashListPage extends Panel {
     private void updateAutoExpandLevel() {
         int level = AbstractDicomModel.PATIENT_LEVEL;
         pat: for (PrivPatientModel patient : viewport.getPatients()) {
-           for (PrivStudyModel s : patient.getStudies()) {
-               if (level < s.levelOfModel())
-                   level = s.levelOfModel();
-                for (PrivSeriesModel se : s.getSeries()) {
-                    if (se.isCollapsed()) {
-                        level = se.levelOfModel();
-                    } else {
-                        level = se.getInstances().get(0).levelOfModel();
-                        break pat;
+            if (!patient.isCollapsed()) {
+                for (PrivStudyModel s : patient.getStudies()) {
+                    if (level < s.levelOfModel())
+                        level = s.levelOfModel();
+                    for (PrivSeriesModel se : s.getSeries()) {
+                        if (se.isCollapsed()) {
+                            level = se.levelOfModel();
+                        } else {
+                            level = se.getInstances().get(0).levelOfModel();
+                            break pat;
+                        }
+                
                     }
                 }
             }

@@ -1007,23 +1007,28 @@ public class StudyListPage extends Panel {
     }
     
     private void updateAutoExpandLevel() {
-        int level = AbstractDicomModel.STUDY_LEVEL;
+        int level = AbstractDicomModel.PATIENT_LEVEL;
         pat: for (PatientModel patient : viewport.getPatients()) {
-           for (StudyModel s : patient.getStudies()) {
-                for (PPSModel p : s.getPPSs()) {
-                    if (level < AbstractDicomModel.PPS_LEVEL)
-                        level = AbstractDicomModel.PPS_LEVEL;
-                    for (SeriesModel se : p.getSeries()) {
-                        if (se.isCollapsed()) {
-                            level = AbstractDicomModel.SERIES_LEVEL;
-                        } else {
-                            level = AbstractDicomModel.INSTANCE_LEVEL;
-                            break pat;
+            if (!patient.isCollapsed()) {
+                for (StudyModel s : patient.getStudies()) {
+                   if (level < AbstractDicomModel.STUDY_LEVEL)
+                       level = AbstractDicomModel.STUDY_LEVEL;
+                    for (PPSModel p : s.getPPSs()) {
+                        if (level < AbstractDicomModel.PPS_LEVEL)
+                            level = AbstractDicomModel.PPS_LEVEL;
+                        for (SeriesModel se : p.getSeries()) {
+                            if (se.isCollapsed()) {
+                                level = AbstractDicomModel.SERIES_LEVEL;
+                            } else {
+                                level = AbstractDicomModel.INSTANCE_LEVEL;
+                                break pat;
+                            }
                         }
                     }
                 }
             }
         }
+System.out.println("Decided to set expand level to: " + level);
         header.setExpandAllLevel(level);
     }
 

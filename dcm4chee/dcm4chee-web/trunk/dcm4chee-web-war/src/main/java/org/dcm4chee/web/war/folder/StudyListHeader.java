@@ -27,7 +27,7 @@ public class StudyListHeader extends Panel {
     private static final long serialVersionUID = 1L;
     
     private int headerExpandLevel = 1;
-    private int expandAllLevel = 1;
+    private int expandAllLevel = 0;
     private IModel<Boolean> autoExpand = new Model<Boolean>(false);
  
     private final class Row extends WebMarkupContainer {
@@ -98,7 +98,11 @@ public class StudyListHeader extends Panel {
 
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
-                headerExpandLevel = autoExpand.getObject() ? expandAllLevel : AbstractDicomModel.STUDY_LEVEL;
+                headerExpandLevel = autoExpand.getObject() ? 
+                        expandAllLevel : 
+                            (((AuthenticatedWebSession) getSession()).getFolderViewPort().getFilter().isPatientQuery() ? 
+                                    AbstractDicomModel.PATIENT_LEVEL : 
+                                        AbstractDicomModel.STUDY_LEVEL);
                 target.addComponent(StudyListHeader.this);
             }
         }
@@ -130,6 +134,11 @@ public class StudyListHeader extends Panel {
         add(new Row("file", 5));
     }
 
+    protected void onBeforeRender() {
+        super.onBeforeRender();
+        headerExpandLevel = expandAllLevel;
+    }
+    
     public void setExpandAllLevel(int expandAllLevel) {
         this.expandAllLevel = expandAllLevel;
         if (autoExpand.getObject())

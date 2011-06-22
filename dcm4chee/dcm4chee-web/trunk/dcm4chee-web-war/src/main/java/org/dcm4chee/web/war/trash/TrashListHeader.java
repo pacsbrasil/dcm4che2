@@ -13,6 +13,7 @@ import org.apache.wicket.model.Model;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
 public class TrashListHeader extends Panel {
@@ -20,7 +21,7 @@ public class TrashListHeader extends Panel {
     private static final long serialVersionUID = 1L;
     
     private int headerExpandLevel = 1;
-    private int expandAllLevel = 1;
+    private int expandAllLevel = 0;
     private Model<Boolean> autoExpand = new Model<Boolean>(false);
  
     private final class Row extends WebMarkupContainer {
@@ -91,7 +92,11 @@ public class TrashListHeader extends Panel {
 
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
-                headerExpandLevel = autoExpand.getObject() ? expandAllLevel : AbstractDicomModel.STUDY_LEVEL;
+                headerExpandLevel = autoExpand.getObject() ? 
+                        expandAllLevel : 
+                            (((AuthenticatedWebSession) getSession()).getTrashViewPort().getFilter().isPatientQuery() ? 
+                                    AbstractDicomModel.PATIENT_LEVEL : 
+                                        AbstractDicomModel.STUDY_LEVEL);
                 target.addComponent(TrashListHeader.this);
             }
         }
@@ -105,6 +110,10 @@ public class TrashListHeader extends Panel {
         add(new Row("instance", 3));
     }
 
+    protected void onBeforeRender() {
+        super.onBeforeRender();
+        headerExpandLevel = expandAllLevel;
+    }
 
     public void setExpandAllLevel(int expandAllLevel) {
         this.expandAllLevel = expandAllLevel;

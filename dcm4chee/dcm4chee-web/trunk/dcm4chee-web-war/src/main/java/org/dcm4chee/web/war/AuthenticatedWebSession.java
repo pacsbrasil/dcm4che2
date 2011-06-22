@@ -56,6 +56,7 @@ public class AuthenticatedWebSession extends SecureSession {
     protected static Logger log = LoggerFactory.getLogger(AuthenticatedWebSession.class);
 
     private org.dcm4chee.web.war.folder.ViewPort folderViewport = new org.dcm4chee.web.war.folder.ViewPort();
+    private org.dcm4chee.web.war.trash.ViewPort trashViewport = new org.dcm4chee.web.war.trash.ViewPort();
     private org.dcm4chee.web.war.worklist.modality.ViewPort mwViewport = new org.dcm4chee.web.war.worklist.modality.ViewPort();
     private StudyPermissionHelper studyPermissionHelper;
     
@@ -87,6 +88,10 @@ public class AuthenticatedWebSession extends SecureSession {
 
     public org.dcm4chee.web.war.folder.ViewPort getFolderViewPort() {
         return folderViewport;
+    }
+
+    public org.dcm4chee.web.war.trash.ViewPort getTrashViewPort() {
+        return trashViewport;
     }
 
     public org.dcm4chee.web.war.worklist.modality.ViewPort getMwViewPort() {
