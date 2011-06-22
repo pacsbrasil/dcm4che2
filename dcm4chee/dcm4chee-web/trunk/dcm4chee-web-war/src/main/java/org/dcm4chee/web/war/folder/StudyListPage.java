@@ -958,8 +958,8 @@ public class StudyListPage extends Panel {
     }
 
     private void queryStudies() {
-        List<String> dicomSecurityRoles = studyPermissionHelper.applyStudyPermissions() ? 
-                    studyPermissionHelper.getDicomRoles() : null;
+        List<String> dicomSecurityRoles = (studyPermissionHelper.applyStudyPermissions() ? 
+                    studyPermissionHelper.getDicomRoles() : null);
         viewport.setTotal(dao.count(viewport.getFilter(), dicomSecurityRoles));
         updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset(), dicomSecurityRoles));
         updateAutoExpandLevel();
@@ -1028,7 +1028,6 @@ public class StudyListPage extends Panel {
                 }
             }
         }
-System.out.println("Decided to set expand level to: " + level);
         header.setExpandAllLevel(level);
     }
 

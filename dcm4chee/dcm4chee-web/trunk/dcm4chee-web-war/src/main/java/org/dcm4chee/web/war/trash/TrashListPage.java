@@ -647,8 +647,8 @@ public class TrashListPage extends Panel {
     }
 
     private void queryStudies() {
-        List<String> dicomSecurityRoles = StudyPermissionHelper.get().applyStudyPermissions() ?
-                    StudyPermissionHelper.get().getDicomRoles() : null;
+        List<String> dicomSecurityRoles = (StudyPermissionHelper.get().applyStudyPermissions() ?
+                    StudyPermissionHelper.get().getDicomRoles() : null);
         viewport.setTotal(dao.count(viewport.getFilter(), dicomSecurityRoles));
         updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset(), dicomSecurityRoles));
         updateAutoExpandLevel();
@@ -660,7 +660,9 @@ public class TrashListPage extends Panel {
         for (PrivatePatient patient : patients) {
             PrivPatientModel patientModel = addPatient(patient);
             if (viewport.getFilter().isPatientQuery()) {
-                patientModel.setExpandable(dao.countStudiesOfPatient(patient.getPk(), StudyPermissionHelper.get().getDicomRoles()) > 0);
+                patientModel.setExpandable(dao.countStudiesOfPatient(patient.getPk(), 
+                        (StudyPermissionHelper.get().applyStudyPermissions() ?
+                                StudyPermissionHelper.get().getDicomRoles() : null)) > 0);
             } else {
                 StudyListLocal folderDao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
                 for (PrivateStudy study : patient.getStudies()) {               
