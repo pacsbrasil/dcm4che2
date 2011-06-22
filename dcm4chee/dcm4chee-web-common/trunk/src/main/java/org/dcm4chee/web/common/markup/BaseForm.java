@@ -39,7 +39,6 @@
 package org.dcm4chee.web.common.markup;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -69,7 +68,6 @@ import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.model.DicomElementModel;
 import org.dcm4chee.web.common.util.DateUtils;
 import org.dcm4chee.web.common.validators.UIDValidator;
-
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -202,7 +200,8 @@ public class BaseForm extends Form<Object> {
                 return enabledModel == null ? true : enabledModel.getObject();
             }
         };
-        dtf.add(new TooltipBehaviour(generateResourcePrefix(dtf), id, 
+        parent.add(dtf);
+        dtf.add(new TooltipBehaviour(generateResourcePrefix(dtf), id,
                 new AbstractReadOnlyModel<String>(){
                     private static final long serialVersionUID = 1L;
 
