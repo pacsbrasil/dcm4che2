@@ -65,6 +65,7 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
@@ -75,8 +76,10 @@ import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.report.display.DynamicDisplayPage;
 import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.SimpleDateTimeField;
+import org.dcm4chee.web.common.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,8 +161,9 @@ public class ConfigureReportPage extends SecureWebPage {
                 variableRows.add(parameterRow);                        
 
                 if (parameterName.toString().startsWith("date")) {
+                    SimpleDateTimeField dtf;
                     parameterRow
-                            .add(new SimpleDateTimeField("date-variable-value", new IModel<Date>() {
+                            .add(dtf = new SimpleDateTimeField("date-variable-value", new IModel<Date>() {
         
                                 private static final long serialVersionUID = 1L;
         
@@ -182,10 +186,23 @@ public class ConfigureReportPage extends SecureWebPage {
                                 @Override
                                 public void detach() {
                                 }
-                            })
-                    );
-                    parameterRow.add(new TextField<String>("variable-value").setVisible(false));
+                            }));
+                            dtf.addToDateField(
+                                    new TooltipBehaviour("dashboard.report.configure.", 
+                                        "date-variable-value",
+                                    new AbstractReadOnlyModel<String>(){
+                                        private static final long serialVersionUID = 1L;
                     
+                                        @Override
+                                        public String getObject() {
+                                            return DateUtils.getDatePattern(getParent());
+                                        }
+                                    }
+                            ));
+                            dtf.addToTimeField(
+                                    new TooltipBehaviour("dashboard.report.configure.", 
+                                        "date-variable-value.timeField"));
+                    parameterRow.add(new TextField<String>("variable-value").setVisible(false));
                 } else {
                     parameterRow
                             .add((new TextField<String>("variable-value", new Model<String>() {
