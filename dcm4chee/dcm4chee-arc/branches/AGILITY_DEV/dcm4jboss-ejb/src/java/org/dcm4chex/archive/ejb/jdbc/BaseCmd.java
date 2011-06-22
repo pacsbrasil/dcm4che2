@@ -41,6 +41,8 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -49,6 +51,7 @@ import java.sql.Statement;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.naming.NoInitialContextException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
@@ -107,8 +110,9 @@ public abstract class BaseCmd {
 		if (sql != null)
 	        log.debug("SQL: " + sql);
 
- 	   	 try {
-	         Context jndiCtx = new InitialContext();
+		try {
+ 	   		 Context jndiCtx = getJndiContext();
+ 	   		 
 	         try {
 	             ds = (DataSource) jndiCtx.lookup(dsJndiName);
 	         } finally {
@@ -125,6 +129,56 @@ public abstract class BaseCmd {
         open();
     }
 
+    private Context getJndiContext() throws NamingException {
+
+    	Context jndiCtx = null;
+    	try{
+    		jndiCtx = new InitialContext();
+    	} catch(NoInitialContextException e){
+    		Throwable rootCause = e.getRootCause();
+    		if(rootCause instanceof ClassNotFoundException){
+    			// it might be a JBoss 5 class loading issue. See https://issues.jboss.org/browse/JBPAPP-4395
+    			if (rootCause.getMessage().trim().equals(System.getProperty(Context.INITIAL_CONTEXT_FACTORY))){
+    				ClassLoader oldCCL = Thread.currentThread().getContextClassLoader();
+    				ClassLoader cl = getClass().getClassLoader();
+
+    				log.warn("ContextClassLoader: " + toString(oldCCL)+ " wasn't able to load " + 
+    						rootCause.getMessage() +
+    						", retrying with BaseCmd's class loader: " + toString(cl));
+    				
+    				Thread.currentThread().setContextClassLoader(cl);
+    				try {
+    					jndiCtx = new InitialContext();
+    				} finally {
+    					Thread.currentThread().setContextClassLoader(oldCCL);
+    				}
+    			}
+    		} else{
+    			throw e;
+    		}
+    	}
+    	return jndiCtx;
+    }
+    
+    private String toString(ClassLoader cl) {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append(cl.getClass().getName());
+    	if (cl instanceof URLClassLoader) {
+    		URLClassLoader ucl = (URLClassLoader)cl;
+    		URL[] urls = ucl.getURLs();
+    		sb.append(", URLs: ");
+    		if (urls != null) {
+    			for (URL url : urls) {
+    				sb.append(url);
+    				sb.append(", ");
+    			}
+    		} else {
+    			sb.append("NULL");
+    		}
+    	}
+    	return sb.toString();
+    }
+    
     public static String transactionIsolationLevelAsString(int level) {
         switch (level) {
         case 0:
