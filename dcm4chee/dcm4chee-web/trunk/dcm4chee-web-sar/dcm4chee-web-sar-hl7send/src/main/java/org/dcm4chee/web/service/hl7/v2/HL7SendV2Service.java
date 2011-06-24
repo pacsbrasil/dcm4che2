@@ -122,6 +122,7 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
     private ObjectName contentEditServiceName;
 
     private String[] receiver;
+    private String bindAddress;
     private String sendingApplication, sendingFacility;
     private Map<String,String> xslFilenames;
     
@@ -213,6 +214,14 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
 
     public void setSendingFacility(String facility) {
         this.sendingFacility = facility;
+    }
+
+    public String getBindAddress() {
+        return bindAddress == null ? NONE : bindAddress;
+    }
+
+    public void setBindAddress(String addr) {
+        this.bindAddress = NONE.equals(addr) ? null : addr;
     }
 
     public String getLinkMsgType() {
@@ -533,7 +542,7 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         String[] ciphers = (l==null || l.size()<1) ? null : l.toArray(new String[l.size()]);
         Socket s = (Socket) server.invoke(
                 tlscfgServiceName, "initSocket",
-                new Object[] { ae.getHostName(), ae.getPort(), ciphers, null, 0 },
+                new Object[] { ae.getHostName(), ae.getPort(), ciphers, bindAddress, 0 },
                 new String[] { String.class.getName(), int.class.getName(), 
                         String[].class.getName(), String.class.getName(), int.class.getName()});
         try {
@@ -604,7 +613,7 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         String[] ciphers = (l==null || l.size()<1) ? null : l.toArray(new String[l.size()]);
         Socket s = (Socket) server.invoke(
                 tlscfgServiceName, "initSocket",
-                new Object[] { ae.getHostName(), ae.getPort(), ciphers, null, 0 },
+                new Object[] { ae.getHostName(), ae.getPort(), ciphers, bindAddress, 0 },
                 new String[] { String.class.getName(), int.class.getName(), 
                         String[].class.getName(), String.class.getName(), int.class.getName()});
         try {

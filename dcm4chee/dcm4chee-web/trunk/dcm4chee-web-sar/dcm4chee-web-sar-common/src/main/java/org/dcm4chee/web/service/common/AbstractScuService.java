@@ -71,6 +71,8 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
     protected NetworkConnection localConn;
     protected NetworkApplicationEntity localNAE;
     
+    private boolean bindToCallingAET;
+    
     protected int priority;
 
     private AEHomeLocal aeHome;
@@ -101,6 +103,14 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
         localNAE.setAssociationInitiator(true);
         device.setNetworkApplicationEntity(localNAE);
         device.setNetworkConnection(localConn);
+    }
+
+    public boolean isBindToCallingAET() {
+        return bindToCallingAET;
+    }
+
+    public void setBindToCallingAET(boolean bindToCallingAET) {
+        this.bindToCallingAET = bindToCallingAET;
     }
 
     public int getMaxPDULengthReceive() {
@@ -250,9 +260,16 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
                 throw new IOException("Failed to initialize TLS aet:"+ae.getTitle());
             }
         } else {
-            NetworkConnection localConn = device.getNetworkConnection()[0];
             remoteConn.setTlsCipherSuite(new String[0]);
             localConn.setTlsCipherSuite(new String[0]);
+        }
+        if (bindToCallingAET) {
+            try {
+                AE callingAE = this.lookupAEHome().findByTitle(localNAE.getAETitle());
+                localConn.setHostname(callingAE.getHostName());
+            } catch (Exception x) {
+                log.warn("Socket can not be bound to IP of calling AET!", x);
+            }
         }
         try {
             return localNAE.connect(remoteAE, executor, true);

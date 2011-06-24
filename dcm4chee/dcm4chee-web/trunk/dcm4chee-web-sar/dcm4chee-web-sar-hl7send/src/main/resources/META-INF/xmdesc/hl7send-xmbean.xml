@@ -55,6 +55,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getBindAddress"
+      setMethod="setBindAddress">
+      <description>Hostname/IP to specify local network interface for connection. NONE: use a valid local address.
+      </description>
+      <name>BindAddress</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getLinkMsgType"
       setMethod="setLinkMsgType">
       <description><![CDATA[Message type for linking MPPS to MWL.<br />

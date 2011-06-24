@@ -54,6 +54,18 @@
       </descriptors>
    </attribute>
 
+   <attribute access="read-write"
+      getMethod="isBindToCallingAET"
+      setMethod="setBindToCallingAET">
+      <description>Bind socket to address of CallingAET.
+      </description>
+      <name>BindToCallingAET</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+
    <attribute access="read-write" getMethod="getPriority" setMethod="setPriority">
       <description>Priority used in C-MOVE requests.
       Enumerated Values: LOW, MEDIUM, HIGH.

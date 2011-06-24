@@ -31,6 +31,18 @@
    </attribute>
  
    <attribute access="read-write"
+      getMethod="isBindToCallingAET"
+      setMethod="setBindToCallingAET">
+      <description>Bind socket to address of CallingAET.
+      </description>
+      <name>BindToCallingAET</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
      getMethod="getConnectTimeout"
      setMethod="setConnectTimeout">
       <description>Connection timeout in ms. 0 = no timeout</description>
