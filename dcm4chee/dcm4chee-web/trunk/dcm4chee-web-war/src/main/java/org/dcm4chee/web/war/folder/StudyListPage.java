@@ -1038,7 +1038,7 @@ public class StudyListPage extends Panel {
                 return patientModel;
             }
         }
-        PatientModel patientModel = new PatientModel(patient, latestStudyFirst, patient.getCreatedTime());
+        PatientModel patientModel = new PatientModel(patient, latestStudyFirst);
         viewport.getPatients().add(patientModel);
         return patientModel;
     }

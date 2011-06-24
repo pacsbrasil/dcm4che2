@@ -69,11 +69,11 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
 
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
 
-    public PatientModel(Patient patient, IModel<Boolean> latestStudyFirst, Date createdTime) {
+    public PatientModel(Patient patient, IModel<Boolean> latestStudyFirst) {
         setPk(patient.getPk());
         this.dataset = patient.getAttributes();
         this.latestStudyFirst = latestStudyFirst;
-        this.createdTime = createdTime;
+        this.createdTime = patient.getCreatedTime();
         expandable = null;
     }
 

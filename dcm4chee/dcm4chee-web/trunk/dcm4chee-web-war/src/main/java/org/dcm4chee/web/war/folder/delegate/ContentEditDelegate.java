@@ -39,6 +39,7 @@
 package org.dcm4chee.web.war.folder.delegate;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -46,12 +47,14 @@ import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
+import org.apache.wicket.model.Model;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.common.Availability;
+import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
@@ -259,15 +262,15 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         new String[]{long[].class.getName(), long.class.getName()});
     }
     
-    public MppsToMwlLinkResult linkMppsToMwl(Collection<PPSModel> ppsModels, MWLItemModel mwl) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
-        if (mwl.getPk() != -1) {
+    public MppsToMwlLinkResult linkMppsToMwl(Collection<PPSModel> ppsModels, MWLItemModel mwl, Patient pat) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+        if (pat == null) {
             return (MppsToMwlLinkResult) server.invoke(serviceObjectName, "linkMppsToMwl", 
                 new Object[]{toPks(ppsModels), mwl.getPk(), null, null}, 
                 new String[]{long[].class.getName(), long.class.getName(), String.class.getName(), String.class.getName()});
         } else {
             return (MppsToMwlLinkResult) server.invoke(serviceObjectName, "linkMppsToMwl", 
-                    new Object[]{toPks(ppsModels), mwl.getDataset(), mwl.getPatientAttributes(), null, null}, 
-                    new String[]{long[].class.getName(), DicomObject.class.getName(), DicomObject.class.getName(),
+                    new Object[]{toPks(ppsModels), mwl.getDataset(), pat, null, null}, 
+                    new String[]{long[].class.getName(), DicomObject.class.getName(), Patient.class.getName(),
                                 String.class.getName(), String.class.getName()});
         }
     }
@@ -302,6 +305,13 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
                 DicomObject.class.getName(), String.class.getName()});
     }
     
+    @SuppressWarnings("unchecked")
+    public List<Patient> selectPatient(DicomObject patAttrs) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+        return (List<Patient>) server.invoke(serviceObjectName, "selectPatient", 
+                new Object[]{patAttrs}, 
+                new String[]{DicomObject.class.getName()});
+    }
+
     private AbstractDicomModel getModelOfLevel(AbstractDicomModel m, int level) {
         if (m.levelOfModel() < level) 
             return null;

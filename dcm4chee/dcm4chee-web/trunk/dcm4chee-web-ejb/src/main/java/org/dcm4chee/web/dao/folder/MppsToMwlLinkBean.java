@@ -106,13 +106,12 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
     }
 
     @SuppressWarnings("unchecked")
-    public MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, DicomObject mwlAttrs, DicomObject patAttrs, String modifyingSystem, String reason) {
+    public MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, DicomObject mwlAttrs, Patient mwlPat, String modifyingSystem, String reason) {
         Query qMpps = QueryUtil.getQueryForPks(em,"select object(m) from MPPS m where pk ", mppsPks);
         List<MPPS> mppss = (List<MPPS>) qMpps.getResultList();
         MppsToMwlLinkResult result = new MppsToMwlLinkResult();
         MWLItem mwl = new MWLItem();
         mwl.setAttributes(mwlAttrs);
-        Patient mwlPat = updateOrCreatePatient(patAttrs);
         mwl.setPatient(mwlPat);
         result.setMwl(mwl);
         Patient mppsPat;
@@ -454,9 +453,9 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
     }
 
     @SuppressWarnings("unchecked")
-    private Patient updateOrCreatePatient(DicomObject mwlAttrs) {
-        String patID = mwlAttrs.getString(Tag.PatientID);
-        String issuer = mwlAttrs.getString(Tag.IssuerOfPatientID);
+    public List<Patient> selectOrCreatePatient(DicomObject patAttrs) {
+        String patID = patAttrs.getString(Tag.PatientID);
+        String issuer = patAttrs.getString(Tag.IssuerOfPatientID);
         Query qPat;
         if (issuer == null) {
             qPat = em.createQuery("select object(p) from Patient p where patientID = :patID");
@@ -467,18 +466,15 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         }
         List<Patient> pats = (List<Patient>) qPat.getResultList();
         Patient pat;
-        if (pats.size() > 1) {
-            throw new RuntimeException("Patient identifier not unique! patID:"+patID+" Issuer:"+issuer);
-        } else if (pats.size() == 0) {
+        if (pats.size() == 0) {
             log.info("create new Patient for linking MPPS to external worklist entry! patID:"+patID);
             pat = new Patient();
-            pat.setAttributes(mwlAttrs);
+            pat.setAttributes(patAttrs);
             em.persist(pat);
             log.debug("Patient created:{}",pat.getAttributes());
-        } else {
-            pat = pats.get(0);
+            pats.add(pat);
         }
-        log.info("return pat:"+pat);
-        return pat;
+        log.info("return pat:"+pats);
+        return pats;
     }
 }

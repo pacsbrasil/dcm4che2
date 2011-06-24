@@ -506,8 +506,8 @@ public class ContentEditService extends ServiceMBeanSupport {
         doAfterLinkMppsToMwl(result);
         return result;
     }
-    public MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, DicomObject mwlAttrs, DicomObject patAttrs, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsPks, mwlAttrs, patAttrs,
+    public MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, DicomObject mwlAttrs, Patient pat, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsPks, mwlAttrs, pat,
                 emptyAsDefault(system, modifyingSystem), emptyAsDefault(reason, modifyReason));
         doAfterLinkMppsToMwl(result);
         return result;
@@ -518,6 +518,11 @@ public class ContentEditService extends ServiceMBeanSupport {
                 emptyAsDefault(system, modifyingSystem), emptyAsDefault(reason, modifyReason));
         doAfterLinkMppsToMwl(result);
     }
+    
+    public List<Patient> selectPatient(DicomObject patAttrs) {
+        return lookupMppsToMwlLinkLocal().selectOrCreatePatient(patAttrs);
+    }
+
     
     private String emptyAsDefault(String value, String def) {
         return value == null || value.trim().length() < 1 ? def : value;

@@ -37,16 +37,22 @@
 
 package org.dcm4chee.web.war.folder;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.ReflectionException;
+
 import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -54,18 +60,31 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.Radio;
+import org.apache.wicket.markup.html.form.RadioGroup;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.list.PropertyListView;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
+import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
@@ -94,7 +113,8 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     private static final long ONE_DAY_IN_MILLIS = 60000*60*24;
     private static final ResourceReference CSS = new CompressedResourceReference(Mpps2MwlLinkPage.class, "mpps-link-style.css");
     
-    private Mpps2MwlLinkPanelM panel = new Mpps2MwlLinkPanelM("content");
+    private Mpps2MwlLinkPanelM linkPanel = new Mpps2MwlLinkPanelM("panel");
+    private ContentPanel panel = new ContentPanel();
     private List<PPSModel> ppsModels;
     private PPSModel ppsModelForInfo;
     private PatientModel ppsPatModelForInfo;
@@ -109,22 +129,22 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         
         if (Mpps2MwlLinkPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(Mpps2MwlLinkPage.CSS));
-        
         setContent(panel);
     }
 
     public Button getSearchButton() {
-        return panel.getSearchButton();
+        return linkPanel.getSearchButton();
     }
     public void show(AjaxRequestTarget target, PPSModel ppsModel, Component c) {
         ppsModels  = toList(ppsModel);
         ppsModelForInfo = ppsModels.get(0);
         ppsPatModelForInfo = ppsModelForInfo.getStudy().getPatient();
-        panel.getViewPort().clear();
-        panel.presetSearchfields();
+        panel.replace(linkPanel);
+        linkPanel.getViewPort().clear();
+        linkPanel.presetSearchfields();
         comp = c;
         if (WebCfgDelegate.getInstance().isMpps2mwlAutoQuery() ) {
-            target.appendJavascript("hideMask();document.getElementById('" + panel.getSearchButton().getMarkupId() +
+            target.appendJavascript("hideMask();document.getElementById('" + linkPanel.getSearchButton().getMarkupId() +
                 "').click();");
         }
         super.show(target);
@@ -151,12 +171,52 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         return l;
     }
 
+    private void doLink(final MWLItemModel mwlItemModel, Patient pat) throws InstanceNotFoundException, MBeanException,
+            ReflectionException, IOException {
+        MppsToMwlLinkResult result = ContentEditDelegate.getInstance().linkMppsToMwl(ppsModels, mwlItemModel, pat);
+        org.dcm4chee.web.war.folder.ViewPort viewport = ((AuthenticatedWebSession) getSession()).getFolderViewPort();
+        int nrOfStudies = result.getStudiesToMove().size();
+        boolean hideLinkedPps = ((AuthenticatedWebSession) getSession()).getFolderViewPort().getFilter().isPpsWithoutMwl();
+        if (nrOfStudies == 0) {
+            if (hideLinkedPps) {
+                hideLinkedPpsInFolder(viewport);
+            } else {
+                for (PPSModel mpps : ppsModels) {
+                    mpps.getStudy().refresh().expand();
+                }
+            }
+        } else {
+            hideLinkedPpsInFolder(viewport);
+            if (!hideLinkedPps) {
+                List<PatientModel> pats = viewport.getPatients();
+                PatientModel patModel = new PatientModel(result.getMwl().getPatient(), new Model<Boolean>(false));
+                int pos = pats.indexOf(patModel);
+                if (pos == -1) {
+                    pats.add(patModel);
+                } else {
+                    patModel = pats.get(pos);
+                }
+                StudyModel sm;
+                List<StudyModel> studies = patModel.getStudies();
+                for (Study s : result.getStudiesToMove()) {
+                    sm = new StudyModel(s, patModel, s.getCreatedTime(), 
+                            dao.findStudyPermissionActions(s.getStudyInstanceUID(), 
+                                    StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
+                                            null : StudyPermissionHelper.get().getDicomRoles()));
+                    sm.refresh().expand();
+                    studies.add(sm);
+                }
+            }
+        }
+    }
+
     public class Mpps2MwlLinkPanelM extends ModalityWorklistPanel {
 
         private static final long serialVersionUID = 1L;
 
         public Mpps2MwlLinkPanelM(final String id) {
             super(id);
+            this.setOutputMarkupId(true);
             addMppsInfoPanel();
         }
         
@@ -183,47 +243,34 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                 public void onClick(AjaxRequestTarget target) {
                     log.info("Link MPPS to MWL!:"+mwlItemModel);
                     try {
-                        MppsToMwlLinkResult result = ContentEditDelegate.getInstance().linkMppsToMwl(ppsModels, mwlItemModel);
-                        org.dcm4chee.web.war.folder.ViewPort viewport = ((AuthenticatedWebSession) getSession()).getFolderViewPort();
-                        int nrOfStudies = result.getStudiesToMove().size();
-                        boolean hideLinkedPps = ((AuthenticatedWebSession) getSession()).getFolderViewPort().getFilter().isPpsWithoutMwl();
-                        if (nrOfStudies == 0) {
-                            if (hideLinkedPps) {
-                                hideLinkedPpsInFolder(viewport);
-                            } else {
-                                for (PPSModel mpps : ppsModels) {
-                                    mpps.getStudy().refresh().expand();
-                                }
-                            }
-                        } else {
-                            hideLinkedPpsInFolder(viewport);
-                            if (!hideLinkedPps) {
-                                List<PatientModel> pats = viewport.getPatients();
-                                PatientModel patModel = new PatientModel(result.getMwl().getPatient(), new Model<Boolean>(false), result.getMwl().getPatient().getCreatedTime());
-                                int pos = pats.indexOf(patModel);
-                                if (pos == -1) {
-                                    pats.add(patModel);
-                                } else {
-                                    patModel = pats.get(pos);
-                                }
-                                StudyModel sm;
-                                List<StudyModel> studies = patModel.getStudies();
-                                for (Study s : result.getStudiesToMove()) {
-                                    sm = new StudyModel(s, patModel, s.getCreatedTime(), 
-                                            dao.findStudyPermissionActions(s.getStudyInstanceUID(), 
-                                                    StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
-                                                            null : StudyPermissionHelper.get().getDicomRoles()));
-                                    sm.refresh().expand();
-                                    studies.add(sm);
-                                }
+                        if (mwlItemModel.getPk() == -1) {
+                            final List<Patient> pats = ContentEditDelegate.getInstance().selectPatient(mwlItemModel.getPatientAttributes());
+                            if (pats.size() > 1) {
+                                IModel<List<Patient>> pm = new AbstractReadOnlyModel<List<Patient>>(){
+                                    private static final long serialVersionUID = 1L;
+
+                                    @Override
+                                    public List<Patient> getObject() {
+                                        return pats;
+                                    }
+                                    
+                                };
+                                Panel p = new SelectPatientWindowPanel("panel", pm, mwlItemModel);
+                                panel.replace(p);
+                                target.addComponent(p);
+                                return;
                             }
                         }
+                        doLink(mwlItemModel, null);
                         target.addComponent(comp);
                         close(target);
                     } catch (Exception e) {
                         log.error("MPPS to MWL link failed!", e);
+                        close(target);
+                        target.appendJavascript("alert('"+this.getString("link.message.linkFailed")+"');");
                     }
                 }
+                
             }.add(new Image("linkImg",ImageManager.IMAGE_COMMON_LINK)
             .add(new ImageSizeBehaviour())
             .add(new TooltipBehaviour("mpps2mwl.", "link"))));
@@ -248,7 +295,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
             p.add(new Label("studyDescription"));
             add(p);
         }
-        
+
         @SuppressWarnings("unchecked")
         private void presetSearchfields() {
             PPSModel ppsModel = ppsModels.get(0);
@@ -342,6 +389,76 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         }
         public String getStudyId() {
             return ppsModelForInfo.getStudy().getId();
+        }
+    }
+    private class ContentPanel extends Panel {
+        private static final long serialVersionUID = 1L;
+    
+        private ContentPanel() {
+            super(getContentId());
+            add(linkPanel);
+        }
+    }
+    
+    private class SelectPatientWindowPanel extends Panel {
+        private static final long serialVersionUID = 1L;
+
+        public SelectPatientWindowPanel(String id, final IModel<List<Patient>> pm, final MWLItemModel mwlItemModel) {
+            super(id);
+            this.setOutputMarkupId(true);
+            BaseForm f = new BaseForm("form");
+            add(f);
+            f.addLabel("linkPatSelectInfo");
+            final RadioGroup<Integer> group = new RadioGroup<Integer>("group", new Model<Integer>(0));
+            f.add(group);
+            final PropertyListView<Patient> patList = new PropertyListView<Patient>("list", pm) {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void populateItem(ListItem<Patient> item) {
+                    final Patient pat = item.getModelObject();
+                    TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.patient.");
+                    WebMarkupContainer row = new WebMarkupContainer("row");
+                    item.add(row);
+                    row.add(new Radio<Integer>("radio", new Model<Integer>(item.getIndex())));
+                    row.add(new Label("patientName").add(tooltip));        
+                    row.add(new Label("id", new AbstractReadOnlyModel<String>(){
+
+                        private static final long serialVersionUID = 1L;
+
+                        @Override
+                        public String getObject() {
+                            return pat.getIssuerOfPatientID() == null ? pat.getPatientID() :
+                                pat.getPatientID()+" / "+pat.getIssuerOfPatientID();
+                        }
+                    })
+                    .add(tooltip));
+                    DateTimeLabel dtl = new DateTimeLabel("birthdate", 
+                            new Model<Date>(pat.getAttributes().getDate(Tag.PatientBirthDate)))
+                    .setWithoutTime(true);
+                    dtl.add(tooltip.newWithSubstitution(new PropertyModel<String>(dtl, "textFormat")));
+                    row.add(dtl);
+                    row.add(new Label("patientSex").add(tooltip));
+                    
+                }
+                
+            };
+            group.add(patList);
+            f.add(new AjaxButton("okBtn") {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                    try {
+                        doLink(mwlItemModel, patList.getModelObject().get(group.getModelObject()));
+                        close(target);
+                    } catch (Exception e) {
+                        log.error("MPPS to MWL link failed!", e);
+                        close(target);
+                        target.appendJavascript("alert('"+this.getString("link.message.linkFailed")+"');");
+                    }
+                }
+            });
         }
     }
 }
