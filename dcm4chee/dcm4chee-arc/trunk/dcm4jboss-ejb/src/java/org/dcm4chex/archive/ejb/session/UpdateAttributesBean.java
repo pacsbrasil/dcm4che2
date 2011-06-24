@@ -109,10 +109,10 @@ public abstract class UpdateAttributesBean implements SessionBean {
      */
     public Collection seriesIuidsForAttributesUpdate(int availability,
             String modality, String srcAET, Timestamp updatedAfter,
-            Timestamp updatedBefore, int limit) {
+            Timestamp updatedBefore, int offset, int limit) {
         try {
             return seriesHome.seriesIuidsForAttributesUpdate(availability,
-                    modality, srcAET, updatedAfter, updatedBefore, limit);
+                    modality, srcAET, updatedAfter, updatedBefore, offset, limit);
         } catch (FinderException e) {
             throw new EJBException(e);
         }

@@ -131,14 +131,14 @@ import org.dcm4chex.archive.util.Convert;
  *              query="SELECT MAX(i.availability) FROM Instance i WHERE i.series.pk = ?1"
  * @jboss.query signature="java.sql.Timestamp ejbSelectMaxUpdatedTimeOfSeriesRelatedInstances(java.lang.Long pk)"
  *              query="SELECT MAX(i.updatedTime) FROM Instance i WHERE i.series.pk = ?1"
- * @jboss.query signature="java.util.Collection ejbSelectSeriesIuidsByModalityAndSrcAETAndUpdatedTime(int availability, java.lang.String modality, java.lang.String srcAET, java.sql.Timestamp updatedAfter, java.sql.Timestamp updatedBefore, int limit)"
- *              query="SELECT s.seriesIuid FROM Series AS s WHERE s.availability = ?1 AND s.modality = ?2 AND s.sourceAET = ?3 AND s.updatedTime BETWEEN ?4 AND ?5 ORDER BY s.pk DESC LIMIT ?6"
- * @jboss.query signature="java.util.Collection ejbSelectSeriesIuidsByModalityAndUpdatedTime(int availability, java.lang.String modality, java.sql.Timestamp updatedAfter, java.sql.Timestamp updatedBefore, int limit)"
- *              query="SELECT s.seriesIuid FROM Series AS s WHERE s.availability = ?1 AND s.modality = ?2 AND s.updatedTime BETWEEN ?3 AND ?4 ORDER BY s.pk DESC LIMIT ?5"
- * @jboss.query signature="java.util.Collection ejbSelectSeriesIuidsBySrcAETAndUpdatedTime(int availability, java.lang.String srcAET, java.sql.Timestamp updatedAfter, java.sql.Timestamp updatedBefore, int limit)"
- *              query="SELECT s.seriesIuid FROM Series AS s WHERE s.availability = ?1 AND s.sourceAET = ?2 AND s.updatedTime BETWEEN ?3 AND ?4 ORDER BY s.pk DESC LIMIT ?5"
- * @jboss.query signature="java.util.Collection ejbSelectSeriesIuidsByUpdatedTime(int availability, java.sql.Timestamp updatedAfter, java.sql.Timestamp updatedBefore, int limit)"
- *              query="SELECT s.seriesIuid FROM Series AS s WHERE s.availability = ?1 AND s.updatedTime BETWEEN ?2 AND ?3 ORDER BY s.pk DESC LIMIT ?4"
+ * @jboss.query signature="java.util.Collection ejbSelectSeriesIuidsByModalityAndSrcAETAndUpdatedTime(int availability, java.lang.String modality, java.lang.String srcAET, java.sql.Timestamp updatedAfter, java.sql.Timestamp updatedBefore, int offset, int limit)"
+ *              query="SELECT s.seriesIuid FROM Series AS s WHERE s.availability = ?1 AND s.modality = ?2 AND s.sourceAET = ?3 AND s.updatedTime BETWEEN ?4 AND ?5 ORDER BY s.pk DESC OFFSET ?6 LIMIT ?7"
+ * @jboss.query signature="java.util.Collection ejbSelectSeriesIuidsByModalityAndUpdatedTime(int availability, java.lang.String modality, java.sql.Timestamp updatedAfter, java.sql.Timestamp updatedBefore, int offset, int limit)"
+ *              query="SELECT s.seriesIuid FROM Series AS s WHERE s.availability = ?1 AND s.modality = ?2 AND s.updatedTime BETWEEN ?3 AND ?4 ORDER BY s.pk DESC OFFSET ?5 LIMIT ?6"
+ * @jboss.query signature="java.util.Collection ejbSelectSeriesIuidsBySrcAETAndUpdatedTime(int availability, java.lang.String srcAET, java.sql.Timestamp updatedAfter, java.sql.Timestamp updatedBefore, int offset, int limit)"
+ *              query="SELECT s.seriesIuid FROM Series AS s WHERE s.availability = ?1 AND s.sourceAET = ?2 AND s.updatedTime BETWEEN ?3 AND ?4 ORDER BY s.pk DESC OFFSET ?5 LIMIT ?6"
+ * @jboss.query signature="java.util.Collection ejbSelectSeriesIuidsByUpdatedTime(int availability, java.sql.Timestamp updatedAfter, java.sql.Timestamp updatedBefore, int offset, int limit)"
+ *              query="SELECT s.seriesIuid FROM Series AS s WHERE s.availability = ?1 AND s.updatedTime BETWEEN ?2 AND ?3 ORDER BY s.pk DESC OFFSET ?4 LIMIT ?5"
  * @jboss.query signature="int ejbSelectCountSeriesByModalityAndSrcAETAndUpdatedTime(int availability, java.lang.String modality, java.lang.String srcAET, java.sql.Timestamp updatedAfter, java.sql.Timestamp updatedBefore)"
  *              query="SELECT COUNT(s) FROM Series AS s WHERE s.availability = ?1 AND s.modality = ?2 AND s.sourceAET = ?3 AND s.updatedTime BETWEEN ?4 AND ?5"
  * @jboss.query signature="int ejbSelectCountSeriesByModalityAndUpdatedTime(int availability, java.lang.String modality, java.sql.Timestamp updatedAfter, java.sql.Timestamp updatedBefore)"
@@ -652,7 +652,7 @@ public abstract class SeriesBean implements EntityBean {
      */
     public abstract Collection ejbSelectSeriesIuidsByModalityAndSrcAETAndUpdatedTime(
             int availability, String modality, String srcAET,
-            Timestamp updatedAfter, Timestamp updatedBefore, int limit)
+            Timestamp updatedAfter, Timestamp updatedBefore, int offset, int limit)
             throws FinderException;
 
     /**
@@ -660,21 +660,21 @@ public abstract class SeriesBean implements EntityBean {
      */
     public abstract Collection ejbSelectSeriesIuidsByModalityAndUpdatedTime(
             int availability, String modality, Timestamp updatedAfter,
-            Timestamp updatedBefore, int limit) throws FinderException;
+            Timestamp updatedBefore, int offset, int limit) throws FinderException;
 
     /**
      * @ejb.select query=""
      */
     public abstract Collection ejbSelectSeriesIuidsBySrcAETAndUpdatedTime(
             int availability, String srcAET, Timestamp updatedAfter,
-            Timestamp updatedBefore, int limit) throws FinderException;
+            Timestamp updatedBefore, int offset, int limit) throws FinderException;
 
     /**
      * @ejb.select query=""
      */
     public abstract Collection ejbSelectSeriesIuidsByUpdatedTime(
             int availability, Timestamp updatedAfter, Timestamp updatedBefore,
-            int limit) throws FinderException;
+            int offset, int limit) throws FinderException;
 
     /**
      * @ejb.select query=""
@@ -709,22 +709,22 @@ public abstract class SeriesBean implements EntityBean {
      */
     public Collection ejbHomeSeriesIuidsForAttributesUpdate(int availability,
             String modality, String srcAET, Timestamp updatedAfter,
-            Timestamp updatedBefore, int limit)
+            Timestamp updatedBefore, int offset, int limit)
             throws FinderException {
         return (modality == null || modality.length() == 0)
                 ? ((srcAET == null || srcAET.length() == 0)
                         ? ejbSelectSeriesIuidsByUpdatedTime(availability,
-                                updatedAfter, updatedBefore, limit)
+                                updatedAfter, updatedBefore, offset, limit)
                         : ejbSelectSeriesIuidsBySrcAETAndUpdatedTime(
                                 availability, srcAET, updatedAfter,
-                                updatedBefore, limit))
+                                updatedBefore, offset, limit))
                 : ((srcAET == null || srcAET.length() == 0)
                         ? ejbSelectSeriesIuidsByModalityAndUpdatedTime(
                                 availability, modality, updatedAfter,
-                                updatedBefore, limit)
+                                updatedBefore, offset, limit)
                         : ejbSelectSeriesIuidsByModalityAndSrcAETAndUpdatedTime(
                                 availability, modality, srcAET, updatedAfter,
-                                updatedBefore, limit));
+                                updatedBefore, offset, limit));
     }
 
     /**

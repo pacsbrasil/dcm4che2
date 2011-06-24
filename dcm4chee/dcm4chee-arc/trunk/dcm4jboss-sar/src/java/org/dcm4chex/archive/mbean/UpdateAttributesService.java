@@ -183,13 +183,22 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
     public int updateMatchingSeries() throws Exception {
         reloadAttributeFilter();
         UpdateAttributes updateAttributes = updateAttributes();
-        Collection seriesIuids = updateAttributes.seriesIuidsForAttributesUpdate(
-                availability, modality, sourceAETitle, updatedAfter,
-                updatedBefore(), maximalNumberOfSeriesToUpdateByOneTask);
-        for (Iterator iterator = seriesIuids.iterator(); iterator.hasNext();) {
-            updateSeries((String) iterator.next(), updateAttributes);
+        int remain = maximalNumberOfSeriesToUpdateByOneTask;
+        int offset = 0;
+        while (remain > 0) {
+            Collection seriesIuids = updateAttributes.seriesIuidsForAttributesUpdate(
+                    availability, modality, sourceAETitle, updatedAfter,
+                    updatedBefore(), offset, remain);
+            if (seriesIuids.size() == 0)
+                break;
+            for (Iterator iterator = seriesIuids.iterator(); iterator.hasNext();) {
+                if (updateSeries((String) iterator.next(), updateAttributes) > 0) {
+                    remain--;
+                }
+            }
+            offset += maximalNumberOfSeriesToUpdateByOneTask;
         }
-        return seriesIuids.size();
+        return maximalNumberOfSeriesToUpdateByOneTask - remain;
     }
 
     public int updateSeries(String seriesIuid) throws Exception {
@@ -208,6 +217,9 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
         Dataset series = null;
         for (int i = 0; i < fileInfos.length; i++) {
             Dataset inst = loadDataset(fileInfos[i]);
+            correctUID(inst, Tags.SOPInstanceUID, fileInfos[i][0].sopIUID);
+            correctUID(inst, Tags.SeriesInstanceUID, fileInfos[i][0].seriesIUID);
+            correctUID(inst, Tags.StudyInstanceUID, fileInfos[i][0].studyIUID);
             if (inst != null) {
                 try {
                     updateAttributes.updateInstanceAttributes(inst);
@@ -224,6 +236,7 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
                 updateAttributes.updatePatientStudySeriesAttributes(series);
             } catch (Exception e) {
                 log.error("Failed to update series[uid= " + seriesIuid + "]");
+                return 0;
             }
             log.info("Updated " + count + " of " + fileInfos.length
                     + " instances from series[uid= " + seriesIuid + "]");
@@ -233,6 +246,14 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
             }
         }
         return count;
+    }
+    
+    private void correctUID(Dataset ds, int tag, String uid) {
+        String oldUid = ds.getString(tag);
+        if (!oldUid.equals(uid)) {Tags.toString(tag);
+            log.info("Received UID ("+Tags.toString(tag)+"="+oldUid+") has been changed ("+uid+")! corrected!");
+            ds.putUI(tag, uid);
+        }
     }
 
     private Dataset loadDataset(FileInfo[] fileInfos) {
