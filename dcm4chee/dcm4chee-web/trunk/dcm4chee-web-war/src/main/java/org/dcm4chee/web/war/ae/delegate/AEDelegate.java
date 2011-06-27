@@ -189,35 +189,33 @@ public class AEDelegate extends BaseMBeanDelegate {
     private void updateSchedule(String aet) {
         log.debug("Setting schedule for " + aet + ".");
         try {
-            boolean newSchedule = true;
-            StringBuffer scheduleBuffer = new StringBuffer();
-            String[] schedule = ((String) server.getAttribute(mppsEmulatorServiceObjectName, "ModalityAETitles"))
-                .split(newline);
-            for (String entry : schedule) {
-                if (entry.startsWith(aet)) {
-                    appendSchedule(aet, scheduleBuffer);
-                    newSchedule = false;
+            String delay = mppsEmulatedAETs.get(aet);
+            String aetStr = this.mppsEmulatedAETs.containsKey(aet) ? delay == null ? aet : aet+":"+delay : null;
+            String schedule = (String) server.getAttribute(mppsEmulatorServiceObjectName, "ModalityAETitles");
+            String line;
+            int pos, offs=0, aetLen;
+            StringBuilder scheduleBuffer = new StringBuilder();
+            while ((pos = schedule.indexOf(newline, offs)) != -1) {
+                line = schedule.substring(offs, pos);
+                offs = pos + newline.length();
+                aetLen = line.indexOf(':');
+                if (aetLen == -1)
+                    aetLen = line.length();
+                if (aet.length() == aetLen && aet.equals(line.substring(0, aetLen))) {
+                    if (aetStr != null)
+                        scheduleBuffer.append(aetStr).append(newline);
+                    scheduleBuffer.append(schedule.substring(offs));
+                    aetStr = null;
+                    break;
                 } else {
-                    scheduleBuffer.append(entry).append(newline);
+                    scheduleBuffer.append(line).append(newline);
                 }
             }
-            if (newSchedule)
-                appendSchedule(aet, scheduleBuffer);
+            if (aetStr != null)
+                scheduleBuffer.append(aetStr).append(newline);
             server.setAttribute(mppsEmulatorServiceObjectName, new Attribute("ModalityAETitles", scheduleBuffer.toString()));
         } catch (Exception e) {
-            log.error("Getting schedule for " + aet + " failed!", e);
+            log.error("Update schedule for " + aet + " failed!", e);
         }       
-    }
-
-    private boolean appendSchedule(String aet, StringBuffer scheduleBuffer) {
-        if (this.mppsEmulatedAETs.containsKey(aet)) {
-            scheduleBuffer.append(aet);
-            String delay = mppsEmulatedAETs.get(aet);
-            if (delay != null) {
-                scheduleBuffer.append(':').append(delay);
-            }
-            return true;
-        }
-        return false;
     }
 }
