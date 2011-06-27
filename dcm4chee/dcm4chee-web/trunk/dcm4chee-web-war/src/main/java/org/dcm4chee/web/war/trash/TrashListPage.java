@@ -78,6 +78,7 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.PrivateFile;
@@ -480,6 +481,7 @@ public class TrashListPage extends Panel {
             
             @Override
             public void onOk(AjaxRequestTarget target) {
+                setRemark(null);
                 target.addComponent(form);
             }
 
@@ -503,6 +505,8 @@ public class TrashListPage extends Panel {
                         public int compare(PrivateFile f1, PrivateFile f2) {
                             return f2.getFileSystem().getAvailability().compareTo(f1.getFileSystem().getAvailability());
                         }});
+                    
+                    boolean allOnline = true;                    
                     for (PrivateFile privateFile : files) {
                         DicomObject dio = dao.getDicomAttributes(privateFile.getPk());
                         File file = new File();
@@ -515,19 +519,28 @@ public class TrashListPage extends Panel {
                         Instance instance = new Instance();
                         file.setInstance(instance);
                         fio.addFile(file, dio);
+
+                        if (privateFile.getFileSystem().getAvailability().equals(Availability.ONLINE))  
+                            if (!new java.io.File(privateFile.getFilePath()).exists())
+                                allOnline = false;
                     }
+                    
+                    if (!allOnline) 
+                        setRemark(new StringResourceModel("trash.message.notAllOnline", TrashListPage.this, null));
+                    
                     StoreBridgeDelegate.getInstance().importFile(fio);
                     removeRestoredEntries();                            
                     log.info("###### before setStatus done");
 
-                    setStatus(new StringResourceModel("trash.message.restoreDone", TrashListPage.this,null));
+                    setStatus(new StringResourceModel("trash.message.restoreDone", TrashListPage.this, null));
                     if (selected.hasPatients()) {
                         viewport.getPatients().clear();
                         queryStudies();
                     } else
                         selected.refreshView(true);
                 } catch (Throwable t) {
-                    setStatus(new StringResourceModel("trash.message.restoreFailed", TrashListPage.this,null));
+                    setStatus(new StringResourceModel("trash.message.restoreFailed", TrashListPage.this, null));
+                    setRemark(new Model<String>(t.getLocalizedMessage()));
                     log.error("Exception restoring entry:"+t.getMessage(), t);
                 }
                 log.info("###### onConfirmation doLAST");
@@ -785,7 +798,7 @@ public class TrashListPage extends Panel {
 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
+                    target.addComponent(this.getParent());
                 }
             };
             row.add(new SelectableTableRowBehaviour(selChkBox, "patient", "patient_selected"));
@@ -866,7 +879,7 @@ public class TrashListPage extends Panel {
 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
+                    target.addComponent(this.getParent());
                 }
             };
             row.add(new SelectableTableRowBehaviour(selChkBox, "study", "study_selected"));
@@ -948,7 +961,7 @@ public class TrashListPage extends Panel {
 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
+                    target.addComponent(this.getParent());
                 }
             };
             row.add(new SelectableTableRowBehaviour(selChkBox, "series", "series_selected"));
@@ -1031,7 +1044,7 @@ public class TrashListPage extends Panel {
 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
-                    target.addComponent(this);
+                    target.addComponent(this.getParent());
                 }
             };
             row.add(new SelectableTableRowBehaviour(selChkBox, "instance", "instance_selected"));
