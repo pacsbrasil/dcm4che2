@@ -59,6 +59,7 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.PageMap;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
@@ -110,6 +111,7 @@ import org.apache.wicket.security.hive.authorization.Principal;
 import org.apache.wicket.security.hive.authorization.SimplePrincipal;
 import org.apache.wicket.security.swarm.strategies.SwarmStrategy;
 import org.apache.wicket.util.time.Duration;
+import org.dcm4che2.data.DateRange;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
@@ -465,30 +467,39 @@ public class StudyListPage extends Panel {
         final CheckBox chkPpsWoMwl = form.addLabeledCheckBox("ppsWithoutMwl", null);
         final CheckBox chkWoPps = form.addLabeledCheckBox("withoutPps", null);
 
-        final Model<String> searchOptionSelected = new Model<String>();
-        form.addDropDownChoice("queryType", searchOptionSelected, new Model<ArrayList<String>>() {
-
+        final Model<ArrayList<String>> searchOptionsModel = new Model<ArrayList<String>>() {
             private static final long serialVersionUID = 1L;
 
             public ArrayList<String> getObject() {
-
                 final ArrayList<String> searchOptionsStrings = new ArrayList<String>(2);
                 searchOptionsStrings.add(new StringResourceModel("folder.searchOptions.patient", StudyListPage.this, null).getObject());
                 searchOptionsStrings.add(new StringResourceModel("folder.searchOptions.study", StudyListPage.this, null).getObject());
-                if (!searchOptionsStrings.contains(searchOptionSelected.getObject())) 
-                        searchOptionSelected.setObject(searchOptionsStrings.get(1));
-                return searchOptionsStrings;                
+                return searchOptionsStrings;
             }
-        }, new Model<Boolean>(true), true)
+        };
+        final IModel<String> searchOptionSelected = new IModel<String>(){
+            private static final long serialVersionUID = 1L;
+
+            public void detach() {}
+
+            public String getObject() {
+                return viewport.getFilter().isPatientQuery() ? 
+                        searchOptionsModel.getObject().get(0) : searchOptionsModel.getObject().get(1);
+            }
+
+            public void setObject(String object) {
+                viewport.getFilter().setPatientQuery(object.equals(searchOptionsModel.getObject().get(0)));
+            }
+            
+        };
+        form.addDropDownChoice("queryType", searchOptionSelected, searchOptionsModel, new Model<Boolean>(true), true)
         .add(new AjaxFormComponentUpdatingBehavior("onchange") {
                     
             private static final long serialVersionUID = 1L;
 
                 @SuppressWarnings("unchecked")
                 protected void onUpdate(AjaxRequestTarget target) {
-                    boolean b = ((DropDownChoice<String>) getComponent())
-                        .getChoices().get(0).equals(searchOptionSelected.getObject());
-                    viewport.getFilter().setPatientQuery(b);
+                    boolean b = viewport.getFilter().isPatientQuery();
                     chkLatestStudyFirst.setEnabled(!b);
                     chkPpsWoMwl.setEnabled(!b);
                     chkWoPps.setEnabled(!b);
@@ -2070,4 +2081,59 @@ public class StudyListPage extends Panel {
         }
         return true;
     } 
+    
+    @Override
+    protected void onBeforeRender() {
+        applyPageParameters();
+        super.onBeforeRender();
+    }
+
+    private void applyPageParameters() {
+        PageParameters paras = getRequestCycle().getPageParameters();
+        if (paras != null && !paras.isEmpty()) {
+            log.info("applyPageParameters:"+paras);
+            StudyListFilter filter = viewport.getFilter();
+            filter.setPatientName(paras.getString("patName"));
+            filter.setPatientID(paras.getString("patID"));
+            filter.setIssuerOfPatientID(paras.getString("issuer"));
+            filter.setAccessionNumber(paras.getString("accNr"));
+            Date[] studyDate = toDateRange(paras.getString("studyDate"));
+            filter.setStudyDateMin(studyDate[0]);
+            filter.setStudyDateMax(studyDate[1]);
+            filter.setModality(paras.getString("modality"));
+            filter.setSourceAET(paras.getString("sourceAET"));
+            String studyIUID = paras.getString("studyIUID");
+            filter.setStudyInstanceUID(studyIUID);
+            String seriesIUID = paras.getString("seriesIUID");
+            filter.setSeriesInstanceUID(seriesIUID);
+            Date[] birthdate = toDateRange(paras.getString("birthdate"));
+            filter.setBirthDateMin(birthdate[0]);
+            filter.setBirthDateMax(birthdate[1]);
+            filter.setExtendedQuery(studyIUID != null || seriesIUID != null || paras.getString("birthdate") != null);
+            
+            filter.setLatestStudiesFirst(Boolean.valueOf(paras.getString("latestStudiesFirst")));
+            filter.setPatientQuery(Boolean.valueOf(paras.getString("patQuery")));
+            filter.setPpsWithoutMwl(Boolean.valueOf(paras.getString("ppsWithoutMwl")));
+            filter.setWithoutPps(Boolean.valueOf(paras.getString("withoutPps")));
+            filter.setExactModalitiesInStudy(Boolean.valueOf(paras.getString("exactModalitiesInStudy")));
+            if (Boolean.valueOf(paras.getString("query"))) {
+                queryStudies();
+            }
+        }
+    }
+
+    private Date[] toDateRange(String s) {
+        Date[] d = new Date[2];
+        if (s != null && s.length() > 2) {
+            try {
+                DateRange dr = VR.DT.toDateRange(s.getBytes());
+                d[0] = dr.getStart();
+                d[1] = dr.getEnd();
+            } catch (Exception x) {
+                log.warn("Wrong date range format:"+s+" Must be [yyyy[MM[dd[hh[mm[ss]]]]]][-yyyy[MM[dd[hh[mm[ss]]]]]]");
+            }
+        }
+        return d;
+    }
+
 }

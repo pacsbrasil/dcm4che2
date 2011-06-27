@@ -227,7 +227,7 @@ public class StudyListFilter implements Serializable {
         return seriesInstanceUID;
     }
 
-    public void setSesriesInstanceUID(String seriesInstanceUID) {
+    public void setSeriesInstanceUID(String seriesInstanceUID) {
         this.seriesInstanceUID = seriesInstanceUID;
     }
     
