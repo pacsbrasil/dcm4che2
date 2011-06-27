@@ -81,7 +81,7 @@ public final class EditMwl {
 
     private String ejbProviderURL = "jnp://localhost:1099";
 
-    private final PatientMatching patientMatching = new PatientMatching("pat,issuer?");
+    private final PatientMatching patientMatching = new PatientMatching("pid,issuer?");
     
     public static void main(String[] args) {
          Getopt g = new Getopt("mwlitem.jar", args, "af:r:u:hv", LONG_OPTS);
