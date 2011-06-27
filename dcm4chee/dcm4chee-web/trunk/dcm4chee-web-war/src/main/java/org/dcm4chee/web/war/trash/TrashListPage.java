@@ -45,6 +45,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.management.MBeanException;
+
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
@@ -540,8 +542,12 @@ public class TrashListPage extends Panel {
                         selected.refreshView(true);
                 } catch (Throwable t) {
                     setStatus(new StringResourceModel("trash.message.restoreFailed", TrashListPage.this, null));
-                    setRemark(new Model<String>(t.getLocalizedMessage()));
-                    log.error("Exception restoring entry:"+t.getMessage(), t);
+                    MBeanException mbe = null;
+                    while (t instanceof javax.management.MBeanException) 
+                        t = ((javax.management.MBeanException) t).getCause();
+                    if (t != null) 
+                        setRemark(new Model<String>(t.getLocalizedMessage()));
+                    log.error("Exception restoring entry:"+t.getMessage(), t);                    
                 }
                 log.info("###### onConfirmation doLAST");
                 target.addComponent(messageWindowPanel.getMsgLabel());
