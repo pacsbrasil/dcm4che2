@@ -217,11 +217,7 @@ public abstract class MPPSEmulatorBean implements SessionBean {
             final Dataset studyAttrs = study.getAttributes(false);
             mpps.putAll(patAttrs.subSet(PATIENT_TAGS));
             mpps.putAll(studyAttrs.subSet(STUDY_TAGS));
-            DcmElement procCodeSeq = mpps.get(Tags.ProcedureCodeSeq);
-            if (procCodeSeq != null && procCodeSeq.countItems() > 1) {
-                LOG.warn("Study with multiple Procedure Codes - only include first in emulated MPPS");
-                mpps.putSQ(Tags.ProcedureCodeSeq).addItem(procCodeSeq.getItem());
-            }
+            checkCodeSeq(mpps, Tags.ProcedureCodeSeq);
             DcmElement rqaSq = ignoreReqAttrIfNoStudyAccNo && studyAttrs.getString(Tags.AccessionNumber) == null ? 
                     null : seriesAttrs.get(Tags.RequestAttributesSeq);
             int rqaSqSize = rqaSq != null ? rqaSq.countItems() : 0;
@@ -254,9 +250,7 @@ public abstract class MPPSEmulatorBean implements SessionBean {
                     if (!ssa.contains(Tags.SPSDescription)) {
                         ssa.putLO(Tags.SPSDescription);
                     }
-                    if (!ssa.contains(Tags.ScheduledProtocolCodeSeq)) {
-                        ssa.putSQ(Tags.ScheduledProtocolCodeSeq);
-                    }
+                    checkCodeSeq(ssa, Tags.ScheduledProtocolCodeSeq);
                     if (!ssa.contains(Tags.RequestedProcedureID)) {
                         ssa.putSH(Tags.RequestedProcedureID);
                     }
@@ -306,6 +300,28 @@ public abstract class MPPSEmulatorBean implements SessionBean {
             Dataset refSOP = refImageSq.addNewItem();
             refSOP.putUI(Tags.RefSOPClassUID, inst.getSopCuid());
             refSOP.putUI(Tags.RefSOPInstanceUID, inst.getSopIuid());
+        }
+    }
+
+    private void checkCodeSeq(Dataset ds, int tag) {
+        DcmElement codeSeq = ds.get(tag);
+        if (codeSeq == null) {
+            ds.putSQ(tag);
+        } else if (codeSeq.countItems() > 0) {
+            DcmElement newCodeSeq = ds.putSQ(tag);
+            Dataset item;
+            for (int i = 0, len = codeSeq.countItems() ; i < len ; i++) {
+                item = codeSeq.getItem(i);
+                if (item != null && item.containsValue(Tags.CodeValue) && item.containsValue(Tags.CodingSchemeDesignator)) {
+                    newCodeSeq.addItem(item);
+                    if (tag == Tags.ProcedureCodeSeq && len > 1) {
+                        LOG.warn("Study with multiple Procedure Codes - only include first (valid) code item in emulated MPPS");
+                        return;
+                    }
+                } else {
+                    LOG.warn("Code sequence "+Tags.toString(tag)+":Invalid code item removed! code:");LOG.warn(item);
+                }
+            }
         }
     }
 
