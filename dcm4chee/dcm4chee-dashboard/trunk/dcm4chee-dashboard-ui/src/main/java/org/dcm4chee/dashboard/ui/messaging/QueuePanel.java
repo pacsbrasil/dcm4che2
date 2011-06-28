@@ -116,10 +116,9 @@ public class QueuePanel extends Panel {
                 DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new QueueModel());
 
                 DashboardDelegator dashboardDelegator = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName")));
-                for (String queueName : dashboardDelegator.listQueueNames()) {
-                        int[] counts = dashboardDelegator.listQueueAttributes(queueName);
-                    
-                        QueueModel queueModel = new QueueModel(queueName);
+                for (String[] queueName : dashboardDelegator.listQueueNames()) {
+                        int[] counts = dashboardDelegator.listQueueAttributes(queueName[0], queueName[1]);
+                        QueueModel queueModel = new QueueModel(queueName[0], queueName[1]);
                         DefaultMutableTreeNode queueNode;
                         queueModel.setQueue(true);
                         queueModel.setMessageCount(counts == null ? -1 : counts[0]);
@@ -142,27 +141,32 @@ public class QueuePanel extends Panel {
                 QueueTreeTable queueTreeTable = new QueueTreeTable("queue-tree-table", 
                        new DefaultTreeModel(rootNode), new IColumn[] {
                    new PropertyTreeColumn(new ColumnLocation(
-                           Alignment.LEFT, 39, Unit.PERCENT), 
+                           Alignment.LEFT, 25, Unit.PERCENT), 
                            new ResourceModel(
                                    "dashboard.queue.table.column.name").wrapOnAssignment(this).getObject(), 
                                    "userObject.jndiName"),
                    new PropertyRenderableColumn(new ColumnLocation(
-                           Alignment.RIGHT, 14, Unit.PERCENT),
+                           Alignment.RIGHT, 18, Unit.PERCENT),
+                           new ResourceModel(
+                                   "dashboard.queue.table.column.domain").wrapOnAssignment(this).getObject(),
+                                   "userObject.domainName"), 
+                   new PropertyRenderableColumn(new ColumnLocation(
+                           Alignment.RIGHT, 12, Unit.PERCENT),
                            new ResourceModel(
                                    "dashboard.queue.table.column.messageCount").wrapOnAssignment(this).getObject(),
                                    "userObject.messageCount"), 
                    new PropertyRenderableColumn(new ColumnLocation(
-                           Alignment.RIGHT, 14, Unit.PERCENT),
+                           Alignment.RIGHT, 12, Unit.PERCENT),
                            new ResourceModel(
                                    "dashboard.queue.table.column.deliveringCount").wrapOnAssignment(this).getObject(),
                                    "userObject.deliveringCount"), 
                    new PropertyRenderableColumn(new ColumnLocation(
-                           Alignment.RIGHT, 18, Unit.PERCENT),
+                           Alignment.RIGHT, 16, Unit.PERCENT),
                            new ResourceModel(
                                    "dashboard.queue.table.column.scheduledMessageCount").wrapOnAssignment(this).getObject(),
                                    "userObject.scheduledMessageCount"), 
                    new PropertyRenderableColumn(new ColumnLocation(
-                           Alignment.RIGHT, 14, Unit.PERCENT),
+                           Alignment.RIGHT, 12, Unit.PERCENT),
                            new ResourceModel(
                                    "dashboard.queue.table.column.consumerCount").wrapOnAssignment(this).getObject(),
                                    "userObject.consumerCount")
@@ -214,7 +218,8 @@ public class QueuePanel extends Panel {
                                     : getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_QUEUE_MESSAGE)) 
                                     +"')"
                     );
-                    tag.put("title", ((QueueModel) ((DefaultMutableTreeNode) node).getUserObject()).getJndiName());
+                    QueueModel queueModel = (QueueModel) ((DefaultMutableTreeNode) node).getUserObject();
+                    tag.put("title", (queueModel.getDomainName() != null ? queueModel.getDomainName() + ":" : "") + queueModel.getJndiName());
                 }
             };
         }
@@ -225,6 +230,7 @@ public class QueuePanel extends Panel {
         private static final long serialVersionUID = -1L;
 
         private String jndiName;
+        private String domainName;
         
         private int messageCount;
         private int deliveringCount;
@@ -238,6 +244,11 @@ public class QueuePanel extends Panel {
         public QueueModel(String jndiName) {
             this.jndiName = jndiName;
         }
+
+        public QueueModel(String domainName, String jndiName) {
+            this.domainName = domainName;
+            this.jndiName = jndiName;
+        }
         
         public void setJndiName(String jndiName) {
             this.jndiName = jndiName;
@@ -247,6 +258,14 @@ public class QueuePanel extends Panel {
             return jndiName;
         }
         
+        public void setDomainName(String domainName) {
+            this.domainName = domainName;
+        }
+
+        public String getDomainName() {
+            return domainName;
+        }
+
         public void setMessageCount(int messageCount) {
             this.messageCount = messageCount;
         }

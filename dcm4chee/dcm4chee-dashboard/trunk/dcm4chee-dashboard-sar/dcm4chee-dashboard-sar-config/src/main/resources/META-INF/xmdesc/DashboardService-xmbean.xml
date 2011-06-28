@@ -13,11 +13,11 @@
       <description>MBean Constructor.</description>
       <name>org.dcm4chee.dashboard.mbean.DashboardService</name>
    </constructor>
-	<attribute access="read-write" getMethod="getDomainName" setMethod="setDomainName">
+	<attribute access="read-write" getMethod="getDomainNames" setMethod="setDomainNames">
         <description>
-            Represents the xmbean domain name
+            Represents the domain name list to query queues
         </description>
-        <name>domainName</name>
+        <name>domainNames</name>
         <type>java.lang.String</type>
         <descriptors>
             <value>dcm4chee.archive</value>
@@ -189,11 +189,15 @@ Java;Version;java.version</value>
    <operation>
       <description>MBean Operation.</description>
       <name>listQueueNames</name>
-	  <return-type>[Ljava.lang.String;</return-type>
+	  <return-type>[[Ljava.lang.String;</return-type>
    </operation>
    <operation>
       <description>MBean Operation.</description>
       <name>listQueueAttributes</name>
+      <parameter>
+         <name>domainName</name>
+         <type>java.lang.String</type>
+      </parameter>
       <parameter>
          <name>queueName</name>
          <type>java.lang.String</type>

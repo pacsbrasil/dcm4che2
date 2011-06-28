@@ -80,7 +80,7 @@ public class DashboardService extends ServiceMBeanSupport {
 
     private static Logger log = LoggerFactory.getLogger(DashboardService.class);
     
-    private String domainName;
+    private String[] domainNames;
     private String[] jbossSystemTypesToQuery = new String[] {"Server", "ServerConfig", "ServerInfo"};
     private String newline = System.getProperty("line.separator");
 
@@ -94,12 +94,12 @@ public class DashboardService extends ServiceMBeanSupport {
 
     private int reportTablePagesize;
     
-    public void setDomainName(String domainName) {
-        this.domainName = domainName;
+    public void setDomainNames(String domainNames) {
+        this.domainNames = tokenize(domainNames);
     }
 
-    public String getDomainName() {
-        return domainName;
+    public String getDomainNames() {
+        return arrayToString(this.domainNames);
     }
 
     public void setDataSourceList(String dataSourceList) {
@@ -338,20 +338,22 @@ public class DashboardService extends ServiceMBeanSupport {
         }       
     }
     
-    public String[] listQueueNames() throws MalformedObjectNameException, NullPointerException {
-        List<String> queueNameList = new ArrayList<String>();
-        for (ObjectInstance oi : 
-            (Set<ObjectInstance>) this.server.queryMBeans(
-                new ObjectName(this.domainName + ":service=Queue,*"), null)) {
-            queueNameList.add(oi.getObjectName().getKeyProperty("name"));
+    public String[][] listQueueNames() throws MalformedObjectNameException, NullPointerException {
+        List<String[]> queueNameList = new ArrayList<String[]>();
+        for (String domainName : this.domainNames) {
+            for (ObjectInstance oi : 
+                (Set<ObjectInstance>) this.server.queryMBeans(
+                    new ObjectName(domainName + ":service=Queue,*"), null)) {
+                queueNameList.add(new String[] {domainName, oi.getObjectName().getKeyProperty("name")});
+            }
         }
-        return queueNameList.toArray(new String[queueNameList.size()]);
+        return queueNameList.toArray(new String[queueNameList.size()][2]);
     }
 
-    public int[] listQueueAttributes(String queueName) throws MalformedObjectNameException, NullPointerException {
+    public int[] listQueueAttributes(String domainName, String queueName) throws MalformedObjectNameException, NullPointerException {
         int[] queueAttributesList = new int[4];
         try {
-            ObjectName queueON = new ObjectName(this.domainName + ":service=Queue,name="+queueName);
+            ObjectName queueON = new ObjectName(domainName + ":service=Queue,name="+queueName);
             queueAttributesList[0] = new Integer(server.getAttribute(queueON, "MessageCount").toString()).intValue();
             queueAttributesList[1] = new Integer(server.getAttribute(queueON, "DeliveringCount").toString()).intValue();
             queueAttributesList[2] = new Integer(server.getAttribute(queueON, "ScheduledMessageCount").toString()).intValue();

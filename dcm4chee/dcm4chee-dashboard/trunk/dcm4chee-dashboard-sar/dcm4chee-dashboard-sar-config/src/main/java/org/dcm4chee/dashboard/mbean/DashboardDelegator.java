@@ -173,18 +173,18 @@ public final class DashboardDelegator {
                         .split(this.newline);
     }
     
-    public String[] listQueueNames() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
-        return (String[]) server.invoke(
+    public String[][] listQueueNames() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
+        return (String[][]) server.invoke(
                         this.objectName,
                         "listQueueNames", null, null);
     }
     
-    public int[] listQueueAttributes(String queueName) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
+    public int[] listQueueAttributes(String domainName, String queueName) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
         return (int[]) server.invoke(
                         this.objectName,
                         "listQueueAttributes", 
-                        new Object[] { queueName }, 
-                        new String[] { java.lang.String.class.getName() });
+                        new Object[] { domainName, queueName }, 
+                        new String[] { java.lang.String.class.getName(), java.lang.String.class.getName() });
     }
     
     public int getReportTablePagesize() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
