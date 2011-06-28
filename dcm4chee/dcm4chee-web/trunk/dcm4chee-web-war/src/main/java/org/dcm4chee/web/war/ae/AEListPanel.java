@@ -67,6 +67,8 @@ import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.usr.dao.UserAccess;
+import org.dcm4chee.usr.model.AETGroup;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
@@ -166,7 +168,8 @@ public class AEListPanel extends Panel {
         add( new Label("stationHdr.label", new ResourceModel("ae.stationHdr.label")));
         add( new Label("institutionHdr.label", new ResourceModel("ae.institutionHdr.label")));
         add( new Label("departmentHdr.label", new ResourceModel("ae.departmentHdr.label")));
-        
+
+        final List<AETGroup> aetGroups = ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getAllAETGroups();
         add((list = new PropertyListView<AE>("list") {
 
             private static final long serialVersionUID = 1L;
@@ -178,7 +181,12 @@ public class AEListPanel extends Panel {
 
             @Override
             protected void populateItem(final ListItem<AE> item) {
-                item.add(new Label("title"));
+                StringBuffer tooltip = new StringBuffer();
+                String name = item.getModelObject().getTitle();
+                for (AETGroup aetGroup : aetGroups)
+                    if (aetGroup.getAets().contains(name))
+                        tooltip.append(name).append(" ");
+                item.add(new Label("title").add(new AttributeModifier("title", true, new Model<String>(tooltip.toString()))));
                 item.add(new Label("hostName"));
                 item.add(new Label("port"));
                 item.add(new Label("description", new Model<String>(item.getModelObject().getDescription())));
