@@ -12,7 +12,7 @@
   <name>AcceptTimeout</name>
   <type>int</type>
   <descriptors>
-  <value value="10000"/>
+  <value value="30000"/>
   </descriptors>
   </attribute>
   
