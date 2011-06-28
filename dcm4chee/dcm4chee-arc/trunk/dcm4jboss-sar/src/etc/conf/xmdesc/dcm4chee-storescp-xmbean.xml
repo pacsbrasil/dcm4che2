@@ -642,7 +642,7 @@ the store of images by the Storage SCP.]]>
       <name>CompressionRules</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="[calling=SAMPLE_SCU1|SAMPLE_SCU2,pmi!=RGB,imgtype!=LOCALIZER]JLSL;NONE"/>
+         <value value="[pmi=YBR_FULL_422]NONE;[calling=SAMPLE_SCU1|SAMPLE_SCU2,pmi!=RGB,imgtype!=LOCALIZER]JLSL;NONE"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
