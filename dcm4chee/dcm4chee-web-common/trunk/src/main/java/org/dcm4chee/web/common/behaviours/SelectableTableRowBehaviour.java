@@ -42,6 +42,8 @@ import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.form.CheckBox;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -53,28 +55,35 @@ public class SelectableTableRowBehaviour extends AjaxEventBehavior {
 
     private static final long serialVersionUID = 1L;
     
-    private CheckBox chkBox;
+    private IModel<Boolean> model;
     private String unselectedClass, selectedClass;
     
-    public SelectableTableRowBehaviour(CheckBox chkBox, String unselectedClass, String selectedClass) {
+    public SelectableTableRowBehaviour(IModel<Boolean> model, String unselectedClass, String selectedClass) {
         super("onclick");
-        this.chkBox = chkBox;
+        this.model = model;
         this.unselectedClass = unselectedClass;
         this.selectedClass = selectedClass;
+    }
+    
+    public SelectableTableRowBehaviour(CheckBox chkBox, String unselectedClass, String selectedClass) {
+        this(chkBox.getModel(), unselectedClass, selectedClass);
+        if (model == null) {
+            model = new Model<Boolean>(false);
+            chkBox.setModel(model);
+        }
         chkBox.setOutputMarkupId(true);
     }
 
     @Override
     protected void onEvent(AjaxRequestTarget target) {
-        chkBox.setModelObject(!chkBox.getModelObject());
-        //target.addComponent(chkBox);
+        model.setObject(!model.getObject());
         target.addComponent(getComponent());
     }
     
     @Override
     protected void onComponentTag(final ComponentTag tag) {
         super.onComponentTag(tag);
-        if (chkBox.getModelObject()) {
+        if (model.getObject()) {
             if (selectedClass != null)
                 tag.put("class", selectedClass);
         } else if (unselectedClass != null) {
@@ -83,11 +92,10 @@ public class SelectableTableRowBehaviour extends AjaxEventBehavior {
     }
     
     @Override
-    protected CharSequence getPreconditionScript()
-    {
-            return "if (event == null) return false;var t = (event.target) ? event.target : (event.srcElement) ? event.srcElement : null;"+
-                    "if (t.nodeType == 3) t = t.parentNode;"+ // handle Safari bug (text node)
-                    " return t.nodeName == 'TD' || t.nodeName == 'SPAN'";
+    protected CharSequence getPreconditionScript() {
+        return "if (event == null || !event.ctrlKey) return false;var t = (event.target) ? event.target : (event.srcElement) ? event.srcElement : null;"+
+                "if (t.nodeType == 3) t = t.parentNode;"+ // handle Safari bug (text node)
+                " return t.nodeName == 'TD' || t.nodeName == 'SPAN'";
     }
     
 }
