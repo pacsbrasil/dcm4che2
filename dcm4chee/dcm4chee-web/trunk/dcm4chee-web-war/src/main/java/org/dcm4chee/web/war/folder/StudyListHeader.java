@@ -134,11 +134,6 @@ public class StudyListHeader extends Panel {
         add(new Row("file", 5));
     }
 
-    protected void onBeforeRender() {
-        super.onBeforeRender();
-        headerExpandLevel = expandAllLevel;
-    }
-    
     public void setExpandAllLevel(int expandAllLevel) {
         this.expandAllLevel = expandAllLevel;
         if (autoExpand.getObject())
