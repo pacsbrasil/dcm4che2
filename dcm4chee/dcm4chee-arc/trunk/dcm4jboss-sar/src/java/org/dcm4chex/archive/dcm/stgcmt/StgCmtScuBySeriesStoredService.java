@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.dcm.stgcmt;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -52,6 +53,7 @@ import javax.management.ObjectName;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.SeriesStored;
+import org.dcm4chex.archive.ejb.jdbc.QueryExternalRetrieveAETsOfSeriesCmd;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -67,7 +69,8 @@ public class StgCmtScuBySeriesStoredService extends ServiceMBeanSupport {
     protected ObjectName stgCmtServiceName;
     private ObjectName storeScpServiceName;
     
-    Map<String, String> rqStgCmtOnReceiveFromAETs = new HashMap<String, String>();
+    private Map<String, String> rqStgCmtOnReceiveFromAETs = new HashMap<String, String>();
+    private String noStgCmtIfExternalRetrieveAET;
     
     private NotificationListener seriesStoredListener;
 
@@ -119,6 +122,14 @@ public class StgCmtScuBySeriesStoredService extends ServiceMBeanSupport {
         updateSeriesStoredListener();
     }
     
+    public String getNoStgCmtIfExternalRetrieveAET() {
+        return noStgCmtIfExternalRetrieveAET == null ? NONE : noStgCmtIfExternalRetrieveAET;
+    }
+
+    public void setNoStgCmtIfExternalRetrieveAET(String s) {
+        this.noStgCmtIfExternalRetrieveAET = NONE.equals(s) ? null : s;
+    }
+
     private void updateSeriesStoredListener() throws InstanceNotFoundException, ListenerNotFoundException {
         if (server != null) {
             if (rqStgCmtOnReceiveFromAETs.isEmpty()) {
@@ -151,22 +162,46 @@ public class StgCmtScuBySeriesStoredService extends ServiceMBeanSupport {
     private void onSeriesStored(SeriesStored stored) {
         String aet = rqStgCmtOnReceiveFromAETs.get(stored.getSourceAET());
         if (aet != null) {
-            Dataset actionInfo = stored.getIAN().get(Tags.RefSeriesSeq).getItem();
-            String callingAet = null;
-            int pos = aet.indexOf(':'); 
-            if (pos != -1) {
-                callingAet = aet.substring(0, pos);
-                aet = aet.substring(++pos);
+            boolean needStgCmt = true;
+            boolean specificExtRetr = !"ANY".equals(noStgCmtIfExternalRetrieveAET);
+            if (noStgCmtIfExternalRetrieveAET != null) {
+                needStgCmt = false;
+                try {
+                    Collection<String[]> iuidAndAETs = 
+                        new QueryExternalRetrieveAETsOfSeriesCmd(stored.getSeriesInstanceUID(), 50)
+                                .getRetrieveAETs();
+                    for (String[] iuidAndAET : iuidAndAETs) {
+                        if (iuidAndAET[1] == null || 
+                                (specificExtRetr && !iuidAndAET[1].equals(noStgCmtIfExternalRetrieveAET))) {
+                            needStgCmt = true;
+                            break;
+                        }
+                    }
+                } catch (Exception x) {
+                    log.warn("Failed to get ExtRetrAETs for series:"+stored.getSeriesInstanceUID()+"! Send StgCmt anyway.", x);
+                }
             }
-            try {
-                log.info("Queue StgCmt Order! calling:"+callingAet+" called:"+aet);
-                server.invoke(stgCmtServiceName, "onInstancesRetrieved", new Object[] {
-                        callingAet, aet, actionInfo }, new String[] {
-                        String.class.getName(), String.class.getName(),
-                        Dataset.class.getName() });
-            } catch (Exception x) {
-                log.error("Failed to queue StorageCommit Order! calledAet:"+aet, x);
-                log.debug(actionInfo);
+            if (needStgCmt) {
+                Dataset actionInfo = stored.getIAN().get(Tags.RefSeriesSeq).getItem();
+                String callingAet = null;
+                int pos = aet.indexOf(':'); 
+                if (pos != -1) {
+                    callingAet = aet.substring(0, pos);
+                    aet = aet.substring(++pos);
+                }
+                try {
+                    log.info("Queue StgCmt Order! calling:"+callingAet+" called:"+aet);
+                    server.invoke(stgCmtServiceName, "onInstancesRetrieved", new Object[] {
+                            callingAet, aet, actionInfo }, new String[] {
+                            String.class.getName(), String.class.getName(),
+                            Dataset.class.getName() });
+                } catch (Exception x) {
+                    log.error("Failed to queue StorageCommit Order! calledAet:"+aet, x);
+                    log.debug(actionInfo);
+                }
+            } else {
+                log.info("No Storage Commit necessary! All instances already external retrievable"+
+                        (specificExtRetr ? " from "+noStgCmtIfExternalRetrieveAET : "."));
             }
         }
     }

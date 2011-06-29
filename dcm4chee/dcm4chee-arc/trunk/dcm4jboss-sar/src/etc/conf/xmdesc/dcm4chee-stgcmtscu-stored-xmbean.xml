@@ -42,6 +42,23 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getNoStgCmtIfExternalRetrieveAET"
+      setMethod="setNoStgCmtIfExternalRetrieveAET">
+      <description><![CDATA[
+        Dont request a Storage Commit if objects are external retrievable.<br/>
+        Possible Values:<br />
+        NONE : Do always request a StgCmt.<br />
+        ANY  : Only request a StgCmt if a object is not external retrievable.<br />
+        &lt;AET&gt;: Only request a StgCmt if a object is not external retrievable from this AET.<br/>
+        ]]>
+      </description>
+      <name>NoStgCmtIfExternalRetrieveAET</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getStgCmtServiceName"
       setMethod="setStgCmtServiceName">
       <description>Used internally. Do NOT modify.
