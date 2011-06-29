@@ -1072,9 +1072,11 @@ public class StudyListPage extends Panel {
             for (Iterator<PPSModel> it = m.getPPSs().iterator() ; it.hasNext() ; ) {
                 pps = it.next();
                 if (pps.getDataset() == null) {
-                    if (woPps)
+                    if (woPps) {
+                        pps.getNumberOfSeries();
+                        pps.getNumberOfInstances();
                         pps.collapse();
-                    else
+                    } else
                         it.remove();
                 } else if (woMwl && pps.getAccessionNumber()==null) {
                     pps.collapse();
