@@ -200,8 +200,7 @@ public class BaseForm extends Form<Object> {
                 return enabledModel == null ? true : enabledModel.getObject();
             }
         };
-        parent.add(dtf);
-        dtf.add(new TooltipBehaviour(generateResourcePrefix(dtf), id,
+        dtf.add(new TooltipBehaviour(resourceIdPrefix, id,
                 new AbstractReadOnlyModel<String>(){
                     private static final long serialVersionUID = 1L;
 
@@ -210,7 +209,7 @@ public class BaseForm extends Form<Object> {
                         return DateUtils.getDatePattern(dtf);
                     }
                 }
-        ));
+        ).setGenerateComponentTreePrefix());
         return dtf;
     }
     
@@ -330,7 +329,7 @@ public class BaseForm extends Form<Object> {
 
         public Object component(Component c) {
             if (componentHasNoTooltip(c)) 
-                c.add(new TooltipBehaviour(generateResourcePrefix(c), c.getId()));
+                c.add(new TooltipBehaviour(resourceIdPrefix, c.getId()).setGenerateComponentTreePrefix());
             if (c instanceof FormComponent<?>) {
                 c.add(markInvalidBehaviour);
                 c.setOutputMarkupId(true);
@@ -345,20 +344,6 @@ public class BaseForm extends Form<Object> {
                 return false;
         }
         return true;
-    }
-
-    private String generateResourcePrefix(Component c) {
-
-        StringBuffer prefix = new StringBuffer("");
-        Component parent = c.getParent();
-        while ((parent != null) && !parent.equals("") && !(parent instanceof BaseForm)) {
-            prefix.insert(0, ".");
-            prefix.insert(0, parent.getId());
-            parent = parent.getParent();
-        }
-        if ((resourceIdPrefix != null) && (!resourceIdPrefix.equals(""))) 
-            prefix.insert(0, resourceIdPrefix);
-        return prefix.toString();
     }
 
     public FormComponent<?> getDicomObjectField(String id, DicomObject dcmObj, int[] tagPath) {

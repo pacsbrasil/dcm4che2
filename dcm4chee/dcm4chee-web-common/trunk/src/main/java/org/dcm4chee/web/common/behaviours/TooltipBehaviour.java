@@ -45,6 +45,7 @@ import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
+import org.dcm4chee.web.common.markup.BaseForm;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -63,6 +64,7 @@ public class TooltipBehaviour extends AbstractBehavior {
     private IModel<?> substitutionModel;
     private AbstractReadOnlyModel<Boolean> showTooltipModel;
     
+    private boolean generateComponentTreePrefix;
     /*
      * Create a TooltipBehaviour with given prefix.
      * <p>
@@ -92,11 +94,18 @@ public class TooltipBehaviour extends AbstractBehavior {
         this.showTooltipModel = showTooltipModel;
     }
 
+    public TooltipBehaviour setGenerateComponentTreePrefix() {
+        this.generateComponentTreePrefix = true;
+        return this;
+    }
+
     public void onComponentTag(Component c, ComponentTag tag) {
         tag.put("title", getLocalizer().getStringIgnoreSettings(getResourceKey(c), c, substitutionModel, ""));
     }
 
     private String getResourceKey(Component c) {
+        if (generateComponentTreePrefix)
+            prefix = generateComponentTreePrefix(c);
         StringBuilder sb = new StringBuilder();
         if ( prefix != null ) 
             sb.append(prefix);
@@ -106,6 +115,20 @@ public class TooltipBehaviour extends AbstractBehavior {
                     + (this.showTooltipModel.getObject() ?  "hide" : "show")
         );
         sb.append(POSTFIX);
+        return sb.toString();
+    }
+
+    private String generateComponentTreePrefix(Component c) {
+        generateComponentTreePrefix = false;
+        StringBuilder sb = new StringBuilder("");
+        Component parent = c.getParent();
+        while ((parent != null) && !parent.equals("") && !(parent instanceof BaseForm)) {
+            sb.insert(0, ".");
+            sb.insert(0, parent.getId());
+            parent = parent.getParent();
+        }
+        if ((prefix != null) && (!prefix.equals(""))) 
+            sb.insert(0, prefix);
         return sb.toString();
     }
 
