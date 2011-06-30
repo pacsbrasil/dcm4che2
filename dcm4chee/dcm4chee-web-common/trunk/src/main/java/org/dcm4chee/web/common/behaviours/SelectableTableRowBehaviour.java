@@ -43,7 +43,6 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -56,21 +55,23 @@ public class SelectableTableRowBehaviour extends AjaxEventBehavior {
     private static final long serialVersionUID = 1L;
     
     private IModel<Boolean> model;
+    private CheckBox chkBox;
     private String unselectedClass, selectedClass;
     
-    public SelectableTableRowBehaviour(IModel<Boolean> model, String unselectedClass, String selectedClass) {
+    private SelectableTableRowBehaviour(String unselectedClass, String selectedClass) {
         super("onclick");
-        this.model = model;
         this.unselectedClass = unselectedClass;
         this.selectedClass = selectedClass;
     }
+
+    public SelectableTableRowBehaviour(IModel<Boolean> model, String unselectedClass, String selectedClass) {
+        this(unselectedClass,selectedClass);
+        this.model = model;
+    }
     
     public SelectableTableRowBehaviour(CheckBox chkBox, String unselectedClass, String selectedClass) {
-        this(chkBox.getModel(), unselectedClass, selectedClass);
-        if (model == null) {
-            model = new Model<Boolean>(false);
-            chkBox.setModel(model);
-        }
+        this(unselectedClass, selectedClass);
+        this.chkBox = chkBox;
         chkBox.setOutputMarkupId(true);
     }
 
@@ -83,6 +84,8 @@ public class SelectableTableRowBehaviour extends AjaxEventBehavior {
     @Override
     protected void onComponentTag(final ComponentTag tag) {
         super.onComponentTag(tag);
+        if (model == null)
+            model = chkBox.getModel();
         if (model.getObject()) {
             if (selectedClass != null)
                 tag.put("class", selectedClass);
