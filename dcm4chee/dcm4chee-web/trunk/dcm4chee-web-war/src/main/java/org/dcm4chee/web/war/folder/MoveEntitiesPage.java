@@ -140,11 +140,15 @@ public class MoveEntitiesPage extends SecureWebPage {
     
     private ModalWindow window;
     
+    private Model<Boolean> success;
+    
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
 
-    public MoveEntitiesPage(ModalWindow window, SelectedEntities selectedEntities, List<PatientModel> all) {
+    public MoveEntitiesPage(ModalWindow window, SelectedEntities selectedEntities, List<PatientModel> all, Model<Boolean> success) {
         super();
 
+        this.success = success;
+        
         if (MoveEntitiesPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(MoveEntitiesPage.BaseCSS));
         if (MoveEntitiesPage.CSS != null)
@@ -530,6 +534,7 @@ public class MoveEntitiesPage extends SecureWebPage {
                             int nrOfMovedInstances = ContentEditDelegate.getInstance().moveEntities(selected);
                             if (nrOfMovedInstances > 0) {
                                 infoMsgId = "move.message.moveDone";
+                                success.setObject(true);
                             } else if (nrOfMovedInstances == 0) {
                                 infoMsgId = "move.message.moveNothing";
                             } else {

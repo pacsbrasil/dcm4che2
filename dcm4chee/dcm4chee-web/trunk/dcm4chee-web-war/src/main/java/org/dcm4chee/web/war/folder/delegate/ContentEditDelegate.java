@@ -128,7 +128,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         return true;
     }
 
-    private void moveToTrash(String op, long[] pks)
+    public void moveToTrash(String op, long[] pks)
             throws InstanceNotFoundException, MBeanException,
             ReflectionException, IOException {
         server.invoke(serviceObjectName, op, new Object[]{pks}, 

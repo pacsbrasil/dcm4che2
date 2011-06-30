@@ -45,6 +45,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -806,14 +807,138 @@ public class StudyListPage extends Panel {
         form.add(deleteBtn);
         deleteBtn.add(new SecurityBehavior(getModuleName() + ":deleteButton"));
         
+        final List<PatientModel> pml = new ArrayList<PatientModel>();
+        final List<PPSModel> ppsml = new ArrayList<PPSModel>();
+        final List<SeriesModel> sml = new ArrayList<SeriesModel>();
+
+        final ConfirmationWindow<AbstractEditableDicomModel> confirmReduce = 
+            new ConfirmationWindow<AbstractEditableDicomModel>("confirmReduce") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, final AbstractEditableDicomModel model) {
+
+                Set<Long> patientPks = new HashSet<Long>();
+                Set<Long> studyPks = new HashSet<Long>();
+                Set<Long> ppsPks = new HashSet<Long>();
+                Set<Long> seriesPks = new HashSet<Long>();                
+                
+                for (PatientModel pm : pml) 
+                    if (pm.getStudies().isEmpty())
+                        patientPks.add(pm.getPk());
+
+                for (PPSModel ppsm : ppsml) {
+                    if (ppsm.getSeries().isEmpty()) {
+                        ppsPks.add(ppsm.getPk());
+                        
+                        ppsm.getStudy().getPPSs().remove(ppsm);
+                        if (ppsm.getStudy().getPPSs().isEmpty()) {
+                            StudyModel sm = ppsm.getStudy();
+                            studyPks.add(ppsm.getStudy().getPk());
+                            PatientModel pm = sm.getPatient();
+                            pm.getStudies().remove(sm);                           
+                            if (pm.getStudies().isEmpty())
+                                patientPks.add(pm.getPk());
+                        }
+                    }
+                }
+
+                for (SeriesModel sm : sml) {
+                    if (sm.getInstances().isEmpty()) {
+                        seriesPks.add(sm.getPk());
+                        PPSModel ppsm = sm.getPPS(); 
+                        ppsm.getSeries().remove(sm);
+                        if (ppsm.getStudy().getPPSs().isEmpty()) {
+                            ppsm.getStudy().getPPSs().remove(ppsm);
+                            if (ppsm.getStudy().getPPSs().isEmpty()) {
+                                StudyModel sm1 = ppsm.getStudy();
+                                studyPks.add(ppsm.getStudy().getPk());
+                                PatientModel pm = sm1.getPatient();
+                                pm.getStudies().remove(sm1);
+                                if (pm.getStudies().isEmpty())
+                                    patientPks.add(pm.getPk());
+                            }
+                        }
+                    }
+                }
+                try {
+                    long[] pks;
+                    if (!patientPks.isEmpty()) {
+                        pks = new long[patientPks.size()];
+                        int i = 0;
+                        for (Long pk : patientPks) {
+                            pks[i] = pk.longValue();
+                            i++;
+                        }
+                        ContentEditDelegate.getInstance()
+                            .moveToTrash("movePatientsToTrash", pks);
+                    }
+                    if (!studyPks.isEmpty()) {
+                        pks = new long[studyPks.size()];
+                        int i = 0;
+                        for (Long pk : studyPks) {
+                            pks[i] = pk.longValue();
+                            i++;
+                        }
+                        ContentEditDelegate.getInstance()
+                            .moveToTrash("moveStudiesToTrash", pks);
+                    }
+                    if (!ppsPks.isEmpty()) {
+                        pks = new long[ppsPks.size()];
+                        int i = 0;
+                        for (Long pk : ppsPks) {
+                            pks[i] = pk.longValue();
+                            i++;
+                        }
+                        ContentEditDelegate.getInstance()
+                            .moveToTrash("moveSeriesOfPpsToTrash", pks);
+                    }
+                    if (!seriesPks.isEmpty()) {
+                        pks = new long[seriesPks.size()];
+                        int i = 0;
+                        for (Long pk : seriesPks) {
+                            pks[i] = pk.longValue();
+                            i++;
+                        }
+                        ContentEditDelegate.getInstance()
+                            .moveToTrash("moveSeriesToTrash", pks);
+                    }
+                } catch (Exception e) {
+                    log.error("Reduce failed: ", e);
+                }
+                
+                if (!patientPks.isEmpty() || !studyPks.isEmpty() || !ppsPks.isEmpty() || !seriesPks.isEmpty()) {
+                    queryStudies();
+                    target.addComponent(getPage());
+                }
+            }
+        };
+        confirmReduce.setInitialHeight(150);
+        form.add(confirmReduce);
+        
         AjaxFallbackButton moveBtn = new AjaxFallbackButton("moveBtn", form) {
             
             private static final long serialVersionUID = 1L;
             
             @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+            protected void onSubmit(final AjaxRequestTarget target, Form<?> form) {
                 selected.update(false, viewport.getPatients(), StudyPermission.UPDATE_ACTION, true);
                 log.info("Selected Entities:"+selected);
+                final Model<Boolean> success = new Model<Boolean>(false);
+
+                Iterator<StudyModel> i = selected.getStudies().iterator();
+                while (i.hasNext())
+                    pml.add(i.next().getPatient());
+                
+                Iterator<SeriesModel> i1 = selected.getSeries().iterator();
+                while (i1.hasNext())
+                    ppsml.add(i1.next().getPPS());
+
+                Iterator<InstanceModel> i2 = selected.getInstances().iterator();
+                while (i2.hasNext())
+                    sml.add(i2.next().getSeries());
+
                 if (selected.hasDicomSelection()) {
                     modalWindow
                     .setPageCreator(new ModalWindow.PageCreator() {
@@ -825,9 +950,21 @@ public class StudyListPage extends Panel {
                             return new MoveEntitiesPage(
                                   modalWindow, 
                                   selected, 
-                                  viewport.getPatients()
+                                  viewport.getPatients(), 
+                                  success
                           );
                         }
+                    });
+                    
+                    modalWindow.setWindowClosedCallback(new WindowClosedCallback() {
+                        private static final long serialVersionUID = 1L;
+
+                        public void onClose(AjaxRequestTarget target) {
+                            if (success.getObject()) 
+                                confirmReduce.confirm(target, 
+                                        new StringResourceModel("folder.message.reduce", modalWindow, null), 
+                                        null);
+                        }            
                     });
                     int[] winSize = WebCfgDelegate.getInstance().getWindowSize("move");
                     modalWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);

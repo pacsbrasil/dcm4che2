@@ -103,5 +103,5 @@ public interface StudyListLocal {
 
     MPPS getMPPS(long pk);
 
-    MPPS updateMPPS(long pk, DicomObject dataset);
+    MPPS updateMPPS(long pk, DicomObject dataset);    
 }
