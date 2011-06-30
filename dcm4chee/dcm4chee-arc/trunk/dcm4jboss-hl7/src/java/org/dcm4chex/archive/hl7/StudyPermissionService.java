@@ -260,8 +260,12 @@ public class StudyPermissionService extends ServiceMBeanSupport {
     	try {
 	        Collection suids = getStudyPermissionManager()
 	                .grantForPatient(patPk, StringUtils.split(actions,','), role);
-	        String desc = "Grant StudyPermissions for patient patPk:"+patPk+" StudyIuids:"+toString(suids)+" role="+role+" actions:"+actions;
-	        logSecurityAlert(true, desc);
+	        if (suids.size() > 0) {
+	            String desc = "Grant StudyPermissions for patient patPk:"+patPk+" StudyIuids:"+toString(suids)+" role="+role+" actions:"+actions;
+	            logSecurityAlert(true, desc);
+	        } else {
+                    log.warn("No studies found to grant StudyPermissions for patient patPk:"+patPk);
+	        }
 	        return suids;
     	} catch (Exception x) {
     		logSecurityAlert(false, "Grant StudyPermissions for patient: patPk:"+patPk+ "actions:"+actions+" role:"+role);
@@ -285,8 +289,12 @@ public class StudyPermissionService extends ServiceMBeanSupport {
     	try {
 	    	Collection suids =  getStudyPermissionManager().grantForPatient(
 	                pid, issuer, StringUtils.split(actions,','), role);
-	        String desc = "Grant StudyPermissions for patient patID:"+pid+" issuer:"+issuer+" StudyIuids:"+toString(suids)+" role="+role+" actions:"+actions;
-	        logSecurityAlert(true, desc);
+	    	if (suids.size() > 0) {
+	    	    String desc = "Grant StudyPermissions for patient patID:"+pid+" issuer:"+issuer+" StudyIuids:"+toString(suids)+" role="+role+" actions:"+actions;
+	    	    logSecurityAlert(true, desc);
+	    	} else {
+	    	    log.warn("No studies found to grant StudyPermissions for patient patID:"+pid+" issuer:"+issuer);
+	    	}
 	        return suids;
     	} catch (Exception x) {
     		logSecurityAlert(false, "Grant StudyPermissions for patient: pid:"+pid+" issuer:"+issuer+ "actions:"+actions+" role:"+role);
@@ -309,8 +317,12 @@ public class StudyPermissionService extends ServiceMBeanSupport {
     	try {
 	    	Collection suids =  getStudyPermissionManager()
                 .revokeForPatient(patPk, StringUtils.split(actions,','), role);
-	        String desc = "Revoke StudyPermissions for patient patPk:"+patPk+" StudyIuids:"+toString(suids)+" role="+role+" actions:"+actions;
-	        logSecurityAlert(true, desc);
+	    	if (suids.size() > 0) {
+	    	    String desc = "Revoke StudyPermissions for patient patPk:"+patPk+" StudyIuids:"+toString(suids)+" role="+role+" actions:"+actions;
+	    	    logSecurityAlert(true, desc);
+	    	} else {
+                    log.warn("No studies found to revoke StudyPermissions for patient patPk:"+patPk);
+	    	}
 	        return suids;
     	} catch (Exception x) {
     		logSecurityAlert(false, "Revoke StudyPermissions for patient: patPk:"+patPk+ "actions:"+actions+" role:"+role);
@@ -334,11 +346,15 @@ public class StudyPermissionService extends ServiceMBeanSupport {
     	try {
 	    	Collection suids =  getStudyPermissionManager().revokeForPatient(
                 pid, issuer, StringUtils.split(actions,','), role);
-	        String desc = "Grant StudyPermissions for patient patID:"+pid+" issuer:"+issuer+" StudyIuids:"+toString(suids)+" role="+role+" actions:"+actions;
-	        logSecurityAlert(true, desc);
+	    	if (suids.size() > 0) {
+	    	    String desc = "Revoke StudyPermissions for patient patID:"+pid+" issuer:"+issuer+" StudyIuids:"+toString(suids)+" role="+role+" actions:"+actions;
+	    	    logSecurityAlert(true, desc);
+	    	} else {
+                    log.warn("No studies found to revoke StudyPermissions for patient patID:"+pid+" issuer:"+issuer);
+	    	}
 	        return suids;
     	} catch (Exception x) {
-    		logSecurityAlert(false, "Grant StudyPermissions for patient: pid:"+pid+" issuer:"+issuer+ "actions:"+actions+" role:"+role);
+    		logSecurityAlert(false, "Revoke StudyPermissions for patient: pid:"+pid+" issuer:"+issuer+ "actions:"+actions+" role:"+role);
     		throw x;
     	}
     }
@@ -559,6 +575,8 @@ public class StudyPermissionService extends ServiceMBeanSupport {
         
     }
     private String toString(Collection c) {
+        if (c.isEmpty())
+            return "";
         StringBuffer sb = new StringBuffer();
         for ( Iterator iter = c.iterator() ; iter.hasNext() ; ) {
        		sb.append(iter.next().toString()).append(',');
