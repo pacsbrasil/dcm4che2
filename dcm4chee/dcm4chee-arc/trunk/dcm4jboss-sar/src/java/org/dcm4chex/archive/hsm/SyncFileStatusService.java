@@ -13,9 +13,11 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Map.Entry;
@@ -33,6 +35,7 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
+import org.dcm4chex.archive.ejb.interfaces.MD5;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.mbean.SchedulerDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -340,7 +343,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
             }
             int count = 0;
             HashMap<String, Integer> checkedTarsStatus = new HashMap<String, Integer>();
-            HashMap<String, Set<String>> checkedTarsMD5 = verifyTar ? new HashMap<String, Set<String>>() : null;
+            HashMap<String, Map<String, byte[]>> checkedTarsMD5 = verifyTar ? new HashMap<String, Map<String, byte[]>>() : null;
             for (int i = 0; i < c.length; i++) {
                 if (check(fsmgt, c[i], checkedTarsStatus, checkedTarsMD5))
                     ++count;
@@ -353,7 +356,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     }
 
     private boolean check(FileSystemMgt2 fsmgt, FileDTO fileDTO,
-            HashMap<String, Integer> checkedTarsStatus, HashMap<String, Set<String>> checkedTarsMD5) throws IOException, VerifyTarException {
+            HashMap<String, Integer> checkedTarsStatus, HashMap<String, Map<String, byte[]>> checkedTarsMD5) throws IOException, VerifyTarException {
         String fsId = fileDTO.getDirectoryPath();
         String filePath = fileDTO.getFilePath();
         String tarPathKey = null;
@@ -402,11 +405,11 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
        return false;
     }
 
-    private Integer verifyTar(FileDTO dto, String tarPathKey, HashMap<String, Set<String>> checkedTarsMD5) {
+    private Integer verifyTar(FileDTO dto, String tarPathKey, HashMap<String, Map<String, byte[]>> checkedTarsMD5) {
         log.info("Verify tar file "+tarPathKey);
         String filePath = dto.getFilePath();
         String tarfilePath = filePath.substring(0, filePath.indexOf('!'));
-        Set<String> entries = null;
+        Map<String, byte[]> entries = null;
         if (checkedTarsMD5.containsKey(tarPathKey)) {
             entries = checkedTarsMD5.get(tarPathKey);
             if (log.isDebugEnabled()) log.debug("entries of checked tar file "+tarPathKey+" :"+entries);
@@ -435,14 +438,16 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         return checkFileInTar(dto, tarPathKey, entries);
     }
 
-    private Integer checkFileInTar(FileDTO dto, String tarPathKey, Set<String> entries) {
+    private Integer checkFileInTar(FileDTO dto, String tarPathKey, Map<String, byte[]> entries) {
         String filePath = dto.getFilePath();
         String filepathInTar = filePath.substring(filePath.indexOf('!')+1);
         if (entries == null) {
             log.error("TAR file "+tarPathKey+" not valid -> " + (invalidTarStatus == Integer.MIN_VALUE ?
                     "File is deleted!" : "set status to "+FileStatus.toString(invalidTarStatus)));
             return invalidTarStatus;
-        } else if (!entries.contains(filepathInTar)) {
+        }
+        byte[] md5 = entries.get(filepathInTar);
+        if (md5 == null) {
             log.error("Tar File "+tarPathKey+" does NOT contain File "+filepathInTar);
             if (notInTarStatus == Integer.MIN_VALUE) {
                 log.error("Delete file entity that is missing in tar file:"+filePath);
@@ -451,6 +456,12 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
                 log.error("Set file status to "+FileStatus.toString(notInTarStatus));
             }
             return notInTarStatus;
+        } else {
+            if (!Arrays.equals(dto.getFileMd5(), md5)) {
+                log.error("Tar File "+tarPathKey+": MD5 of File "+filepathInTar+" is NOT equal to MD5 of file entity! ("+
+                        MD5.toString(md5)+" vs. "+dto.getMd5String()+ ")");
+                return invalidTarStatus;
+            }
         }
         return null;
     }

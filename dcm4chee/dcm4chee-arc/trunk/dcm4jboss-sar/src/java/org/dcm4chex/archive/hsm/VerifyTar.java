@@ -52,8 +52,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
 
 import org.apache.commons.compress.tar.TarEntry;
 import org.apache.commons.compress.tar.TarInputStream;
@@ -74,7 +73,7 @@ public class VerifyTar {
             + "          file name prompted to stdout.";
 
 
-    public static Set<String> verify(File file, byte[] buf)
+    public static Map<String, byte[]> verify(File file, byte[] buf)
             throws IOException, VerifyTarException {
         FileInputStream in = new FileInputStream(file);
         try {
@@ -84,12 +83,12 @@ public class VerifyTar {
         }
     }
     
-    public static Set<String> verify(InputStream in, String tarname, byte[] buf)
+    public static Map<String, byte[]> verify(InputStream in, String tarname, byte[] buf)
     throws IOException, VerifyTarException {
         return verify(in, tarname, buf, null);
     }
 
-    public static Set<String> verify(InputStream in, String tarname, byte[] buf, ArrayList<String> objectNames)
+    public static Map<String, byte[]> verify(InputStream in, String tarname, byte[] buf, ArrayList<String> objectNames)
     throws IOException, VerifyTarException {
         TarInputStream tar = new TarInputStream(in);
         try {
@@ -114,8 +113,8 @@ public class VerifyTar {
                 }
                 md5sums.put(line.substring(34), md5sum);
             }
-            Set<String> entries = new HashSet<String>(md5sums.size());
-            entries.addAll(md5sums.keySet());
+            Map<String, byte[]> entries = new HashMap<String, byte[]>(md5sums.size());
+            entries.putAll(md5sums);
             MessageDigest digest;
             try {
                 digest = MessageDigest.getInstance("MD5");
