@@ -821,12 +821,14 @@ CREATE TABLE priv_instance (
     series_fk         INT8,
     priv_type         INTEGER NOT NULL,
     sop_iuid          TEXT NOT NULL,
+    created_time      TIMESTAMP,
     inst_attrs        BYTEA,
 FOREIGN KEY (series_fk) REFERENCES priv_series(pk)
 );
 CREATE INDEX priv_series_fk ON priv_instance(series_fk);
 CREATE INDEX priv_inst_type ON priv_instance(priv_type);
 CREATE INDEX priv_sop_iuid ON priv_instance(sop_iuid);
+CREATE INDEX priv_inst_created ON priv_instance(created_time);
 
 CREATE TABLE priv_file (
     pk                SERIAL8 NOT NULL CONSTRAINT priv_file_pk PRIMARY KEY,

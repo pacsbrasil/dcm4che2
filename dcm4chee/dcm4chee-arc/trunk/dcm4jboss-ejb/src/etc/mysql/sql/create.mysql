@@ -893,6 +893,7 @@ CREATE TABLE priv_instance (
     series_fk         BIGINT,
     priv_type         INTEGER NOT NULL,
     sop_iuid          VARCHAR(250) BINARY NOT NULL,
+    created_time      DATETIME,
     inst_attrs        LONGBLOB
 ) ENGINE=INNODB;
 ALTER TABLE priv_instance
@@ -900,6 +901,7 @@ ALTER TABLE priv_instance
     ADD CONSTRAINT priv_series_fk FOREIGN KEY (series_fk) REFERENCES priv_series(pk);
 CREATE INDEX priv_inst_type ON priv_instance(priv_type);
 CREATE INDEX priv_sop_iuid ON priv_instance(sop_iuid(64));
+CREATE INDEX priv_inst_created ON priv_instance(created_time);
 
 CREATE TABLE priv_file (
     pk                BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,

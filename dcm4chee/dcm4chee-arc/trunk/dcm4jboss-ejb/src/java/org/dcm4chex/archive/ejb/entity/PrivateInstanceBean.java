@@ -61,6 +61,7 @@ import org.dcm4chex.archive.ejb.interfaces.PrivateSeriesLocal;
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="priv_instance"
  * @jboss.entity-command name="hsqldb-fetch-key"
+ * @jboss.audit-created-time field-name="createdTime"
  * 
  * @ejb.finder signature="java.util.Collection findByPrivateType(int privateType)"
  *             query="SELECT OBJECT(a) FROM PrivateInstance AS a WHERE a.privateType = ?1"
@@ -98,6 +99,13 @@ public abstract class PrivateInstanceBean implements EntityBean {
      */
     public abstract Long getPk();
     public abstract void setPk(Long pk);
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="created_time"
+     */
+    public abstract java.sql.Timestamp getCreatedTime();
+    public abstract void setCreatedTime(java.sql.Timestamp time);
 
     /**
      * @ejb.interface-method

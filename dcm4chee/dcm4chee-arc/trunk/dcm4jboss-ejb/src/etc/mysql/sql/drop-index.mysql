@@ -386,6 +386,7 @@ ALTER TABLE priv_instance
    DROP INDEX priv_series_fk;
 ALTER TABLE priv_instance DROP INDEX priv_inst_type;
 ALTER TABLE priv_instance DROP INDEX priv_sop_iuid;
+ALTER TABLE priv_instance DROP INDEX priv_inst_created;
 ALTER TABLE priv_file
    DROP FOREIGN KEY priv_instance_fk,
    DROP INDEX priv_instance_fk;

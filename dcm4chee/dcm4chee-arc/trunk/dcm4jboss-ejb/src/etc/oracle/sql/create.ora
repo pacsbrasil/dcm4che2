@@ -858,12 +858,14 @@ CREATE TABLE priv_instance (
     series_fk         NUMBER(38,0),
     priv_type         NUMBER(38,0) NOT NULL,
     sop_iuid          VARCHAR2(255) NOT NULL,
+    created_time      TIMESTAMP,
     inst_attrs        BLOB,
 FOREIGN KEY (series_fk) REFERENCES priv_series(pk)
 );
 CREATE INDEX priv_series_fk ON priv_instance(series_fk);
 CREATE INDEX priv_inst_type ON priv_instance(priv_type);
 CREATE INDEX priv_sop_iuid ON priv_instance(sop_iuid);
+CREATE INDEX priv_inst_created ON priv_instance(created_time);
 
 CREATE SEQUENCE priv_file_pk_seq;
 CREATE TABLE priv_file (
