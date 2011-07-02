@@ -140,17 +140,17 @@ public class Weasis_Launcher extends HttpServlet {
         // Test if this client is allowed
         String hosts = pacsProperties.getProperty("hosts.allow");
         if (hosts != null && !hosts.trim().equals("")) {
-            String clintHost = request.getRemoteHost();
+            String clientHost = request.getRemoteHost();
             String clientIP = request.getRemoteAddr();
             boolean accept = false;
             for (String host : hosts.split(",")) {
-                if (host.equals(clintHost) || host.equals(clientIP)) {
+                if (host.equals(clientHost) || host.equals(clientIP)) {
                     accept = true;
                     break;
                 }
             }
             if (!accept) {
-                logger.warn("The request from {} is not allowed.", clintHost);
+                logger.warn("The request from {} is not allowed.", clientHost);
                 return;
             }
         }
