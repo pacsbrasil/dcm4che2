@@ -466,47 +466,27 @@ public class StudyListPage extends Panel {
     private void addQueryOptions(final BaseForm form) {
 
         final CheckBox chkLatestStudyFirst = form.addLabeledCheckBox("latestStudiesFirst", null);
-        final CheckBox chkPpsWoMwl = form.addLabeledCheckBox("ppsWithoutMwl", null);
-        final CheckBox chkWoPps = form.addLabeledCheckBox("withoutPps", null);
 
-        final Model<ArrayList<String>> searchOptionsModel = new Model<ArrayList<String>>() {
-            private static final long serialVersionUID = 1L;
-
-            public ArrayList<String> getObject() {
-                final ArrayList<String> searchOptionsStrings = new ArrayList<String>(2);
-                searchOptionsStrings.add(new StringResourceModel("folder.searchOptions.patient", StudyListPage.this, null).getObject());
-                searchOptionsStrings.add(new StringResourceModel("folder.searchOptions.study", StudyListPage.this, null).getObject());
-                return searchOptionsStrings;
-            }
-        };
-        final IModel<String> searchOptionSelected = new IModel<String>(){
-            private static final long serialVersionUID = 1L;
-
-            public void detach() {}
-
-            public String getObject() {
-                return viewport.getFilter().isPatientQuery() ? 
-                        searchOptionsModel.getObject().get(0) : searchOptionsModel.getObject().get(1);
-            }
-
-            public void setObject(String object) {
-                viewport.getFilter().setPatientQuery(object.equals(searchOptionsModel.getObject().get(0)));
-            }
-            
-        };
         List<Integer> expandChoices = WebCfgDelegate.getInstance().getAutoExpandLevelChoiceList();
-        final DropDownChoice autoExpand = new DropDownChoice<Object>("autoExpandLevel", expandChoices);
+        final DropDownChoice<Integer> autoExpand = new DropDownChoice<Integer>("autoExpandLevel", expandChoices) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean isEnabled() {
+                return !viewport.getFilter().isPatientQuery();
+            }
+        };
         form.addComponent(autoExpand);
         Label autoExpandLabel = form.addInternalLabel("autoExpandLevel");
-        autoExpand.setChoiceRenderer(new IChoiceRenderer() {
+        autoExpand.setChoiceRenderer(new IChoiceRenderer<Integer>() {
                 private static final long serialVersionUID = 1L;
 
-                public Object getDisplayValue(Object object) {
+                public Object getDisplayValue(Integer object) {
                     int level = (Integer) object;
                     return level < 0 ? "auto" : form.getString("folder.searchOptions."+AbstractDicomModel.LEVEL_STRINGS[level].toLowerCase());
                 }
 
-                public String getIdValue(Object object, int index) {
+                public String getIdValue(Integer object, int index) {
                     return String.valueOf(index);
                 }
                 
@@ -516,18 +496,66 @@ public class StudyListPage extends Panel {
             autoExpand.setVisible(false);
             autoExpandLabel.setVisible(false);
         }
-        form.addDropDownChoice("queryType", searchOptionSelected, searchOptionsModel, new Model<Boolean>(true), true)
-        .add(new AjaxFormComponentUpdatingBehavior("onchange") {
-                    
+
+        final IModel<Integer> searchOptionSelected = new IModel<Integer>(){
+            private static final long serialVersionUID = 1L;
+
+            public void detach() {}
+
+            public Integer getObject() {
+                StudyListFilter filter = viewport.getFilter();
+                int i = 0;
+                if (!filter.isPatientQuery()) { 
+                    if (filter.isPpsWithoutMwl())
+                        i = 0x01;
+                    if (filter.isWithoutPps())
+                        i = i | 0x02;
+                    i++;
+                }
+                return i; 
+            }
+
+            public void setObject(Integer object) {
+                StudyListFilter filter = viewport.getFilter();
+                filter.setPatientQuery(object == 0);
+                filter.setPpsWithoutMwl((--object & 0x01) > 0);
+                filter.setWithoutPps((object & 0x02) > 0);
+            }
+            
+        };
+        final DropDownChoice<Integer> queryType = new DropDownChoice<Integer>("queryType", searchOptionSelected, Arrays.asList(0,1,2,3,4));
+        form.addComponent(queryType);
+        form.addInternalLabel("queryType");
+        queryType.setChoiceRenderer(new IChoiceRenderer<Integer>() {
+                private static final long serialVersionUID = 1L;
+
+                public Object getDisplayValue(Integer object) {
+                        switch(object) {
+                        case 0:
+                            return form.getString("folder.searchOptions.patient");
+                        case 1:
+                            return form.getString("folder.searchOptions.study");
+                        case 2:
+                            return form.getString("folder.searchOptions.ppsWithoutMwl");
+                        case 3:
+                            return form.getString("folder.searchOptions.withoutPps");
+                        case 4:
+                            return form.getString("folder.searchOptions.withoutMwl");
+                        };
+                        return "unknown";
+                }
+
+                public String getIdValue(Integer object, int index) {
+                    return String.valueOf(index);
+                }
+                
+            });
+        queryType.add(new AjaxFormComponentUpdatingBehavior("onchange") {
             private static final long serialVersionUID = 1L;
 
                 @SuppressWarnings("unchecked")
                 protected void onUpdate(AjaxRequestTarget target) {
-                    boolean b = viewport.getFilter().isPatientQuery();
-                    chkLatestStudyFirst.setEnabled(!b);
-                    chkPpsWoMwl.setEnabled(!b);
-                    chkWoPps.setEnabled(!b);
-                    autoExpand.setEnabled(!b);
+                    chkLatestStudyFirst.setEnabled(!viewport.getFilter().isPatientQuery());
                     BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
                 }
         });
