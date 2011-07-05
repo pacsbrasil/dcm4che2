@@ -74,6 +74,7 @@ public class StudyListFilter implements Serializable {
     private boolean ppsWithoutMwl;
     private boolean withoutPps;
     private boolean exactModalitiesInStudy;
+    private int autoExpandLevel = -1;
     
     public StudyListFilter(String forUsername) {
         clear();
@@ -85,8 +86,11 @@ public class StudyListFilter implements Serializable {
         studyDateMin = studyDateMax = null; 
         birthDateMin = birthDateMax = null;
         extendedQuery = false;
+        patientQuery = false;
         latestStudiesFirst = false;
         ppsWithoutMwl = false;
+        withoutPps = false;
+        exactModalitiesInStudy = false;
     }
 
     public String getPatientName() {
@@ -245,5 +249,13 @@ public class StudyListFilter implements Serializable {
 
     public void setLatestStudiesFirst(boolean latestStudiesFirst) {
         this.latestStudiesFirst = latestStudiesFirst;
+    }
+
+    public void setAutoExpandLevel(int level) {
+        this.autoExpandLevel = level;
+    }
+
+    public int getAutoExpandLevel() {
+        return autoExpandLevel;
     }
 }
