@@ -94,6 +94,7 @@ public class DummyWebCfgMBean extends ServiceMBeanSupport implements DynamicMBea
         if ("getStationAETList".equals(actionName)) return new ArrayList<String>(Arrays.asList("DCMSND","CT1"));
         if ("getStationNameList".equals(actionName)) return new ArrayList<String>(Arrays.asList("STATION1","STATION2"));
         if ("getWindowSize".equals(actionName)) return new int[]{800,600};
+        if ("getAutoExpandLevelChoiceList".equals(actionName)) return Arrays.asList(-1);
         return null;
     }
 

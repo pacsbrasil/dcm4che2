@@ -181,6 +181,10 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return names;
     }
     
+    public List<Integer> getAutoExpandLevelChoiceList() {
+        return getIntegerList("getAutoExpandLevelChoiceList", Arrays.asList(-1));
+    }
+    
     @SuppressWarnings("unchecked")
     public List<Integer> getPagesizeList() {
         if (server == null) return Arrays.asList(10,25,50);

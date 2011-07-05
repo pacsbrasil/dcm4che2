@@ -103,6 +103,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private static final String ANY = "ANY";
     private static final String DEFAULT_TIMER_SERVICE = "jboss:service=Timer";
     private static final long ONE_DAY_IN_MILLIS = 60000*60*24;
+    public static final String[] LEVEL_STRINGS = {"Patient", "Study", "PPS", "Series", "Instance"};
     
     private String dicomSecurityServletUrl;
     
@@ -166,6 +167,8 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     private String retentionTime;
     private String emptyTrashInterval;
     private Integer trashCleanerTimerId;
+    
+    private List<Integer> autoExpandLevelChoices = new ArrayList<Integer>(6);
     
     private int hasNotificationListener;
     
@@ -500,6 +503,42 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public void setForcePatientExpandableForPatientQuery(boolean b) {
         this.forcePatientExpandableForPatientQuery = b;
+    }
+
+    public String getAutoExpandLevelChoices() {
+        StringBuilder sb = new StringBuilder();
+        int l;
+        for (int i = 0, len = autoExpandLevelChoices.size() ; i < len ; i++) {
+            l = autoExpandLevelChoices.get(i);
+            sb.append(l == -1 ? "auto" : LEVEL_STRINGS[l]).append(NEWLINE);
+        }
+        return sb.toString();
+    }
+    
+    public List<Integer> getAutoExpandLevelChoiceList() {
+        return autoExpandLevelChoices;
+    }
+
+    public void setAutoExpandLevelChoices(String choices) {
+        autoExpandLevelChoices.clear();
+        String tk;
+        StringTokenizer st = new StringTokenizer(choices, "\n\r\t;");
+        token: while (st.hasMoreTokens()) {
+            tk = st.nextToken().trim();
+            if ("auto".equals(tk)) {
+                autoExpandLevelChoices.add(-1);
+            } else {
+                for (int i = 0; i < LEVEL_STRINGS.length ; i++) {
+                    if (LEVEL_STRINGS[i].equals(tk) ) {
+                        autoExpandLevelChoices.add(i);
+                        continue token;
+                    }
+                }
+                throw new IllegalArgumentException("Unknown AutoExpandLevel:"+tk);
+            }
+        }
+        if (autoExpandLevelChoices.isEmpty())
+            autoExpandLevelChoices.add(-1);
     }
 
     private String listAsString(List<String> list, String sep) {

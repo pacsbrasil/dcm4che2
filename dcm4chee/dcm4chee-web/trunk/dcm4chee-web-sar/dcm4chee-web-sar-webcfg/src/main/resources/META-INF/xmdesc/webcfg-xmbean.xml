@@ -447,6 +447,18 @@
          <value value="false"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getAutoExpandLevelChoices"
+      setMethod="setAutoExpandLevelChoices">
+      <description><![CDATA[List of Choices for 'Expand to' drop down box.<br/>
+      	Possible values: auto, Patient, Study, Series, Instance<br/>
+      ]]></description>
+      <name>AutoExpandLevelChoices</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="auto;Patient;Study;Series"/>
+      </descriptors>
+   </attribute>
 
    <attribute access="read-write"
       getMethod="getPagesizes"
@@ -875,6 +887,11 @@
    <operation impact="ACTION">
       <description>Get List of Station Names</description>
       <name>getStationNameList</name>
+      <return-type>java.util.List</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Get List of Levels for 'Expand to' selection choices.</description>
+      <name>getAutoExpandLevelChoiceList</name>
       <return-type>java.util.List</return-type>
    </operation>
    <operation impact="ACTION">

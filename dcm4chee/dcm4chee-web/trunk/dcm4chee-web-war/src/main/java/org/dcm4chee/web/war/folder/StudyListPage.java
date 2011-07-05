@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -493,6 +494,28 @@ public class StudyListPage extends Panel {
             }
             
         };
+        List<Integer> expandChoices = WebCfgDelegate.getInstance().getAutoExpandLevelChoiceList();
+        final DropDownChoice autoExpand = new DropDownChoice<Object>("autoExpandLevel", expandChoices);
+        form.addComponent(autoExpand);
+        Label autoExpandLabel = form.addInternalLabel("autoExpandLevel");
+        autoExpand.setChoiceRenderer(new IChoiceRenderer() {
+                private static final long serialVersionUID = 1L;
+
+                public Object getDisplayValue(Object object) {
+                    int level = (Integer) object;
+                    return level < 0 ? "auto" : form.getString("folder.searchOptions."+AbstractDicomModel.LEVEL_STRINGS[level].toLowerCase());
+                }
+
+                public String getIdValue(Object object, int index) {
+                    return String.valueOf(index);
+                }
+                
+            });
+        viewport.getFilter().setAutoExpandLevel(expandChoices.get(0));
+        if (expandChoices.size() < 2) {
+            autoExpand.setVisible(false);
+            autoExpandLabel.setVisible(false);
+        }
         form.addDropDownChoice("queryType", searchOptionSelected, searchOptionsModel, new Model<Boolean>(true), true)
         .add(new AjaxFormComponentUpdatingBehavior("onchange") {
                     
@@ -504,6 +527,7 @@ public class StudyListPage extends Panel {
                     chkLatestStudyFirst.setEnabled(!b);
                     chkPpsWoMwl.setEnabled(!b);
                     chkWoPps.setEnabled(!b);
+                    autoExpand.setEnabled(!b);
                     BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
                 }
         });
@@ -1130,7 +1154,8 @@ public class StudyListPage extends Panel {
         boolean forceExpandable = WebCfgDelegate.getInstance().forcePatientExpandableForPatientQuery();
         for (Patient patient : patients) {
             PatientModel patientModel = addPatient(patient);   
-            if (!viewport.getFilter().isPatientQuery()) {
+            if (!viewport.getFilter().isPatientQuery() && 
+                    viewport.getFilter().getAutoExpandLevel() != PatientModel.PATIENT_LEVEL) {
                 for (Study study : patient.getStudies()) {
                     List<String> actions = dao.findStudyPermissionActions((study).getStudyInstanceUID(), studyPermissionHelper.getDicomRoles());
                     if (!studyPermissionHelper.applyStudyPermissions()
@@ -1201,29 +1226,45 @@ public class StudyListPage extends Panel {
             }
         }
         StudyModel m = new StudyModel(study, patient, study.getCreatedTime(), studyPermissionActions);
-        boolean woMwl = viewport.getFilter().isPpsWithoutMwl();
-        boolean woPps = viewport.getFilter().isWithoutPps();
-        if (woMwl || woPps) {
-            m.expand();
-            PPSModel pps;
-            for (Iterator<PPSModel> it = m.getPPSs().iterator() ; it.hasNext() ; ) {
-                pps = it.next();
-                if (pps.getDataset() == null) {
-                    if (woPps) {
-                        pps.getNumberOfSeries();
-                        pps.getNumberOfInstances();
+        int expandLevel = viewport.getFilter().getAutoExpandLevel();
+        if (expandLevel == -1) {
+            boolean woMwl = viewport.getFilter().isPpsWithoutMwl();
+            boolean woPps = viewport.getFilter().isWithoutPps();
+            if (woMwl || woPps) {
+                m.expand();
+                PPSModel pps;
+                for (Iterator<PPSModel> it = m.getPPSs().iterator() ; it.hasNext() ; ) {
+                    pps = it.next();
+                    if (pps.getDataset() == null) {
+                        if (woPps) {
+                            pps.getNumberOfSeries();
+                            pps.getNumberOfInstances();
+                            pps.collapse();
+                        } else
+                            it.remove();
+                    } else if (woMwl && pps.getAccessionNumber()==null) {
                         pps.collapse();
-                    } else
+                    } else {
                         it.remove();
-                } else if (woMwl && pps.getAccessionNumber()==null) {
-                    pps.collapse();
-                } else {
-                    it.remove();
+                    }
                 }
             }
+        } else if (expandLevel > StudyModel.STUDY_LEVEL) {
+            expandToLevel(m, expandLevel);
         }
         studies.add(m);
         return true;
+    }
+    
+    private void expandToLevel(AbstractDicomModel m, int level) {
+        if ( m.levelOfModel() < level) {
+            m.expand();
+            if (m.levelOfModel()+1 < level) {
+                for (AbstractDicomModel m1 : m.getDicomModelsOfNextLevel()) {
+                    expandToLevel(m1, level);
+                }
+            }
+        }
     }
 
     private boolean expandLevelChanged(AbstractDicomModel model) {
