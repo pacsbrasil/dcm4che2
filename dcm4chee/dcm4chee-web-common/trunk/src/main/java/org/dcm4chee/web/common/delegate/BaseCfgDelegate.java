@@ -189,4 +189,17 @@ public class BaseCfgDelegate {
             return new ArrayList<String>();
         }
     }
+    
+    @SuppressWarnings("unchecked")
+    protected List<Integer> getIntegerList(String name, List<Integer> defValue) {
+        if (server != null) {
+            try {
+                return (List<Integer>) server.invoke(serviceObjectName, name, new Object[] {}, new String[] {});
+            } catch (Exception e) {
+                log.warn("Cant invoke '" + name + "', returning defValue:"+defValue, e);
+            }
+        }
+        return defValue == null ? new ArrayList<Integer>() : defValue;
+    }
+
 }
