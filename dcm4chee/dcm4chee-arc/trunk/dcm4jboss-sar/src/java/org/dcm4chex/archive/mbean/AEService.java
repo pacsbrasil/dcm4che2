@@ -385,9 +385,9 @@ public class AEService extends ServiceMBeanSupport {
     public void updateAE(long pk, String title, String host, int port,
             String cipher, String issuerOfPatientID,
             String issuerOfAccessionNumber, String user, String passwd,
-            String fsGroupID, String desc, String wadoUrl, String stationName,
-            String institution, String department, boolean installed,
-            boolean checkHost)
+            String fsGroupID, String group, String desc, String wadoUrl,
+            String stationName, String institution, String department,
+            boolean installed, boolean checkHost)
     throws Exception {
         if (checkHost) {
             try {
@@ -409,6 +409,7 @@ public class AEService extends ServiceMBeanSupport {
         newAE.setUserID(user);
         newAE.setPassword(passwd);
         newAE.setFileSystemGroupID(fsGroupID);
+        newAE.setGroup(group);
         newAE.setDescription(desc);
         newAE.setWadoURL(wadoUrl);
         newAE.setStationName(stationName);
@@ -445,13 +446,13 @@ public class AEService extends ServiceMBeanSupport {
     public void addAE(String title, String host, int port, String cipher,
             String issuerOfPatientID, String issuerOfAccessionNumber,
             String user, String passwd, String fsGroupID,
-            String desc, String wadoUrl, String stationName,
+            String group, String desc, String wadoUrl, String stationName,
             String institution, String department, boolean installed,
             boolean checkHost) throws Exception {
         updateAE(-1, title, host, port, cipher, issuerOfPatientID,
                 issuerOfAccessionNumber, user, passwd,
-                fsGroupID, desc, wadoUrl, stationName, institution, department,
-                installed, checkHost);
+                fsGroupID, group, desc, wadoUrl, stationName, institution,
+                department, installed, checkHost);
     }
 
     public void removeAE(String titles) throws Exception {

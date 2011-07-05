@@ -78,6 +78,7 @@ public class AEDTO implements Serializable {
     private String userID;
     private String passwd;
     private String fsGroupID;
+    private String group;
     private String desc;
     private String wadoURL;
     private String stationName;
@@ -179,10 +180,18 @@ public class AEDTO implements Serializable {
         this.fsGroupID = fsGroupID;
     }
 
+    public final String getGroup() {
+        return group;        
+    }
+    
+    public final void setGroup(String group) {
+        this.group = group;
+    }
+
     public final String getDescription() {
         return desc;        
     }
-    
+
     public final void setDescription(String desc) {
         this.desc = desc;
     }

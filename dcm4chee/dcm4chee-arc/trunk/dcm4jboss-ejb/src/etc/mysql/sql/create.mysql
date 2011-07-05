@@ -9,6 +9,7 @@ CREATE TABLE ae (
     user_id           VARCHAR(250) BINARY,
     passwd            VARCHAR(250) BINARY,
     fs_group_id       VARCHAR(250) BINARY,
+    ae_group          VARCHAR(250) BINARY,
     ae_desc           VARCHAR(250) BINARY,
     wado_url          VARCHAR(250) BINARY,
     station_name      VARCHAR(250) BINARY,
@@ -19,6 +20,7 @@ CREATE TABLE ae (
 ) ENGINE=INNODB;
 CREATE UNIQUE INDEX aet ON ae(aet(64));
 CREATE INDEX hostname ON ae(hostname(16));
+CREATE INDEX ae_group ON ae(ae_group);
 
 CREATE TABLE code (
     pk                BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,

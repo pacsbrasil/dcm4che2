@@ -1,5 +1,6 @@
 CREATE UNIQUE INDEX aet ON ae(aet(64));
 CREATE INDEX hostname ON ae(hostname(16));
+CREATE INDEX ae_group ON ae(ae_group);
 CREATE UNIQUE INDEX code_value ON code(code_value(64),code_designator(64),code_version(64));
 CREATE UNIQUE INDEX entity_id ON issuer(entity_id(64));
 CREATE UNIQUE INDEX entity_uid ON issuer(entity_uid(64),entity_uid_type(64));

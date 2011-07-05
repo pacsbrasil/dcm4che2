@@ -28,17 +28,20 @@
               <td width="10%">
                 <h2>Cipher</h2>
               </td>
-              <td width="10%">
+              <td width="8%">
                 <h2>Issuer Of Patient ID</h2>
               </td>
-              <td width="10%">
+              <td width="8%">
                 <h2>Issuer Of Accession Number</h2>
               </td>
-              <td width="10%">
+              <td width="8%">
                 <h2>User ID</h2>
               </td>
-              <td width="10%">
+              <td width="8%">
                 <h2>FS Group ID</h2>
+              </td>
+              <td width="8%">
+                <h2>AE Group</h2>
               </td>
               <td width="15%">
                 <h2>Description</h2>
@@ -68,34 +71,37 @@
     match="item[@type='org.dcm4chex.archive.ejb.interfaces.AEDTO']">
     <tr>
       <td title="AE Title" valign="top">
-        <xsl:value-of select="title" />
+        <xsl:value-of select="title" />&#160;
       </td>
       <td title="Hostname" valign="top">
-        <xsl:value-of select="hostName" />
+        <xsl:value-of select="hostName" />&#160;
       </td>
       <td title="Port" valign="top">
-        <xsl:value-of select="port" />
+        <xsl:value-of select="port" />&#160;
       </td>
       <td title="Cipher" valign="top">
         <xsl:for-each select="cipherSuites/item">
           <xsl:value-of select="." />
           <br />
-        </xsl:for-each>
+        </xsl:for-each>&#160;
       </td>
       <td title="Issuer of Patient ID" valign="top">
-        <xsl:value-of select="issuerOfPatientID" />
+        <xsl:value-of select="issuerOfPatientID" />&#160;
       </td>
       <td title="Issuer of Accession Number" valign="top">
-        <xsl:value-of select="issuerOfAccessionNumberAsString" />
+        <xsl:value-of select="issuerOfAccessionNumberAsString" />&#160;
       </td>
       <td title="User ID" valign="top">
-        <xsl:value-of select="userID" />
+        <xsl:value-of select="userID" />&#160;
       </td>
       <td title="File System Group ID" valign="top">
-        <xsl:value-of select="fileSystemGroupID" />
+        <xsl:value-of select="fileSystemGroupID" />&#160;
+      </td>
+      <td title="Group" valign="top">
+        <xsl:value-of select="group" />&#160;
       </td>
       <td title="Description" valign="top">
-        <xsl:value-of select="description" />
+        <xsl:value-of select="description" />&#160;
       </td>
       <xsl:if test="$ae_mgr.edit='true'">
         <td align="center" valign="top">

@@ -68,6 +68,7 @@ public class AEModel extends BasicFormModel {
     private String userID;
     private String passwd;
     private String fileSystemGroupID;
+    private String group;
     private String description;
     private String wadoUrl;
     private String stationName;
@@ -224,6 +225,7 @@ public class AEModel extends BasicFormModel {
         dto.setUserID(userID);
         dto.setPassword(passwd);
         dto.setFileSystemGroupID(fileSystemGroupID);
+        dto.setGroup(group);
         dto.setDescription(description);
         dto.setWadoURL(wadoUrl);
         dto.setStationName(stationName);
@@ -268,6 +270,7 @@ public class AEModel extends BasicFormModel {
         userID = ae.getUserID();
         passwd = ae.getPassword();
         fileSystemGroupID = ae.getFileSystemGroupID();
+        group = ae.getGroup();
         description = ae.getDescription();
         wadoUrl = ae.getWadoURL();
         stationName = ae.getStationName();
@@ -286,6 +289,7 @@ public class AEModel extends BasicFormModel {
         userID = null;
         passwd = null;
         fileSystemGroupID = null;
+        group = null;
         description = null;
         wadoUrl = null;
         stationName = null;

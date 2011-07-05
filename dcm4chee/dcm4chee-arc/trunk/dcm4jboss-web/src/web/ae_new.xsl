@@ -148,6 +148,13 @@
                         </td>
                       </tr>
                       <tr>
+                        <td width="50">AE Group</td>
+                        <td title="Group">
+                          <input size="25" name="group"
+                            type="text" value="" />
+                        </td>
+                      </tr>
+                      <tr>
                         <td width="50">Description</td>
                         <td title="Description">
                           <input size="25" name="description"

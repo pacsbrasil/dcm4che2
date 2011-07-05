@@ -300,6 +300,11 @@
        <type>java.lang.String</type>
      </parameter>
      <parameter>
+       <description>Group to which this AE belongs</description>
+       <name>group</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
        <description>Free text description of this AE</description>
        <name>description</name>
        <type>java.lang.String</type>
@@ -383,6 +388,11 @@
      <parameter>
        <description>File System Group ID associated with this AE</description>
        <name>fsGroupID</name>
+       <type>java.lang.String</type>
+     </parameter>
+     <parameter>
+       <description>Group to which this AE belongs</description>
+       <name>group</name>
        <type>java.lang.String</type>
      </parameter>
      <parameter>

@@ -149,7 +149,7 @@ public abstract class AEBean implements EntityBean {
      * @ejb.interface-method
      */
     public abstract void setCipherSuites(String cipherSuites);
-    
+
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="pat_id_issuer"
@@ -248,7 +248,18 @@ public abstract class AEBean implements EntityBean {
      * @ejb.interface-method
      */ 
     public abstract void setFileSystemGroupID(String id);
-    
+
+    /**
+     * @ejb.interface-method
+     * @ejb.persistence column-name="ae_group"
+     */
+    public abstract String getGroup();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setGroup(String group);
+
     /**
      * @ejb.interface-method
      * @ejb.persistence column-name="ae_desc"
@@ -309,6 +320,7 @@ public abstract class AEBean implements EntityBean {
         setUserID(dto.getUserID());
         setPassword(dto.getPassword());
         setFileSystemGroupID(dto.getFileSystemGroupID());
+        setGroup(dto.getGroup());
         setDescription(dto.getDescription());
         setWadoURL(dto.getWadoURL());
         setStationName(dto.getStationName());
@@ -334,6 +346,7 @@ public abstract class AEBean implements EntityBean {
         dto.setUserID(getUserID());
         dto.setPassword(getPassword());
         dto.setFileSystemGroupID(getFileSystemGroupID());
+        dto.setGroup(getGroup());
         dto.setDescription(getDescription());
         dto.setWadoURL(getWadoURL());
         dto.setStationName(getStationName());

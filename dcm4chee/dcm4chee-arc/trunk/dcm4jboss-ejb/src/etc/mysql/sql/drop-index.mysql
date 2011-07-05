@@ -1,5 +1,6 @@
 ALTER TABLE ae DROP INDEX aet;
 ALTER TABLE ae DROP INDEX hostname;
+ALTER TABLE ae DROP INDEX ae_group;
 ALTER TABLE code DROP INDEX code_value;
 ALTER TABLE issuer DROP INDEX entity_id;
 ALTER TABLE issuer DROP INDEX entity_uid;

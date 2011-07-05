@@ -10,6 +10,7 @@ CREATE TABLE ae (
     user_id           VARCHAR2(255),
     passwd            VARCHAR2(255),
     fs_group_id       VARCHAR2(255),
+    ae_group          VARCHAR2(255),
     ae_desc           VARCHAR2(255),
     wado_url          VARCHAR2(255),
     station_name      VARCHAR2(255),
@@ -20,6 +21,7 @@ CREATE TABLE ae (
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
 CREATE INDEX hostname ON ae(hostname);
+CREATE INDEX ae_group ON ae(ae_group);
 
 CREATE SEQUENCE code_pk_seq;
 CREATE TABLE code (

@@ -9,6 +9,7 @@ CREATE TABLE ae (
     user_id           TEXT,
     passwd            TEXT,
     fs_group_id       TEXT,
+    ae_group          TEXT,
     ae_desc           TEXT,
     wado_url          TEXT,
     station_name      TEXT,
@@ -19,6 +20,7 @@ CREATE TABLE ae (
 );
 CREATE UNIQUE INDEX aet ON ae(aet);
 CREATE INDEX hostname ON ae(hostname);
+CREATE INDEX ae_group ON ae(ae_group);
 
 CREATE TABLE code (
     pk                SERIAL8 NOT NULL CONSTRAINT code_pk PRIMARY KEY,
