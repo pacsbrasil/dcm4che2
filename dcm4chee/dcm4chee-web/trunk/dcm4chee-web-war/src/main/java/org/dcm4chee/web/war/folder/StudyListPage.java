@@ -1161,11 +1161,16 @@ public class StudyListPage extends Panel {
     private void queryStudies() {
         List<String> dicomSecurityRoles = (studyPermissionHelper.applyStudyPermissions() ? 
                     studyPermissionHelper.getDicomRoles() : null);
-        viewport.setTotal(dao.count(viewport.getFilter(), dicomSecurityRoles));
-        updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset(), dicomSecurityRoles));
-        header.expandToLevel(viewport.getFilter().isPatientQuery() ? 
+        StudyListFilter filter = viewport.getFilter();
+        viewport.setTotal(dao.count(filter, dicomSecurityRoles));
+        updatePatients(dao.findPatients(filter, pagesize.getObject(), viewport.getOffset(), dicomSecurityRoles));
+        header.expandToLevel(filter.isPatientQuery() ? 
                 AbstractDicomModel.PATIENT_LEVEL : AbstractDicomModel.STUDY_LEVEL);
         updateAutoExpandLevel();
+        if (filter.isExtendedQuery() && filter.getSeriesInstanceUID() != null) {
+            filter.setPpsWithoutMwl(false);
+            filter.setWithoutPps(false);
+        }
         notSearched = false;
     }
 
