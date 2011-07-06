@@ -73,6 +73,8 @@ public interface StudyListLocal {
     List<Series> findSeriesOfStudy(long pk);
 
     List<Series> findSeriesOfMpps(String uid);
+    
+    Series findSeriesByIuid(String seriesIuid);
 
     List<Instance> findInstancesOfSeries(long pk);
 

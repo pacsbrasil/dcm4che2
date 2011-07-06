@@ -74,6 +74,7 @@ public class StudyListFilter implements Serializable {
     private boolean ppsWithoutMwl;
     private boolean withoutPps;
     private boolean exactModalitiesInStudy;
+    private boolean exactSeriesIuid;
     private int autoExpandLevel = -1;
     
     public StudyListFilter(String forUsername) {
@@ -91,6 +92,7 @@ public class StudyListFilter implements Serializable {
         ppsWithoutMwl = false;
         withoutPps = false;
         exactModalitiesInStudy = false;
+        exactSeriesIuid = false;
     }
 
     public String getPatientName() {
@@ -203,6 +205,14 @@ public class StudyListFilter implements Serializable {
 
     public void setExactModalitiesInStudy(boolean exactModalitiesInStudy) {
         this.exactModalitiesInStudy = exactModalitiesInStudy;
+    }
+
+    public boolean isExactSeriesIuid() {
+        return exactSeriesIuid;
+    }
+
+    public void setExactSeriesIuid(boolean exactSeriesIuid) {
+        this.exactSeriesIuid = exactSeriesIuid;
     }
 
     public String getSourceAET() {

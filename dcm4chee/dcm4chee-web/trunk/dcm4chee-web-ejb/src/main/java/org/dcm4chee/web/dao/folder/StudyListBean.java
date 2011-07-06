@@ -296,6 +296,12 @@ public class StudyListBean implements StudyListLocal {
                 .setParameter(1, pk)
                 .getResultList());
     }
+    
+    public Series findSeriesByIuid(String iuid) {
+        Query q = em.createNamedQuery("Series.findByIUID");
+        q.setParameter("iuid", iuid);
+        return (Series) q.getSingleResult();
+    }
 
     @SuppressWarnings("unchecked")
     public List<Series> findSeriesOfMpps(String uid) {

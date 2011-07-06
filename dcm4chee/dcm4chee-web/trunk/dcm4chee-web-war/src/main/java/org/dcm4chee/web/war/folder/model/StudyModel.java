@@ -73,6 +73,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     private int numberOfStudyRelatedSeries;
     private int numberOfStudyRelatedInstances;
     private List<String> studyPermissionActions = new ArrayList<String>();
+    private String seriesIuid;
     
     public StudyModel(Study study, PatientModel patModel, Date createdTime) {
         if (study == null) {
@@ -90,6 +91,10 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     public StudyModel(Study study, PatientModel patModel, Date createdTime, List<String> studyPermissionActions) {
         this(study, patModel, createdTime);
         setStudyPermissionActions(studyPermissionActions);
+    }
+    
+    public void setRestrictChildsBySeriesIuid(String seriesIuid) {
+        this.seriesIuid = seriesIuid;
     }
 
     private void setPatient(PatientModel patModel) {
@@ -174,6 +179,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     @Override
     public void collapse() {
         ppss.clear();
+        seriesIuid = null;
     }
 
     @Override
@@ -196,9 +202,13 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     public void expand() {
         ppss.clear();
         StudyListLocal dao = (StudyListLocal)
-                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        for (Series series : dao.findSeriesOfStudy(getPk())) 
-            add(series);
+        JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        if (seriesIuid == null) {
+            for (Series series : dao.findSeriesOfStudy(getPk())) 
+                add(series);
+        } else {
+            add(dao.findSeriesByIuid(seriesIuid));
+        }
     }
 
     @Override

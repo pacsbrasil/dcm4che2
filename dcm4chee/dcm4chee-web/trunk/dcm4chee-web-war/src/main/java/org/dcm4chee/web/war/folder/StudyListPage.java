@@ -426,6 +426,7 @@ public class StudyListPage extends Panel {
                 return !filter.isPatientQuery() && QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
             }
         }.add(new UIDValidator(true)));
+        extendedFilter.add(new CheckBox("exactSeriesIuid"));
         form.add(extendedFilter);
         
         searchTableComponents.add(form.createAjaxParent("searchFooter"));
@@ -1254,26 +1255,33 @@ public class StudyListPage extends Panel {
             }
         }
         StudyModel m = new StudyModel(study, patient, study.getCreatedTime(), studyPermissionActions);
-        int expandLevel = viewport.getFilter().getAutoExpandLevel();
+        StudyListFilter filter = viewport.getFilter();
+        if (filter.isExactSeriesIuid())
+            m.setRestrictChildsBySeriesIuid(viewport.getFilter().getSeriesInstanceUID());
+        int expandLevel = filter.getAutoExpandLevel();
         if (expandLevel == -1) {
-            boolean woMwl = viewport.getFilter().isPpsWithoutMwl();
-            boolean woPps = viewport.getFilter().isWithoutPps();
-            if (woMwl || woPps) {
+            if (filter.isExactSeriesIuid()) {
                 m.expand();
-                PPSModel pps;
-                for (Iterator<PPSModel> it = m.getPPSs().iterator() ; it.hasNext() ; ) {
-                    pps = it.next();
-                    if (pps.getDataset() == null) {
-                        if (woPps) {
-                            pps.getNumberOfSeries();
-                            pps.getNumberOfInstances();
+            } else {
+                boolean woMwl = filter.isPpsWithoutMwl();
+                boolean woPps = filter.isWithoutPps();
+                if (woMwl || woPps) {
+                    m.expand();
+                    PPSModel pps;
+                    for (Iterator<PPSModel> it = m.getPPSs().iterator() ; it.hasNext() ; ) {
+                        pps = it.next();
+                        if (pps.getDataset() == null) {
+                            if (woPps) {
+                                pps.getNumberOfSeries();
+                                pps.getNumberOfInstances();
+                                pps.collapse();
+                            } else
+                                it.remove();
+                        } else if (woMwl && pps.getAccessionNumber()==null) {
                             pps.collapse();
-                        } else
+                        } else {
                             it.remove();
-                    } else if (woMwl && pps.getAccessionNumber()==null) {
-                        pps.collapse();
-                    } else {
-                        it.remove();
+                        }
                     }
                 }
             }
@@ -1285,9 +1293,22 @@ public class StudyListPage extends Panel {
     }
     
     private void expandToLevel(AbstractDicomModel m, int level) {
-        if ( m.levelOfModel() < level) {
+        int modelLevel = m.levelOfModel();
+        if ( modelLevel < level) {
             m.expand();
-            if (m.levelOfModel()+1 < level) {
+            if (modelLevel == AbstractDicomModel.STUDY_LEVEL) {//study expands to series
+                if (level == AbstractDicomModel.PPS_LEVEL) {
+                    for (AbstractDicomModel m1 : m.getDicomModelsOfNextLevel()) {
+                        m1.collapse();
+                    }
+                } else if (level == AbstractDicomModel.INSTANCE_LEVEL) {
+                    for (AbstractDicomModel m1 : m.getDicomModelsOfNextLevel()) {
+                        for (AbstractDicomModel m2 : m1.getDicomModelsOfNextLevel()) {
+                            expandToLevel(m2, level);
+                        }
+                    }
+                }
+            } else if (++modelLevel < level) {
                 for (AbstractDicomModel m1 : m.getDicomModelsOfNextLevel()) {
                     expandToLevel(m1, level);
                 }
