@@ -631,6 +631,10 @@ public class DicomEditBean implements DicomEditLocal {
 
     private void removeFromMPPS(DicomObject mppsAttrs, String seriesIUID, Collection<String> sopIUIDs) {
         DicomElement psSq = mppsAttrs.get(Tag.PerformedSeriesSequence);
+        if (psSq == null) {
+            log.warn("Missing Performed Series Sequence in MPPS! mpps\n:"+mppsAttrs);
+            return;
+        }
         for(int i = psSq.countItems() - 1; i >= 0; i--) {
             DicomObject psItem = psSq.getDicomObject(i);
             if(!seriesIUID.equals(psItem.getString(Tag.SeriesInstanceUID)))
