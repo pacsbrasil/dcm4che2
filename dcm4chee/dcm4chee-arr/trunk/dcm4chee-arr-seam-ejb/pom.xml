@@ -62,15 +62,15 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>hibernate</groupId>
-      <artifactId>hibernate3</artifactId>
-      <version>3.2.4.SP1</version>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate</artifactId>
+      <version>3.2.4.sp1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>hibernate-annotations</groupId>
+      <groupId>org.hibernate</groupId>
       <artifactId>hibernate-annotations</artifactId>
-      <version>3.2.1.GA</version>
+      <version>3.2.1.ga</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
