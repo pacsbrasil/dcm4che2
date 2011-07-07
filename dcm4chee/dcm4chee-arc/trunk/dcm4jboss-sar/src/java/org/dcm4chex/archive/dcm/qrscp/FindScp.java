@@ -166,7 +166,8 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
             boolean pixQuery = forcePixQuery(assoc)
                     || service.isPixQueryCallingAET(callingAET);
             Set<PIDWithIssuer> pidWithIssuer = pixQuery ? pixQuery(rqData) : null;
-            boolean adjustPatientID = pixQuery && pidWithIssuer == null;
+            boolean adjustPatientID = pixQuery && pidWithIssuer == null
+                    && rqData.containsValue(Tags.IssuerOfPatientID);
             // return OtherPatientIDs needed to adjust Patient IDs
             rqData.putSQ(Tags.OtherPatientIDSeq);
 

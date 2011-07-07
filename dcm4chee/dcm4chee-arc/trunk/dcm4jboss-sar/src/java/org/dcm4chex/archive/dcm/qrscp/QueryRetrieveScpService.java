@@ -1102,10 +1102,11 @@ public class QueryRetrieveScpService extends AbstractScpService {
         if (pidWithIssuers == null) {
             List<String[]> results = null;
             try {
-                results = queryCorrespondingPIDs(pid, issuer);
+                results = isPixQueryIssuer(issuer) ? queryCorrespondingPIDs(pid, issuer) : null;
             } catch (DcmServiceException e) {}
             if (results == null || results.isEmpty()) {
                 pidWithIssuers = new HashSet<PIDWithIssuer>(2);
+                pidWithIssuers.add(key);
                 map.put(key, pidWithIssuers);
                 return pidWithIssuers;
             }
