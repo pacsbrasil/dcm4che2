@@ -3,14 +3,14 @@
   <property file="build.properties"/>
   <property file="../build.properties"/>
 
-  <property name="version" value="2.16.2"/>
-  <property name="audit-version" value="2.16.2"/>
+  <property name="version" value="2.17.0"/>
+  <property name="audit-version" value="2.17.0"/>
   <property name="docstore-version" value="1.0.2"/>
   <property name="target.dir" value="${basedir}/target"/>
 
   <!-- Override with your dcm4che-1.4.x source dist location -->
   <property name="dcm4che14.home"
-    value="${user.home}/dcm4che14/build/dcm4che-1.4.29"/>
+    value="${user.home}/dcm4che14/build/dcm4che-1.4.30"/>
 
   <!-- Override with your local Maven2 repository location -->
   <property name="m2.repos" value="${user.home}/.m2/repository"/>
