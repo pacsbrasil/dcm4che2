@@ -187,7 +187,10 @@ public class CompressionRules {
             e.condition.toStringBuffer(sb);
             sb.append(CODES[e.compression]);
             if (e.compression == JPLY) {
-                sb.append('(').append(e.quality).append(':').append(e.ratio).append(')');
+                sb.append('(').append(e.quality)
+                  .append(':').append(e.ratio)
+                  .append(':').append(e.derivationDescription)
+                  .append(')');
             }
             sb.append(newline);
         }
