@@ -48,7 +48,6 @@ import java.util.List;
 import javax.management.MBeanException;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
@@ -59,7 +58,6 @@ import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
@@ -91,6 +89,7 @@ import org.dcm4chee.archive.entity.PrivateStudy;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
 import org.dcm4chee.web.common.behaviours.SelectableTableRowBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
@@ -104,17 +103,11 @@ import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.service.common.FileImportOrder;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
-import org.dcm4chee.web.war.MainPage;
 import org.dcm4chee.web.war.StudyPermissionHelper;
-import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
-import org.dcm4chee.web.war.folder.model.PPSModel;
-import org.dcm4chee.web.war.folder.model.PatientModel;
-import org.dcm4chee.web.war.folder.model.SeriesModel;
-import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.dcm4chee.web.war.trash.delegate.StoreBridgeDelegate;
 import org.dcm4chee.web.war.trash.model.PrivInstanceModel;
 import org.dcm4chee.web.war.trash.model.PrivPatientModel;
@@ -333,6 +326,7 @@ public class TrashListPage extends Panel {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
                     viewport.setOffset(0);
+                    viewport.getFilter().setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
                     queryStudies();
                 } catch (Throwable t) {
                     log.error("search failed: ", t);

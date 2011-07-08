@@ -613,7 +613,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         searchDS.putString(Tag.PatientName, VR.PN, checkAutoWildcard(filter.getPatientName()));
         searchDS.putString(Tag.PatientID, VR.LO, filter.getPatientID());
         searchDS.putString(Tag.IssuerOfPatientID, VR.LO, filter.getIssuerOfPatientID());
-        searchDS.putString(Tag.AccessionNumber, VR.SH, checkAutoWildcard(filter.getAccessionNumber()));
+        searchDS.putString(Tag.AccessionNumber, VR.SH, filter.getAccessionNumber());
         DicomElement spsSq = searchDS.putSequence(Tag.ScheduledProcedureStepSequence);
         DicomObject spsSqItem = new BasicDicomObject();
         spsSq.addDicomObject(spsSqItem);
@@ -744,6 +744,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
     private void doSearch(AjaxRequestTarget target) {
         viewport.setOffset(0);
+        viewport.getFilter().setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
         queryMWLItems(target);
     }
 

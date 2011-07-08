@@ -98,7 +98,7 @@ public class TrashListBean implements TrashListLocal {
             return query.setMaxResults(pagesize).setFirstResult(offset).getResultList();
         else {
             List<Object[]> result = query.setMaxResults(pagesize).setFirstResult(offset).getResultList();
-            List<PrivatePatient> patientList = new ArrayList();
+            List<PrivatePatient> patientList = new ArrayList<PrivatePatient>();
             PrivatePatient patient = null;
             for (Object[] element: result) {
                 if (!patientList.contains((PrivatePatient) element[0])) {
@@ -125,7 +125,7 @@ public class TrashListBean implements TrashListLocal {
         } else {
             if ( QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) ) {
                 appendPatFilter(ql, filter);
-                QueryUtil.appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
+                QueryUtil.appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber(), filter.isAutoWildcard()));
             } else {
                 ql.append(" AND s.studyInstanceUID = :studyInstanceUID");
             }
@@ -136,9 +136,9 @@ public class TrashListBean implements TrashListLocal {
     }
 
     private static void appendPatFilter(StringBuilder ql, TrashListFilter filter) {
-        QueryUtil.appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
-        QueryUtil.appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID()));
-        QueryUtil.appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
+        QueryUtil.appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName(), filter.isPNAutoWildcard()));
+        QueryUtil.appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID(), filter.isAutoWildcard()));
+        QueryUtil.appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID(), filter.isAutoWildcard()));
     }
 
     private static void setQueryParameters(Query query, TrashListFilter filter, List<String> roles) {
@@ -147,7 +147,7 @@ public class TrashListBean implements TrashListLocal {
         } else {
             if ( QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) ) {
                 setPatQueryParameters(query, filter);
-                QueryUtil.setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
+                QueryUtil.setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber(), filter.isAutoWildcard()));
             } else {
                 QueryUtil.setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
             }
@@ -158,9 +158,9 @@ public class TrashListBean implements TrashListLocal {
     }
 
     private static void setPatQueryParameters(Query query, TrashListFilter filter) {
-        QueryUtil.setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
-        QueryUtil.setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID()));
-        QueryUtil.setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
+        QueryUtil.setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName(), filter.isPNAutoWildcard()));
+        QueryUtil.setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID(), filter.isAutoWildcard()));
+        QueryUtil.setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID(), filter.isAutoWildcard()));
     }
     
     public int countStudiesOfPatient(long pk, List<String> roles) {

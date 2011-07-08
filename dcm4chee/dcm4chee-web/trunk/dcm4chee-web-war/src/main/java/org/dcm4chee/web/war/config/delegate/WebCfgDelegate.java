@@ -185,6 +185,19 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return getIntegerList("getAutoExpandLevelChoiceList", Arrays.asList(-1));
     }
     
+    public int getAutoWildcard() {
+        if (server != null) {
+            try {
+                return (Integer) server.getAttribute(serviceObjectName, "AutoWildcard"); 
+            } catch (Exception ignore) {
+                log.debug("Failed to get AutoWildcard attribute!", ignore);
+            }
+        }
+        log.warn("Cant get AutoWildcard attribute! return 1 (only Patient) as default!");
+        return 1;
+        
+    }
+    
     @SuppressWarnings("unchecked")
     public List<Integer> getPagesizeList() {
         if (server == null) return Arrays.asList(10,25,50);

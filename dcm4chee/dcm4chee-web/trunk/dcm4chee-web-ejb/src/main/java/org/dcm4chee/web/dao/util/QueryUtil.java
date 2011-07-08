@@ -110,10 +110,10 @@ public class QueryUtil {
         
     }
         
-    public static String checkAutoWildcard(String s) {
+    public static String checkAutoWildcard(String s, boolean allowWildcard) {
         if (isUniversalMatch(s)) {
             return null;
-        } else if (s.indexOf('*')!=-1 || s.indexOf('?')!=-1 || s.indexOf('^')!=-1) {
+        } else if (!allowWildcard || s.indexOf('*')!=-1 || s.indexOf('?')!=-1 || s.indexOf('^')!=-1) {
             return s;
         } else {
             return s+'*';

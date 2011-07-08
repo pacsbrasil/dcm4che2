@@ -196,7 +196,7 @@ public class StudyListBean implements StudyListLocal {
                 QueryUtil.appendSeriesInstanceUIDFilter(ql, filter.getSeriesInstanceUID());
             } else {
                 appendPatFilter(ql, filter);
-                QueryUtil.appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
+                QueryUtil.appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber(), filter.isAutoWildcard()));
                 QueryUtil.appendPpsWithoutMwlFilter(ql, filter.isWithoutPps(), filter.isPpsWithoutMwl());
                 QueryUtil.appendStudyDateMinFilter(ql, filter.getStudyDateMin());
                 QueryUtil.appendStudyDateMaxFilter(ql, filter.getStudyDateMax());
@@ -216,10 +216,10 @@ public class StudyListBean implements StudyListLocal {
         if (filter.isFuzzyPN()) {
             QueryUtil.appendPatientNameFuzzyFilter(ql, filter.getPatientName());
         } else {
-            QueryUtil.appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+            QueryUtil.appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName(), filter.isPNAutoWildcard()));
         }
-        QueryUtil.appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID()));
-        QueryUtil.appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
+        QueryUtil.appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID(), filter.isAutoWildcard()));
+        QueryUtil.appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID(), filter.isAutoWildcard()));
         if ( filter.isExtendedQuery()) {
             QueryUtil.appendPatientBirthDateFilter(ql, filter.getBirthDateMin(), filter.getBirthDateMax());
         }
@@ -235,7 +235,7 @@ public class StudyListBean implements StudyListLocal {
                 QueryUtil.setSeriesInstanceUIDQueryParameter(query, filter.getSeriesInstanceUID());
             } else {
                 setPatQueryParameters(query, filter);
-                QueryUtil.setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
+                QueryUtil.setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber(), filter.isAutoWildcard()));
                 QueryUtil.setStudyDateMinQueryParameter(query, filter.getStudyDateMin());
                 QueryUtil.setStudyDateMaxQueryParameter(query, filter.getStudyDateMax());
                 QueryUtil.setModalityQueryParameter(query, filter.getModality());
@@ -250,10 +250,10 @@ public class StudyListBean implements StudyListLocal {
         if (filter.isFuzzyPN()) {
             QueryUtil.setPatientNameFuzzyQueryParameter(query, filter.getPatientName());
         } else {
-            QueryUtil.setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+            QueryUtil.setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName(), filter.isPNAutoWildcard()));
         }
-        QueryUtil.setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID()));
-        QueryUtil.setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
+        QueryUtil.setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID(), filter.isAutoWildcard()));
+        QueryUtil.setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID(), filter.isAutoWildcard()));
         if ( filter.isExtendedQuery()) {
             QueryUtil.setPatientBirthDateQueryParameter(query, filter.getBirthDateMin(), filter.getBirthDateMax());
         }

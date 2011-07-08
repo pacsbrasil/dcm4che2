@@ -613,6 +613,7 @@ public class StudyListPage extends Panel {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 viewport.setOffset(0);
+                viewport.getFilter().setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
                 queryStudies(target);
                 target.addComponent(form);
             }

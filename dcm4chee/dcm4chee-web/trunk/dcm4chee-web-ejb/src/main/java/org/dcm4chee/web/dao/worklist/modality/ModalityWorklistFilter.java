@@ -73,6 +73,7 @@ public class ModalityWorklistFilter implements Serializable {
     private Date startDateMin;
     private Date startDateMax;
     private boolean fuzzyPN;
+    private int autoWildcard = 0;
 
     public ModalityWorklistFilter(String forUsername) {
         clear();
@@ -228,5 +229,22 @@ public class ModalityWorklistFilter implements Serializable {
 
     public void setStartDateMax(Date startDateMax) {
         this.startDateMax = startDateMax;
+    }
+    
+    public boolean isAutoWildcard() {
+        return autoWildcard  > 1;
+    }
+
+    public boolean isPNAutoWildcard() {
+        return autoWildcard > 0;
+    }
+    /**
+     * 0..Off
+     * 1..Only Patient name
+     * 2..All 'wildcard' text fields.
+     * @param autoWildcard
+     */
+    public void setAutoWildcard(int autoWildcard) {
+        this.autoWildcard = autoWildcard;
     }
 }

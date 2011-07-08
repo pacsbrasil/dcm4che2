@@ -62,6 +62,7 @@ public class TrashListFilter implements Serializable {
     private String studyInstanceUID;
     private String sourceAET;
     private boolean patientQuery;
+    private int autoWildcard = 0;
 
     public TrashListFilter(String forUsername) {
         clear();
@@ -141,5 +142,22 @@ public class TrashListFilter implements Serializable {
 
     public void setPatientQuery(boolean patQuery) {
         this.patientQuery = patQuery;
+    }
+    
+    public boolean isAutoWildcard() {
+        return autoWildcard  > 1;
+    }
+
+    public boolean isPNAutoWildcard() {
+        return autoWildcard > 0;
+    }
+    /**
+     * 0..Off
+     * 1..Only Patient name
+     * 2..All 'wildcard' text fields.
+     * @param autoWildcard
+     */
+    public void setAutoWildcard(int autoWildcard) {
+        this.autoWildcard = autoWildcard;
     }
 }

@@ -459,6 +459,23 @@
          <value value="auto;Patient;Study;Series"/>
       </descriptors>
    </attribute>
+   
+   <attribute access="read-write"
+      getMethod="getAutoWildcard"
+      setMethod="setAutoWildcard">
+      <description><![CDATA[AutoWildcard specify if text of search fields should be automatically extended by '*'.<br/>
+      	<dl><dt>Possible values:</dt>
+      	 <dd>0...Disabled</dd>
+      	 <dd>1...Only patient name</dd>
+      	 <dd>2...All 'wildcard' search fields</dd>
+      	</dl>
+      ]]></description>
+      <name>AutoWildcard</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1"/>
+      </descriptors>
+   </attribute>
 
    <attribute access="read-write"
       getMethod="getPagesizes"

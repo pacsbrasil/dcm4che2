@@ -170,6 +170,8 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     
     private List<Integer> autoExpandLevelChoices = new ArrayList<Integer>(6);
     
+    private int autoWildcard;
+    
     private int hasNotificationListener;
     
     public WebCfgService() throws MalformedObjectNameException {
@@ -435,6 +437,17 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public void setAutoUpdateStationNames(boolean b) {
         autoUpdateStationNames = b;
         updateAutoUpdateTimer();
+    }
+
+    public int getAutoWildcard() {
+        return autoWildcard;
+    }
+
+    public void setAutoWildcard(int autoWildcard) {
+        if (autoWildcard < 0 || autoWildcard > 2) {
+            throw new IllegalArgumentException("AutoWildcard must be 0, 1 or 2!");
+        }
+        this.autoWildcard = autoWildcard;
     }
 
     public List<Integer> getPagesizeList() {

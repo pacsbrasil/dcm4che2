@@ -118,14 +118,14 @@ public class ModalityWorklistBean implements ModalityWorklistLocal {
             if (filter.isFuzzyPN()) {
                 QueryUtil.appendPatientNameFuzzyFilter(ql, filter.getPatientName());
             } else {
-                QueryUtil.appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+                QueryUtil.appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName(), filter.isPNAutoWildcard()));
             }
-            appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID()));
-            appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
+            appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID(), filter.isAutoWildcard()));
+            appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID(), filter.isAutoWildcard()));
             if (filter.isExtendedQuery()) {
                 appendPatientBirthDateFilter(ql, filter.getBirthDateMin(), filter.getBirthDateMax());
             }
-            appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
+            appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber(), filter.isAutoWildcard()));
             appendStartDateMinFilter(ql, filter.getStartDateMin());
             appendStartDateMaxFilter(ql, filter.getStartDateMax());
             appendModalityFilter(ql, filter.getModality());
@@ -143,14 +143,14 @@ public class ModalityWorklistBean implements ModalityWorklistLocal {
             if (filter.isFuzzyPN()) {
                 QueryUtil.setPatientNameFuzzyQueryParameter(query, filter.getPatientName());
             } else {
-                QueryUtil.setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+                QueryUtil.setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName(), filter.isPNAutoWildcard()));
             }
-            setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID()));
-            setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
+            setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID(), filter.isAutoWildcard()));
+            setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID(), filter.isAutoWildcard()));
             if (filter.isExtendedQuery()) {
                 setPatientBirthDateQueryParameter(query, filter.getBirthDateMin(), filter.getBirthDateMax());
             }
-            setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber()));
+            setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber(), filter.isAutoWildcard()));
             setStartDateMinQueryParameter(query, filter.getStartDateMin());
             setStartDateMaxQueryParameter(query, filter.getStartDateMax());
             setModalityQueryParameter(query, filter.getModality());
