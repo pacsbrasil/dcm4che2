@@ -43,6 +43,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.dcm4chee.archive.conf.AttributeFilter;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.AETGroup;
 import org.dcm4chee.usr.util.JNDIUtils;
@@ -76,6 +77,7 @@ public class StudyListFilter implements Serializable {
     private boolean exactModalitiesInStudy;
     private boolean exactSeriesIuid;
     private int autoExpandLevel = -1;
+    private boolean fuzzyPN;
     
     public StudyListFilter(String forUsername) {
         clear();
@@ -93,6 +95,7 @@ public class StudyListFilter implements Serializable {
         withoutPps = false;
         exactModalitiesInStudy = false;
         exactSeriesIuid = false;
+        fuzzyPN = false;
     }
 
     public String getPatientName() {
@@ -101,6 +104,16 @@ public class StudyListFilter implements Serializable {
 
     public void setPatientName(String patientName) {
         this.patientName = patientName;
+    }
+
+    public boolean isFuzzyPNEnabled() {
+        return AttributeFilter.isSoundexEnabled();
+    }
+    public boolean isFuzzyPN() {
+        return fuzzyPN;
+    }
+    public void setFuzzyPN(boolean fuzzyPN) {
+        this.fuzzyPN = fuzzyPN;
     }
 
     public String getPatientID() {

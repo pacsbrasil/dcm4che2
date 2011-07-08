@@ -43,6 +43,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.dcm4chee.archive.conf.AttributeFilter;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.AETGroup;
 import org.dcm4chee.usr.util.JNDIUtils;
@@ -71,7 +72,8 @@ public class ModalityWorklistFilter implements Serializable {
     private String SPSStatus;
     private Date startDateMin;
     private Date startDateMax;
-    
+    private boolean fuzzyPN;
+
     public ModalityWorklistFilter(String forUsername) {
         clear();
     }
@@ -90,6 +92,16 @@ public class ModalityWorklistFilter implements Serializable {
 
     public void setPatientName(String patientName) {
         this.patientName = patientName;
+    }
+
+    public boolean isFuzzyPNEnabled() {
+        return AttributeFilter.isSoundexEnabled();
+    }
+    public boolean isFuzzyPN() {
+        return fuzzyPN;
+    }
+    public void setFuzzyPN(boolean fuzzyPN) {
+        this.fuzzyPN = fuzzyPN;
     }
 
     public String getPatientID() {

@@ -59,7 +59,7 @@ public interface AEHomeLocal {
     
     AE findByTitle(String title);
     
-    void updateOrCreateAET(AE ae);
+    AE updateOrCreateAET(AE ae);
 
     void removeAET(long pk);
 }

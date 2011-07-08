@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import javax.ejb.EJBException;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 import javax.servlet.http.HttpServletRequest;
@@ -112,13 +113,18 @@ import org.apache.wicket.security.hive.authentication.DefaultSubject;
 import org.apache.wicket.security.hive.authorization.Principal;
 import org.apache.wicket.security.hive.authorization.SimplePrincipal;
 import org.apache.wicket.security.swarm.strategies.SwarmStrategy;
+import org.apache.wicket.util.lang.Classes;
 import org.apache.wicket.util.time.Duration;
+import org.apache.wicket.validation.IValidatable;
+import org.apache.wicket.validation.validator.AbstractValidator;
 import org.dcm4che2.data.DateRange;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4chee.archive.common.PrivateTag;
+import org.dcm4chee.archive.conf.AttributeFilter;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyPermission;
@@ -126,9 +132,11 @@ import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.CheckOneDayBehaviour;
+import org.dcm4chee.web.common.behaviours.MarkInvalidBehaviour;
 import org.dcm4chee.web.common.behaviours.SelectableTableRowBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
+import org.dcm4chee.web.common.exceptions.WicketExceptionWithMsgKey;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
@@ -366,6 +374,8 @@ public class StudyListPage extends Panel {
         
         form.addPatientNameField("patientName", new PropertyModel<String>(filter, "patientName"),
                     WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModelPat, false);
+        form.addComponent(new CheckBox("fuzzyPN")).setVisible(filter.isFuzzyPNEnabled());
+        form.addInternalLabel("fuzzyPN").setVisible(filter.isFuzzyPNEnabled());
         form.addTextField("patientID", enabledModelPat, true);
         form.addTextField("issuerOfPatientID", enabledModelPat, true);
         SimpleDateTimeField dtf = form.addDateTimeField("studyDateMin", new PropertyModel<Date>(filter, "studyDateMin"), 
@@ -602,12 +612,8 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                try {
-                    viewport.setOffset(0);
-                    queryStudies();
-                } catch (Throwable t) {
-                    log.error("search failed: ", t);
-                }
+                viewport.setOffset(0);
+                queryStudies(target);
                 target.addComponent(form);
             }
             
@@ -652,11 +658,7 @@ public class StudyListPage extends Panel {
             protected void onSubmit(AjaxRequestTarget target) {
                 if (!WebCfgDelegate.getInstance().isQueryAfterPagesizeChange())
                     return;
-                try {
-                    queryStudies();
-                } catch (Throwable t) {
-                    log.error("search failed: ", t);
-                }
+                queryStudies(target);
                 target.addComponent(form);
                 target.addComponent(header);
             }
@@ -683,7 +685,7 @@ public class StudyListPage extends Panel {
             @Override
             public void onClick() {
                 viewport.setOffset(Math.max(0, viewport.getOffset() - pagesize.getObject()));
-                queryStudies();               
+                queryStudies(null);               
             }
             
             @Override
@@ -703,7 +705,7 @@ public class StudyListPage extends Panel {
             @Override
             public void onClick() {
                 viewport.setOffset(viewport.getOffset() + pagesize.getObject());
-                queryStudies();
+                queryStudies(null);
             }
 
             @Override
@@ -799,7 +801,7 @@ public class StudyListPage extends Panel {
                         setStatus(new StringResourceModel("folder.message.deleteDone", StudyListPage.this,null));
                         if (selected.hasPatients()) {
                             viewport.getPatients().clear();
-                            queryStudies();
+                            queryStudies(target);
                         } else
                             selected.refreshView(true);
                     } else
@@ -962,7 +964,7 @@ public class StudyListPage extends Panel {
                 }
                 
                 if (!patientPks.isEmpty() || !studyPks.isEmpty() || !ppsPks.isEmpty() || !seriesPks.isEmpty()) {
-                    queryStudies();
+                    queryStudies(target);
                     target.addComponent(getPage());
                 }
             }
@@ -1105,7 +1107,7 @@ public class StudyListPage extends Panel {
                         setStatus(new StringResourceModel("folder.message.unlinkDone", StudyListPage.this,null));
                         if (selected.hasPatients()) {
                             viewport.getPatients().clear();
-                            queryStudies();
+                            queryStudies(target);
                         } else
                             selected.refreshView(true);
                     } else 
@@ -1158,20 +1160,30 @@ public class StudyListPage extends Panel {
         form.add(confirmEmulateMpps);
     }
 
-    private void queryStudies() {
-        List<String> dicomSecurityRoles = (studyPermissionHelper.applyStudyPermissions() ? 
-                    studyPermissionHelper.getDicomRoles() : null);
-        StudyListFilter filter = viewport.getFilter();
-        viewport.setTotal(dao.count(filter, dicomSecurityRoles));
-        updatePatients(dao.findPatients(filter, pagesize.getObject(), viewport.getOffset(), dicomSecurityRoles));
-        header.expandToLevel(filter.isPatientQuery() ? 
-                AbstractDicomModel.PATIENT_LEVEL : AbstractDicomModel.STUDY_LEVEL);
-        updateAutoExpandLevel();
-        if (filter.isExtendedQuery() && filter.getSeriesInstanceUID() != null) {
-            filter.setPpsWithoutMwl(false);
-            filter.setWithoutPps(false);
+    private void queryStudies(AjaxRequestTarget target) {
+        try {
+            List<String> dicomSecurityRoles = (studyPermissionHelper.applyStudyPermissions() ? 
+                        studyPermissionHelper.getDicomRoles() : null);
+            StudyListFilter filter = viewport.getFilter();
+            viewport.setTotal(dao.count(filter, dicomSecurityRoles));
+            updatePatients(dao.findPatients(filter, pagesize.getObject(), viewport.getOffset(), dicomSecurityRoles));
+            header.expandToLevel(filter.isPatientQuery() ? 
+                    AbstractDicomModel.PATIENT_LEVEL : AbstractDicomModel.STUDY_LEVEL);
+            updateAutoExpandLevel();
+            if (filter.isExtendedQuery() && filter.getSeriesInstanceUID() != null) {
+                filter.setPpsWithoutMwl(false);
+                filter.setWithoutPps(false);
+            }
+            notSearched = false;
+        } catch (Throwable x) {
+            if ((x instanceof EJBException) && x.getCause() != null) {
+                x = x.getCause();
+            }
+            if ((x instanceof IllegalArgumentException) && x.getMessage() != null && x.getMessage().indexOf("fuzzy") != -1) {
+                x = new WicketExceptionWithMsgKey("fuzzyError", x);
+            }
+            msgWin.show(target, new WicketExceptionWithMsgKey("folder.message.searcherror", x), true);
         }
-        notSearched = false;
     }
 
     private void updateStudyPermissions() {
@@ -2234,7 +2246,7 @@ public class StudyListPage extends Panel {
                     @Override
                     public void onClose(AjaxRequestTarget target) {
                         updateStudyPermissions();
-                        queryStudies(); 
+                        queryStudies(target); 
                         modalWindow.getPage().setOutputMarkupId(true);
                         target.addComponent(modalWindow.getPage());
                         target.addComponent(header);
@@ -2353,7 +2365,7 @@ public class StudyListPage extends Panel {
             filter.setWithoutPps(Boolean.valueOf(paras.getString("withoutPps")));
             filter.setExactModalitiesInStudy(Boolean.valueOf(paras.getString("exactModalitiesInStudy")));
             if (Boolean.valueOf(paras.getString("query"))) {
-                queryStudies();
+                queryStudies(null);
             }
         }
     }

@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.ejb.EJBException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
@@ -53,6 +54,7 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
@@ -62,6 +64,7 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
@@ -89,6 +92,7 @@ import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
 import org.dcm4chee.web.common.behaviours.CheckOneDayBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.exceptions.WicketExceptionWithMsgKey;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.PatientNameField;
@@ -241,6 +245,20 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         pnField = form.addPatientNameField("patientName", new PropertyModel<String>(filter, "patientName"),
                 WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModel, false);
         pnField.setOutputMarkupId(true);
+        form.addComponent(new CheckBox("fuzzyPN") {
+            private static final long serialVersionUID = 1L;
+
+            public boolean isVisible() {
+                return filter.isFuzzyPNEnabled() && viewport.isInternalWorklistProvider();
+            }
+        });
+        form.addComponent(new Label("fuzzyPN.label", new ResourceModel("mw.searchFields.fuzzyPN.label")) {
+            private static final long serialVersionUID = 1L;
+
+            public boolean isVisible() {
+                return filter.isFuzzyPNEnabled() && viewport.isInternalWorklistProvider();
+            }
+        });
         form.addTextField("patientID", enabledModel, true);
         form.addTextField("issuerOfPatientID", enabledModel, true);
         SimpleDateTimeField dtf = form.addDateTimeField("startDateMin", null, enabledModel, false, true);
@@ -256,19 +274,19 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         form.addInternalLabel("scheduledStationName");
         form.addInternalLabel("SPSStatus");
 
-        form.addDropDownChoice("modality", null, new Model<ArrayList<String>>(new ArrayList(WebCfgDelegate.getInstance().getModalityList())), 
+        form.addDropDownChoice("modality", null, new Model<ArrayList<String>>(new ArrayList<String>(WebCfgDelegate.getInstance().getModalityList())), 
                 enabledModel, false).setModelObject("*");
         
         List<String> aetChoices = viewport.getAetChoices();
         if (aetChoices.size() > 0)
-            form.addDropDownChoice("scheduledStationAET", null, new Model<ArrayList<String>>(new ArrayList(aetChoices)), enabledModel, false)
+            form.addDropDownChoice("scheduledStationAET", null, new Model<ArrayList<String>>(new ArrayList<String>(aetChoices)), enabledModel, false)
             .setModelObject(aetChoices.get(0));
         else
-            form.addDropDownChoice("scheduledStationAET", null, new Model<ArrayList<String>>(new ArrayList(aetChoices)), new Model<Boolean>(false), false)
+            form.addDropDownChoice("scheduledStationAET", null, new Model<ArrayList<String>>(new ArrayList<String>(aetChoices)), new Model<Boolean>(false), false)
             .setNullValid(true);
 
-        form.addDropDownChoice("scheduledStationName", null, new Model<ArrayList<String>>(new ArrayList(WebCfgDelegate.getInstance().getStationNameList())), enabledModel, false).setModelObject("*");
-        form.addDropDownChoice("SPSStatus", null, new Model<ArrayList<String>>(new ArrayList(getSpsStatusChoices())), enabledModel, false).setModelObject("*");
+        form.addDropDownChoice("scheduledStationName", null, new Model<ArrayList<String>>(new ArrayList<String>(WebCfgDelegate.getInstance().getStationNameList())), enabledModel, false).setModelObject("*");
+        form.addDropDownChoice("SPSStatus", null, new Model<ArrayList<String>>(new ArrayList<String>(getSpsStatusChoices())), enabledModel, false).setModelObject("*");
 
         final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
 
@@ -346,14 +364,14 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             protected void onSubmit(final AjaxRequestTarget target, Form<?> form) {
                 form.clearInput();
                 viewport.clear();
-                ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("modality")).setModelObject("*");
-                DropDownChoice scheduledStationAETDropDownChoice = ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("scheduledStationAET"));
+                ((DropDownChoice<String>) ((WebMarkupContainer) form.get("searchDropdowns")).get("modality")).setModelObject("*");
+                DropDownChoice<String> scheduledStationAETDropDownChoice = ((DropDownChoice<String>) ((WebMarkupContainer) form.get("searchDropdowns")).get("scheduledStationAET"));
                 if (scheduledStationAETDropDownChoice.getChoices().size() > 0)
                     scheduledStationAETDropDownChoice.setModelObject(scheduledStationAETDropDownChoice.getChoices().get(0));
                 else
                     scheduledStationAETDropDownChoice.setNullValid(true);
-                ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("scheduledStationName")).setModelObject("*");
-                ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("SPSStatus")).setModelObject("*");
+                ((DropDownChoice<String>) ((WebMarkupContainer) form.get("searchDropdowns")).get("scheduledStationName")).setModelObject("*");
+                ((DropDownChoice<String>) ((WebMarkupContainer) form.get("searchDropdowns")).get("SPSStatus")).setModelObject("*");
                 pagesize.setObject(WebCfgDelegate.getInstance().getDefaultMWLPagesize());
                 notSearched = true;
                 BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
@@ -419,7 +437,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         navPanel = form.createAjaxParent("navPanel");
         
         pagesize.setObject(WebCfgDelegate.getInstance().getDefaultMWLPagesize());
-        form.addDropDownChoice("pagesize", pagesize, new Model<ArrayList<String>>(new ArrayList(WebCfgDelegate.getInstance().getPagesizeList())), new Model<Boolean>() {
+        form.addDropDownChoice("pagesize", pagesize, new Model<ArrayList<Integer>>(new ArrayList<Integer>(WebCfgDelegate.getInstance().getPagesizeList())), new Model<Boolean>() {
                     
             private static final long serialVersionUID = 1L;
 
@@ -504,16 +522,15 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
             @Override
             protected Object[] getParameters() {
-                boolean intern = ViewPort.INTERNAL_WORKLISTPROVIDER.equals(viewport.getWorklistProvider());
                 return new Object[]{viewport.getOffset()+1,
                         Math.min(viewport.getOffset() + pagesize.getObject(), viewport.getTotal()),
-                        intern ? String.valueOf(viewport.getTotal()) : "?" };
+                        viewport.isInternalWorklistProvider() ? String.valueOf(viewport.getTotal()) : "?" };
             }
         }));
         form.clearParent();
     }
 
-    private void addMwlScpAetSelection(BaseForm form) {
+    private void addMwlScpAetSelection(final BaseForm form) {
         DropDownChoice<String> ch = new DropDownChoice<String>("aetSelect", 
                 viewport.getWorklistProviderModel(), viewport.getWorklistProviderListModel()){
             private static final long serialVersionUID = 1L;
@@ -522,7 +539,14 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             public boolean isVisible() {
                 return viewport.getWorklistProviderListModel().getObject().size() > 1;
             }
-        }; 
+        };
+        ch.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+            private static final long serialVersionUID = 1L;
+
+            protected void onUpdate(AjaxRequestTarget target) {
+                BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
+            }
+        });
         form.addComponent(ch);
         form.addComponent(new Label("aetSelect.label", new ResourceModel("mw.searchFooter.aetSelect.label")) {
             private static final long serialVersionUID = 1L;
@@ -572,9 +596,15 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             notSearched = false;
             log.debug("#### queryMWLItems (found "+current.size()+" items) done in "+(System.currentTimeMillis()-t1)+" ms!");
             addAfterQueryComponents(target);
-        } catch (Exception x) {
+        } catch (Throwable x) {
             log.error("Query MWL failed!", x);
-            msgWin.show(target, new ResourceModel("mw.search.msg.queryFailed").wrapOnAssignment(this));
+            if ((x instanceof EJBException) && x.getCause() != null) {
+                x = x.getCause();
+            }
+            if ((x instanceof IllegalArgumentException) && x.getMessage() != null && x.getMessage().indexOf("fuzzy") != -1) {
+                x = new WicketExceptionWithMsgKey("fuzzyError", x);
+            }
+            msgWin.show(target, new WicketExceptionWithMsgKey("mw.search.msg.queryFailed", x), true);
         }
     }
     

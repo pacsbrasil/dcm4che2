@@ -115,7 +115,11 @@ public class ModalityWorklistBean implements ModalityWorklistLocal {
         if (filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
             ql.append(" AND m.studyInstanceUID = :studyInstanceUID");
         } else {
-            appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+            if (filter.isFuzzyPN()) {
+                QueryUtil.appendPatientNameFuzzyFilter(ql, filter.getPatientName());
+            } else {
+                QueryUtil.appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+            }
             appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID()));
             appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
             if (filter.isExtendedQuery()) {
@@ -136,7 +140,11 @@ public class ModalityWorklistBean implements ModalityWorklistLocal {
         if (filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
             setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
         } else {        
-            setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+            if (filter.isFuzzyPN()) {
+                QueryUtil.setPatientNameFuzzyQueryParameter(query, filter.getPatientName());
+            } else {
+                QueryUtil.setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+            }
             setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID()));
             setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
             if (filter.isExtendedQuery()) {
@@ -150,16 +158,6 @@ public class ModalityWorklistBean implements ModalityWorklistLocal {
             setScheduledStationNameQueryParameter(query, filter.getScheduledStationName());
             setScheduledProcedureStepStatusQueryParameter(query, filter.getSPSStatus());
         }
-    }
-
-    private static void appendPatientNameFilter(StringBuilder ql,
-            String patientName) {
-        QueryUtil.appendPatientName(ql, "p.patientName", ":patientName", patientName);
-    }
-
-    private static void setPatientNameQueryParameter(Query query,
-            String patientName) {
-        QueryUtil.setPatientNameQueryParameter(query, "patientName", patientName);
     }
 
     private static void appendPatientIDFilter(StringBuilder ql,

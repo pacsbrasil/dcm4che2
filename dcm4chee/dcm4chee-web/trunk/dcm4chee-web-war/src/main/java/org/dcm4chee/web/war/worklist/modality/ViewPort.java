@@ -103,6 +103,10 @@ public class ViewPort extends AbstractViewPort {
         return worklistProvider.getObject();
     }
     
+    public boolean isInternalWorklistProvider() {
+        return INTERNAL_WORKLISTPROVIDER.equals(getWorklistProvider());
+    }
+    
     public void clear() {
         super.clear();
         filter.clear();

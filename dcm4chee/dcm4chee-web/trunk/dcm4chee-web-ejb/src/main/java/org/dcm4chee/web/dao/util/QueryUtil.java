@@ -46,6 +46,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
 
+import org.dcm4che2.data.PersonName;
+import org.dcm4che2.data.Tag;
+import org.dcm4chee.archive.conf.AttributeFilter;
+
 /**
  * @author Franz Willer <fwiller@gmail.com>
  * @version $Revision$ $Date$
@@ -210,8 +214,42 @@ public class QueryUtil {
         }
     }
     
+    public static void appendPatientNameFuzzyFilter(StringBuilder ql, String patientName) {
+        appendPersonNameFuzzyFilter(ql, "p.patientFamilyNameSoundex", "p.patientGivenNameSoundex", patientName);
+    }
+    public static void appendPersonNameFuzzyFilter(StringBuilder ql, String fnField, String gnField, String name) {
+        PersonName pn = new PersonName(name);
+        String fnSoundex = AttributeFilter.toSoundexWithLike(pn, PersonName.FAMILY);
+        String gnSoundex = AttributeFilter.toSoundexWithLike(pn, PersonName.GIVEN);
+        if (fnSoundex != null && gnSoundex != null) {
+            ql.append(" AND ((").append(fnField).append(like(fnSoundex)).append(" :fnsx OR ").append(fnField).append(" ='*')")
+            .append(" AND (").append(gnField).append(like(gnSoundex)).append(" :gnsx OR ").append(gnField).append(" ='*')")
+            .append(" OR (").append(gnField).append(like(fnSoundex)).append(" :fnsx OR ").append(gnField).append(" ='*')")
+            .append(" AND (").append(fnField).append(like(gnSoundex)).append(" :gnsx OR ").append(fnField).append(" ='*'))");
+        } else if (fnSoundex!=null || gnSoundex!=null) {
+            String varName = fnSoundex!=null ? " :fnsx" : " :gnsx"; 
+            ql.append(" AND (").append(fnField).append(like(fnSoundex)).append(varName)
+            .append(" OR ").append(gnField).append(like(fnSoundex)).append(varName)
+            .append(" OR (").append(fnField).append(" ='*' AND ").append(gnField).append(" ='*'))");
+        }
+    }
+    
+    private static String like(String soundex) {
+        return soundex != null && soundex.endsWith("%") ? " LIKE " : " = ";
+    }
+    
     public static void setPatientNameQueryParameter(Query query, String patientName) {
         setPatientNameQueryParameter(query, "patientName", patientName);
+    }
+
+    public static void setPatientNameFuzzyQueryParameter(Query query, String patientName) {
+        PersonName pn = new PersonName(patientName);
+        String fnSoundex = AttributeFilter.toSoundexWithLike(pn, PersonName.FAMILY);
+        String gnSoundex = AttributeFilter.toSoundexWithLike(pn, PersonName.GIVEN);
+        if (fnSoundex != null)
+            query.setParameter("fnsx", fnSoundex);
+        if (gnSoundex != null)
+            query.setParameter("gnsx", gnSoundex);
     }
 
     public static void setPatientNameQueryParameter(Query query, String varName, String patientName) {
@@ -384,7 +422,9 @@ public class QueryUtil {
     private static String toPatientNameQueryString(String patientName) {
         int padcarets = 4;
         StringBuilder param = new StringBuilder();
-        StringTokenizer tokens = new StringTokenizer(patientName.toUpperCase(),
+        if (AttributeFilter.getPatientAttributeFilter().isICase(Tag.PatientName))
+            patientName = patientName.toUpperCase();
+        StringTokenizer tokens = new StringTokenizer(patientName,
                 "^*?_%", true);
         while (tokens.hasMoreTokens()) {
             String token = tokens.nextToken();

@@ -213,7 +213,11 @@ public class StudyListBean implements StudyListLocal {
     }
 
     private static void appendPatFilter(StringBuilder ql, StudyListFilter filter) {
-        QueryUtil.appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+        if (filter.isFuzzyPN()) {
+            QueryUtil.appendPatientNameFuzzyFilter(ql, filter.getPatientName());
+        } else {
+            QueryUtil.appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+        }
         QueryUtil.appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID()));
         QueryUtil.appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
         if ( filter.isExtendedQuery()) {
@@ -243,7 +247,11 @@ public class StudyListBean implements StudyListLocal {
     }
 
     private static void setPatQueryParameters(Query query, StudyListFilter filter) {
-        QueryUtil.setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+        if (filter.isFuzzyPN()) {
+            QueryUtil.setPatientNameFuzzyQueryParameter(query, filter.getPatientName());
+        } else {
+            QueryUtil.setPatientNameQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientName()));
+        }
         QueryUtil.setPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getPatientID()));
         QueryUtil.setIssuerOfPatientIDQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID()));
         if ( filter.isExtendedQuery()) {
