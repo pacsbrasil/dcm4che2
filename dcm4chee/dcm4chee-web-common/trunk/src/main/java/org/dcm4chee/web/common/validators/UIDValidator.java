@@ -40,10 +40,8 @@ package org.dcm4chee.web.common.validators;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.wicket.util.lang.Classes;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.validator.AbstractValidator;
-import org.apache.wicket.validation.validator.UrlValidator;
 import org.dcm4che2.util.UIDUtils;
 
 /**

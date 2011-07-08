@@ -38,6 +38,8 @@
 
 package org.dcm4chee.web.common.markup.modal;
 
+import java.text.MessageFormat;
+
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
@@ -47,6 +49,9 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.util.string.interpolator.PropertyVariableInterpolator;
+import org.dcm4chee.web.common.exceptions.WicketExceptionWithMsgKey;
 import org.dcm4chee.web.common.markup.modal.AutoOpenModalWindow;
 
 /**
@@ -100,6 +105,44 @@ public class MessageWindow extends AutoOpenModalWindow {
     }
     
     /**
+     * Get Message from Exception
+     * If Exception is of type WicketExceptionWithMsgKey: ResourceKey with the msgKey
+     * For any other Exception: the first getLocalizedMessage()!=null of the Exception hierachie or toString of root cause
+     * 
+     * @param x
+     * @param useCauseAsDetail
+     */
+    public void setErrorMessage(Exception x, boolean useCauseAsDetail) {
+        IModel<String> detail = null;
+        if (useCauseAsDetail && x.getCause() != null) {
+            Throwable cause = x.getCause();
+            if (cause instanceof WicketExceptionWithMsgKey) {
+                detail = new ResourceModel(((WicketExceptionWithMsgKey) cause).getMsgKey()).wrapOnAssignment(this);
+            } else {
+                detail = new Model<String>(getExceptionMessage(cause));
+            }
+        }
+        if (x instanceof WicketExceptionWithMsgKey) {
+            msgModel = new StringResourceModel(((WicketExceptionWithMsgKey) x).getMsgKey(), this, detail);
+        } else {
+            String msg = detail == null ? getExceptionMessage(x) : 
+                PropertyVariableInterpolator.interpolate(getExceptionMessage(x), detail.getObject());
+            msgModel = new Model<String>(msg);
+        }
+        setTitle(new ResourceModel(TITLE_ERROR,TITLE_DEFAULT));
+    }
+    
+    private String getExceptionMessage(Throwable x) {
+        if (x.getLocalizedMessage() != null) {
+            return x.getLocalizedMessage();
+        } else if (x.getCause() == null) {
+            return x.toString();
+        } else {
+            return getExceptionMessage(x.getCause());
+        }
+    }
+    
+    /**
      * Called by onBeforeRender to check if window should be opened without AJAX for this request. 
      *
      * @return true when window should be opened. 
@@ -110,8 +153,10 @@ public class MessageWindow extends AutoOpenModalWindow {
     
     @Override
     public void show(final AjaxRequestTarget target) {
-        super.show(target);
-        target.focusComponent(this.get("content:close"));
+        if (target != null) {
+            super.show(target);
+            target.focusComponent(this.get("content:close"));
+        }
     }
 
     public void show(AjaxRequestTarget target, String msg) {
@@ -125,6 +170,10 @@ public class MessageWindow extends AutoOpenModalWindow {
     
     public void show(AjaxRequestTarget target, IModel<String> msg) {
         this.msgModel = msg;
+        show(target);
+    }
+    public void show(AjaxRequestTarget target, Exception x, boolean useCauseAsDetail) {
+        this.setErrorMessage(x, useCauseAsDetail);
         show(target);
     }
 
