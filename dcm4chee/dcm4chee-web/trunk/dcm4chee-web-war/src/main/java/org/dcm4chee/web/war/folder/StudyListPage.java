@@ -115,6 +115,11 @@ import org.apache.wicket.security.hive.authorization.SimplePrincipal;
 import org.apache.wicket.security.swarm.strategies.SwarmStrategy;
 import org.apache.wicket.util.lang.Classes;
 import org.apache.wicket.util.time.Duration;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.ParticipantObject;
+import org.dcm4che2.audit.message.ParticipantObjectDescription;
+import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.validator.AbstractValidator;
 import org.dcm4che2.data.DateRange;
@@ -204,6 +209,11 @@ public class StudyListPage extends Panel {
     private static final String MODULE_NAME = "folder";
     private static final long serialVersionUID = 1L;
     private static Logger log = LoggerFactory.getLogger(StudyListPage.class);
+
+    private static String tooOldAuditMessageText = 
+        "Requested editing of an object that should not be edited anymore because of editing time limit. " +
+        "The restriction was overriden because the user has assigned the web right 'swarm.principal.IgnoreEditTimeLimit'.";
+
     private ViewPort viewport = ((AuthenticatedWebSession) AuthenticatedWebSession.get()).getFolderViewPort();
     private StudyListHeader header;
     private SelectedEntities selected = new SelectedEntities();
@@ -237,8 +247,6 @@ public class StudyListPage extends Panel {
     
     final MaskingAjaxCallBehavior macb = new MaskingAjaxCallBehavior();
 
-    private Component x;
-    
     public StudyListPage(final String id) {
         super(id);
 
@@ -754,7 +762,8 @@ public class StudyListPage extends Panel {
 
             @Override
             public void onConfirmation(AjaxRequestTarget target, final AbstractEditableDicomModel model) {
-
+                logSecurityAlert(model, true, StudyListPage.tooOldAuditMessageText);
+                
                 modalWindow.setContent(getEditDicomObjectPanel(model));
                 modalWindow.show(target);
                 setStatus(new Model<String>(""));
@@ -1065,6 +1074,8 @@ public class StudyListPage extends Panel {
             
             @Override
             public void onConfirmation(AjaxRequestTarget target, final PPSModel ppsModel) {
+                logSecurityAlert(ppsModel, true, StudyListPage.tooOldAuditMessageText);
+                
                 setMppsLinkWindow().show(target, ppsModel, form);
                 setStatus(new Model<String>(""));
             }
@@ -1099,7 +1110,8 @@ public class StudyListPage extends Panel {
 
             @Override
             public void onConfirmation(AjaxRequestTarget target, final PPSModel ppsModel) {
-                           
+                logSecurityAlert(ppsModel, true, StudyListPage.tooOldAuditMessageText);
+                
                 this.setStatus(new StringResourceModel("folder.message.unlink.running", StudyListPage.this, null));
                 messageWindowPanel.getOkBtn().setVisible(false);
 
@@ -2385,4 +2397,45 @@ public class StudyListPage extends Panel {
         return d;
     }
 
+    private void logSecurityAlert(AbstractDicomModel model, boolean success, String description) {
+        
+        org.dcm4chee.web.service.common.HttpUserInfo userInfo = 
+            new org.dcm4chee.web.service.common.HttpUserInfo(AuditMessage.isEnableDNSLookups());
+
+        SecurityAlertMessage msg = new SecurityAlertMessage(
+                SecurityAlertMessage.OBJECT_SECURITY_ATTRIBUTES_CHANGED);
+        msg.setOutcomeIndicator(AuditEvent.OutcomeIndicator.SUCCESS);
+        msg.addReportingProcess(AuditMessage.getProcessID(),
+                AuditMessage.getLocalAETitles(),
+                AuditMessage.getProcessName(),
+                AuditMessage.getLocalHostName());
+        
+        if ( userInfo.getHostName() != null ) {
+            msg.addPerformingPerson(userInfo.getUserId(), null, null, userInfo.getHostName());
+        } else {
+            msg.addPerformingNode(AuditMessage.getLocalHostName());
+        }
+        msg.addAlertSubjectWithNodeID(AuditMessage.getLocalNodeID(), description);
+        msg.validate();
+
+        if (model.levelOfModel() == 0) {
+            msg.addParticipantObject(ParticipantObject.createPatient(
+                    model.getAttributeValueAsString(Tag.PatientID), 
+                    model.getAttributeValueAsString(Tag.PatientName)
+            ));
+        } else if (model.levelOfModel() > 0 && model.levelOfModel() < 5) {
+            System.out.println("level is: " + model.levelOfModel());
+            switch (model.levelOfModel()) {
+                case 2: {model = model.getParent(); break;}
+                case 3: {model = model.getParent().getParent(); break;}
+                case 4: {model = model.getParent().getParent().getParent(); break;}
+            }
+            msg.addParticipantObject(ParticipantObject.createStudy(
+                    model.getAttributeValueAsString(Tag.StudyInstanceUID), 
+                    null));
+        } else { 
+            log.warn("Unknown Dicom model received, cannot log id");
+        }
+        LoggerFactory.getLogger("auditlog").warn(msg.toString());
+    }
 }
