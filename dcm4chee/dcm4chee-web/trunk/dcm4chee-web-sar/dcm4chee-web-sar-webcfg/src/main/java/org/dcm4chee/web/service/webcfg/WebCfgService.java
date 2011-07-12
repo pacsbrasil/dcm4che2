@@ -49,6 +49,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -131,6 +132,9 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     private Map<String, List<String>> ridMimeTypes = new LinkedHashMap<String, List<String>>();
 
+    private String tcKeywordCataloguesPath;
+    private Map<String, String> tcKeywordCatalogues = new LinkedHashMap<String, String>();
+    
     private List<String> modalities = new ArrayList<String>();
     private List<String> sourceAETs = new ArrayList<String>();
     private List<String> stationAETs = new ArrayList<String>();
@@ -302,6 +306,28 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public void setEncapsulatedCUIDS(String encapsulatedCUIDS) {
         this.encapsulatedCUIDS = parseUIDs(encapsulatedCUIDS);
+    }
+    
+    public String getTCKeywordCataloguesPath()
+    {
+        return tcKeywordCataloguesPath;
+    }
+    
+    public void setTCKeywordCataloguesPath(String path)
+    {
+        tcKeywordCataloguesPath = path;
+    }
+    
+    public Map<String,String> getTCKeywordCataloguesMap() {
+        return Collections.unmodifiableMap( tcKeywordCatalogues );
+    }
+    
+    public String getTCKeywordCatalogues() {
+        return keywordCataloguesToString(tcKeywordCatalogues);
+    }
+    
+    public void setTCKeywordCatalogues(String s) {
+        this.tcKeywordCatalogues = parseKeywordCatalogues(s);
     }
 
     public String getRIDMimeTypes() {
@@ -776,6 +802,40 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         }
         return map;
     }
+    
+    private String keywordCataloguesToString(Map<String, String> map)
+    {
+        if (map==null || map.isEmpty())
+        {
+            return NONE;
+        }
+        else
+        {
+            StringBuilder sbuilder = new StringBuilder();
+            for (Map.Entry<String, String> me : map.entrySet())
+            {
+                sbuilder.append(me.getKey()).append(":").append(me.getValue()).append(NEWLINE);
+            }
+            return sbuilder.toString();
+        }
+    }
+    
+    
+    private LinkedHashMap<String, String> parseKeywordCatalogues(String s)
+    {
+        StringTokenizer st = new StringTokenizer(s, "\t\r\n;");
+       
+        LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
+        
+        while (st.hasMoreTokens())
+        {
+            String entry = st.nextToken().trim();
+            String[] parts = entry.split( ":" );
+            map.put(parts[0], parts[1] );
+        }
+        
+        return map;
+    }
 
     private static boolean isDigit(char c) {
         return c >= '0' && c <= '9';
@@ -1157,5 +1217,6 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         return new int[]{Integer.parseInt(s.substring(0,pos).trim()), 
                 Integer.parseInt(s.substring(++pos).trim())};
     }
+    
 }
 

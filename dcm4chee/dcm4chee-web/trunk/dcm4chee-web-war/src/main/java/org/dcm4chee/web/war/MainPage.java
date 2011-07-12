@@ -58,6 +58,7 @@ import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecureWicketPage;
 import org.dcm4chee.web.war.ae.AEPanel;
 import org.dcm4chee.web.war.folder.StudyListPage;
+import org.dcm4chee.web.war.tc.TCPanel;
 import org.dcm4chee.web.war.trash.TrashListPage;
 import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
 import org.slf4j.Logger;
@@ -102,6 +103,8 @@ public class MainPage extends SecureWicketPage {
         selectorPanel.addModule(ModalityWorklistPanel.class);
         selectorPanel.addModule(DashboardPanel.class);
         selectorPanel.addModule(RolePanel.class, null);
+        selectorPanel.addModule(TCPanel.class);
+
         if (((SecureSession) RequestCycle.get().getSession()).getManageUsers()) {
             selectorPanel.addModule(UserListPanel.class, null);
             selectorPanel.addModule(ChangePasswordPanel.class, null);

@@ -134,4 +134,12 @@ public class WadoImage extends WebComponent {
         @Override
         protected void onComponentTagBody(final MarkupStream markupStream, final ComponentTag openTag) {
         }
+        public WadoImage(final String id, String iuid, String suid, String stuid, IModel<Integer> imgWidthModel)
+        {
+            super(id);
+            this.sopIuid = iuid;
+            this.seriesIuid = suid;
+            this.studyIuid = stuid;
+            this.imgWidthModel = imgWidthModel;
+        }
 }

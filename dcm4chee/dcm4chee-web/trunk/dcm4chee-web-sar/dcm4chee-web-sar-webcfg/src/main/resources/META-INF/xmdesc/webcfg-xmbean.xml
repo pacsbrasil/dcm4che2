@@ -613,7 +613,56 @@
          <value value="false"/>
       </descriptors>
    </attribute>
-
+   <attribute access="read-write"
+      getMethod="getTCKeywordCataloguesPath"
+      setMethod="setTCKeywordCataloguesPath">
+      <description><![CDATA[
+        Optional configurable path to custom keyword catalogue definition files.<br/>
+        A non-absolute path is resolved relative to the archive-install-directory, i.e '/server/default/'.]]>
+      </description>
+      <name>TCKeywordCataloguesPath</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getTCKeywordCatalogues"
+      setMethod="setTCKeywordCatalogues">
+      <description><![CDATA[
+        List of teaching-file attributes with associated keyword catalogues.<br/>
+        <br/>
+        Each listed teaching-file attribute uses it's own associated keyword catalogue
+        in order to provide smart lookup for a specific keyword value when searching for
+        teaching-files. Note: The only keyword catalogue that currently comes out-of-the-box 
+        with web3 is ACR! <br/>
+        <br/>
+        Each entry needs to conform to the following syntax (catalogueVersion is optional):<br/>
+        <br/>
+        Attribute ':' catalogueDesignatorId ',' catalogueId ',' catalogueVersion<br/>
+        <br/>
+        Supported attributes are:<br/>
+        <ul>
+            <li>Keyword</li>
+            <li>Anatomy</li>
+            <li>Pathology</li>
+            <li>Diagnosis</li>
+            <li>DifferentialDiagnosis</li>
+            <li>Finding</li>
+        </ul>
+            <br/>
+            <br/>
+        For example: "Keyword:ACR,ACR"
+        ]]>
+      </description>
+      <name>TCKeywordCatalogues</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+           Keyword:ACR,ACR
+           "/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getMoveScuServiceName"
       setMethod="setMoveScuServiceName">
@@ -841,11 +890,7 @@
       </descriptors>
    </attribute>
 
-   &defaultAttributes;
-   
    <!-- Operations -->
-   &defaultOperations;
-
    <operation impact="ACTION">
       <description><![CDATA[ <dl><dt>Check the type of given SOP Class UID.<dt/>
       			<dd>0...Image</dd>
@@ -915,6 +960,11 @@
       <description>Get List of Page sizes</description>
       <name>getPagesizeList</name>
       <return-type>java.util.List</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Get a map of teaching-file field id's to keyword catalogue id's</description>
+      <name>getTCKeywordCataloguesMap</name>
+      <return-type>java.util.Map</return-type>
    </operation>
    <operation impact="ACTION">
       <description><![CDATA[Get List of WebViewer names<br />

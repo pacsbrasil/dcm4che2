@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:wicket="http://wicket.apache.org">
+<head>
+</head>
+<body>
+    <wicket:panel>
+        <div>
+	        <table class="content-table-header">
+	            <tr>
+		            <td wicket:id="numberOfMatchingInstances" class="numberOfMatchingInstances"/>
+		            <td wicket:id="navigator" class="navigator"/>
+	            </tr>
+			</table>
+		</div>
+		<div>
+			<table cellspacing="0" class="content-table">
+				<tr>
+				    <th id="loadColumn"/>
+					<th wicket:id="titleColumn" id="titleColumn">
+					   <span wicket:id="titleTitle"/>
+					</th>
+					<th wicket:id="abstractColumn" id="abstractColumn">
+					   <span wicket:id="abstractTitle"/>
+					</th>
+					<th wicket:id="authorColumn" id="authorColumn">
+					   <span wicket:id="authorTitle"/>
+					</th>
+					<th wicket:id="dateColumn" id="dateColumn">
+					   <span wicket:id="dateTitle"/>
+					</th>
+				</tr>
+				<tr wicket:id="row" class="hover-out">
+				    <td><span wicket:id="webview">[load]</span></td>
+					<td wicket:id="title">[title]</td>
+					<td wicket:id="abstract">[abstract]</td>
+					<td wicket:id="author">[author]</td>
+					<td wicket:id="date">[date]</td>
+				</tr>
+			</table>
+		</div>
+	</wicket:panel> 
+</body>
+</html>

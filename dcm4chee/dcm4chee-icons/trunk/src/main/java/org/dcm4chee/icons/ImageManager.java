@@ -178,4 +178,7 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "trash/empty_trash.png");
     public static final ResourceReference IMAGE_TRASH_RESTORE = 
         new ResourceReference(ImageManager.class, "trash/restore.png");
+    
+    public static final ResourceReference IMAGE_TC_IMAGE_PLACEHOLDER =
+        new ResourceReference(ImageManager.class, "tc/empty-image.png");
 }

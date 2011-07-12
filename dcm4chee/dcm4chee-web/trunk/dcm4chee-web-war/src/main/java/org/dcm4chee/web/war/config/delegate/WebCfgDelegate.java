@@ -39,6 +39,8 @@
 package org.dcm4chee.web.war.config.delegate;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -251,6 +253,29 @@ public class WebCfgDelegate extends BaseCfgDelegate {
     public boolean isMpps2mwlAutoQuery() {
         return getBoolean("Mpps2mwlAutoQuery", true); 
     }
+    
+    public String getTCKeywordCataloguesPath()
+    {
+        return getString("TCKeywordCataloguesPath");
+    }
+    
+    public Map<String, KeywordCatalogue> getTCKeywordCatalogues()
+    {
+        Map<String, String> map = getStringMap("getTCKeywordCataloguesMap");
+        Map<String, KeywordCatalogue> parsedMap = new HashMap<String, KeywordCatalogue>(map.size());
+        for (Map.Entry<String, String> me : map.entrySet())
+        {
+            try
+            {
+                parsedMap.put(me.getKey(), KeywordCatalogue.create( me.getValue() ));
+            }
+            catch (Exception e)
+            {
+                log.error( "Parsing TC keyword catalogue failed! Skipped...", e );
+            }
+        }
+        return parsedMap;
+    }
 
     public int checkCUID(String cuid) {
         if (server == null) return -1;
@@ -263,7 +288,76 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         }
     }
     
+    @SuppressWarnings( "unchecked" )
+    private Map<String, String> getStringMap(String name) {
+        if (server!=null)
+        {
+            try
+            {
+                return (Map<String,String>) server.invoke( serviceObjectName, name, new Object[0], new String[0] );
+            }
+            catch (Exception e)
+            {
+                log.warn("Can't invoke '" + name + "', returning empty map!", e);
+            }
+        }
+        
+        return Collections.emptyMap();
+    }
+    
     private String noneAsNull(String s) {
         return "NONE".equals(s) ? null : s;
+    }
+    
+    public static class KeywordCatalogue
+    {
+        private String designator;
+        private String id;
+        private String version;
+        
+        private KeywordCatalogue(String designator, String id, String version)
+        {
+            this.designator = designator.trim();
+            this.id = id.trim();
+            this.version = version!=null ? version.trim() : null;
+        }
+        
+        public static KeywordCatalogue create(String s) throws Exception
+        {
+            String[] parts = s.split( "," );
+            
+            return new KeywordCatalogue(parts[0], parts[1], parts.length>2 ? parts[2] : null);
+        }
+        
+        public String getDesignator()
+        {
+            return designator;
+        }
+        
+        public String getId()
+        {
+            return id;
+        }
+        
+        public String getVersion()
+        {
+            return version;
+        }
+        
+        @Override
+        public String toString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(designator);
+            sb.append(",");
+            sb.append(id);
+            
+            if (version!=null)
+            {
+                sb.append(",");
+                sb.append(version);
+            }
+            return sb.toString();
+        }
     }
 }
