@@ -88,5 +88,4 @@ public class FilePanel extends Panel {
         add(new Label("file.fileSystem.status"));
         add(new Label("file.fileSystem.userInfo"));
     }
-
 }

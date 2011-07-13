@@ -82,6 +82,13 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "T
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:trash:deleteButton", "render, enable";
 };
 
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "TCRead"
+{
+// KEY: swarm.principal.TCRead
+    permission ${ComponentPermission} "org.dcm4chee.web.war.tc.TCPanel", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:tc:webviewerInstanceLink", "render, enable";
+};
+
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "AERead"
 {
 // KEY: swarm.principal.AERead

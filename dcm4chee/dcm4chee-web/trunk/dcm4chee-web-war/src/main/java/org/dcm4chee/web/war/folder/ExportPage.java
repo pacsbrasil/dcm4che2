@@ -43,7 +43,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.wicket.MetaDataKey;
 import org.apache.wicket.ResourceReference;
@@ -243,7 +245,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             }
         }.setOutputMarkupId(true));
         
-        form.add( new AjaxButton("export", new ResourceModel("export.exportBtn.text")){
+        form.add(new AjaxButton("export", new ResourceModel("export.exportBtn.text")){
 
             private static final long serialVersionUID = 1L;
             
@@ -322,6 +324,25 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             }
         });
         add(JavascriptPackageResource.getHeaderContribution(ExportPage.class, "popupcloser.js"));
+        
+        form.add(new AjaxButton("download", new ResourceModel("export.downloadBtn.text")) {
+
+            private static final long serialVersionUID = 1L;
+            
+            @Override
+            public boolean isEnabled() {
+                return exportInfo.hasSelection() && isExportInactive();
+            }
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                System.out.println("DOWNLOAD");
+//                getSession().setMetaData(LAST_DESTINATION_AET_ATTRIBUTE, destinationAET);
+//                exportSelected();
+                download();
+            }
+        }.setOutputMarkupId(true));
+
     }
 
     private void initDestinationAETs() {
@@ -366,6 +387,37 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         }
     }
     
+    // TODO: 
+    private void download() {
+        
+//        StudyListLocal dao = (StudyListLocal)
+//            JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+//
+//        for (MoveRequest mr : exportInfo.requests) {
+//            Set<String> instances = new HashSet<String>();
+//            
+//            for (String studyUID : mr.studyIUIDs)
+//                
+//                dao.
+//                for (Study s : dao.findStudiesOfPatient(, false, StudyPermissionHelper.get().applyStudyPermissions() ? 
+//                        StudyPermissionHelper.get().getDicomRoles() : null))
+//                    System.out.println(s);
+//            }
+//            
+////            List<Instance> findInstancesOfSeries(long pk);
+//            
+//            
+//            System.out.println("EXPORTING: " + mr.toString());
+//            System.out.println("Patient: " + mr.patId);
+//            for (String s : mr.studyIUIDs)
+//                System.out.println("Study: " + s.toString());
+//            for (String se : mr.seriesIUIDs)
+//                System.out.println("Series: " + se.toString());
+//            for (String i : mr.sopIUIDs)
+//                System.out.println("Study: " + i.toString());
+//        }
+    }
+
     private String[] toArray(List<String> l) {
         if (l == null) return null;
         return l.toArray(new String[l.size()]);
@@ -745,7 +797,6 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         public boolean equals(Object o) {
             return ((ExportResponseHandler) o).id == id;
         }
-
 
         @Override
         public void onDimseRSP(Association as, DicomObject cmd,

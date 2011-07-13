@@ -37,7 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.MarkupStream;
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
@@ -48,6 +47,9 @@ import org.apache.wicket.markup.html.basic.MultiLineLabel;
  * @since April 28, 2011
  */
 public class TCMultiLineLabel extends MultiLineLabel {
+
+    private static final long serialVersionUID = 1L;
+    
     private int cutAtIndex = -1;
 
     public TCMultiLineLabel(final String id, String text, int cutAtIndex) {
@@ -72,10 +74,6 @@ public class TCMultiLineLabel extends MultiLineLabel {
         String s2 = s;
 
         if (s2 != null) {
-            s2 = unescapeHtml(s);
-        }
-
-        if (s2 != null) {
             s2 = replaceNewlines(s2);
         }
 
@@ -84,14 +82,6 @@ public class TCMultiLineLabel extends MultiLineLabel {
         }
 
         return s2;
-    }
-
-    private String unescapeHtml(String s) {
-        if (s != null) {
-            return StringEscapeUtils.unescapeHtml(s);
-        }
-
-        return s;
     }
 
     private String replaceNewlines(String s) {

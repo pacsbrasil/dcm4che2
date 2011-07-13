@@ -4,6 +4,17 @@
 	 xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
 	 version="2.4">
 	<display-name>dcm4chee-web</display-name>
+	
+    <servlet>
+	    <servlet-name>StudyDownload</servlet-name>
+	    <servlet-class>org.dcm4chee.web.war.StudyDownload</servlet-class>
+	    <load-on-startup>1</load-on-startup>
+    </servlet>
+	<servlet-mapping>
+	    <servlet-name>StudyDownload</servlet-name>
+	    <url-pattern>/s/*</url-pattern>
+	</servlet-mapping>
+
 	<filter>
 		<filter-name>wicket.dcm4chee-web</filter-name>
  		<filter-class>org.apache.wicket.protocol.http.WicketFilter</filter-class>
