@@ -147,8 +147,12 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
     
     private static Logger log = LoggerFactory.getLogger(ExportPage.class);
     
+    List<PatientModel> list;
+    
     public ExportPage(List<PatientModel> list) {
         super();        
+        
+        this.list = list;
         
         StudyPermissionHelper studyPermissionHelper = StudyPermissionHelper.get(); 
         if (ExportPage.BaseCSS != null)
@@ -337,8 +341,6 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 System.out.println("DOWNLOAD");
-//                getSession().setMetaData(LAST_DESTINATION_AET_ATTRIBUTE, destinationAET);
-//                exportSelected();
                 download();
             }
         }.setOutputMarkupId(true));
@@ -390,32 +392,19 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
     // TODO: 
     private void download() {
         
-//        StudyListLocal dao = (StudyListLocal)
-//            JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-//
-//        for (MoveRequest mr : exportInfo.requests) {
-//            Set<String> instances = new HashSet<String>();
-//            
-//            for (String studyUID : mr.studyIUIDs)
-//                
-//                dao.
-//                for (Study s : dao.findStudiesOfPatient(, false, StudyPermissionHelper.get().applyStudyPermissions() ? 
-//                        StudyPermissionHelper.get().getDicomRoles() : null))
-//                    System.out.println(s);
+        StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        
+        
+        ArrayList<MoveRequest> requests = new ArrayList<MoveRequest>(list.size());
+        
+        for (PatientModel pat : list) {
+//            if (pat.isSelected()) {
+//                prepareStudiesOfPatientRequests(pat);
+//            } else {
+//                prepareStudyRequests(pat.getStudies());
 //            }
-//            
-////            List<Instance> findInstancesOfSeries(long pk);
-//            
-//            
-//            System.out.println("EXPORTING: " + mr.toString());
-//            System.out.println("Patient: " + mr.patId);
-//            for (String s : mr.studyIUIDs)
-//                System.out.println("Study: " + s.toString());
-//            for (String se : mr.seriesIUIDs)
-//                System.out.println("Series: " + se.toString());
-//            for (String i : mr.sopIUIDs)
-//                System.out.println("Study: " + i.toString());
-//        }
+        }
+
     }
 
     private String[] toArray(List<String> l) {
@@ -541,12 +530,12 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                     NOTnrStudy++;
             }
             if (pat.isSelected()) {
-                if (allowed == studies.size())
+                if (allowed == studies.size()) 
                     nrPat++;
                 else {
                     NOTnrPat++;
+                    nrStudy += allowed;
                 }
-                nrStudy += allowed;
             }
 
             log.debug("Selected for export: Studies of Patient:{} StudyUIDs:{}", pat.getId(), uids);
