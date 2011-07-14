@@ -153,7 +153,7 @@ public class TCResultPanel extends Panel {
                 }
 
                 item.add(
-                        Webviewer.getLink(selected, webviewerLinkProviders,
+                        Webviewer.getLink(tc, webviewerLinkProviders,
                                 stPermHelper, new TooltipBehaviour(
                                         "tc.result.table.", "webviewer"))).add(
                         new SecurityBehavior(StudyListPage.getModuleName()
