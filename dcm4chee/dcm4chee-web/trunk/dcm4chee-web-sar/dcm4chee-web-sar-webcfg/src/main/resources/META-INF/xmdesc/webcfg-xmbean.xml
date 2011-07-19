@@ -842,7 +842,7 @@
    <attribute access="read-write"
       getMethod="getTooOldLimit"
       setMethod="setTooOldLimit">
-      <description><![CDATA[The time limit it is possible to edit dicom objects.
+      <description><![CDATA[The time limit it is possible to edit dicom objects in the folder.
       <br>Can be specified in weeks (##w) or days (##d).
       <br>If set to NEVER the feature will not be used.
       ]]></description>
@@ -879,7 +879,7 @@
    <attribute access="read-write"
       getMethod="getEmptyTrashInterval"
       setMethod="setEmptyTrashInterval">
-      <description><![CDATA[Retention time for automized deletion of studies in trash.
+      <description><![CDATA[Time interval for checking if object in the trash are older than the retention time and executing the automized deletion eventually.
       <br>Can be specified in weeks (##w) or days (##d).
       <br>If set to NEVER the feature will not be used.
       ]]></description>
