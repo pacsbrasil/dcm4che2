@@ -38,45 +38,86 @@
 
 package org.dcm4chee.web.war.folder;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.wicket.MetaDataKey;
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.DynamicWebResource;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
+import org.apache.wicket.markup.html.WebResource;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
+import org.apache.wicket.markup.html.link.DownloadLink;
+import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.link.ResourceLink;
 import org.apache.wicket.markup.html.link.PopupCloseLink.ClosePopupPage;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.LoadableDetachableModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.protocol.http.WebResponse;
+import org.apache.wicket.request.target.resource.ResourceStreamRequestTarget;
+import org.apache.wicket.resource.ByteArrayResource;
 import org.apache.wicket.security.components.SecureWebPage;
+import org.apache.wicket.util.resource.IResourceStream;
+import org.apache.wicket.util.resource.ResourceStreamNotFoundException;
+import org.apache.wicket.util.resource.StringResourceStream;
 import org.apache.wicket.util.time.Duration;
+import org.apache.wicket.util.time.Time;
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.io.DicomInputStream;
+import org.dcm4che2.io.DicomOutputStream;
+import org.dcm4che2.io.StopTagInputHandler;
 import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4chee.archive.entity.AE;
+import org.dcm4chee.archive.entity.File;
+import org.dcm4chee.archive.entity.Instance;
+import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
@@ -84,10 +125,13 @@ import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.model.ProgressProvider;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.util.CloseRequestSupport;
+import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
+import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.folder.delegate.ExportDelegate;
+import org.dcm4chee.web.war.folder.model.FileModel;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
@@ -147,12 +191,8 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
     
     private static Logger log = LoggerFactory.getLogger(ExportPage.class);
     
-    List<PatientModel> list;
-    
     public ExportPage(List<PatientModel> list) {
         super();        
-        
-        this.list = list;
         
         StudyPermissionHelper studyPermissionHelper = StudyPermissionHelper.get(); 
         if (ExportPage.BaseCSS != null)
@@ -328,23 +368,28 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             }
         });
         add(JavascriptPackageResource.getHeaderContribution(ExportPage.class, "popupcloser.js"));
-        
-        form.add(new AjaxButton("download", new ResourceModel("export.downloadBtn.text")) {
+
+        WebResource download = new WebResource() {
 
             private static final long serialVersionUID = 1L;
-            
+
             @Override
-            public boolean isEnabled() {
-                return exportInfo.hasSelection() && isExportInactive();
+            public IResourceStream getResourceStream() {
+                return new ByteArrayResource("application/zip", download().toByteArray())
+                    .getResourceStream();
             }
 
             @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                System.out.println("DOWNLOAD");
-                download();
+            protected void setHeaders(WebResponse response) {
+              super.setHeaders(response);
+              response.setAttachmentHeader("dicom.zip");
             }
-        }.setOutputMarkupId(true));
+        };
+        download.setCacheable(false);
 
+        form.add(new ResourceLink<WebResource>("downloadLink", download)
+            .add(new Label("downloadLabel", new ResourceModel("export.downloadBtn.text")))
+        );
     }
 
     private void initDestinationAETs() {
@@ -389,22 +434,78 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         }
     }
     
-    // TODO: 
-    private void download() {
+// TODO:
+    private ByteArrayOutputStream download() {
         
-        StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         
-        
-        ArrayList<MoveRequest> requests = new ArrayList<MoveRequest>(list.size());
-        
-        for (PatientModel pat : list) {
-//            if (pat.isSelected()) {
-//                prepareStudiesOfPatientRequests(pat);
-//            } else {
-//                prepareStudyRequests(pat.getStudies());
-//            }
-        }
+        try {
+            StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+            Set<Instance> instances = new HashSet<Instance>(exportInfo.getMoveRequests().size());
 
+            for (MoveRequest moveRequest : exportInfo.getMoveRequests()) {
+                if (moveRequest.sopIUIDs != null)
+                    for (String sopIUID : moveRequest.sopIUIDs) 
+                        instances.addAll(dao.getDownloadableInstances(sopIUID, Instance.class));
+                if (moveRequest.seriesIUIDs != null)
+                    for (String seriesIUID : moveRequest.seriesIUIDs) 
+                        instances.addAll(dao.getDownloadableInstances(seriesIUID, Series.class));
+                if (moveRequest.studyIUIDs != null)
+                    for (String studyIUID : moveRequest.studyIUIDs) 
+                        instances.addAll(dao.getDownloadableInstances(studyIUID, Study.class));
+            }
+
+            ZipOutputStream zos = new ZipOutputStream(baos);
+            Iterator<Instance> iterator = instances.iterator();
+            while (iterator.hasNext()) {
+                Instance instance = iterator.next(); 
+                for (File file : instance.getFiles()) {
+                    try {
+                        java.io.File originalFile = new java.io.File(file.getFileSystem().getDirectoryPath() + 
+                        "/" + 
+                        file.getFilePath());              
+                        if (!FileUtils.resolve(originalFile).exists()) { 
+                            log.error("Dicom file does not exist: " + FileUtils.resolve(originalFile));
+                            continue;
+                        }
+                        DicomInputStream dis = new DicomInputStream(new FileInputStream(FileUtils.resolve(originalFile)));
+                        dis.setHandler(new StopTagInputHandler(Tag.PixelData));
+                        DicomObject disObject = dis.readDicomObject();
+                        DicomObject blobData = instance.getAttributes(false);
+                        Iterator<DicomElement> blobAttributes = blobData.datasetIterator();
+                        while (blobAttributes.hasNext()) 
+                            disObject.add(blobAttributes.next());
+                        ZipEntry entry = new ZipEntry(originalFile.getPath());
+                        zos.putNextEntry(entry);                                
+                        zos.write(dis.getPreamble());
+                        zos.write("DICM".getBytes());
+                        DicomOutputStream dos = new DicomOutputStream(zos);
+                        dos.setAutoFinish(false);
+                        dos.writeDataset(disObject.fileMetaInfo(), dis.getTransferSyntax().uid());
+                        dos.writeDataset(disObject, dis.getTransferSyntax().uid());
+                        long disCounter = 0;
+                        while (dis.available() > 0) {
+                            disCounter += dis.available();
+                            byte[] b = new byte[dis.available()];
+                            dis.read(b);
+                            zos.write(b);
+                        }
+                        zos.closeEntry();
+                    } catch (Throwable th) {
+                        log.error("An error occurred while attempting to prepare zip file for download: " + th);
+                    }
+                }
+            }
+            zos.close();
+            return baos;
+        } catch (Throwable th) {
+            log.error("An error occurred while attempting to prepare zip file for download." + th);
+        } finally {
+            try {
+                baos.close();
+            } catch (Exception ignore) {}
+            return baos;
+        }
     }
 
     private String[] toArray(List<String> l) {
@@ -564,7 +665,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                 requests.add( new MoveRequest().setStudyMoveRequest(null, toArray(uids)));
             }
         }
-        
+
         private void prepareSeriesRequests(String studyIUID, List<PPSModel> ppss, boolean denied) {
             ArrayList<String> uids = new ArrayList<String>();
             for (PPSModel pps : ppss ) {
@@ -598,7 +699,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                 requests.add( new MoveRequest().setSeriesMoveRequest(null, studyIUID, toArray(uids)));
             }
         }
-        
+
         private void prepareInstanceRequest(String studyIUID, String seriesIUID,
                 List<InstanceModel> instances, boolean denied) {
             ArrayList<String> uids = new ArrayList<String>();
@@ -856,5 +957,5 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                 sb.append(", sopIUIDs:").append(StringUtils.join(sopIUIDs, ','));
             return sb.toString();
         }
-    }
+    }    
 }
