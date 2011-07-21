@@ -2059,21 +2059,6 @@ public class StudyListPage extends Panel {
             item.add(new Label("fileObject.fileSystem.directoryPath").add(tooltip));
             item.add(new Label("fileObject.filePath").add(tooltip));
             item.add(new Label("fileObject.fileSystem.availability").add(tooltip));
-            item.add(new AjaxFallbackLink<Object>("toggledetails") {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onClick(AjaxRequestTarget target) {
-                    fileModel.setDetails(!fileModel.isDetails());
-                    if (target != null) {
-                        target.addComponent(patientListItem);
-                    }
-                }
-
-            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour())
-            .add(tooltip)));
             item.add(getFileDisplayLink(modalWindow, fileModel, tooltip));
             item.add(new AjaxCheckBox("selected") {
                 private static final long serialVersionUID = 1L;
@@ -2087,17 +2072,6 @@ public class StudyListPage extends Panel {
                     target.addComponent(this);
                 }}.setOutputMarkupId(true)
                 .add(tooltip));
-            WebMarkupContainer details = new WebMarkupContainer("details") {
-                
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public boolean isVisible() {
-                    return fileModel.isDetails();
-                }
-            };
-            item.add(details);
-            details.add(new FilePanel("file", fileModel));
         }
     }
     
