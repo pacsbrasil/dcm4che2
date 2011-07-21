@@ -434,9 +434,8 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         }
     }
     
-// TODO:
     private ByteArrayOutputStream download() {
-        
+System.out.println("Starting zip download");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         
         try {
@@ -463,7 +462,8 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                     try {
                         java.io.File originalFile = new java.io.File(file.getFileSystem().getDirectoryPath() + 
                         "/" + 
-                        file.getFilePath());              
+                        file.getFilePath());
+System.out.println("Checking file: " + FileUtils.resolve(originalFile));
                         if (!FileUtils.resolve(originalFile).exists()) { 
                             log.error("Dicom file does not exist: " + FileUtils.resolve(originalFile));
                             continue;

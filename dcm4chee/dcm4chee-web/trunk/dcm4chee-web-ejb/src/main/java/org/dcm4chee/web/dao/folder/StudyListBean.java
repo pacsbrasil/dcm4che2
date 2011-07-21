@@ -455,17 +455,17 @@ public class StudyListBean implements StudyListLocal {
         if (clazz.equals(Instance.class)) {
             instances = new ArrayList<Instance>(1);
             instances.add((Instance) em
-                    .createQuery("SELECT DISTINCT i FROM Instance i LEFT JOIN FETCH i.files WHERE i.sopInstanceUID = :uid")
+                    .createQuery("SELECT i FROM Instance i LEFT JOIN FETCH i.files WHERE i.sopInstanceUID = :uid")
                     .setParameter("uid", uid)
                     .getSingleResult());
         } else if (clazz.equals(Series.class)) {
             instances = (List<Instance>) em
-                .createQuery("SELECT DISTINCT i FROM Instance i LEFT JOIN FETCH i.files WHERE i.series.seriesInstanceUID = :uid")
+                .createQuery("SELECT i FROM Instance i LEFT JOIN FETCH i.files WHERE i.series.seriesInstanceUID = :uid")
                 .setParameter("uid", uid)
                 .getResultList();
         } else if (clazz.equals(Study.class)) {
             instances = (List<Instance>) em
-            .createQuery("SELECT DISTINCT i FROM Instance i LEFT JOIN FETCH i.files WHERE i.series.study.studyInstanceUID = :uid")
+            .createQuery("SELECT i FROM Instance i LEFT JOIN FETCH i.files WHERE i.series.study.studyInstanceUID = :uid")
             .setParameter("uid", uid)
             .getResultList();
         } else 
