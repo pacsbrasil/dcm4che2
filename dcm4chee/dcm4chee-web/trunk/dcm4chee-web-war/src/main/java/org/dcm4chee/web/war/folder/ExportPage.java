@@ -38,15 +38,8 @@
 
 package org.dcm4chee.web.war.folder;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -55,53 +48,36 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.wicket.MetaDataKey;
-import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.DynamicWebResource;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebResource;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
-import org.apache.wicket.markup.html.link.DownloadLink;
-import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.ResourceLink;
-import org.apache.wicket.markup.html.link.PopupCloseLink.ClosePopupPage;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.LoadableDetachableModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
-import org.apache.wicket.request.target.resource.ResourceStreamRequestTarget;
 import org.apache.wicket.resource.ByteArrayResource;
 import org.apache.wicket.security.components.SecureWebPage;
 import org.apache.wicket.util.resource.IResourceStream;
-import org.apache.wicket.util.resource.ResourceStreamNotFoundException;
-import org.apache.wicket.util.resource.StringResourceStream;
 import org.apache.wicket.util.time.Duration;
-import org.apache.wicket.util.time.Time;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -117,7 +93,6 @@ import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
-import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
@@ -128,10 +103,8 @@ import org.dcm4chee.web.common.util.CloseRequestSupport;
 import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
-import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.folder.delegate.ExportDelegate;
-import org.dcm4chee.web.war.folder.model.FileModel;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
@@ -435,7 +408,6 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
     }
     
     private ByteArrayOutputStream download() {
-System.out.println("Starting zip download");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         
         try {
@@ -463,7 +435,6 @@ System.out.println("Starting zip download");
                         java.io.File originalFile = new java.io.File(file.getFileSystem().getDirectoryPath() + 
                         "/" + 
                         file.getFilePath());
-System.out.println("Checking file: " + FileUtils.resolve(originalFile));
                         if (!FileUtils.resolve(originalFile).exists()) { 
                             log.error("Dicom file does not exist: " + FileUtils.resolve(originalFile));
                             continue;
@@ -497,15 +468,14 @@ System.out.println("Checking file: " + FileUtils.resolve(originalFile));
                 }
             }
             zos.close();
-            return baos;
         } catch (Throwable th) {
             log.error("An error occurred while attempting to prepare zip file for download." + th);
         } finally {
             try {
                 baos.close();
             } catch (Exception ignore) {}
-            return baos;
         }
+        return baos;
     }
 
     private String[] toArray(List<String> l) {
