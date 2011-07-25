@@ -97,7 +97,7 @@ table.folded-table tr.patient { background-color : #FFFFFF; }
 table.folded-table tr.patient_selected { background-color: orange; }
 
 div.dicomobjectpanel { border: thin; border-width: 1px; border-style: inset; border-color: #AAAAAA; }
-table.dicomobject { background: #FFFFFF; width: 100%; }
+table.dicomobject { background: #FFFFFF; color: black; width: 100%; }
 
 .invalid { background: #EEBBAA; }
 
