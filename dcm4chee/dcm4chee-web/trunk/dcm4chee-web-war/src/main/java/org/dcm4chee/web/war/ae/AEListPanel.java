@@ -230,7 +230,7 @@ public class AEListPanel extends Panel {
                     .add(new TooltipBehaviour("ae."))
                     .add(new SecurityBehavior(getModuleName() + ":editAETLink"))
                 );
-                    
+
                 AjaxLink<?> removeAET = new AjaxLink<Object>("removeAET") {
     
                     private static final long serialVersionUID = 1L;

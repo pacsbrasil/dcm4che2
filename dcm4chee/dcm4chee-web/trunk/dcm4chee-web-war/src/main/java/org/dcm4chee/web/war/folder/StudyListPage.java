@@ -152,6 +152,7 @@ import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.common.validators.UIDValidator;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.dao.folder.StudyListFilter;
@@ -2199,7 +2200,7 @@ public class StudyListPage extends Panel {
                 DicomInputStream dis = null;
                 try {
                     final File file = fsID.startsWith("tar:") ? TarRetrieveDelegate.getInstance().retrieveFileFromTar(fsID, fileID) :
-                        new File(fsID, fileID);
+                        FileUtils.resolve(new File(fsID, fileID));
                     dis =new DicomInputStream(file);
                     modalWindow.setContent(new DicomObjectPanel("content", dis.readDicomObject(), true));
                     modalWindow.setTitle(new StringResourceModel("folder.dcmfileview.title", 
@@ -2226,7 +2227,7 @@ public class StudyListPage extends Panel {
         image.add(new ImageSizeBehaviour("vertical-align: middle;"));
         if (tooltip != null) image.add(tooltip);
         displayLink.add(image);
-        displayLink.setVisible(fsID.startsWith("tar:") || new File(fsID, fileID).exists());
+        displayLink.setVisible(fsID.startsWith("tar:") || FileUtils.resolve(new File(fsID, fileID)).exists());
         return displayLink;
     }
 
@@ -2424,7 +2425,6 @@ public class StudyListPage extends Panel {
                     model.getAttributeValueAsString(Tag.PatientName)
             ));
         } else if (model.levelOfModel() > 0 && model.levelOfModel() < 5) {
-            System.out.println("level is: " + model.levelOfModel());
             switch (model.levelOfModel()) {
                 case 2: {model = model.getParent(); break;}
                 case 3: {model = model.getParent().getParent(); break;}
