@@ -449,6 +449,7 @@ public class StudyListBean implements StudyListLocal {
         return mpps;
     }
     
+    @SuppressWarnings("unchecked")
     public List<Instance> getDownloadableInstances(String uid, Class clazz) {
         List<Instance> instances = null;
         
