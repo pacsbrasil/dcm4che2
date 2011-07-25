@@ -74,18 +74,18 @@ public class FilePanel extends Panel {
             }
         });
        
-        add(new DateTimeLabel("file.createdTime"));
-        add(new Label("file.fileSize"));
-        add(new Label("file.transferSyntaxUID"));
-        add(new Label("file.md5Sum"));
-        add(new DateTimeLabel("file.timeOfLastMD5SumCheck"));
-        add(new Label("file.fileStatus"));
-        add(new Label("file.filePath"));
-        add(new Label("file.fileSystem.directoryPath"));
-        add(new Label("file.fileSystem.groupID"));
-        add(new Label("file.fileSystem.retrieveAET"));
-        add(new Label("file.fileSystem.availability"));
-        add(new Label("file.fileSystem.status"));
-        add(new Label("file.fileSystem.userInfo"));
+        add(new DateTimeLabel("fileObject.createdTime"));
+        add(new Label("fileObject.fileSize"));
+        add(new Label("fileObject.transferSyntaxUID"));
+        add(new Label("fileObject.md5Sum"));
+        add(new DateTimeLabel("fileObject.timeOfLastMD5SumCheck"));
+        add(new Label("fileObject.fileStatus"));
+        add(new Label("fileObject.filePath"));
+        add(new Label("fileObject.fileSystem.directoryPath"));
+        add(new Label("fileObject.fileSystem.groupID"));
+        add(new Label("fileObject.fileSystem.retrieveAET"));
+        add(new Label("fileObject.fileSystem.availability"));
+        add(new Label("fileObject.fileSystem.status"));
+        add(new Label("fileObject.fileSystem.userInfo"));
     }
 }
