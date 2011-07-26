@@ -60,4 +60,8 @@ public class FileUtils {
         }
     }
 
+    public static File toFile(String unixPath) {
+        return resolve(new File(unixPath.replace('/', File.separatorChar)));
+    }
+
 }
