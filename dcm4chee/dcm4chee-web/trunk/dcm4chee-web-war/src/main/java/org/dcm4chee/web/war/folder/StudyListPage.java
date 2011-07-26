@@ -2058,7 +2058,6 @@ public class StudyListPage extends Panel {
             item.add(new Label("fileObject.fileSize").add(tooltip));
             item.add(new Label("fileObject.transferSyntaxUID").add(tooltip));
             item.add(new Label("fileObject.fileSystem.directoryPath").add(tooltip));
-            item.add(new Label("absoluteDirectoryPath").add(tooltip));
             item.add(new Label("fileObject.filePath").add(tooltip));
             item.add(new Label("fileObject.fileSystem.availability").add(tooltip));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {
@@ -2204,13 +2203,7 @@ public class StudyListPage extends Panel {
                         FileUtils.resolve(new File(fsID, fileID));
                     dis =new DicomInputStream(file);
                     modalWindow.setContent(new DicomObjectPanel("content", dis.readDicomObject(), true));
-                    modalWindow.setTitle(new StringResourceModel("folder.dcmfileview.title", 
-                            new AbstractReadOnlyModel<String>(){
-                                private static final long serialVersionUID = 1L;
-                                @Override
-                                public String getObject() {
-                                    return file.getAbsolutePath().replace('\\', '/');
-                                }}));
+                    modalWindow.setTitle(new ResourceModel("folder.dcmfileview.title"));
                     modalWindow.show(target);
                     super.onClick(target);
                 } catch (Exception e) {
