@@ -88,8 +88,10 @@ import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.common.DicomEditLocal;
 import org.dcm4chee.web.dao.folder.MppsToMwlLinkLocal;
+import org.dcm4chee.web.dao.util.CoercionUtil;
 import org.dcm4chee.web.dao.vo.EntityTree;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.service.common.DicomActionNotification;
@@ -137,6 +139,8 @@ public class ContentEditService extends ServiceMBeanSupport {
     private boolean processIAN;
     private boolean processRejNote;
     private boolean dcm14Stylesheet;
+    
+    private String addMwlAttrsToMppsXsl;
     
     private String[] forwardModifiedToAETs;
     
@@ -271,6 +275,14 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     public final void setTemplatesServiceName(ObjectName serviceName) {
         templates.setTemplatesServiceName(serviceName);
+    }
+
+    public String getAddMwlAttrsToMppsXsl() {
+        return addMwlAttrsToMppsXsl == null ? NONE : addMwlAttrsToMppsXsl;
+    }
+
+    public void setAddMwlAttrsToMppsXsl(String addMwlAttrToMppsXsl) {
+        this.addMwlAttrsToMppsXsl = NONE.equals(addMwlAttrToMppsXsl) ? null : addMwlAttrToMppsXsl;
     }
 
     public boolean isDcm14Stylesheet() {
@@ -532,6 +544,9 @@ public class ContentEditService extends ServiceMBeanSupport {
         log.info("MppsToMwlLinkResult:"+result);
         logMppsLinkRecord(result);
         Map<String,DicomObject> fwdIANs = updateSeriesAttributes(result);
+        if (this.addMwlAttrsToMppsXsl != null) {
+            addMwlAttrs2Mpps(result);
+        }
         this.sendJMXNotification(result);
         log.info("MppsToMwlLinkResult: studiesToMove:"+result.getStudiesToMove().size());
         if (result.getStudiesToMove().size() > 0) {
@@ -552,6 +567,29 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
     
+    private void addMwlAttrs2Mpps(MppsToMwlLinkResult result) {
+        try {
+            boolean dcm14xsl = addMwlAttrsToMppsXsl.startsWith("14|");
+            java.io.File f = FileUtils.toFile(dcm14xsl ? addMwlAttrsToMppsXsl.substring(3) : addMwlAttrsToMppsXsl);
+            if (f.isFile()) {
+                Templates tpl = templates.getTemplates(f);
+                DicomObject coerce = new BasicDicomObject();
+                Templates[] tpls = dcm14xsl ? new Templates[]{dcm2To14Tpl,tpl,dcm14To2Tpl} : new Templates[]{tpl};
+                XSLTUtils.xslt(result.getMwl().getAttributes(), tpls, coerce, null);
+                List<MPPS> mppss = result.getMppss();
+                DicomObject mppsAttrs;
+                for (MPPS mpps : mppss) {
+                    mppsAttrs = mpps.getAttributes();
+                    CoercionUtil.coerceAttributes(mppsAttrs, coerce);
+                    mpps.setAttributes(mppsAttrs);
+                }
+            } else {
+                log.info("Can not add MWL attributes to MPPS Linked notification! addMwlAttrsToMppsXsl stylesheet file not found! file:"+f);
+            }
+        } catch (Exception e) {
+            log.error("Attribute coercion failed! Can not add MWL attributes to MPPS Linked notification!", e);
+        }
+    }
     public boolean unlinkMpps(long pk) {
         MPPS mpps = lookupMppsToMwlLinkLocal().unlinkMpps(pk, modifyingSystem, modifyReason);
         if (mpps != null) {
@@ -619,11 +657,6 @@ public class ContentEditService extends ServiceMBeanSupport {
     private DicomObject getCoercionAttrs(DicomObject ds) throws InstanceNotFoundException, MBeanException, ReflectionException {
         if ( ds == null ) return null;
         log.info("Dataset to get coercion ds:"+ds);
-        try {
-            XSLTUtils.dump(ds, null, "/tmp/mpps2mwl_coerce.xml", true);
-        } catch (Exception x) {
-            log.warn("Can't dump dicom object!", x);
-        }
         DicomObject sps = ds.get(Tag.ScheduledProcedureStepSequence).getDicomObject();
         String aet = sps == null ? null : sps.getString(Tag.ScheduledStationAETitle);
         Templates tpl = templates.getTemplatesForAET(aet, MWL2STORE_XSL);

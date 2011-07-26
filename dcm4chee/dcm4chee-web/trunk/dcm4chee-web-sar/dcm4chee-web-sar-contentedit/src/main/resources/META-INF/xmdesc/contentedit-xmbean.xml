@@ -172,6 +172,23 @@
          <value value="resource:xsl/dcm14To2.xsl" />
       </descriptors>
    </attribute>
+   
+   <attribute access="read-write"
+      getMethod="getAddMwlAttrsToMppsXsl"
+      setMethod="setAddMwlAttrsToMppsXsl">
+      <description><![CDATA[ Stylesheet to add MWL attributes to MPPS attributes for 'MPPS Linked' notification.<br/>
+                This allow the use of additional MWL attributes to create ORM message in HL7SendV2 service. 
+                A relative path name is resolved relative to <i>archive-install-directory</i>/server/default/.<br/>
+                NONE..leave MPPS attributes unchanged. <br />
+                Use a leading '14|' identifier if the stylesheet is for dcm4che14 formatted xml.
+        ]]>
+      </description>
+      <name>AddMwlAttrsToMppsXsl</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
 
    <attribute access="read-write"
       getMethod="getRejectionNoteServiceName"

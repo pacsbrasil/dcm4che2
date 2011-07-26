@@ -63,6 +63,7 @@ import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.web.dao.util.CoercionUtil;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.jboss.annotation.ejb.LocalBinding;
@@ -328,7 +329,7 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
                 seriesAndStudyAttrs.remove(Tag.RequestAttributesSequence);
                 log.debug("Coerce SeriesAndStudy: orig:"+seriesAndStudyAttrs);
                 log.debug("Coerce SeriesAndStudy: coerce:"+coerce);
-                coerceAttributes(seriesAndStudyAttrs, coerce, null);
+                CoercionUtil.coerceAttributes(seriesAndStudyAttrs, coerce, null);
                 log.debug("Set coerced SeriesAndStudy: "+seriesAndStudyAttrs);
                 s.setAttributes(seriesAndStudyAttrs);
                 em.merge(s);
@@ -392,64 +393,6 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         DicomElement modSq = origAttrsItem.putSequence(Tag.ModifiedAttributesSequence);
         modSq.addDicomObject(origAttrs);
         origAttrsSq.addDicomObject(origAttrsItem);
-    }
-
-    private void coerceAttributes(DicomObject attrs, DicomObject coerce,
-            DicomElement parent) {
-        boolean coerced = false;
-        DicomElement el;
-        DicomElement oldEl;
-        for (Iterator<DicomElement> it = coerce.iterator(); it.hasNext();) {
-            el = it.next();
-            oldEl = attrs.get(el.tag());
-            if (el.isEmpty()) {
-                coerced = oldEl != null && !oldEl.isEmpty();
-                if (oldEl == null || coerced) {
-                    if ( el.vr()==VR.SQ ) {
-                        attrs.putSequence(el.tag());
-                    } else {
-                        attrs.putBytes(el.tag(), el.vr(), el.getBytes());
-                    }
-                }
-            } else {
-                DicomObject item;
-                DicomElement sq = oldEl; 
-                if (el.vr() == VR.SQ) {
-                    coerced = oldEl != null && sq.vr() != VR.SQ;
-                    if (oldEl == null || coerced) {
-                        sq = attrs.putSequence(el.tag());
-                    }
-                    for (int i = 0, n = el.countItems(), sqLen = sq.countItems(); i < n; i++) {
-                        if (i < sqLen) {
-                            item  = sq.getDicomObject(i);
-                        } else {
-                            item = new BasicDicomObject();
-                            sq.addDicomObject(item);
-                        }
-                        DicomObject coerceItem = el.getDicomObject(i);
-                        coerceAttributes(item, coerceItem, el);
-                        if (!coerceItem.isEmpty()) {
-                            coerced = true;
-                        }
-                    }
-                } else {
-                    coerced = oldEl != null && !oldEl.equals(el);
-                    if (oldEl == null || coerced) {
-                        attrs.putBytes(el.tag(), el.vr(), el.getBytes());
-                    }
-                }
-            }
-            if (coerced) {
-                log.info(parent == null ? ("Coerce " + oldEl + " to " + el)
-                                : ("Coerce " + oldEl + " to " + el
-                                        + " in item of " + parent));
-            } else {
-                if (oldEl == null && log.isDebugEnabled()) {
-                    log.debug(parent == null ? ("Add " + el) : ("Add " + el
-                            + " in item of " + parent));
-                }
-            }
-        }
     }
 
     @SuppressWarnings("unchecked")

@@ -93,29 +93,31 @@ public class XSLTUtils {
         writer.write(attrs);
     }
     public static void xslt(DicomObject attrs, Templates[] tpls, DicomObject out, Map<String,String> parameter) throws TransformerConfigurationException, SAXException, IOException {
-        if(tpls==null || tpls.length == 1) {
-            xslt(attrs, tpls[0], out, parameter);
-        }
-        TransformerHandler[] thChain = toTransformerHandlerChain(tpls);
-        if (parameter != null) {
-            for ( int i=0 ; i<thChain.length ; i++) {
-                setParameter(parameter, thChain[i].getTransformer());
+        if(tpls!=null && tpls.length > 1) {
+            TransformerHandler[] thChain = toTransformerHandlerChain(tpls);
+            if (parameter != null) {
+                for ( int i=0 ; i<thChain.length ; i++) {
+                    setParameter(parameter, thChain[i].getTransformer());
+                }
             }
+            xslt(attrs, thChain, out);
+        } else {
+            xslt(attrs, tpls == null ? null : tpls[0], out, parameter);
         }
-        xslt(attrs, thChain, out);
-    }
+}
 
     public static void xslt(DicomObject attrs, Templates[] tpls, OutputStream out, Map<String,String> parameter) throws TransformerConfigurationException, SAXException, IOException {
-        if(tpls==null || tpls.length == 1) {
-            xslt(attrs, tpls[0], out, parameter);
-        }
-        TransformerHandler[] thChain = toTransformerHandlerChain(tpls);
-        if (parameter != null) {
-            for ( int i=0 ; i<thChain.length ; i++) {
-                setParameter(parameter, thChain[i].getTransformer());
+        if(tpls!=null && tpls.length > 1) {
+            TransformerHandler[] thChain = toTransformerHandlerChain(tpls);
+            if (parameter != null) {
+                for ( int i=0 ; i<thChain.length ; i++) {
+                    setParameter(parameter, thChain[i].getTransformer());
+                }
             }
+            xslt(attrs, thChain, out);
+        } else {
+            xslt(attrs, tpls == null ? null : tpls[0], out, parameter);
         }
-        xslt(attrs, thChain, out);
     }
 
     public static void xslt(DicomObject attrs, TransformerHandler[] thChain,
