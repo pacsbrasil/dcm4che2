@@ -2058,6 +2058,7 @@ public class StudyListPage extends Panel {
             item.add(new Label("fileObject.fileSize").add(tooltip));
             item.add(new Label("fileObject.transferSyntaxUID").add(tooltip));
             item.add(new Label("fileObject.fileSystem.directoryPath").add(tooltip));
+            item.add(new Label("absoluteDirectoryPath").add(tooltip));
             item.add(new Label("fileObject.filePath").add(tooltip));
             item.add(new Label("fileObject.fileSystem.availability").add(tooltip));
             item.add(new AjaxFallbackLink<Object>("toggledetails") {

@@ -41,6 +41,7 @@ package org.dcm4chee.web.war.folder.model;
 import java.io.Serializable;
 
 import org.dcm4chee.archive.entity.File;
+import org.dcm4chee.web.common.util.FileUtils;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -61,6 +62,10 @@ public class FileModel implements Serializable {
 
     public File getFileObject() {
         return file;
+    }
+
+    public String getAbsoluteDirectoryPath() {
+        return FileUtils.resolve(new java.io.File(file.getFileSystem().getDirectoryPath())).getAbsolutePath();
     }
 
     public boolean isSelected() {

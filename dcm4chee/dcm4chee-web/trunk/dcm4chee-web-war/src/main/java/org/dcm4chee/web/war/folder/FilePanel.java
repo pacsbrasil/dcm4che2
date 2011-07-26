@@ -82,6 +82,7 @@ public class FilePanel extends Panel {
         add(new Label("fileObject.fileStatus"));
         add(new Label("fileObject.filePath"));
         add(new Label("fileObject.fileSystem.directoryPath"));
+        add(new Label("absoluteDirectoryPath"));
         add(new Label("fileObject.fileSystem.groupID"));
         add(new Label("fileObject.fileSystem.retrieveAET"));
         add(new Label("fileObject.fileSystem.availability"));
