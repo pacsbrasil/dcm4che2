@@ -2397,43 +2397,44 @@ public class StudyListPage extends Panel {
     }
 
     private void logSecurityAlert(AbstractDicomModel model, boolean success, String description) {
-        
-        org.dcm4chee.web.service.common.HttpUserInfo userInfo = 
-            new org.dcm4chee.web.service.common.HttpUserInfo(AuditMessage.isEnableDNSLookups());
-
-        SecurityAlertMessage msg = new SecurityAlertMessage(
-                SecurityAlertMessage.OBJECT_SECURITY_ATTRIBUTES_CHANGED);
-        msg.setOutcomeIndicator(AuditEvent.OutcomeIndicator.SUCCESS);
-        msg.addReportingProcess(AuditMessage.getProcessID(),
-                AuditMessage.getLocalAETitles(),
-                AuditMessage.getProcessName(),
-                AuditMessage.getLocalHostName());
-        
-        if ( userInfo.getHostName() != null ) {
-            msg.addPerformingPerson(userInfo.getUserId(), null, null, userInfo.getHostName());
-        } else {
-            msg.addPerformingNode(AuditMessage.getLocalHostName());
-        }
-        msg.addAlertSubjectWithNodeID(AuditMessage.getLocalNodeID(), description);
-        msg.validate();
-
-        if (model.levelOfModel() == 0) {
-            msg.addParticipantObject(ParticipantObject.createPatient(
-                    model.getAttributeValueAsString(Tag.PatientID), 
-                    model.getAttributeValueAsString(Tag.PatientName)
-            ));
-        } else if (model.levelOfModel() > 0 && model.levelOfModel() < 5) {
-            switch (model.levelOfModel()) {
-                case 2: {model = model.getParent(); break;}
-                case 3: {model = model.getParent().getParent(); break;}
-                case 4: {model = model.getParent().getParent().getParent(); break;}
+        try {
+            org.dcm4chee.web.service.common.HttpUserInfo userInfo = 
+                new org.dcm4chee.web.service.common.HttpUserInfo(AuditMessage.isEnableDNSLookups());
+    
+            SecurityAlertMessage msg = new SecurityAlertMessage(
+                    SecurityAlertMessage.OBJECT_SECURITY_ATTRIBUTES_CHANGED);
+            msg.setOutcomeIndicator(AuditEvent.OutcomeIndicator.SUCCESS);
+            msg.addReportingProcess(AuditMessage.getProcessID(),
+                    AuditMessage.getLocalAETitles(),
+                    AuditMessage.getProcessName(),
+                    AuditMessage.getLocalHostName());
+            
+            if ( userInfo.getHostName() != null ) {
+                msg.addPerformingPerson(userInfo.getUserId(), null, null, userInfo.getHostName());
+            } else {
+                msg.addPerformingNode(AuditMessage.getLocalHostName());
             }
-            msg.addParticipantObject(ParticipantObject.createStudy(
-                    model.getAttributeValueAsString(Tag.StudyInstanceUID), 
-                    null));
-        } else { 
-            log.warn("Unknown Dicom model received, cannot log id");
+            msg.addAlertSubjectWithNodeID(AuditMessage.getLocalNodeID(), description);
+    
+            PatientModel patInfoModel;
+            AbstractDicomModel studyInfoModel = null;
+            if (model.levelOfModel() > AbstractDicomModel.PATIENT_LEVEL) {
+                studyInfoModel = model;
+                while (studyInfoModel.levelOfModel() > AbstractDicomModel.STUDY_LEVEL)
+                    studyInfoModel = studyInfoModel.getParent();
+                patInfoModel = (PatientModel) studyInfoModel.getParent();
+            } else {
+                patInfoModel = (PatientModel) model;
+            }
+            msg.addParticipantObject(ParticipantObject.createPatient(patInfoModel.getId(), patInfoModel.getName()));
+            if (studyInfoModel != null) {
+                msg.addParticipantObject(ParticipantObject.createStudy(
+                        studyInfoModel.getAttributeValueAsString(Tag.StudyInstanceUID), null));
+            }
+            msg.validate();
+            LoggerFactory.getLogger("auditlog").info(msg.toString());
+        } catch (Exception ignore) {
+            log.warn("Audit log of SecurityAlert for overriding editing time limit failed!", ignore);
         }
-        LoggerFactory.getLogger("auditlog").warn(msg.toString());
     }
 }
