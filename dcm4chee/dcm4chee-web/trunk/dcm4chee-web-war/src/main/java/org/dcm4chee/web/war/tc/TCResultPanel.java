@@ -90,6 +90,9 @@ import org.slf4j.LoggerFactory;
  * @since April 28, 2011
  */
 public class TCResultPanel extends Panel {
+
+    private static final long serialVersionUID = 1L;
+
     private static final Logger log = LoggerFactory
             .getLogger(TCResultPanel.class);
 
@@ -113,6 +116,9 @@ public class TCResultPanel extends Panel {
 
         final DataView<TCModel> dataView = new DataView<TCModel>("row",
                 tclistProvider) {
+
+            private static final long serialVersionUID = 1L;
+
             private final StudyListLocal dao = (StudyListLocal) JNDIUtils
                     .lookup(StudyListLocal.JNDI_NAME);
 
@@ -128,9 +134,15 @@ public class TCResultPanel extends Panel {
                 item.add(new TCMultiLineLabel("author", tc.getAuthor(), 80));
                 item.add(new Label("date",
                         new Model<Date>(tc.getCreationDate())) {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public IConverter getConverter(Class<?> type) {
                         return new DateConverter() {
+
+                            private static final long serialVersionUID = 1L;
+
                             @Override
                             public DateFormat getDateFormat(Locale locale) {
                                 if (locale == null) {
@@ -160,6 +172,9 @@ public class TCResultPanel extends Panel {
                                 + ":webviewerInstanceLink"));
 
                 item.add(new AbstractDefaultAjaxBehavior() {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     protected void respond(AjaxRequestTarget target) {
                         target.addComponent(item);
@@ -181,6 +196,9 @@ public class TCResultPanel extends Panel {
 
                 item.add(new AttributeModifier("onmouseover", true,
                         new AbstractReadOnlyModel<String>() {
+
+                            private static final long serialVersionUID = 1L;
+
                             @Override
                             public String getObject() {
                                 if (selected != null && selected.equals(tc)) {
@@ -194,6 +212,9 @@ public class TCResultPanel extends Panel {
 
                 item.add(new AttributeModifier("onmouseout", true,
                         new AbstractReadOnlyModel<String>() {
+
+                            private static final long serialVersionUID = 1L;
+
                             @Override
                             public String getObject() {
                                 if (selected != null && selected.equals(tc)) {
@@ -206,6 +227,9 @@ public class TCResultPanel extends Panel {
                         }));
 
                 item.add(new AjaxEventBehavior("onclick") {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public void onEvent(AjaxRequestTarget target) {
                         selected = tc;
@@ -228,6 +252,9 @@ public class TCResultPanel extends Panel {
 
         OrderByBorder titleBorder = new OrderByBorder("titleColumn", "Title",
                 tclistProvider) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected void onSortChanged() {
                 if (selected == null) {
@@ -241,6 +268,9 @@ public class TCResultPanel extends Panel {
 
         OrderByBorder abstractBorder = new OrderByBorder("abstractColumn",
                 "Abstract", tclistProvider) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected void onSortChanged() {
                 if (selected == null) {
@@ -254,6 +284,9 @@ public class TCResultPanel extends Panel {
 
         OrderByBorder authorBorder = new OrderByBorder("authorColumn",
                 "Author", tclistProvider) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected void onSortChanged() {
                 if (selected == null) {
@@ -267,6 +300,9 @@ public class TCResultPanel extends Panel {
 
         OrderByBorder dateBorder = new OrderByBorder("dateColumn", "Date",
                 tclistProvider) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected void onSortChanged() {
                 if (selected == null) {
@@ -300,6 +336,9 @@ public class TCResultPanel extends Panel {
         add(new Label("numberOfMatchingInstances", new StringResourceModel(
                 "tc.list.numberOfMatchingInstances", this, null,
                 new Object[] { new Model<Integer>() {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public Integer getObject() {
                         return ((TCListModel) TCResultPanel.this
@@ -338,6 +377,9 @@ public class TCResultPanel extends Panel {
     }
 
     public static class TCListModel extends Model<ArrayList<TCModel>> {
+
+        private static final long serialVersionUID = 1L;
+
         private TCQueryLocal dao = (TCQueryLocal) JNDIUtils
                 .lookup(TCQueryLocal.JNDI_NAME);
 
@@ -394,6 +436,9 @@ public class TCResultPanel extends Panel {
     }
 
     public class SortableTCListProvider extends SortableDataProvider<TCModel> {
+
+        private static final long serialVersionUID = 1L;
+        
         private TCListModel model;
 
         public SortableTCListProvider(TCListModel model) {
@@ -403,7 +448,7 @@ public class TCResultPanel extends Panel {
             setSort(TCModel.Sorter.Date.name(), false);
         }
 
-        @SuppressWarnings({ "unchecked", "rawtypes" })
+        @SuppressWarnings({ "unchecked" })
         @Override
         public Iterator<TCModel> iterator(int first, int count) {
             List<TCModel> items = model.getObject();
@@ -467,5 +512,4 @@ public class TCResultPanel extends Panel {
             return null;
         }
     }
-
 }

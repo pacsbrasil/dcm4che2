@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 
 public class TCDetails implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private final static Logger log = LoggerFactory.getLogger(TCDetails.class);
 
     private String abstr;
@@ -231,7 +233,7 @@ public class TCDetails implements Serializable {
         return Collections.emptyList();
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked" })
     public List<InstanceRef> getReferencedImages() {
         List<InstanceRef> refs = instanceRefs != null ? new ArrayList<InstanceRef>(
                 instanceRefs) : (List) Collections.emptyList();
@@ -610,6 +612,9 @@ public class TCDetails implements Serializable {
     }
 
     public static class InstanceRef implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
         private String stuid;
 
         private String suid;
@@ -648,6 +653,9 @@ public class TCDetails implements Serializable {
     }
 
     public static class DicomCode implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
         private String value;
 
         private String designator;

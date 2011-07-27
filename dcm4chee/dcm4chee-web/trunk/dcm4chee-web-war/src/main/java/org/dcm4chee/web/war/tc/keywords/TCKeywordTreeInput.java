@@ -71,6 +71,8 @@ import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue.TCKeywordInput;
  */
 public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
 
+    private static final long serialVersionUID = 1L;
+
     public TCKeywordTreeInput(final String id, final TCKeywordNode root) {
         this(id, null, root);
     }
@@ -82,10 +84,16 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
 
         final AutoCompleteTextField<TCKeyword> text = new AutoCompleteTextField<TCKeyword>(
                 "text", getModel(), TCKeyword.class, new AutoCompleteSettings()) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public IConverter getConverter(Class<?> type) {
                 if (TCKeyword.class.equals(type)) {
                     return new IConverter() {
+
+                        private static final long serialVersionUID = 1L;
+
                         @Override
                         public String convertToString(Object o, Locale locale) {
                             return o != null ? o.toString() : null;
@@ -128,6 +136,9 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
         popup.setVisible(false);
 
         final Tree tree = new Tree("keyword-tree", new DefaultTreeModel(root)) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onNodeLinkClicked(AjaxRequestTarget target,
                     TreeNode node) {
@@ -161,6 +172,9 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
         tree.getTreeState().setAllowSelectMultiple(false);
 
         popup.add(new AjaxFallbackLink<String>("popup-close-button") {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onClick(AjaxRequestTarget target) {
                 MarkupContainer parent = TCKeywordTreeInput.this.getParent();
@@ -184,6 +198,9 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
                 "tc-utils.js"));
         add(text);
         add(new AjaxButton("chooser-button", new Model<String>("...")) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 TCKeyword keyword = TCKeywordTreeInput.this
@@ -230,7 +247,7 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
         return this;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked" })
     private Model<TCKeyword> getModel() {
         return (Model) getDefaultModel();
     }

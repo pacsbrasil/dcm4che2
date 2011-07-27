@@ -53,15 +53,23 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
  */
 public class TCDetailsAuthorTab extends Panel {
 
+    private static final long serialVersionUID = 1L;
+
     public TCDetailsAuthorTab(final String id) {
         super(id);
 
         add(new Label("details-author-name", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.AuthorName);
             }
         }).add(new AbstractBehavior() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
                 tag.put("title", getStringValue(TCQueryFilterKey.AuthorName));
@@ -69,11 +77,17 @@ public class TCDetailsAuthorTab extends Panel {
         }));
 
         add(new Label("details-author-affiliation", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.AuthorAffiliation);
             }
         }).add(new AbstractBehavior() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
                 tag.put("title",
@@ -82,6 +96,9 @@ public class TCDetailsAuthorTab extends Panel {
         }));
 
         add(new MultiLineLabel("details-author-contact", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.AuthorContact);
@@ -100,5 +117,4 @@ public class TCDetailsAuthorTab extends Panel {
 
         return s != null ? s : "-";
     }
-
 }

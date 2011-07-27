@@ -55,8 +55,6 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.resource.loader.PackageStringResourceLoader;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -64,8 +62,8 @@ import org.slf4j.LoggerFactory;
  * @since May 27, 2011
  */
 public class TCDetailsPanel extends Panel {
-    private static final Logger log = LoggerFactory
-            .getLogger(TCDetailsPanel.class);
+
+    private static final long serialVersionUID = 1L;
 
     private WebMarkupContainer errordetailsContainer;
 
@@ -81,6 +79,9 @@ public class TCDetailsPanel extends Panel {
         TCKeywordCatalogueProvider catProv = TCKeywordCatalogueProvider
                 .getInstance();
         final Model<TCDetails> tabModel = new Model<TCDetails>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public TCDetails getObject() {
                 return (TCDetails) TCDetailsPanel.this.getDefaultModelObject();
@@ -90,6 +91,9 @@ public class TCDetailsPanel extends Panel {
         List<ITab> tabs = new ArrayList<ITab>();
         tabs.add(new AbstractDetailsTab(new ResourceModel(
                 "tc.details.tab.info.title.text")) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Panel getPanel(String id) {
                 Panel tab = new TCDetailsInfoTab(id);
@@ -106,6 +110,9 @@ public class TCDetailsPanel extends Panel {
         if (!catProv.hasCatalogue(TCQueryFilterKey.Diagnosis)) {
             tabs.add(new AbstractDetailsTab(new ResourceModel(
                     "tc.details.tab.diagnosis.title.text")) {
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public Panel getPanel(String id) {
                     Panel tab = new TCDetailsDiagnosisTab(id);
@@ -130,9 +137,15 @@ public class TCDetailsPanel extends Panel {
         if (!catProv.hasCatalogue(TCQueryFilterKey.DifferentialDiagnosis)) {
             tabs.add(new AbstractDetailsTab(new ResourceModel(
                     "tc.details.tab.differential-diagnosis.title.text")) {
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public Panel getPanel(String id) {
                     Panel tab = new TCDetailsDefaultTab(id) {
+
+                        private static final long serialVersionUID = 1L;
+
                         @Override
                         public TCQueryFilterKey getKey() {
                             return TCQueryFilterKey.DifferentialDiagnosis;
@@ -154,9 +167,15 @@ public class TCDetailsPanel extends Panel {
         if (!catProv.hasCatalogue(TCQueryFilterKey.Finding)) {
             tabs.add(new AbstractDetailsTab(new ResourceModel(
                     "tc.details.tab.finding.title.text")) {
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public Panel getPanel(String id) {
                     Panel tab = new TCDetailsDefaultTab(id) {
+
+                        private static final long serialVersionUID = 1L;
+
                         @Override
                         public TCQueryFilterKey getKey() {
                             return TCQueryFilterKey.Finding;
@@ -177,9 +196,15 @@ public class TCDetailsPanel extends Panel {
 
         tabs.add(new AbstractDetailsTab(new ResourceModel(
                 "tc.details.tab.history.title.text")) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Panel getPanel(String id) {
                 Panel tab = new TCDetailsDefaultTab(id) {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public TCQueryFilterKey getKey() {
                         return TCQueryFilterKey.History;
@@ -199,9 +224,15 @@ public class TCDetailsPanel extends Panel {
 
         tabs.add(new AbstractDetailsTab(new ResourceModel(
                 "tc.details.tab.discussion.title.text")) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Panel getPanel(String id) {
                 Panel tab = new TCDetailsDefaultTab(id) {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public TCQueryFilterKey getKey() {
                         return TCQueryFilterKey.Discussion;
@@ -221,9 +252,15 @@ public class TCDetailsPanel extends Panel {
 
         tabs.add(new AbstractDetailsTab(new ResourceModel(
                 "tc.details.tab.organsystem.title.text")) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Panel getPanel(String id) {
                 Panel tab = new TCDetailsDefaultTab(id) {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public TCQueryFilterKey getKey() {
                         return TCQueryFilterKey.OrganSystem;
@@ -243,6 +280,9 @@ public class TCDetailsPanel extends Panel {
 
         tabs.add(new AbstractDetailsTab(new ResourceModel(
                 "tc.details.tab.author.title.text")) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Panel getPanel(String id) {
                 Panel tab = new TCDetailsAuthorTab(id);
@@ -265,6 +305,9 @@ public class TCDetailsPanel extends Panel {
         });
 
         tabs.add(new AbstractDetailsTab(new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+            
             String title = new PackageStringResourceLoader()
                     .loadStringResource(TCDetailsPanel.class,
                             "tc.details.tab.images.title.text", null, null);
@@ -281,6 +324,9 @@ public class TCDetailsPanel extends Panel {
                 return sbuf.toString();
             }
         }) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Panel getPanel(String id) {
                 Panel tab = new TCDetailsImagesTab(id);
@@ -299,6 +345,9 @@ public class TCDetailsPanel extends Panel {
 
         tabs.add(new AbstractDetailsTab(new ResourceModel(
                 "tc.details.tab.bibliography.title.text")) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Panel getPanel(String id) {
                 Panel tab = new TCDetailsBibliographyTab(id);
@@ -355,6 +404,9 @@ public class TCDetailsPanel extends Panel {
     }
 
     private static abstract class AbstractDetailsTab extends AbstractTab {
+
+        private static final long serialVersionUID = 1L;
+
         public AbstractDetailsTab(IModel<String> titleModel) {
             super(titleModel);
         }
@@ -363,6 +415,9 @@ public class TCDetailsPanel extends Panel {
     }
 
     private static class DetailsTabbedPanel extends AjaxTabbedPanel {
+
+        private static final long serialVersionUID = 1L;
+
         public DetailsTabbedPanel(final String id, List<ITab> tabs) {
             super(id, tabs);
         }
@@ -370,6 +425,9 @@ public class TCDetailsPanel extends Panel {
         @Override
         protected WebMarkupContainer newLink(String linkId, final int index) {
             AjaxFallbackLink<Void> link = new AjaxFallbackLink<Void>(linkId) {
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     if (((AbstractDetailsTab) getTabs().get(index))
@@ -384,18 +442,20 @@ public class TCDetailsPanel extends Panel {
             };
             link.add(new AttributeModifier("class", true,
                     new AbstractReadOnlyModel<String>() {
-                        @Override
-                        public String getObject() {
-                            if (((AbstractDetailsTab) getTabs().get(index))
-                                    .isDataAvailable()) {
-                                return "enabled";
-                            } else {
-                                return "disabled";
-                            }
-                        }
-                    }));
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public String getObject() {
+                    if (((AbstractDetailsTab) getTabs().get(index))
+                            .isDataAvailable()) {
+                        return "enabled";
+                    } else {
+                        return "disabled";
+                    }
+                }
+            }));
             return link;
         }
     }
-
 }

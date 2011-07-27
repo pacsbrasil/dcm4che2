@@ -45,8 +45,10 @@ import org.dcm4chee.web.war.tc.keywords.TCKeyword;
  * @version $Revision$ $Date$
  * @since May 30, 2011
  */
-public class ACRKeyword extends TCKeyword 
-{
+public class ACRKeyword extends TCKeyword {
+    
+    private static final long serialVersionUID = 1L;
+
     private static final String NAME_DELIMITER = " - ";
 
     private static final String VALUE_DELIMITER = ".";

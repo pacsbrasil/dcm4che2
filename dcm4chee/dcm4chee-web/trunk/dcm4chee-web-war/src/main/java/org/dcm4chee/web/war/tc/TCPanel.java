@@ -54,6 +54,9 @@ import org.slf4j.LoggerFactory;
  * @since April 28, 2011
  */
 public class TCPanel extends Panel {
+
+    private static final long serialVersionUID = 1L;
+
     private static final Logger log = LoggerFactory.getLogger(TCPanel.class);
 
     private static final ResourceReference CSS = new CompressedResourceReference(
@@ -75,6 +78,9 @@ public class TCPanel extends Panel {
         final TCListModel listModel = new TCListModel();
         final TCResultPanel listPanel = new TCResultPanel("result-panel",
                 listModel) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Component selectionChanged(TCModel tc) {
                 try {
@@ -95,6 +101,9 @@ public class TCPanel extends Panel {
 
         add(macb);
         add(new TCSearchPanel("search-panel") {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Component doSearch(TCQueryFilter filter) {
                 listModel.update(filter);

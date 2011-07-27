@@ -73,6 +73,9 @@ import org.dcm4chee.web.war.tc.keywords.TCKeywordNode;
  * @since June 20, 2011
  */
 public class TCKeywordACRInput extends Panel implements TCKeywordInput {
+
+    private static final long serialVersionUID = 1L;
+
     public TCKeywordACRInput(final String id) {
         this(id, null);
     }

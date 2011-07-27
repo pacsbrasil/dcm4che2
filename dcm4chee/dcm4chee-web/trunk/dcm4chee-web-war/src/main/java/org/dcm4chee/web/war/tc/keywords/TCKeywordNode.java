@@ -53,6 +53,8 @@ import javax.swing.tree.TreePath;
  */
 public class TCKeywordNode implements TreeNode, Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private TCKeyword keyword;
 
     private TCKeywordNode parent;

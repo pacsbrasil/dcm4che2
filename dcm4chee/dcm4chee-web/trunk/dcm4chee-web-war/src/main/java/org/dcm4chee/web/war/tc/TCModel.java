@@ -60,6 +60,9 @@ import org.dcm4chee.web.war.folder.model.StudyModel;
  * @since May 04, 2011
  */
 public class TCModel extends InstanceModel {
+
+    private static final long serialVersionUID = 1L;
+
     private String fsId;
 
     private String fileId;

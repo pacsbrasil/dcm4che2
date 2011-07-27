@@ -42,8 +42,8 @@ package org.dcm4chee.web.war.tc.keywords.acr;
  * @version $Revision$ $Date$
  * @since June 22, 2011
  */
-public class ACRData 
-{
+public class ACRData {
+    
     public static String[] rawdataAnatomy = new String[]
         {
     	    "Breast;0",
@@ -3272,7 +3272,7 @@ public class ACRData
                 "314;Vascular, lymphatic origin",
                 "3141;Hemangioma",
                 "3142;Lymphangioma",
-                "3143;Skeletal angiomatosis   include: gorham disease (ìvanishing boneî) (see also .18",
+                "3143;Skeletal angiomatosis   include: gorham disease (ï¿½vanishing boneï¿½) (see also .18",
                 "3149;Other   include: hemangiopericytoma (benign or malignant)",
                 "315;Nerve tissue origin",
                 "318;Unknown origin",
@@ -5245,7 +5245,7 @@ public class ACRData
                 "285;Hydrops, empyema, acute cholecystitis, intraperitoneal perforation of gallbladde",
                 "286;Milk of calcium bile, calcified gallbladder wall",
                 "287;Hyperplastic cholecystosis",
-                "288;Sclerosing cholangitis, primary biliary cirrhosis, caroliís disease, other abnor",
+                "288;Sclerosing cholangitis, primary biliary cirrhosis, caroliï¿½s disease, other abnor",
                 "289;Other     include: gallstone on plain film (76.2891), recurrent pyogenic cholang",
                 "29;Miscellaneous",
                 "291;Esophagitis (see .85), gastritis, duodenitis, appendicitis, hepatitis, pancreati",

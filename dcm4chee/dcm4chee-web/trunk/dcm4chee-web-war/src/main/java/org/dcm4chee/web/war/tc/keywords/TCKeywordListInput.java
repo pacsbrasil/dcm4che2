@@ -67,6 +67,9 @@ import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue.TCKeywordInput;
  * @since June 20, 2011
  */
 public class TCKeywordListInput extends Panel implements TCKeywordInput {
+
+    private static final long serialVersionUID = 1L;
+
     public TCKeywordListInput(final String id, List<TCKeyword> keywords) {
         this(id, null, keywords);
     }
@@ -78,6 +81,9 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
 
         final AutoCompleteTextField<TCKeyword> text = new AutoCompleteTextField<TCKeyword>(
                 "text", getModel(), TCKeyword.class, new AutoCompleteSettings()) {
+
+            private static final long serialVersionUID = 1L;
+            
             final Map<String, TCKeyword> keywordMap = new HashMap<String, TCKeyword>();
 
             @Override
@@ -90,6 +96,9 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
                         }
                     }
                     return new IConverter() {
+
+                        private static final long serialVersionUID = 1L;
+
                         @Override
                         public String convertToString(Object o, Locale locale) {
                             return o != null ? o.toString() : null;
@@ -137,6 +146,9 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
 
         final ListChoice<TCKeyword> keywordList = new ListChoice<TCKeyword>(
                 "keyword-list", new Model<TCKeyword>(selectedKeyword), keywords) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected String getNullValidKey() {
                 return "tc.search.null.text";
@@ -145,6 +157,9 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
         keywordList.setOutputMarkupId(true);
         keywordList.setNullValid(true);
         keywordList.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onUpdate(AjaxRequestTarget target) {
                 TCKeyword choosenKeyword = keywordList.getModelObject();
@@ -170,6 +185,9 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
         popup.add(keywordList);
 
         popup.add(new AjaxButton("popup-close-button") {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 MarkupContainer parent = TCKeywordListInput.this.getParent();
@@ -192,6 +210,9 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
 
         add(text);
         add(new AjaxButton("chooser-button", new Model<String>("...")) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 target.appendJavascript("setPositionRelativeToParent('"
@@ -225,7 +246,7 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
         return this;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked" })
     private Model<TCKeyword> getModel() {
         return (Model) getDefaultModel();
     }

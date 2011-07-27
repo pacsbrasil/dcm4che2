@@ -51,10 +51,15 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
  */
 public class TCDetailsDiagnosisTab extends Panel {
 
+    private static final long serialVersionUID = 1L;
+
     public TCDetailsDiagnosisTab(final String id) {
         super(id);
 
         add(new MultiLineLabel("details-diagnosis", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.Diagnosis);
@@ -62,6 +67,9 @@ public class TCDetailsDiagnosisTab extends Panel {
         }));
 
         add(new Label("details-diagnosis-confirmed", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 YesNo yesno = null;
@@ -100,5 +108,4 @@ public class TCDetailsDiagnosisTab extends Panel {
 
         return s != null ? s : "-";
     }
-
 }

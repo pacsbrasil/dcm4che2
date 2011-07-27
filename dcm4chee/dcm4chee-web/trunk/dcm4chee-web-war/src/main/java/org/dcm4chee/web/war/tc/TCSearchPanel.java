@@ -87,6 +87,9 @@ import org.slf4j.LoggerFactory;
  * @since April 28, 2011
  */
 public abstract class TCSearchPanel extends Panel {
+
+    private static final long serialVersionUID = 1L;
+    
     private static final Logger log = LoggerFactory
             .getLogger(TCSearchPanel.class);
 
@@ -160,6 +163,9 @@ public abstract class TCSearchPanel extends Panel {
 
         final IndicatingAjaxButton searchBtn = new IndicatingAjaxButton(
                 "doSearchBtn") {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
@@ -305,6 +311,9 @@ public abstract class TCSearchPanel extends Panel {
                         "vertical-align: middle;"))).setOutputMarkupId(true));
 
         AjaxButton resetBtn = new IndicatingAjaxButton("resetSearchBtn") {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 TCQueryFilter filter = (TCQueryFilter) TCSearchPanel.this
@@ -376,6 +385,9 @@ public abstract class TCSearchPanel extends Panel {
         AjaxCheckBox advancedOptionsChkBox = new AjaxCheckBox(
                 "advancedOptionsToggle", new PropertyModel<Boolean>(wmc,
                         "visible")) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onUpdate(AjaxRequestTarget target) {
                 target.addComponent(wmc);
@@ -421,6 +433,9 @@ public abstract class TCSearchPanel extends Panel {
             final String id, IModel<T> model, List<T> options,
             boolean localizeValues, final String localizePrefix) {
         DropDownChoice<T> choice = new DropDownChoice<T>(id, model, options) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected String getNullValidKey() {
                 return TCPanel.ModuleName + ".search.null.text";
@@ -431,6 +446,9 @@ public abstract class TCSearchPanel extends Panel {
 
         if (localizeValues) {
             choice.setChoiceRenderer(new EnumChoiceRenderer<T>(choice) {
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 protected String resourceKey(T object) {
                     String key = localizePrefix != null ? localizePrefix + "."
@@ -458,6 +476,9 @@ public abstract class TCSearchPanel extends Panel {
             final TCKeywordInput input = cat.createInput(componentId, keyword);
 
             return new IKeywordAwareInput() {
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public Object getSearchObject() {
                     TCKeyword kw = input.getSelectedKeyword();
@@ -496,6 +517,9 @@ public abstract class TCSearchPanel extends Panel {
             fragment.add(tf);
 
             return new IKeywordAwareInput() {
+
+                private static final long serialVersionUID = 1L;
+
                 @Override
                 public Object getSearchObject() {
                     return tf.getDefaultModelObjectAsString();

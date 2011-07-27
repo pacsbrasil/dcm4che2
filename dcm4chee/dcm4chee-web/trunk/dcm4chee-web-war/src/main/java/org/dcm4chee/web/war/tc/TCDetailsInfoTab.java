@@ -55,6 +55,8 @@ import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
  */
 public class TCDetailsInfoTab extends Panel {
 
+    private static final long serialVersionUID = 1L;
+
     private static final TCKeywordCatalogueProvider catProv = TCKeywordCatalogueProvider
             .getInstance();
 
@@ -64,11 +66,17 @@ public class TCDetailsInfoTab extends Panel {
         WebMarkupContainer titleWmc = new WebMarkupContainer(
                 "details-title-row");
         titleWmc.add(new Label("details-title", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.Title);
             }
         }).add(new AbstractBehavior() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
                 tag.put("title", getStringValue(TCQueryFilterKey.Title));
@@ -79,6 +87,9 @@ public class TCDetailsInfoTab extends Panel {
                 "details-abstract-row");
         abstractWmc.add(new MultiLineLabel("details-abstract",
                 new Model<String>() {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public String getObject() {
                         return getStringValue(TCQueryFilterKey.Abstract);
@@ -88,11 +99,17 @@ public class TCDetailsInfoTab extends Panel {
         WebMarkupContainer keywordWmc = new WebMarkupContainer(
                 "details-keyword-row");
         keywordWmc.add(new Label("details-keyword", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.Keyword);
             }
         }).add(new AbstractBehavior() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
                 tag.put("title", getStringValue(TCQueryFilterKey.Keyword));
@@ -102,11 +119,17 @@ public class TCDetailsInfoTab extends Panel {
         WebMarkupContainer anatomyWmc = new WebMarkupContainer(
                 "details-anatomy-row");
         anatomyWmc.add(new Label("details-anatomy", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.Anatomy);
             }
         }).add(new AbstractBehavior() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
                 tag.put("title", getStringValue(TCQueryFilterKey.Anatomy));
@@ -116,11 +139,17 @@ public class TCDetailsInfoTab extends Panel {
         WebMarkupContainer pathologyWmc = new WebMarkupContainer(
                 "details-pathology-row");
         pathologyWmc.add(new Label("details-pathology", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.Pathology);
             }
         }).add(new AbstractBehavior() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
                 tag.put("title", getStringValue(TCQueryFilterKey.Pathology));
@@ -130,11 +159,17 @@ public class TCDetailsInfoTab extends Panel {
         WebMarkupContainer findingWmc = new WebMarkupContainer(
                 "details-finding-row");
         findingWmc.add(new Label("details-finding", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.Finding);
             }
         }).add(new AbstractBehavior() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
                 tag.put("title", getStringValue(TCQueryFilterKey.Finding));
@@ -144,11 +179,17 @@ public class TCDetailsInfoTab extends Panel {
         WebMarkupContainer diagnosisWmc = new WebMarkupContainer(
                 "details-diagnosis-row");
         diagnosisWmc.add(new Label("details-diagnosis", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.Diagnosis);
             }
         }).add(new AbstractBehavior() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
                 tag.put("title", getStringValue(TCQueryFilterKey.Diagnosis));
@@ -159,22 +200,31 @@ public class TCDetailsInfoTab extends Panel {
                 "details-diffdiagnosis-row");
         diffdiagnosisWmc.add(new Label("details-diffdiagnosis",
                 new Model<String>() {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public String getObject() {
                         return getStringValue(TCQueryFilterKey.DifferentialDiagnosis);
                     }
                 }).add(new AbstractBehavior() {
-            @Override
-            public void onComponentTag(Component c, ComponentTag tag) {
-                tag.put("title",
-                        getStringValue(TCQueryFilterKey.DifferentialDiagnosis));
-            }
-        }));
+
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    public void onComponentTag(Component c, ComponentTag tag) {
+                        tag.put("title",
+                                getStringValue(TCQueryFilterKey.DifferentialDiagnosis));
+                    }
+                }));
 
         WebMarkupContainer diagnosisConfirmedWmc = new WebMarkupContainer(
                 "details-diagnosis-confirmed-row");
         diagnosisConfirmedWmc.add(new Label("details-diagnosis-confirmed",
                 new Model<String>() {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public String getObject() {
                         return getStringValue(TCQueryFilterKey.DiagnosisConfirmed);
@@ -184,11 +234,17 @@ public class TCDetailsInfoTab extends Panel {
         WebMarkupContainer categoryWmc = new WebMarkupContainer(
                 "details-category-row");
         categoryWmc.add(new Label("details-category", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.Category);
             }
         }).add(new AbstractBehavior() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
                 tag.put("title", getStringValue(TCQueryFilterKey.Category));
@@ -198,11 +254,17 @@ public class TCDetailsInfoTab extends Panel {
         WebMarkupContainer levelWmc = new WebMarkupContainer(
                 "details-level-row");
         levelWmc.add(new Label("details-level", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.Level);
             }
         }).add(new AbstractBehavior() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
                 tag.put("title", getStringValue(TCQueryFilterKey.Level));
@@ -212,11 +274,17 @@ public class TCDetailsInfoTab extends Panel {
         WebMarkupContainer modalitiesWmc = new WebMarkupContainer(
                 "details-modalities-row");
         modalitiesWmc.add(new Label("details-modalities", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.AcquisitionModality);
             }
         }).add(new AbstractBehavior() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
                 tag.put("title",
@@ -227,6 +295,9 @@ public class TCDetailsInfoTab extends Panel {
         WebMarkupContainer patientSexWmc = new WebMarkupContainer(
                 "details-patient-sex-row");
         patientSexWmc.add(new Label("details-patient-sex", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.PatientSex);
@@ -237,17 +308,23 @@ public class TCDetailsInfoTab extends Panel {
                 "details-patient-species-row");
         patientSpeciesWmc.add(new Label("details-patient-species",
                 new Model<String>() {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public String getObject() {
                         return getStringValue(TCQueryFilterKey.PatientSpecies);
                     }
                 }).add(new AbstractBehavior() {
-            @Override
-            public void onComponentTag(Component c, ComponentTag tag) {
-                tag.put("title",
-                        getStringValue(TCQueryFilterKey.PatientSpecies));
-            }
-        }));
+
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    public void onComponentTag(Component c, ComponentTag tag) {
+                        tag.put("title",
+                                getStringValue(TCQueryFilterKey.PatientSpecies));
+                    }
+                }));
 
         if (catProv != null) {
             diffdiagnosisWmc.setVisible(catProv
@@ -286,5 +363,4 @@ public class TCDetailsInfoTab extends Panel {
 
         return s != null ? s : "-";
     }
-
 }

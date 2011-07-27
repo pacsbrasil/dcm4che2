@@ -49,10 +49,15 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
  */
 public abstract class TCDetailsDefaultTab extends Panel {
 
+    private static final long serialVersionUID = 1L;
+
     public TCDetailsDefaultTab(final String id) {
         super(id);
 
         add(new MultiLineLabel("details-text", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public String getObject() {
                 return getStringValue(getKey());
@@ -73,5 +78,4 @@ public abstract class TCDetailsDefaultTab extends Panel {
 
         return s != null ? s : "-";
     }
-
 }

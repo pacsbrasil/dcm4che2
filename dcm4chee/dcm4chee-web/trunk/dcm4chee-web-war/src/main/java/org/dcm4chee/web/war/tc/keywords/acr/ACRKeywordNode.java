@@ -48,6 +48,8 @@ import org.dcm4chee.web.war.tc.keywords.TCKeywordNode;
  */
 public class ACRKeywordNode extends TCKeywordNode {
 
+    private static final long serialVersionUID = 1L;
+    
     private String id;
 
     private ACRKeywordNode(String id, String name, DicomCode code) {

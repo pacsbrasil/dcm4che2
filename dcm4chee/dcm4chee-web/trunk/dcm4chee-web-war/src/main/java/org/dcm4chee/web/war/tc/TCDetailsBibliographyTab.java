@@ -53,11 +53,16 @@ import org.apache.wicket.model.Model;
  */
 public class TCDetailsBibliographyTab extends Panel {
 
+    private static final long serialVersionUID = 1L;
+
     public TCDetailsBibliographyTab(final String id) {
         super(id);
 
         ListView<String> list = new ListView<String>("bibliography-list",
                 new Model<ArrayList<String>>() {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public ArrayList<String> getObject() {
                         TCDetails o = getTCObject();
@@ -68,10 +73,16 @@ public class TCDetailsBibliographyTab extends Panel {
                                 0);
                     }
                 }) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected void populateItem(final ListItem<String> item) {
                 WebMarkupContainer wmc = new WebMarkupContainer(
                         "bibliography-separator") {
+
+                    private static final long serialVersionUID = 1L;
+
                     @Override
                     public boolean isVisible() {
                         return item.getIndex() < getList().size() - 1;
@@ -90,5 +101,4 @@ public class TCDetailsBibliographyTab extends Panel {
     private TCDetails getTCObject() {
         return (TCDetails) getDefaultModelObject();
     }
-
 }

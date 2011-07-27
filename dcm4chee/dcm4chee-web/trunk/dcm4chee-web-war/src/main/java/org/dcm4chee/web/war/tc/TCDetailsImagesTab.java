@@ -61,6 +61,9 @@ import org.dcm4chee.web.war.tc.TCDetails.InstanceRef;
  * @since May 27, 2011
  */
 public class TCDetailsImagesTab extends Panel {
+
+    private static final long serialVersionUID = 1L;
+
     private WebMarkupContainer navWmc;
 
     public TCDetailsImagesTab(final String id) {
@@ -75,6 +78,9 @@ public class TCDetailsImagesTab extends Panel {
 
         GridView<InstanceRef> view = new GridView<InstanceRef>(
                 "details-image-row", new ReferencedImageProvider()) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected void populateItem(final Item<InstanceRef> item) {
                 InstanceRef ref = item.getModelObject();
@@ -103,6 +109,9 @@ public class TCDetailsImagesTab extends Panel {
         view.setRows(rows);
 
         navWmc = new WebMarkupContainer("details-images-nav-container") {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isVisible() {
                 TCDetails o = getTCObject();
@@ -124,7 +133,10 @@ public class TCDetailsImagesTab extends Panel {
     }
 
     public class ReferencedImageProvider implements IDataProvider<InstanceRef> {
-        @SuppressWarnings({ "unchecked", "rawtypes" })
+
+        private static final long serialVersionUID = 1L;
+
+        @SuppressWarnings({ "unchecked" })
         @Override
         public Iterator<InstanceRef> iterator(int first, int count) {
             TCDetails o = getTCObject();
@@ -156,5 +168,4 @@ public class TCDetailsImagesTab extends Panel {
         public void detach() {
         }
     }
-
 }
