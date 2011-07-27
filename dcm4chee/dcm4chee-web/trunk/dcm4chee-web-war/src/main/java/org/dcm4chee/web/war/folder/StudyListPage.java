@@ -766,6 +766,7 @@ public class StudyListPage extends Panel {
                 logSecurityAlert(model, true, StudyListPage.tooOldAuditMessageText);
                 
                 modalWindow.setContent(getEditDicomObjectPanel(model));
+                modalWindow.setTitle("");
                 modalWindow.show(target);
                 setStatus(new Model<String>(""));
             }
@@ -1034,6 +1035,7 @@ public class StudyListPage extends Panel {
                     });
                     int[] winSize = WebCfgDelegate.getInstance().getWindowSize("move");
                     modalWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
+                    modalWindow.setTitle("");
                     modalWindow.show(target);
                 } else
                     msgWin.show(target, getString("folder.message.noSelection"));
@@ -2119,6 +2121,7 @@ public class StudyListPage extends Panel {
                     confirmEdit.show(target);
                 } else {
                     modalWindow.setContent(getEditDicomObjectPanel(model));
+                    modalWindow.setTitle("");
                     modalWindow.show(target);
                     super.onClick(target);
                 }
@@ -2261,6 +2264,7 @@ public class StudyListPage extends Panel {
                     }
                 });
                 modalWindow.add(new ModalWindowLink.DisableDefaultConfirmBehavior());
+                modalWindow.setTitle("");
                 modalWindow.show(target);
             }
             
