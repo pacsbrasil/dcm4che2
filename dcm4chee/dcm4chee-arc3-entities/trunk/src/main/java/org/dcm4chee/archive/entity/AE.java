@@ -71,7 +71,7 @@ public class AE extends BaseEntity implements Serializable {
     private String hostName;
 
     @Column(name = "port", nullable = false)
-    private int port = 1;
+    private int port = 11112;
 
     @Column(name = "cipher_suites")
     private String cipherSuites;
