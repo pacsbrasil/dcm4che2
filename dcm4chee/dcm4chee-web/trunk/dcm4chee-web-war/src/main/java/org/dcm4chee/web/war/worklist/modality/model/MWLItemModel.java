@@ -40,9 +40,9 @@ package org.dcm4chee.web.war.worklist.modality.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
-import org.apache.wicket.model.IModel;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
@@ -53,7 +53,6 @@ import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
-import java.util.Iterator;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -185,7 +184,7 @@ public class MWLItemModel extends AbstractEditableDicomModel implements Serializ
 
     @Override
     public int levelOfModel() {
-        return 0;
+        return NO_LEVEL;
     }
 
     @Override

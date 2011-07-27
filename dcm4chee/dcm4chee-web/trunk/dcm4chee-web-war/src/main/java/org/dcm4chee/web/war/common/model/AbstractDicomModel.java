@@ -57,6 +57,7 @@ public abstract class AbstractDicomModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
+    public static final int NO_LEVEL = -1;
     public static final int PATIENT_LEVEL = 0;
     public static final int STUDY_LEVEL = 1;
     public static final int PPS_LEVEL = 2;
