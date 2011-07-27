@@ -193,7 +193,10 @@ public final class VRMap implements Serializable {
             return vrOfCommand(tag);
         if ((tag & 0x00010000) != 0) { // Private Element
             if ((tag & 0x0000ff00) == 0)
-                return VR.LO; // Private Creator
+                if ((tag & 0x000000f0) == 0) //Invalid tag
+                    return VR.UN;
+                else // Private Creator
+                    return VR.LO;
             tag &= 0xffff00ff;
         } else {
             final int ggg00000 = tag & 0xffe00000;
