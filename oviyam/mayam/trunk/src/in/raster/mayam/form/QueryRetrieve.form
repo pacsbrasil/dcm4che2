@@ -34,10 +34,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="jPanel9" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
+          <Component id="jPanel9" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -60,44 +57,46 @@
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="jScrollPane2" alignment="0" pref="1163" max="32767" attributes="2"/>
+                      <Component id="jScrollPane2" alignment="0" pref="1161" max="32767" attributes="2"/>
                       <Group type="102" alignment="1" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="serverlistScroll" pref="535" max="32767" attributes="1"/>
-                              <Component id="serverNameLabel" alignment="1" pref="535" max="32767" attributes="2"/>
-                              <Component id="headerLabel" alignment="0" pref="535" max="32767" attributes="2"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Component id="serverlistScroll" alignment="0" pref="551" max="32767" attributes="1"/>
+                              <Component id="serverNameLabel" alignment="0" pref="551" max="32767" attributes="1"/>
+                              <Component id="headerLabel" alignment="0" pref="551" max="32767" attributes="1"/>
                           </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="queryFilterLabel" alignment="0" max="32767" attributes="1"/>
-                              <Component id="jPanel7" alignment="0" pref="618" max="32767" attributes="1"/>
-                              <Component id="jPanel8" alignment="0" max="32767" attributes="1"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="jPanel8" max="32767" attributes="1"/>
+                              <Component id="jPanel7" alignment="1" max="32767" attributes="1"/>
+                              <Component id="queryFilterLabel" alignment="0" pref="604" max="32767" attributes="2"/>
                           </Group>
                       </Group>
                   </Group>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="headerLabel" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
                       <Component id="queryFilterLabel" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="serverlistScroll" pref="235" max="32767" attributes="1"/>
-                      <Component id="jPanel7" alignment="0" max="32767" attributes="1"/>
+                      <Component id="jPanel7" max="32767" attributes="2"/>
+                      <Component id="serverlistScroll" alignment="0" min="0" pref="0" max="32767" attributes="3"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="103" groupAlignment="1" attributes="0">
                       <Component id="serverNameLabel" min="-2" pref="23" max="-2" attributes="0"/>
                       <Component id="jPanel8" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane2" pref="516" max="32767" attributes="2"/>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jScrollPane2" pref="551" max="32767" attributes="1"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -117,12 +116,12 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
-                      <Component id="jPanel1" min="-2" pref="157" max="-2" attributes="0"/>
+                      <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jPanel10" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
+                      <EmptySpace pref="30" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -130,14 +129,16 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jPanel2" alignment="0" min="-2" max="-2" attributes="1"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-                              <Component id="jPanel10" min="-2" max="-2" attributes="1"/>
+                          <Component id="jPanel1" min="-2" max="-2" attributes="1"/>
+                          <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                              <Group type="102" attributes="1">
+                                  <EmptySpace min="8" pref="8" max="8" attributes="0"/>
+                                  <Component id="jPanel10" max="32767" attributes="1"/>
+                              </Group>
+                              <Component id="jPanel2" alignment="0" min="-2" max="-2" attributes="1"/>
                           </Group>
-                          <Component id="jPanel1" alignment="0" min="-2" max="-2" attributes="1"/>
                       </Group>
-                      <EmptySpace pref="21" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -205,8 +206,9 @@
                     </Property>
                     <Property name="selected" type="boolean" value="true"/>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.anydateRadio.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.Anydate.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
                     </Property>
+                    <Property name="name" type="java.lang.String" value="Anydate" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="todayRadio">
@@ -215,8 +217,9 @@
                       <ComponentRef name="searchDaysGroup"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.todayRadio.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.Today.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
                     </Property>
+                    <Property name="name" type="java.lang.String" value="Today" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="yesterdayRadio">
@@ -225,8 +228,9 @@
                       <ComponentRef name="searchDaysGroup"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.yesterdayRadio.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.Yesterday.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
                     </Property>
+                    <Property name="name" type="java.lang.String" value="Yesterday" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="lastweekRadio">
@@ -235,8 +239,9 @@
                       <ComponentRef name="searchDaysGroup"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.lastweekRadio.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.Last week.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
                     </Property>
+                    <Property name="name" type="java.lang.String" value="Last week" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="lastmonthRadio">
@@ -245,8 +250,9 @@
                       <ComponentRef name="searchDaysGroup"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.lastmonthRadio.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.Last month.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
                     </Property>
+                    <Property name="name" type="java.lang.String" value="Last month" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="betweenRadio">
@@ -255,8 +261,9 @@
                       <ComponentRef name="searchDaysGroup"/>
                     </Property>
                     <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.betweenRadio.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.Between.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
                     </Property>
+                    <Property name="name" type="java.lang.String" value="Between" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JSpinner" name="fromSpinner">
@@ -283,31 +290,26 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="dobLabel" min="-2" max="-2" attributes="0"/>
-                              <Component id="accessionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="patientIDLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="patientNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
                           <Group type="103" groupAlignment="1" attributes="0">
-                              <Group type="102" attributes="0">
-                                  <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="1" attributes="0">
-                                      <Component id="patientNameText" alignment="0" pref="126" max="32767" attributes="0"/>
-                                      <Component id="patientIDText" alignment="0" pref="126" max="32767" attributes="0"/>
-                                  </Group>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="patientIDLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="patientNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="accessionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Group type="102" alignment="1" attributes="0">
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="jTextField3" alignment="1" max="32767" attributes="1"/>
-                                      <Component id="birthDateSpinner" alignment="1" min="-2" pref="125" max="-2" attributes="1"/>
-                                  </Group>
+                              <Component id="dobLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="birthDateSpinner" pref="125" max="32767" attributes="1"/>
+                              <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="jTextField3" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="patientIDText" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="patientNameText" alignment="0" pref="125" max="32767" attributes="1"/>
                               </Group>
                           </Group>
-                          <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -329,23 +331,16 @@
                               <Component id="accessionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="birthDateSpinner" max="32767" attributes="1"/>
-                              <Component id="dobLabel" alignment="0" pref="28" max="32767" attributes="1"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="birthDateSpinner" alignment="3" pref="22" max="32767" attributes="1"/>
+                              <Component id="dobLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
               </Layout>
               <SubComponents>
-                <Component class="javax.swing.JLabel" name="dobLabel">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.dobLabel.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;,ApplicationContext.currentLocale).getString(&quot;{key}&quot;)"/>
-                    </Property>
-                  </Properties>
-                </Component>
                 <Component class="javax.swing.JSpinner" name="birthDateSpinner">
                   <Properties>
                     <Property name="enabled" type="boolean" value="false"/>
@@ -378,6 +373,17 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="jTextField3">
                 </Component>
+                <Component class="javax.swing.JCheckBox" name="dobLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="QueryRetrieve.dobLabel.text_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                    </Property>
+                    <Property name="name" type="java.lang.String" value="Date Of Birth" noResource="true"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="dobLabelItemStateChanged"/>
+                  </Events>
+                </Component>
               </SubComponents>
             </Container>
             <Container class="javax.swing.JPanel" name="jPanel2">
@@ -392,34 +398,39 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
+                      <Group type="102" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="ctCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="mrCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="xaCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="crCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="scCheckBox" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="ctCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="mrCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="xaCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="crCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="scCheckBox" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="nmCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="rfCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="dxCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="pxCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="usCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="otCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="drCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="srCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="mgCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="rgCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="modalityText" min="-2" pref="119" max="-2" attributes="0"/>
+                              </Group>
                           </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="nmCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="rfCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="dxCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="pxCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="usCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="otCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="drCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="srCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="mgCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="rgCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="20" pref="20" max="20" attributes="0"/>
-                          <Component id="modalityText" min="-2" pref="119" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -464,7 +475,7 @@
                                   </Group>
                               </Group>
                           </Group>
-                          <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace pref="7" max="32767" attributes="0"/>
                           <Component id="modalityText" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -614,7 +625,7 @@
                       <Component id="retrieveButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="47" max="-2" attributes="0"/>
                       <Component id="jLabel6" min="-2" pref="198" max="-2" attributes="0"/>
-                      <EmptySpace pref="106" max="32767" attributes="0"/>
+                      <EmptySpace pref="150" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

@@ -49,12 +49,9 @@ import in.raster.mayam.model.ServerModel;
 import in.raster.mayam.model.Study;
 import in.raster.mayam.model.StudyModel;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.derby.jdbc.EmbeddedSimpleDataSource;
@@ -69,7 +66,6 @@ import javax.swing.SwingUtilities;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import sun.util.calendar.JulianCalendar;
 
 /**
  *

@@ -47,6 +47,7 @@ import in.raster.mayam.delegate.LocalizerDelegate;
 import in.raster.mayam.delegate.SeriesChooserDelegate;
 import in.raster.mayam.delegate.SynchronizationDelegate;
 import in.raster.mayam.model.Instance;
+import in.raster.mayam.model.PresetModel;
 import in.raster.mayam.model.ScoutLineInfoModel;
 import in.raster.mayam.model.Series;
 import in.raster.mayam.model.Study;
@@ -67,11 +68,13 @@ import org.dcm4che.image.ColorModelParam;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelListener;
@@ -1833,10 +1836,33 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         mousePressed = true;
         if (e.isPopupTrigger()) {
             designContext();
+            addContextItem();
             jPopupMenu1.show(this, e.getX(), e.getY());
         }
     }
-
+    public void addContextItem(){
+        JMenu menu;
+        if(widowingFlag){
+            ArrayList presetList = ApplicationContext.databaseRef.getPresetValueForModality(ApplicationContext.imgPanel.getModality());
+            menu = new JMenu("Window Width & Level");
+            //menu.setEnabled(false);
+            jPopupMenu1.addSeparator();
+            for (int i = 0; i < presetList.size(); i++) {
+                final PresetModel presetModel = (PresetModel) presetList.get(i);
+                if (!presetModel.getPresetName().equalsIgnoreCase("PRESETNAME")) {
+                    JMenuItem menu1 = new JMenuItem(presetModel.getPresetName());
+                    menu.add(menu1);
+                    menu1.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            ApplicationContext.imgPanel.windowChanged(Integer.parseInt(presetModel.getWindowLevel()), 
+                                    Integer.parseInt(presetModel.getWindowWidth()));
+                        }
+                    });
+                }
+            }
+            jPopupMenu1.add(menu);
+        }
+    }
     public void mouseReleased(MouseEvent e) {
         selectSeries(e);
     }

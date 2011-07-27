@@ -109,7 +109,7 @@ public class QueryService {
             }
 
             if (searchDob!=null && searchDob.length() > 0) {
-                cfgCDimseService.put("key.PatientBirthDate", searchDob);
+                cfgCDimseService.put("key.PatientBirthDate", searchDob.replace("/", ""));
             }
              if (searchAccNo!=null && searchAccNo.length() > 0) {
                 cfgCDimseService.put("key.AccessionNumber", searchAccNo);

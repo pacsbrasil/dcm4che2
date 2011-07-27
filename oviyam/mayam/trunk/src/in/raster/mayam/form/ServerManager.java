@@ -198,7 +198,7 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(serverLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(261, Short.MAX_VALUE)
+                .addContainerGap(268, Short.MAX_VALUE)
                 .add(verifyButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(addButton)
@@ -207,7 +207,7 @@ public class ServerManager extends javax.swing.JPanel implements KeyListener {
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
                 .addContainerGap())
         );
 

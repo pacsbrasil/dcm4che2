@@ -90,6 +90,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
     /** Creates new form QueryRetrieve */
     public QueryRetrieve() {
         initComponents();
+        System.out.println("Date Of Birth : "+ java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle").getString("QueryRetrieve.dobLabel.text"));
         refreshModels();
         addSearchDateitemListener();
         addModalityitemListener();
@@ -176,7 +177,6 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
         fromSpinner = new javax.swing.JSpinner();
         toSpinner = new javax.swing.JSpinner();
         jPanel10 = new javax.swing.JPanel();
-        dobLabel = new javax.swing.JLabel();
         birthDateSpinner = new javax.swing.JSpinner();
         patientNameLabel = new javax.swing.JLabel();
         patientNameText = new javax.swing.JTextField();
@@ -184,6 +184,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
         patientIDText = new javax.swing.JTextField();
         accessionLabel = new javax.swing.JLabel();
         jTextField3 = new javax.swing.JTextField();
+        dobLabel = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
         ctCheckBox = new javax.swing.JCheckBox();
         mrCheckBox = new javax.swing.JCheckBox();
@@ -226,22 +227,28 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
 
         searchDaysGroup.add(anydateRadio);
         anydateRadio.setSelected(true);
-        anydateRadio.setText(bundle.getString("QueryRetrieve.anydateRadio.text_1")); // NOI18N
+        anydateRadio.setText(bundle.getString("QueryRetrieve.Anydate.text_1")); // NOI18N
+        anydateRadio.setName("Anydate"); // NOI18N
 
         searchDaysGroup.add(todayRadio);
-        todayRadio.setText(bundle.getString("QueryRetrieve.todayRadio.text_1")); // NOI18N
+        todayRadio.setText(bundle.getString("QueryRetrieve.Today.text_1")); // NOI18N
+        todayRadio.setName("Today"); // NOI18N
 
         searchDaysGroup.add(yesterdayRadio);
-        yesterdayRadio.setText(bundle.getString("QueryRetrieve.yesterdayRadio.text_1")); // NOI18N
+        yesterdayRadio.setText(bundle.getString("QueryRetrieve.Yesterday.text_1")); // NOI18N
+        yesterdayRadio.setName("Yesterday"); // NOI18N
 
         searchDaysGroup.add(lastweekRadio);
-        lastweekRadio.setText(bundle.getString("QueryRetrieve.lastweekRadio.text_1")); // NOI18N
+        lastweekRadio.setText(bundle.getString("QueryRetrieve.Last week.text_1")); // NOI18N
+        lastweekRadio.setName("Last week"); // NOI18N
 
         searchDaysGroup.add(lastmonthRadio);
-        lastmonthRadio.setText(bundle.getString("QueryRetrieve.lastmonthRadio.text_1")); // NOI18N
+        lastmonthRadio.setText(bundle.getString("QueryRetrieve.Last month.text_1")); // NOI18N
+        lastmonthRadio.setName("Last month"); // NOI18N
 
         searchDaysGroup.add(betweenRadio);
-        betweenRadio.setText(bundle.getString("QueryRetrieve.betweenRadio.text_1")); // NOI18N
+        betweenRadio.setText(bundle.getString("QueryRetrieve.Between.text_1")); // NOI18N
+        betweenRadio.setName("Between"); // NOI18N
 
         fromSpinner.setEnabled(false);
 
@@ -293,8 +300,6 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
 
         jPanel10.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
-        dobLabel.setText(bundle.getString("QueryRetrieve.dobLabel.text_1")); // NOI18N
-
         birthDateSpinner.setEnabled(false);
 
         patientNameLabel.setText(bundle.getString("QueryRetrieve.patientNameLabel.text_1")); // NOI18N
@@ -303,29 +308,35 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
 
         accessionLabel.setText(bundle.getString("QueryRetrieve.accessionLabel.text_1")); // NOI18N
 
+        java.util.ResourceBundle bundle1 = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle"); // NOI18N
+        dobLabel.setText(bundle1.getString("QueryRetrieve.dobLabel.text_1")); // NOI18N
+        dobLabel.setName("Date Of Birth"); // NOI18N
+        dobLabel.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                dobLabelItemStateChanged(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout jPanel10Layout = new org.jdesktop.layout.GroupLayout(jPanel10);
         jPanel10.setLayout(jPanel10Layout);
         jPanel10Layout.setHorizontalGroup(
             jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel10Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(dobLabel)
-                    .add(accessionLabel)
-                    .add(patientIDLabel)
-                    .add(patientNameLabel))
                 .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jPanel10Layout.createSequentialGroup()
-                        .add(18, 18, 18)
-                        .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, patientNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, patientIDText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)))
-                    .add(jPanel10Layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextField3)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, birthDateSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 125, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                .add(28, 28, 28))
+                    .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(patientIDLabel)
+                        .add(patientNameLabel)
+                        .add(accessionLabel))
+                    .add(dobLabel))
+                .add(18, 18, 18)
+                .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(birthDateSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
+                    .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                        .add(jTextField3)
+                        .add(patientIDText)
+                        .add(patientNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel10Layout.setVerticalGroup(
             jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -342,10 +353,10 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
                     .add(jTextField3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(accessionLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(birthDateSpinner)
-                    .add(dobLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 28, Short.MAX_VALUE))
-                .add(20, 20, 20))
+                .add(jPanel10Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(birthDateSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 22, Short.MAX_VALUE)
+                    .add(dobLabel))
+                .add(34, 34, 34))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -386,28 +397,31 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(ctCheckBox)
-                    .add(mrCheckBox)
-                    .add(xaCheckBox)
-                    .add(crCheckBox)
-                    .add(scCheckBox))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(nmCheckBox)
-                    .add(rfCheckBox)
-                    .add(dxCheckBox)
-                    .add(pxCheckBox)
-                    .add(usCheckBox))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(otCheckBox)
-                    .add(drCheckBox)
-                    .add(srCheckBox)
-                    .add(mgCheckBox)
-                    .add(rgCheckBox)))
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(20, 20, 20)
-                .add(modalityText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(ctCheckBox)
+                            .add(mrCheckBox)
+                            .add(xaCheckBox)
+                            .add(crCheckBox)
+                            .add(scCheckBox))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(nmCheckBox)
+                            .add(rfCheckBox)
+                            .add(dxCheckBox)
+                            .add(pxCheckBox)
+                            .add(usCheckBox))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(otCheckBox)
+                            .add(drCheckBox)
+                            .add(srCheckBox)
+                            .add(mgCheckBox)
+                            .add(rgCheckBox)))
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(modalityText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -444,7 +458,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
                             .add(xaCheckBox)
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(crCheckBox))))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 7, Short.MAX_VALUE)
                 .add(modalityText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -454,23 +468,24 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
             jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel7Layout.createSequentialGroup()
                 .add(9, 9, 9)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 157, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(36, 36, 36))
+                .addContainerGap(30, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel7Layout.createSequentialGroup()
                 .add(jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jPanel7Layout.createSequentialGroup()
-                        .add(8, 8, 8)
-                        .add(jPanel10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(21, Short.MAX_VALUE))
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jPanel7Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(jPanel7Layout.createSequentialGroup()
+                            .add(8, 8, 8)
+                            .add(jPanel10, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         serverListTable.setModel(new ServerTableModel());
@@ -516,7 +531,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
                 .add(retrieveButton)
                 .add(47, 47, 47)
                 .add(jLabel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 198, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(106, Short.MAX_VALUE))
+                .addContainerGap(150, Short.MAX_VALUE))
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -569,34 +584,36 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel9Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1163, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1161, Short.MAX_VALUE)
                     .add(jPanel9Layout.createSequentialGroup()
-                        .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(serverlistScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, serverNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
-                            .add(headerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE))
+                        .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, serverlistScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, serverNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, headerLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(queryFilterLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 618, Short.MAX_VALUE)
-                            .add(jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                        .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jPanel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(queryFilterLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 604, Short.MAX_VALUE))))
+                .addContainerGap())
         );
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel9Layout.createSequentialGroup()
+                .addContainerGap()
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(headerLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(queryFilterLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(serverlistScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE)
-                    .add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(jPanel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(serverlistScroll, 0, 0, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(jPanel9Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(serverNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jPanel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -604,9 +621,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(jPanel9, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+            .add(jPanel9, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -620,16 +635,20 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
         queryParam.setPatientId(patientIDText.getText());
         queryParam.setPatientName(patientNameText.getText());
         queryParam.setAccessionNo(jTextField3.getText());
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        Date d1 = (Date) birthDateSpinner.getModel().getValue();
-        String dateOfBirth = sdf.format(d1);
-        queryParam.setBirthDate(dateOfBirth);
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+//        Date d1 = (Date) birthDateSpinner.getModel().getValue();
+//        String dateOfBirth = sdf.format(d1);
+//        queryParam.setBirthDate(dateOfBirth);
         if (!queryParam.getSearchDays().equalsIgnoreCase("Between")) {
             resetFromAndToDate();
         } else {
             setFromToDate();
         }
-
+        if (!dobLabel.isSelected()) {
+            resetBirthDate();
+        } else {
+            setBirthDate();
+        }
     }
     private boolean startSearch = false;
     private void queryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queryButtonActionPerformed
@@ -656,11 +675,12 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
     private void doQuery(AEModel ae, DcmURL url, int noFilterQuery) {
         QueryService qs = new QueryService();
         setPatientInfoToQueryParam();
-        if (queryParam.getPatientId().equalsIgnoreCase("") && queryParam.getPatientName().equalsIgnoreCase("") && queryParam.getSearchDate().equalsIgnoreCase("") && modalityText.getText().equalsIgnoreCase("") && queryParam.getAccessionNo().equalsIgnoreCase("")) {
+        //System.out.println("Birth Date Filter :" + queryParam.getBirthDate());
+        if (queryParam.getPatientId().equalsIgnoreCase("") && queryParam.getPatientName().equalsIgnoreCase("") && queryParam.getSearchDate().equalsIgnoreCase("") && queryParam.getBirthDate().equalsIgnoreCase("") && modalityText.getText().equalsIgnoreCase("") && queryParam.getAccessionNo().equalsIgnoreCase("")) {
             noFilterQuery = JOptionPane.showConfirmDialog(this, "No filters have been selected. It will take long time to query and display result...!", "Confirm Dialog", JOptionPane.YES_NO_OPTION);
         }
         if (noFilterQuery == 0) {
-            qs.callFindWithQuery(queryParam.getPatientId(), queryParam.getPatientName(), "", queryParam.getSearchDate(), modalityText.getText(), queryParam.getAccessionNo(), null, url);
+            qs.callFindWithQuery(queryParam.getPatientId(), queryParam.getPatientName(), queryParam.getBirthDate(), queryParam.getSearchDate(), modalityText.getText(), queryParam.getAccessionNo(), null, url);
             Vector studyList = new Vector();
             for (int dataSetCount = 0; dataSetCount < qs.getDatasetVector().size(); dataSetCount++) {
                 try {
@@ -844,24 +864,37 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
         }
     }//GEN-LAST:event_studyListTableMouseClicked
 
+    private void dobLabelItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_dobLabelItemStateChanged
+        if (evt.getStateChange() == 1) {
+            birthDateSpinner.setEnabled(true);
+            //SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+            //Date d1 = (Date) birthDateSpinner.getModel().getValue();
+            //dateOfBirth = sdf.format(d1);
+            //queryParam.setBirthDate("Date Of Birth");
+        } else {
+            birthDateSpinner.setEnabled(false);
+            //queryParam.setBirthDate(null);
+        }
+    }//GEN-LAST:event_dobLabelItemStateChanged
+
     private class SearchDaysHandler implements ItemListener {
 
         public void itemStateChanged(ItemEvent e) {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 if (searchDaysGroup.getSelection() == ((JRadioButton) e.getItem()).getModel()) {
-                    if (((JRadioButton) e.getItem()).getActionCommand().equalsIgnoreCase("Between")) {
+                    if (((JRadioButton) e.getItem()).getName().equalsIgnoreCase("Between")) {
                         fromSpinner.setEnabled(true);
                         toSpinner.setEnabled(true);
                     } else {
                         fromSpinner.setEnabled(false);
                         toSpinner.setEnabled(false);
                     }
-                    queryParam.setSearchDays(((JRadioButton) e.getItem()).getActionCommand());
+                    queryParam.setSearchDays(((JRadioButton) e.getItem()).getName());
                 }
             }
         }
     }
-
+    
     private class ModalityHandler implements ItemListener {
 
         public void itemStateChanged(ItemEvent e) {
@@ -971,6 +1004,19 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
         queryParam.setFrom(null);
         queryParam.setTo(null);
     }
+    public void setBirthDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+        Date d1 = (Date) birthDateSpinner.getModel().getValue();
+        String birthDate = sdf.format(d1);
+        queryParam.setBirthDate(birthDate);
+    }
+
+    /**
+     *This routine used to reset the from and to date.
+     */
+    public void resetBirthDate() {
+        queryParam.setBirthDate(null);
+    }
 
     /**
      * @param args the command line arguments
@@ -990,7 +1036,7 @@ public class QueryRetrieve extends javax.swing.JFrame implements ServerChangeLis
     private javax.swing.JSpinner birthDateSpinner;
     private javax.swing.JCheckBox crCheckBox;
     private javax.swing.JCheckBox ctCheckBox;
-    private javax.swing.JLabel dobLabel;
+    private javax.swing.JCheckBox dobLabel;
     private javax.swing.JCheckBox drCheckBox;
     private javax.swing.JCheckBox dxCheckBox;
     private javax.swing.JSpinner fromSpinner;
