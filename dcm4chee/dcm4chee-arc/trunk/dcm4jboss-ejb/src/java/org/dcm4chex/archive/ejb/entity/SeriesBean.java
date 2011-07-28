@@ -506,13 +506,14 @@ public abstract class SeriesBean implements EntityBean {
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
         setSourceAET(ds.getString(PrivateTags.CallingAET));
         ds.setPrivateCreatorID(null);
-        setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
+        setAttributes(ds);
         return null;
     }
 
     public void ejbPostCreate(Dataset ds, StudyLocal study)
             throws CreateException {
-        updateAttributes(ds, false, null);
+        updateSeriesRequest(null, ds, false);
+        updateInstitutionCode(null, ds.getItem(Tags.InstitutionCodeSeq));
         setStudy(study);
         updateMpps();
         log.info("Created " + prompt());
