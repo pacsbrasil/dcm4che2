@@ -105,8 +105,10 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "folder/deselect_all.png");
     public static ResourceReference IMAGE_FOLDER_NO_IMAGE = 
         new ResourceReference(ImageManager.class, "folder/no_image.png");
-    public static final ResourceReference IMAGE_FOLDER_TIMELIMIT = 
-        new ResourceReference(ImageManager.class, "folder/time_limit.png");
+    public static final ResourceReference IMAGE_FOLDER_TIMELIMIT_EDIT = 
+        new ResourceReference(ImageManager.class, "folder/time_limit_edit.png");
+    public static final ResourceReference IMAGE_FOLDER_TIMELIMIT_LINK = 
+        new ResourceReference(ImageManager.class, "folder/time_limit_link.png");
     
     public static final ResourceReference IMAGE_AE_ECHO = 
         new ResourceReference(ImageManager.class, "ae/echo.png");
