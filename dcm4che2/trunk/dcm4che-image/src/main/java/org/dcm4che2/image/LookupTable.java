@@ -771,21 +771,21 @@ public abstract class LookupTable {
             return lut;
         }
         
-        LookupTable vlut = createLut(32, true, voiLut, pixelPaddingValue, pixelPaddingRange, inverse);
+        LookupTable vlut = createLut(inBits, signed, voiLut, pixelPaddingValue, pixelPaddingRange, inverse);
         float in1 = (vlut.off - intercept) / slope;
         float in2 = in1 + vlut.length() / slope;
         int off = (int) Math.floor(Math.min(in1, in2));
         int len = ((int) Math.ceil(Math.max(in1, in2))) - off;
         short[] data = new short[len];
         for (int i = 0; i < data.length; i++) {
-            data[i] = vlut.lookupShort(Math.round(i * slope + intercept));
+            data[i] = vlut.lookupShort(Math.round(i * slope +off + intercept));
         }
         
         GenericNumericArray dataArray = GenericNumericArray.create(data);
         Integer[] minMaxPixelPadding = getMinMaxPixelPadding(pixelPaddingValue, pixelPaddingRange);
         applyPixelPadding(dataArray, 0, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
         
-        return new ShortLookupTable(inBits, signed, off, vlut.outBits,
+        return new ShortLookupTable(inBits, signed, off, vlut.outBits, 
                 (short[]) dataArray.getArray());
     }
 
