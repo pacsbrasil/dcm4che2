@@ -308,20 +308,24 @@ public class Weasis_Launcher extends HttpServlet {
         try {
             if (obj != null && isRequestIDAllowed(ObjectUID)) {
                 patients = Manifest.buildFromSopInstanceUID(dicomSource, componentAET, obj);
-                if (!isValidateAllIDs(ObjectUID, patients, request))
+                if (!isValidateAllIDs(ObjectUID, patients, request)) {
                     return null;
+                }
             } else if (ser != null && isRequestIDAllowed(SeriesUID)) {
                 patients = Manifest.buildFromSeriesInstanceUID(dicomSource, componentAET, ser);
-                if (!isValidateAllIDs(SeriesUID, patients, request))
+                if (!isValidateAllIDs(SeriesUID, patients, request)) {
                     return null;
+                }
             } else if (anb != null && isRequestIDAllowed(AccessionNumber)) {
                 patients = Manifest.buildFromStudyAccessionNumber(dicomSource, componentAET, anb);
-                if (!isValidateAllIDs(AccessionNumber, patients, request))
+                if (!isValidateAllIDs(AccessionNumber, patients, request)) {
                     return null;
+                }
             } else if (stu != null && isRequestIDAllowed(StudyUID)) {
                 patients = Manifest.buildFromStudyInstanceUID(dicomSource, componentAET, stu);
-                if (!isValidateAllIDs(StudyUID, patients, request))
+                if (!isValidateAllIDs(StudyUID, patients, request)) {
                     return null;
+                }
             } else if (pat != null && isRequestIDAllowed(PatientID)) {
                 patients = Manifest.buildFromPatientID(dicomSource, componentAET, pat);
             }
@@ -333,8 +337,9 @@ public class Weasis_Launcher extends HttpServlet {
     }
 
     private boolean isRequestIDAllowed(String id) {
-        if (id != null)
+        if (id != null) {
             return Boolean.valueOf(pacsProperties.getProperty(id));
+        }
         return false;
     }
 
@@ -345,23 +350,27 @@ public class Weasis_Launcher extends HttpServlet {
             if (ids != null) {
                 for (String val : ids.split(",")) {
                     if (val.trim().equals(PatientID)) {
-                        if (!patient.getPatientID().equals(request.getParameter(PatientID)))
+                        if (!patient.getPatientID().equals(request.getParameter(PatientID))) {
                             return false;
+                        }
                     } else if (val.trim().equals(StudyUID)) {
                         for (Study study : patient.getStudies()) {
-                            if (!study.getStudyID().equals(request.getParameter(StudyUID)))
+                            if (!study.getStudyID().equals(request.getParameter(StudyUID))) {
                                 return false;
+                            }
                         }
                     } else if (val.trim().equals(AccessionNumber)) {
                         for (Study study : patient.getStudies()) {
-                            if (!study.getAccessionNumber().equals(request.getParameter(AccessionNumber)))
+                            if (!study.getAccessionNumber().equals(request.getParameter(AccessionNumber))) {
                                 return false;
+                            }
                         }
                     } else if (val.trim().equals(SeriesUID)) {
                         for (Study study : patient.getStudies()) {
                             for (Series series : study.getSeriesList()) {
-                                if (!series.getSeriesInstanceUID().equals(request.getParameter(SeriesUID)))
+                                if (!series.getSeriesInstanceUID().equals(request.getParameter(SeriesUID))) {
                                     return false;
+                                }
                             }
                         }
                     }
