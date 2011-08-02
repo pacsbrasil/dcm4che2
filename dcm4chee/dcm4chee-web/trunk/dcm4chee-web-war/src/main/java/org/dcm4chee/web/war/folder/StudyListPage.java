@@ -179,7 +179,6 @@ import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage;
 import org.dcm4chee.web.war.folder.webviewer.Webviewer;
-import org.dcm4chee.web.war.trash.TrashListPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1723,20 +1722,20 @@ public class StudyListPage extends Panel {
                 public boolean isEnabled() {
                     return StudyPermissionHelper.get().ignoreEditTimeLimit() || !tooOld;
                 }
-            };
-            linkBtn.add(tooOld ? 
-                    (new Image("linkImg", ImageManager.IMAGE_FOLDER_TIMELIMIT) 
-                        .add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.link.tooltip"))))
-                        : 
-                    (new Image("linkImg", ImageManager.IMAGE_COMMON_LINK)
-                        .add(new ImageSizeBehaviour())
-                        .add(tooltip))
-            ) ;
-            row.add(linkBtn);
+            };            
+            Image image = tooOld ? new Image("linkImg", ImageManager.IMAGE_FOLDER_TIMELIMIT_LINK) : 
+                new Image("linkImg", ImageManager.IMAGE_COMMON_LINK);
+            image.add(new ImageSizeBehaviour());
+            if (tooOld && !StudyPermissionHelper.get().ignoreEditTimeLimit())
+                image.add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.link.tooltip")));
+            else
+                if (tooltip != null) image.add(tooltip);            
+            linkBtn.add(image);
             linkBtn.setVisible(studyPermissionHelper.checkPermission(ppsModel, StudyPermission.UPDATE_ACTION));
             linkBtn.add(new SecurityBehavior(getModuleName() + ":linkPPSLink"));
-
-            row.add(new AjaxFallbackLink<Object>("unlinkBtn") {
+            row.add(linkBtn);
+            
+            IndicatingAjaxFallbackLink<?> unlinkBtn = new IndicatingAjaxFallbackLink<Object>("unlinkBtn") {
 
                 private static final long serialVersionUID = 1L;
 
@@ -1754,16 +1753,16 @@ public class StudyListPage extends Panel {
                 public boolean isEnabled() {
                     return StudyPermissionHelper.get().ignoreEditTimeLimit() || !tooOld;
                 }
-            }
-            .add(tooOld ? 
-                (new Image("unlinkImg", ImageManager.IMAGE_FOLDER_TIMELIMIT) 
-                    .add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.unlink.tooltip"))))
-    		        :
-		        (new Image("unlinkImg",ImageManager.IMAGE_FOLDER_UNLINK)
-                	.add(new ImageSizeBehaviour()).add(tooltip))
-                	.setVisible(studyPermissionHelper.checkPermission(ppsModel, StudyPermission.UPDATE_ACTION))
-                	.add(new SecurityBehavior(getModuleName() + ":unlinkPPSLink")))
-            );
+            };
+            image = tooOld ? new Image("unlinkImg", ImageManager.IMAGE_FOLDER_TIMELIMIT_LINK) : 
+                new Image("unlinkImg", ImageManager.IMAGE_FOLDER_UNLINK);
+            image.add(new ImageSizeBehaviour());
+            if (tooOld && !StudyPermissionHelper.get().ignoreEditTimeLimit())
+                image.add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.unlink.tooltip")));
+            else
+                if (tooltip != null) image.add(tooltip);            
+            unlinkBtn.add(image);
+            row.add(unlinkBtn);
             
             row.add(new AjaxFallbackLink<Object>("emulateBtn") {
                 private static final long serialVersionUID = 1L;
@@ -2138,7 +2137,7 @@ public class StudyListPage extends Panel {
                 return StudyPermissionHelper.get().ignoreEditTimeLimit() || !tooOld;
             }
         };
-        Image image = tooOld ? new Image("editImg", ImageManager.IMAGE_FOLDER_TIMELIMIT) : 
+        Image image = tooOld ? new Image("editImg", ImageManager.IMAGE_FOLDER_TIMELIMIT_EDIT) : 
                 new Image("editImg", ImageManager.IMAGE_COMMON_DICOM_EDIT);
         image.add(new ImageSizeBehaviour("vertical-align: middle;"));
         if (tooOld && !StudyPermissionHelper.get().ignoreEditTimeLimit())
