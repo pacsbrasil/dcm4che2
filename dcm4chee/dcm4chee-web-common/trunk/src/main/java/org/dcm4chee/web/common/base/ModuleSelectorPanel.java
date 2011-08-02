@@ -246,6 +246,10 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
                 Integer pageID;
                 for (int i = 0, len = providers.size() ; i < len ; i++) {
                     pageID = providers.get(i).getPopupPageId();
+                    System.out.println("Provider has status: " + providers.get(i).getStatus());
+                    if (providers.get(i).getStatus() == ProgressProvider.NOT_STARTED
+                            || providers.get(i).getStatus() == ProgressProvider.FINISHED) 
+                        continue;
                     if (pageID != null) {
                         Page p = ModuleSelectorPanel.this.getSession().getPage(pageID, 0);
                         log.info("Found open popup page:"+p);
