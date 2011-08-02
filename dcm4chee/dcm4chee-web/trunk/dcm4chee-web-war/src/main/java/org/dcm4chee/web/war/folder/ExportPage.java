@@ -38,9 +38,9 @@
 
 package org.dcm4chee.web.war.folder;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.Serializable;
+import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -52,8 +52,11 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.wicket.IRequestTarget;
 import org.apache.wicket.MetaDataKey;
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.Response;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -62,21 +65,18 @@ import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
-import org.apache.wicket.markup.html.WebResource;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
-import org.apache.wicket.markup.html.link.ResourceLink;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
-import org.apache.wicket.resource.ByteArrayResource;
 import org.apache.wicket.security.components.SecureWebPage;
-import org.apache.wicket.util.resource.IResourceStream;
 import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
@@ -146,7 +146,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
     private int resultId;
     private ExportInfo exportInfo;
     
-    private IModel<AE> destinationModel = new IModel<AE>(){
+    private IModel<AE> destinationModel = new IModel<AE>() {
 
         private static final long serialVersionUID = 1L;
         
@@ -163,6 +163,8 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
     private boolean exportPerformed = false;
     
     private static Logger log = LoggerFactory.getLogger(ExportPage.class);
+    
+    public static java.io.File temp;
     
     public ExportPage(List<PatientModel> list) {
         super();        
@@ -329,7 +331,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                         if (result.nrOfMoverequests == 0) {
                             target.addComponent(form.get("export"));
                             target.addComponent(form.get("destinationAETs"));
-                            if (  closeOnFinished && result.failedRequests.isEmpty() ) {
+                            if (closeOnFinished && result.failedRequests.isEmpty()) {
                                 removeProgressProvider(getExportResults().remove(resultId), false);
                                 getPage().getPageMap().remove(ExportPage.this);
                                 target.appendJavascript("javascript:self.close()");
@@ -341,30 +343,104 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             }
         });
         add(JavascriptPackageResource.getHeaderContribution(ExportPage.class, "popupcloser.js"));
-
-        WebResource download = new WebResource() {
+        
+        form.add(new Link<Object>("downloadLink") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public IResourceStream getResourceStream() {
-                return new ByteArrayResource("application/zip", download().toByteArray())
-                    .getResourceStream();
-            }
+            public void onClick() {
 
-            @Override
-            protected void setHeaders(WebResponse response) {
-              super.setHeaders(response);
-              response.setAttachmentHeader("dicom.zip");
-            }
-        };
-        download.setCacheable(false);
+                RequestCycle.get().setRequestTarget(new IRequestTarget() {
+                       
+                    public void detach(RequestCycle requestCycle) {
+                    }
 
-        form.add(new ResourceLink<WebResource>("downloadLink", download)
-            .add(new Label("downloadLabel", new ResourceModel("export.downloadBtn.text")))
+                    public void respond(RequestCycle requestCycle) {
+                        
+                        ZipOutputStream zos = null;
+                        try {
+                            Response response = requestCycle.getResponse();
+                            response.setContentType("application/zip");
+                            ((WebResponse) response).setAttachmentHeader("dicom.zip");
+
+                            zos = new ZipOutputStream(response.getOutputStream());
+                       
+                            StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+                            Set<Instance> instances = new HashSet<Instance>(exportInfo.getMoveRequests().size());
+
+                            for (MoveRequest moveRequest : exportInfo.getMoveRequests()) {
+                                if (moveRequest.sopIUIDs != null)
+                                    for (String sopIUID : moveRequest.sopIUIDs) 
+                                        instances.addAll(dao.getDownloadableInstances(sopIUID, Instance.class));
+                                if (moveRequest.seriesIUIDs != null)
+                                    for (String seriesIUID : moveRequest.seriesIUIDs) 
+                                        instances.addAll(dao.getDownloadableInstances(seriesIUID, Series.class));
+                                if (moveRequest.studyIUIDs != null)
+                                    for (String studyIUID : moveRequest.studyIUIDs) 
+                                        instances.addAll(dao.getDownloadableInstances(studyIUID, Study.class));
+                            }
+
+                            Iterator<Instance> iterator = instances.iterator();
+                            while (iterator.hasNext()) {
+                                Instance instance = iterator.next(); 
+                                for (File file : instance.getFiles()) {
+                                    try {
+                                        java.io.File originalFile = new java.io.File(file.getFileSystem().getDirectoryPath() + 
+                                                "/" + 
+                                                file.getFilePath());
+                                        if (!FileUtils.resolve(originalFile).exists()) { 
+                                            log.error("Dicom file does not exist: " + FileUtils.resolve(originalFile));
+                                            continue;
+                                        }
+                                        DicomInputStream dis = new DicomInputStream(new FileInputStream(FileUtils.resolve(originalFile)));
+                                        dis.setHandler(new StopTagInputHandler(Tag.PixelData));
+                                        DicomObject disObject = dis.readDicomObject();
+                                        DicomObject blobData = instance.getAttributes(false);
+                                        Iterator<DicomElement> blobAttributes = blobData.datasetIterator();
+                                        while (blobAttributes.hasNext()) 
+                                            disObject.add(blobAttributes.next());
+                                        ZipEntry entry = new ZipEntry(originalFile.getPath());
+                                        zos.putNextEntry(entry);                                
+                                        zos.write(dis.getPreamble());
+                                        zos.write("DICM".getBytes());
+                                        DicomOutputStream dos = new DicomOutputStream(zos);
+                                        dos.setAutoFinish(false);
+                                        dos.writeDataset(disObject.fileMetaInfo(), dis.getTransferSyntax().uid());
+                                        dos.writeDataset(disObject, dis.getTransferSyntax().uid());
+                                        dos.flush();
+                                        long disCounter = 0;
+                                        while (dis.available() > 0) {
+                                            disCounter += dis.available();
+                                            byte[] b = new byte[dis.available()];
+                                            dis.read(b);
+                                            zos.write(b);
+                                        }
+                                        zos.closeEntry();
+                                    } catch (SocketException se) {
+                                        log.warn("Client aborted zip file download: ", se);
+                                        throw se;
+                                    } catch (Throwable th) {
+                                        log.error("An error occurred while attempting to stream zip file for download: ", th);
+                                    }
+                                }
+                            }
+                            zos.close();
+                        } catch (Throwable th) {
+                            log.error("An error occurred while attempting to stream zip file for download: ", th);
+                        } finally {
+                            try {
+                                zos.close();
+                            } catch (Exception ignore) {}
+                        }
+                    }
+                });
+            }
+        }
+        .add(new Label("downloadLabel", new ResourceModel("export.downloadBtn.text")))
         );
     }
-
+    
     private void initDestinationAETs() {
         destinationAETs.clear();
         AEHomeLocal dao = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
@@ -372,7 +448,6 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         if ( destinationAET == null && destinationAETs.size() > 0) {
             destinationAET = destinationAETs.get(0);
         }
-        
     }
 
     private HashMap<Integer,ExportResult> getExportResults() {
@@ -407,77 +482,6 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         }
     }
     
-    private ByteArrayOutputStream download() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        
-        try {
-            StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-            Set<Instance> instances = new HashSet<Instance>(exportInfo.getMoveRequests().size());
-
-            for (MoveRequest moveRequest : exportInfo.getMoveRequests()) {
-                if (moveRequest.sopIUIDs != null)
-                    for (String sopIUID : moveRequest.sopIUIDs) 
-                        instances.addAll(dao.getDownloadableInstances(sopIUID, Instance.class));
-                if (moveRequest.seriesIUIDs != null)
-                    for (String seriesIUID : moveRequest.seriesIUIDs) 
-                        instances.addAll(dao.getDownloadableInstances(seriesIUID, Series.class));
-                if (moveRequest.studyIUIDs != null)
-                    for (String studyIUID : moveRequest.studyIUIDs) 
-                        instances.addAll(dao.getDownloadableInstances(studyIUID, Study.class));
-            }
-
-            ZipOutputStream zos = new ZipOutputStream(baos);
-            Iterator<Instance> iterator = instances.iterator();
-            while (iterator.hasNext()) {
-                Instance instance = iterator.next(); 
-                for (File file : instance.getFiles()) {
-                    try {
-                        java.io.File originalFile = new java.io.File(file.getFileSystem().getDirectoryPath() + 
-                        "/" + 
-                        file.getFilePath());
-                        if (!FileUtils.resolve(originalFile).exists()) { 
-                            log.error("Dicom file does not exist: " + FileUtils.resolve(originalFile));
-                            continue;
-                        }
-                        DicomInputStream dis = new DicomInputStream(new FileInputStream(FileUtils.resolve(originalFile)));
-                        dis.setHandler(new StopTagInputHandler(Tag.PixelData));
-                        DicomObject disObject = dis.readDicomObject();
-                        DicomObject blobData = instance.getAttributes(false);
-                        Iterator<DicomElement> blobAttributes = blobData.datasetIterator();
-                        while (blobAttributes.hasNext()) 
-                            disObject.add(blobAttributes.next());
-                        ZipEntry entry = new ZipEntry(originalFile.getPath());
-                        zos.putNextEntry(entry);                                
-                        zos.write(dis.getPreamble());
-                        zos.write("DICM".getBytes());
-                        DicomOutputStream dos = new DicomOutputStream(zos);
-                        dos.setAutoFinish(false);
-                        dos.writeDataset(disObject.fileMetaInfo(), dis.getTransferSyntax().uid());
-                        dos.writeDataset(disObject, dis.getTransferSyntax().uid());
-                        long disCounter = 0;
-                        while (dis.available() > 0) {
-                            disCounter += dis.available();
-                            byte[] b = new byte[dis.available()];
-                            dis.read(b);
-                            zos.write(b);
-                        }
-                        zos.closeEntry();
-                    } catch (Throwable th) {
-                        log.error("An error occurred while attempting to prepare zip file for download: " + th);
-                    }
-                }
-            }
-            zos.close();
-        } catch (Throwable th) {
-            log.error("An error occurred while attempting to prepare zip file for download." + th);
-        } finally {
-            try {
-                baos.close();
-            } catch (Exception ignore) {}
-        }
-        return baos;
-    }
-
     private String[] toArray(List<String> l) {
         if (l == null) return null;
         return l.toArray(new String[l.size()]);
