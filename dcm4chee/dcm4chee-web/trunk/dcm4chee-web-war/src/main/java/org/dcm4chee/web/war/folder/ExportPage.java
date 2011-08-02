@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.folder;
 
 import java.io.FileInputStream;
 import java.io.Serializable;
-import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
