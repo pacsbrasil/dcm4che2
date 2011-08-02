@@ -50,8 +50,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.catalina.connector.ClientAbortException;
 import org.apache.wicket.IRequestTarget;
 import org.apache.wicket.MetaDataKey;
 import org.apache.wicket.RequestCycle;
@@ -417,17 +419,23 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                                             zos.write(b);
                                         }
                                         zos.closeEntry();
-                                    } catch (SocketException se) {
-                                        log.warn("Client aborted zip file download: ", se);
-                                        throw se;
-                                    } catch (Throwable th) {
-                                        log.error("An error occurred while attempting to stream zip file for download: ", th);
+                                    } catch (ClientAbortException cae) {
+                                        log.warn("Client aborted zip file download: " + cae);
+                                        return;
+                                    } catch (Exception e) {
+                                        log.error("An error occurred while attempting to stream zip file for download: ", e);
                                     }
                                 }
                             }
                             zos.close();
-                        } catch (Throwable th) {
-                            log.error("An error occurred while attempting to stream zip file for download: ", th);
+                        } catch (ZipException ze) {
+                            log.warn("Problem creating zip file: " + ze);
+                            return;
+                        } catch (ClientAbortException cae) {
+                            log.warn("Client aborted zip file download: " + cae);
+                            return;
+                        } catch (Exception e) {
+                            log.error("An error occurred while attempting to stream zip file for download: ", e);
                         } finally {
                             try {
                                 zos.close();
