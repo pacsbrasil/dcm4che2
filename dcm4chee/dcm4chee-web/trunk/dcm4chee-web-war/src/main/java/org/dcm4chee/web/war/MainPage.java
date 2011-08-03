@@ -101,9 +101,9 @@ public class MainPage extends SecureWicketPage {
         selectorPanel.addModule(TrashListPage.class);
         selectorPanel.addModule(AEPanel.class);
         selectorPanel.addModule(ModalityWorklistPanel.class);
+        selectorPanel.addModule(TCPanel.class);
         selectorPanel.addModule(DashboardPanel.class);
         selectorPanel.addModule(RolePanel.class, null);
-        selectorPanel.addModule(TCPanel.class);
 
         if (((SecureSession) RequestCycle.get().getSession()).getManageUsers()) {
             selectorPanel.addModule(UserListPanel.class, null);
