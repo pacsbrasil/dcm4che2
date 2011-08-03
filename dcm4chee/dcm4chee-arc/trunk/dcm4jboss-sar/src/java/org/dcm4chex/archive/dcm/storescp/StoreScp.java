@@ -73,6 +73,7 @@ import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.DcmParseException;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.PersonName;
@@ -459,15 +460,18 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 .getTransferSyntaxUID());
         Dataset ds = objFact.newDataset();
         DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
-        parser.setMaxValueLength(service.getMaxValueLength());
-        parser.setDcmHandler(ds.getDcmHandler());
-        parser.parseDataset(decParam, Tags.PixelData);
-        if (!parser.hasSeenEOF() && parser.getReadTag() != Tags.PixelData) {
-            parser.unreadHeader();
-            parser.parseDataset(decParam, -1);
+        try {
+            parser.setMaxValueLength(service.getMaxValueLength());
+            parser.setDcmHandler(ds.getDcmHandler());
+            parser.parseDataset(decParam, Tags.PixelData);
+            if (!parser.hasSeenEOF() && parser.getReadTag() != Tags.PixelData) {
+                parser.unreadHeader();
+                parser.parseDataset(decParam, -1);
+            }
+            doActualCStore(activeAssoc, rq, rspCmd, ds, parser);
+        } catch (DcmParseException x) {
+            throw new DcmServiceException(Status.ProcessingFailure, x.getMessage(), x);
         }
-        doActualCStore(activeAssoc, rq, rspCmd, ds, parser);
-
         perfMon.stop(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_IN);
     }
 
