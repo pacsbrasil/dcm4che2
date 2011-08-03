@@ -477,7 +477,11 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
             handler.startElement(rTag, rVR, rPos0);
             byte[] b4 = new byte[4];
             System.arraycopy(b12, 0, b4, 0, 4);
-            handler.value(b4, 0, 4);
+            try {
+                handler.value(b4, 0, 4);
+            } catch (IllegalArgumentException x) {
+                throw new DcmParseException(x.getMessage(), x);
+            }
             handler.endElement();
         }
         return doParse(-1, bb12.getInt(0)) + 12;
@@ -756,8 +760,13 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     
     private int readValue() throws IOException {
         byte[] data = readBytes(rLen);
-        if (handler != null && unBuf == null)
-            handler.value(data, 0, rLen);
+        if (handler != null && unBuf == null) {
+            try {
+                handler.value(data, 0, rLen);
+            } catch (IllegalArgumentException x) {
+                throw new DcmParseException(x.getMessage(), x);
+            }
+        }
         if (rTag == TS_ID_TAG)
             tsUID = decodeUID(data, rLen-1);
         return rLen;

@@ -2321,9 +2321,7 @@ abstract class DcmObjectImpl implements DcmObject {
         case VRs.UT:
             return putUT(tag);
         default:
-            log.warn(Tags.toString(tag) + " with illegal VR Code: "
-                    + Integer.toHexString(vr) + "H");
-            return putXX(tag, VRMap.DEFAULT.lookup(tag));
+            return putXX(tag, checkIllegalVR(tag, vr));
         }
     }
 
@@ -2396,9 +2394,7 @@ abstract class DcmObjectImpl implements DcmObject {
         case VRs.UT:
             return put(StringElement.createUT(tag, value));
         default:
-            log.warn(Tags.toString(tag) + " with illegal VR Code: "
-                    + Integer.toHexString(vr) + "H");
-            return putXX(tag, VRMap.DEFAULT.lookup(tag), value);
+            return putXX(tag, checkIllegalVR(tag, vr), value);
         }
     }
 
@@ -2471,9 +2467,7 @@ abstract class DcmObjectImpl implements DcmObject {
         case VRs.UT:
             return putUT(tag, value);
         default:
-            log.warn(Tags.toString(tag) + " with illegal VR Code: "
-                    + Integer.toHexString(vr) + "H");
-            return putXX(tag, VRMap.DEFAULT.lookup(tag), value);
+            return putXX(tag, checkIllegalVR(tag, vr), value);
         }
     }
 
@@ -2546,9 +2540,7 @@ abstract class DcmObjectImpl implements DcmObject {
         case VRs.UT:
             return putUT(tag, values);
         default:
-            log.warn(Tags.toString(tag) + " with illegal VR Code: "
-                    + Integer.toHexString(vr) + "H");
-            return putXX(tag, VRMap.DEFAULT.lookup(tag), values);
+            return putXX(tag, checkIllegalVR(tag, vr), values);
         }
     }
 
@@ -2835,4 +2827,21 @@ abstract class DcmObjectImpl implements DcmObject {
         }
     }
 
+    /**
+     * Log warning about illegal VR code and check if default VR of given tag is different.
+     * Throws an IllegalArgumentException if given VR is already the default VR!
+     * 
+     * @param tag
+     * @param vr
+     * @return Default VR code of given tag
+     */
+    private int checkIllegalVR(int tag, int vr) {
+        log.warn(Tags.toString(tag) + " with illegal VR Code: "
+                + Integer.toHexString(vr) + "H");
+        int defaultVR = VRMap.DEFAULT.lookup(tag);
+        if (vr == defaultVR)
+            throw new IllegalArgumentException("Illegal VR code "+ Integer.toHexString(vr) + "H! Tag:"+Tags.toString(tag));
+        return defaultVR;
+    }
+    
 }
