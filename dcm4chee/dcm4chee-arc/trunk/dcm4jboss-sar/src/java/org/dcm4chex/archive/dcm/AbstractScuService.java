@@ -49,6 +49,7 @@ import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.Association;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4che.net.ExtNegotiation;
 import org.dcm4che.net.PDU;
 import org.dcm4che.net.PDataTF;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
@@ -65,6 +66,7 @@ import org.jboss.system.ServiceMBeanSupport;
  */
 public abstract class AbstractScuService extends ServiceMBeanSupport {
 
+    private static final byte[] RELATIONAL_QUERY = { 1 };
     protected static final int ERR_ASSOC_RJ = -1;
     protected static final int ERR_NO_PC_AC = -2;
     
@@ -184,21 +186,26 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
         return openAssociation(calledAET, new String[]{ asuid });
     }
     
+    public ActiveAssociation openAssociation(String calledAET, String asuid, ExtNegotiation extNeg)
+            throws Exception {
+        return openAssociation(calledAET, new String[]{ asuid }, extNeg);
+    }
+
     public ActiveAssociation openAssociation(AEDTO remoteAE, String asuid)
             throws Exception {
         return openAssociation(aeMgt().findByAET(callingAET), remoteAE,
                 new String[]{ asuid });
     }
     
-    public ActiveAssociation openAssociation(String calledAET, String[] asuids)
-            throws Exception {
+    public ActiveAssociation openAssociation(String calledAET, String[] asuids,
+            ExtNegotiation... extNegos) throws Exception {
         AEManager aeMgt = aeMgt();
         return openAssociation(aeMgt.findByAET(callingAET), 
                 aeMgt.findByAET(calledAET), asuids);
     }
 
     private ActiveAssociation openAssociation(AEDTO localAE, AEDTO remoteAE,
-            String[] asuids) throws IOException, DcmServiceException {
+            String[] asuids, ExtNegotiation... extNegos) throws IOException, DcmServiceException {
         AssociationFactory af = AssociationFactory.getInstance();
         Association a = af.newRequestor(tlsConfig.createSocket(localAE, remoteAE));
         a.setAcTimeout(acTimeout);
@@ -209,6 +216,9 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
         rq.setCallingAET(callingAET);
         for (int i = 0; i < asuids.length; i++) {
             rq.addPresContext(af.newPresContext(rq.nextPCID(), asuids[i]));
+        }
+        for (ExtNegotiation extNeg : extNegos) {
+            rq.addExtNegotiation(extNeg);
         }
         rq.setMaxPDULength(maxPDULength);
         PDU ac = a.connect(rq);

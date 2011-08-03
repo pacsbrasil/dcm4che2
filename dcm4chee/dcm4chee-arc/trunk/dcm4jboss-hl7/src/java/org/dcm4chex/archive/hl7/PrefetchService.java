@@ -79,6 +79,7 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.ActiveAssociation;
 import org.dcm4che.net.AssociationFactory;
 import org.dcm4che.net.Dimse;
+import org.dcm4che.net.ExtNegotiation;
 import org.dcm4che.net.FutureRSP;
 import org.dcm4che.util.DTFormat;
 import org.dcm4che2.audit.message.ActiveParticipant;
@@ -138,6 +139,7 @@ public class PrefetchService extends AbstractScuService implements
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
     private TemplatesDelegate templates = new TemplatesDelegate(this);
     public static final SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
+    private static final byte[] RELATIONAL_QUERY = { 1 };
 
     public String getPrefetchMessageTypes() {
         if (prefetchMessageTypes == null || prefetchMessageTypes.length == 0) {
@@ -516,8 +518,10 @@ public class PrefetchService extends AbstractScuService implements
     @SuppressWarnings("unchecked")
     private Map<String, Dataset> doCFIND(String calledAET, Dataset keys, int priority )
             throws Exception {
+        ExtNegotiation extNeg = AssociationFactory.getInstance().newExtNegotiation(
+                UIDs.StudyRootQueryRetrieveInformationModelFIND, RELATIONAL_QUERY);
         ActiveAssociation assoc = openAssociation(calledAET,
-                UIDs.StudyRootQueryRetrieveInformationModelFIND);
+                UIDs.StudyRootQueryRetrieveInformationModelFIND, extNeg);
         try {
             Map<String, Dataset> result = new HashMap<String, Dataset>();
             // send cfind request.
