@@ -2,15 +2,16 @@ package org.dcm4chee.xds.store.mbean;
 
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
 import org.dcm4chee.xds.common.XDSConstants;
 import org.dcm4chee.xds.common.exception.XDSException;
 import org.dcm4chee.xds.common.store.XDSDocument;
 import org.dcm4chee.xds.common.store.XDSDocumentWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class XDSStoreServiceIdenticalHashTest extends XDSStoreTestBase {
 
-    private static Logger log = Logger.getLogger(XDSStoreServiceIdenticalHashTest.class);
+    private static Logger log = LoggerFactory.getLogger(XDSStoreServiceIdenticalHashTest.class);
 
     public XDSStoreServiceIdenticalHashTest() {
         super();

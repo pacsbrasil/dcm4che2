@@ -52,15 +52,7 @@
     <repository>
       <id>jboss</id>
       <name>jboss Repository</name>
-      <url>http://repository.jboss.com/maven2</url>
-    </repository>
-    <repository>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots />
-      <id>codehause.maven.snapshots</id>
-      <url>http://snapshots.repository.codehaus.org/</url>
+      <url>https://repository.jboss.org/nexus/content/groups/developer/</url>
     </repository>
     <repository>
       <id>maven2-repository.dev.java.net</id>
@@ -73,6 +65,16 @@
        <url>http://download.java.net/maven/1/</url>
        <layout>legacy</layout>
      </repository>
+    <repository>
+        <id>Maven Central</id>
+        <url>http://repo1.maven.org/maven2</url>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+    </repository>
   </repositories>
   <pluginRepositories>
     <pluginRepository>

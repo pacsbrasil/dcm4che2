@@ -77,12 +77,6 @@
 			<scope>test</scope>
 		</dependency>
         <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-log4j</artifactId>
-            <version>2.0.5.GA</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>oswego-concurrent</groupId>
             <artifactId>concurrent</artifactId>
             <version>1.3.4-jboss</version>
@@ -94,6 +88,12 @@
 			<version>1.0.3</version>
 			<scope>provided</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.6.1</version>
+            <scope>compile</scope>
+        </dependency>
 	</dependencies>
 </project>
 

@@ -96,11 +96,4 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
-  <repositories>    
-    <repository>
-      <id>jboss</id>
-      <name>jboss Repository</name>
-      <url>http://repository.jboss.com/maven2</url>
-    </repository>
-  </repositories>
 </project>

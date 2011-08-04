@@ -3,7 +3,6 @@ package org.dcm4chee.xds.store.mbean;
 import java.io.IOException;
 import java.net.URL;
 
-import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.DocumentStorageRegistry;
 import org.dcm4chee.docstore.DocumentStore;
 import org.dcm4chee.xds.common.XDSConstants;
@@ -11,12 +10,14 @@ import org.dcm4chee.xds.common.exception.XDSException;
 import org.dcm4chee.xds.common.store.XDSDocument;
 import org.dcm4chee.xds.common.store.XDSDocumentWriter;
 import org.dcm4chee.xds.common.store.XDSDocumentWriterFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import junit.framework.TestCase;
 
 public class XDSStoreServiceDocsizeTest extends XDSStoreTestBase {
 
-    private static Logger log = Logger.getLogger(XDSStoreServiceDocsizeTest.class);
+    private static Logger log = LoggerFactory.getLogger(XDSStoreServiceDocsizeTest.class);
 
     public XDSStoreServiceDocsizeTest() {
         super();
