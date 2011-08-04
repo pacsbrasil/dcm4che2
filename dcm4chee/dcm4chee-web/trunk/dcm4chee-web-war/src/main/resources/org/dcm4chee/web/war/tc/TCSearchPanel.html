@@ -18,13 +18,15 @@
 				<wicket:message key="tc.keyword.text" />
 				<div wicket:id="keywordInput" style="display:inline"/>
 				<button wicket:id="doSearchBtn" type="submit">
-					<img wicket:id="doSearchImg" alt="Search" /> <span
-						wicket:id="doSearchText" />
+					<img wicket:id="doSearchImg" alt="Search" /> 
+					   <span wicket:id="doSearchText" />
 				</button>
 			</div>
 			<div class="advanced-options-toggle-area">
-				<input type="checkbox" wicket:id="advancedOptionsToggle"/>
-				<wicket:message key="tc.search.advancedOptions.Text"/>
+			    <a wicket:id="advancedOptionsToggle" style="color:black;text-decoration:none">
+                   <img wicket:id="advancedOptionsToggleImg"/>
+                   <span wicket:id="advancedOptionsToggleText"/>
+                </a>
 			</div>
 			<div wicket:id="advancedOptions" class="advanced-options-area">
 			     <table><tr>

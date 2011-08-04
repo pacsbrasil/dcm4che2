@@ -37,8 +37,13 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
@@ -68,6 +73,8 @@ public class TCPanel extends Panel {
 
     public TCPanel(final String id) {
         super(id);
+
+        PopupCloseables.getInstance().clear();
 
         if (TCPanel.CSS != null) {
             add(CSSPackageResource.getHeaderContribution(TCPanel.CSS));
@@ -105,15 +112,19 @@ public class TCPanel extends Panel {
             private static final long serialVersionUID = 1L;
 
             @Override
-            public Component doSearch(TCQueryFilter filter) {
+            public Component[] doSearch(TCQueryFilter filter) {
+                detailsPanel.clearTCObject(false);
+                listPanel.clearSelected();
                 listModel.update(filter);
 
-                return listPanel;
+                return new Component[] { detailsPanel, listPanel };
             }
         });
 
         add(listPanel);
         add(detailsPanel);
+
+        // add(new PopupCloseBehavior());
     }
 
     public static String getModuleName() {
@@ -124,4 +135,149 @@ public class TCPanel extends Panel {
         return macb;
     }
 
+    public static class PopupCloseables {
+        private static PopupCloseables instance;
+
+        private List<IPopupCloseable> closeables;
+
+        private List<IPopupCloseable> ignoreOnNextClick;
+
+        public static synchronized PopupCloseables getInstance() {
+            if (instance == null) {
+                instance = new PopupCloseables();
+            }
+            return instance;
+        }
+
+        public void clear() {
+            if (closeables != null) {
+                closeables.clear();
+            }
+        }
+
+        public List<IPopupCloseable> getCloseables() {
+            if (closeables != null) {
+                return Collections.unmodifiableList(closeables);
+            }
+
+            return Collections.emptyList();
+        }
+
+        public void addCloseable(IPopupCloseable closeable) {
+            if (closeables == null) {
+                closeables = new ArrayList<IPopupCloseable>();
+            }
+
+            if (closeable != null && !closeables.contains(closeable)) {
+                closeables.add(closeable);
+            }
+        }
+
+        public void removeCloseable(IPopupCloseable closeable) {
+            if (closeables != null) {
+                if (closeables.remove(closeable)) {
+                    if (closeables.isEmpty()) {
+                        closeables = null;
+                    }
+                }
+            }
+        }
+
+        public boolean shouldIgnoreNextClose(IPopupCloseable closeable) {
+            return ignoreOnNextClick != null
+                    && ignoreOnNextClick.contains(closeable);
+        }
+
+        public void setIgnoreNextClose(IPopupCloseable closeable, boolean ignore) {
+            if (closeable != null) {
+                if (ignore) {
+                    if (ignoreOnNextClick == null) {
+                        ignoreOnNextClick = new ArrayList<IPopupCloseable>();
+                    }
+
+                    if (!ignoreOnNextClick.contains(closeable)) {
+                        ignoreOnNextClick.add(closeable);
+                    }
+                } else {
+                    if (ignoreOnNextClick != null
+                            && ignoreOnNextClick.remove(closeable)) {
+                        if (ignoreOnNextClick.isEmpty()) {
+                            ignoreOnNextClick = null;
+                        }
+                    }
+                }
+            }
+        }
+
+        public void closeAll(AjaxRequestTarget target) {
+            List<IPopupCloseable> popups = PopupCloseables.getInstance()
+                    .getCloseables();
+            if (popups != null) {
+                for (IPopupCloseable popup : popups) {
+                    if (!popup.isClosed()) {
+                        popup.close(target);
+                    }
+                }
+            }
+        }
+
+        public static interface IPopupCloseable {
+            String getMarkupId();
+
+            boolean isClosed();
+
+            void close(AjaxRequestTarget target);
+        }
+    }
+
+    /*
+     * private class PopupCloseBehavior extends AbstractDefaultAjaxBehavior {
+     * 
+     * @Override public void renderHead(IHeaderResponse response) {
+     * super.renderHead(response);
+     * 
+     * response.renderJavascriptReference(new ResourceReference(TCPanel.class,
+     * "tc-utils.js")); }
+     * 
+     * @Override protected void onComponentTag(ComponentTag tag) {
+     * super.onComponentTag(tag);
+     * 
+     * tag.put("onclick", createOnClickJavascript()); }
+     * 
+     * @Override protected void respond(AjaxRequestTarget target) {
+     * List<IPopupCloseable> closeables =
+     * PopupCloseables.getInstance().getCloseables();
+     * 
+     * for (IPopupCloseable closeable: closeables) { if (!closeable.isClosed()
+     * && !PopupCloseables.getInstance().shouldIgnoreNextClose(closeable)) {
+     * Boolean clickedInParent =
+     * Boolean.parseBoolean(RequestCycle.get().getRequest
+     * ().getParameter(closeable.getMarkupId())); if (!clickedInParent) {
+     * closeable.close(target); } }
+     * 
+     * PopupCloseables.getInstance().setIgnoreNextClose(closeable, false); } }
+     * 
+     * private String createOnClickJavascript() { StringBuilder sb = new
+     * StringBuilder();
+     * 
+     * sb.append("{"); sb.append("wicketAjaxGet('");
+     * sb.append(getCallbackUrl());
+     * 
+     * List<IPopupCloseable> closeables =
+     * PopupCloseables.getInstance().getCloseables();
+     * 
+     * if (closeables!=null && !closeables.isEmpty()) { int i=0; for
+     * (IPopupCloseable closeable : closeables) { if (i>0) { sb.append("+'"); }
+     * 
+     * sb.append("&"); sb.append(closeables.get(i).getMarkupId());
+     * sb.append("='+");
+     * sb.append("checkLastOnClickInParent(event || window.event,'");
+     * sb.append(closeables.get(i).getMarkupId()); sb.append("')");
+     * 
+     * i++; } } else { sb.append("'"); }
+     * 
+     * sb.append(");"); sb.append("return false;"); sb.append("}");
+     * 
+     * return sb.toString(); } }
+     */
 }

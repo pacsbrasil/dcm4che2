@@ -150,7 +150,7 @@ public class TCResultPanel extends Panel {
                                 }
 
                                 return DateFormat.getDateInstance(
-                                        DateFormat.LONG, locale);
+                                        DateFormat.MEDIUM, locale);
                             }
                         };
                     }
@@ -164,12 +164,11 @@ public class TCResultPanel extends Panel {
                                     stPermHelper.getDicomRoles()));
                 }
 
-                item.add(
-                        Webviewer.getLink(tc, webviewerLinkProviders,
-                                stPermHelper, new TooltipBehaviour(
-                                        "tc.result.table.", "webviewer"))).add(
-                        new SecurityBehavior(StudyListPage.getModuleName()
-                                + ":webviewerInstanceLink"));
+                item.add(Webviewer.getLink(tc, webviewerLinkProviders,
+                        stPermHelper,
+                        new TooltipBehaviour("tc.result.table.", "webviewer"))
+                        .add(new SecurityBehavior(StudyListPage.getModuleName()
+                                + ":webviewerInstanceLink")));
 
                 item.add(new AbstractDefaultAjaxBehavior() {
 
@@ -354,6 +353,10 @@ public class TCResultPanel extends Panel {
         return null;
     }
 
+    public void clearSelected() {
+        selected = null;
+    }
+
     private void initWebviewerLinkProvider() {
         List<String> names = WebCfgDelegate.getInstance()
                 .getWebviewerNameList();
@@ -438,7 +441,7 @@ public class TCResultPanel extends Panel {
     public class SortableTCListProvider extends SortableDataProvider<TCModel> {
 
         private static final long serialVersionUID = 1L;
-        
+
         private TCListModel model;
 
         public SortableTCListProvider(TCListModel model) {

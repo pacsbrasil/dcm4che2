@@ -23,3 +23,55 @@ function setPositionRelativeToParent(parentElementId, elementId)
 	  obj.style.left = new String(x+"px");
   }
 }
+
+
+function checkLastOnClickInParent(e, parentId)
+{
+	if (parentId)
+	{
+		var parent = document.getElementById(parentId);
+
+		if (parent)
+		{
+			var child = getLastOnClickEventSource(e);
+	
+			while (child)
+			{
+				if (child.parentNode==parent)
+				{
+					return true;
+				}
+				
+				child = child.parentNode;
+			}
+		}
+	}
+	
+	return false;
+}
+
+
+function getLastOnClickEventSource(e)
+{
+	var el;
+	
+	if (!e)
+	{
+		e = window.event;
+	}
+	
+	if (e.type=='click')
+	{
+		if (e.target)
+	    {
+			el = e.target;
+	    }
+			
+		else if (e.srcElement)
+	    {
+			el = e.srcElement;
+	    }
+	}
+	
+	return el;
+}

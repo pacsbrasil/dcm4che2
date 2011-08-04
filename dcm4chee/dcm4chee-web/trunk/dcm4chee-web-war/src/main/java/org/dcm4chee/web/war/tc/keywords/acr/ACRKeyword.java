@@ -46,7 +46,7 @@ import org.dcm4chee.web.war.tc.keywords.TCKeyword;
  * @since May 30, 2011
  */
 public class ACRKeyword extends TCKeyword {
-    
+
     private static final long serialVersionUID = 1L;
 
     private static final String NAME_DELIMITER = " - ";
@@ -54,106 +54,92 @@ public class ACRKeyword extends TCKeyword {
     private static final String VALUE_DELIMITER = ".";
 
     private static final String MEANING_DELIMITER = " - ";
-    
+
     private TCKeyword anatomyKeyword;
+
     private TCKeyword pathologyKeyword;
 
     public ACRKeyword(TCKeyword anatomyKeyword, TCKeyword pathologyKeyword) {
-        super(compositeNames(anatomyKeyword.getName(), pathologyKeyword.getName()),
-                compositeCodes(anatomyKeyword.getCode(), pathologyKeyword.getCode()));
+        super(compositeNames(anatomyKeyword.getName(),
+                pathologyKeyword.getName()), compositeCodes(
+                anatomyKeyword.getCode(), pathologyKeyword.getCode()));
         this.anatomyKeyword = anatomyKeyword;
         this.pathologyKeyword = pathologyKeyword;
     }
 
-    public TCKeyword getAnatomyKeyword()
-    {
+    public TCKeyword getAnatomyKeyword() {
         return anatomyKeyword;
     }
-    
-    public TCKeyword getPathologyKeyword()
-    {
+
+    public TCKeyword getPathologyKeyword() {
         return pathologyKeyword;
     }
-        
-    public static String getAnatomyCodeValue(String value)
-    {
-        if (isValidCodeValue(value))
-        {
-            DicomCode code = DicomCode.fromString(ACRCatalogue.getInstance().getDesignatorId(), value);
-            String codeValue = code!=null ? code.getValue() : null;
-            
-            if (codeValue!=null)
-            {
-                if (codeValue.contains(VALUE_DELIMITER))
-                {
-                    return codeValue.split("\\"+VALUE_DELIMITER)[0].trim();
+
+    public static String getAnatomyCodeValue(String value) {
+        if (isValidCodeValue(value)) {
+            DicomCode code = DicomCode.fromString(ACRCatalogue.getInstance()
+                    .getDesignatorId(), value);
+            String codeValue = code != null ? code.getValue() : null;
+
+            if (codeValue != null) {
+                if (codeValue.contains(VALUE_DELIMITER)) {
+                    return codeValue.split("\\" + VALUE_DELIMITER)[0].trim();
                 }
-                
+
                 return codeValue;
             }
         }
-        
+
         return null;
     }
-    
-    public static String getPathologyCodeValue(String value)
-    {
-        if (isValidCodeValue(value))
-        {
-            DicomCode code = DicomCode.fromString(ACRCatalogue.getInstance().getDesignatorId(), value);
-            String codeValue = code!=null ? code.getValue() : null;
-            
-            if (codeValue!=null)
-            {
-                if (codeValue.contains(VALUE_DELIMITER))
-                {
-                    return codeValue.split("\\"+VALUE_DELIMITER)[1].trim();
+
+    public static String getPathologyCodeValue(String value) {
+        if (isValidCodeValue(value)) {
+            DicomCode code = DicomCode.fromString(ACRCatalogue.getInstance()
+                    .getDesignatorId(), value);
+            String codeValue = code != null ? code.getValue() : null;
+
+            if (codeValue != null) {
+                if (codeValue.contains(VALUE_DELIMITER)) {
+                    return codeValue.split("\\" + VALUE_DELIMITER)[1].trim();
                 }
             }
         }
-        
+
         return null;
     }
-    
-    public static String getAnatomyKeywordName(String name)
-    {
-        if (name!=null && name.contains(MEANING_DELIMITER))
-        {
+
+    public static String getAnatomyKeywordName(String name) {
+        if (name != null && name.contains(MEANING_DELIMITER)) {
             return name.split(MEANING_DELIMITER)[0].trim();
         }
         return name;
     }
-    
-    public static String getPathologyKeywordName(String name)
-    {
-        if (name!=null && name.contains(MEANING_DELIMITER))
-        {
+
+    public static String getPathologyKeywordName(String name) {
+        if (name != null && name.contains(MEANING_DELIMITER)) {
             return name.split(MEANING_DELIMITER)[1].trim();
         }
         return name;
     }
-    
-    private static String compositeNames(String name1, String name2)
-    {
+
+    private static String compositeNames(String name1, String name2) {
         StringBuffer sbuf = new StringBuffer();
-        if (name1!=null)
-        {
+        if (name1 != null) {
             sbuf.append(name1);
         }
-        
-        if (name2!=null)
-        {
-            if (sbuf.length()>0 )
-            {
+
+        if (name2 != null) {
+            if (sbuf.length() > 0) {
                 sbuf.append(NAME_DELIMITER);
             }
-            
+
             sbuf.append(name2);
         }
-        
+
         return sbuf.toString();
     }
-    
+
     private static DicomCode compositeCodes(DicomCode code1, DicomCode code2) {
         StringBuffer valueBuf = new StringBuffer();
         StringBuffer meaningBuf = new StringBuffer();
@@ -162,9 +148,8 @@ public class ACRKeyword extends TCKeyword {
         if (code1 != null) {
             designatorId = code1.getDesignator();
             valueBuf.append(code1.getValue());
-            
-            if (code1.getMeaning()!=null)
-            {
+
+            if (code1.getMeaning() != null) {
                 meaningBuf.append(code1.getMeaning());
             }
         }
@@ -178,29 +163,27 @@ public class ACRKeyword extends TCKeyword {
                 valueBuf.append(VALUE_DELIMITER);
             }
 
-            if (meaningBuf.length() > 0 && code2.getMeaning()!=null) {
+            if (meaningBuf.length() > 0 && code2.getMeaning() != null) {
                 meaningBuf.append(MEANING_DELIMITER);
             }
 
             valueBuf.append(code2.getValue());
-            
-            if (code2.getMeaning()!=null)
-            {
+
+            if (code2.getMeaning() != null) {
                 meaningBuf.append(code2.getMeaning());
             }
         }
 
-        if (designatorId!=null && valueBuf.length()>0)
-        {
+        if (designatorId != null && valueBuf.length() > 0) {
             return new DicomCode(designatorId, valueBuf.toString(),
-                            meaningBuf.toString());
+                    meaningBuf.toString());
         }
-        
+
         return null;
     }
-    
-    private static boolean isValidCodeValue(String value)
-    {
-        return value!=null && value.matches("[0-9]+(\\"+VALUE_DELIMITER+"[0-9]+)?");
+
+    private static boolean isValidCodeValue(String value) {
+        return value != null
+                && value.matches("[0-9]+(\\" + VALUE_DELIMITER + "[0-9]+)?");
     }
 }

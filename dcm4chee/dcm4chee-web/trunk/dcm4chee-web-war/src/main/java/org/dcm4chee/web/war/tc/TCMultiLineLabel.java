@@ -49,7 +49,7 @@ import org.apache.wicket.markup.html.basic.MultiLineLabel;
 public class TCMultiLineLabel extends MultiLineLabel {
 
     private static final long serialVersionUID = 1L;
-    
+
     private int cutAtIndex = -1;
 
     public TCMultiLineLabel(final String id, String text, int cutAtIndex) {

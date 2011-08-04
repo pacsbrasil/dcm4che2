@@ -49,7 +49,7 @@ import org.dcm4chee.web.war.tc.keywords.TCKeywordNode;
 public class ACRKeywordNode extends TCKeywordNode {
 
     private static final long serialVersionUID = 1L;
-    
+
     private String id;
 
     private ACRKeywordNode(String id, String name, DicomCode code) {
@@ -96,25 +96,23 @@ public class ACRKeywordNode extends TCKeywordNode {
     }
 
     public ACRKeywordNode findNode(TCKeyword keyword) {
-        return keyword != null && keyword.getCode()!=null ? 
-                findNodeByCode(keyword.getCode()) : null;
+        return keyword != null && keyword.getCode() != null ? findNodeByCode(keyword
+                .getCode()) : null;
     }
-    
-    
-    public ACRKeywordNode findNodeByCode(DicomCode code)
-    {
-        if (code != null) 
-        {
+
+    public ACRKeywordNode findNodeByCode(DicomCode code) {
+        if (code != null) {
             DicomCode c = getKeyword().getCode();
-            
-            if (c!=null && c.equals(code) && c.getMeaning().equals(code.getMeaning())) 
-            {
-                    return this;
+
+            if (c != null && c.equals(code)
+                    && c.getMeaning().equals(code.getMeaning())) {
+                return this;
             }
-            
+
             if (getChildCount() > 0) {
                 for (TCKeywordNode child : getChildren()) {
-                    ACRKeywordNode node = ((ACRKeywordNode) child).findNodeByCode(code);
+                    ACRKeywordNode node = ((ACRKeywordNode) child)
+                            .findNodeByCode(code);
                     if (node != null) {
                         return node;
                     }
@@ -124,22 +122,21 @@ public class ACRKeywordNode extends TCKeywordNode {
 
         return null;
     }
-    
 
     public ACRKeywordNode findNodeByCodeValue(String value) {
         if (value != null) {
             DicomCode code = getKeyword().getCode();
-            
-            if (code!=null)
-            {
+
+            if (code != null) {
                 if (value.equals(code.getValue())) {
                     return this;
                 }
             }
-            
+
             if (getChildCount() > 0) {
                 for (TCKeywordNode child : getChildren()) {
-                    ACRKeywordNode n = ((ACRKeywordNode) child).findNodeByCodeValue(value);
+                    ACRKeywordNode n = ((ACRKeywordNode) child)
+                            .findNodeByCodeValue(value);
                     if (n != null) {
                         return n;
                     }

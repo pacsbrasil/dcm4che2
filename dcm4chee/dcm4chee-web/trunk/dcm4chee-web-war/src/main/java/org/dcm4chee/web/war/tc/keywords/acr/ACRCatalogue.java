@@ -124,74 +124,56 @@ public class ACRCatalogue extends TCKeywordCatalogue {
             TCKeyword selectedKeyword) {
         return new TCKeywordACRInput(id, selectedKeyword);
     }
-    
-    
-    public TCKeyword findAnatomyKeywordByValue(String codeValue)
-    {
+
+    public TCKeyword findAnatomyKeywordByValue(String codeValue) {
         ACRKeywordNode node = getAnatomyRoot().findNodeByCodeValue(codeValue);
-        return node!=null ? node.getKeyword() : null;
+        return node != null ? node.getKeyword() : null;
     }
-    
-    
-    public TCKeyword findPathologyKeywordByValue(String codeValue)
-    {
-        for (ACRKeywordNode pathologyRoot : getPathologyRoots())
-        {
+
+    public TCKeyword findPathologyKeywordByValue(String codeValue) {
+        for (ACRKeywordNode pathologyRoot : getPathologyRoots()) {
             ACRKeywordNode node = pathologyRoot.findNodeByCodeValue(codeValue);
-            if (node!=null)
-            {
+            if (node != null) {
                 return node.getKeyword();
             }
         }
         return null;
     }
-    
-    
+
     @Override
     public TCKeyword findKeyword(String codeValue) {
-        if (codeValue != null) 
-        {
-            TCKeyword anatomyKeyword = findAnatomyKeywordByValue(
-                    ACRKeyword.getAnatomyCodeValue(codeValue));
+        if (codeValue != null) {
+            TCKeyword anatomyKeyword = findAnatomyKeywordByValue(ACRKeyword
+                    .getAnatomyCodeValue(codeValue));
 
-            TCKeyword pathologyKeyword = findPathologyKeywordByValue(
-                    ACRKeyword.getPathologyCodeValue(codeValue));
+            TCKeyword pathologyKeyword = findPathologyKeywordByValue(ACRKeyword
+                    .getPathologyCodeValue(codeValue));
 
-            if (anatomyKeyword!=null && pathologyKeyword!=null)
-            {
+            if (anatomyKeyword != null && pathologyKeyword != null) {
                 return new ACRKeyword(anatomyKeyword, pathologyKeyword);
-            }
-            else if (anatomyKeyword!=null)
-            {
+            } else if (anatomyKeyword != null) {
                 return anatomyKeyword;
-            }
-            else if (pathologyKeyword!=null)
-            {
+            } else if (pathologyKeyword != null) {
                 return pathologyKeyword;
             }
-            
+
             return null;
         }
 
         return null;
     }
-    
-    public boolean isCompositeKeyword(TCKeyword keyword)
-    {
+
+    public boolean isCompositeKeyword(TCKeyword keyword) {
         return keyword instanceof ACRKeyword;
     }
-    
-    public boolean isAnatomyKeyword(TCKeyword keyword)
-    {
-        return getAnatomyRoot().findNode(keyword)!=null;
+
+    public boolean isAnatomyKeyword(TCKeyword keyword) {
+        return getAnatomyRoot().findNode(keyword) != null;
     }
-    
-    public boolean isPathologyKeyword(TCKeyword keyword)
-    {
-        for (ACRKeywordNode pathologyRoot : getPathologyRoots())
-        {
-            if (pathologyRoot.findNode(keyword)!=null)
-            {
+
+    public boolean isPathologyKeyword(TCKeyword keyword) {
+        for (ACRKeywordNode pathologyRoot : getPathologyRoots()) {
+            if (pathologyRoot.findNode(keyword) != null) {
                 return true;
             }
         }

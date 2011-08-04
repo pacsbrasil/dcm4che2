@@ -58,10 +58,13 @@ import org.apache.wicket.extensions.markup.html.tree.Tree;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.convert.IConverter;
 import org.dcm4chee.web.war.tc.TCPanel;
+import org.dcm4chee.web.war.tc.TCPanel.PopupCloseables;
+import org.dcm4chee.web.war.tc.TCPanel.PopupCloseables.IPopupCloseable;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue.TCKeywordInput;
 
 /**
@@ -103,12 +106,9 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
                         public TCKeyword convertToObject(String s, Locale locale) {
                             if (s != null) {
                                 TCKeywordNode node = findNode(root, s);
-                                if (node!=null)
-                                {
+                                if (node != null) {
                                     return node.getKeyword();
-                                }
-                                else if (s.length()>0)
-                                {
+                                } else if (s.length() > 0) {
                                     return new TCKeyword(s, null, false);
                                 }
                             }
@@ -129,11 +129,7 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
         };
         text.setOutputMarkupId(true);
 
-        final WebMarkupContainer popup = new WebMarkupContainer(
-                "popup-keyword-tree");
-        popup.setOutputMarkupId(true);
-        popup.setOutputMarkupPlaceholderTag(true);
-        popup.setVisible(false);
+        final TreePopupCloseable popup = new TreePopupCloseable(text);
 
         final Tree tree = new Tree("keyword-tree", new DefaultTreeModel(root)) {
 
@@ -142,34 +138,16 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
             @Override
             public void onNodeLinkClicked(AjaxRequestTarget target,
                     TreeNode node) {
-                TCKeywordNode n = node instanceof TCKeywordNode ? (TCKeywordNode) node
-                        : null;
-                TCKeyword keyword = n != null ? n.getKeyword() : null;
-
-                if (keyword != null && keyword.isAllKeywordsPlaceholder()) {
-                    keyword = null;
-                }
-
-                TCKeywordTreeInput.this.getModel().setObject(keyword);
-
-                MarkupContainer parent = TCKeywordTreeInput.this.getParent();
-                
-                popup.setVisible(false);
-                target.addComponent(popup);
-                if (parent!=null)
-                {
-                    target.addComponent(parent);
-                }
-                else
-                {
-                    target.addComponent(text);
-                }
+                popup.close(target, node, true);
             }
         };
+
         tree.setOutputMarkupId(true);
         tree.setRootLess(true);
         tree.setLinkType(LinkType.AJAX);
         tree.getTreeState().setAllowSelectMultiple(false);
+
+        PopupCloseables.getInstance().addCloseable(popup);
 
         popup.add(new AjaxFallbackLink<String>("popup-close-button") {
 
@@ -177,21 +155,11 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                MarkupContainer parent = TCKeywordTreeInput.this.getParent();
-                
-                popup.setVisible(false);
-                target.addComponent(popup);
-                if (parent!=null)
-                {
-                    target.addComponent(parent);
-                }
-                else
-                {
-                    target.addComponent(text);
-                }
+                popup.close(target, null, false);
             }
         });
 
+        popup.setTree(tree);
         popup.add(tree);
 
         add(JavascriptPackageResource.getHeaderContribution(TCPanel.class,
@@ -221,12 +189,16 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
                     }
                 }
 
-                target.appendJavascript("setPositionRelativeToParent('"
-                        + getMarkupId() + "','" + popup.getMarkupId() + "')");
+                PopupCloseables.getInstance().closeAll(target);
+                // PopupCloseables.getInstance().setIgnoreNextClose(popup,
+                // true);
 
                 popup.setVisible(true);
                 target.addComponent(popup);
                 target.addComponent(tree);
+
+                target.appendJavascript("setPositionRelativeToParent('"
+                        + getMarkupId() + "','" + popup.getMarkupId() + "')");
             }
         });
         add(popup);
@@ -323,5 +295,65 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
         }
 
         return null;
+    }
+
+    private class TreePopupCloseable extends WebMarkupContainer implements
+            IPopupCloseable {
+        private Tree tree;
+
+        private TextField<TCKeyword> text;
+
+        public TreePopupCloseable(TextField<TCKeyword> text) {
+            super("popup-keyword-tree");
+
+            this.text = text;
+
+            setOutputMarkupId(true);
+            setOutputMarkupPlaceholderTag(true);
+            setVisible(false);
+        }
+
+        public void setTree(Tree tree) {
+            this.tree = tree;
+        }
+
+        @Override
+        public boolean isClosed() {
+            return !isVisible();
+        }
+
+        @Override
+        public void close(AjaxRequestTarget target) {
+            Collection<Object> selNodes = tree != null ? tree.getTreeState()
+                    .getSelectedNodes() : null;
+            close(target, selNodes != null && !selNodes.isEmpty() ? selNodes
+                    .iterator().next() : null, true);
+        }
+
+        public void close(AjaxRequestTarget target, Object node,
+                boolean updateSelection) {
+            if (updateSelection) {
+                TCKeywordNode n = node instanceof TCKeywordNode ? (TCKeywordNode) node
+                        : null;
+                TCKeyword keyword = n != null ? n.getKeyword() : null;
+
+                if (keyword != null && keyword.isAllKeywordsPlaceholder()) {
+                    keyword = null;
+                }
+
+                TCKeywordTreeInput.this.getModel().setObject(keyword);
+            }
+
+            MarkupContainer parent = TCKeywordTreeInput.this.getParent();
+
+            setVisible(false);
+            target.addComponent(this);
+
+            if (parent != null) {
+                target.addComponent(parent);
+            } else {
+                target.addComponent(text);
+            }
+        }
     }
 }

@@ -307,7 +307,7 @@ public class TCDetailsPanel extends Panel {
         tabs.add(new AbstractDetailsTab(new Model<String>() {
 
             private static final long serialVersionUID = 1L;
-            
+
             String title = new PackageStringResourceLoader()
                     .loadStringResource(TCDetailsPanel.class,
                             "tc.details.tab.images.title.text", null, null);
@@ -387,6 +387,7 @@ public class TCDetailsPanel extends Panel {
         nodetailsContainer.setVisible(tc == null);
         errordetailsContainer.setVisible(false);
         detailsContainer.setVisible(tc != null);
+        ((DetailsTabbedPanel) detailsContainer.get(0)).setSelectedTab(0);
 
         setDefaultModel(new Model<TCDetails>(tc));
     }
@@ -443,18 +444,18 @@ public class TCDetailsPanel extends Panel {
             link.add(new AttributeModifier("class", true,
                     new AbstractReadOnlyModel<String>() {
 
-                private static final long serialVersionUID = 1L;
+                        private static final long serialVersionUID = 1L;
 
-                @Override
-                public String getObject() {
-                    if (((AbstractDetailsTab) getTabs().get(index))
-                            .isDataAvailable()) {
-                        return "enabled";
-                    } else {
-                        return "disabled";
-                    }
-                }
-            }));
+                        @Override
+                        public String getObject() {
+                            if (((AbstractDetailsTab) getTabs().get(index))
+                                    .isDataAvailable()) {
+                                return "enabled";
+                            } else {
+                                return "disabled";
+                            }
+                        }
+                    }));
             return link;
         }
     }

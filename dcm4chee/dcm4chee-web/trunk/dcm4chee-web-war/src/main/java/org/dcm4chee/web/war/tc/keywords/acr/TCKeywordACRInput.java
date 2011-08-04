@@ -63,6 +63,8 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.convert.IConverter;
 import org.dcm4chee.web.war.tc.TCPanel;
+import org.dcm4chee.web.war.tc.TCPanel.PopupCloseables;
+import org.dcm4chee.web.war.tc.TCPanel.PopupCloseables.IPopupCloseable;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue.TCKeywordInput;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordNode;
@@ -85,35 +87,37 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
                 selectedKeyword) : new Model<TCKeyword>());
 
         final TextField<TCKeyword> text = new TextField<TCKeyword>("text",
-                selectedKeyword!=null?new Model<TCKeyword>(selectedKeyword):new Model<TCKeyword>(), TCKeyword.class) {
+                selectedKeyword != null ? new Model<TCKeyword>(selectedKeyword)
+                        : new Model<TCKeyword>(), TCKeyword.class) {
             @Override
             public IConverter getConverter(Class<?> type) {
                 if (TCKeyword.class.isAssignableFrom(type)) {
                     return new IConverter() {
                         @Override
-                        public String convertToString(Object o, Locale locale) 
-                        {
-                            if (o instanceof TCKeyword)
-                            {
-                                return ((TCKeyword)o).getName();
+                        public String convertToString(Object o, Locale locale) {
+                            if (o instanceof TCKeyword) {
+                                return ((TCKeyword) o).getName();
                             }
-                            
-                            return o!=null ? o.toString() : null;
+
+                            return o != null ? o.toString() : null;
                         }
 
                         @Override
                         public TCKeyword convertToObject(String s, Locale locale) {
-                            if (s != null) 
-                            {
-                                TCKeyword keyword = new TCKeyword(s, null, false);
-                                
-                                TCKeyword curKeyword = TCKeywordACRInput.this.getModel().getObject();
-                                
-                                if (curKeyword==null || !curKeyword.getName().equals(keyword.getName()))
-                                {
-                                    TCKeywordACRInput.this.getModel().setObject(keyword);
+                            if (s != null) {
+                                TCKeyword keyword = new TCKeyword(s, null,
+                                        false);
+
+                                TCKeyword curKeyword = TCKeywordACRInput.this
+                                        .getModel().getObject();
+
+                                if (curKeyword == null
+                                        || !curKeyword.getName().equals(
+                                                keyword.getName())) {
+                                    TCKeywordACRInput.this.getModel()
+                                            .setObject(keyword);
                                 }
-                                
+
                                 return keyword;
                             }
 
@@ -127,68 +131,46 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
         text.setOutputMarkupId(true);
 
         final ACRChooser chooser = new ACRChooser("keyword-acr");
-
-        final WebMarkupContainer popup = new WebMarkupContainer(
-                "popup-keyword-acr");
-        popup.setOutputMarkupId(true);
-        popup.setOutputMarkupPlaceholderTag(true);
-        popup.setVisible(false);
+        final ACRPopupCloseable popup = new ACRPopupCloseable(chooser, text);
 
         popup.add(new AjaxFallbackLink<String>("popup-close-button") {
             @Override
             public void onClick(AjaxRequestTarget target) {
-                TCKeyword keyword = chooser.getKeyword();
-
-                if (keyword != null && keyword.isAllKeywordsPlaceholder()) {
-                    keyword = null;
-                }
-
-                TCKeywordACRInput.this.getModel().setObject(keyword);
-                text.setModelObject(keyword);
-                
-                MarkupContainer parent = TCKeywordACRInput.this.getParent();
-                
-                popup.setVisible(false);
-                target.addComponent(popup);
-                if (parent!=null)
-                {
-                    target.addComponent(parent);
-                }
-                else
-                {
-                    target.addComponent(text);
-                }
+                popup.close(target);
             }
         });
 
+        PopupCloseables.getInstance().addCloseable(popup);
+
         add(JavascriptPackageResource.getHeaderContribution(TCPanel.class,
                 "tc-utils.js"));
+
         add(text);
         add(new AjaxButton("chooser-button", new Model<String>("...")) {
             @Override
             public void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                TCKeyword keyword = TCKeywordACRInput.this
-                        .getSelectedKeyword();
+                TCKeyword keyword = TCKeywordACRInput.this.getSelectedKeyword();
 
                 Component[] updateComponents = chooser.setKeyword(keyword);
 
-                target.appendJavascript("setPositionRelativeToParent('"
-                        + getMarkupId() + "','" + popup.getMarkupId() + "')");
+                PopupCloseables.getInstance().closeAll(target);
+                // PopupCloseables.getInstance().setIgnoreNextClose(popup,
+                // true);
 
                 popup.setVisible(true);
                 target.addComponent(popup);
                 target.addComponent(chooser);
 
-                if (updateComponents!=null)
-                {
-                    for (Component c : updateComponents)
-                    {
-                        if (c!=null)
-                        {
+                if (updateComponents != null) {
+                    for (Component c : updateComponents) {
+                        if (c != null) {
                             target.addComponent(c);
                         }
                     }
                 }
+
+                target.appendJavascript("setPositionRelativeToParent('"
+                        + getMarkupId() + "','" + popup.getMarkupId() + "')");
             }
         });
 
@@ -219,10 +201,11 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
 
     public class ACRChooser extends Fragment {
         private TCKeyword anatomyKeyword;
+
         private TCKeyword pathologyKeyword;
 
         private String curPathologyTreeId;
-        
+
         public ACRChooser(String id) {
             super(id, "acr-chooser", TCKeywordACRInput.this);
 
@@ -264,10 +247,11 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
                 pathologyTree.setLinkType(LinkType.AJAX);
                 pathologyTree.getTreeState().setAllowSelectMultiple(false);
                 pathologyTree.setVisible(false);
-                
+
                 pathologyTrees.put(pathologyRoots[i], pathologyTree);
 
-                ACRKeywordNode node = pathologyRoots[i].findNode(pathologyKeyword);
+                ACRKeywordNode node = pathologyRoots[i]
+                        .findNode(pathologyKeyword);
 
                 Tree tree = getCurrentPathologyTree();
 
@@ -278,8 +262,9 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
                 add(pathologyTree);
             }
 
-            final Tree anatomyTree = new Tree("anatomy-tree", new DefaultTreeModel(
-                    ACRCatalogue.getInstance().getAnatomyRoot())) {
+            final Tree anatomyTree = new Tree("anatomy-tree",
+                    new DefaultTreeModel(ACRCatalogue.getInstance()
+                            .getAnatomyRoot())) {
                 @Override
                 public void onNodeLinkClicked(AjaxRequestTarget target,
                         TreeNode node) {
@@ -288,9 +273,11 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
                             && getTreeState().isNodeSelected(node);
 
                     if (shouldSelect) {
-                        TCKeyword keyword = ((ACRKeywordNode) node).getKeyword();
+                        TCKeyword keyword = ((ACRKeywordNode) node)
+                                .getKeyword();
 
-                        if (keyword != null && keyword.isAllKeywordsPlaceholder()) {
+                        if (keyword != null
+                                && keyword.isAllKeywordsPlaceholder()) {
                             keyword = null;
                         }
 
@@ -307,7 +294,7 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
                             if (pathologyTree != curPathologyTree) {
                                 setPathologyTreeVisible(pathologyTree);
                                 setNodeSelected(pathologyTree, null);
-                                
+
                                 target.addComponent(curPathologyTree);
                                 target.addComponent(pathologyTree);
                             }
@@ -321,94 +308,83 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
             anatomyTree.setLinkType(LinkType.AJAX);
             anatomyTree.setRootLess(true);
             anatomyTree.getTreeState().setAllowSelectMultiple(false);
-            
+
             add(anatomyTree);
         }
 
         public TCKeyword getKeyword() {
-            
-            if (anatomyKeyword != null && pathologyKeyword != null &&
-                    anatomyKeyword.getCode()!=null && pathologyKeyword.getCode()!=null) {
+
+            if (anatomyKeyword != null && pathologyKeyword != null
+                    && anatomyKeyword.getCode() != null
+                    && pathologyKeyword.getCode() != null) {
                 return new ACRKeyword(anatomyKeyword, pathologyKeyword);
-            }
-            else if (pathologyKeyword!=null)
-            {
+            } else if (pathologyKeyword != null) {
                 return pathologyKeyword;
-            }
-            else if (anatomyKeyword!=null)
-            {
+            } else if (anatomyKeyword != null) {
                 return anatomyKeyword;
             }
-            
+
             return null;
         }
 
         public Component[] setKeyword(TCKeyword keyword) {
             anatomyKeyword = null;
             pathologyKeyword = null;
-            
-            if (keyword!=null)
-            {
-                if (keyword.getCode()==null)
-                {
+
+            if (keyword != null) {
+                if (keyword.getCode() == null) {
                     anatomyKeyword = keyword;
-                }
-                else if (ACRCatalogue.getInstance().isCompositeKeyword(keyword))
-                {
-                    if (keyword instanceof ACRKeyword)
-                    {
-                        anatomyKeyword = ((ACRKeyword)keyword).getAnatomyKeyword();
-                        pathologyKeyword = ((ACRKeyword)keyword).getPathologyKeyword();
+                } else if (ACRCatalogue.getInstance().isCompositeKeyword(
+                        keyword)) {
+                    if (keyword instanceof ACRKeyword) {
+                        anatomyKeyword = ((ACRKeyword) keyword)
+                                .getAnatomyKeyword();
+                        pathologyKeyword = ((ACRKeyword) keyword)
+                                .getPathologyKeyword();
                     }
-                }
-                else
-                {
-                    if (ACRCatalogue.getInstance().isAnatomyKeyword(keyword))
-                    {
+                } else {
+                    if (ACRCatalogue.getInstance().isAnatomyKeyword(keyword)) {
                         anatomyKeyword = keyword;
-                    }
-                    else if (ACRCatalogue.getInstance().isPathologyKeyword(keyword))
-                    {
+                    } else if (ACRCatalogue.getInstance().isPathologyKeyword(
+                            keyword)) {
                         pathologyKeyword = keyword;
                     }
                 }
             }
-            
-            Tree anatomyTree = (Tree)get("anatomy-tree");
-            Tree pathologyTree = curPathologyTreeId!=null ? (Tree) get(curPathologyTreeId) : null;
-            
-            if (anatomyTree!=null)
-            {
-                setNodeSelected(anatomyTree, ((ACRKeywordNode)anatomyTree.getModelObject().getRoot()).findNode(anatomyKeyword));
+
+            Tree anatomyTree = (Tree) get("anatomy-tree");
+            Tree pathologyTree = curPathologyTreeId != null ? (Tree) get(curPathologyTreeId)
+                    : null;
+
+            if (anatomyTree != null) {
+                setNodeSelected(anatomyTree, ((ACRKeywordNode) anatomyTree
+                        .getModelObject().getRoot()).findNode(anatomyKeyword));
             }
-            
-            if (pathologyTree!=null)
-            {
-                setNodeSelected(pathologyTree, ((ACRKeywordNode)pathologyTree.getModelObject().getRoot()).findNode(pathologyKeyword));
+
+            if (pathologyTree != null) {
+                setNodeSelected(pathologyTree, ((ACRKeywordNode) pathologyTree
+                        .getModelObject().getRoot()).findNode(pathologyKeyword));
             }
-            
-            return new Component[] {
-                    get("anatomy-tree"),
-                    get(curPathologyTreeId)
-            };
+
+            return new Component[] { get("anatomy-tree"),
+                    get(curPathologyTreeId) };
         }
-        
-        private void setPathologyTreeVisible(Tree tree)
-        {
+
+        private void setPathologyTreeVisible(Tree tree) {
             Tree curTree = getCurrentPathologyTree();
-            
-            if (curTree!=null && curTree!=tree)
-            {
+
+            if (curTree != null && curTree != tree) {
                 curTree.setVisible(false);
             }
-            
+
             curPathologyTreeId = tree.getId();
-            
+
             tree.setVisible(true);
         }
 
         private Tree getCurrentPathologyTree() {
-            return curPathologyTreeId!=null ? (Tree) get(curPathologyTreeId) : null;
+            return curPathologyTreeId != null ? (Tree) get(curPathologyTreeId)
+                    : null;
         }
 
         private void ensurePathExpanded(Tree tree, ACRKeywordNode node) {
@@ -425,11 +401,12 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
         private void setNodeSelected(Tree tree, ACRKeywordNode node) {
             if (node != null) {
                 tree.getTreeState().selectNode(node, true);
-        
+
                 ensurePathExpanded(tree, node);
             } else {
-                Collection<Object> selectedNodes = tree.getTreeState()!=null?tree.getTreeState()
-                        .getSelectedNodes():Collections.emptyList();
+                Collection<Object> selectedNodes = tree.getTreeState() != null ? tree
+                        .getTreeState().getSelectedNodes() : Collections
+                        .emptyList();
                 if (selectedNodes != null && !selectedNodes.isEmpty()) {
                     for (Object n : selectedNodes) {
                         tree.getTreeState().selectNode(n, false);
@@ -438,4 +415,51 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
             }
         }
     }
+
+    private class ACRPopupCloseable extends WebMarkupContainer implements
+            IPopupCloseable {
+        private ACRChooser chooser;
+
+        private TextField<TCKeyword> text;
+
+        public ACRPopupCloseable(ACRChooser chooser, TextField<TCKeyword> text) {
+            super("popup-keyword-acr");
+
+            this.chooser = chooser;
+            this.text = text;
+
+            setOutputMarkupId(true);
+            setOutputMarkupPlaceholderTag(true);
+            setVisible(false);
+        }
+
+        @Override
+        public boolean isClosed() {
+            return !isVisible();
+        }
+
+        @Override
+        public void close(AjaxRequestTarget target) {
+            // apply keyword(s)
+            TCKeyword keyword = chooser.getKeyword();
+            if (keyword != null && keyword.isAllKeywordsPlaceholder()) {
+                keyword = null;
+            }
+
+            TCKeywordACRInput.this.getModel().setObject(keyword);
+            text.setModelObject(keyword);
+
+            // close popup
+            MarkupContainer parent = TCKeywordACRInput.this.getParent();
+
+            setVisible(false);
+            target.addComponent(this);
+            if (parent != null) {
+                target.addComponent(parent);
+            } else {
+                target.addComponent(text);
+            }
+        }
+    }
+
 }

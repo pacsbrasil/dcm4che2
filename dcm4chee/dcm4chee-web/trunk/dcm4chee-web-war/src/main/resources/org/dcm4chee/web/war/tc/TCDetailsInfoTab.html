@@ -49,34 +49,32 @@
             
             <div class="spacer"/>
                         
-            <div wicket:id="details-finding-row" class="table-property-row">
-                <span class="table-property-key">
+            <div wicket:id="details-finding-row" style="height:60px" class="table-property-row">
+                <span class="table-property-key" style="height:100%">
                     <wicket:message key="tc.finding.text"/>
                 </span>
-                <span class="table-property-value" wicket:id="details-finding"/>
-            </div>  
-            
-            <div class="spacer"/>
-                        
+                <div class="table-property-value" style="overflow-y:scroll;height:100%" wicket:id="details-finding"/>
+            </div> 
+                                    
             <div wicket:id="details-diffdiagnosis-row" class="table-property-row">
+                <div class="spacer"/>
                 <span class="table-property-key">
                     <wicket:message key="tc.diffdiagnosis.text"/>
                 </span>
                 <span class="table-property-value" wicket:id="details-diffdiagnosis"/>
             </div>
             
-            <div class="spacer"/>
                         
             <div wicket:id="details-diagnosis-row" class="table-property-row">
+                <div class="spacer"/>
                 <span class="table-property-key">
                     <wicket:message key="tc.diagnosis.text"/>
                 </span>
                 <span class="table-property-value" wicket:id="details-diagnosis"/>
             </div> 
-            
-            <div class="spacer"/>
-                        
+       
             <div wicket:id="details-diagnosis-confirmed-row" class="table-property-row">
+                <div class="spacer"/>
                 <span class="table-property-key">
                     <wicket:message key="tc.diagnosis.confirmed.text"/>
                 </span>

@@ -158,15 +158,16 @@ public class TCDetailsInfoTab extends Panel {
 
         WebMarkupContainer findingWmc = new WebMarkupContainer(
                 "details-finding-row");
-        findingWmc.add(new Label("details-finding", new Model<String>() {
+        findingWmc.add(new MultiLineLabel("details-finding",
+                new Model<String>() {
 
-            private static final long serialVersionUID = 1L;
+                    private static final long serialVersionUID = 1L;
 
-            @Override
-            public String getObject() {
-                return getStringValue(TCQueryFilterKey.Finding);
-            }
-        }).add(new AbstractBehavior() {
+                    @Override
+                    public String getObject() {
+                        return getStringValue(TCQueryFilterKey.Finding);
+                    }
+                }).add(new AbstractBehavior() {
 
             private static final long serialVersionUID = 1L;
 
@@ -209,14 +210,14 @@ public class TCDetailsInfoTab extends Panel {
                     }
                 }).add(new AbstractBehavior() {
 
-                    private static final long serialVersionUID = 1L;
+            private static final long serialVersionUID = 1L;
 
-                    @Override
-                    public void onComponentTag(Component c, ComponentTag tag) {
-                        tag.put("title",
-                                getStringValue(TCQueryFilterKey.DifferentialDiagnosis));
-                    }
-                }));
+            @Override
+            public void onComponentTag(Component c, ComponentTag tag) {
+                tag.put("title",
+                        getStringValue(TCQueryFilterKey.DifferentialDiagnosis));
+            }
+        }));
 
         WebMarkupContainer diagnosisConfirmedWmc = new WebMarkupContainer(
                 "details-diagnosis-confirmed-row");
@@ -317,14 +318,14 @@ public class TCDetailsInfoTab extends Panel {
                     }
                 }).add(new AbstractBehavior() {
 
-                    private static final long serialVersionUID = 1L;
+            private static final long serialVersionUID = 1L;
 
-                    @Override
-                    public void onComponentTag(Component c, ComponentTag tag) {
-                        tag.put("title",
-                                getStringValue(TCQueryFilterKey.PatientSpecies));
-                    }
-                }));
+            @Override
+            public void onComponentTag(Component c, ComponentTag tag) {
+                tag.put("title",
+                        getStringValue(TCQueryFilterKey.PatientSpecies));
+            }
+        }));
 
         if (catProv != null) {
             diffdiagnosisWmc.setVisible(catProv

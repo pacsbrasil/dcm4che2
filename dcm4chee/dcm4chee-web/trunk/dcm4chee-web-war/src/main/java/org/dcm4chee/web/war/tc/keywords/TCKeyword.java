@@ -55,7 +55,7 @@ public class TCKeyword implements Serializable {
     private DicomCode code;
 
     private boolean isAllKeywordsPlaceholder;
-    
+
     private boolean isValid;
 
     public TCKeyword(DicomCode code) {
@@ -65,9 +65,10 @@ public class TCKeyword implements Serializable {
     public TCKeyword(String name, DicomCode code) {
         this(name, code, true);
     }
-    
+
     public TCKeyword(String name, DicomCode code, boolean isValid) {
-        this.name = name != null ? name : code!=null ? code.getMeaning() : null;
+        this.name = name != null ? name : code != null ? code.getMeaning()
+                : null;
         this.code = code;
         this.isValid = isValid;
     }
@@ -91,25 +92,22 @@ public class TCKeyword implements Serializable {
     public boolean isAllKeywordsPlaceholder() {
         return isAllKeywordsPlaceholder;
     }
-    
-    public boolean isValid()
-    {
+
+    public boolean isValid() {
         return isValid;
     }
 
     @Override
     public String toString() {
-        return name != null ? name : code!=null ? code.toString() : super.toString();
+        return name != null ? name : code != null ? code.toString() : super
+                .toString();
     }
 
     public boolean equals(TCKeyword keyword) {
-        if (code==null)
-        {
-            return keyword.code==null && name.equals(keyword.getName());
-        }
-        else
-        {
-            return keyword.code!=null && code.equals(keyword.code);
+        if (code == null) {
+            return keyword.code == null && name.equals(keyword.getName());
+        } else {
+            return keyword.code != null && code.equals(keyword.code);
         }
     }
 }

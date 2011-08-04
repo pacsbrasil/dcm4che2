@@ -55,10 +55,13 @@ import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.ListChoice;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.convert.IConverter;
 import org.dcm4chee.web.war.tc.TCPanel;
+import org.dcm4chee.web.war.tc.TCPanel.PopupCloseables;
+import org.dcm4chee.web.war.tc.TCPanel.PopupCloseables.IPopupCloseable;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue.TCKeywordInput;
 
 /**
@@ -83,7 +86,7 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
                 "text", getModel(), TCKeyword.class, new AutoCompleteSettings()) {
 
             private static final long serialVersionUID = 1L;
-            
+
             final Map<String, TCKeyword> keywordMap = new HashMap<String, TCKeyword>();
 
             @Override
@@ -106,11 +109,9 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
 
                         @Override
                         public TCKeyword convertToObject(String s, Locale locale) {
-                            if (s!=null)
-                            {
+                            if (s != null) {
                                 TCKeyword keyword = keywordMap.get(s);
-                                if (keyword==null)
-                                {
+                                if (keyword == null) {
                                     keyword = new TCKeyword(s, null, false);
                                 }
                                 return keyword;
@@ -138,12 +139,6 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
         };
         text.setOutputMarkupId(true);
 
-        final WebMarkupContainer popup = new WebMarkupContainer(
-                "popup-keyword-list");
-        popup.setOutputMarkupId(true);
-        popup.setOutputMarkupPlaceholderTag(true);
-        popup.setVisible(false);
-
         final ListChoice<TCKeyword> keywordList = new ListChoice<TCKeyword>(
                 "keyword-list", new Model<TCKeyword>(selectedKeyword), keywords) {
 
@@ -156,29 +151,16 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
         };
         keywordList.setOutputMarkupId(true);
         keywordList.setNullValid(true);
-        keywordList.add(new AjaxFormComponentUpdatingBehavior("onchange") {
 
+        final ListPopupCloseable popup = new ListPopupCloseable(keywordList,
+                text);
+
+        keywordList.add(new AjaxFormComponentUpdatingBehavior("onchange") {
             private static final long serialVersionUID = 1L;
 
             @Override
             public void onUpdate(AjaxRequestTarget target) {
-                TCKeyword choosenKeyword = keywordList.getModelObject();
-
-                TCKeywordListInput.this.getModel().setObject(choosenKeyword!=null && 
-                        choosenKeyword.isAllKeywordsPlaceholder()?null:choosenKeyword);
-
-                MarkupContainer parent = TCKeywordListInput.this.getParent();
-                
-                popup.setVisible(false);
-                target.addComponent(popup);
-                if (parent!=null)
-                {
-                    target.addComponent(parent);
-                }
-                else
-                {
-                    target.addComponent(text);
-                }
+                popup.close(target, keywordList.getModelObject(), true);
             }
         });
 
@@ -190,20 +172,11 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
 
             @Override
             public void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                MarkupContainer parent = TCKeywordListInput.this.getParent();
-                
-                popup.setVisible(false);
-                target.addComponent(popup);
-                if (parent!=null)
-                {
-                    target.addComponent(parent);
-                }
-                else
-                {
-                    target.addComponent(text);
-                }
+                popup.close(target, null, false);
             }
         });
+
+        PopupCloseables.getInstance().addCloseable(popup);
 
         add(JavascriptPackageResource.getHeaderContribution(TCPanel.class,
                 "tc-utils.js"));
@@ -215,14 +188,19 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
 
             @Override
             public void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                keywordList.setModelObject(getSelectedKeyword());
+
+                PopupCloseables.getInstance().closeAll(target);
+                // PopupCloseables.getInstance().setIgnoreNextClose(popup,
+                // true);
+
+                popup.setVisible(true);
+
+                target.addComponent(popup);
+                target.addComponent(keywordList);
+
                 target.appendJavascript("setPositionRelativeToParent('"
                         + getMarkupId() + "','" + popup.getMarkupId() + "')");
-                
-                keywordList.setModelObject(getSelectedKeyword());
-                
-                popup.setVisible(true);
-                target.addComponent(keywordList);
-                target.addComponent(popup);
             }
         });
         add(popup);
@@ -249,5 +227,57 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
     @SuppressWarnings({ "unchecked" })
     private Model<TCKeyword> getModel() {
         return (Model) getDefaultModel();
+    }
+
+    private class ListPopupCloseable extends WebMarkupContainer implements
+            IPopupCloseable {
+        private ListChoice<TCKeyword> list;
+
+        private TextField<TCKeyword> text;
+
+        public ListPopupCloseable(ListChoice<TCKeyword> list,
+                TextField<TCKeyword> text) {
+            super("popup-keyword-list");
+
+            this.list = list;
+            this.text = text;
+
+            setOutputMarkupId(true);
+            setOutputMarkupPlaceholderTag(true);
+            setVisible(false);
+        }
+
+        @Override
+        public boolean isClosed() {
+            return !isVisible();
+        }
+
+        @Override
+        public void close(AjaxRequestTarget target) {
+            close(target, this != null ? list.getModelObject() : null, true);
+        }
+
+        public void close(AjaxRequestTarget target, TCKeyword selectedKeyword,
+                boolean updateSelection) {
+            if (updateSelection) {
+                TCKeywordListInput.this
+                        .getModel()
+                        .setObject(
+                                selectedKeyword != null
+                                        && selectedKeyword
+                                                .isAllKeywordsPlaceholder() ? null
+                                        : selectedKeyword);
+            }
+
+            MarkupContainer parent = TCKeywordListInput.this.getParent();
+
+            setVisible(false);
+            target.addComponent(this);
+            if (parent != null) {
+                target.addComponent(parent);
+            } else {
+                target.addComponent(text);
+            }
+        }
     }
 }

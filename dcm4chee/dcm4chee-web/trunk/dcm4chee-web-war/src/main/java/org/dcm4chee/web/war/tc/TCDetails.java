@@ -682,24 +682,19 @@ public class TCDetails implements Serializable {
             this.meaning = dataset.getString(Tag.CodeMeaning);
             this.version = dataset.getString(Tag.CodingSchemeVersion);
         }
-        
-        public static DicomCode fromString(String designator, String s)
-        {
-            if (designator!=null && s!=null)
-            {
-                if (s.startsWith("("))
-                {
+
+        public static DicomCode fromString(String designator, String s) {
+            if (designator != null && s != null) {
+                if (s.startsWith("(")) {
                     String value = s.substring(1, s.indexOf(")"));
-                    String meaning = s.substring(s.indexOf(")")+2);
-                    
+                    String meaning = s.substring(s.indexOf(")") + 2);
+
                     return new DicomCode(designator, value, meaning);
-                }
-                else
-                {
+                } else {
                     return new DicomCode(designator, s, null);
                 }
             }
-            
+
             return null;
         }
 
@@ -722,16 +717,14 @@ public class TCDetails implements Serializable {
         @Override
         public String toString() {
             StringBuffer sbuf = new StringBuffer();
-            
-            if (meaning!=null)
-            {
+
+            if (meaning != null) {
                 sbuf.append("(");
             }
-            
+
             sbuf.append(value);
-            
-            if (meaning!=null)
-            {
+
+            if (meaning != null) {
                 sbuf.append(") ");
                 sbuf.append(meaning);
             }

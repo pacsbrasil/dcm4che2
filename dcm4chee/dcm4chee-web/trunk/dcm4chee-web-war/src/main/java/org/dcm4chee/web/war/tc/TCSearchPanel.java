@@ -43,12 +43,12 @@ import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
+import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
-import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -64,7 +64,6 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.archive.entity.Code;
 import org.dcm4chee.icons.ImageManager;
@@ -74,6 +73,7 @@ import org.dcm4chee.web.dao.tc.TCQueryFilter;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue;
 import org.dcm4chee.web.war.tc.TCDetails.DicomCode;
+import org.dcm4chee.web.war.tc.TCPanel.PopupCloseables;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue.TCKeywordInput;
@@ -89,7 +89,7 @@ import org.slf4j.LoggerFactory;
 public abstract class TCSearchPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
-    
+
     private static final Logger log = LoggerFactory
             .getLogger(TCSearchPanel.class);
 
@@ -98,6 +98,8 @@ public abstract class TCSearchPanel extends Panel {
     }
 
     private boolean showSearch = true;
+
+    private boolean showAdvancedOptions = false;
 
     public TCSearchPanel(final String id) {
         super(id, new Model<TCQueryFilter>(new TCQueryFilter()));
@@ -168,71 +170,78 @@ public abstract class TCSearchPanel extends Panel {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                // close popups
+                PopupCloseables.getInstance().closeAll(target);
+
                 try {
                     TCQueryFilter filter = (TCQueryFilter) TCSearchPanel.this
                             .getDefaultModelObject();
                     filter.clear();
 
                     Object keywordInputValue = keywordInput.getSearchObject();
-                    if (keywordInputValue!=null)
-                    {
+                    if (keywordInputValue != null) {
                         if (Code.class.equals(keywordInputValue.getClass())) {
-                                filter.setKeywordCode((Code) keywordInputValue);
-                        } else if (String.class.equals(keywordInputValue.getClass())) {
+                            filter.setKeywordCode((Code) keywordInputValue);
+                        } else if (String.class.equals(keywordInputValue
+                                .getClass())) {
                             filter.setKeyword((String) keywordInputValue);
                         }
                     }
 
                     Object anatomyInputValue = anatomyInput.getSearchObject();
-                    if (anatomyInputValue!=null)
-                    {
+                    if (anatomyInputValue != null) {
                         if (Code.class.equals(anatomyInputValue.getClass())) {
-                                filter.setAnatomyCode((Code) anatomyInputValue);    
-                        } else if (String.class.equals(anatomyInputValue.getClass())) {
+                            filter.setAnatomyCode((Code) anatomyInputValue);
+                        } else if (String.class.equals(anatomyInputValue
+                                .getClass())) {
                             filter.setAnatomy((String) anatomyInputValue);
                         }
                     }
-                    
-                    Object pathologyInputValue = pathologyInput.getSearchObject();
-                    if (pathologyInputValue!=null)
-                    {
+
+                    Object pathologyInputValue = pathologyInput
+                            .getSearchObject();
+                    if (pathologyInputValue != null) {
                         if (Code.class.equals(pathologyInputValue.getClass())) {
-                                filter.setPathologyCode((Code) pathologyInputValue);
-                        } else if (String.class.equals(pathologyInputValue.getClass())) {
+                            filter.setPathologyCode((Code) pathologyInputValue);
+                        } else if (String.class.equals(pathologyInputValue
+                                .getClass())) {
                             filter.setPathology((String) pathologyInputValue);
                         }
                     }
-                    
+
                     Object findingInputValue = findingInput.getSearchObject();
-                    if (findingInputValue!=null)
-                    {
+                    if (findingInputValue != null) {
                         if (Code.class.equals(findingInputValue.getClass())) {
-                                filter.setFindingCode((Code) findingInputValue);
-                        } else if (String.class.equals(findingInputValue.getClass())) {
+                            filter.setFindingCode((Code) findingInputValue);
+                        } else if (String.class.equals(findingInputValue
+                                .getClass())) {
                             filter.setFinding((String) findingInputValue);
                         }
                     }
-                    
-                    Object diagnosisInputValue = diagnosisInput.getSearchObject();
-                    if (diagnosisInputValue!=null)
-                    {
+
+                    Object diagnosisInputValue = diagnosisInput
+                            .getSearchObject();
+                    if (diagnosisInputValue != null) {
                         if (Code.class.equals(diagnosisInputValue.getClass())) {
-                                filter.setDiagnosisCode((Code) diagnosisInputValue);
-                        } else if (String.class.equals(diagnosisInputValue.getClass())) {
+                            filter.setDiagnosisCode((Code) diagnosisInputValue);
+                        } else if (String.class.equals(diagnosisInputValue
+                                .getClass())) {
                             filter.setDiagnosis((String) diagnosisInputValue);
                         }
                     }
-                    
-                    Object diffDiagnosisInputValue = diffDiagnosisInput.getSearchObject();
-                    if (diffDiagnosisInputValue!=null)
-                    {
-                        if (Code.class.equals(diffDiagnosisInputValue.getClass())) {
-                                filter.setDiffDiagnosisCode((Code) diffDiagnosisInputValue);
-                        } else if (String.class.equals(diffDiagnosisInputValue.getClass())) {
+
+                    Object diffDiagnosisInputValue = diffDiagnosisInput
+                            .getSearchObject();
+                    if (diffDiagnosisInputValue != null) {
+                        if (Code.class.equals(diffDiagnosisInputValue
+                                .getClass())) {
+                            filter.setDiffDiagnosisCode((Code) diffDiagnosisInputValue);
+                        } else if (String.class.equals(diffDiagnosisInputValue
+                                .getClass())) {
                             filter.setDiffDiagnosis((String) diffDiagnosisInputValue);
                         }
                     }
-                    
+
                     filter.setAcquisitionModality(modalityChoice
                             .getModelObject());
                     filter.setPatientSex(patientSexChoice.getModelObject());
@@ -271,10 +280,12 @@ public abstract class TCSearchPanel extends Panel {
                         }
                     }
 
-                    Component toUpdate = doSearch(filter);
+                    Component[] toUpdate = doSearch(filter);
 
                     if (toUpdate != null && target != null) {
-                        target.addComponent(toUpdate);
+                        for (Component c : toUpdate) {
+                            target.addComponent(c);
+                        }
                     }
                 } catch (Throwable t) {
                     log.error("Searching for teaching-files failed!", t);
@@ -316,6 +327,8 @@ public abstract class TCSearchPanel extends Panel {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                PopupCloseables.getInstance().closeAll(target);
+
                 TCQueryFilter filter = (TCQueryFilter) TCSearchPanel.this
                         .getDefaultModelObject();
                 filter.clear();
@@ -334,21 +347,6 @@ public abstract class TCSearchPanel extends Panel {
                 textText.setModelObject(null);
                 optionGroup.setModelObject(null);
 
-                /*
-                 * target.addComponent(keywordInput.getInputComponent());
-                 * target.addComponent(anatomyInput.getInputComponent());
-                 * target.addComponent(pathologyInput.getInputComponent());
-                 * target.addComponent(findingInput.getInputComponent());
-                 * target.addComponent(diagnosisInput.getInputComponent());
-                 * target.addComponent(diffDiagnosisInput.getInputComponent());
-                 * target.addComponent(modalityChoice);
-                 * target.addComponent(levelChoice);
-                 * target.addComponent(patientSexChoice);
-                 * target.addComponent(categoryChoice);
-                 * target.addComponent(diagnosisConfirmedChoice);
-                 * target.addComponent(textText);
-                 * target.addComponent(optionGroup);
-                 */
                 target.addComponent(form);
             }
 
@@ -382,25 +380,47 @@ public abstract class TCSearchPanel extends Panel {
         wmc.add(textText);
         wmc.add(resetBtn);
 
-        AjaxCheckBox advancedOptionsChkBox = new AjaxCheckBox(
-                "advancedOptionsToggle", new PropertyModel<Boolean>(wmc,
-                        "visible")) {
-
+        final MarkupContainer advancedOptionsToggleLink = new AjaxFallbackLink<String>(
+                "advancedOptionsToggle") {
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onUpdate(AjaxRequestTarget target) {
+            public void onClick(AjaxRequestTarget target) {
+                showAdvancedOptions = !showAdvancedOptions;
+
+                wmc.setVisible(showAdvancedOptions);
+
                 target.addComponent(wmc);
+                target.addComponent(this);
             }
-        };
+        }.add(new Label("advancedOptionsToggleText",
+                new AbstractReadOnlyModel<String>() {
+                    @Override
+                    public String getObject() {
+                        return showAdvancedOptions ? getString("tc.search.advancedOptions.hide.Text")
+                                : getString("tc.search.advancedOptions.show.Text");
+                    }
+                })).add(
+                (new Image("advancedOptionsToggleImg",
+                        new AbstractReadOnlyModel<ResourceReference>() {
+                            private static final long serialVersionUID = 1L;
+
+                            @Override
+                            public ResourceReference getObject() {
+                                return showAdvancedOptions ? ImageManager.IMAGE_COMMON_COLLAPSE
+                                        : ImageManager.IMAGE_COMMON_EXPAND;
+                            }
+                        })).add(new ImageSizeBehaviour()));
+        advancedOptionsToggleLink.setOutputMarkupId(true);
 
         final Form<?> form = new Form<Object>("searchForm");
         form.add(keywordInput.getInputComponent());
-        form.add(advancedOptionsChkBox);
         form.add(wmc);
         form.add(searchBtn);
         form.setDefaultButton(searchBtn);
         form.setOutputMarkupPlaceholderTag(true);
+
+        form.add(advancedOptionsToggleLink);
 
         add(form);
 
@@ -427,7 +447,7 @@ public abstract class TCSearchPanel extends Panel {
                 })).add(new ImageSizeBehaviour())));
     }
 
-    protected abstract Component doSearch(TCQueryFilter filter);
+    protected abstract Component[] doSearch(TCQueryFilter filter);
 
     private static <T extends Enum<T>> DropDownChoice<T> createEnumDropDownChoice(
             final String id, IModel<T> model, List<T> options,
@@ -482,20 +502,16 @@ public abstract class TCSearchPanel extends Panel {
                 @Override
                 public Object getSearchObject() {
                     TCKeyword kw = input.getSelectedKeyword();
-                    if (kw!=null)
-                    {
+                    if (kw != null) {
                         DicomCode code = kw.getCode();
-                        if (kw.isValid() && code!=null)
-                        {
+                        if (kw.isValid() && code != null) {
                             return code.toCode();
-                        }
-                        else
-                        {
+                        } else {
                             String s = kw.getName();
-                            return s != null && s.length()>0 ? s : null;
+                            return s != null && s.length() > 0 ? s : null;
                         }
                     }
-                    
+
                     return null;
                 }
 
