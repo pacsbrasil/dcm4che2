@@ -273,6 +273,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             public boolean isEnabled() {
                 return exportInfo.hasSelection() && isExportInactive();
             }
+
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 getSession().setMetaData(LAST_DESTINATION_AET_ATTRIBUTE, destinationAET);
@@ -350,6 +351,11 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             private static final long serialVersionUID = 1L;
 
             @Override
+            public boolean isEnabled() {
+                return exportInfo.hasSelection() && isExportInactive();
+            }
+
+            @Override
             public void onClick() {
 
                 RequestCycle.get().setRequestTarget(new IRequestTarget() {
@@ -386,53 +392,44 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                             while (iterator.hasNext()) {
                                 Instance instance = iterator.next(); 
                                 for (File file : instance.getFiles()) {
-                                    try {
-                                        java.io.File originalFile = new java.io.File(file.getFileSystem().getDirectoryPath() + 
-                                                "/" + 
-                                                file.getFilePath());
-                                        if (!FileUtils.resolve(originalFile).exists()) { 
-                                            log.error("Dicom file does not exist: " + FileUtils.resolve(originalFile));
-                                            continue;
-                                        }
-                                        DicomInputStream dis = new DicomInputStream(new FileInputStream(FileUtils.resolve(originalFile)));
-                                        dis.setHandler(new StopTagInputHandler(Tag.PixelData));
-                                        DicomObject disObject = dis.readDicomObject();
-                                        DicomObject blobData = instance.getAttributes(false);
-                                        Iterator<DicomElement> blobAttributes = blobData.datasetIterator();
-                                        while (blobAttributes.hasNext()) 
-                                            disObject.add(blobAttributes.next());
-                                        ZipEntry entry = new ZipEntry(originalFile.getPath());
-                                        zos.putNextEntry(entry);                                
-                                        zos.write(dis.getPreamble());
-                                        zos.write("DICM".getBytes());
-                                        DicomOutputStream dos = new DicomOutputStream(zos);
-                                        dos.setAutoFinish(false);
-                                        dos.writeDataset(disObject.fileMetaInfo(), dis.getTransferSyntax().uid());
-                                        dos.writeDataset(disObject, dis.getTransferSyntax().uid());
-                                        dos.flush();
-                                        long disCounter = 0;
-                                        while (dis.available() > 0) {
-                                            disCounter += dis.available();
-                                            byte[] b = new byte[dis.available()];
-                                            dis.read(b);
-                                            zos.write(b);
-                                        }
-                                        zos.closeEntry();
-                                    } catch (ClientAbortException cae) {
-                                        log.warn("Client aborted zip file download: " + cae);
-                                        return;
-                                    } catch (Exception e) {
-                                        log.error("An error occurred while attempting to stream zip file for download: ", e);
+                                    java.io.File originalFile = new java.io.File(file.getFileSystem().getDirectoryPath() + 
+                                            "/" + 
+                                            file.getFilePath());
+                                    if (!FileUtils.resolve(originalFile).exists()) { 
+                                        log.error("Dicom file does not exist: " + FileUtils.resolve(originalFile));
+                                        continue;
                                     }
+                                    DicomInputStream dis = new DicomInputStream(new FileInputStream(FileUtils.resolve(originalFile)));
+                                    dis.setHandler(new StopTagInputHandler(Tag.PixelData));
+                                    DicomObject disObject = dis.readDicomObject();
+                                    DicomObject blobData = instance.getAttributes(false);
+                                    Iterator<DicomElement> blobAttributes = blobData.datasetIterator();
+                                    while (blobAttributes.hasNext()) 
+                                        disObject.add(blobAttributes.next());
+                                    ZipEntry entry = new ZipEntry(originalFile.getPath());
+                                    zos.putNextEntry(entry);                                
+                                    zos.write(dis.getPreamble());
+                                    zos.write("DICM".getBytes());
+                                    DicomOutputStream dos = new DicomOutputStream(zos);
+                                    dos.setAutoFinish(false);
+                                    dos.writeDataset(disObject.fileMetaInfo(), dis.getTransferSyntax().uid());
+                                    dos.writeDataset(disObject, dis.getTransferSyntax().uid());
+                                    dos.flush();
+                                    long disCounter = 0;
+                                    while (dis.available() > 0) {
+                                        disCounter += dis.available();
+                                        byte[] b = new byte[dis.available()];
+                                        dis.read(b);
+                                        zos.write(b);
+                                    }
+                                    zos.closeEntry();
                                 }
                             }
                             zos.close();
                         } catch (ZipException ze) {
                             log.warn("Problem creating zip file: " + ze);
-                            return;
                         } catch (ClientAbortException cae) {
                             log.warn("Client aborted zip file download: " + cae);
-                            return;
                         } catch (Exception e) {
                             log.error("An error occurred while attempting to stream zip file for download: ", e);
                         } finally {
