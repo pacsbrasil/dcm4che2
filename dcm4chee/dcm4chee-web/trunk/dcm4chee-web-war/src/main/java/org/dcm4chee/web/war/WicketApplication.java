@@ -39,7 +39,6 @@
 package org.dcm4chee.web.war;
 
 import javax.security.auth.Subject;
-import javax.security.jacc.PolicyContext;
 
 import org.apache.wicket.Page;
 import org.apache.wicket.Request;
