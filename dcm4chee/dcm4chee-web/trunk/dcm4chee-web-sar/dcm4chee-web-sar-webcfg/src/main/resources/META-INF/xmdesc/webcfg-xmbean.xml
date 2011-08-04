@@ -855,7 +855,7 @@
    <attribute access="read-write"
       getMethod="getIgnoreEditTimeLimitRolename"
       setMethod="setIgnoreEditTimeLimitRolename">
-      <description><![CDATA[Rolename which may ignore the configured edit time limit (tooOldLimit) for dicom objects.
+      <description><![CDATA[Hive Rolename which may ignore the configured edit time limit (tooOldLimit) for dicom objects.
       ]]></description>
       <name>ignoreEditTimeLimitRolename</name>
       <type>java.lang.String</type>
