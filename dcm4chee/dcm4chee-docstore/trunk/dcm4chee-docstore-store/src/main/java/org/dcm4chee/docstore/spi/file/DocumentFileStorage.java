@@ -53,7 +53,6 @@ import java.util.Set;
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
-import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.Availability;
 import org.dcm4chee.docstore.BaseDocument;
 import org.dcm4chee.docstore.DataHandlerVO;
@@ -62,6 +61,9 @@ import org.dcm4chee.docstore.Feature;
 import org.dcm4chee.docstore.spi.BaseDocumentStorage;
 import org.dcm4chee.docstore.util.FileSystemInfo;
 import org.jboss.system.server.ServerConfigLocator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DocumentFileStorage extends BaseDocumentStorage {
 
@@ -81,7 +83,7 @@ public class DocumentFileStorage extends BaseDocumentStorage {
     private long lastCheck;
     private int checkIntervall = 600000;
 
-    private static Logger log = Logger.getLogger( DocumentFileStorage.class.getName() );
+    private static Logger log = LoggerFactory.getLogger( DocumentFileStorage.class );
 
     public DocumentFileStorage() {
         this(STORAGE_TYPE);

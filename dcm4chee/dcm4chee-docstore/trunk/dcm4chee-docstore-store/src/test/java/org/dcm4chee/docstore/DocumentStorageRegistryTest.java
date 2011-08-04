@@ -45,14 +45,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.spi.DocumentStorage;
 import org.dcm4chee.docstore.spi.file.DocumentFileStorage;
 import org.dcm4chee.docstore.test.DocStoreTestBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DocumentStorageRegistryTest extends DocStoreTestBase {
 
-    private static Logger log = Logger.getLogger( DocumentStorageRegistryTest.class );
+    private static Logger log = LoggerFactory.getLogger( DocumentStorageRegistryTest.class );
 
     public DocumentStorageRegistryTest() {
         super();

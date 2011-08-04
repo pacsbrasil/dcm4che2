@@ -35,18 +35,18 @@
     <repository>
       <id>jboss</id>
       <name>jboss Repository</name>
-      <url>http://repository.jboss.com/maven2</url>
+      <url>https://repository.jboss.org/nexus/content/groups/public-jboss/</url>
     </repository>
     <repository>
-      <id>codehause.maven.snapshots</id>
-      <url>http://snapshots.repository.codehaus.org/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>false</enabled>
-      </releases>    
-    </repository>  
+        <id>Maven Central</id>
+        <url>http://repo1.maven.org/maven2</url>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+    </repository>
   </repositories>
 <pluginRepositories>
   <pluginRepository>

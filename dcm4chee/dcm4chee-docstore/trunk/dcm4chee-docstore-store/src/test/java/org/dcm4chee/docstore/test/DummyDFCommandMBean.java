@@ -52,12 +52,13 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.ReflectionException;
 
-import org.apache.log4j.Logger;
 import org.jboss.system.ServiceMBeanSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class DummyDFCommandMBean extends ServiceMBeanSupport implements DynamicMBean {
+public class DummyDFCommandMBean implements DynamicMBean {
 
-    private static Logger log = Logger.getLogger( DummyDFCommandMBean.class );
+    private static Logger log = LoggerFactory.getLogger( DummyDFCommandMBean.class );
     
     private static HashMap<String, Long> freeMap;
     

@@ -46,8 +46,11 @@ import java.util.Set;
 
 import javax.activation.DataHandler;
 
-import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.spi.DocumentStorage;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * 
  * @author franz.willer@gmail.com
@@ -65,7 +68,7 @@ public class DocumentStore {
     private Set<DocumentStorage> retrieveDocStorages = new HashSet<DocumentStorage>();
     private static DocumentStorageRegistry registry;
 
-    private static Logger log = Logger.getLogger( DocumentStore.class.getName() );
+    private static Logger log = LoggerFactory.getLogger( DocumentStore.class );
 
     private DocumentStore(String name, String domain) {
         this.name = name;

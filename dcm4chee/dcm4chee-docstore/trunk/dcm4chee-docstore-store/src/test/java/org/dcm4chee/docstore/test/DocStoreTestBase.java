@@ -49,18 +49,20 @@ import javax.management.ObjectName;
 
 import junit.framework.TestCase;
 
-import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.DocumentStorageRegistry;
 import org.dcm4chee.docstore.DocumentStore;
 import org.dcm4chee.docstore.spi.DocumentStorage;
 import org.dcm4chee.docstore.spi.file.DocumentFileStorage;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DocStoreTestBase extends TestCase{
 
     protected static DocumentStorageRegistry registry;
     protected static DocumentStore docStore;
 
-    private static Logger log = Logger.getLogger( DocStoreTestBase.class );
+    private static Logger log = LoggerFactory.getLogger( DocStoreTestBase.class );
 
     protected DocStoreTestBase() {
         init();

@@ -12,7 +12,6 @@ import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.mail.util.ByteArrayDataSource;
 
-import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.Availability;
 import org.dcm4chee.docstore.BaseDocument;
 import org.dcm4chee.docstore.DataHandlerVO;
@@ -20,6 +19,8 @@ import org.dcm4chee.docstore.DocumentStore;
 import org.dcm4chee.docstore.DocumentStoreNoPoolTest;
 import org.dcm4chee.docstore.spi.BaseDocumentStorage;
 import org.dcm4chee.docstore.spi.DocumentStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import junit.framework.TestCase;
 
@@ -38,7 +39,7 @@ public class TestUtil {
     public static final String MIME_TEXT_XML = "text/xml";
     public static final String MIME_TEXT_HTML = "text/html";
     
-    private static Logger log = Logger.getLogger( DocumentStoreNoPoolTest.class );
+    private static Logger log = LoggerFactory.getLogger( DocumentStoreNoPoolTest.class );
     
     static {
         try {

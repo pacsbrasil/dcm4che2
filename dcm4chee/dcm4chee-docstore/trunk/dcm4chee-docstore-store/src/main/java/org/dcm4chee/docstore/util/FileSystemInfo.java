@@ -48,13 +48,14 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
-import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.Availability;
 import org.jboss.mx.util.MBeanServerLocator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileSystemInfo {
 
-    private static Logger log = Logger.getLogger( FileSystemInfo.class.getName() );
+    private static Logger log = LoggerFactory.getLogger( FileSystemInfo.class );
 
     private static ObjectName dfCmdName;
 

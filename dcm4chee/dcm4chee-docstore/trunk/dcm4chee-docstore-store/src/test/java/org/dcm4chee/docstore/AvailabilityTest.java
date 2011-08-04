@@ -40,9 +40,10 @@ package org.dcm4chee.docstore;
 
 import java.lang.reflect.Field;
 
-import org.apache.log4j.Logger;
-
 import junit.framework.TestCase;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AvailabilityTest extends TestCase {
     private Availability inmemory = Availability.INMEMORY;
@@ -54,7 +55,7 @@ public class AvailabilityTest extends TestCase {
 
     private Field[] fields = Availability.class.getFields();
     
-    private static Logger log = Logger.getLogger( AvailabilityTest.class.getName() );
+    private static Logger log = LoggerFactory.getLogger( AvailabilityTest.class );
     
     public void testHashCode() {
         assertEquals("HashCode of INMEMORY incorrect!", 0, inmemory.hashCode());

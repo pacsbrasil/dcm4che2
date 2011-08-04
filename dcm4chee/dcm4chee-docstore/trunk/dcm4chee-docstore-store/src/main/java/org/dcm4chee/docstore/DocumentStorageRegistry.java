@@ -53,13 +53,14 @@ import javax.activation.DataHandler;
 import javax.imageio.spi.ServiceRegistry;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.spi.DocumentStorage;
 import org.dcm4chee.docstore.spi.DocumentStorageProviderSPI;
 import org.jboss.system.server.ServerConfigLocator;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class DocumentStorageRegistry extends DefaultHandler {
@@ -84,7 +85,7 @@ public class DocumentStorageRegistry extends DefaultHandler {
     private DocumentStorage curStore;
     private StringBuilder initStringSB;
 
-    private static Logger log = Logger.getLogger( DocumentStorageRegistry.class.getName() );
+    private static Logger log = LoggerFactory.getLogger( DocumentStorageRegistry.class );
 
     public DocumentStorageRegistry() {
         init();

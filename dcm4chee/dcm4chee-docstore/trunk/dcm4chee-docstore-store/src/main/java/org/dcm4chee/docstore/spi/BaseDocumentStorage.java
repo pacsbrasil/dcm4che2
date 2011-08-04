@@ -44,11 +44,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.Availability;
 import org.dcm4chee.docstore.BaseDocument;
 import org.dcm4chee.docstore.DocumentStorageListener;
 import org.dcm4chee.docstore.Feature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BaseDocumentStorage implements DocumentStorage {
 
@@ -57,7 +58,7 @@ public abstract class BaseDocumentStorage implements DocumentStorage {
     private String name;
     private HashSet<DocumentStorageListener> listeners = new HashSet<DocumentStorageListener>();
 
-    private static Logger log = Logger.getLogger( BaseDocumentStorage.class.getName() );
+    private static Logger log = LoggerFactory.getLogger( BaseDocumentStorage.class );
     public BaseDocumentStorage() {
     }
 

@@ -6,17 +6,18 @@ import java.util.List;
 
 import javax.activation.DataHandler;
 
-import org.apache.log4j.Logger;
 import org.dcm4chee.docstore.spi.DocumentStorage;
 import org.dcm4chee.docstore.test.DocStoreTestBase;
 import org.dcm4chee.docstore.test.TestUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DocumentStorageListenerTest extends DocStoreTestBase {
 
     private static TestDocumentStorageListener listener;
     private DataHandler dummyDH = new DataHandler(TestUtil.DUMMY_PLAIN_DATA_SOURCE);
     
-    private static Logger log = Logger.getLogger( TestDocumentStorageListener.class );
+    private static Logger log = LoggerFactory.getLogger( TestDocumentStorageListener.class );
     
     public DocumentStorageListenerTest() throws IOException {
         super();
