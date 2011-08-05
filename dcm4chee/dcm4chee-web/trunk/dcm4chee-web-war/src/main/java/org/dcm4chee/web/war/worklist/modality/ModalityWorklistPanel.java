@@ -779,7 +779,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             
             @Override
             public void onClick(AjaxRequestTarget target) {
-// TODO: Sind Sie sicher ?
                 confirm.confirm(target, new ResourceModel("mw.confirmRemove").wrapOnAssignment(this), mwlItemModel);
             }
         };
