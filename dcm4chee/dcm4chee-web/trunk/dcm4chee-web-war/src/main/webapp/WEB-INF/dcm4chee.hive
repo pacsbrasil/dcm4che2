@@ -234,6 +234,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "M
 {
 // KEY: swarm.principal.MWLWrite
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:mw:editMwlItem", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:mw:removeMWLItem", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "ExternalWebApp"

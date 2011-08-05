@@ -56,6 +56,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
@@ -97,6 +98,7 @@ import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.PatientNameField;
 import org.dcm4chee.web.common.markup.SimpleDateTimeField;
+import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.validators.UIDValidator;
@@ -151,6 +153,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
     final MaskingAjaxCallBehavior macb = new MaskingAjaxCallBehavior();
 
+    private ConfirmationWindow<MWLItemModel> confirm;
+    
     public ModalityWorklistPanel(final String id) {
         super(id);
 
@@ -211,6 +215,23 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         add(listPanel);
         listPanel.setOutputMarkupId(true);
         listPanel.add(new MWLItemListView("mwlitems", viewport.getMWLItemModels(), this));
+        
+        confirm = new ConfirmationWindow<MWLItemModel>("confirm") {
+
+            private static final long serialVersionUID = 1L;
+            
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, MWLItemModel mwlItemModel) {
+                ((ModalityWorklistLocal) JNDIUtils.lookup(ModalityWorklistLocal.JNDI_NAME))
+                    .removeMWLItem(mwlItemModel.getPk());
+                ModalityWorklistPanel.this.setOutputMarkupId(true);
+                queryMWLItems(target);
+                target.addComponent(ModalityWorklistPanel.this);
+            }
+        };
+        confirm.setInitialHeight(150);
+        add(confirm);
+
     }
     
     protected ViewPort initViewPort() {
@@ -704,6 +725,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         .add(new ImageSizeBehaviour())
         .add(new TooltipBehaviour("mw.", "detailImg"))))
         .add(new ModalWindowLink("edit", modalWindow, winSize[0], winSize[1]) {
+            
                 private static final long serialVersionUID = 1L;
     
                 @Override
@@ -730,6 +752,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                     modalWindow.show(target);
                     super.onClick(target);
                 }
+                
                 @Override
                 public boolean isVisible() {
                     return mwlItemModel.getPk() != -1;
@@ -740,6 +763,32 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             .add(new TooltipBehaviour("mw.", "editImg")))
             .add(new SecurityBehavior(getModuleName() + ":editMwlItem"))
         );
+
+        final boolean isLinked = 
+            ((ModalityWorklistLocal) JNDIUtils.lookup(ModalityWorklistLocal.JNDI_NAME))
+                .hasMPPS(item.getModelObject().getAccessionNumber());
+
+        AjaxLink<?> removeMWLItem = new AjaxLink<Object>("remove") {
+            
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public boolean isEnabled() {
+                return !isLinked;
+            }
+            
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+// TODO: Sind Sie sicher ?
+                confirm.confirm(target, new ResourceModel("mw.confirmRemove").wrapOnAssignment(this), mwlItemModel);
+            }
+        };
+        removeMWLItem.add(new Image("removeImg", ImageManager.IMAGE_COMMON_REMOVE)
+        .add(new ImageSizeBehaviour()));
+        removeMWLItem.add(!isLinked ? new TooltipBehaviour("mw.") : 
+            new AttributeModifier("title", true, new ResourceModel("mw.remove.isLinked.tooltip")));
+        removeMWLItem.add(new SecurityBehavior(getModuleName() + ":removeMWLItem"));
+        valueContainer.add(removeMWLItem);
     }
 
     private void doSearch(AjaxRequestTarget target) {

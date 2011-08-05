@@ -13,6 +13,7 @@
 		<wicket:panel>
 			<div wicket:id="modal-window" />
 			<div wicket:id="msgWin" />
+            <div wicket:id="confirm" >confirmDelete</div>
 			<form style="clear: both" wicket:id="form">
 				<table rules="groups" class="search-table" style="margin-top: 20px;">
 					<thead>
@@ -174,7 +175,7 @@
 								<th><wicket:message key="mw.content.header.stationAET" /></th>
 								<th><wicket:message key="mw.content.header.stationName" /></th>
 				      		<th><wicket:message key="mw.content.header.accessionNumber" /></th>
-				      		<th colspan="2"></th>
+				      		<th colspan="3"></th>
 				    	</tr>
 					</thead>
 					<tbody align="left" valign="top" >
@@ -200,6 +201,11 @@
 										<img wicket:id="editImg" alt="E" />
 									</a>
 								</td>
+                                <td class="action">
+                                    <a wicket:id="remove" href="#">
+                                        <img wicket:id="removeImg" alt="R" />
+                                    </a>
+                                </td>
 					    	</tr>
 			 			    <tr wicket:id="details" class="patient">
 			 			    	<td class="expand"></td>

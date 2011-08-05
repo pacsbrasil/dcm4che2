@@ -350,4 +350,15 @@ public class ModalityWorklistBean implements ModalityWorklistLocal {
         mwlItem.setAttributes(attrs);
         return mwlItem;
     }
+    
+    public boolean hasMPPS(String accessionNumber) {
+        return ((Number)em.createQuery("SELECT COUNT(*) FROM MPPS mpps WHERE mpps.accessionNumber IS NOT NULL AND mpps.accessionNumber = :accessionNumber")
+        .setParameter("accessionNumber", accessionNumber)
+        .getSingleResult()).intValue() > 0;
+    }
+    
+    public void removeMWLItem(long pk) {
+        MWLItem mwlItem = em.find(MWLItem.class, pk);
+        em.remove(mwlItem);
+    }
 }

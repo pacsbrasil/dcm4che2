@@ -64,4 +64,7 @@ public interface ModalityWorklistLocal {
     public List<String> selectDistinctModalities();
     public List<String> selectDistinctStationAETs();
     public List<String> selectDistinctStationNames();
+    
+    public boolean hasMPPS(String accessionNumber);
+    public void removeMWLItem(long pk);
 }
