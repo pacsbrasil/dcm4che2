@@ -193,8 +193,17 @@ public class Weasis_Launcher extends HttpServlet {
                 boolean onlysopuid = Boolean.valueOf(pacsProperties.getProperty("wado.onlysopuid"));
                 String addparams = pacsProperties.getProperty("wado.addparams", "");
                 String overrideTags = pacsProperties.getProperty("wado.override.tags", null);
+                String httpTags = pacsProperties.getProperty("wado.httpTags", null);
 
                 WadoParameters wado = new WadoParameters(wadoQueriesURL, onlysopuid, addparams, overrideTags, webLogin);
+                if (httpTags != null && !httpTags.trim().equals("")) {
+                    for (String tag : httpTags.split(",")) {
+                        String[] val = tag.split(":");
+                        if (val.length == 2) {
+                            wado.addHttpTag(val[0].trim(), val[1].trim());
+                        }
+                    }
+                }
                 WadoQuery wadoQuery =
                     new WadoQuery(patients, wado, pacsProperties.getProperty("pacs.db.encoding", "utf-8"));
                 ByteArrayOutputStream outStream = new ByteArrayOutputStream();
