@@ -616,7 +616,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
             notSearched = false;
             log.debug("#### queryMWLItems (found "+current.size()+" items) done in "+(System.currentTimeMillis()-t1)+" ms!");
-            addAfterQueryComponents(target);
         } catch (Throwable x) {
             log.error("Query MWL failed!", x);
             if ((x instanceof EJBException) && x.getCause() != null) {
@@ -627,6 +626,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
             msgWin.show(target, new WicketExceptionWithMsgKey("mw.search.msg.queryFailed", x), true);
         }
+        addAfterQueryComponents(target);
     }
     
     private List<DicomObject> queryAET(String aet, ModalityWorklistFilter filter) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
