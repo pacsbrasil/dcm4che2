@@ -781,6 +781,11 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             public void onClick(AjaxRequestTarget target) {
                 confirm.confirm(target, new ResourceModel("mw.confirmRemove").wrapOnAssignment(this), mwlItemModel);
             }
+            
+            @Override
+            public boolean isVisible() {
+                return mwlItemModel.getPk() != -1;
+            }
         };
         removeMWLItem.add(new Image("removeImg", ImageManager.IMAGE_COMMON_REMOVE)
         .add(new ImageSizeBehaviour()));
