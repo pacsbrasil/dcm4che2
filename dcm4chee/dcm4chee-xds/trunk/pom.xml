@@ -56,15 +56,20 @@
     </repository>
     <repository>
       <id>maven2-repository.dev.java.net</id>
-	<name>Java.net Repository for Maven 2</name>
-      <url>http://download.java.net/maven/2</url>
+	  <name>Java.net Repository for Maven 2</name>
+	  <url>http://download.java.net/maven/2</url>
     </repository>
-     <repository>
+    <repository>
+      <id>glassfish-repository.dev.java.net</id>
+	  <name>Java.net Repository for glassfish</name>
+	  <url>http://download.java.net/maven/glassfish</url>
+    </repository>
+    <repository>
        <id>maven-repository.dev.java.net</id>
        <name>Java.net Repository for Maven 1</name>
        <url>http://download.java.net/maven/1/</url>
        <layout>legacy</layout>
-     </repository>
+    </repository>
     <repository>
         <id>Maven Central</id>
         <url>http://repo1.maven.org/maven2</url>
