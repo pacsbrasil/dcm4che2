@@ -402,7 +402,7 @@
    <attribute access="read-write"
       getMethod="getStationAETs"
       setMethod="setStationAETs">
-      <description><![CDATA[List of source AETs.<br/>
+      <description><![CDATA[List of Station AETs.<br/>
       	Format: &lt;AET&gt;[|&lt;AET&gt[|..]]<br/>
       	NONE is used for an empty list. In this case a getStationAETList will trigger updateStationAETs.
       ]]></description>
@@ -426,7 +426,7 @@
    <attribute access="read-write"
       getMethod="getStationNames"
       setMethod="setStationNames">
-      <description><![CDATA[List of source AETs.<br/>
+      <description><![CDATA[List of Station AETs.<br/>
       	Format: &lt;AET&gt;[|&lt;AET&gt[|..]]<br/>
       	NONE is used for an empty list. In this case a getStationNameList will trigger updateStationNames.
       ]]></description>
