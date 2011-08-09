@@ -380,14 +380,14 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                                 if (moveRequest.sopIUIDs != null)
                                     for (String sopIUID : moveRequest.sopIUIDs) 
                                         instances.addAll(dao.getDownloadableInstances(sopIUID, Instance.class));
-                                if (moveRequest.seriesIUIDs != null)
+                                else if (moveRequest.seriesIUIDs != null)
                                     for (String seriesIUID : moveRequest.seriesIUIDs) 
                                         instances.addAll(dao.getDownloadableInstances(seriesIUID, Series.class));
-                                if (moveRequest.studyIUIDs != null)
+                                else if (moveRequest.studyIUIDs != null)
                                     for (String studyIUID : moveRequest.studyIUIDs) 
                                         instances.addAll(dao.getDownloadableInstances(studyIUID, Study.class));
                             }
-
+                            
                             Iterator<Instance> iterator = instances.iterator();
                             while (iterator.hasNext()) {
                                 Instance instance = iterator.next(); 
@@ -618,12 +618,12 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             }
 
             log.debug("Selected for export: Studies of Patient:{} StudyUIDs:{}", pat.getId(), uids);
-            requests.add( new MoveRequest().setStudyMoveRequest(pat.getId(), toArray(uids)));
+            requests.add(new MoveRequest().setStudyMoveRequest(pat.getId(), toArray(uids)));
         }
 
         private void prepareStudyRequests(List<StudyModel> studies) {
             ArrayList<String> uids = new ArrayList<String>();
-            for (StudyModel study : studies ) {
+            for (StudyModel study : studies) {
                 boolean denied = StudyPermissionHelper.get().isUseStudyPermissions()
                 &&  !(dao.findStudyPermissionActions(study.getStudyInstanceUID(), StudyPermissionHelper.get().getDicomRoles())
                                         .contains(StudyPermission.EXPORT_ACTION));

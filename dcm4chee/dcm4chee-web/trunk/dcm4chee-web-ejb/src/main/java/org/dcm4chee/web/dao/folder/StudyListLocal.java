@@ -107,5 +107,5 @@ public interface StudyListLocal {
 
     MPPS updateMPPS(long pk, DicomObject dataset);
     
-    List<Instance> getDownloadableInstances(String uid, Class clazz);
+    List<Instance> getDownloadableInstances(String uid, Class<?> clazz);
 }
