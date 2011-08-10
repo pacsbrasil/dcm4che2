@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.web.maverick;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -92,13 +93,15 @@ public class Dcm4cheeFormController extends Throwaway2
             throws Exception {
         String[] studyIUIDs = new String[studyList.size()];
         int i = 0;
-        for ( Iterator iter = studyList.iterator() ; iter.hasNext() ; i++) {
-            studyIUIDs[i] = ((Dataset) iter.next())
-                    .getString(Tags.StudyInstanceUID);
+        String suid;
+        for ( Iterator iter = studyList.iterator() ; iter.hasNext() ; ) {
+            suid = ((Dataset) iter.next()).getString(Tags.StudyInstanceUID);
+            if (suid != null)
+                studyIUIDs[i++] = suid;
         }
         QueryStudyPermissionCmd cmd = new QueryStudyPermissionCmd();
         cmd.setFetchSize(fetchSize.intValue());
-        return cmd.getGrantedActionsForStudies(studyIUIDs, subject);
+        return cmd.getGrantedActionsForStudies(i > studyIUIDs.length ? studyIUIDs : Arrays.copyOf(studyIUIDs, i), subject);
     }
 
     /**
