@@ -57,6 +57,8 @@ import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.web.service.common.AbstractScheduledScuService;
 import org.dcm4chee.web.service.common.DicomActionOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author franz.willer@gmail.com
@@ -75,6 +77,8 @@ public class AttributesModificationScuService extends AbstractScheduledScuServic
             UID.Dcm4cheAttributesModificationNotificationSOPClass,
             NATIVE_LE_TS, TransferCapability.SCU);
 
+    private static Logger log = LoggerFactory.getLogger(AttributesModificationScuService.class);
+    
     public AttributesModificationScuService() {
         super();
         setTransferCapability(new TransferCapability[]{tcMod});
@@ -132,6 +136,7 @@ public class AttributesModificationScuService extends AbstractScheduledScuServic
     }
 
     private void doScheduleModification(DicomObject obj) throws Exception {
+        log.info("Schedule AttributesModification order! obj:\n"+obj);
         String level = obj.getString(Tag.QueryRetrieveLevel);
         if (level == null)
             throw new IllegalArgumentException("Missing Query/Retrieve Level");
@@ -144,6 +149,11 @@ public class AttributesModificationScuService extends AbstractScheduledScuServic
         } else if ("STUDY".equals(level)) {
             if (!obj.containsValue(Tag.StudyInstanceUID))
                 throw new IllegalArgumentException("Missing Study Instance UID on STUDY level!");
+        } else if ("PATIENT".equals(level)) {
+            if (!obj.containsValue(Tag.PatientID))
+                throw new IllegalArgumentException("Missing Patient ID on PATIENT level!");
+            if (!obj.containsValue(Tag.StudyInstanceUID))
+                throw new IllegalArgumentException("Missing Study Instance UID on PATIENT level!");
         } else {
             throw new IllegalArgumentException("Illegal Query/Retrieve Level: " + level);
         }
