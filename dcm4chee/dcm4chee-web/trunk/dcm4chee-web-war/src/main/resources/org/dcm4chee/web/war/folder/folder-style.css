@@ -8,6 +8,7 @@ div.imageSelectWindow { overflow: hidden; }
 
 table.imageSelect {overflow: hidden; background-color: white; width:100% }
 td.imageSelect {background-color: white; }
+div.msgWindow_header a { color: gray; }
 
 /* PatientName formatting */
 table.search-table .patientField {width:300px;}
