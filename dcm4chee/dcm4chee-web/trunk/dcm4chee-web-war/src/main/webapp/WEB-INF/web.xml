@@ -4,7 +4,6 @@
 	 xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
 	 version="2.4">
 	<display-name>dcm4chee-web</display-name>
-	
 	<filter>
 		<filter-name>wicket.dcm4chee-web</filter-name>
  		<filter-class>org.apache.wicket.protocol.http.WicketFilter</filter-class>
@@ -28,7 +27,7 @@
 	      <param-name>UserAccessServiceName</param-name>
 	      <param-value>dcm4chee.usr:service=UserAccessService</param-value>
 	    </init-param>
-			<init-param>
+        <init-param>
 			<param-name>DicomSecurityService</param-name>
 			<param-value>dcm4chee.archive:service=DicomSecurity</param-value>
  		</init-param>

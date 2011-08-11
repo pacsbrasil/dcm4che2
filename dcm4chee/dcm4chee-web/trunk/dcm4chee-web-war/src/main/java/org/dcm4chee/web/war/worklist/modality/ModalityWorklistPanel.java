@@ -333,6 +333,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         extendedFilter.setOutputMarkupPlaceholderTag(true);
         form.add(extendedFilter);
         
+        searchTableComponents.add(extendedFilter);
         searchTableComponents.add(form.createAjaxParent("searchFooter"));
         
         AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedFilter") {
