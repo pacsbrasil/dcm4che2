@@ -272,6 +272,14 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
 
         return new Code(dataset);
     }
+    
+    
+    private static boolean equals(Code code1, Code code2)
+    {
+        return code1.getCodingSchemeDesignator().equals(code2.getCodingSchemeDesignator()) &&
+            code1.getCodeValue().equals(code2.getCodeValue());
+    }
+    
 
     public static class QueryParam {
         private static final Random random = new Random();
@@ -319,7 +327,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
         public static Level get(Code code) {
             if (code != null) {
                 for (Level level : values()) {
-                    if (code.equals(level.getCode())) {
+                    if (TCQueryFilterValue.equals(code, level.getCode())) {
                         return level;
                     }
                 }
@@ -345,7 +353,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
         public static YesNo get(Code code) {
             if (code != null) {
                 for (YesNo yesNo : values()) {
-                    if (code.equals(yesNo.getCode())) {
+                    if (TCQueryFilterValue.equals(code, yesNo.getCode())) {
                         return yesNo;
                     }
                 }
@@ -426,7 +434,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
         public static Purpose get(Code code) {
             if (code != null) {
                 for (Purpose purpose : values()) {
-                    if (code.equals(purpose.getCode())) {
+                    if (TCQueryFilterValue.equals(code, purpose.getCode())) {
                         return purpose;
                     }
                 }
@@ -457,7 +465,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
         public static Category get(Code code) {
             if (code != null) {
                 for (Category category : values()) {
-                    if (code.equals(category.getCode())) {
+                    if (TCQueryFilterValue.equals(code, category.getCode())) {
                         return category;
                     }
                 }
