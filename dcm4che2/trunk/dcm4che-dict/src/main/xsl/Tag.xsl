@@ -115,8 +115,9 @@ public class <xsl:value-of select="$class"/> {
         <xsl:value-of select="@vm"/>
         <xsl:text> </xsl:text>
         <xsl:value-of select="text()"/>
-        <xsl:text> </xsl:text>
-        <xsl:value-of select="@ret"/>
+        <xsl:if test="@retired='true'">
+            <xsl:text> (retired)</xsl:text>
+        </xsl:if>
         <xsl:text> */
     public static final int </xsl:text>
         <xsl:value-of select="@keyword"/>

@@ -144,7 +144,7 @@ public class UIDDictionary implements Serializable {
         public void startElement(String uri, String localName, String qName,
                 Attributes attributes) {
             if ("uid".equals(qName)) {
-                uid = attributes.getValue("value");
+                uid = attributes.getValue("uid");
             }
         }
 

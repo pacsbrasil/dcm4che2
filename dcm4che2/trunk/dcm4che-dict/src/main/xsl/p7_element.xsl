@@ -1,37 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"
-    xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
-    xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
-    exclude-result-prefixes="office table">
-    <xsl:output method="xml" indent="yes"/>
-    <xsl:template match="/">
-        <xsl:apply-templates
-            select="office:document-content/office:body/office:text/table:table[position()=last()-1]/table:table-row[position()!=1]"/>
-        <xsl:apply-templates
-            select="office:document-content/office:body/office:text/table:table[position()=last()]/table:table-row[position()!=1]">
-            <xsl:with-param name="ret">RET</xsl:with-param>
-        </xsl:apply-templates>
-    </xsl:template>
-    <xsl:template match="table:table-row">
-        <xsl:param name="ret"/>
-        <xsl:variable name="tag" select="normalize-space(table:table-cell[3])"/>
-        <element>
-            <xsl:attribute name="tag">
-                <xsl:value-of select="translate($tag,'(,)','')"/>
-            </xsl:attribute>
-            <xsl:attribute name="keyword">
-                <xsl:value-of select="normalize-space(table:table-cell[2])"/>
-            </xsl:attribute>
-            <xsl:attribute name="vr">
-                <xsl:value-of select="normalize-space(table:table-cell[4])"/>
-            </xsl:attribute>
-            <xsl:attribute name="vm">
-                <xsl:value-of select="normalize-space(table:table-cell[5])"/>
-            </xsl:attribute>
-            <xsl:attribute name="ret">
-                <xsl:value-of select="$ret"/>
-            </xsl:attribute>
-            <xsl:value-of select="normalize-space(table:table-cell[1])"/>
-        </element>
-    </xsl:template>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+   <xsl:output method="xml" indent="yes" />
+   <xsl:template match="/article">
+      <xsl:apply-templates select="//row[starts-with(entry[1]/para,'(0')]">
+         <xsl:sort select="entry[1]/para" />
+      </xsl:apply-templates>
+   </xsl:template>
+   <xsl:template match="row">
+      <xsl:variable name="tag">
+         <xsl:value-of select="substring(entry[1]/para,2,4)" />
+         <xsl:value-of select="substring(entry[1]/para,7,4)" />
+      </xsl:variable>
+      <xsl:variable name="name" select="normalize-space(entry[2]/para)" />
+      <xsl:variable name="keyword" select="entry[3]/para" />
+      <xsl:variable name="vr" select="entry[4]/para" />
+      <xsl:variable name="vm" select="entry[5]/para" />
+      <element tag="{$tag}" keyword="{$keyword}" vr="{$vr}" vm="{$vm}">
+          <xsl:if test="not(entry[6])">
+             <xsl:attribute name="retired">true</xsl:attribute>
+          </xsl:if>
+          <xsl:value-of select="$name"/>
+      </element>
+   </xsl:template>
 </xsl:stylesheet>

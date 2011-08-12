@@ -78,12 +78,12 @@ public class </xsl:text>
         <xsl:text>    /** </xsl:text>
         <xsl:value-of select="text()"/>
         <xsl:text> - </xsl:text>
-        <xsl:value-of select="@type"/>        
+        <xsl:value-of select="@type"/>
         <xsl:text> */
     public static final String </xsl:text>
-        <xsl:value-of select="@alias"/>
+        <xsl:value-of select="@keyword"/>
         <xsl:text> = "</xsl:text>
-        <xsl:value-of select="@value"/>
+        <xsl:value-of select="@uid"/>
         <xsl:text>";
 
 </xsl:text>

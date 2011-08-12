@@ -462,7 +462,7 @@ public class BasicApplicationProfile implements ApplicationProfile {
             }
             break;            
         case 797116269:
-            if (UID._12leadECGWaveformStorage.equals(cuid)) {
+            if (UID.TwelveLeadECGWaveformStorage.equals(cuid)) {
                 return makeWaveformDirectoryRecord(dcmobj, fileIDs);
             }
             break;

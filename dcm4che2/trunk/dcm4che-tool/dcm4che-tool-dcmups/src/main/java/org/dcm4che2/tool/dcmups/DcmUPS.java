@@ -167,8 +167,8 @@ public class DcmUPS {
         Tag.MedicalAlerts,
         Tag.PregnancyStatus,
         Tag.SpecialNeeds,
-        Tag.UnifiedProcedureStepState,
-        Tag.UnifiedProcedureStepProgressInformationSequence,
+        Tag.ProcedureStepState,
+        Tag.ProcedureStepProgressInformationSequence,
         Tag.UnifiedProcedureStepPerformedProcedureSequence,
     };
     private enum Operation {
@@ -513,7 +513,7 @@ public class DcmUPS {
     }
 
     public void setState(String state) {
-        attrs.putString(Tag.UnifiedProcedureStepState, VR.CS, state);
+        attrs.putString(Tag.ProcedureStepState, VR.CS, state);
     }
 
     public void addMatchingKey(int[] tagPath, String value) {
@@ -641,7 +641,7 @@ public class DcmUPS {
                UIDDictionary.getDictionary().prompt(cuid), attrs);
         assoc.naction(cuid, UID.UnifiedProcedureStepPushSOPClass, 
                 iuid != null ? iuid 
-                             : UID.UnifiedWorklistandProcedureStepSOPInstance,
+                             : UID.UnifiedWorklistAndProcedureStepSOPInstance,
                 3, attrs, tsuid, rspHandler);
     }
 
@@ -651,7 +651,7 @@ public class DcmUPS {
                UIDDictionary.getDictionary().prompt(cuid), attrs);
         assoc.naction(cuid, UID.UnifiedProcedureStepPushSOPClass,
                 iuid != null ? iuid 
-                        : UID.UnifiedWorklistandProcedureStepSOPInstance,
+                        : UID.UnifiedWorklistAndProcedureStepSOPInstance,
                 4, attrs, tsuid, rspHandler);
     }
 
@@ -660,7 +660,7 @@ public class DcmUPS {
         LOG.info("Send N-ACTION Request using {}:\n{}",
                UIDDictionary.getDictionary().prompt(cuid), attrs);
         assoc.naction(cuid, UID.UnifiedProcedureStepPushSOPClass,
-                UID.UnifiedWorklistandProcedureStepSOPInstance, 5,
+                UID.UnifiedWorklistAndProcedureStepSOPInstance, 5,
                 attrs, tsuid, rspHandler);
     }
 
