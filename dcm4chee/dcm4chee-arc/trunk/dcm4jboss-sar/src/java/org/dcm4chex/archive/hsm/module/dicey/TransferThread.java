@@ -16,6 +16,10 @@ public class TransferThread extends Thread {
     public long lengthInBytes;
     public long chunckSizeInBytes;
     public boolean verbose;
+    volatile FileChannel outputChannel;
+    volatile FileChannel inputChannel;
+    volatile boolean stop = false;
+
     private static final Logger log = Logger.getLogger(TransferThread.class);
 
     public TransferThread(File inFile, File outFile, long length, int i) {
@@ -33,22 +37,22 @@ public class TransferThread extends Thread {
             try {
                 fileInputStream = new FileInputStream(source);
             } catch (FileNotFoundException e) {
-                log.error("Source file not found:"+source);
-                throw e;
+                e.printStackTrace();
+                throw new IOException("Opening input Stream Failed");
             }
             try {
                 fileOutputStream = new FileOutputStream(destination);
-            } catch (FileNotFoundException e) {
-                log.error("Opening destination file failed:"+destination);
-                throw e;
+            } catch (FileNotFoundException e1) {
+                e1.printStackTrace();
+                throw new IOException("Opening output Stream Failed");
             }
             log.debug("Opening channels");
-            FileChannel inputChannel = fileInputStream.getChannel();
-            FileChannel outputChannel = fileOutputStream.getChannel();
+            inputChannel = fileInputStream.getChannel();
+            outputChannel = fileOutputStream.getChannel();
             long overallBytesTransfered = 0L;
 
             try {
-                while (overallBytesTransfered < lengthInBytes) {
+                while ( stop == false ) {
                     long bytesToTransfer = Math.min(chunckSizeInBytes,
                             lengthInBytes - overallBytesTransfered);
                     long bytesTransfered = 0;
@@ -58,14 +62,16 @@ public class TransferThread extends Thread {
                                 overallBytesTransfered, bytesToTransfer,
                                 outputChannel);
                     } catch (IOException e) {
-                        log.error("Copy of chunks Failed");
-                        throw e;
+                        e.printStackTrace();
+                        throw new IOException("Copy of chunks Failed");
                     }
                     overallBytesTransfered += bytesTransfered;
+                    if (overallBytesTransfered == lengthInBytes) stop=true;
                 }
+
             } catch (IOException e) {
-                log.error("Copy Failed");
-                throw e;
+                e.printStackTrace();
+                throw new IOException("Copy Failed");
 
             } finally {
                 fileInputStream.close();
@@ -74,7 +80,7 @@ public class TransferThread extends Thread {
                 outputChannel.close();
             }
         } catch (IOException e) {
-            log.error("IOException:"+e.getMessage(), e);
+            e.printStackTrace();
         } finally {
             interrupt();
         }
