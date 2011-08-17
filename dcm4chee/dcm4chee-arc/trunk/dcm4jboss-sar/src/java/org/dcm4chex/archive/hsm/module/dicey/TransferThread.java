@@ -37,14 +37,14 @@ public class TransferThread extends Thread {
             try {
                 fileInputStream = new FileInputStream(source);
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                throw new IOException("Opening input Stream Failed");
+                log.error("Opening input Stream Failed");
+                throw e;
             }
             try {
                 fileOutputStream = new FileOutputStream(destination);
             } catch (FileNotFoundException e1) {
-                e1.printStackTrace();
-                throw new IOException("Opening output Stream Failed");
+                log.error("Opening output Stream Failed");
+                throw e1;
             }
             log.debug("Opening channels");
             inputChannel = fileInputStream.getChannel();
@@ -62,16 +62,16 @@ public class TransferThread extends Thread {
                                 overallBytesTransfered, bytesToTransfer,
                                 outputChannel);
                     } catch (IOException e) {
-                        e.printStackTrace();
-                        throw new IOException("Copy of chunks Failed");
+                        log.error("Opening output Stream Failed");
+                        throw e;
                     }
                     overallBytesTransfered += bytesTransfered;
                     if (overallBytesTransfered == lengthInBytes) stop=true;
                 }
 
             } catch (IOException e) {
-                e.printStackTrace();
-                throw new IOException("Copy Failed");
+                log.error("Copy failed");
+                throw e;
 
             } finally {
                 fileInputStream.close();
@@ -80,7 +80,7 @@ public class TransferThread extends Thread {
                 outputChannel.close();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Stacktrace:", e);
         } finally {
             interrupt();
         }
