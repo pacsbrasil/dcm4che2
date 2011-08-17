@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 public class TransferThread extends Thread {
     public File source;
     public File destination;
-    public long lengthInBytes;
+    private long lengthInBytes;
     public long chunckSizeInBytes;
     public boolean verbose;
     volatile FileChannel outputChannel;
@@ -22,10 +22,9 @@ public class TransferThread extends Thread {
 
     private static final Logger log = Logger.getLogger(TransferThread.class);
 
-    public TransferThread(File inFile, File outFile, long length, int i) {
+    public TransferThread(File inFile, File outFile, int i) {
         this.source = inFile;
         this.destination = outFile;
-        this.lengthInBytes = length;
         this.chunckSizeInBytes = i;
     }
 
@@ -33,6 +32,7 @@ public class TransferThread extends Thread {
         log.debug("Opening streams");
         FileInputStream fileInputStream = null;
         FileOutputStream fileOutputStream = null;
+        this.lengthInBytes = source.length();
         try {
             try {
                 fileInputStream = new FileInputStream(source);

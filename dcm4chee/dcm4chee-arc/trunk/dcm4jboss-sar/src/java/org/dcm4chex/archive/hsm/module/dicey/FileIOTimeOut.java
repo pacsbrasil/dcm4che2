@@ -6,22 +6,21 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.hsm.module.dicey.FileIOTimeOut;
+import org.dcm4chex.archive.hsm.module.dicey.TransferThread;
 
 public class FileIOTimeOut {
     private static final Logger log = Logger.getLogger(FileIOTimeOut.class);
+    private static final int KB = 1024;
+    private static final int MB = KB * KB;
 
     public static void copy(File source, File destination, int timeOut)
     throws IOException {
-        int KB = 1024;
-        int MB = KB * KB;
-        String logoutput = "";
+        StringBuilder logoutput = new StringBuilder();
 
         try {
             long t1 = System.currentTimeMillis();
 
-            TransferThread ioThread;
-            ioThread = new TransferThread(source, destination, source.length(),
-                    1024 * 1024 * 4 /* 4 MB chunks */);			
+            TransferThread ioThread = new TransferThread(source, destination, MB * 4);			
             ioThread.start();
             log.debug("Thread started");
             int MAX_SECONDS = timeOut; // Max number of seconds
@@ -57,26 +56,20 @@ public class FileIOTimeOut {
                         throw new IOException("Thread Aborted");
                     }
                 }
-
                 counter++;
             }
 
             long t2 = System.currentTimeMillis();
-            logoutput = "Copied " + source + " -> " + destination + " ";
+            logoutput.append("Copied ").append(source).append(" -> ").append(destination).append(' ');
             totalSize = destination.length();
             if (totalSize > MB) {
-                logoutput = logoutput + (totalSize / MB);
-                logoutput = logoutput + ("MiB");
+                logoutput.append(totalSize / MB).append("MiB");
             } else {
-                logoutput = logoutput + (totalSize / KB);
-                logoutput = logoutput + ("KiB");
+                logoutput.append(totalSize / KB).append("KiB");
             }
-            logoutput = logoutput
-            + (" in " + Float.valueOf((t2 - t1) / 1000f) + " seconds");
-            logoutput = logoutput
-            + (" [" + Float.valueOf(( totalSize / 1024f / 1024f ) / (( t2 - t1  ) / 1000f) ) + "MiB/s]");
-            log.info(logoutput);
-
+            logoutput.append(" in ").append((t2 - t1) / 1000f).append(" seconds")
+            .append(" [").append((totalSize / (float)MB ) / ((t2 - t1) / 1000f)).append("MiB/s]");
+            log.info(logoutput.toString());
         } catch (Exception e) {
             throw new IOException("FileCopy Not successfull",e);
         }
