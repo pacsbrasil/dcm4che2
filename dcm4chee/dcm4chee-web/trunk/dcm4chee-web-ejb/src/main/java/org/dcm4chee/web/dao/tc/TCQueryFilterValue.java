@@ -95,14 +95,13 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
                 sb.append(" AND (concept_name.codingSchemeDesignator = :"
                         + conceptNameDesignatorParam.getKey() + ")");
                 sb.append(")");
-                
-                if (key.supportsCodeValue())
-                {
+
+                if (key.supportsCodeValue()) {
                     QueryParam conceptCodeMeaningParam = new QueryParam(
                             "conceptCodeMeaning", "%" + getValue() + "%");
 
                     sb.append(" OR ");
-                    
+
                     sb.append("EXISTS (");
                     sb.append("FROM ContentItem content_item");
                     sb.append(" INNER JOIN content_item.conceptName concept_name");
@@ -116,12 +115,11 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
                     sb.append(" AND (concept_code.codeMeaning LIKE :"
                             + conceptCodeMeaningParam.getKey() + ")");
                     sb.append(")");
-                    
+
                     return new QueryParam[] { searchStringParam,
                             conceptNameValueParam, conceptNameDesignatorParam,
                             conceptCodeMeaningParam };
                 }
-
 
                 return new QueryParam[] { searchStringParam,
                         conceptNameValueParam, conceptNameDesignatorParam };
@@ -162,9 +160,9 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
                 sb.append(" AND (concept_code.codingSchemeDesignator = :"
                         + conceptCodeDesignatorParam.getKey() + ")");
                 sb.append(")");
-                
+
                 sb.append(" OR ");
-                
+
                 sb.append("EXISTS (");
                 sb.append("FROM ContentItem content_item");
                 sb.append(" INNER JOIN content_item.conceptName concept_name");
@@ -272,14 +270,12 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
 
         return new Code(dataset);
     }
-    
-    
-    private static boolean equals(Code code1, Code code2)
-    {
-        return code1.getCodingSchemeDesignator().equals(code2.getCodingSchemeDesignator()) &&
-            code1.getCodeValue().equals(code2.getCodeValue());
+
+    private static boolean equals(Code code1, Code code2) {
+        return code1.getCodingSchemeDesignator().equals(
+                code2.getCodingSchemeDesignator())
+                && code1.getCodeValue().equals(code2.getCodeValue());
     }
-    
 
     public static class QueryParam {
         private static final Random random = new Random();

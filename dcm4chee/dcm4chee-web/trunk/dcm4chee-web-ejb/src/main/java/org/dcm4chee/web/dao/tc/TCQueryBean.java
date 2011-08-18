@@ -71,25 +71,43 @@ public class TCQueryBean implements TCQueryLocal {
     @PersistenceContext(unitName = "dcm4chee-arc")
     private EntityManager em;
 
-    public int countMatchingInstances(TCQueryFilter filter, List<String> roles) {
+    public int countMatchingInstances(TCQueryFilter filter, List<String> roles,
+            List<String> restrictedSourceAETs) {
         if (roles != null && roles.isEmpty()) {
             return 0;
         }
 
         boolean doStudyPermissionCheck = roles != null;
+        boolean doSourceAETCheck = restrictedSourceAETs != null
+                && !restrictedSourceAETs.isEmpty();
 
         StringBuilder sb = new StringBuilder(64);
         sb.append(" Select COUNT(*) FROM Instance instance");
 
-        if (doStudyPermissionCheck) {
-            sb.append(" LEFT JOIN instance.series series");
-            sb.append(" LEFT JOIN series.study s");
+        if (doStudyPermissionCheck || doSourceAETCheck) {
+            sb.append(" LEFT JOIN FETCH instance.series series");
+
+            if (doStudyPermissionCheck) {
+                sb.append(" LEFT JOIN FETCH series.study s");
+            }
         }
 
         sb.append(" LEFT JOIN FETCH instance.conceptNameCode sr_code");
         sb.append(" WHERE (instance.sopClassUID = '1.2.840.10008.5.1.4.1.1.88.11')");
         sb.append(" AND (sr_code.codeValue = 'TCE006')");
         sb.append(" AND (sr_code.codingSchemeDesignator = 'IHERADTF')");
+
+        if (doSourceAETCheck) {
+            sb.append(" AND (series.sourceAET IN (");
+            for (int i = 0; i < restrictedSourceAETs.size(); i++) {
+                if (i > 0) {
+                    sb.append(",");
+                }
+
+                sb.append("'").append(restrictedSourceAETs.get(i)).append("'");
+            }
+            sb.append("))");
+        }
 
         Set<Entry<TCQueryFilterKey, TCQueryFilterValue<?>>> entries = filter
                 .getEntries();
@@ -138,19 +156,24 @@ public class TCQueryBean implements TCQueryLocal {
 
     @SuppressWarnings("unchecked")
     public List<Instance> findMatchingInstances(TCQueryFilter filter,
-            List<String> roles) {
+            List<String> roles, List<String> restrictedSourceAETs) {
         if (roles != null && roles.isEmpty()) {
             return Collections.emptyList();
         }
 
         boolean doStudyPermissionCheck = roles != null;
+        boolean doSourceAETCheck = restrictedSourceAETs != null
+                && !restrictedSourceAETs.isEmpty();
 
         StringBuilder sb = new StringBuilder(64);
         sb.append(" FROM Instance instance");
 
-        if (doStudyPermissionCheck) {
-            sb.append(" LEFT JOIN instance.series series");
-            sb.append(" LEFT JOIN series.study s");
+        if (doStudyPermissionCheck || doSourceAETCheck) {
+            sb.append(" LEFT JOIN FETCH instance.series series");
+
+            if (doStudyPermissionCheck) {
+                sb.append(" LEFT JOIN FETCH series.study s");
+            }
         }
 
         sb.append(" LEFT JOIN FETCH instance.conceptNameCode sr_code");
@@ -158,6 +181,18 @@ public class TCQueryBean implements TCQueryLocal {
         sb.append(" WHERE (instance.sopClassUID = '1.2.840.10008.5.1.4.1.1.88.11')");
         sb.append(" AND (sr_code.codeValue = 'TCE006')");
         sb.append(" AND (sr_code.codingSchemeDesignator = 'IHERADTF')");
+
+        if (doSourceAETCheck) {
+            sb.append(" AND (series.sourceAET IN (");
+            for (int i = 0; i < restrictedSourceAETs.size(); i++) {
+                if (i > 0) {
+                    sb.append(",");
+                }
+
+                sb.append("'").append(restrictedSourceAETs.get(i)).append("'");
+            }
+            sb.append("))");
+        }
 
         Set<Entry<TCQueryFilterKey, TCQueryFilterValue<?>>> entries = filter
                 .getEntries();
@@ -202,6 +237,7 @@ public class TCQueryBean implements TCQueryLocal {
         }
 
         log.info("Executing teaching-file query: " + query.toString());
+        log.info("Restricted to aets: " + restrictedSourceAETs);
 
         List<Instance> instances = query.getResultList();
 

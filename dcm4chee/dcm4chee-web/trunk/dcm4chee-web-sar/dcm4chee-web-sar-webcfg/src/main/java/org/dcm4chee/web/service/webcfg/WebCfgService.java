@@ -70,14 +70,12 @@ import javax.management.ObjectName;
 import javax.management.timer.TimerNotification;
 
 import org.dcm4che2.data.UID;
-import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.webview.link.spi.WebviewerLinkProviderSPI;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.folder.StudyPermissionsLocal;
 import org.dcm4chee.web.dao.trash.TrashCleanerLocal;
-import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
 import org.dcm4chee.web.service.common.RetryIntervalls;
 import org.jboss.system.ServiceMBeanSupport;
@@ -89,95 +87,142 @@ import org.jboss.system.server.ServerConfigLocator;
  * @version $Revision$ $Date$
  * @since July 26, 2010
  */
-public class WebCfgService extends ServiceMBeanSupport implements NotificationListener, NotificationFilter {
+public class WebCfgService extends ServiceMBeanSupport implements
+        NotificationListener, NotificationFilter {
 
     protected static final long serialVersionUID = 1L;
 
     protected String loginAllowedRolename;
+
     protected boolean manageUsers;
+
     protected String webConfigPath;
-    
-    protected Map<String,int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
-    
+
+    protected Map<String, int[]> windowsizeMap = new LinkedHashMap<String, int[]>();
+
     protected static final String NONE = "NONE";
+
     protected final String NEWLINE = System.getProperty("line.separator", "\n");
+
     private static final String ANY = "ANY";
+
     private static final String DEFAULT_TIMER_SERVICE = "jboss:service=Timer";
-    private static final long ONE_DAY_IN_MILLIS = 60000*60*24;
-    public static final String[] LEVEL_STRINGS = {"Patient", "Study", "PPS", "Series", "Instance"};
-    
+
+    private static final long ONE_DAY_IN_MILLIS = 60000 * 60 * 24;
+
+    public static final String[] LEVEL_STRINGS = { "Patient", "Study", "PPS",
+            "Series", "Instance" };
+
     private String dicomSecurityServletUrl;
-    
+
     private String wadoBaseURL;
+
     private String ridBaseURL;
+
     private List<String> webviewerNames;
-    private Map<String,String> webviewerBaseUrls = new HashMap<String,String>();
-    
+
+    private Map<String, String> webviewerBaseUrls = new HashMap<String, String>();
+
     private ObjectName aeServiceName;
+
     private ObjectName echoServiceName;
+
     private ObjectName moveScuServiceName;
+
     private ObjectName contentEditServiceName;
+
     private ObjectName storeBridgeServiceName;
+
     private ObjectName mppsEmulatorServiceName;
+
     private ObjectName mwlscuServiceName;
+
     private ObjectName tarRetrieveServiceName;
+
     private ObjectName timerServiceName;
-        
+
     private Map<String, String> imageCUIDS = new LinkedHashMap<String, String>();
+
     private Map<String, String> srCUIDS = new LinkedHashMap<String, String>();
+
     private Map<String, String> psCUIDS = new LinkedHashMap<String, String>();
+
     private Map<String, String> waveformCUIDS = new LinkedHashMap<String, String>();
+
     private Map<String, String> videoCUIDS = new LinkedHashMap<String, String>();
+
     private Map<String, String> encapsulatedCUIDS = new LinkedHashMap<String, String>();
 
     private Map<String, List<String>> ridMimeTypes = new LinkedHashMap<String, List<String>>();
 
     private String tcKeywordCataloguesPath;
+
     private Map<String, String> tcKeywordCatalogues = new LinkedHashMap<String, String>();
-    
+
+    private List<String> tcRestrictedSrcAETs = new ArrayList<String>();
+
     private List<String> modalities = new ArrayList<String>();
+
     private List<String> sourceAETs = new ArrayList<String>();
+
     private List<String> stationAETs = new ArrayList<String>();
+
     private List<String> stationNames = new ArrayList<String>();
+
     private boolean autoUpdateModalities;
+
     private boolean autoUpdateSourceAETs;
+
     private boolean autoUpdateStationAETs;
+
     private boolean autoUpdateStationNames;
+
     private Integer autoUpdateTimerId;
 
     private List<Integer> pagesizes = new ArrayList<Integer>();
+
     private int defaultFolderPagesize;
+
     private int defaultMWLPagesize;
-    private boolean queryAfterPagesizeChange; 
-    
+
+    private boolean queryAfterPagesizeChange;
+
     private String mpps2mwlPresetPatientname;
+
     private String mpps2mwlPresetModality;
+
     private String mpps2mwlPresetStartDate;
+
     private boolean mpps2mwlAutoQuery;
-    
+
     private boolean useFamilyAndGivenNameQueryFields;
-    
+
     private String studyPermissionsAllRolename;
+
     private String studyPermissionsOwnRolename;
 
     private boolean manageStudyPermissions;
+
     private boolean useStudyPermissions;
 
     private boolean forcePatientExpandableForPatientQuery;
-    
+
     private String tooOldLimit;
+
     private String ignoreEditTimeLimitRolename;
-    
+
     private String retentionTime;
+
     private String emptyTrashInterval;
+
     private Integer trashCleanerTimerId;
-    
+
     private List<Integer> autoExpandLevelChoices = new ArrayList<Integer>(6);
-    
+
     private int autoWildcard;
-    
+
     private int hasNotificationListener;
-    
+
     public WebCfgService() throws MalformedObjectNameException {
         timerServiceName = new ObjectName(DEFAULT_TIMER_SERVICE);
     }
@@ -187,9 +232,8 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         this.updateAutoUpdateTimer();
         this.configureTrashCleaner();
     }
-    
-    public void setDicomSecurityServletUrl(
-            String dicomSecurityServletUrl) {
+
+    public void setDicomSecurityServletUrl(String dicomSecurityServletUrl) {
         this.dicomSecurityServletUrl = dicomSecurityServletUrl;
     }
 
@@ -204,7 +248,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public void setWadoBaseURL(String wadoBaseURL) {
         this.wadoBaseURL = wadoBaseURL;
     }
-    
+
     public String getRIDBaseURL() {
         return ridBaseURL;
     }
@@ -212,35 +256,37 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public void setRIDBaseURL(String url) {
         this.ridBaseURL = url;
     }
-    
+
     public String getInstalledWebViewer() {
         List<String> l = getInstalledWebViewerNameList();
         if (l == null)
             return "ERROR";
         StringBuilder sb = new StringBuilder();
-        for (int i = 0, len = l.size() ; i < len ; i++) {
+        for (int i = 0, len = l.size(); i < len; i++) {
             sb.append(l.get(i)).append(NEWLINE);
         }
         return sb.toString();
     }
-    
+
     public List<String> getInstalledWebViewerNameList() {
         try {
             ArrayList<String> l = new ArrayList<String>();
-            Iterator<WebviewerLinkProviderSPI> iter = ServiceRegistry.lookupProviders(WebviewerLinkProviderSPI.class);
+            Iterator<WebviewerLinkProviderSPI> iter = ServiceRegistry
+                    .lookupProviders(WebviewerLinkProviderSPI.class);
             while (iter.hasNext()) {
                 l.add(iter.next().getName());
             }
             return l;
         } catch (Throwable t) {
-            log.error("getInstalledWebViewer failed! reason:"+t, t);
+            log.error("getInstalledWebViewer failed! reason:" + t, t);
             return null;
         }
     }
-    
+
     public List<String> getWebviewerNameList() {
         return webviewerNames;
     }
+
     public String getWebviewerNames() {
         return listAsString(webviewerNames, NEWLINE);
     }
@@ -249,9 +295,10 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         this.webviewerNames = stringAsList(names, NEWLINE);
     }
 
-    public Map<String,String> getWebviewerBaseUrlMap() {
+    public Map<String, String> getWebviewerBaseUrlMap() {
         return webviewerBaseUrls;
     }
+
     public String getWebviewerBaseUrls() {
         return mapAsString(webviewerBaseUrls);
     }
@@ -307,27 +354,37 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public void setEncapsulatedCUIDS(String encapsulatedCUIDS) {
         this.encapsulatedCUIDS = parseUIDs(encapsulatedCUIDS);
     }
-    
-    public String getTCKeywordCataloguesPath()
-    {
+
+    public String getTCKeywordCataloguesPath() {
         return tcKeywordCataloguesPath;
     }
-    
-    public void setTCKeywordCataloguesPath(String path)
-    {
+
+    public void setTCKeywordCataloguesPath(String path) {
         tcKeywordCataloguesPath = path;
     }
-    
-    public Map<String,String> getTCKeywordCataloguesMap() {
-        return Collections.unmodifiableMap( tcKeywordCatalogues );
+
+    public Map<String, String> getTCKeywordCataloguesMap() {
+        return Collections.unmodifiableMap(tcKeywordCatalogues);
     }
-    
+
     public String getTCKeywordCatalogues() {
         return keywordCataloguesToString(tcKeywordCatalogues);
     }
-    
+
     public void setTCKeywordCatalogues(String s) {
         this.tcKeywordCatalogues = parseKeywordCatalogues(s);
+    }
+
+    public String getTCRestrictedSourceAETs() {
+        return listAsString(tcRestrictedSrcAETs, "|");
+    }
+
+    public List<String> getTCRestrictedSourceAETList() {
+        return new ArrayList<String>(tcRestrictedSrcAETs);
+    }
+
+    public void setTCRestrictedSourceAETs(String s) {
+        updateList(tcRestrictedSrcAETs, s, "|");
     }
 
     public String getRIDMimeTypes() {
@@ -335,9 +392,12 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             return NONE;
         StringBuilder sb = new StringBuilder();
         Entry<String, List<String>> entry;
-        for ( Iterator<Entry<String, List<String>>> it = ridMimeTypes.entrySet().iterator() ; it.hasNext() ; ) {
+        for (Iterator<Entry<String, List<String>>> it = ridMimeTypes.entrySet()
+                .iterator(); it.hasNext();) {
             entry = it.next();
-            sb.append(entry.getKey()).append(':').append(listAsString(entry.getValue(), "|")).append(NEWLINE);
+            sb.append(entry.getKey()).append(':')
+                    .append(listAsString(entry.getValue(), "|"))
+                    .append(NEWLINE);
         }
         return sb.toString();
     }
@@ -352,13 +412,15 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
                 line = st.nextToken().trim();
                 pos = line.indexOf(':');
                 if (pos == -1)
-                    throw new IllegalArgumentException("Wrong RidCUIDSwithMime format! Missing ':'!");
-                map.put(line.substring(0, pos++), stringAsList(line.substring(pos), "|"));
+                    throw new IllegalArgumentException(
+                            "Wrong RidCUIDSwithMime format! Missing ':'!");
+                map.put(line.substring(0, pos++),
+                        stringAsList(line.substring(pos), "|"));
             }
         }
         this.ridMimeTypes = map;
     }
-    
+
     public List<String> getRIDMimeTypesForCuid(String cuid) {
         if (srCUIDS.containsValue(cuid)) {
             return ridMimeTypes.get("SR");
@@ -380,14 +442,15 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         }
         return new ArrayList<String>(modalities);
     }
-    
+
     public void setModalities(String s) {
         updateList(modalities, s, "|");
     }
-    
+
     public boolean isAutoUpdateModalities() {
         return autoUpdateModalities;
     }
+
     public void setAutoUpdateModalities(boolean b) {
         autoUpdateModalities = b;
         updateAutoUpdateTimer();
@@ -396,22 +459,22 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public String getSourceAETs() {
         return listAsString(sourceAETs, "|");
     }
-    
+
     public List<String> getSourceAETList() {
         if (sourceAETs.isEmpty()) {
             this.updateSourceAETs();
         }
         return new ArrayList<String>(sourceAETs);
     }
-    
+
     public void setSourceAETs(String s) {
         updateList(sourceAETs, s, "|");
     }
-    
+
     public boolean isAutoUpdateSourceAETs() {
         return autoUpdateSourceAETs;
     }
-    
+
     public void setAutoUpdateSourceAETs(boolean b) {
         autoUpdateSourceAETs = b;
         updateAutoUpdateTimer();
@@ -420,22 +483,22 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public String getStationAETs() {
         return listAsString(stationAETs, "|");
     }
-    
+
     public List<String> getStationAETList() {
         if (stationAETs.isEmpty()) {
             this.updateStationAETs();
         }
         return new ArrayList<String>(stationAETs);
     }
-    
+
     public void setStationAETs(String s) {
         updateList(stationAETs, s, "|");
     }
-    
+
     public boolean isAutoUpdateStationAETs() {
         return autoUpdateStationAETs;
     }
-    
+
     public void setAutoUpdateStationAETs(boolean b) {
         autoUpdateStationAETs = b;
         updateAutoUpdateTimer();
@@ -444,22 +507,22 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public String getStationNames() {
         return listAsString(stationNames, "|");
     }
-    
+
     public List<String> getStationNameList() {
         if (stationNames.isEmpty()) {
             this.updateStationNames();
         }
         return new ArrayList<String>(stationNames);
     }
-    
+
     public void setStationNames(String s) {
         updateList(stationNames, s, "|");
     }
-    
+
     public boolean isAutoUpdateStationNames() {
         return autoUpdateStationNames;
     }
-    
+
     public void setAutoUpdateStationNames(boolean b) {
         autoUpdateStationNames = b;
         updateAutoUpdateTimer();
@@ -471,7 +534,8 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public void setAutoWildcard(int autoWildcard) {
         if (autoWildcard < 0 || autoWildcard > 2) {
-            throw new IllegalArgumentException("AutoWildcard must be 0, 1 or 2!");
+            throw new IllegalArgumentException(
+                    "AutoWildcard must be 0, 1 or 2!");
         }
         this.autoWildcard = autoWildcard;
     }
@@ -479,9 +543,10 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public List<Integer> getPagesizeList() {
         return pagesizes;
     }
+
     public String getPagesizes() {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0, len = pagesizes.size() ; i < len ; i++ ) {
+        for (int i = 0, len = pagesizes.size(); i < len; i++) {
             sb.append(pagesizes.get(i)).append(NEWLINE);
         }
         return sb.toString();
@@ -505,7 +570,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public void setDefaultFolderPagesize(int size) {
         this.defaultFolderPagesize = size;
         if (!pagesizes.contains(new Integer(size))) {
-            pagesizes.add(0,size);
+            pagesizes.add(0, size);
         }
     }
 
@@ -516,7 +581,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public void setDefaultMWLPagesize(int size) {
         this.defaultMWLPagesize = size;
         if (!pagesizes.contains(new Integer(size))) {
-            pagesizes.add(0,size);
+            pagesizes.add(0, size);
         }
     }
 
@@ -547,13 +612,13 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public String getAutoExpandLevelChoices() {
         StringBuilder sb = new StringBuilder();
         int l;
-        for (int i = 0, len = autoExpandLevelChoices.size() ; i < len ; i++) {
+        for (int i = 0, len = autoExpandLevelChoices.size(); i < len; i++) {
             l = autoExpandLevelChoices.get(i);
             sb.append(l == -1 ? "auto" : LEVEL_STRINGS[l]).append(NEWLINE);
         }
         return sb.toString();
     }
-    
+
     public List<Integer> getAutoExpandLevelChoiceList() {
         return autoExpandLevelChoices;
     }
@@ -567,13 +632,14 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             if ("auto".equals(tk)) {
                 autoExpandLevelChoices.add(-1);
             } else {
-                for (int i = 0; i < LEVEL_STRINGS.length ; i++) {
-                    if (LEVEL_STRINGS[i].equals(tk) ) {
+                for (int i = 0; i < LEVEL_STRINGS.length; i++) {
+                    if (LEVEL_STRINGS[i].equals(tk)) {
                         autoExpandLevelChoices.add(i);
                         continue token;
                     }
                 }
-                throw new IllegalArgumentException("Unknown AutoExpandLevel:"+tk);
+                throw new IllegalArgumentException("Unknown AutoExpandLevel:"
+                        + tk);
             }
         }
         if (autoExpandLevelChoices.isEmpty())
@@ -581,7 +647,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
 
     private String listAsString(List<String> list, String sep) {
-        if (list == null) 
+        if (list == null)
             return ANY;
         if (list.isEmpty())
             return NONE;
@@ -591,6 +657,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         }
         return sb.toString();
     }
+
     private List<String> stringAsList(String s, String sep) {
         if (ANY.equals(s))
             return null;
@@ -598,7 +665,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         updateList(l, s, sep);
         return l;
     }
-    
+
     private void updateList(List<String> list, String s, String sep) {
         list.clear();
         if (!NONE.equals(s)) {
@@ -609,27 +676,29 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         }
     }
 
-    private String mapAsString(Map<String,String> map) {
-        if (map.isEmpty()) 
+    private String mapAsString(Map<String, String> map) {
+        if (map.isEmpty())
             return NONE;
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> e : map.entrySet()) {
-            sb.append(e.getKey()).append(':').append(e.getValue()).append(NEWLINE);
+            sb.append(e.getKey()).append(':').append(e.getValue())
+                    .append(NEWLINE);
         }
         return sb.toString();
     }
-    private Map<String,String> stringAsMap(String s) {
-        Map<String,String> m = new HashMap<String,String>();
+
+    private Map<String, String> stringAsMap(String s) {
+        Map<String, String> m = new HashMap<String, String>();
         if (!NONE.equals(s)) {
             StringTokenizer st = new StringTokenizer(s, "\n\r\t");
             String tk;
             int pos;
-            while(st.hasMoreTokens()) {
+            while (st.hasMoreTokens()) {
                 tk = st.nextToken();
                 pos = tk.indexOf(':');
-                if (pos==-1)
+                if (pos == -1)
                     throw new IllegalArgumentException("Missing ':'");
-                m.put(tk.substring(0,pos++), tk.substring(pos));
+                m.put(tk.substring(0, pos++), tk.substring(pos));
             }
         }
         return m;
@@ -656,19 +725,23 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
 
     public void setMpps2mwlPresetStartDate(String s) {
-        if (!"delete".equals(s) && !s.startsWith("today") &&
-            !s.startsWith("mpps")) {
-            throw new IllegalArgumentException("Preset Start Date must be delete, mpps[(startOffset,endOffset)] or today[((startOffset,endOffset)]! "+s);
+        if (!"delete".equals(s) && !s.startsWith("today")
+                && !s.startsWith("mpps")) {
+            throw new IllegalArgumentException(
+                    "Preset Start Date must be delete, mpps[(startOffset,endOffset)] or today[((startOffset,endOffset)]! "
+                            + s);
         }
         int pos = s.indexOf('(');
         if (pos != -1) {
             try {
                 int pos1 = s.indexOf(',', ++pos);
                 Integer.parseInt(s.substring(pos, pos1));
-                Integer.parseInt(s.substring(++pos1, s.indexOf(')',pos1)));
+                Integer.parseInt(s.substring(++pos1, s.indexOf(')', pos1)));
             } catch (Exception x) {
                 log.info("Illegal Date range extension!", x);
-                throw new IllegalArgumentException("Date range extension must be (startOffset,endOffset):"+s);
+                throw new IllegalArgumentException(
+                        "Date range extension must be (startOffset,endOffset):"
+                                + s);
             }
         }
         mpps2mwlPresetStartDate = s;
@@ -685,6 +758,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public ObjectName getAEServiceName() {
         return aeServiceName;
     }
+
     public void setAEServiceName(ObjectName name) {
         this.aeServiceName = name;
     }
@@ -692,6 +766,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public ObjectName getEchoServiceName() {
         return echoServiceName;
     }
+
     public void setEchoServiceName(ObjectName echoServiceName) {
         this.echoServiceName = echoServiceName;
     }
@@ -743,7 +818,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public void setTarRetrieveServiceName(ObjectName name) {
         this.tarRetrieveServiceName = name;
     }
-    
+
     public int checkCUID(String cuid) {
         if (isInCuids(cuid, imageCUIDS)) {
             return 0;
@@ -760,7 +835,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         }
         return -1;
     }
-    
+
     private boolean isInCuids(String cuid, Map<String, String> cuids) {
         if (cuid == null)
             return false;
@@ -768,7 +843,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             try {
                 cuid = UID.forName(cuid);
             } catch (Throwable t) {
-                log.warn("Unknown UID:" +cuid,t);
+                log.warn("Unknown UID:" + cuid, t);
                 return false;
             }
         }
@@ -785,7 +860,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         }
         return sb.toString();
     }
-    
+
     private static Map<String, String> parseUIDs(String uids) {
         StringTokenizer st = new StringTokenizer(uids, " \t\r\n;");
         String uid, name;
@@ -802,38 +877,31 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         }
         return map;
     }
-    
-    private String keywordCataloguesToString(Map<String, String> map)
-    {
-        if (map==null || map.isEmpty())
-        {
+
+    private String keywordCataloguesToString(Map<String, String> map) {
+        if (map == null || map.isEmpty()) {
             return NONE;
-        }
-        else
-        {
+        } else {
             StringBuilder sbuilder = new StringBuilder();
-            for (Map.Entry<String, String> me : map.entrySet())
-            {
-                sbuilder.append(me.getKey()).append(":").append(me.getValue()).append(NEWLINE);
+            for (Map.Entry<String, String> me : map.entrySet()) {
+                sbuilder.append(me.getKey()).append(":").append(me.getValue())
+                        .append(NEWLINE);
             }
             return sbuilder.toString();
         }
     }
-    
-    
-    private LinkedHashMap<String, String> parseKeywordCatalogues(String s)
-    {
+
+    private LinkedHashMap<String, String> parseKeywordCatalogues(String s) {
         StringTokenizer st = new StringTokenizer(s, "\t\r\n;");
-       
+
         LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
-        
-        while (st.hasMoreTokens())
-        {
+
+        while (st.hasMoreTokens()) {
             String entry = st.nextToken().trim();
-            String[] parts = entry.split( ":" );
-            map.put(parts[0], parts[1] );
+            String[] parts = entry.split(":");
+            map.put(parts[0], parts[1]);
         }
-        
+
         return map;
     }
 
@@ -843,54 +911,64 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
 
     public void updateModalities() {
         log.info("Update Modality List");
-        StudyListLocal dao = (StudyListLocal)
-                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        String mods= listAsString(dao.selectDistinctModalities(), "|");
+        StudyListLocal dao = (StudyListLocal) JNDIUtils
+                .lookup(StudyListLocal.JNDI_NAME);
+        String mods = listAsString(dao.selectDistinctModalities(), "|");
         Attribute attribute = new Attribute("Modalities", mods);
         try {
-            server.setAttribute(getServiceName(), attribute );
+            server.setAttribute(getServiceName(), attribute);
         } catch (Exception x) {
-            log.error("Update Modalities failed! Modality list is only valid for service lifetime: "+mods, x);
+            log.error(
+                    "Update Modalities failed! Modality list is only valid for service lifetime: "
+                            + mods, x);
             this.setModalities(mods);
         }
     }
-    
+
     public void updateSourceAETs() {
         log.info("Update SourceAET List");
-        StudyListLocal dao = (StudyListLocal)
-                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        StudyListLocal dao = (StudyListLocal) JNDIUtils
+                .lookup(StudyListLocal.JNDI_NAME);
         String aets = listAsString(dao.selectDistinctSourceAETs(), "|");
         Attribute attribute = new Attribute("SourceAETs", aets);
         try {
-            server.setAttribute(getServiceName(), attribute );
+            server.setAttribute(getServiceName(), attribute);
         } catch (Exception x) {
-            log.error("Update SourceAETs failed! List of source AETs is only valid for service lifetime: "+aets, x);
+            log.error(
+                    "Update SourceAETs failed! List of source AETs is only valid for service lifetime: "
+                            + aets, x);
             this.setSourceAETs(aets);
         }
     }
-    
+
     public void updateStationAETs() {
         log.info("Update StationAET List");
-        ModalityWorklistLocal dao = (ModalityWorklistLocal) JNDIUtils.lookup(ModalityWorklistLocal.JNDI_NAME);
+        ModalityWorklistLocal dao = (ModalityWorklistLocal) JNDIUtils
+                .lookup(ModalityWorklistLocal.JNDI_NAME);
         String aets = listAsString(dao.selectDistinctStationAETs(), "|");
         Attribute attribute = new Attribute("StationAETs", aets);
         try {
-            server.setAttribute(getServiceName(), attribute );
+            server.setAttribute(getServiceName(), attribute);
         } catch (Exception x) {
-            log.error("Update StationAETs failed! List of Station AETs is only valid for service lifetime: "+aets, x);
+            log.error(
+                    "Update StationAETs failed! List of Station AETs is only valid for service lifetime: "
+                            + aets, x);
             this.setStationAETs(aets);
         }
     }
-    
+
     public void updateStationNames() {
         log.info("Update Station Name List");
-        ModalityWorklistLocal dao = (ModalityWorklistLocal) JNDIUtils.lookup(ModalityWorklistLocal.JNDI_NAME);
+        ModalityWorklistLocal dao = (ModalityWorklistLocal) JNDIUtils
+                .lookup(ModalityWorklistLocal.JNDI_NAME);
         String names = listAsString(dao.selectDistinctStationNames(), "|");
         Attribute attribute = new Attribute("StationNames", names);
         try {
-            server.setAttribute(getServiceName(), attribute );
+            server.setAttribute(getServiceName(), attribute);
         } catch (Exception x) {
-            log.error("Update StationNames failed! List of Station Names is only valid for service lifetime: "+names, x);
+            log.error(
+                    "Update StationNames failed! List of Station Names is only valid for service lifetime: "
+                            + names, x);
             this.setStationNames(names);
         }
     }
@@ -908,38 +986,51 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         if (id.equals(this.autoUpdateTimerId)) {
             new Thread(new Runnable() {
                 public void run() {
-                    if(isAutoUpdateModalities()) updateModalities();
-                    if(isAutoUpdateSourceAETs()) updateSourceAETs();
-                    if(isAutoUpdateStationAETs()) updateStationAETs();
-                    if(isAutoUpdateStationNames()) updateStationNames();
+                    if (isAutoUpdateModalities())
+                        updateModalities();
+                    if (isAutoUpdateSourceAETs())
+                        updateSourceAETs();
+                    if (isAutoUpdateStationAETs())
+                        updateStationAETs();
+                    if (isAutoUpdateStationNames())
+                        updateStationNames();
                 }
             }).start();
-        } else if (id.equals(this.trashCleanerTimerId)) 
+        } else if (id.equals(this.trashCleanerTimerId))
             ((TrashCleanerLocal) JNDIUtils.lookup(TrashCleanerLocal.JNDI_NAME))
-                .clearTrash(new Date(new Date().getTime() - RetryIntervalls.parseIntervalOrNever(retentionTime)));        
+                    .clearTrash(new Date(new Date().getTime()
+                            - RetryIntervalls
+                                    .parseIntervalOrNever(retentionTime)));
     }
 
     public boolean isNotificationEnabled(Notification notification) {
-        if (notification instanceof TimerNotification) 
+        if (notification instanceof TimerNotification)
             return true;
         return false;
     }
 
     private void updateAutoUpdateTimer() {
         try {
-            if (server == null) return;
-            if (autoUpdateModalities || autoUpdateSourceAETs || autoUpdateStationAETs || autoUpdateStationNames) {
+            if (server == null)
+                return;
+            if (autoUpdateModalities || autoUpdateSourceAETs
+                    || autoUpdateStationAETs || autoUpdateStationNames) {
                 if (autoUpdateTimerId == null) {
-                    log.info("Start AutoUpdate Scheduler with period of 24h at 23:59:59");    
-                    autoUpdateTimerId = (Integer) server.invoke(timerServiceName, "addNotification",
-                            new Object[] { "Schedule", "Scheduler Notification", null,
-                            nextMidnight(), new Long(ONE_DAY_IN_MILLIS) },
-                            new String[] {
-                            String.class.getName(), String.class.getName(),
-                            Object.class.getName(), Date.class.getName(),
-                            Long.TYPE.getName() });
+                    log.info("Start AutoUpdate Scheduler with period of 24h at 23:59:59");
+                    autoUpdateTimerId = (Integer) server
+                            .invoke(timerServiceName,
+                                    "addNotification",
+                                    new Object[] { "Schedule",
+                                            "Scheduler Notification", null,
+                                            nextMidnight(),
+                                            new Long(ONE_DAY_IN_MILLIS) },
+                                    new String[] { String.class.getName(),
+                                            String.class.getName(),
+                                            Object.class.getName(),
+                                            Date.class.getName(),
+                                            Long.TYPE.getName() });
                     addNotificationListener();
-                }                
+                }
             } else if (autoUpdateTimerId != null) {
                 removeNotification(autoUpdateTimerId);
                 autoUpdateTimerId = null;
@@ -950,26 +1041,31 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
 
     public void updateDicomRoles() {
-        ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).updateDicomRoles();
+        ((StudyPermissionsLocal) JNDIUtils
+                .lookup(StudyPermissionsLocal.JNDI_NAME)).updateDicomRoles();
     }
 
     private void configureTrashCleaner() {
         try {
-            if (server == null) return;
+            if (server == null)
+                return;
             long timespan = RetryIntervalls.parseIntervalOrNever(retentionTime);
-            long interval = RetryIntervalls.parseIntervalOrNever(emptyTrashInterval);
-            if (timespan > 0L && interval > 0L) { 
+            long interval = RetryIntervalls
+                    .parseIntervalOrNever(emptyTrashInterval);
+            if (timespan > 0L && interval > 0L) {
                 if (trashCleanerTimerId == null) {
                     // TODO: here flies the Exception (NullPointerException)
-                    trashCleanerTimerId = (Integer) server.invoke(timerServiceName, "addNotification",
-                            new Object[] { "TrashCleaner", "TrashCleaner Notification", null,
-                            new Date(), 
-                            interval}, 
-                            new String[] {
-                                String.class.getName(), String.class.getName(),
-                                Object.class.getName(), Date.class.getName(),
-                                Long.TYPE.getName() 
-                            });
+                    trashCleanerTimerId = (Integer) server
+                            .invoke(timerServiceName,
+                                    "addNotification",
+                                    new Object[] { "TrashCleaner",
+                                            "TrashCleaner Notification", null,
+                                            new Date(), interval },
+                                    new String[] { String.class.getName(),
+                                            String.class.getName(),
+                                            Object.class.getName(),
+                                            Date.class.getName(),
+                                            Long.TYPE.getName() });
                     addNotificationListener();
                 }
             } else if (trashCleanerTimerId != null) {
@@ -982,7 +1078,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     }
 
     private void addNotificationListener() throws InstanceNotFoundException {
-        if (hasNotificationListener == 0) 
+        if (hasNotificationListener == 0)
             server.addNotificationListener(timerServiceName, this, this, null);
         hasNotificationListener++;
     }
@@ -993,14 +1089,15 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             log.info("Stop scheduled notification with id " + id);
             if (hasNotificationListener == 0)
                 server.removeNotificationListener(timerServiceName, this);
-            server.invoke(timerServiceName, "removeNotification", new Object[] { id }, 
+            server.invoke(timerServiceName, "removeNotification",
+                    new Object[] { id },
                     new String[] { Integer.class.getName() });
             autoUpdateTimerId = null;
         } catch (Exception e) {
             log.error("operation failed", e);
         }
     }
-    
+
     @Override
     public void stopService() {
         if (autoUpdateTimerId != null)
@@ -1008,7 +1105,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         if (trashCleanerTimerId != null)
             removeNotification(trashCleanerTimerId);
     }
-    
+
     public String getUserMgtUserRole() {
         return System.getProperty("dcm4chee-usr.cfg.userrole", NONE);
     }
@@ -1020,7 +1117,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             System.setProperty("dcm4chee-usr.cfg.userrole", name);
         }
     }
-    
+
     public String getUserMgtAdminRole() {
         return System.getProperty("dcm4chee-usr.cfg.adminrole", NONE);
     }
@@ -1050,7 +1147,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public String getStudyPermissionsOwnRolename() {
         return studyPermissionsOwnRolename;
     }
-    
+
     public void setManageStudyPermissions(boolean manageStudyPermissions) {
         this.manageStudyPermissions = manageStudyPermissions;
     }
@@ -1066,7 +1163,7 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public boolean isUseStudyPermissions() {
         return useStudyPermissions;
     }
-        
+
     public void setLoginAllowedRolename(String loginAllowedRolename) {
         this.loginAllowedRolename = loginAllowedRolename;
     }
@@ -1095,7 +1192,8 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         return ignoreEditTimeLimitRolename;
     }
 
-    public void setIgnoreEditTimeLimitRolename(String ignoreEditTimeLimitRolename) {
+    public void setIgnoreEditTimeLimitRolename(
+            String ignoreEditTimeLimitRolename) {
         this.ignoreEditTimeLimitRolename = ignoreEditTimeLimitRolename;
     }
 
@@ -1128,28 +1226,32 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             System.getProperties().remove("dcm4chee-web3.cfg.path");
         } else {
             String old = System.getProperty("dcm4chee-web3.cfg.path");
-            if (!webConfigPath.endsWith("/")) webConfigPath += "/";
+            if (!webConfigPath.endsWith("/"))
+                webConfigPath += "/";
             System.setProperty("dcm4chee-web3.cfg.path", webConfigPath);
             if (old == null) {
                 initDefaultRolesFile();
             }
         }
     }
-    
+
     protected void initDefaultRolesFile() {
-        String webConfigPath = System.getProperty("dcm4chee-web3.cfg.path", "conf/dcm4chee-web3");
+        String webConfigPath = System.getProperty("dcm4chee-web3.cfg.path",
+                "conf/dcm4chee-web3");
         File mappingFile = new File(webConfigPath + "roles.json");
         if (!mappingFile.isAbsolute())
-            mappingFile = new File(ServerConfigLocator.locate().getServerHomeDir(), mappingFile.getPath());
-        if (mappingFile.exists()) return;
-        log.info("Init default Role Mapping file! mappingFile:"+mappingFile);
+            mappingFile = new File(ServerConfigLocator.locate()
+                    .getServerHomeDir(), mappingFile.getPath());
+        if (mappingFile.exists())
+            return;
+        log.info("Init default Role Mapping file! mappingFile:" + mappingFile);
         if (mappingFile.getParentFile().mkdirs())
-            log.info("M-WRITE dir:" +mappingFile.getParent());
+            log.info("M-WRITE dir:" + mappingFile.getParent());
         FileChannel fos = null;
         InputStream is = null;
         try {
             URL url = getClass().getResource("/META-INF/roles-default.json");
-            log.info("Use default Mapping File content of url:"+url);
+            log.info("Use default Mapping File content of url:" + url);
             is = url.openStream();
             ReadableByteChannel inCh = Channels.newChannel(is);
             fos = new FileOutputStream(mappingFile).getChannel();
@@ -1157,19 +1259,22 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
             while (is.available() > 0)
                 pos += fos.transferFrom(inCh, pos, is.available());
         } catch (Exception e) {
-            log.error("Roles file doesn't exist and the default can't be created!", e);
+            log.error(
+                    "Roles file doesn't exist and the default can't be created!",
+                    e);
         } finally {
             close(is);
             close(fos);
         }
     }
-    
+
     protected void close(Closeable toClose) {
         if (toClose != null) {
             try {
                 toClose.close();
             } catch (IOException ignore) {
-                log.debug("Error closing : "+toClose.getClass().getName(), ignore);
+                log.debug("Error closing : " + toClose.getClass().getName(),
+                        ignore);
             }
         }
     }
@@ -1177,9 +1282,8 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     public String getWindowSizeConfig() {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, int[]> e : windowsizeMap.entrySet()) {
-            sb.append(e.getKey()).append(':').
-            append(e.getValue()[0]).append('x').append(e.getValue()[1]).
-            append(NEWLINE);
+            sb.append(e.getKey()).append(':').append(e.getValue()[0])
+                    .append('x').append(e.getValue()[1]).append(NEWLINE);
         }
         return sb.toString();
     }
@@ -1192,20 +1296,22 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
         while (st.hasMoreTokens()) {
             t = st.nextToken();
             if ((pos = t.indexOf(':')) == -1) {
-                throw new IllegalArgumentException("Format must be:<name>:<width>x<height>! "+t);
+                throw new IllegalArgumentException(
+                        "Format must be:<name>:<width>x<height>! " + t);
             } else {
-                windowsizeMap.put(t.substring(0, pos), parseSize(t.substring(++pos)));
+                windowsizeMap.put(t.substring(0, pos),
+                        parseSize(t.substring(++pos)));
             }
         }
     }
-    
+
     public int[] getWindowSize(String name) {
         int[] size = windowsizeMap.get(name);
-        if (size==null) 
+        if (size == null)
             size = windowsizeMap.get("default");
-        if (size==null) {
+        if (size == null) {
             log.warn("No default window size is configured! use 800x600 as default!");
-            return new int[]{800,600};
+            return new int[] { 800, 600 };
         }
         return size;
     }
@@ -1213,10 +1319,10 @@ public class WebCfgService extends ServiceMBeanSupport implements NotificationLi
     protected int[] parseSize(String s) {
         int pos = s.indexOf('x');
         if (pos == -1)
-            throw new IllegalArgumentException("Windowsize must be <width>x<height>! "+s);
-        return new int[]{Integer.parseInt(s.substring(0,pos).trim()), 
-                Integer.parseInt(s.substring(++pos).trim())};
+            throw new IllegalArgumentException(
+                    "Windowsize must be <width>x<height>! " + s);
+        return new int[] { Integer.parseInt(s.substring(0, pos).trim()),
+                Integer.parseInt(s.substring(++pos).trim()) };
     }
-    
-}
 
+}

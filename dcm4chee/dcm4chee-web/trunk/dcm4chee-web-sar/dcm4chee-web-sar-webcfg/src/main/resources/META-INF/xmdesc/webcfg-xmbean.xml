@@ -614,6 +614,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTCRestrictedSourceAETs"
+      setMethod="setTCRestrictedSourceAETs">
+      <description><![CDATA[List of source AETs for matching teaching-files.<br/>
+        Format: &lt;AET&gt;[|&lt;AET&gt[|..]]<br/>
+        NONE is used for an empty list.
+      ]]></description>
+      <name>TCRestrictedSourceAETs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getTCKeywordCataloguesPath"
       setMethod="setTCKeywordCataloguesPath">
       <description><![CDATA[
@@ -965,6 +978,11 @@
       <description>Get a map of teaching-file field id's to keyword catalogue id's</description>
       <name>getTCKeywordCataloguesMap</name>
       <return-type>java.util.Map</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Get list of matching teaching-file source AETs</description>
+      <name>getTCRestrictedSourceAETList</name>
+      <return-type>java.util.List</return-type>
    </operation>
    <operation impact="ACTION">
       <description><![CDATA[Get List of WebViewer names<br />

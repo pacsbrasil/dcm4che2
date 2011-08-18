@@ -52,7 +52,8 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @author Robert David <robert.david@agfa.com>
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2011-07-12 15:37:33 +0200 (Di, 12 Jul
+ *          2011) $
  * @since Aug 5, 2010
  */
 public class WebCfgDelegate extends BaseCfgDelegate {
@@ -60,11 +61,11 @@ public class WebCfgDelegate extends BaseCfgDelegate {
     protected static WebCfgDelegate singleton;
 
     protected static Logger log = LoggerFactory.getLogger(WebCfgDelegate.class);
-    
+
     protected WebCfgDelegate() {
         init();
     }
-    
+
     public static WebCfgDelegate getInstance() {
         if (singleton == null)
             singleton = new WebCfgDelegate();
@@ -116,11 +117,13 @@ public class WebCfgDelegate extends BaseCfgDelegate {
     }
 
     public String getSourceAetsPropertiesFilename() {
-        return ("NONE".equals(getWebConfigPath()) ? getWebConfigPath() : "") + "source_aets.properties";
+        return ("NONE".equals(getWebConfigPath()) ? getWebConfigPath() : "")
+                + "source_aets.properties";
     }
 
     public String getStationAetsPropertiesFilename() {
-        return ("NONE".equals(getWebConfigPath()) ? getWebConfigPath() : "") + "station_aets.properties";
+        return ("NONE".equals(getWebConfigPath()) ? getWebConfigPath() : "")
+                + "station_aets.properties";
     }
 
     public String getWadoBaseURL() {
@@ -134,14 +137,15 @@ public class WebCfgDelegate extends BaseCfgDelegate {
     @SuppressWarnings("unchecked")
     public List<String> getRIDMimeTypes(String cuid) {
         try {
-            return (List<String>) server.invoke(serviceObjectName, "getRIDMimeTypesForCuid", 
-                    new Object[]{cuid}, new String[]{String.class.getName()});
+            return (List<String>) server.invoke(serviceObjectName,
+                    "getRIDMimeTypesForCuid", new Object[] { cuid },
+                    new String[] { String.class.getName() });
         } catch (Exception x) {
             log.warn("Cant invoke getRIDMimeTypes! Ignored by return null!", x);
             return null;
         }
     }
-    
+
     public List<String> getInstalledWebViewerNameList() {
         return getStringList("getInstalledWebViewerNameList");
     }
@@ -151,209 +155,224 @@ public class WebCfgDelegate extends BaseCfgDelegate {
     }
 
     @SuppressWarnings("unchecked")
-    public Map<String,String> getWebviewerBaseUrlMap() {
+    public Map<String, String> getWebviewerBaseUrlMap() {
         if (server != null) {
             try {
-                return (Map<String,String>) server.invoke(serviceObjectName, "getWebviewerBaseUrlMap", 
-                        new Object[]{}, new String[]{});
+                return (Map<String, String>) server.invoke(serviceObjectName,
+                        "getWebviewerBaseUrlMap", new Object[] {},
+                        new String[] {});
             } catch (Exception x) {
-                log.warn("Cant invoke 'getWebviewerBaseUrlMap'! Return null as default!", x);
+                log.warn(
+                        "Cant invoke 'getWebviewerBaseUrlMap'! Return null as default!",
+                        x);
             }
         }
         return null;
     }
-   
+
     public List<String> getModalityList() {
         List<String> mods = getStringList("getModalityList");
         mods.add(0, "*");
         return mods;
     }
-    
+
     public List<String> getSourceAETList() {
-        return getStringList("getSourceAETList"); 
+        return getStringList("getSourceAETList");
     }
-    
+
     public List<String> getStationAETList() {
-        return getStringList("getStationAETList"); 
+        return getStringList("getStationAETList");
     }
-    
+
     public List<String> getStationNameList() {
         List<String> names = getStringList("getStationNameList");
         names.add(0, "*");
         return names;
     }
-    
+
     public List<Integer> getAutoExpandLevelChoiceList() {
         return getIntegerList("getAutoExpandLevelChoiceList", Arrays.asList(-1));
     }
-    
+
     public int getAutoWildcard() {
         if (server != null) {
             try {
-                return (Integer) server.getAttribute(serviceObjectName, "AutoWildcard"); 
+                return (Integer) server.getAttribute(serviceObjectName,
+                        "AutoWildcard");
             } catch (Exception ignore) {
                 log.debug("Failed to get AutoWildcard attribute!", ignore);
             }
         }
         log.warn("Cant get AutoWildcard attribute! return 1 (only Patient) as default!");
         return 1;
-        
+
     }
-    
+
     @SuppressWarnings("unchecked")
     public List<Integer> getPagesizeList() {
-        if (server == null) return Arrays.asList(10,25,50);
+        if (server == null)
+            return Arrays.asList(10, 25, 50);
         try {
-            return (List<Integer>) server.invoke(serviceObjectName, "getPagesizeList", 
-                    new Object[]{}, new String[]{});
+            return (List<Integer>) server.invoke(serviceObjectName,
+                    "getPagesizeList", new Object[] {}, new String[] {});
         } catch (Exception x) {
-            log.warn("Cant invoke 'getPagesizeList'! Return default list (10,25,50)!", x);
-            return Arrays.asList(10,25,50);
+            log.warn(
+                    "Cant invoke 'getPagesizeList'! Return default list (10,25,50)!",
+                    x);
+            return Arrays.asList(10, 25, 50);
         }
     }
+
     public Integer getDefaultFolderPagesize() {
-        if (server == null) return 10;
+        if (server == null)
+            return 10;
         try {
-            return (Integer) server.getAttribute(serviceObjectName, "DefaultFolderPagesize"); 
+            return (Integer) server.getAttribute(serviceObjectName,
+                    "DefaultFolderPagesize");
         } catch (Exception x) {
-            log.warn("Cant get DefaultFolderPagesize attribute! return 10 as default!", x);
+            log.warn(
+                    "Cant get DefaultFolderPagesize attribute! return 10 as default!",
+                    x);
             return 10;
         }
     }
+
     public Integer getDefaultMWLPagesize() {
-        if (server == null) return 10;
+        if (server == null)
+            return 10;
         try {
-            return (Integer) server.getAttribute(serviceObjectName, "DefaultMWLPagesize"); 
+            return (Integer) server.getAttribute(serviceObjectName,
+                    "DefaultMWLPagesize");
         } catch (Exception x) {
-            log.warn("Cant get DefaultMWLPagesize attribute! return 10 as default!", x);
+            log.warn(
+                    "Cant get DefaultMWLPagesize attribute! return 10 as default!",
+                    x);
             return 10;
         }
     }
+
     public boolean isQueryAfterPagesizeChange() {
-        return getBoolean("QueryAfterPagesizeChange", true); 
+        return getBoolean("QueryAfterPagesizeChange", true);
     }
 
     public boolean useFamilyAndGivenNameQueryFields() {
-        return getBoolean("useFamilyAndGivenNameQueryFields", false); 
+        return getBoolean("useFamilyAndGivenNameQueryFields", false);
     }
 
     public boolean forcePatientExpandableForPatientQuery() {
-        return getBoolean("forcePatientExpandableForPatientQuery", true); 
+        return getBoolean("forcePatientExpandableForPatientQuery", true);
     }
-    
+
     public String getMpps2mwlPresetPatientname() {
         return getString("Mpps2mwlPresetPatientname");
     }
+
     public String getMpps2mwlPresetStartDate() {
         return getString("Mpps2mwlPresetStartDate");
     }
+
     public String getMpps2mwlPresetModality() {
         return getString("Mpps2mwlPresetModality");
     }
+
     public boolean isMpps2mwlAutoQuery() {
-        return getBoolean("Mpps2mwlAutoQuery", true); 
+        return getBoolean("Mpps2mwlAutoQuery", true);
     }
-    
-    public String getTCKeywordCataloguesPath()
-    {
+
+    public String getTCKeywordCataloguesPath() {
         return getString("TCKeywordCataloguesPath");
     }
-    
-    public Map<String, KeywordCatalogue> getTCKeywordCatalogues()
-    {
+
+    public List<String> getTCRestrictedSourceAETList() {
+        return getStringList("getTCRestrictedSourceAETList");
+    }
+
+    public Map<String, KeywordCatalogue> getTCKeywordCatalogues() {
         Map<String, String> map = getStringMap("getTCKeywordCataloguesMap");
-        Map<String, KeywordCatalogue> parsedMap = new HashMap<String, KeywordCatalogue>(map.size());
-        for (Map.Entry<String, String> me : map.entrySet())
-        {
-            try
-            {
-                parsedMap.put(me.getKey(), KeywordCatalogue.create( me.getValue() ));
-            }
-            catch (Exception e)
-            {
-                log.error( "Parsing TC keyword catalogue failed! Skipped...", e );
+        Map<String, KeywordCatalogue> parsedMap = new HashMap<String, KeywordCatalogue>(
+                map.size());
+        for (Map.Entry<String, String> me : map.entrySet()) {
+            try {
+                parsedMap.put(me.getKey(),
+                        KeywordCatalogue.create(me.getValue()));
+            } catch (Exception e) {
+                log.error("Parsing TC keyword catalogue failed! Skipped...", e);
             }
         }
         return parsedMap;
     }
 
     public int checkCUID(String cuid) {
-        if (server == null) return -1;
+        if (server == null)
+            return -1;
         try {
-            return (Integer) server.invoke(serviceObjectName, "checkCUID", 
-                    new Object[]{cuid}, new String[]{String.class.getName()});
+            return (Integer) server.invoke(serviceObjectName, "checkCUID",
+                    new Object[] { cuid },
+                    new String[] { String.class.getName() });
         } catch (Exception x) {
             log.warn("Cant invoke checkCUID! Ignored by return -1!", x);
             return -1;
         }
     }
-    
-    @SuppressWarnings( "unchecked" )
+
+    @SuppressWarnings("unchecked")
     private Map<String, String> getStringMap(String name) {
-        if (server!=null)
-        {
-            try
-            {
-                return (Map<String,String>) server.invoke( serviceObjectName, name, new Object[0], new String[0] );
-            }
-            catch (Exception e)
-            {
+        if (server != null) {
+            try {
+                return (Map<String, String>) server.invoke(serviceObjectName,
+                        name, new Object[0], new String[0]);
+            } catch (Exception e) {
                 log.warn("Can't invoke '" + name + "', returning empty map!", e);
             }
         }
-        
+
         return Collections.emptyMap();
     }
-    
+
     private String noneAsNull(String s) {
         return "NONE".equals(s) ? null : s;
     }
-    
-    public static class KeywordCatalogue
-    {
+
+    public static class KeywordCatalogue {
         private String designator;
+
         private String id;
+
         private String version;
-        
-        private KeywordCatalogue(String designator, String id, String version)
-        {
+
+        private KeywordCatalogue(String designator, String id, String version) {
             this.designator = designator.trim();
             this.id = id.trim();
-            this.version = version!=null ? version.trim() : null;
+            this.version = version != null ? version.trim() : null;
         }
-        
-        public static KeywordCatalogue create(String s) throws Exception
-        {
-            String[] parts = s.split( "," );
-            
-            return new KeywordCatalogue(parts[0], parts[1], parts.length>2 ? parts[2] : null);
+
+        public static KeywordCatalogue create(String s) throws Exception {
+            String[] parts = s.split(",");
+
+            return new KeywordCatalogue(parts[0], parts[1],
+                    parts.length > 2 ? parts[2] : null);
         }
-        
-        public String getDesignator()
-        {
+
+        public String getDesignator() {
             return designator;
         }
-        
-        public String getId()
-        {
+
+        public String getId() {
             return id;
         }
-        
-        public String getVersion()
-        {
+
+        public String getVersion() {
             return version;
         }
-        
+
         @Override
-        public String toString()
-        {
+        public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append(designator);
             sb.append(",");
             sb.append(id);
-            
-            if (version!=null)
-            {
+
+            if (version != null) {
                 sb.append(",");
                 sb.append(version);
             }

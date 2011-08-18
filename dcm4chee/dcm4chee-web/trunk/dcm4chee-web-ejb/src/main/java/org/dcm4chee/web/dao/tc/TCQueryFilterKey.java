@@ -49,36 +49,34 @@ import org.dcm4chee.archive.entity.Code;
  * @since May 05, 2011
  */
 public enum TCQueryFilterKey {
-    Abstract("IHERADTF", "TCE104", "Abstract"), 
-    AcquisitionModality("DCM", "121139", "Modality"), 
-    Anatomy("DCM", "112005","Radiographic Anatomy",true), 
-    AuthorAffiliation("IHERADTF", "TCE102","Affiliation"), 
-    AuthorContact("IHERADTF", "TCE103", "Contact"), 
-    AuthorName("IHERADTF", "TCE101", "Author"), 
-    Category("IHERADTF", "TCE109","Category"), 
-    Diagnosis("IHERADTF", "TCE107", "Diagnosis",true), 
-    DiagnosisConfirmed("IHERADTF", "TCE111", "Diagnosis confirmed"), 
-    DifferentialDiagnosis("DCM", "111023", "Differential Diagnosis/Impression",true), 
-    Discussion("IHERADTF", "TCE106", "Discussion"), 
-    Finding("DCM", "121071","Finding",true), 
-    History("DCM", "121060", "History"), 
-    Keyword("IHERADTF", "TCE105", "Keywords",true), 
-    Level("IHERADTF", "TCE110","Level"), 
-    OrganSystem("IHERADTF", "TCE108", "Organ system"), 
-    Pathology("DCM", "111042", "Pathology",true), 
-    PatientSex("AGFAIMPAXEE", "TF102","Patient Sex"), 
-    PatientSpecies("AGFAIMPAXEE", "TF103","Patient Species"), 
-    BibliographicReference("AGFAIMPAXEE", "TF005","Bibliographic Reference"), 
-    Title("AGFAIMPAXEE", "TF001", "Title");
+    Abstract("IHERADTF", "TCE104", "Abstract"), AcquisitionModality("DCM",
+            "121139", "Modality"), Anatomy("DCM", "112005",
+            "Radiographic Anatomy", true), AuthorAffiliation("IHERADTF",
+            "TCE102", "Affiliation"), AuthorContact("IHERADTF", "TCE103",
+            "Contact"), AuthorName("IHERADTF", "TCE101", "Author"), Category(
+            "IHERADTF", "TCE109", "Category"), Diagnosis("IHERADTF", "TCE107",
+            "Diagnosis", true), DiagnosisConfirmed("IHERADTF", "TCE111",
+            "Diagnosis confirmed"), DifferentialDiagnosis("DCM", "111023",
+            "Differential Diagnosis/Impression", true), Discussion("IHERADTF",
+            "TCE106", "Discussion"), Finding("DCM", "121071", "Finding", true), History(
+            "DCM", "121060", "History"), Keyword("IHERADTF", "TCE105",
+            "Keywords", true), Level("IHERADTF", "TCE110", "Level"), OrganSystem(
+            "IHERADTF", "TCE108", "Organ system"), Pathology("DCM", "111042",
+            "Pathology", true), PatientSex("AGFAIMPAXEE", "TF102",
+            "Patient Sex"), PatientSpecies("AGFAIMPAXEE", "TF103",
+            "Patient Species"), BibliographicReference("AGFAIMPAXEE", "TF005",
+            "Bibliographic Reference"), Title("AGFAIMPAXEE", "TF001", "Title");
 
     private Code code;
+
     private boolean supportsCodeValue;
 
     private TCQueryFilterKey(String designator, String value, String meaning) {
         this(designator, value, meaning, false);
     }
-    
-    private TCQueryFilterKey(String designator, String value, String meaning, boolean supportsCodeValue) {
+
+    private TCQueryFilterKey(String designator, String value, String meaning,
+            boolean supportsCodeValue) {
         this.code = createCode(designator, value, meaning);
         this.supportsCodeValue = supportsCodeValue;
     }
@@ -86,9 +84,8 @@ public enum TCQueryFilterKey {
     public Code getCode() {
         return code;
     }
-    
-    public boolean supportsCodeValue()
-    {
+
+    public boolean supportsCodeValue() {
         return supportsCodeValue;
     }
 

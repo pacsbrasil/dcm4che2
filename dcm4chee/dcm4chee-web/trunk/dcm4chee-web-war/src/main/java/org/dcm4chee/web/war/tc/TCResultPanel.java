@@ -429,7 +429,8 @@ public class TCResultPanel extends Panel {
                         .applyStudyPermissions() ? StudyPermissionHelper.get()
                         .getDicomRoles() : null;
 
-                return dao.findMatchingInstances(filter, roles);
+                return dao.findMatchingInstances(filter, roles, WebCfgDelegate
+                        .getInstance().getTCRestrictedSourceAETList());
             } catch (Exception e) {
                 log.error("TC query failed!", e);
 

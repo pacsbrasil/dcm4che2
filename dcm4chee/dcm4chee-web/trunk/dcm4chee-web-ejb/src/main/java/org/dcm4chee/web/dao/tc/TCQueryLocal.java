@@ -52,9 +52,10 @@ import org.dcm4chee.archive.entity.Instance;
 public interface TCQueryLocal {
     String JNDI_NAME = "dcm4chee-web-ear/TCListBean/local";
 
-    int countMatchingInstances(TCQueryFilter filter, List<String> roles);
+    int countMatchingInstances(TCQueryFilter filter, List<String> roles,
+            List<String> restrictedSourceAETs);
 
     List<Instance> findMatchingInstances(TCQueryFilter filter,
-            List<String> roles);
+            List<String> roles, List<String> restrictedSourceAETs);
 
 }
