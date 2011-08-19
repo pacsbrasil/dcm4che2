@@ -43,6 +43,7 @@ import java.security.Principal;
 import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -108,7 +109,7 @@ public abstract class AbstractViewPort implements Serializable {
             aetChoices.addAll(aetGroup.getAets());
         }
         ArrayList<String> l = new ArrayList<String>(aetChoices);
-        Collections.sort(l);
+        Collections.sort(l, String.CASE_INSENSITIVE_ORDER);
         groupChoices.addAll(l);
         return groupChoices;
     }
