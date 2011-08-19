@@ -134,20 +134,17 @@ public class MoveEntitiesPage extends SecureWebPage {
     
     private AbstractDicomModel destinationModel;
     private HashSet<AbstractDicomModel> modifiedModels = new HashSet<AbstractDicomModel>();
+    private HashSet<AbstractDicomModel> emptySourceParents = new HashSet<AbstractDicomModel>();
     
     private String infoMsgId;
     private StringResourceModel selectedInfoModel;
     
     private ModalWindow window;
     
-    private Model<Boolean> success;
-    
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
 
-    public MoveEntitiesPage(ModalWindow window, SelectedEntities selectedEntities, List<PatientModel> all, Model<Boolean> success) {
+    public MoveEntitiesPage(ModalWindow window, SelectedEntities selectedEntities, List<PatientModel> all) {
         super();
-
-        this.success = success;
         
         if (MoveEntitiesPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(MoveEntitiesPage.BaseCSS));
@@ -490,8 +487,7 @@ public class MoveEntitiesPage extends SecureWebPage {
         
         private Label infoLabel;
         private IndicatingAjaxFallbackLink<?> moveBtn;
-        private AjaxFallbackLink<?> okBtn;
-        private AjaxFallbackLink<?> cancelBtn;
+        private AjaxFallbackLink<?> okBtn, cancelBtn, yesBtn, noBtn;
         
         private IModel<String> infoModel = new AbstractReadOnlyModel<String>() {
             private static final long serialVersionUID = 1L;
@@ -533,15 +529,22 @@ public class MoveEntitiesPage extends SecureWebPage {
                         try {
                             int nrOfMovedInstances = ContentEditDelegate.getInstance().moveEntities(selected);
                             if (nrOfMovedInstances > 0) {
-                                infoMsgId = "move.message.moveDone";
-                                success.setObject(true);
+                                updateModels();
+                                if (emptySourceParents.size() == 0) {
+                                    infoMsgId = "move.message.moveDone";
+                                    okBtn.setVisible(true);
+                                } else {
+                                    infoMsgId = "move.message.removeEmpty";
+                                    yesBtn.setVisible(true);
+                                    noBtn.setVisible(true);
+                                }
                             } else if (nrOfMovedInstances == 0) {
                                 infoMsgId = "move.message.moveNothing";
+                                okBtn.setVisible(true);
                             } else {
                                 infoMsgId = "move.message.moveFailed";
                                 cancelBtn.setVisible(true);
                             }
-                            okBtn.setVisible(true);
                             moveBtn.setVisible(false);
                         } catch (SelectionException x) {
                             log.warn(x.getMessage());
@@ -574,32 +577,6 @@ public class MoveEntitiesPage extends SecureWebPage {
                 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    
-                    selected.clear();
-                    SelectedEntities.deselectAll(allPatients);
-                    if (studyModel == null && seriesModel == null) {
-                        refreshStudyAndSeries(destinationModel);
-                        destinationModel.expand();
-                    } else {
-                        if (studyModel != null) {
-                            studyModel.refresh();
-                            studyModel.expand();
-                            if (seriesModel != null) {//new study && new Series -> only one pps and one series
-                                studyModel.getPPSs().iterator().next().getSeries().iterator().next().expand();
-                            }
-                        } else if (seriesModel != null) {
-                            seriesModel.expand();
-                        }
-                    }
-                    
-                    for (AbstractDicomModel m : modifiedModels) {
-                        if (m.levelOfModel() == AbstractDicomModel.PPS_LEVEL) {
-                            m.getParent().expand();
-                        } else {
-                            m.expand();
-                        }
-                        refreshStudyAndSeries(m);
-                    }
                     window.close(target);
                 }
             };
@@ -623,6 +600,33 @@ public class MoveEntitiesPage extends SecureWebPage {
             .add(new ImageSizeBehaviour("vertical-align: middle;")));
             cancelBtn.add(new TooltipBehaviour("folder.", "cancelBtn"));
             add(cancelBtn.add(new Label("cancelLabel", new ResourceModel("cancelBtn"))).setOutputMarkupId(true));
+            
+            yesBtn = new AjaxFallbackLink<Object>("deleteEmptyBtn") {
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    deleteEmpty();
+                    window.close(target);
+                }
+            };
+            yesBtn.add(new Label("deleteEmptyBtnText", new ResourceModel("yesBtn"))
+                .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle"))));
+            yesBtn.setVisible(false).setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true);
+            add(yesBtn);
+            
+            noBtn = new AjaxFallbackLink<Object>("dontDeleteEmptyBtn") {
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    window.close(target);
+                }
+            };
+            noBtn.add(new Label("dontDeleteEmptyBtnText", new ResourceModel("noBtn"))
+                .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle"))));
+            noBtn.setVisible(false).setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true);
+            add(noBtn);
         }
 
         private void refreshStudyAndSeries(AbstractDicomModel parent) {
@@ -661,7 +665,7 @@ public class MoveEntitiesPage extends SecureWebPage {
             }
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         private StringResourceModel getSelectedInfoModel(String key, SelectedInfo info, String def) {
             if (info == null ) {
                 return new StringResourceModel(key, MoveEntitiesPage.this, null, null, def);
@@ -689,8 +693,100 @@ public class MoveEntitiesPage extends SecureWebPage {
             target.addComponent(okBtn);
             target.addComponent(moveBtn);
             target.addComponent(cancelBtn);
+            target.addComponent(yesBtn);
+            target.addComponent(noBtn);
         }
 
+        private void updateModels() {
+            selected.clear();
+            SelectedEntities.deselectAll(allPatients);
+            if (studyModel == null && seriesModel == null) {
+                refreshStudyAndSeries(destinationModel);
+                destinationModel.expand();
+            } else {
+                if (studyModel != null) {
+                    studyModel.refresh();
+                    studyModel.expand();
+                    if (seriesModel != null) {//new study && new Series -> only one pps and one series
+                        studyModel.getPPSs().iterator().next().getSeries().iterator().next().expand();
+                    }
+                } else if (seriesModel != null) {
+                    seriesModel.expand();
+                }
+            }
+            emptySourceParents.clear();
+            for (AbstractDicomModel m : modifiedModels) {
+                if (m.levelOfModel() == AbstractDicomModel.PPS_LEVEL) {
+                    m.getParent().expand();
+                } else {
+                    m.expand();
+                }
+                refreshStudyAndSeries(m);
+                if (m.isCollapsed()) {
+                    emptySourceParents.add(m);
+                }
+            }
+        }
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        private void deleteEmpty() {
+            log.info("Delete empty entries:"+emptySourceParents);
+            AbstractDicomModel toDel;
+            HashSet[] modelsToDel = new HashSet[4];
+            String[] moveCmds = {"movePatientsToTrash","moveStudiesToTrash",
+                    "moveSeriesOfPpsToTrash","moveSeriesToTrash"};
+            int level;
+            for (AbstractDicomModel m : emptySourceParents) {
+                toDel = m;
+                m = toDel.getParent();
+                log.debug("Model to delete:{}",toDel);
+                while ((m = m.getParent()) != null) {
+                    m.expand();
+                    if (m.getDicomModelsOfNextLevel().size() > 1)
+                        break;
+                    if (m.getDataset() != null) {
+                        log.debug("set parent Model to delete:{}",m);
+                        toDel = m;
+                    } else {
+                        log.debug("Skip parent Model without Dataset:{}",m);
+                    }
+                }
+                level = toDel.levelOfModel();
+                if (modelsToDel[level] == null) {
+                    modelsToDel[level] = new HashSet();
+                }
+                log.debug("add Model to delete for level({}):{}", toDel, level);
+                modelsToDel[level].add(toDel);
+            }
+            for (int i = 0 ; i < modelsToDel.length ; i++) {
+                log.debug("Delete level {} :", i, modelsToDel[i]);
+                if (modelsToDel[i] != null) {
+                    try {
+                        ContentEditDelegate.getInstance()
+                        .moveToTrash(moveCmds[i], toPks(modelsToDel[i]));
+                        if (i==0) {
+                            allPatients.removeAll(modelsToDel[i]);
+                        } else {
+                            for (AbstractDicomModel m : (HashSet<AbstractDicomModel>)modelsToDel[i]) {
+                                if (m.levelOfModel() == AbstractDicomModel.SERIES_LEVEL)
+                                    m.getParent().getParent().expand();
+                                else
+                                    m.getParent().expand();
+                            }
+                        }
+                    } catch (Exception e) {
+                        log.warn("Ignored: Move empty entries to trash failed! cmd:"+moveCmds[i], e);
+                    }
+                }
+            }
+        }
+
+        private long[] toPks(HashSet<AbstractDicomModel> set) {
+            long[] la = new long[set.size()];
+            int i = 0;
+            for (AbstractDicomModel m : set)
+                la[i++] = m.getPk();
+            return la;
+        }
     }
     //used in a PropertyModel
     @SuppressWarnings("unused")
