@@ -70,6 +70,7 @@ import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
+import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
@@ -433,7 +434,19 @@ public class StudyListPage extends Panel {
             public boolean isEnabled() {
                 return !filter.isPatientQuery();
             }            
-        }.add(new UIDValidator(true)));
+        }.add(new UIDValidator(true)).add(new OnChangeAjaxBehavior() {
+            private static final long serialVersionUID = 1L;
+            private boolean stdQuery = true;
+            
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                boolean b = QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
+                if (b != stdQuery) {
+                    target.addComponent(form);
+                    stdQuery = b;
+                }
+            }
+        }));
 
         extendedFilter.add( new Label("seriesInstanceUID.label", new ResourceModel("folder.extendedFilter.seriesInstanceUID.label")));
         extendedFilter.add( new TextField<String>("seriesInstanceUID") {
@@ -443,7 +456,19 @@ public class StudyListPage extends Panel {
             public boolean isEnabled() {
                 return !filter.isPatientQuery() && QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
             }
-        }.add(new UIDValidator(true)));
+        }.add(new UIDValidator(true)).add(new OnChangeAjaxBehavior() {
+            private static final long serialVersionUID = 1L;
+            private boolean stdQuery = true;
+            
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                boolean b = QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID());
+                if (b != stdQuery) {
+                    target.addComponent(form);
+                    stdQuery = b;
+                }
+            }
+        }));
         extendedFilter.add(new CheckBox("exactSeriesIuid"));
         form.add(extendedFilter);
         
