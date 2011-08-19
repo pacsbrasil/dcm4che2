@@ -43,11 +43,11 @@
    <attribute access="read-write"
     getMethod="getReadTimeout"
     setMethod="setReadTimeout">
-    <description>Read TimeOut for file access</description>
+    <description>Read TimeOut for file access [seconds]</description>
     <name>ReadTimeOut</name>
     <type>int</type>
     <descriptors>
-    <value value="30000"/>
+    <value value="30"/>
     </descriptors>
    </attribute>
   
