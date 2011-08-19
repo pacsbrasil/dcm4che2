@@ -21,6 +21,8 @@ public class TransferThread extends Thread {
     volatile boolean stop = false;
 
     private static final Logger log = Logger.getLogger(TransferThread.class);
+    private static final int KB = 1024;
+    private static final int MB = KB * KB;
 
     public TransferThread(File inFile, File outFile, int i) {
         this.source = inFile;
@@ -33,6 +35,7 @@ public class TransferThread extends Thread {
         FileInputStream fileInputStream = null;
         FileOutputStream fileOutputStream = null;
         this.lengthInBytes = source.length();
+        StringBuilder logoutput = new StringBuilder();          
         try {
             try {
                 fileInputStream = new FileInputStream(source);
@@ -52,6 +55,7 @@ public class TransferThread extends Thread {
             long overallBytesTransfered = 0L;
 
             try {
+                long t1 = System.currentTimeMillis();
                 while ( stop == false ) {
                     long bytesToTransfer = Math.min(chunckSizeInBytes,
                             lengthInBytes - overallBytesTransfered);
@@ -66,7 +70,20 @@ public class TransferThread extends Thread {
                         throw e;
                     }
                     overallBytesTransfered += bytesTransfered;
-                    if (overallBytesTransfered == lengthInBytes) stop=true;
+                    if (overallBytesTransfered == lengthInBytes) {
+                        stop = true;
+                        long t2 = System.currentTimeMillis();
+                        logoutput.append("Copied ").append(source)
+                        .append(" -> ").append(destination).append(" ");                                            
+                        if (lengthInBytes > MB) {
+                            logoutput.append(lengthInBytes / MB).append("MiB");
+                        } else {
+                            logoutput.append(lengthInBytes / KB).append("KiB");
+                        }
+                        logoutput.append(" in ").append((t2 - t1) / 1000f).append(" seconds").append(" [")
+                        .append((lengthInBytes / 1024f / 1024f ) / (( t2 - t1  ) / 1000f) ).append("MiB/s]");                        
+                        log.info(logoutput.toString());
+                    }
                 }
 
             } catch (IOException e) {
