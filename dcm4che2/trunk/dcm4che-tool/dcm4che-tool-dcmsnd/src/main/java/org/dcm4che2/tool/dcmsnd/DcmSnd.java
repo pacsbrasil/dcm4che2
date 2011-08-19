@@ -219,6 +219,10 @@ public class DcmSnd extends StorageCommitmentService {
     private String trustStoreURL = "resource:tls/mesa_certs.jks";
     
     private char[] trustStorePassword = SECRET;
+    
+    private int batchSize = 0;
+    
+    private int lastSentFile = 0;
 
     public DcmSnd() {
         this("DCMSND");
@@ -413,7 +417,19 @@ public class DcmSnd extends StorageCommitmentService {
         this.transcoderBufferSize = transcoderBufferSize;
     }
 
-    public final int getNumberOfFilesToSend() {
+	public void setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
+	}
+	
+	public int getBatchSize() {
+		return batchSize;
+	}
+	
+	public int getLastSentFile() {
+		return lastSentFile;
+	}
+
+	public final int getNumberOfFilesToSend() {
         return files.size();
     }
 
@@ -641,6 +657,13 @@ public class DcmSnd extends StorageCommitmentService {
         OptionBuilder.withDescription(
                 "transcoder buffer size in KB, 1KB by default");
         opts.addOption(OptionBuilder.create("bufsize"));
+        
+        OptionBuilder.withArgName("count");
+        OptionBuilder.hasArg();
+        OptionBuilder.withDescription(
+                "Batch size - Number of files to be sent in each batch, " +
+                "where a storage commit is done between batches ");
+        opts.addOption(OptionBuilder.create("batchsize"));
 
         opts.addOption("lowprior", false,
                 "LOW priority of the C-STORE operation, MEDIUM by default");
@@ -783,6 +806,8 @@ public class DcmSnd extends StorageCommitmentService {
             dcmsnd.setTranscoderBufferSize(
                     parseInt(cl.getOptionValue("bufsize"),
                     "illegal argument of option -bufsize", 1, 10000) * KB);
+        if (cl.hasOption("batchsize"))
+        	dcmsnd.setBatchSize(Integer.parseInt(cl.getOptionValue("batchsize")));
         dcmsnd.setPackPDV(!cl.hasOption("pdv1"));
         dcmsnd.setTcpNoDelay(!cl.hasOption("tcpdelay"));
         if (cl.hasOption("async"))
@@ -854,80 +879,82 @@ public class DcmSnd extends StorageCommitmentService {
                         + e.getMessage());
                 System.exit(2);
             }
-        }        
-        try {
-            dcmsnd.start();
-        } catch (Exception e) {
-            System.err.println("ERROR: Failed to start server for receiving " +
-                    "Storage Commitment results:" + e.getMessage());
-            System.exit(2);
         }
-        try {
-            t1 = System.currentTimeMillis();
-            try {
-                dcmsnd.open();
-            } catch (Exception e) {
-                System.err.println("ERROR: Failed to establish association:"
-                        + e.getMessage());
-                System.exit(2);
-            }
-            t2 = System.currentTimeMillis();
-            System.out.println("Connected to " + remoteAE + " in " 
-                    + ((t2 - t1) / 1000F) + "s");
-    
-            t1 = System.currentTimeMillis();
-            dcmsnd.send();
-            t2 = System.currentTimeMillis();
-            prompt(dcmsnd, (t2 - t1) / 1000F);
-            if (dcmsnd.isStorageCommitment()) {
-                t1 = System.currentTimeMillis();
-                if (dcmsnd.commit()) {
-                    t2 = System.currentTimeMillis();
-                    System.out.println("Request Storage Commitment from " 
-                            + remoteAE + " in " + ((t2 - t1) / 1000F) + "s");
-                    System.out.println("Waiting for Storage Commitment Result..");
-                    try {
-                        DicomObject cmtrslt = dcmsnd.waitForStgCmtResult();
-                        t1 = System.currentTimeMillis();
-                        promptStgCmt(cmtrslt, ((t1 - t2) / 1000F));
-                    } catch (InterruptedException e) {
-                        System.err.println("ERROR:" + e.getMessage());
-                    }
-                }
-             }
-            dcmsnd.close();
-            System.out.println("Released connection to " + remoteAE);
-            if (remoteStgCmtAE != null) {
-                t1 = System.currentTimeMillis();
-                try {
-                    dcmsnd.openToStgcmtAE();
-                } catch (Exception e) {
-                    System.err.println("ERROR: Failed to establish association:"
-                            + e.getMessage());
-                    System.exit(2);
-                }
-                t2 = System.currentTimeMillis();
-                System.out.println("Connected to " + remoteStgCmtAE + " in " 
-                        + ((t2 - t1) / 1000F) + "s");
-                t1 = System.currentTimeMillis();
-                if (dcmsnd.commit()) {
-                    t2 = System.currentTimeMillis();
-                    System.out.println("Request Storage Commitment from " 
-                            + remoteStgCmtAE + " in " + ((t2 - t1) / 1000F) + "s");
-                    System.out.println("Waiting for Storage Commitment Result..");
-                    try {
-                        DicomObject cmtrslt = dcmsnd.waitForStgCmtResult();
-                        t1 = System.currentTimeMillis();
-                        promptStgCmt(cmtrslt, ((t1 - t2) / 1000F));
-                    } catch (InterruptedException e) {
-                        System.err.println("ERROR:" + e.getMessage());
-                    }
-                }
-                dcmsnd.close();
-                System.out.println("Released connection to " + remoteStgCmtAE);
-            }
-        } finally {
-            dcmsnd.stop();
+        while( dcmsnd.getLastSentFile() < dcmsnd.getNumberOfFilesToSend() ) {
+	        try {
+	            dcmsnd.start();
+	        } catch (Exception e) {
+	            System.err.println("ERROR: Failed to start server for receiving " +
+	                    "Storage Commitment results:" + e.getMessage());
+	            System.exit(2);
+	        }
+	        try {
+	            t1 = System.currentTimeMillis();
+	            try {
+	                dcmsnd.open();
+	            } catch (Exception e) {
+	                System.err.println("ERROR: Failed to establish association:"
+	                        + e.getMessage());
+	                System.exit(2);
+	            }
+	            t2 = System.currentTimeMillis();
+	            System.out.println("Connected to " + remoteAE + " in " 
+	                    + ((t2 - t1) / 1000F) + "s");
+	    
+	            t1 = System.currentTimeMillis();
+	            dcmsnd.send();
+	            t2 = System.currentTimeMillis();
+	            prompt(dcmsnd, (t2 - t1) / 1000F);
+	            if (dcmsnd.isStorageCommitment()) {
+	                t1 = System.currentTimeMillis();
+	                if (dcmsnd.commit()) {
+	                    t2 = System.currentTimeMillis();
+	                    System.out.println("Request Storage Commitment from " 
+	                            + remoteAE + " in " + ((t2 - t1) / 1000F) + "s");
+	                    System.out.println("Waiting for Storage Commitment Result..");
+	                    try {
+	                        DicomObject cmtrslt = dcmsnd.waitForStgCmtResult();
+	                        t1 = System.currentTimeMillis();
+	                        promptStgCmt(cmtrslt, ((t1 - t2) / 1000F));
+	                    } catch (InterruptedException e) {
+	                        System.err.println("ERROR:" + e.getMessage());
+	                    }
+	                }
+	             }
+	            dcmsnd.close();
+	            System.out.println("Released connection to " + remoteAE);
+	            if (remoteStgCmtAE != null) {
+	                t1 = System.currentTimeMillis();
+	                try {
+	                    dcmsnd.openToStgcmtAE();
+	                } catch (Exception e) {
+	                    System.err.println("ERROR: Failed to establish association:"
+	                            + e.getMessage());
+	                    System.exit(2);
+	                }
+	                t2 = System.currentTimeMillis();
+	                System.out.println("Connected to " + remoteStgCmtAE + " in " 
+	                        + ((t2 - t1) / 1000F) + "s");
+	                t1 = System.currentTimeMillis();
+	                if (dcmsnd.commit()) {
+	                    t2 = System.currentTimeMillis();
+	                    System.out.println("Request Storage Commitment from " 
+	                            + remoteStgCmtAE + " in " + ((t2 - t1) / 1000F) + "s");
+	                    System.out.println("Waiting for Storage Commitment Result..");
+	                    try {
+	                        DicomObject cmtrslt = dcmsnd.waitForStgCmtResult();
+	                        t1 = System.currentTimeMillis();
+	                        promptStgCmt(cmtrslt, ((t1 - t2) / 1000F));
+	                    } catch (InterruptedException e) {
+	                        System.err.println("ERROR:" + e.getMessage());
+	                    }
+	                }
+	                dcmsnd.close();
+	                System.out.println("Released connection to " + remoteStgCmtAE);
+	            }
+	        } finally {
+	            dcmsnd.stop();
+	        }
         }
     }
 
@@ -1142,8 +1169,9 @@ public class DcmSnd extends StorageCommitmentService {
     }
 
     public void send() {
-        for (int i = 0, n = files.size(); i < n; ++i) {
-            FileInfo info = files.get(i);
+    	int i = 0, n = files.size();
+        for ( ; i < n && (batchSize==0 || i < batchSize); ++i) {
+            FileInfo info = files.get(i + lastSentFile);
             TransferCapability tc = assoc.getTransferCapabilityAsSCU(info.cuid);
             if (tc == null) {
                 System.out.println();
@@ -1192,6 +1220,8 @@ public class DcmSnd extends StorageCommitmentService {
                 e.printStackTrace();
             }
         }
+        lastSentFile += i;
+        
         try {
             assoc.waitForDimseRSP();
         } catch (InterruptedException e) {
