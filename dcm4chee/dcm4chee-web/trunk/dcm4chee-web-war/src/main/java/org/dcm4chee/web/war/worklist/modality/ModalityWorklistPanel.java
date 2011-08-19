@@ -55,6 +55,7 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
+import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
@@ -328,7 +329,22 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         extendedFilter.add(dtfB);
         extendedFilter.add(dtfBEnd);
         extendedFilter.add( new Label("studyInstanceUID.label", new ResourceModel("mw.extendedFilter.studyInstanceUID.label")));
-        extendedFilter.add( new TextField<String>("studyInstanceUID").add(new UIDValidator(true)));
+        OnChangeAjaxBehavior onChangeAjaxBehavior = new OnChangeAjaxBehavior() {
+            private static final long serialVersionUID = 1L;
+            private boolean stdQuery = true;
+            
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                boolean b = QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
+                if (b != stdQuery) {
+                    target.addComponent(form);
+                    stdQuery = b;
+                }
+            }
+        };
+
+        extendedFilter.add( new TextField<String>("studyInstanceUID")
+                .add(new UIDValidator(true)).add(onChangeAjaxBehavior));
         extendedFilter.setOutputMarkupId(true);
         extendedFilter.setOutputMarkupPlaceholderTag(true);
         form.add(extendedFilter);
@@ -343,7 +359,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             @Override
             public void onClick(AjaxRequestTarget target) {
                 filter.setExtendedQuery(!filter.isExtendedQuery());
-                target.addComponent(extendedFilter);
+                target.addComponent(form);
                 target.addComponent(this);
             }
         };
@@ -415,6 +431,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 doSearch(target);
+                BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
             }
             
         });
@@ -425,6 +442,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             @Override
             public void onSubmit(AjaxRequestTarget target, final Form<?> form) {
                 doSearch(target);
+                BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
             }
             
             @Override
