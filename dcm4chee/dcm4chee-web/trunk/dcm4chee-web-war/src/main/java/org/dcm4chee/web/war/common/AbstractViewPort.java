@@ -42,6 +42,7 @@ import java.io.Serializable;
 import java.security.Principal;
 import java.security.acl.Group;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -106,7 +107,9 @@ public abstract class AbstractViewPort implements Serializable {
             groupChoices.add("(" + aetGroup.getGroupname() + ")");
             aetChoices.addAll(aetGroup.getAets());
         }
-        groupChoices.addAll(aetChoices);
+        ArrayList<String> l = new ArrayList<String>(aetChoices);
+        Collections.sort(l);
+        groupChoices.addAll(l);
         return groupChoices;
     }
 }
