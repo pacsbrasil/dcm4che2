@@ -150,76 +150,76 @@ button.keyword-chooser-btn
  * Position/Size of result (i.e table) elements 
  *****************************************************/
 
-table.content-table
+table.tc-content-table
 {
 	table-layout: fixed;
 	border-spacing: 5px;
 }
 
-table.content-table tr td
+table.tc-content-table tr td
 {
 	overflow: hidden;
     padding: 2px 20px 2px 0;
     white-space: normal;
 }
 
-table.content-table tr th#loadColumn
+table.tc-tc-content-table tr th#loadColumn
 {
 	width:40px;
 }
 
-table.content-table tr th#titleColumn
+table.tc-content-table tr th#titleColumn
 {
 	padding-left: 15px;
     width:45%;
 }
 
-table.content-table tr th#abstractColumn
+table.tc-content-table tr th#abstractColumn
 {
 	padding-left: 15px;
     width:55%;
 }
 
-table.content-table tr th#authorColumn
+table.tc-content-table tr th#authorColumn
 {
 	padding-left: 15px;
     width:140px;
 }
 
-table.content-table tr th#dateColumn
+table.tc-content-table tr th#dateColumn
 {
 	padding-left: 15px;
     width:100px;
 }
 
-table.content-table tr th a 
+table.tc-content-table tr th a 
 { 
     text-decoration: none;
 }
 
-table.content-table tr th a:hover 
+table.tc-content-table tr th a:hover 
 {
     text-decoration: underline;
 }
 
-table.content-table td span p
+table.tc-content-table td span p
 {
 	margin: 0;
 	overflow: hidden;
 }
 
-table.content-table-header 
+table.tc-content-table-header 
 {
     width: 100%;
 }
 
-table.content-table-header td.navigator 
+table.tc-content-table-header td.navigator 
 {
     padding: 0.5em;
     text-align: right;
 }
 
-table.content-table-header td.numberOfMatchingInstances 
+table.tc-content-table-header td.numberOfMatchingInstances 
 {
     padding: 0.5em;
     text-align: left;
@@ -546,68 +546,68 @@ div.details-area div.details-area-header
 	border-bottom: 1px solid #D3D3D3;
 }
 
-table.content-table tr th a 
+table.tc-content-table tr th a 
 { 
     color: white; 
 }
 
-table.content-table tr th a:hover 
+table.tc-content-table tr th a:hover 
 {
     color: white; 
 }
 
-table.content-table tr th.wicket_orderNone
+table.tc-content-table tr th.wicket_orderNone
 {
 	background-image: url(order-none.png);
 	background-repeat: no-repeat;
 	background-position: left center;
 }
 
-table.content-table tr th.wicket_orderUp
+table.tc-content-table tr th.wicket_orderUp
 {
 	background-image: url(order-ascending.png);
 	background-repeat: no-repeat;
 	background-position: left center;
 }
 
-table.content-table tr th.wicket_orderDown
+table.tc-content-table tr th.wicket_orderDown
 {
 	background-image: url(order-descending.png);
 	background-repeat: no-repeat;
 	background-position: left center;
 }
 	
-table.content-table tr.even-mouse-out 
+table.tc-content-table tr.even-mouse-out 
 { 
     background-color: #E1E0DE; 
     color: #696969;
 }
 
-table.content-table tr.even-mouse-over 
+table.tc-content-table tr.even-mouse-over 
 { 
     background-color: #E1E0DE; 
     color: black;
 }
 
-table.content-table tr.odd-mouse-out 
+table.tc-content-table tr.odd-mouse-out 
 { 
     background-color: #F5F5F5;
     color: #696969;
 }
 
-table.content-table tr.odd-mouse-over 
+table.tc-content-table tr.odd-mouse-over 
 { 
     background-color: #F5F5F5;
     color: black;
 }
 
-table.content-table tr.mouse-out-selected
+table.tc-content-table tr.mouse-out-selected
 { 
     background-color: #FFDEAD; 
     color: black;
 }
 
-table.content-table tr.mouse-over-selected
+table.tc-content-table tr.mouse-over-selected
 { 
     background-color: #FFDEAD; 
     color: black;
