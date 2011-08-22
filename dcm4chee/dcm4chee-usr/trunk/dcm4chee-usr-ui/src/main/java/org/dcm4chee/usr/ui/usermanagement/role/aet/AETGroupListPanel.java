@@ -252,8 +252,8 @@ public class AETGroupListPanel extends Panel {
                     super.onClick(target);
                 }
             }).add(new Image("aetgrouplist.aetAssignment.image", ImageManager.IMAGE_USER_AET_GROUP_AETS)
-                .add(new TooltipBehaviour("aetgrouplist.", "aet-assignment-link"))))
-                .add(new SecurityBehavior(getModuleName() + ":aetAssignmentLink"));
+                .add(new TooltipBehaviour("aetgrouplist.", "aet-assignment-link")))
+                .add(new SecurityBehavior(getModuleName() + ":aetAssignmentLink")));
 
             StringBuffer assignedAETs = new StringBuffer();
             for (String aet : aetGroup.getAets())

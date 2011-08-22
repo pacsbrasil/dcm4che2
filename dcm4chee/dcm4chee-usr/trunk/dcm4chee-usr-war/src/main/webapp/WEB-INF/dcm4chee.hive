@@ -29,8 +29,6 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.RolePanel", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.group.GroupListPanel", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.aet.AETGroupListPanel", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.aet.AETAssignmentPage", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "RoleWrite"
@@ -52,12 +50,6 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
     permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:grouplist:newGroupLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:grouplist:editGroupLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:grouplist:removeGroupLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.aet.CreateOrEditAETGroupPage", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:aetgrouplist:newAETGroupLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:aetgrouplist:editAETGroupLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:aetgrouplist:removeAETGroupLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:aetgrouplist:aetAssignmentLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.aet.AETAssignmentPage:aetassignment:changeAETAssignmentCheckbox", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "Superuser"
@@ -65,4 +57,22 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "S
 // KEY: swarm.principal.Superuser
     permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:rolelist:superuserRoleRow", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.user.RoleAssignmentPage:roleassignment:superuserRoleRow", "render, enable";
+};
+
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "AEGroupRead"
+{
+// KEY: swarm.principal.AEGroupRead
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.aet.AETGroupListPanel", "render, enable";
+};
+
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "AEGroupWrite"
+{
+// KEY: swarm.principal.AEGroupWrite
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.aet.CreateOrEditAETGroupPage", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:aetgrouplist:newAETGroupLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:aetgrouplist:editAETGroupLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:aetgrouplist:removeAETGroupLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.war.pages.UserManagementMainPage:aetgrouplist:aetAssignmentLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.aet.AETAssignmentPage", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.aet.AETAssignmentPage:aetassignment:changeAETAssignmentCheckbox", "render, enable";
 };
