@@ -89,4 +89,5 @@ public interface UserAccess {
     public void removeAETGroup(AETGroup aetGroup);
     
     public List<AETGroup> getAETGroups(List<String> roles);
+    public List<String> listAETitles();
 }

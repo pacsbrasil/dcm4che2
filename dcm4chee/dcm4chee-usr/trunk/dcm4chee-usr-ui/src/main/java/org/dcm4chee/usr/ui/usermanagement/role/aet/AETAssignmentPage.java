@@ -93,8 +93,7 @@ public class AETAssignmentPage extends SecureWebPage {
         this.aetGroup = aetGroup;
         setOutputMarkupId(true);
         
-        aets.addAll(UsrCfgDelegate.getInstance().getSourceAETList());
-        aets.addAll(UsrCfgDelegate.getInstance().getStationAETList());
+        aets.addAll(((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).listAETitles());
     }
 
     @Override

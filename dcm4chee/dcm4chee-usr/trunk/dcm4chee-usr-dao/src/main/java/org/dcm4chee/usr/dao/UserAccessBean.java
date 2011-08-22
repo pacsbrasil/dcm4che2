@@ -541,7 +541,12 @@ public class UserAccessBean implements UserAccess {
         return aetGroups;
     }
     
-    
+    @SuppressWarnings("unchecked")
+    public List<String> listAETitles() {
+        return em.createQuery("SELECT ae.title FROM AE ae ORDER BY ae.title")
+                .getResultList();
+    }
+
     private void saveAETGroups(List<AETGroup> aetGroups) {
         BufferedWriter writer = null;
         try {

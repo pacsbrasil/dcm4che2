@@ -76,13 +76,5 @@ public class UsrCfgDelegate extends BaseCfgDelegate {
     
     public String getStudyPermissionsOwnRolename() {
         return getString("studyPermissionsOwnRolename");
-    }
-    
-    public List<String> getSourceAETList() {
-        return getStringList("getSourceAETList"); 
-    }
-    
-    public List<String> getStationAETList() {
-        return getStringList("getStationAETList"); 
-    }
+    }    
 }
