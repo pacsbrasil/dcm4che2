@@ -39,13 +39,10 @@
 
 package org.dcm4chex.archive.ejb.jdbc;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
