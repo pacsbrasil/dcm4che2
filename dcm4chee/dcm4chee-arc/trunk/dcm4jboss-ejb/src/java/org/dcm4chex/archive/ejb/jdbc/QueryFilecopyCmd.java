@@ -42,6 +42,7 @@ package org.dcm4chex.archive.ejb.jdbc;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -80,6 +81,7 @@ public final class QueryFilecopyCmd extends BaseSQLCmd {
                 log.warn("Error closing connection!");
             }
         }
+        Collections.sort(seriesPKs);
         return seriesPKs;
     }
 }
