@@ -56,7 +56,14 @@ public class DiceyFSModule extends HSMFileBasedModule {
                 throw new HSMException("Failed to retrieve "+fileToFetch, x);
             }
             return tarFile;
-     }
+    }
+    
+    @Override
+    public void fetchHSMFileFinished(String fsID, String filePath, File file) throws HSMException {
+        log.info("M-DELETE " + file);
+        if (!file.delete())
+            log.warn("Deletion failed:" + file);
+    }
 }
 
 
