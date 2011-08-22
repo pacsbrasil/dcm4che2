@@ -163,17 +163,11 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     private List<String> modalities = new ArrayList<String>();
 
-    private List<String> sourceAETs = new ArrayList<String>();
-
-    private List<String> stationAETs = new ArrayList<String>();
-
+    private List<String> aetTypes = new ArrayList<String>();
+    
     private List<String> stationNames = new ArrayList<String>();
 
     private boolean autoUpdateModalities;
-
-    private boolean autoUpdateSourceAETs;
-
-    private boolean autoUpdateStationAETs;
 
     private boolean autoUpdateStationNames;
 
@@ -456,52 +450,16 @@ public class WebCfgService extends ServiceMBeanSupport implements
         updateAutoUpdateTimer();
     }
 
-    public String getSourceAETs() {
-        return listAsString(sourceAETs, "|");
+    public String getAETTypes() {
+        return listAsString(aetTypes, "|");
     }
 
-    public List<String> getSourceAETList() {
-        if (sourceAETs.isEmpty()) {
-            this.updateSourceAETs();
-        }
-        return new ArrayList<String>(sourceAETs);
+    public List<String> getAETTypesList() {
+        return aetTypes;
     }
 
-    public void setSourceAETs(String s) {
-        updateList(sourceAETs, s, "|");
-    }
-
-    public boolean isAutoUpdateSourceAETs() {
-        return autoUpdateSourceAETs;
-    }
-
-    public void setAutoUpdateSourceAETs(boolean b) {
-        autoUpdateSourceAETs = b;
-        updateAutoUpdateTimer();
-    }
-
-    public String getStationAETs() {
-        return listAsString(stationAETs, "|");
-    }
-
-    public List<String> getStationAETList() {
-        if (stationAETs.isEmpty()) {
-            this.updateStationAETs();
-        }
-        return new ArrayList<String>(stationAETs);
-    }
-
-    public void setStationAETs(String s) {
-        updateList(stationAETs, s, "|");
-    }
-
-    public boolean isAutoUpdateStationAETs() {
-        return autoUpdateStationAETs;
-    }
-
-    public void setAutoUpdateStationAETs(boolean b) {
-        autoUpdateStationAETs = b;
-        updateAutoUpdateTimer();
+    public void setAETTypes(String s) {
+        updateList(aetTypes, s, "|");
     }
 
     public String getStationNames() {
@@ -925,38 +883,6 @@ public class WebCfgService extends ServiceMBeanSupport implements
         }
     }
 
-    public void updateSourceAETs() {
-        log.info("Update SourceAET List");
-        StudyListLocal dao = (StudyListLocal) JNDIUtils
-                .lookup(StudyListLocal.JNDI_NAME);
-        String aets = listAsString(dao.selectDistinctSourceAETs(), "|");
-        Attribute attribute = new Attribute("SourceAETs", aets);
-        try {
-            server.setAttribute(getServiceName(), attribute);
-        } catch (Exception x) {
-            log.error(
-                    "Update SourceAETs failed! List of source AETs is only valid for service lifetime: "
-                            + aets, x);
-            this.setSourceAETs(aets);
-        }
-    }
-
-    public void updateStationAETs() {
-        log.info("Update StationAET List");
-        ModalityWorklistLocal dao = (ModalityWorklistLocal) JNDIUtils
-                .lookup(ModalityWorklistLocal.JNDI_NAME);
-        String aets = listAsString(dao.selectDistinctStationAETs(), "|");
-        Attribute attribute = new Attribute("StationAETs", aets);
-        try {
-            server.setAttribute(getServiceName(), attribute);
-        } catch (Exception x) {
-            log.error(
-                    "Update StationAETs failed! List of Station AETs is only valid for service lifetime: "
-                            + aets, x);
-            this.setStationAETs(aets);
-        }
-    }
-
     public void updateStationNames() {
         log.info("Update Station Name List");
         ModalityWorklistLocal dao = (ModalityWorklistLocal) JNDIUtils
@@ -988,10 +914,6 @@ public class WebCfgService extends ServiceMBeanSupport implements
                 public void run() {
                     if (isAutoUpdateModalities())
                         updateModalities();
-                    if (isAutoUpdateSourceAETs())
-                        updateSourceAETs();
-                    if (isAutoUpdateStationAETs())
-                        updateStationAETs();
                     if (isAutoUpdateStationNames())
                         updateStationNames();
                 }
@@ -1013,8 +935,7 @@ public class WebCfgService extends ServiceMBeanSupport implements
         try {
             if (server == null)
                 return;
-            if (autoUpdateModalities || autoUpdateSourceAETs
-                    || autoUpdateStationAETs || autoUpdateStationNames) {
+            if (autoUpdateModalities || autoUpdateStationNames) {
                 if (autoUpdateTimerId == null) {
                     log.info("Start AutoUpdate Scheduler with period of 24h at 23:59:59");
                     autoUpdateTimerId = (Integer) server

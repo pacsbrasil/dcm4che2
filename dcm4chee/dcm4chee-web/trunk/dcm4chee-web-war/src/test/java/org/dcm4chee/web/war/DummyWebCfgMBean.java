@@ -49,8 +49,6 @@ import javax.management.InvalidAttributeValueException;
 import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
 import org.jboss.system.ServiceMBeanSupport;
@@ -90,8 +88,6 @@ public class DummyWebCfgMBean extends ServiceMBeanSupport implements DynamicMBea
             throws MBeanException, ReflectionException {
         if ("getPagesizeList".equals(actionName)) return new ArrayList<Integer>(Arrays.asList(10,25,50));
         if ("getModalityList".equals(actionName)) return new ArrayList<String>(Arrays.asList("CT","MR"));
-        if ("getSourceAETList".equals(actionName)) return new ArrayList<String>(Arrays.asList("DCMSND","CT1"));
-        if ("getStationAETList".equals(actionName)) return new ArrayList<String>(Arrays.asList("DCMSND","CT1"));
         if ("getStationNameList".equals(actionName)) return new ArrayList<String>(Arrays.asList("STATION1","STATION2"));
         if ("getWindowSize".equals(actionName)) return new int[]{800,600};
         if ("getAutoExpandLevelChoiceList".equals(actionName)) return Arrays.asList(-1);

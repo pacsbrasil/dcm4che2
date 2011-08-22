@@ -376,51 +376,16 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getSourceAETs"
-      setMethod="setSourceAETs">
-      <description><![CDATA[List of source AETs.<br/>
-      	Format: &lt;AET&gt;[|&lt;AET&gt[|..]]<br/>
-      	NONE is used for an empty list. In this case a getSourceAETList will trigger updateSourceAETs.
+      getMethod="getAETTypes"
+      setMethod="setAETTypes">
+      <description><![CDATA[List of AET Types.<br/>
+      	Format: &lt;AET Type&gt;[|&lt;AET Type&gt[|..]]<br/>
+      	NONE is used for an empty list.
       ]]></description>
-      <name>SourceAETs</name>
+      <name>aetTypes</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isAutoUpdateSourceAETs"
-      setMethod="setAutoUpdateSourceAETs">
-      <description><![CDATA[Enable auto update of Source AET list at midnight(23:59:59).
-      ]]></description>
-      <name>AutoUpdateSourceAETs</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getStationAETs"
-      setMethod="setStationAETs">
-      <description><![CDATA[List of Station AETs.<br/>
-      	Format: &lt;AET&gt;[|&lt;AET&gt[|..]]<br/>
-      	NONE is used for an empty list. In this case a getStationAETList will trigger updateStationAETs.
-      ]]></description>
-      <name>StationAETs</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="NONE"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="isAutoUpdateStationAETs"
-      setMethod="setAutoUpdateStationAETs">
-      <description><![CDATA[Enable auto update of Station AET list at midnight(23:59:59).
-      ]]></description>
-      <name>AutoUpdateStationAETs</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="false"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -950,13 +915,8 @@
       <return-type>java.util.List</return-type>
    </operation>
    <operation impact="ACTION">
-      <description>Get List of source AETs</description>
-      <name>getSourceAETList</name>
-      <return-type>java.util.List</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Get List of Station AETs</description>
-      <name>getStationAETList</name>
+      <description>Get List of AET Types</description>
+      <name>getAETTypeList</name>
       <return-type>java.util.List</return-type>
    </operation>
    <operation impact="ACTION">

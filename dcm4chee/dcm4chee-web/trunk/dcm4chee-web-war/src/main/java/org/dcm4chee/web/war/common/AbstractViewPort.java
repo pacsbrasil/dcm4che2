@@ -39,27 +39,16 @@
 package org.dcm4chee.web.war.common;
 
 import java.io.Serializable;
-import java.security.Principal;
-import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.security.auth.Subject;
-import javax.security.jacc.PolicyContext;
-
-import org.apache.wicket.RequestCycle;
-import org.apache.wicket.protocol.http.WebApplication;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.AETGroup;
-import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.login.LoginContextSecurityHelper;
-import org.jfree.util.Log;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -101,8 +90,7 @@ public abstract class AbstractViewPort implements Serializable {
         for (AETGroup aetGroup : aetGroups) {
             if (aetGroup.getGroupname().equals("*")) {
                 groupChoices.add(aetGroup.getGroupname());
-                aetChoices.addAll(UsrCfgDelegate.getInstance().getSourceAETList());
-                aetChoices.addAll(UsrCfgDelegate.getInstance().getStationAETList());
+                aetChoices.addAll(((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).listAETitles());
                 continue;
             }
             groupChoices.add("(" + aetGroup.getGroupname() + ")");
