@@ -620,7 +620,7 @@ public abstract class PatientBean implements EntityBean {
             if (issuer != null) {
                 int countWithIssuer = matchIssuer(
                         matching.isUnknownIssuerAlwaysMatch(), issuer, c);
-                if (!matching.isTrustPatientIDWithIssuer()) {
+                if (!matching.isTrustPatientIDWithIssuer() || countWithIssuer == 0) {
                     PatientLocal matchWithIssuer = (countWithIssuer > 0) ?
                                 (PatientLocal) c.iterator().next() : null;
                     matchDemographics(matching, familyName, givenName,
