@@ -50,12 +50,6 @@ import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
-import org.dcm4chee.web.war.folder.model.InstanceModel;
-import org.dcm4chee.web.war.folder.model.PatientModel;
-import org.dcm4chee.web.war.folder.model.SeriesModel;
-import org.dcm4chee.web.war.folder.model.StudyModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -65,8 +59,6 @@ import org.slf4j.LoggerFactory;
 public class WebviewerSelectionPage extends WebPage {
     
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
-    private static Logger log = LoggerFactory.getLogger(WebviewerSelectionPage.class);
     
     public WebviewerSelectionPage(AbstractDicomModel model, WebviewerLinkProvider[] providers) {
         super();        
