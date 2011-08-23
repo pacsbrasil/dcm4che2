@@ -45,6 +45,8 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.dcm4chee.archive.entity.AE;
+import org.dcm4chee.usr.dao.UserAccess;
+import org.dcm4chee.usr.util.JNDIUtils;
 import org.jboss.annotation.ejb.LocalBinding;
 
 /**
@@ -85,7 +87,10 @@ public class AEHomeBean implements AEHomeLocal {
             return null;
         } else {
             AE oldAE = em.find(AE.class, ae.getPk());
+            String oldAETitle = oldAE.getTitle();
             em.merge(ae);
+            ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME))
+                .updateAETInAETGroups(oldAETitle, ae.getTitle());
             return oldAE;
         }
     }
@@ -93,5 +98,7 @@ public class AEHomeBean implements AEHomeLocal {
     public void removeAET(long pk) {
         AE ae = em.find(AE.class, pk);
         em.remove(ae);
+        ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME))
+            .removeAETFromAETGroups(ae.getTitle());
     }
 }
