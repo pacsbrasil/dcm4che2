@@ -53,6 +53,7 @@ import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByBorder;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortParam;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortableDataProvider;
@@ -110,7 +111,9 @@ public class TCResultPanel extends Panel {
         stPermHelper = StudyPermissionHelper.get();
 
         initWebviewerLinkProvider();
-
+        final ModalWindow modalWindow = new ModalWindow("modal-window");
+        add(modalWindow);
+        
         final SortableTCListProvider tclistProvider = new SortableTCListProvider(
                 (TCListModel) getDefaultModel());
 
@@ -166,7 +169,7 @@ public class TCResultPanel extends Panel {
 
                 item.add(Webviewer.getLink(tc, webviewerLinkProviders,
                         stPermHelper,
-                        new TooltipBehaviour("tc.result.table.", "webviewer"))
+                        new TooltipBehaviour("tc.result.table.", "webviewer"), modalWindow)
                         .add(new SecurityBehavior(StudyListPage.getModuleName()
                                 + ":webviewerInstanceLink")));
 

@@ -38,7 +38,10 @@
 
 package org.dcm4chee.web.war.folder.webviewer;
 
+import org.apache.wicket.Page;
 import org.apache.wicket.PageMap;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.markup.html.link.ExternalLink;
@@ -49,6 +52,7 @@ import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
@@ -57,6 +61,7 @@ import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
+import org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,60 +76,80 @@ public class Webviewer  {
     private static Logger log = LoggerFactory.getLogger(Webviewer.class);
 
     public static AbstractLink getLink(final AbstractDicomModel model, final WebviewerLinkProvider[] providers,
-            final StudyPermissionHelper studyPermissionHelper, TooltipBehaviour tooltip) {
-        if (providers == null || providers.length < 2) {
-            String url = isModelSupported(model, providers) ? getUrlForModel(model, providers[0]) : null;
-            ExternalLink link = new ExternalLink(WEBVIEW_ID, url == null ? "http://dummy" : url);
-            boolean visible = false;
-            if (url != null) {
-                if (model instanceof PatientModel) {
-                    visible =  studyPermissionHelper.checkPermission(model.getDicomModelsOfNextLevel(), 
-                            StudyPermission.READ_ACTION, false);
+            final StudyPermissionHelper studyPermissionHelper, TooltipBehaviour tooltip, ModalWindow modalWindow) {
+        WebviewerLinkProvider p = null;
+        AbstractLink link = null;
+        for (int i = 0 ; i < providers.length ; i++) {
+            if (getUrlForModel(model, providers[i]) != null) {
+                if (p == null) {
+                    p = providers[i];
                 } else {
-                    visible =  studyPermissionHelper.checkPermission(model, StudyPermission.READ_ACTION);
+                    link = getWebviewerSelectionPageLink(model, providers, modalWindow);
+                    break;
                 }
             }
-            link.setVisible(visible);
-            return prepareLink(link, tooltip);
+        }
+        if (p == null) {
+            link = new ExternalLink(WEBVIEW_ID, "http://dummy");
+            link.setVisible(false);
         } else {
-            return getWebviewerSelectionPageLink(model, providers, studyPermissionHelper);
-        }
-    }
-
-    private static AbstractLink getWebviewerSelectionPageLink(final AbstractDicomModel model, final WebviewerLinkProvider[] providers,
-            final StudyPermissionHelper studyPermissionHelper) {
-        log.debug("Use SelectionLINK for model:"+model);
-        Link<Object> link =  new Link<Object>(WEBVIEW_ID) {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClick() {
-                setResponsePage(new WebviewerSelectionPage(model, providers));
+            if (link == null) {
+                String url = getUrlForModel(model, p);
+                link = new ExternalLink(WEBVIEW_ID, url)
+                    .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
+                        PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS));
             }
-        };
-        boolean visible = false;
-        if (isModelSupported(model, providers)) {
             if (model instanceof PatientModel) {
-                visible =  studyPermissionHelper.checkPermission(model.getDicomModelsOfNextLevel(), 
-                        StudyPermission.READ_ACTION, false);
+                link.setVisible(studyPermissionHelper.checkPermission(model.getDicomModelsOfNextLevel(), 
+                        StudyPermission.READ_ACTION, false));
             } else {
-                visible =  studyPermissionHelper.checkPermission(model, StudyPermission.READ_ACTION);
+                link.setVisible(studyPermissionHelper.checkPermission(model, StudyPermission.READ_ACTION));
             }
         }
-        link.setVisible(visible);
-        link.setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
-                PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-        .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour()));
+        link.add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour()));
         return link;
     }
 
-    private static ExternalLink prepareLink(ExternalLink link, TooltipBehaviour tooltip) {
-        link.setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
-                PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS))
-        .add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour()).add(tooltip));
-        return link;
-    }
+    private static AbstractLink getWebviewerSelectionPageLink(final AbstractDicomModel model, final WebviewerLinkProvider[] providers, final ModalWindow modalWindow) {
+        log.debug("Use SelectionLINK for model:{}", model);
+        if (modalWindow == null) {
+            Link<Object> link =  new Link<Object>(WEBVIEW_ID) {
+                private static final long serialVersionUID = 1L;
     
+                @Override
+                public void onClick() {
+                    setResponsePage(new WebviewerSelectionPage(model, providers));
+                }
+            };
+            link.setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
+                    PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS));
+            return link;
+        } else {
+            int[] winSize = WebCfgDelegate.getInstance().getWindowSize("webviewer");
+            return new ModalWindowLink(WEBVIEW_ID, modalWindow, winSize[0], winSize[1]) {
+                
+                private static final long serialVersionUID = 1L;
+        
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+        
+                    modalWindow.setPageCreator(new ModalWindow.PageCreator() {
+                        
+                        private static final long serialVersionUID = 1L;
+                          
+                        @Override
+                        public Page createPage() {
+                            return new WebviewerSelectionPage(model, providers);
+                        }
+                    });
+                    modalWindow.setTitle("");
+                    modalWindow.show(target);
+                }
+                
+            };
+        }
+    }
+
     public static String getUrlForModel(AbstractDicomModel model, WebviewerLinkProvider provider) {
         switch (model.levelOfModel()) {
             case AbstractDicomModel.PATIENT_LEVEL:
@@ -164,17 +189,8 @@ public class Webviewer  {
                         model.getClass().getName()+" level:"+model.levelOfModel());
                 return null;
         }
-        log.info("WebviewerProvider "+provider.getName()+" doesn't support DICOM model with level:"+model.levelOfModel());
+        log.debug("WebviewerProvider {} doesn't support DICOM model with level:{}", provider.getName(), model.levelOfModel());
         return null;
     }
 
-    public static boolean isModelSupported(AbstractDicomModel model, WebviewerLinkProvider[] providers) {
-        if (providers != null) {
-            for (int i = 0 ; i < providers.length ; i++) {
-                if (getUrlForModel(model, providers[i]) != null)
-                    return true;
-            }
-        }
-        return false;
-    }
 }

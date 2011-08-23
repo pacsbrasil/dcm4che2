@@ -38,12 +38,14 @@
 
 package org.dcm4chee.web.war.folder.webviewer;
 
+import org.apache.wicket.PageMap;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.ExternalLink;
+import org.apache.wicket.markup.html.link.PopupSettings;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.ResourceModel;
@@ -74,7 +76,10 @@ public class WebviewerSelectionPage extends WebPage {
             String url = Webviewer.getUrlForModel(model, providers[i]);
             if (url != null) {
                 mc = new WebMarkupContainer(rv.newChildId());
-                mc.add(new ExternalLink("link", url, providers[i].getName()));
+                ExternalLink link = new ExternalLink("link", url, providers[i].getName())
+                    .setPopupSettings(new PopupSettings(PageMap.forName(providers[i].getName()), 
+                        PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS));
+                mc.add(link);
                 rv.add(mc);
             }
         }
