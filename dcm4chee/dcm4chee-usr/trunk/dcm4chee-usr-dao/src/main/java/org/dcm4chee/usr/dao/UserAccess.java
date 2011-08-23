@@ -90,4 +90,6 @@ public interface UserAccess {
     
     public List<AETGroup> getAETGroups(List<String> roles);
     public List<String> listAETitles();
+    public void updateAETInAETGroups(String oldAET, String newAET);
+    public void removeAETFromAETGroups(String aet);
 }

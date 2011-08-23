@@ -547,6 +547,22 @@ public class UserAccessBean implements UserAccess {
                 .getResultList();
     }
 
+    public void updateAETInAETGroups(String oldAET, String newAET) {
+        List<AETGroup> aetGroups = getAllAETGroups();
+        for (AETGroup aetGroup : aetGroups) {
+            aetGroup.getAets().remove(oldAET);
+            aetGroup.getAets().add(newAET);
+        }
+        saveAETGroups(aetGroups);
+    }
+
+    public void removeAETFromAETGroups(String aet) {
+        List<AETGroup> aetGroups = getAllAETGroups();
+        for (AETGroup aetGroup : aetGroups) 
+            aetGroup.getAets().remove(aet);
+        saveAETGroups(aetGroups);
+    }
+
     private void saveAETGroups(List<AETGroup> aetGroups) {
         BufferedWriter writer = null;
         try {
@@ -568,7 +584,7 @@ public class UserAccessBean implements UserAccess {
             close(writer, "Temporary aet groups file (in finally block)");
         }
     }
-
+    
     private boolean close(Closeable toClose, String desc) {
         log.debug("Closing ",desc);
         if (toClose != null) {
