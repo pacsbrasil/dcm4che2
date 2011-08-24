@@ -137,7 +137,7 @@ public class ORUService extends ORU_MDMService
         if ( obxs.isEmpty()) return NO_OBX;
         List obxFields = ((Element) obxs.get(0)).elements("field");
 //        log.info("obxFields:"+obxFields);
-        if ( obxFields.size() < obxStatusFieldNr) 
+        if ( obxFields.size() <= obxStatusFieldNr) 
             return NO_RESULT_STATUS;
 //        log.info("obxFields.get(10)).getText():"+((Element) obxFields.get(obxStatusFieldNr)).getText());
         return ((Element) obxFields.get(obxStatusFieldNr)).getText();
