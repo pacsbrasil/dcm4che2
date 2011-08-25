@@ -61,9 +61,7 @@
 
                         <td title="Cipher select">
                           <xsl:call-template name="cipherSelect">
-                            <xsl:with-param name="cipherNumber">
-                              1
-                            </xsl:with-param>
+                            <xsl:with-param name="cipherNumber">1</xsl:with-param>
                             <xsl:with-param name="cipher"
                               select="cipherSuites/item[1]" />
                           </xsl:call-template>
@@ -73,9 +71,7 @@
                         <td></td>
                         <td title="Cipher select">
                           <xsl:call-template name="cipherSelect">
-                            <xsl:with-param name="cipherNumber">
-                              2
-                            </xsl:with-param>
+                            <xsl:with-param name="cipherNumber">2</xsl:with-param>
                             <xsl:with-param name="cipher"
                               select="cipherSuites/item[2]" />
                           </xsl:call-template>
@@ -85,9 +81,7 @@
                         <td></td>
                         <td title="Cipher select">
                           <xsl:call-template name="cipherSelect">
-                            <xsl:with-param name="cipherNumber">
-                              3
-                            </xsl:with-param>
+                            <xsl:with-param name="cipherNumber">3</xsl:with-param>
                             <xsl:with-param name="cipher"
                               select="cipherSuites/item[3]" />
                           </xsl:call-template>
