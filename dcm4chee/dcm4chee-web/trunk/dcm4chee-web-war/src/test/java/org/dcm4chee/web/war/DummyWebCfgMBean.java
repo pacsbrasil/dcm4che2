@@ -55,7 +55,6 @@ import org.jboss.system.ServiceMBeanSupport;
 
 public class DummyWebCfgMBean extends ServiceMBeanSupport implements DynamicMBean {
 
-    
     public Object getAttribute(String attribute)
             throws AttributeNotFoundException, MBeanException,
             ReflectionException {
@@ -91,6 +90,7 @@ public class DummyWebCfgMBean extends ServiceMBeanSupport implements DynamicMBea
         if ("getStationNameList".equals(actionName)) return new ArrayList<String>(Arrays.asList("STATION1","STATION2"));
         if ("getWindowSize".equals(actionName)) return new int[]{800,600};
         if ("getAutoExpandLevelChoiceList".equals(actionName)) return Arrays.asList(-1);
+        if ("getAETTypesList".equals(actionName)) return new ArrayList<String>();
         return null;
     }
 

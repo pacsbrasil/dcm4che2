@@ -116,16 +116,6 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return getBoolean("useStudyPermissions", true);
     }
 
-    public String getSourceAetsPropertiesFilename() {
-        return ("NONE".equals(getWebConfigPath()) ? getWebConfigPath() : "")
-                + "source_aets.properties";
-    }
-
-    public String getStationAetsPropertiesFilename() {
-        return ("NONE".equals(getWebConfigPath()) ? getWebConfigPath() : "")
-                + "station_aets.properties";
-    }
-
     public String getWadoBaseURL() {
         return noneAsNull(getString("WadoBaseURL"));
     }
@@ -176,12 +166,8 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return mods;
     }
 
-    public List<String> getSourceAETList() {
-        return getStringList("getSourceAETList");
-    }
-
-    public List<String> getStationAETList() {
-        return getStringList("getStationAETList");
+    public List<String> getAETTypes() {
+        return getStringList("getAETTypesList");
     }
 
     public List<String> getStationNameList() {

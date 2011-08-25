@@ -16,6 +16,11 @@
     <description></description>
     <dependencies>
         <dependency>
+            <groupId>dcm4che.dcm4chee</groupId>
+            <artifactId>dcm4chee-web-licenseprovider</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+            <dependency>
             <groupId>dcm4che</groupId>
             <artifactId>dcm4che-core</artifactId>
             <version>2.0.25</version>
@@ -46,6 +51,12 @@
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-urlprovider</artifactId>
+            <version>3.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>dcm4che.dcm4chee</groupId>
+            <artifactId>dcm4chee-web-licenseprovider</artifactId>
             <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>

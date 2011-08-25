@@ -70,6 +70,7 @@ import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.AETGroup;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.license.ae.AELicenseProviderManager;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
@@ -148,11 +149,19 @@ public class AEListPanel extends Panel {
                 });
                 super.onClick(target);
             }
+            
+            @Override
+            public boolean isEnabled() {
+                return AELicenseProviderManager.get(null).getProvider().allowAETCreaton();
+            }
         };
         newAET.add(new Image("newAETImg",ImageManager.IMAGE_COMMON_ADD)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        newAET.add(new TooltipBehaviour("ae."));
+        if (newAET.isEnabled())
+            newAET.add(new TooltipBehaviour("ae."));
+        else
+            newAET.add(new AttributeModifier("title", true, new ResourceModel("ae.newAET.tooltip.notAllowed")));
         newAET.add(new Label("newAETText", new ResourceModel("ae.newAET.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
@@ -160,6 +169,7 @@ public class AEListPanel extends Panel {
         newAET.add(new SecurityBehavior(getModuleName() + ":newAETLink"));
 
         add( new Label("titleHdr.label", new ResourceModel("ae.titleHdr.label")));
+        add( new Label("typeHdr.label", new ResourceModel("ae.typeHdr.label")));
         add( new Label("hostHdr.label", new ResourceModel("ae.hostHdr.label")));
         add( new Label("portHdr.label", new ResourceModel("ae.portHdr.label")));
         add( new Label("descriptionHdr.label", new ResourceModel("ae.descriptionHdr.label")));        
@@ -187,6 +197,7 @@ public class AEListPanel extends Panel {
                     if (aetGroup.getAets().contains(name))
                         tooltip.append(name).append(" ");
                 item.add(new Label("title").add(new AttributeModifier("title", true, new Model<String>(tooltip.toString()))));
+                item.add(new Label("aeGroup"));
                 item.add(new Label("hostName"));
                 item.add(new Label("port"));
                 item.add(new Label("description", new Model<String>(item.getModelObject().getDescription())));

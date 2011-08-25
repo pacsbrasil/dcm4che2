@@ -69,7 +69,7 @@ public class AEHomeBean implements AEHomeLocal {
 
     @SuppressWarnings("unchecked")
     public List<AE> findAll() {
-        List<AE> l = em.createQuery("FROM AE ae ORDER BY ae.title")
+        List<AE> l = em.createQuery("FROM AE ae ORDER BY ae.aeGroup, ae.title")
                 .getResultList();
         em.clear();
         return l;

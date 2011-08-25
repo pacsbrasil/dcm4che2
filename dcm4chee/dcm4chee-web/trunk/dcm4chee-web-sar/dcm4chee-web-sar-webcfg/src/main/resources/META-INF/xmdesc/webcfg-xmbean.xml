@@ -916,7 +916,7 @@
    </operation>
    <operation impact="ACTION">
       <description>Get List of AET Types</description>
-      <name>getAETTypeList</name>
+      <name>getAETTypesList</name>
       <return-type>java.util.List</return-type>
    </operation>
    <operation impact="ACTION">

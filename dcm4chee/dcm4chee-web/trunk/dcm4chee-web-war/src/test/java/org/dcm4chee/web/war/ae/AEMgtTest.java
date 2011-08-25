@@ -103,7 +103,7 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
                 "0 is not between 1 and 65535."};
         wicketTester.assertErrorMessages(expectedErrors);
     }
-    
+
     @Test
     public void testEditAEValidators() {
         wicketTester.startPage(AETestPage.class);

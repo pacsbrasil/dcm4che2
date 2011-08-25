@@ -66,7 +66,9 @@ public class WebviewerLinkProvider implements Serializable {
         WebviewerLinkProviderSPI p;
         while (iter.hasNext()) {
             p = iter.next();
+            log.debug("----------------------------------------");
             log.debug("Found WebviewerLinkProvider: {}",p.getName());
+            log.debug("----------------------------------------");
             if (webviewerName == null || webviewerName.equals(p.getName())) {
                 provider = p;
                 break;

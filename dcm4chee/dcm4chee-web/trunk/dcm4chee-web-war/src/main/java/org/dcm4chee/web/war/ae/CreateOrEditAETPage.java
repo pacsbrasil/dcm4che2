@@ -56,6 +56,7 @@ import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.security.components.SecureWebPage;
@@ -65,11 +66,13 @@ import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.license.ae.AELicenseProviderManager;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.validators.UrlValidator1;
 import org.dcm4chee.web.dao.fs.FileSystemHomeLocal;
 import org.dcm4chee.web.war.ae.delegate.AEDelegate;
 import org.dcm4chee.web.war.ae.model.CipherModel;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.util.CyphersuiteUtils;
 
 /**
@@ -103,6 +106,12 @@ public class CreateOrEditAETPage extends SecureWebPage {
         form.setDefaultModel(model);
         form.addLabeledTextField("title").add(new AETitleValidator())
             .setRequired(true).add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour());
+        form.add(new Label("type.label", new StringResourceModel("ae.type.label", CreateOrEditAETPage.this, null, new Object[]{1} ) ) );
+        form.add(new DropDownChoice<String>("type-selection",
+                new PropertyModel<String>(ae, "aeGroup"),
+                AELicenseProviderManager.get(null).getProvider().getAETypes(
+                WebCfgDelegate.getInstance().getAETTypes())
+        ).setNullValid(true));
         form.addLabeledTextField("hostName").setRequired(true); 
         form.addLabeledNumberTextField("port").add(new RangeValidator<Integer>(1,65535));
         form.add(new Label("ciphers1.label", new StringResourceModel("ae.ciphers", CreateOrEditAETPage.this, null, new Object[]{1} ) ) );
