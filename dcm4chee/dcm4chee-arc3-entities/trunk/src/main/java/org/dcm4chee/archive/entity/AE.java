@@ -109,6 +109,9 @@ public class AE extends BaseEntity implements Serializable {
     @Column(name = "wado_url")
     private String wadoURL;
 
+    @Column(name = "ae_group")
+    private String aeGroup;
+    
     public String getTitle() {
         return title;
     }
@@ -220,6 +223,14 @@ public class AE extends BaseEntity implements Serializable {
 
     public String getWadoURL() {
         return wadoURL;
+    }
+
+    public void setAeGroup(String aeGroup) {
+        this.aeGroup = aeGroup;
+    }
+
+    public String getAeGroup() {
+        return aeGroup;
     }
 
     public String getStationName() {
