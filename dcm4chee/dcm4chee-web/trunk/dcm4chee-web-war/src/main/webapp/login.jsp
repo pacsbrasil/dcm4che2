@@ -49,7 +49,11 @@
 	       <div class="module-panel"></div>
         </div>
         <div class="signin" style="padding-top: 160px;">
-            <span class="login-desc">${login.loginLabel} <%= nodeInfo %></span>
+            <% if (request.getParameter("loginFailed") == null) { %>
+	            <span class="login-desc">${login.loginLabel} <%= nodeInfo %></span>
+            <% } else {%>
+    	        <span class="login-desc">${login.loginFailed} <%= nodeInfo %></span>
+    	    <% } %>
             <div>
 		        <form action="j_security_check" method="POST" name="login" >
 		            <table style="padding-top: 60px; padding-right: 90px; padding-bottom: 10px;">
