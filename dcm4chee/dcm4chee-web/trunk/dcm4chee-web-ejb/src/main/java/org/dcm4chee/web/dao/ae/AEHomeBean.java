@@ -68,9 +68,11 @@ public class AEHomeBean implements AEHomeLocal {
     }
 
     @SuppressWarnings("unchecked")
-    public List<AE> findAll() {
-        List<AE> l = em.createQuery("FROM AE ae ORDER BY ae.aeGroup, ae.title")
-                .getResultList();
+    public List<AE> findAll(String filter) {
+        String filterQuery = filter == null ? "" : "WHERE aeGroup = :filter ";
+        Query query = em.createQuery("FROM AE ae " + filterQuery + "ORDER BY ae.aeGroup, ae.title");
+        if (filter != null) query.setParameter("filter", filter);
+        List<AE> l = query.getResultList();
         em.clear();
         return l;
     }

@@ -45,13 +45,18 @@ import java.util.Map;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.IAjaxCallDecorator;
+import org.apache.wicket.ajax.IAjaxIndicatorAware;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.OddEvenListItem;
@@ -59,7 +64,9 @@ import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.model.util.ListModel;
@@ -95,6 +102,8 @@ public class AEListPanel extends Panel {
     
     PropertyListView<AE> list;
     private Map<String, String> mppsEmulatedAETs;
+    
+    private final IModel<String> typeSelectionModel = new Model<String>();
     
     public AEListPanel(String id) {
         super(id);
@@ -167,6 +176,24 @@ public class AEListPanel extends Panel {
         );
         add(newAET);
         newAET.add(new SecurityBehavior(getModuleName() + ":newAETLink"));
+        
+        add(new Label("type.filter.label", new StringResourceModel("ae.type.filter.label", AEListPanel.this, null, new Object[]{1} ) ) );
+        add(new DropDownChoice<String>("type-selection",
+                typeSelectionModel,
+                AELicenseProviderManager.get(null).getProvider().getAETypes(
+                WebCfgDelegate.getInstance().getAETTypes())
+        )
+        .setNullValid(true)
+        .add(new AjaxFormComponentUpdatingBehavior("onchange") {
+            
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                updateAETList();
+                target.addComponent(AEListPanel.this);
+            }
+        }));
 
         add( new Label("titleHdr.label", new ResourceModel("ae.titleHdr.label")));
         add( new Label("typeHdr.label", new ResourceModel("ae.typeHdr.label")));
@@ -286,7 +313,7 @@ public class AEListPanel extends Panel {
         list.setModel(new ListModel<AE>());
         AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
         List<AE> updatedList = new ArrayList<AE>();
-        updatedList.addAll(aeHome.findAll());
+        updatedList.addAll(aeHome.findAll(typeSelectionModel.getObject()));
         list.setModelObject(updatedList);
         mppsEmulatedAETs = AEDelegate.getInstance().getEmulatedAETs();
     }
@@ -304,14 +331,14 @@ public class AEListPanel extends Panel {
         list.setModelObject(updatedList);
     }
 
-    public static String getModuleName() {
-        return "aelist";
-    }
-
     public Map<String, String> getMppsEmulatedAETs() {
         if (this.mppsEmulatedAETs == null) {
             mppsEmulatedAETs = AEDelegate.getInstance().getEmulatedAETs();
         }
         return mppsEmulatedAETs;
+    }
+    
+    public static String getModuleName() {
+        return "aelist";
     }
 }

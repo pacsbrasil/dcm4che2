@@ -50,7 +50,8 @@ import org.dcm4chee.web.common.markup.BaseForm;
 public abstract class IndicatingAjaxFormSubmitBehavior extends AjaxFormSubmitBehavior implements IAjaxIndicatorAware {
 
     private static final long serialVersionUID = 1L;
-    private IAjaxIndicatorAware indicatorComponent;
+    
+    public IAjaxIndicatorAware indicatorComponent;
 
     public IndicatingAjaxFormSubmitBehavior(BaseForm form, String string, IAjaxIndicatorAware indicatorComponent) {
         super(form, string);

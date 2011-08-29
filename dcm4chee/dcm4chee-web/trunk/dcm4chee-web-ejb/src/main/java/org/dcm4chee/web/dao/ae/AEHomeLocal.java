@@ -55,7 +55,7 @@ public interface AEHomeLocal {
 
     List<String> listAETitles();
 
-    List<AE> findAll();
+    List<AE> findAll(String filter);
     
     AE findByTitle(String title);
     

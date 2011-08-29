@@ -448,7 +448,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
     private void initDestinationAETs() {
         destinationAETs.clear();
         AEHomeLocal dao = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
-        destinationAETs.addAll(dao.findAll());
+        destinationAETs.addAll(dao.findAll(null));
         if ( destinationAET == null && destinationAETs.size() > 0) {
             destinationAET = destinationAETs.get(0);
         }
