@@ -79,16 +79,17 @@ public class Webviewer  {
             final StudyPermissionHelper studyPermissionHelper, TooltipBehaviour tooltip, ModalWindow modalWindow) {
         WebviewerLinkProvider p = null;
         AbstractLink link = null;
-        for (int i = 0 ; i < providers.length ; i++) {
-            if (getUrlForModel(model, providers[i]) != null) {
-                if (p == null) {
-                    p = providers[i];
-                } else {
-                    link = getWebviewerSelectionPageLink(model, providers, modalWindow);
-                    break;
+        if (providers != null)
+            for (int i = 0 ; i < providers.length ; i++) {
+                if (getUrlForModel(model, providers[i]) != null) {
+                    if (p == null) {
+                        p = providers[i];
+                    } else {
+                        link = getWebviewerSelectionPageLink(model, providers, modalWindow);
+                        break;
+                    }
                 }
             }
-        }
         if (p == null) {
             link = new ExternalLink(WEBVIEW_ID, "http://dummy");
             link.setVisible(false);
@@ -106,7 +107,10 @@ public class Webviewer  {
                 link.setVisible(studyPermissionHelper.checkPermission(model, StudyPermission.READ_ACTION));
             }
         }
-        link.add(new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER).add(new ImageSizeBehaviour()));
+        Image image = new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER);
+        image.add(new ImageSizeBehaviour());
+        if (tooltip != null) image.add(tooltip);
+        link.add(image);
         return link;
     }
 
@@ -192,5 +196,4 @@ public class Webviewer  {
         log.debug("WebviewerProvider {} doesn't support DICOM model with level:{}", provider.getName(), model.levelOfModel());
         return null;
     }
-
 }
