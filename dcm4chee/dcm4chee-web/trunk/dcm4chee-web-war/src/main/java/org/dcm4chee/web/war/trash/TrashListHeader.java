@@ -110,10 +110,10 @@ public class TrashListHeader extends Panel {
         add(new Row("instance", 3));
     }
 
-    protected void onBeforeRender() {
+    /*protected void onBeforeRender() {
         super.onBeforeRender();
         headerExpandLevel = expandAllLevel;
-    }
+    }*/
 
     public void setExpandAllLevel(int expandAllLevel) {
         this.expandAllLevel = expandAllLevel;

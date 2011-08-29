@@ -664,6 +664,8 @@ public class TrashListPage extends Panel {
                     StudyPermissionHelper.get().getDicomRoles() : null);
         viewport.setTotal(dao.count(viewport.getFilter(), dicomSecurityRoles));
         updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset(), dicomSecurityRoles));
+        header.expandToLevel(viewport.getFilter().isPatientQuery() ? 
+                AbstractDicomModel.PATIENT_LEVEL : AbstractDicomModel.STUDY_LEVEL);
         updateAutoExpandLevel();
         notSearched = false;
     }
