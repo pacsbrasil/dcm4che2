@@ -308,7 +308,7 @@ public class StudyListBean implements StudyListLocal {
     }
     
     public Series findSeriesByIuid(String iuid) {
-        Query q = em.createNamedQuery("Series.findByIUID");
+        Query q = em.createQuery("FROM Series s LEFT JOIN FETCH s.modalityPerformedProcedureStep WHERE s.seriesInstanceUID = :iuid");
         q.setParameter("iuid", iuid);
         return (Series) q.getSingleResult();
     }
