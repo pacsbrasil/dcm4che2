@@ -195,7 +195,7 @@ public class AEListPanel extends Panel {
                 String name = item.getModelObject().getTitle();
                 for (AETGroup aetGroup : aetGroups)
                     if (aetGroup.getAets().contains(name))
-                        tooltip.append(name).append(" ");
+                        tooltip.append(aetGroup.getGroupname()).append(" ");
                 item.add(new Label("title").add(new AttributeModifier("title", true, new Model<String>(tooltip.toString()))));
                 item.add(new Label("aeGroup"));
                 item.add(new Label("hostName"));
