@@ -38,9 +38,8 @@
 
 package org.dcm4chee.usr.ui.usermanagement.role.aet;
 
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.apache.wicket.AttributeModifier;
@@ -60,13 +59,9 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.AETGroup;
-import org.dcm4chee.usr.model.Role;
-import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
-import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
-import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -81,7 +76,7 @@ public class AETAssignmentPage extends SecureWebPage {
     
     UserAccess userAccess;
     private AETGroup aetGroup;
-    private Set<String> aets = new HashSet<String>();
+    private Set<String> aets = new LinkedHashSet<String>();
     
     public AETAssignmentPage(final ModalWindow modalWindow, AETGroup aetGroup) {
         super();
