@@ -807,9 +807,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             }
         };
         removeMWLItem.add(new Image("removeImg", ImageManager.IMAGE_COMMON_REMOVE)
+        .add(!isLinked ? new TooltipBehaviour("mw.", "removeImg") : 
+            new AttributeModifier("title", true, new ResourceModel("mw.removeImg.isLinked.tooltip")))
         .add(new ImageSizeBehaviour()));
-        removeMWLItem.add(!isLinked ? new TooltipBehaviour("mw.") : 
-            new AttributeModifier("title", true, new ResourceModel("mw.remove.isLinked.tooltip")));
         removeMWLItem.add(new SecurityBehavior(getModuleName() + ":removeMWLItem"));
         valueContainer.add(removeMWLItem);
     }
