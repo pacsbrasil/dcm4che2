@@ -45,8 +45,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.management.MBeanException;
-
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -292,7 +290,6 @@ public class TrashListPage extends Panel {
             
             private static final long serialVersionUID = 1L;
 
-            @SuppressWarnings("unchecked")
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
 
@@ -536,7 +533,6 @@ public class TrashListPage extends Panel {
                         selected.refreshView(true);
                 } catch (Throwable t) {
                     setStatus(new StringResourceModel("trash.message.restoreFailed", TrashListPage.this, null));
-                    MBeanException mbe = null;
                     while (t instanceof javax.management.MBeanException) 
                         t = ((javax.management.MBeanException) t).getCause();
                     if (t != null) 
@@ -548,7 +544,8 @@ public class TrashListPage extends Panel {
                 target.addComponent(messageWindowPanel.getOkBtn());
             }
         };
-        confirmRestore.setInitialHeight(150);
+        confirmRestore.setInitialHeight(300);
+        confirmRestore.setInitialWidth(400);
         form.add(confirmRestore);
         
         AjaxButton restoreBtn = new AjaxButton("restoreBtn") {
