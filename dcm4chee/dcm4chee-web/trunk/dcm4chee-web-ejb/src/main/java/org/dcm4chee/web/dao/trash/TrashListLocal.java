@@ -49,6 +49,7 @@ import org.dcm4chee.archive.entity.PrivateInstance;
 import org.dcm4chee.archive.entity.PrivatePatient;
 import org.dcm4chee.archive.entity.PrivateSeries;
 import org.dcm4chee.archive.entity.PrivateStudy;
+import org.dcm4chee.archive.entity.Study;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -78,6 +79,7 @@ public interface TrashListLocal {
     public void removeTrashAll();
     
     public List<PrivateFile> getFilesForEntity(long pk, Class<? extends BaseEntity> clazz);
+    public List<Study> getStudiesInFolder(String[] suids);
     
     public DicomObject getDicomAttributes(long filePk);
 

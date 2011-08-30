@@ -41,6 +41,7 @@ package org.dcm4chee.web.dao.trash;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -56,6 +57,7 @@ import org.dcm4chee.archive.entity.PrivateInstance;
 import org.dcm4chee.archive.entity.PrivatePatient;
 import org.dcm4chee.archive.entity.PrivateSeries;
 import org.dcm4chee.archive.entity.PrivateStudy;
+import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.jboss.annotation.ejb.LocalBinding;
 
@@ -314,6 +316,15 @@ public class TrashListBean implements TrashListLocal {
         return em.createQuery(query)
             .setParameter("pk", pk)
             .getResultList();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<Study> getStudiesInFolder(String[] suids) {
+        StringBuilder sb = new StringBuilder("SELECT st from Study st WHERE st.studyInstanceUID");
+        QueryUtil.appendIN(sb, suids.length);
+        Query q = em.createQuery(sb.toString());
+        QueryUtil.setParametersForIN(q, suids);
+        return q.getResultList();
     }
 
     public DicomObject getDicomAttributes(long filePk) {

@@ -42,8 +42,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.management.MBeanException;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
@@ -79,11 +84,13 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
+import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.PrivateFile;
 import org.dcm4chee.archive.entity.PrivateInstance;
 import org.dcm4chee.archive.entity.PrivatePatient;
 import org.dcm4chee.archive.entity.PrivateSeries;
 import org.dcm4chee.archive.entity.PrivateStudy;
+import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
@@ -290,6 +297,7 @@ public class TrashListPage extends Panel {
             
             private static final long serialVersionUID = 1L;
 
+            @SuppressWarnings("unchecked")
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
 
@@ -468,7 +476,7 @@ public class TrashListPage extends Panel {
 
     private void addActions(final BaseForm form) {
         
-        final ConfirmationWindow<PrivSelectedEntities> confirmRestore = new ConfirmationWindow<PrivSelectedEntities>("confirmRestore") {
+        final ConfirmationWindow<List<PrivateFile>> confirmRestore = new ConfirmationWindow<List<PrivateFile>>("confirmRestore") {
 
             private static final long serialVersionUID = 1L;
             
@@ -485,67 +493,65 @@ public class TrashListPage extends Panel {
             }
             
             @Override
-            public void onConfirmation(AjaxRequestTarget target, final PrivSelectedEntities selected) {
+            public void onConfirmation(AjaxRequestTarget target, List<PrivateFile> files) {
 
                 this.setStatus(new StringResourceModel("trash.message.restore.running", TrashListPage.this, null));
                 messageWindowPanel.getOkBtn().setVisible(false);
                 
                 try {
                     FileImportOrder fio = new FileImportOrder();
-                    List<PrivateFile> files = getFilesToRestore();
-                    log.info("###### files:"+files);
-                    Collections.sort(files, new Comparator<PrivateFile>() {
-                        public int compare(PrivateFile f1, PrivateFile f2) {
-                            return f2.getFileSystem().getAvailability().compareTo(f1.getFileSystem().getAvailability());
-                        }});
-                    
-                    boolean allOnline = true;                    
-                    for (PrivateFile privateFile : files) {
-                        DicomObject dio = dao.getDicomAttributes(privateFile.getPk());
-                        File file = new File();
-                        file.setFilePath(privateFile.getFilePath());
-                        file.setFileSize(privateFile.getFileSize());
-                        file.setFileStatus(privateFile.getFileStatus());
-                        file.setFileSystem(privateFile.getFileSystem());
-                        file.setMD5Sum(privateFile.getFileMD5());
-                        file.setTransferSyntaxUID(privateFile.getTransferSyntaxUID());
-                        Instance instance = new Instance();
-                        file.setInstance(instance);
-                        fio.addFile(file, dio);
-
-                        if (privateFile.getFileSystem().getAvailability().equals(Availability.ONLINE))  
-                            if (!new java.io.File(privateFile.getFilePath()).exists())
-                                allOnline = false;
+                    if (files.size() > 0) {
+                        Collections.sort(files, new Comparator<PrivateFile>() {
+                            public int compare(PrivateFile f1, PrivateFile f2) {
+                                return f2.getFileSystem().getAvailability().compareTo(f1.getFileSystem().getAvailability());
+                            }});
+                        
+                        boolean allOnline = true;                    
+                        for (PrivateFile privateFile : files) {
+                            DicomObject dio = dao.getDicomAttributes(privateFile.getPk());
+                            File file = new File();
+                            file.setFilePath(privateFile.getFilePath());
+                            file.setFileSize(privateFile.getFileSize());
+                            file.setFileStatus(privateFile.getFileStatus());
+                            file.setFileSystem(privateFile.getFileSystem());
+                            file.setMD5Sum(privateFile.getFileMD5());
+                            file.setTransferSyntaxUID(privateFile.getTransferSyntaxUID());
+                            Instance instance = new Instance();
+                            file.setInstance(instance);
+                            fio.addFile(file, dio);
+    
+                            if (privateFile.getFileSystem().getAvailability().equals(Availability.ONLINE))  
+                                if (!new java.io.File(privateFile.getFilePath()).exists())
+                                    allOnline = false;
+                        }
+                        
+                        if (!allOnline) 
+                            setRemark(new StringResourceModel("trash.message.notAllOnline", TrashListPage.this, null));
+                        StoreBridgeDelegate.getInstance().importFile(fio);
+                        removeRestoredEntries();                            
+                        setStatus(new StringResourceModel("trash.message.restoreDone", TrashListPage.this, null));
+                        if (selected.hasPatients()) {
+                            viewport.getPatients().clear();
+                            queryStudies();
+                        } else
+                            selected.refreshView(true);
+                    } else {
+                        setStatus(new StringResourceModel("trash.message.restoreNotPossible", TrashListPage.this, null));
                     }
-                    
-                    if (!allOnline) 
-                        setRemark(new StringResourceModel("trash.message.notAllOnline", TrashListPage.this, null));
-                    
-                    StoreBridgeDelegate.getInstance().importFile(fio);
-                    removeRestoredEntries();                            
-                    log.info("###### before setStatus done");
-
-                    setStatus(new StringResourceModel("trash.message.restoreDone", TrashListPage.this, null));
-                    if (selected.hasPatients()) {
-                        viewport.getPatients().clear();
-                        queryStudies();
-                    } else
-                        selected.refreshView(true);
                 } catch (Throwable t) {
                     setStatus(new StringResourceModel("trash.message.restoreFailed", TrashListPage.this, null));
+                    MBeanException mbe = null;
                     while (t instanceof javax.management.MBeanException) 
                         t = ((javax.management.MBeanException) t).getCause();
                     if (t != null) 
                         setRemark(new Model<String>(t.getLocalizedMessage()));
                     log.error("Exception restoring entry:"+t.getMessage(), t);                    
                 }
-                log.info("###### onConfirmation doLAST");
                 target.addComponent(messageWindowPanel.getMsgLabel());
                 target.addComponent(messageWindowPanel.getOkBtn());
             }
         };
-        confirmRestore.setInitialHeight(300);
-        confirmRestore.setInitialWidth(400);
+        confirmRestore.setInitialHeight(150);
         form.add(confirmRestore);
         
         AjaxButton restoreBtn = new AjaxButton("restoreBtn") {
@@ -556,10 +562,38 @@ public class TrashListPage extends Panel {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 selected.update(viewport.getPatients());
                 selected.deselectChildsOfSelectedEntities();
-                if (selected.hasDicomSelection())
-                    confirmRestore.confirm(target, new StringResourceModel("trash.message.confirmRestore", this, null,new Object[]{selected}), selected);
-                else
+                if (selected.hasDicomSelection()) {
+                    try {
+                        Set<Study> studiesInFolder = new HashSet<Study>();
+                        List<PrivateFile> files = getFilesToRestore(studiesInFolder);
+                        log.debug("Files to restore: {}", files);
+                        log.debug("Trash restore studiesInFolder: {}", studiesInFolder);
+                        if (files.size() > 0) {
+                            if (studiesInFolder.isEmpty()) {
+                                confirmRestore.confirm(target, new StringResourceModel("trash.message.confirmRestore", this, null,new Object[]{selected}), files);
+                            } else {
+                                StringBuilder suids = new StringBuilder();
+                                for (Study st : studiesInFolder) {
+                                    suids.append(st.getStudyInstanceUID()).append(", ");
+                                }
+                                suids.setLength(suids.length() - 2);
+                                confirmRestore.confirm(target, new StringResourceModel("trash.message.confirmRestoreStudyExists", this, null,
+                                        new Object[]{selected, studiesInFolder.size(), suids}), files);
+                            }
+                        } else {
+                            msgWin.show(target, getString("trash.message.restoreNotPossible"));
+                        }
+                    } catch (Throwable t) {
+                        while (t instanceof javax.management.MBeanException) 
+                            t = ((javax.management.MBeanException) t).getCause();
+                        if (t != null) 
+                            msgWin.show(target, new StringResourceModel("trash.message.restoreFailedWithReason", TrashListPage.this, 
+                                    null, new Object[]{t.getLocalizedMessage()}));
+                        log.error("Exception restoring entry:"+t.getMessage(), t);                    
+                    }
+                } else {
                     msgWin.show(target, getString("trash.message.noSelection"));
+                }
             }
         };
         restoreBtn.add(new Image("restoreImg",ImageManager.IMAGE_TRASH_RESTORE)
@@ -1161,24 +1195,39 @@ public class TrashListPage extends Panel {
         return true;
     }
     
-    private List<PrivateFile> getFilesToRestore() {
+    private List<PrivateFile> getFilesToRestore(Set<Study> studiesInFolder) {
 
         List<PrivateFile> files = new ArrayList<PrivateFile>();
         if (selected.hasPatients()) {
-            for (PrivPatientModel pp : selected.getPatients())
+            for (PrivPatientModel pp : selected.getPatients()) {
                 files.addAll(dao.getFilesForEntity(pp.getPk(), PrivatePatient.class));
+                List<PrivStudyModel> studies = pp.getStudies();
+                if (!studies.isEmpty()) {
+                    String[] suids = new String[studies.size()];
+                    int i = 0;
+                    for (PrivStudyModel psm : studies)
+                        suids[i++] = psm.getStudyInstanceUID();
+                    studiesInFolder.addAll(dao.getStudiesInFolder(suids));
+                }
+            }
         }
         if (selected.hasStudies()) {
-            for (PrivStudyModel pst : selected.getStudies())
+            for (PrivStudyModel pst : selected.getStudies()) {
                 files.addAll(dao.getFilesForEntity(pst.getPk(), PrivateStudy.class));
+                studiesInFolder.addAll(dao.getStudiesInFolder(new String[]{pst.getStudyInstanceUID()}));
+            }
         }
         if (selected.hasSeries()) {
-            for (PrivSeriesModel pse : selected.getSeries())
+            for (PrivSeriesModel pse : selected.getSeries()) {
                 files.addAll(dao.getFilesForEntity(pse.getPk(), PrivateSeries.class));
+                studiesInFolder.addAll(dao.getStudiesInFolder(new String[]{pse.getStudy().getStudyInstanceUID()}));
+            }
         }
         if (selected.hasInstances()) {
-            for (PrivInstanceModel pi : selected.getInstances())
+            for (PrivInstanceModel pi : selected.getInstances()) {
                 files.addAll(dao.getFilesForEntity(pi.getPk(), PrivateInstance.class));
+                studiesInFolder.addAll(dao.getStudiesInFolder(new String[]{pi.getSeries().getStudy().getStudyInstanceUID()}));
+            }
         }
         return files;
     }
