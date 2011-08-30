@@ -102,6 +102,7 @@ import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.trash.TrashListFilter;
 import org.dcm4chee.web.dao.trash.TrashListLocal;
@@ -520,8 +521,8 @@ public class TrashListPage extends Panel {
                             file.setInstance(instance);
                             fio.addFile(file, dio);
     
-                            if (privateFile.getFileSystem().getAvailability().equals(Availability.ONLINE))  
-                                if (!new java.io.File(privateFile.getFilePath()).exists())
+                            if (allOnline && privateFile.getFileSystem().getAvailability().equals(Availability.ONLINE))  
+                                if (!FileUtils.resolve(new java.io.File(privateFile.getFileSystem().getDirectoryPath(), privateFile.getFilePath())).exists())
                                     allOnline = false;
                         }
                         
