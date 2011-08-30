@@ -79,6 +79,8 @@ public class StudyListFilter implements Serializable {
     private int autoExpandLevel = -1;
     private boolean fuzzyPN;
     private int autoWildcard = 0;
+    private boolean isStudyIuidQuery;
+    private boolean isSeriesIuidQuery;
     
     public StudyListFilter(String forUsername) {
         clear();
@@ -89,7 +91,6 @@ public class StudyListFilter implements Serializable {
             studyInstanceUID = modality = sourceAET = seriesInstanceUID = null;
         studyDateMin = studyDateMax = null; 
         birthDateMin = birthDateMax = null;
-        extendedQuery = false;
         patientQuery = false;
         latestStudiesFirst = false;
         ppsWithoutMwl = false;
@@ -97,6 +98,7 @@ public class StudyListFilter implements Serializable {
         exactModalitiesInStudy = false;
         exactSeriesIuid = false;
         fuzzyPN = false;
+        isStudyIuidQuery = isSeriesIuidQuery = false;
     }
 
     public String getPatientName() {
@@ -298,5 +300,21 @@ public class StudyListFilter implements Serializable {
      */
     public void setAutoWildcard(int autoWildcard) {
         this.autoWildcard = autoWildcard;
+    }
+
+    public boolean isStudyIuidQuery() {
+        return isStudyIuidQuery;
+    }
+
+    public void setStudyIuidQuery(boolean b) {
+        this.isStudyIuidQuery = b;
+    }
+
+    public boolean isSeriesIuidQuery() {
+        return isSeriesIuidQuery;
+    }
+
+    public void setSeriesIuidQuery(boolean b) {
+        this.isSeriesIuidQuery = b;
     }
 }

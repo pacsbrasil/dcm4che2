@@ -436,14 +436,13 @@ public class StudyListPage extends Panel {
             }            
         }.add(new UIDValidator(true)).add(new OnChangeAjaxBehavior() {
             private static final long serialVersionUID = 1L;
-            private boolean stdQuery = true;
             
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
-                boolean b = QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
-                if (b != stdQuery) {
+                boolean b = !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
+                if (b != filter.isStudyIuidQuery()) {
                     target.addComponent(form);
-                    stdQuery = b;
+                    filter.setStudyIuidQuery(b);
                 }
             }
         }));
@@ -458,14 +457,13 @@ public class StudyListPage extends Panel {
             }
         }.add(new UIDValidator(true)).add(new OnChangeAjaxBehavior() {
             private static final long serialVersionUID = 1L;
-            private boolean stdQuery = true;
             
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
-                boolean b = QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID());
-                if (b != stdQuery) {
+                boolean b = !QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID());
+                if (b != filter.isSeriesIuidQuery()) {
                     target.addComponent(form);
-                    stdQuery = b;
+                    filter.setSeriesIuidQuery(b);
                 }
             }
         }));

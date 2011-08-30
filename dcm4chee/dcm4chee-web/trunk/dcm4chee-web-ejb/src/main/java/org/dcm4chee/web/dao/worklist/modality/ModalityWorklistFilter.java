@@ -74,6 +74,7 @@ public class ModalityWorklistFilter implements Serializable {
     private Date startDateMax;
     private boolean fuzzyPN;
     private int autoWildcard = 0;
+    private boolean isStudyIuidQuery;
 
     public ModalityWorklistFilter(String forUsername) {
         clear();
@@ -84,7 +85,8 @@ public class ModalityWorklistFilter implements Serializable {
             studyInstanceUID = modality = scheduledStationAET = 
                 scheduledStationName = SPSStatus = null;
         startDateMin = startDateMax = birthDateMin = birthDateMax = null;
-        extendedQuery = latestItemsFirst = false;
+        latestItemsFirst = false;
+        isStudyIuidQuery = false;
     }
 
     public String getPatientName() {
@@ -246,5 +248,13 @@ public class ModalityWorklistFilter implements Serializable {
      */
     public void setAutoWildcard(int autoWildcard) {
         this.autoWildcard = autoWildcard;
+    }
+
+    public boolean isStudyIuidQuery() {
+        return isStudyIuidQuery;
+    }
+
+    public void setStudyIuidQuery(boolean b) {
+        this.isStudyIuidQuery = b;
     }
 }

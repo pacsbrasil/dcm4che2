@@ -331,14 +331,13 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         extendedFilter.add( new Label("studyInstanceUID.label", new ResourceModel("mw.extendedFilter.studyInstanceUID.label")));
         OnChangeAjaxBehavior onChangeAjaxBehavior = new OnChangeAjaxBehavior() {
             private static final long serialVersionUID = 1L;
-            private boolean stdQuery = true;
             
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
-                boolean b = QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
-                if (b != stdQuery) {
+                boolean b = !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
+                if (b != filter.isStudyIuidQuery()) {
                     target.addComponent(form);
-                    stdQuery = b;
+                    filter.setStudyIuidQuery(b);
                 }
             }
         };
