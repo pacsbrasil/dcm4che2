@@ -490,8 +490,11 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     
     private void fetchTarFileFinished(String fsID, String tarPath, File tarFile) {
         try {
-            server.invoke(tarRetrieverName, "fetchHSMFileFinished", new Object[]{fsID, tarPath, tarFile}, 
-                new String[]{String.class.getName(),String.class.getName(),File.class.getName()});
+            String tarRetrieverHSMModule = (String) server.getAttribute(tarRetrieverName, "HSMModulServicename");
+            if (!NONE.equals(tarRetrieverHSMModule)) {
+                server.invoke(new ObjectName(tarRetrieverHSMModule), "fetchHSMFileFinished", new Object[]{fsID, tarPath, tarFile}, 
+                        new String[]{String.class.getName(),String.class.getName(),File.class.getName()});
+            }
         } catch (Exception x) {
             log.warn("fetchHSMFileFinished failed! fsID:"+fsID+" tarPath:"+tarPath+" tarFile:"+tarFile, x);
         }
