@@ -243,8 +243,7 @@ public class StudyPermissionsPage extends SecureWebPage {
                     .add(new Label("rolename", role.getRolename()))
             );
 
-            int[] winSize = UsrCfgDelegate.getInstance().getWindowSize("confirmation");
-            rowParent.add((new ModalWindowLink("remove-dicom-role-link", confirmationWindow, winSize[0], winSize[1]) {
+            rowParent.add((new ModalWindowLink("remove-dicom-role-link", confirmationWindow, 400, 300) {
 
                 private static final long serialVersionUID = 1L;
 

@@ -319,7 +319,6 @@
         <dd>reportDiagramImage:   size of the diagram image</dd>
         <dd>reportTable:   size of the report table window</dd>
         <dd>reportTable:   size of the window displaying both diagram image and report table</dd>
-        <dd>confirmation:   size of the confirmation window</dd>
       ]]></description>
       <name>WindowSizeConfig</name>
       <type>java.lang.String</type>
@@ -347,7 +346,6 @@
             reportDiagramImage:800x600
             reportTable:1024x768
             reportDiagramandtable:1024x768
-            confirmation:400x300
          	"/>
       </descriptors>
    </attribute>
