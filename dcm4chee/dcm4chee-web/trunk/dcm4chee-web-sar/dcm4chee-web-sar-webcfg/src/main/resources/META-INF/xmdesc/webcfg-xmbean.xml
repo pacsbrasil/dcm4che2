@@ -431,7 +431,8 @@
       	 <dd>0...Disabled</dd>
       	 <dd>1...Only patient name</dd>
       	 <dd>2...All 'wildcard' search fields</dd>
-      	</dl>
+      	</dl><br/>
+      	Note: Not used for fuzzy (phonetic) search.
       ]]></description>
       <name>AutoWildcard</name>
       <type>int</type>
