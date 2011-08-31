@@ -188,8 +188,8 @@ public class CompressionRules {
             sb.append(CODES[e.compression]);
             if (e.compression == JPLY) {
                 sb.append('(').append(e.quality)
-                  .append(':').append(e.ratio)
                   .append(':').append(e.derivationDescription)
+                  .append(':').append(e.ratio)
                   .append(')');
             }
             sb.append(newline);
