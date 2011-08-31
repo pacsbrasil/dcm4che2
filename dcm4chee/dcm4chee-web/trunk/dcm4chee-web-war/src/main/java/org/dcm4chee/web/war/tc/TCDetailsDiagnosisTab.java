@@ -79,11 +79,14 @@ public class TCDetailsDiagnosisTab extends Panel {
                     yesno = tc.getDiagnosisConfirmed();
                 }
 
-                if (yesno == null) {
-                    yesno = YesNo.No;
+                if (yesno == null) 
+                {
+                    return getString("tc.yesno.unknown");
                 }
-
-                return getString("tc.yesno." + yesno.name().toLowerCase());
+                else
+                {
+                    return getString("tc.yesno." + yesno.name().toLowerCase());
+                }
             }
         }));
     }
