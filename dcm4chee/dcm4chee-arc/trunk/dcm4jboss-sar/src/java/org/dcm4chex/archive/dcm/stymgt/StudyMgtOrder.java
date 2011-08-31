@@ -131,19 +131,23 @@ public class StudyMgtOrder extends BaseJmsOrder implements Serializable {
 	public void processOrderProperties(Object... properties) {
 		this.setOrderProperty(JmsOrderProperties.CALLED_AE_TITLE, this.callingAET);
 		this.setOrderProperty(JmsOrderProperties.CALLING_AE_TITLE, this.calledAET);
-		this.setOrderProperty(JmsOrderProperties.STUDY_INSTANCE_UID, ds.getString(Tags.StudyInstanceUID));
-		this.setOrderProperty(JmsOrderProperties.ISSUER_OF_PATIENT_ID, ds.getString(Tags.IssuerOfPatientID));
-		this.setOrderProperty(JmsOrderProperties.PATIENT_ID, ds.getString(Tags.PatientID));
-        
-		List<String> seriesUIDList = new ArrayList<String>();
-		DcmElement refSeriesSeq = ds.get(Tags.RefSeriesSeq);
-		if ( refSeriesSeq != null ) {
-			for ( int j = 0; j < refSeriesSeq.countItems(); j++ ) {
-				Dataset refSeriesDS = refSeriesSeq.getItem(j);
-				seriesUIDList.add(refSeriesDS.getString(Tags.SeriesInstanceUID));
-			}
+		if (ds != null) {
+        		this.setOrderProperty(JmsOrderProperties.STUDY_INSTANCE_UID, ds.getString(Tags.StudyInstanceUID));
+        		this.setOrderProperty(JmsOrderProperties.ISSUER_OF_PATIENT_ID, ds.getString(Tags.IssuerOfPatientID));
+        		this.setOrderProperty(JmsOrderProperties.PATIENT_ID, ds.getString(Tags.PatientID));
+                
+        		List<String> seriesUIDList = new ArrayList<String>();
+        		DcmElement refSeriesSeq = ds.get(Tags.RefSeriesSeq);
+        		if ( refSeriesSeq != null ) {
+        			for ( int j = 0; j < refSeriesSeq.countItems(); j++ ) {
+        				Dataset refSeriesDS = refSeriesSeq.getItem(j);
+        				seriesUIDList.add(refSeriesDS.getString(Tags.SeriesInstanceUID));
+        			}
+        		}
+                
+        		this.setOrderMultiProperty(JmsOrderProperties.SERIES_INSTANCE_UID, seriesUIDList.toArray(new String[0]));
+		} else {
+		    setOrderProperty(JmsOrderProperties.SOP_INSTANCE_UID, iuid);
 		}
-        
-		this.setOrderMultiProperty(JmsOrderProperties.SERIES_INSTANCE_UID, seriesUIDList.toArray(new String[0]));
 	}
 }
