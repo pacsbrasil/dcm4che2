@@ -70,10 +70,15 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "S
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "FolderActions"
 {
 // KEY: swarm.principal.FolderActions
-    permission ${ComponentPermission} "org.dcm4chee.web.war.folder.StudyListPage", "render, enable";
-//
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:deleteButton", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:moveButton", "render, enable";
+};
+
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "FolderExport"
+{
+// KEY: swarm.principal.FolderExport
+    permission ${ComponentPermission} "org.dcm4chee.web.war.folder.StudyListPage", "render, enable";
+//
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:exportButton", "render, enable";
 };
 
