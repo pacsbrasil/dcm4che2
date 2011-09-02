@@ -36,10 +36,12 @@ public final class TranscoderMain
                 new LongOpt("j2kr", LongOpt.NO_ARGUMENT, null, 'r'),
                 new LongOpt("jply", LongOpt.OPTIONAL_ARGUMENT, null, 'y'),
                 new LongOpt("j2ki", LongOpt.OPTIONAL_ARGUMENT, null, 'i'),
+                new LongOpt("concurrent", LongOpt.OPTIONAL_ARGUMENT, null, 'c'),
                 };
         // 
         Getopt g = new Getopt("dcm4chex-codec", args, "jhv", longopts, true);
         Transcoder t = new Transcoder();
+        boolean concurrent = false;
         while ((c = g.getopt()) != -1)
             switch (c)
             {
@@ -86,6 +88,9 @@ public final class TranscoderMain
                 case 'h' :
                     System.out.println(rb.getString("usage"));
                     return;
+                case 'c' :
+                    concurrent  = true;
+                    break;
             }
         if (!checkArgs(g.getOptind(), args))
         {
@@ -95,49 +100,58 @@ public final class TranscoderMain
         File dest = new File(args[args.length - 1]);
         for (int i = g.getOptind(); i + 1 < args.length; ++i)
         {
-            transcode(t, new File(args[i]), dest);
+            transcode(t, new File(args[i]), dest, concurrent);
         }
     }
 
-    private static void transcode(Transcoder t, File src, File dest)
+    private static void transcode(final Transcoder t, final File src, final File dest,
+            boolean concurrent)
     {
         if (src.isDirectory())
         {
             File[] file = src.listFiles();
             for (int i = 0; i < file.length; i++)
             {
-                transcode(t, file[i], dest);
+                transcode(t, file[i], dest, concurrent);
             }
-        } else
+        } else if (concurrent) {
+            new Thread(new Runnable(){
+
+                public void run() {
+                    transcodeFile(new Transcoder(t), src, dest);
+                }}).start();
+        } else {
+            transcodeFile(t, src, dest);
+        }
+    }
+
+    private static void transcodeFile(Transcoder t, File src, File dest) {
+        try
         {
-            try
-            {
-                File outFile =
-                    dest.isDirectory() ? new File(dest, src.getName()) : dest;
-                long srcLength = src.length();
-                System.out.print(
-                    ""
-                        + src
-                        + " ["
-                        + (srcLength >>> 10)
-                        + " KB] -> "
-                        + outFile);
-                long begin = System.currentTimeMillis();
-                t.transcode(src, outFile);
-                long end = System.currentTimeMillis();
-                long destLength = outFile.length();
-                System.out.println(" [" + (destLength >>> 10) + " KB] ");
-                System.out.println(
-                    "  takes "
-                        + (end - begin)
-                        + " ms, compression rate= "
-                        + ((destLength < srcLength)
-                            ? (srcLength / (float) destLength) + " : 1"
-                            : "1 : " + (destLength / (float) srcLength)));
-            } catch (Exception e)
-            {
-                e.printStackTrace(System.out);
-            }
+            File outFile =
+                dest.isDirectory() ? new File(dest, src.getName()) : dest;
+            long srcLength = src.length();
+            System.out.print(
+                ""
+                    + src
+                    + " ["
+                    + (srcLength >>> 10)
+                    + " KB] -> "
+                    + outFile);
+            long begin = System.currentTimeMillis();
+            t.transcode(src, outFile);
+            long end = System.currentTimeMillis();
+            long destLength = outFile.length();
+            System.out.println(" [" + (destLength >>> 10) + " KB] ");
+            System.out.println(
+                "  takes "
+                    + (end - begin)
+                    + " ms, compression rate= "
+                    + ((destLength < srcLength)
+                        ? (srcLength / (float) destLength) + " : 1"
+                        : "1 : " + (destLength / (float) srcLength)));
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
         }
     }
 

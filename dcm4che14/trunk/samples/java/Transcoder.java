@@ -126,6 +126,16 @@ public class Transcoder {
     private boolean patchInputJpegLS;
     private boolean patchOutputJpegLS;
 
+    public Transcoder() {}
+
+    public Transcoder(Transcoder other) {
+        this.compressionQuality = other.compressionQuality;
+        this.encodingRate = other.encodingRate;
+        this.encodeParam = other.encodeParam;
+        this.encodeTS = other.encodeTS;
+        this.truncatePostPixelData = other.truncatePostPixelData;
+    }
+
     /**
      * if true, input stream is directly copied into output stream without pixel
      * decoding. Makes sense if output ts == input ts. cleared by readHeader if
