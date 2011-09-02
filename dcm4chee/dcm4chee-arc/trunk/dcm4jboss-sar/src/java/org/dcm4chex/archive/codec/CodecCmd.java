@@ -41,6 +41,7 @@ package org.dcm4chex.archive.codec;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
@@ -76,7 +77,7 @@ public abstract class CodecCmd {
     static final String JPEG_LS = "JPEG-LS";
 
     static int maxConcurrentCodec = 1;
-    static int nrOfConcurrentCodec = 0;
+    static AtomicInteger nrOfConcurrentCodec = new AtomicInteger();
 
     static Semaphore codecSemaphore = new FIFOSemaphore(maxConcurrentCodec);
 

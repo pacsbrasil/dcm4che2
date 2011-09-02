@@ -252,6 +252,22 @@ public class CompressionService extends ServiceMBeanSupport {
         CodecCmd.setMaxConcurrentCodec(maxConcurrentCodec);
     }
 
+    public final int getMaxConcurrentCompression() {
+        return CompressCmd.getMaxConcurrentCompression();
+    }
+
+    public final void setMaxConcurrentCompression(int maxConcurrent) {
+        CompressCmd.setMaxConcurrentCompression(maxConcurrent);
+    }
+
+    public final int getMaxConcurrentDecompression() {
+        return DecompressCmd.getMaxConcurrentDecompression();
+    }
+
+    public final void setMaxConcurrentDecompression(int maxConcurrent) {
+        DecompressCmd.setMaxConcurrentDecompression(maxConcurrent);
+    }
+
     public final int getMaxBufferedImagePoolSize() {
         return CodecCmd.getMaxBufferedImagePoolSize();
     }

@@ -81,6 +81,9 @@ import org.dcm4cheri.imageio.plugins.PatchJpegLSImageOutputStream;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 
+import EDU.oswego.cs.dl.util.concurrent.FIFOSemaphore;
+import EDU.oswego.cs.dl.util.concurrent.Semaphore;
+
 import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
 
 /**
@@ -91,6 +94,9 @@ import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
  */
 public abstract class CompressCmd extends CodecCmd {
 
+    private static int maxConcurrentCompress = 1;
+    private static Semaphore compressSemaphore = new FIFOSemaphore(maxConcurrentCompress);
+
     private static final byte[] ITEM_TAG = { (byte) 0xfe, (byte) 0xff,
             (byte) 0x00, (byte) 0xe0 };
     private static final String[] DERIVED_PRIMARY = { "DERIVED", "PRIMARY" };
@@ -98,7 +104,7 @@ public abstract class CompressCmd extends CodecCmd {
             newCodeItem("113040", "DCM", "Lossy Compression");
     private static final Dataset UNCOMPRESSED_PREDECESSOR =
             newCodeItem("121320", "DCM", "Uncompressed predecessor");
-    
+
     private static Dataset newCodeItem(String value, String schemeDesignator,
             String meaning) {
         Dataset item = DcmObjectFactory.getInstance().newDataset();
@@ -276,6 +282,15 @@ public abstract class CompressCmd extends CodecCmd {
         }
     };
 
+    public static void setMaxConcurrentCompression(int maxConcurrentCompress) {
+        compressSemaphore = new FIFOSemaphore(maxConcurrentCompress);
+        CompressCmd.maxConcurrentCompress = maxConcurrentCompress;
+    }
+
+    public static int getMaxConcurrentCompression() {
+        return CompressCmd.maxConcurrentCompress;
+    }
+
     private int bitmask() {
         return 0xffff >>> (bitsAllocated - bitsUsed());
     }
@@ -436,13 +451,15 @@ public abstract class CompressCmd extends CodecCmd {
         ImageWriter w = null;
         BufferedImage bi = null;
         boolean codecSemaphoreAquired = false;
+        boolean compressSemaphoreAquired = false;
         long end = 0;
         try {
             log.debug("acquire codec semaphore");
             codecSemaphore.acquire();
             codecSemaphoreAquired = true;
+            compressSemaphore.acquire();
             log.info("start compression of image: " + rows + "x" + columns
-                    + "x" + frames + " (concurrency:" + (++nrOfConcurrentCodec)+")");
+                    + "x" + frames + " (concurrency:" + (nrOfConcurrentCodec.incrementAndGet())+")");
             t1 = System.currentTimeMillis();
             ImageOutputStream ios = new MemoryCacheImageOutputStream(out);
             ios.setByteOrder(ByteOrder.LITTLE_ENDIAN);
@@ -495,10 +512,13 @@ public abstract class CompressCmd extends CodecCmd {
                 w.dispose();
             if (bi != null)
                 biPool.returnBufferedImage(bi);
+            if (compressSemaphoreAquired) {
+                compressSemaphore.release();
+            }
             if (codecSemaphoreAquired) {
                 log.debug("release codec semaphore");
                 codecSemaphore.release();
-                nrOfConcurrentCodec--;
+                nrOfConcurrentCodec.decrementAndGet();
             }
         }
         long t2 = System.currentTimeMillis();

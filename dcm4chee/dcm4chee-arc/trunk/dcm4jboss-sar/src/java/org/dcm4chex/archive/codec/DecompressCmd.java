@@ -73,6 +73,8 @@ import org.dcm4cheri.image.ImageReaderFactory;
 import org.dcm4cheri.image.ItemParser;
 import org.dcm4cheri.imageio.plugins.PatchJpegLSImageInputStream;
 
+import EDU.oswego.cs.dl.util.concurrent.FIFOSemaphore;
+
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
 
 /**
@@ -94,6 +96,19 @@ public class DecompressCmd extends CodecCmd {
     private final ImageInputStream iis;
 
     private int[] simpleFrameList;
+
+    private static int maxConcurrentDecompress = 1;
+    private static FIFOSemaphore decompressSemaphore = new FIFOSemaphore(maxConcurrentDecompress);
+
+    public static void setMaxConcurrentDecompression(int maxConcurrentDecompress) {
+        decompressSemaphore = new FIFOSemaphore(maxConcurrentDecompress);
+        DecompressCmd.maxConcurrentDecompress = maxConcurrentDecompress;
+    }
+
+    public static int getMaxConcurrentDecompression() {
+        return DecompressCmd.maxConcurrentDecompress;
+    }
+
 
     public static byte[] decompressFile(File inFile, File outFile,
             String outTS, int planarConfiguration, int pxdataVR,
@@ -182,12 +197,15 @@ public class DecompressCmd extends CodecCmd {
         BufferedImage bi = null;
         boolean patchJpegLS = false;
         boolean codecSemaphoreAquired = false;
+        boolean decompressSemaphoreAquired = false;
         try {
             log.debug("acquire codec semaphore");
             codecSemaphore.acquire();
             codecSemaphoreAquired = true;
+            decompressSemaphore.acquire();
+            decompressSemaphoreAquired = true;
             log.info("start decompression of image: " + rows + "x" + columns
-                    + "x" + frames + " (concurrency:" + (++nrOfConcurrentCodec)+")");
+                    + "x" + frames + " (concurrency:" + (nrOfConcurrentCodec.incrementAndGet())+")");
             t1 = System.currentTimeMillis();
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(tsuid);
@@ -227,10 +245,13 @@ public class DecompressCmd extends CodecCmd {
                 reader.dispose();
             if (bi != null)
                 biPool.returnBufferedImage(bi);
+            if (decompressSemaphoreAquired) {
+                decompressSemaphore.release();
+            }
             if (codecSemaphoreAquired) {
                 log.debug("release codec semaphore");
                 codecSemaphore.release();
-                nrOfConcurrentCodec--;
+                nrOfConcurrentCodec.decrementAndGet();
             }
         }
         long t2 = System.currentTimeMillis();

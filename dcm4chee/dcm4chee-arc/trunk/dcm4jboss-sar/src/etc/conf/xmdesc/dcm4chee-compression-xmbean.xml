@@ -53,6 +53,32 @@ configured -Xmx value in the $DCM4CHEE_HOME/bin/run.conf file).
     </descriptors>
   </attribute>
 
+  <attribute access="read-write" getMethod="getMaxConcurrentCompression"
+    setMethod="setMaxConcurrentCompression">
+    <description><![CDATA[
+Maximum number of concurrent tasks for compressing images. With the default value of
+<b>MaxConcurrentCompression</b> = 1, all compression operations are serialized.
+]]></description>
+    <name>MaxConcurrentCompression</name>
+    <type>int</type>
+    <descriptors>
+      <value value="1" />
+    </descriptors>
+  </attribute>
+
+  <attribute access="read-write" getMethod="getMaxConcurrentDecompression"
+    setMethod="setMaxConcurrentDecompression">
+    <description><![CDATA[
+Maximum number of concurrent tasks for decompressing images. With the default value of
+<b>MaxConcurrentDecompression</b> = 1, all decompression operations are serialized.
+]]></description>
+    <name>MaxConcurrentDecompression</name>
+    <type>int</type>
+    <descriptors>
+      <value value="1" />
+    </descriptors>
+  </attribute>
+
   <attribute access="read-write" getMethod="getFileSystemGroupIDs"
     setMethod="setFileSystemGroupIDs">
     <description><![CDATA[Group IDs of writable file systems which are scanned
