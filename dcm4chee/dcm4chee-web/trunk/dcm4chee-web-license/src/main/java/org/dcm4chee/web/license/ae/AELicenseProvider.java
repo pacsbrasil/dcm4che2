@@ -60,8 +60,8 @@ public class AELicenseProvider implements AELicenseProviderSPI {
         return types;
     }
     
-    public boolean allowAETCreaton() {
-        // check if allowed number of licensed AETs is reached
+    public boolean allowAETCreation(String type) {
+        // check if allowed number of licensed AETs of given type is reached
         return true;
     }
 }

@@ -51,5 +51,5 @@ public interface AELicenseProviderSPI {
     
     public String getName();
     public List<String> getAETypes(List<String> types);
-    public boolean allowAETCreaton();
+    public boolean allowAETCreation(String type);
 }

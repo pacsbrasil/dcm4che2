@@ -94,8 +94,8 @@ public class AELicenseProviderManager implements Serializable {
             return "NOPLicenseProvider";
         }
 
-        public boolean allowAETCreaton() {
-            return true;
+        public boolean allowAETCreation(String type) {
+            return !"TEST".equals(type);
         }
 
         public List<String> getAETypes(List<String> types) {
