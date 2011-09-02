@@ -38,6 +38,8 @@
 
 package org.dcm4chee.web.war.ae;
 
+import java.util.HashMap;
+
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
@@ -60,6 +62,8 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.security.components.SecureWebPage;
+import org.apache.wicket.validation.IValidatable;
+import org.apache.wicket.validation.validator.AbstractValidator;
 import org.apache.wicket.validation.validator.RangeValidator;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -67,7 +71,9 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.license.ae.AELicenseProviderManager;
+import org.dcm4chee.web.common.license.ae.spi.AELicenseProviderSPI;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.validators.UrlValidator1;
 import org.dcm4chee.web.dao.fs.FileSystemHomeLocal;
 import org.dcm4chee.web.war.ae.delegate.AEDelegate;
@@ -91,10 +97,9 @@ public class CreateOrEditAETPage extends SecureWebPage {
     
     public CreateOrEditAETPage(final ModalWindow window, final AE ae, final AEListPanel panel) {
         super();
-        
+        final String oldType = ae.getAeGroup();
         if (CreateOrEditAETPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(CreateOrEditAETPage.BaseCSS));
-
         add(new WebMarkupContainer("create-ae-title").setVisible(ae.getPk() == -1));
         add(new WebMarkupContainer("edit-ae-title").setVisible(ae.getPk() != -1));
 
@@ -111,7 +116,22 @@ public class CreateOrEditAETPage extends SecureWebPage {
                 new PropertyModel<String>(ae, "aeGroup"),
                 AELicenseProviderManager.get(null).getProvider().getAETypes(
                 WebCfgDelegate.getInstance().getAETTypes())
-        ).setNullValid(true));
+        ).setNullValid(true).add( new AbstractValidator<String>() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onValidate(IValidatable<String> validatable) {
+                String newType = validatable.getValue();
+                if (ae.getPk() != -1 && (oldType == null ? newType == null : oldType.equals(newType)))
+                    return;
+                if (!AELicenseProviderManager.get(null).getProvider().allowAETCreation(newType)) {
+                    HashMap<String,Object> vars = new HashMap<String, Object>();
+                    vars.put("type", newType);
+                    this.error(validatable, "ae.error.aetTypeDenied", vars);
+                }
+            }
+            
+        }));
         form.addLabeledTextField("hostName").setRequired(true); 
         form.addLabeledNumberTextField("port").add(new RangeValidator<Integer>(1,65535));
         form.add(new Label("ciphers1.label", new StringResourceModel("ae.ciphers", CreateOrEditAETPage.this, null, new Object[]{1} ) ) );
@@ -157,6 +177,7 @@ public class CreateOrEditAETPage extends SecureWebPage {
                 public void setObject(String object) {
                     panel.getMppsEmulatedAETs().put(ae.getTitle(), object);
                 }
+                
             }) {
                 private static final long serialVersionUID = 1L;
                 @Override

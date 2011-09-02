@@ -158,11 +158,6 @@ public class AEListPanel extends Panel {
                 });
                 super.onClick(target);
             }
-            
-            @Override
-            public boolean isEnabled() {
-                return AELicenseProviderManager.get(null).getProvider().allowAETCreaton();
-            }
         };
         newAET.add(new Image("newAETImg",ImageManager.IMAGE_COMMON_ADD)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
