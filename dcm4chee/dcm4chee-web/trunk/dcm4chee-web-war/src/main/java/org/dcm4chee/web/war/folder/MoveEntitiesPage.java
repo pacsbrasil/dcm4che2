@@ -665,7 +665,7 @@ public class MoveEntitiesPage extends SecureWebPage {
             }
         }
 
-        @SuppressWarnings({ "unchecked", "rawtypes" })
+        @SuppressWarnings({ "unchecked" })
         private StringResourceModel getSelectedInfoModel(String key, SelectedInfo info, String def) {
             if (info == null ) {
                 return new StringResourceModel(key, MoveEntitiesPage.this, null, null, def);
@@ -727,7 +727,7 @@ public class MoveEntitiesPage extends SecureWebPage {
                 }
             }
         }
-        @SuppressWarnings({ "rawtypes", "unchecked" })
+        @SuppressWarnings({ "unchecked" })
         private void deleteEmpty() {
             log.info("Delete empty entries:"+emptySourceParents);
             AbstractDicomModel toDel;

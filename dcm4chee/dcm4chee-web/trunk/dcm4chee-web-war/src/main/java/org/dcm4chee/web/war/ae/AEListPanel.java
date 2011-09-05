@@ -162,10 +162,7 @@ public class AEListPanel extends Panel {
         newAET.add(new Image("newAETImg",ImageManager.IMAGE_COMMON_ADD)
             .add(new ImageSizeBehaviour("vertical-align: middle;"))
         );
-        if (newAET.isEnabled())
-            newAET.add(new TooltipBehaviour("ae."));
-        else
-            newAET.add(new AttributeModifier("title", true, new ResourceModel("ae.newAET.tooltip.notAllowed")));
+        newAET.add(new TooltipBehaviour("ae."));
         newAET.add(new Label("newAETText", new ResourceModel("ae.newAET.text"))
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
