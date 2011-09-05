@@ -387,10 +387,12 @@ public class StudyListPage extends Panel {
         form.addInternalLabel("fuzzyPN").setVisible(filter.isFuzzyPNEnabled());
         form.addTextField("patientID", enabledModelPat, true);
         form.addTextField("issuerOfPatientID", enabledModelPat, true);
+       
         SimpleDateTimeField dtf = form.addDateTimeField("studyDateMin", new PropertyModel<Date>(filter, "studyDateMin"), 
                 enabledModel, false, true);
         SimpleDateTimeField dtfEnd = form.addDateTimeField("studyDateMax", new PropertyModel<Date>(filter, "studyDateMax"), enabledModel, true, true);
         dtf.addToDateField(new CheckOneDayBehaviour(dtf, dtfEnd, "onchange"));
+        
         form.addTextField("accessionNumber", enabledModel, false);
 
         searchTableComponents.add(form.createAjaxParent("searchDropdowns"));
