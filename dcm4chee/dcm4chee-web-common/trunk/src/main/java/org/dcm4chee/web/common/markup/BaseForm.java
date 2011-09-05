@@ -202,23 +202,20 @@ public class BaseForm extends Form<Object> {
                 return enabledModel == null ? true : enabledModel.getObject();
             }
         };
-
-        AbstractReadOnlyModel<String> dateFormatModel = 
-            new AbstractReadOnlyModel<String>() {
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public String getObject() {
-                    return DateUtils.getDatePattern(dtf);
-                }
-            };
-        dtf.add(new TooltipBehaviour(resourceIdPrefix, id, dateFormatModel)
-            .setGenerateComponentTreePrefix());
-
-        // workaround for internet explorer to display the tooltip : 
-        // add title to date field 
         dtf.getDateField().add(new AttributeModifier("title", true, 
-                new StringResourceModel(toResourceKey(id) + ".tooltip", this, dateFormatModel)));
+                new StringResourceModel(toResourceKey(id) + ".date.tooltip", this, 
+                        new AbstractReadOnlyModel<String>() {
+                            private static final long serialVersionUID = 1L;
+        
+                            @Override
+                            public String getObject() {
+                                return DateUtils.getDatePattern(dtf);
+                            }
+                        }
+                )
+        ));
+        dtf.getTimeField().add(new AttributeModifier("title", true, 
+                new StringResourceModel(toResourceKey(id) + ".time.tooltip", this, null)));
         return dtf;
     }
     
@@ -233,15 +230,11 @@ public class BaseForm extends Form<Object> {
         };
         dtf.setWithoutTime(true);
         if (tooltipPrefix != null) {
-            dtf.add(new TooltipBehaviour((resourceIdPrefix != null ? resourceIdPrefix : "") + tooltipPrefix, id, new PropertyModel<Object>(dtf,"textFormat")));
-
-            // workaround for internet explorer to display the tooltip : 
-            // add title to date field 
             dtf.getDateField().add(new AttributeModifier("title", true, 
                     new StringResourceModel((resourceIdPrefix != null ? resourceIdPrefix : "") 
-                            + tooltipPrefix 
+                            + tooltipPrefix
                             + id 
-                            + ".tooltip", this, new PropertyModel<Object>(dtf,"textFormat"))));
+                            + ".date.tooltip", this, new PropertyModel<Object>(dtf,"textFormat"))));
         }
         dtf.add(markInvalidBehaviour);
         return dtf;

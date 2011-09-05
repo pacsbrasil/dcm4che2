@@ -118,6 +118,10 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
         return this.dateField;
     }
     
+    public TimeField getTimeField() {
+        return this.timeField;
+    }
+
     public boolean isWithoutTime() {
         return withoutTime;
     }
