@@ -414,7 +414,6 @@ public class StudyListPage extends Panel {
         final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
 
             private static final long serialVersionUID = 1L;
-
             @Override
             public boolean isVisible() {
                 return showSearch && filter.isExtendedQuery();
