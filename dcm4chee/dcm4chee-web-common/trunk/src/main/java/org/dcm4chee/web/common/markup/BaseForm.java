@@ -42,6 +42,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -59,6 +60,7 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.validation.IValidator;
 import org.apache.wicket.validation.validator.StringValidator;
 import org.dcm4che2.data.DicomObject;
@@ -200,21 +202,28 @@ public class BaseForm extends Form<Object> {
                 return enabledModel == null ? true : enabledModel.getObject();
             }
         };
-        dtf.add(new TooltipBehaviour(resourceIdPrefix, id,
-                new AbstractReadOnlyModel<String>(){
-                    private static final long serialVersionUID = 1L;
 
-                    @Override
-                    public String getObject() {
-                        return DateUtils.getDatePattern(dtf);
-                    }
+        AbstractReadOnlyModel<String> dateFormatModel = 
+            new AbstractReadOnlyModel<String>() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public String getObject() {
+                    return DateUtils.getDatePattern(dtf);
                 }
-        ).setGenerateComponentTreePrefix());
+            };
+        dtf.add(new TooltipBehaviour(resourceIdPrefix, id, dateFormatModel)
+            .setGenerateComponentTreePrefix());
+
+        // workaround for internet explorer to display the tooltip : 
+        // add title to date field 
+        dtf.getDateField().add(new AttributeModifier("title", true, 
+                new StringResourceModel(toResourceKey(id) + ".tooltip", this, dateFormatModel)));
         return dtf;
     }
     
     public SimpleDateTimeField getDateTextField(String id, IModel<Date> model, String tooltipPrefix, final IModel<Boolean> enabledModel) {
-        SimpleDateTimeField dt = new SimpleDateTimeField(id, model) {
+        SimpleDateTimeField dtf = new SimpleDateTimeField(id, model) {
                 private static final long serialVersionUID = 1L;
 
             @Override
@@ -222,11 +231,20 @@ public class BaseForm extends Form<Object> {
                 return enabledModel == null ? true : enabledModel.getObject();
             }
         };
-        dt.setWithoutTime(true);
-        if (tooltipPrefix != null) 
-            dt.add(new TooltipBehaviour((resourceIdPrefix != null ? resourceIdPrefix : "") + tooltipPrefix, id, new PropertyModel<Object>(dt,"textFormat")));
-        dt.add(markInvalidBehaviour);
-        return dt;
+        dtf.setWithoutTime(true);
+        if (tooltipPrefix != null) {
+            dtf.add(new TooltipBehaviour((resourceIdPrefix != null ? resourceIdPrefix : "") + tooltipPrefix, id, new PropertyModel<Object>(dtf,"textFormat")));
+
+            // workaround for internet explorer to display the tooltip : 
+            // add title to date field 
+            dtf.getDateField().add(new AttributeModifier("title", true, 
+                    new StringResourceModel((resourceIdPrefix != null ? resourceIdPrefix : "") 
+                            + tooltipPrefix 
+                            + id 
+                            + ".tooltip", this, new PropertyModel<Object>(dtf,"textFormat"))));
+        }
+        dtf.add(markInvalidBehaviour);
+        return dtf;
     }
     
     public DropDownChoice<?> addLabeledDropDownChoice(String id, IModel<Object> model, List<String> values) {

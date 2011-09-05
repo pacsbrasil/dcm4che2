@@ -77,7 +77,7 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
         super(id, model);
         setType(Date.class);
         dateField = new DateTextField("dateField", new DateModel(this), 
-                new StyleDateConverter("S-", false){
+                new StyleDateConverter("S-", false) {
 
                     private static final long serialVersionUID = 1L;
 
@@ -112,6 +112,10 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
     public SimpleDateTimeField setWithoutTime(boolean b) {
         withoutTime = b;
         return this;
+    }
+    
+    DateTextField getDateField() {
+        return this.dateField;
     }
     
     public boolean isWithoutTime() {

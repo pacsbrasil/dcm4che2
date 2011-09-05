@@ -100,10 +100,12 @@ public class TooltipBehaviour extends AbstractBehavior {
     }
 
     public void onComponentTag(Component c, ComponentTag tag) {
-        tag.put("title", getLocalizer().getStringIgnoreSettings(getResourceKey(c), c, substitutionModel, ""));
+        String currentTitle = tag.getAttribute("title");
+        tag.put("title", currentTitle != null ? (currentTitle + " ") : "" + 
+            getLocalizer().getStringIgnoreSettings(getResourceKey(c), c, substitutionModel, ""));
     }
 
-    private String getResourceKey(Component c) {
+    String getResourceKey(Component c) {
         if (generateComponentTreePrefix)
             prefix = generateComponentTreePrefix(c);
         StringBuilder sb = new StringBuilder();

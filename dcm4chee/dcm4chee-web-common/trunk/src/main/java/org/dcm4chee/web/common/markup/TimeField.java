@@ -72,7 +72,7 @@ public class TimeField extends TextField<Date> implements ITextFormatProvider {
         super.onComponentTag(tag);
         if ( tag.getAttribute("class") == null ) {
             tag.put("class", "timeField");
-	}
+        }
     }
     
     @Override
