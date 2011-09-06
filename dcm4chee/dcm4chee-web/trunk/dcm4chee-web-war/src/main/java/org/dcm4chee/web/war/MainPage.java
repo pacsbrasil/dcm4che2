@@ -54,6 +54,8 @@ import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.ExternalWebApp;
 import org.dcm4chee.web.common.base.ExternalWebApplications;
 import org.dcm4chee.web.common.base.ModuleSelectorPanel;
+import org.dcm4chee.web.common.license.ae.AELicenseProviderManager;
+import org.dcm4chee.web.common.license.ae.spi.AELicenseProviderSPI;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecureWicketPage;
 import org.dcm4chee.web.war.ae.AEPanel;
@@ -97,12 +99,17 @@ public class MainPage extends SecureWicketPage {
     }
 
     private void addModules(ModuleSelectorPanel selectorPanel) {
+        
+        AELicenseProviderSPI provider = AELicenseProviderManager.get(null).getProvider();
+
         selectorPanel.addModule(StudyListPage.class);
         selectorPanel.addModule(TrashListPage.class);
         selectorPanel.addModule(AEPanel.class);
         selectorPanel.addModule(ModalityWorklistPanel.class);
-        selectorPanel.addModule(TCPanel.class);
-        selectorPanel.addModule(DashboardPanel.class);
+        if (provider.allowFeature("teachingfiles"))
+            selectorPanel.addModule(TCPanel.class);
+        if (provider.allowFeature("dashboard"))
+            selectorPanel.addModule(DashboardPanel.class);
         selectorPanel.addModule(RolePanel.class, null);
 
         if (((SecureSession) RequestCycle.get().getSession()).getManageUsers()) {

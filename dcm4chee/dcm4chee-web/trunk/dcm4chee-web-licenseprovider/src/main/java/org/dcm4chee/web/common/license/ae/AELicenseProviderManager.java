@@ -101,5 +101,9 @@ public class AELicenseProviderManager implements Serializable {
         public List<String> getAETypes(List<String> types) {
             return types;
         }
+    
+        public boolean allowFeature(String name) {
+            return true;
+        }
     }
 }

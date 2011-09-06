@@ -64,4 +64,14 @@ public class AELicenseProvider implements AELicenseProviderSPI {
         // check if allowed number of licensed AETs of given type is reached
         return true;
     }
+    
+    public boolean allowFeature(String name) {
+        // check if feature is allowed
+        if ("dashboard".equals(name))
+            return true;
+        else if ("teachingfiles".equals(name))
+            return true;
+        else 
+            return false;
+    }
 }
