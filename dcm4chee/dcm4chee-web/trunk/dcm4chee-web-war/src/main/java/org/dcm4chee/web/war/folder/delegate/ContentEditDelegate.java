@@ -140,13 +140,13 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
             if (selected.getPpss().size() > 0) {
                 throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVE_PPS, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_PPS);
             } 
-            checkAllOnline(selected);
             // study(series,inst) -> pat
             int pats = selected.getPatients().size();
             if (pats > 1) {
                 throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVE_DESTINATION, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_DESTINATION);
             } 
             if( pats == 1) {
+                checkAllOnline(selected, PatientModel.PATIENT_LEVEL);
                 long patPk = selected.getPatients().iterator().next().getPk();
                 if (selected.getStudies().size() < 1) {
                     if ( selected.hasSeries() && selected.hasInstances()) {
@@ -172,6 +172,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
                 throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVE_DESTINATION, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_DESTINATION);
             } 
             if( nrOfStudies == 1) {
+                checkAllOnline(selected, PatientModel.STUDY_LEVEL);
                 if (selected.getSeries().size() < 1) {
                     if ( selected.hasInstances()) {
                         SeriesModel sModel = selected.getInstances().iterator().next().getSeries();
@@ -189,6 +190,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
                 throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVE_DESTINATION, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_DESTINATION);
             } 
             if( nrOfSeries == 1) {
+                checkAllOnline(selected, PatientModel.SERIES_LEVEL);
                 if (selected.getInstances().size() < 1) {
                     throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVE_NO_SOURCE, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_NO_SOURCE);
                 }
@@ -214,18 +216,24 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         }
     }
 
-    private void checkAllOnline(SelectedEntities selected) throws SelectionException {
-        for ( StudyModel m : selected.getStudies()) {
-            if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE)
-                throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVENOT_ONLINE, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
+    private void checkAllOnline(SelectedEntities selected, int level) throws SelectionException {
+        if (level > StudyModel.STUDY_LEVEL) {
+            for ( StudyModel m : selected.getStudies()) {
+                if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE)
+                    throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVENOT_ONLINE, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
+            }
         }
-        for ( SeriesModel m : selected.getSeries()) {
-            if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE)
-                throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVENOT_ONLINE, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
+        if (level > SeriesModel.SERIES_LEVEL) {
+            for ( SeriesModel m : selected.getSeries()) {
+                if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE)
+                    throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVENOT_ONLINE, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
+            }
         }
-        for ( InstanceModel m : selected.getInstances()) {
-            if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE)
-                throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVENOT_ONLINE, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
+        if (level > InstanceModel.INSTANCE_LEVEL) {
+            for ( InstanceModel m : selected.getInstances()) {
+                if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE)
+                    throw new SelectionException(MoveEntitiesPage.MSG_ERR_SELECTION_MOVENOT_ONLINE, MoveEntitiesPage.MSGID_ERR_SELECTION_MOVE_NOT_ONLINE);
+            }
         }
     }
 
