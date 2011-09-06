@@ -65,11 +65,13 @@ import org.apache.wicket.PageMap;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.Component.IVisitor;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
+import org.apache.wicket.ajax.form.AjaxFormSubmitBehavior;
 import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -93,6 +95,7 @@ import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
+import org.apache.wicket.markup.html.form.IFormSubmittingComponent;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.ExternalLink;
@@ -115,6 +118,7 @@ import org.apache.wicket.security.hive.authorization.Principal;
 import org.apache.wicket.security.hive.authorization.SimplePrincipal;
 import org.apache.wicket.security.swarm.strategies.SwarmStrategy;
 import org.apache.wicket.util.lang.Classes;
+import org.apache.wicket.util.string.AppendingStringBuffer;
 import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
@@ -166,6 +170,7 @@ import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
 import org.dcm4chee.web.war.common.EditDicomObjectPanel;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
+import org.dcm4chee.web.war.common.UIDFieldBehavior;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
@@ -435,18 +440,7 @@ public class StudyListPage extends Panel {
             public boolean isEnabled() {
                 return !filter.isPatientQuery();
             }            
-        }.add(new UIDValidator(true)).add(new OnChangeAjaxBehavior() {
-            private static final long serialVersionUID = 1L;
-            
-            @Override
-            protected void onUpdate(AjaxRequestTarget target) {
-                boolean b = !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
-                if (b != filter.isStudyIuidQuery()) {
-                    target.addComponent(form);
-                    filter.setStudyIuidQuery(b);
-                }
-            }
-        }));
+        }.add(new UIDValidator(true)).add(new UIDFieldBehavior(form)));
 
         extendedFilter.add( new Label("seriesInstanceUID.label", new ResourceModel("folder.extendedFilter.seriesInstanceUID.label")));
         extendedFilter.add( new TextField<String>("seriesInstanceUID") {
@@ -456,18 +450,7 @@ public class StudyListPage extends Panel {
             public boolean isEnabled() {
                 return !filter.isPatientQuery() && QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
             }
-        }.add(new UIDValidator(true)).add(new OnChangeAjaxBehavior() {
-            private static final long serialVersionUID = 1L;
-            
-            @Override
-            protected void onUpdate(AjaxRequestTarget target) {
-                boolean b = !QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID());
-                if (b != filter.isSeriesIuidQuery()) {
-                    target.addComponent(form);
-                    filter.setSeriesIuidQuery(b);
-                }
-            }
-        }));
+        }.add(new UIDValidator(true)).add(new UIDFieldBehavior(form)));
         extendedFilter.add(new CheckBox("exactSeriesIuid"));
         form.add(extendedFilter);
         
