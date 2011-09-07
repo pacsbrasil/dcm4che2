@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
  * @since Aug 23, 2011
  */
 public class AELicenseProviderManager implements Serializable {
+    
     private static final long serialVersionUID = 1L;
 
     private AELicenseProviderSPI provider;

@@ -106,9 +106,9 @@ public class MainPage extends SecureWicketPage {
         selectorPanel.addModule(TrashListPage.class);
         selectorPanel.addModule(AEPanel.class);
         selectorPanel.addModule(ModalityWorklistPanel.class);
-        if (provider.allowFeature("teachingfiles"))
+        if (provider.allowFeature("Teachingfiles"))
             selectorPanel.addModule(TCPanel.class);
-        if (provider.allowFeature("dashboard"))
+        if (provider.allowFeature("Dashboard"))
             selectorPanel.addModule(DashboardPanel.class);
         selectorPanel.addModule(RolePanel.class, null);
 
