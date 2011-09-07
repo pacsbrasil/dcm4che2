@@ -49,7 +49,7 @@ import org.dcm4chee.web.common.license.ae.spi.AELicenseProviderSPI;
  */
 public class AELicenseProvider implements AELicenseProviderSPI {
 
-    private static final long serialVersionUID = 8729394756000614767L;
+    private static final long serialVersionUID = 1L;
 
     public String getName() {
         return "AELicenseProvider";
@@ -67,9 +67,9 @@ public class AELicenseProvider implements AELicenseProviderSPI {
     
     public boolean allowFeature(String name) {
         // check if feature is allowed
-        if ("dashboard".equals(name))
+        if ("Dashboard".equals(name))
             return true;
-        else if ("teachingfiles".equals(name))
+        else if ("Teachingfiles".equals(name))
             return true;
         else 
             return false;
