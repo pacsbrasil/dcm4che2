@@ -122,21 +122,24 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "A
 // KEY: swarm.principal.AERead
     permission ${ComponentPermission} "org.dcm4chee.web.war.ae.AEPanel", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.ae.AEListPanel", "render, enable";
-};
-
-grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "AEWrite"
-{
-// KEY: swarm.principal.AEWrite
-    permission ${ComponentPermission} "org.dcm4chee.web.war.ae.AEPanel", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.ae.AEListPanel", "render, enable";
-//
-    permission ${ComponentPermission} "org.dcm4chee.web.war.ae.CreateOrEditAETPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.ae.DicomEchoWindow$DicomEchoPage", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:aelist:newAETLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:aelist:editAETLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:aelist:removeAETLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:aelist:dicomEchoLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:aelist:dicomEchoWindow", "render, enable";
+};
+
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "AEEdit"
+{
+// KEY: swarm.principal.AEEdit
+    permission ${ComponentPermission} "org.dcm4chee.web.war.ae.CreateOrEditAETPage", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:aelist:editAETLink", "render, enable";
+};
+
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "AEAddRemove"
+{
+// KEY: swarm.principal.AEAddRemove
+    permission ${ComponentPermission} "org.dcm4chee.web.war.ae.CreateOrEditAETPage", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:aelist:newAETLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:aelist:removeAETLink", "render, enable";  
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "AEGroupRead"
