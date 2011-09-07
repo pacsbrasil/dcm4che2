@@ -2,7 +2,7 @@
     Move Entities CSS
 */
 
-div.movePage div.movePage-content { text-align: center; height: 50%; width: 90%; position: absolute; left: 5%; top: 40px; }
-div.movePage div.movePage-content span.movePage-title { width:90%; position: absolute; left: 5%; top: 25%; }
-div.movePage div.movePage-content span.movePage-msg { width:90%; position: absolute; left: 5%; top: 35%; }
-div.movePage div.movePage-button { text-align: center;width:90%;position: absolute; left: 5%; top: 45%; }
+div.movePage div.movePage-content { height: 100%; width: 90%; }
+div.movePage div.movePage-content div.movePage-title { padding: 10px; }
+div.movePage div.movePage-content div.movePage-msg { text-align: left; padding: 10px; background-color: white;}
+div.movePage div.movePage-button { width: 90%; padding: 10px; }

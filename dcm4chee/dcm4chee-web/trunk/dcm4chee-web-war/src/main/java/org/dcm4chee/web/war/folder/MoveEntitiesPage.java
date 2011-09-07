@@ -38,8 +38,8 @@
 
 package org.dcm4chee.web.war.folder;
 
-import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,7 +58,6 @@ import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.security.components.SecureWebPage;
@@ -75,6 +74,7 @@ import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.exceptions.SelectionException;
+import org.dcm4chee.web.common.model.MultiResourceModel;
 import org.dcm4chee.web.dao.common.DicomEditLocal;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.StudyPermissionHelper;
@@ -137,7 +137,7 @@ public class MoveEntitiesPage extends SecureWebPage {
     private HashSet<AbstractDicomModel> emptySourceParents = new HashSet<AbstractDicomModel>();
     
     private String infoMsgId;
-    private StringResourceModel selectedInfoModel;
+    private IModel<String> selectedInfoModel;
     
     private ModalWindow window;
     
@@ -156,8 +156,18 @@ public class MoveEntitiesPage extends SecureWebPage {
         allPatients = all;
         this.add(infoPanel = new InfoPanel());
         infoMsgId = checkSelection(selected);
-        if (infoMsgId == null) 
+        if (infoMsgId == null) {
             infoPanel.setSrcInfo(selected);
+            StringResourceModel titleModel = null;
+            if (selected.hasPatients()) {
+                titleModel = new StringResourceModel("move.pageTitle_toPatient",this, new Model(selected.getPatients().iterator().next()));
+            } else if (selected.hasStudies()) {
+                titleModel = new StringResourceModel("move.pageTitle_toStudy",this, new Model(selected.getStudies().iterator().next()));
+            } else if (selected.hasSeries()) {
+                titleModel = new StringResourceModel("move.pageTitle_toSeries",this, new Model(selected.getSeries().iterator().next()));
+            }
+            infoPanel.get("infoTitle").setDefaultModel(titleModel);
+        }
     }
 
     @Override
@@ -495,7 +505,7 @@ public class MoveEntitiesPage extends SecureWebPage {
             @Override
             public String getObject() {
                 if (infoMsgId == null) {
-                    return selectedInfoModel.getString();
+                    return selectedInfoModel.getObject();
                 } else {
                     return MoveEntitiesPage.this.getString(infoMsgId);
                 }
@@ -508,6 +518,7 @@ public class MoveEntitiesPage extends SecureWebPage {
             add( new Label("infoTitle", new ResourceModel("move.pageTitle")));
             add( infoLabel = new Label("info", infoModel));
             infoLabel.setOutputMarkupId(true);
+            infoLabel.setEscapeModelStrings(false);
             
             moveBtn = new IndicatingAjaxFallbackLink<Object>("moveBtn") {
                 
@@ -642,21 +653,16 @@ public class MoveEntitiesPage extends SecureWebPage {
         }
         
         public void setSrcInfo(SelectedEntities selected) {
-            SelectedInfo info = null;
             if (selected.hasInstances()) {
                 addModifiedModels(selected.getInstances());
-                info = new SelectedInfo(selected.getInstances().iterator().next(),
-                        selected.getInstances().size());
+                selectedInfoModel = getSelectedInfoModel(selected.getInstances());
             } else if (selected.hasSeries()) {
                 addModifiedModels(selected.getSeries());
-                info = new SelectedInfo(selected.getSeries().iterator().next(),
-                        selected.getSeries().size());
+                selectedInfoModel = getSelectedInfoModel(selected.getSeries());
             } else if (selected.hasStudies()) {
                 addModifiedModels(selected.getStudies());
-                info = new SelectedInfo(selected.getStudies().iterator().next(),
-                        selected.getStudies().size());
+                selectedInfoModel = getSelectedInfoModel(selected.getStudies());
             }
-            selectedInfoModel = getSelectedInfoModel("move.selectedToMove_${level}.text", info, "Selected:?");
         }
         
         private void addModifiedModels(Set<? extends AbstractDicomModel> models) {
@@ -665,27 +671,36 @@ public class MoveEntitiesPage extends SecureWebPage {
             }
         }
 
-        @SuppressWarnings({ "unchecked" })
-        private StringResourceModel getSelectedInfoModel(String key, SelectedInfo info, String def) {
-            if (info == null ) {
-                return new StringResourceModel(key, MoveEntitiesPage.this, null, null, def);
-            } else {
-                Model m = new Model(info);
-                Object[] params = new Object[]{
-                    new PropertyModel<String>(info, "patientName"),
-                    new PropertyModel<String>(info, "patientId"),
-                    new PropertyModel<String>(info, "birthdate"),
-                    new PropertyModel<String>(info, "sex"),
-                    new PropertyModel<String>(info, "studyIUID"),
-                    new PropertyModel<String>(info, "accessionNumber"),
-                    new PropertyModel<String>(info, "description"),
-                    new PropertyModel<String>(info, "studyId"),
-                    new PropertyModel<String>(info, "studyDate"),
-                    new PropertyModel<String>(info, "level"),
-                    new PropertyModel<String>(info, "count")
-                };
-                return new StringResourceModel(key, MoveEntitiesPage.this, m, params, def);
+        private MultiResourceModel getSelectedInfoModel(Set<? extends AbstractDicomModel> selected) {
+            MultiResourceModel model = new MultiResourceModel();
+            int level = selected.iterator().next().levelOfModel();
+            String levelString = AbstractDicomModel.LEVEL_STRINGS[level];
+            String resourceKey = "move.selectedToMove_"+levelString.toLowerCase()+".text";
+            String key;
+            HashMap<String, IModel<AbstractDicomModel>> modelMap = new HashMap<String,IModel<AbstractDicomModel>>();
+            HashMap<String, Integer[]> paramMap = new HashMap<String,Integer[]>();
+            AbstractDicomModel mStudy;
+            Integer[] params;
+            for (AbstractDicomModel m : selected) {
+                mStudy = m;
+                while (mStudy.levelOfModel() > AbstractDicomModel.STUDY_LEVEL) {
+                    mStudy = mStudy.getParent();
+                }
+                key = String.valueOf(mStudy.getParent().getPk()) + 
+                    (level == AbstractDicomModel.STUDY_LEVEL ? "" : "_"+mStudy.getPk());
+                params = paramMap.get(key);
+                if (params == null) {
+                    params = new Integer[]{1};
+                    paramMap.put(key, params);
+                    modelMap.put(key, new Model<AbstractDicomModel>(m));
+                } else {
+                    params[0]++;
+                }
             }
+            for (String k : paramMap.keySet()) {
+                model.addModel(new StringResourceModel(resourceKey, MoveEntitiesPage.this, modelMap.get(k), paramMap.get(k), "selected?"));
+            }
+            return model;
         }
 
         private void addToTarget(AjaxRequestTarget target) {
@@ -731,7 +746,7 @@ public class MoveEntitiesPage extends SecureWebPage {
         private void deleteEmpty() {
             log.info("Delete empty entries:"+emptySourceParents);
             AbstractDicomModel toDel;
-            HashSet[] modelsToDel = new HashSet[4];
+            HashSet<AbstractDicomModel>[] modelsToDel = new HashSet[4];
             String[] moveCmds = {"movePatientsToTrash","moveStudiesToTrash",
                     "moveSeriesOfPpsToTrash","moveSeriesToTrash"};
             int level;
@@ -752,7 +767,7 @@ public class MoveEntitiesPage extends SecureWebPage {
                 }
                 level = toDel.levelOfModel();
                 if (modelsToDel[level] == null) {
-                    modelsToDel[level] = new HashSet();
+                    modelsToDel[level] = new HashSet<AbstractDicomModel>();
                 }
                 log.debug("add Model to delete for level({}):{}", toDel, level);
                 modelsToDel[level].add(toDel);
@@ -788,74 +803,4 @@ public class MoveEntitiesPage extends SecureWebPage {
             return la;
         }
     }
-    //used in a PropertyModel
-    @SuppressWarnings("unused")
-    private class SelectedInfo implements Serializable {
-        private static final long serialVersionUID = 1L;
-        private PatientModel pat;
-        private StudyModel study;
-        String level;
-        int count;
-        
-        private SelectedInfo(String level, int count) {
-            this.level = level;
-            this.count = count;
-            
-        }
-        SelectedInfo(PatientModel m) {
-            this("patient", 1);
-            pat = m;
-        }
-        public SelectedInfo(StudyModel m, int count) {
-            this("study", count);
-            pat = m.getPatient();
-            study = m;
-        }
-        public SelectedInfo(SeriesModel m, int count) {
-            this("series", count);
-            study = m.getPPS().getStudy();
-            pat = study.getPatient();
-        }
-        public SelectedInfo(InstanceModel m, int count) {
-            this("instance", count);
-            study = m.getSeries().getPPS().getStudy();
-            pat = study.getPatient();
-        }
-        
-        public String getLevel() {
-            return level;
-        }
-        public int getCount() {
-            return count;
-        }
-        
-        public String getPatientName() {
-            return pat.getName();
-        }
-        public String getPatientId() {
-            return pat.getIssuer() == null ? pat.getId() : pat.getId()+"/"+pat.getIssuer();
-        }
-        public Date getBirthdate() {
-            return pat.getBirthdate();
-        }
-        public String getSex() {
-            return pat.getSex();
-        }
-        public String getStudyIUID() {
-            return study == null ? null : study.getStudyInstanceUID();
-        }
-        public String getAccessionNumber() {
-            return study == null ? null : study.getAccessionNumber();
-        }
-        public String getDescription() {
-            return study == null ? null : study.getDescription();
-        }
-        public String getStudyId() {
-            return study == null ? null : study.getId();
-        }
-        public Date getStudyDate() {
-            return study == null ? null : study.getDatetime();
-        }
-    }
-
 }
