@@ -65,6 +65,9 @@ public class FileModel implements Serializable {
     }
 
     public String getAbsoluteDirectoryPath() {
+        if (file.getFileSystem().getDirectoryPath().startsWith("tar:")) {
+            return "N.A.";
+        }
         return FileUtils.resolve(new java.io.File(file.getFileSystem().getDirectoryPath())).getAbsolutePath();
     }
 
