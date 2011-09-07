@@ -39,7 +39,6 @@
 package org.dcm4chee.web.war.folder.delegate;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -47,7 +46,6 @@ import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
-import org.apache.wicket.model.Model;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -114,7 +112,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         }
         return true;
     }
-    
+
     public boolean deletePps(SelectedEntities selected) {
         try {
             server.invoke(serviceObjectName, "deletePps", 
