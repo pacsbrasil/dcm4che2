@@ -45,10 +45,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
-import javax.management.MBeanException;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
@@ -84,7 +81,6 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
-import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.PrivateFile;
 import org.dcm4chee.archive.entity.PrivateInstance;
 import org.dcm4chee.archive.entity.PrivatePatient;
@@ -298,7 +294,6 @@ public class TrashListPage extends Panel {
             
             private static final long serialVersionUID = 1L;
 
-            @SuppressWarnings("unchecked")
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
 
@@ -541,7 +536,6 @@ public class TrashListPage extends Panel {
                     }
                 } catch (Throwable t) {
                     setStatus(new StringResourceModel("trash.message.restoreFailed", TrashListPage.this, null));
-                    MBeanException mbe = null;
                     while (t instanceof javax.management.MBeanException) 
                         t = ((javax.management.MBeanException) t).getCause();
                     if (t != null) 
