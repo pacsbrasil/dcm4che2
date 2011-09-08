@@ -970,16 +970,6 @@
       <return-type>void</return-type>
    </operation>
    <operation impact="ACTION">
-      <description>Update List of source AETs by querying database</description>
-      <name>updateSourceAETs</name>
-      <return-type>void</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Update List of Station AETs by querying database</description>
-      <name>updateStationAETs</name>
-      <return-type>void</return-type>
-   </operation>
-   <operation impact="ACTION">
       <description>Update List of Station Names by querying database</description>
       <name>updateStationNames</name>
       <return-type>void</return-type>
