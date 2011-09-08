@@ -20,7 +20,6 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
 // KEY: swarm.principal.FolderWrite
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.StudyListPage", "render, enable";
 //
-    permission ${ComponentPermission} "org.dcm4chee.web.war.folder.ExportPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.MoveEntitiesPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.InstanceViewPage", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage", "render, enable";
@@ -80,6 +79,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.StudyListPage", "render, enable";
 //
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:exportButton", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.folder.ExportPage", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "IgnoreEditTimeLimit"
