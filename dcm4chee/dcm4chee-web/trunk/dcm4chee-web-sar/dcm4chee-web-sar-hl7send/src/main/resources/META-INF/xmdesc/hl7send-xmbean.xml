@@ -110,7 +110,8 @@
       <description><![CDATA[Mapping of MsgTypeID like pat_upd to a XSL URL to transform Dicom Dataset to an HL7 message.<br/>
       	Format: &lt;msgTypeID&gt;:&lt;XSL URL/Name&gt;[|14] <br/>
       	The optional postfix '|14' can be used to support stylesheets written for dcm4che14 xml format. <br/>
-      	XSL names that do not start with resource: must be located in ConfigDirectory/[Receiver/] ]]>
+      	XSL names that do not start with 'resource:' or 'file:' must be located in ConfigDirectory/[Receiver/] <br />
+      	In this case the stylesheet used will be choosen according the configured receiver. (see Template service:getTemplatesForAET)]]>
       </description>
       <name>XslFilenames</name>
       <type>java.lang.String</type>

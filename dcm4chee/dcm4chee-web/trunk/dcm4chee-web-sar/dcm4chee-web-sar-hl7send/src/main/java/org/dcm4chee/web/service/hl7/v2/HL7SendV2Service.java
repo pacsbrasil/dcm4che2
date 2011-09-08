@@ -584,7 +584,7 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
                 xslName = xslName.substring(0,pos);
             }
             Templates tpl;
-            if (xslName.startsWith("resource:")) {
+            if (xslName.startsWith("resource:") || xslName.startsWith("file:")) {
                 tpl = tf.newTemplates(new StreamSource(xslName));
             } else {
                 tpl = this.templatesDelegate.getTemplatesForAET(receiver, xslName);
