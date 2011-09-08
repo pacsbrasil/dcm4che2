@@ -5,6 +5,21 @@ Precondition:
 
 Installed DCM4CHE Archive instance. Version > 2.17.0
 
+Minimum System Requirements: (same as dcm4chee archive)
+  JDK 5 or higher.
+  512 MB RAM
+  200 MB hard disk space (additional to archive storage disk space)  
+  400 MHz CPU
+
+Supported Databases: (same as dcm4chee archive)
+  PostgreSQL 8.1+
+  MySQL 4.1+
+  Oracle 9i/10g
+  SQL Server
+  DB2 8.1+
+  Firebird 2.1
+  Hypersonic SQL (Embedded in JBoss AS) - not suitable for production use!
+
 Installation Procedure:
 
 1. Extract the binary distribution package of dcm4chee-web for the database
