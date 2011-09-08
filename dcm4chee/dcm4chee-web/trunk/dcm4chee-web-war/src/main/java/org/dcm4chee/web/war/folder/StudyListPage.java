@@ -809,7 +809,7 @@ public class StudyListPage extends Panel {
 
             @Override
             public void onConfirmation(AjaxRequestTarget target, final SelectedEntities selected) {
-// TODO: 
+
                 if (selected.hasTooOld()) 
                     logSecurityAlert(null, true, StudyListPage.tooOldAuditMessageText);
                 
