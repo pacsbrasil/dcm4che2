@@ -617,6 +617,7 @@ public class WebCfgService extends ServiceMBeanSupport implements
     }
 
     private List<String> stringAsList(String s, String sep) {
+        s = s.trim();
         if (ANY.equals(s))
             return null;
         ArrayList<String> l = new ArrayList<String>();
