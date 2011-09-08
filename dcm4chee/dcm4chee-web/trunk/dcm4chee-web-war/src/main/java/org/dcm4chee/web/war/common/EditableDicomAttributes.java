@@ -75,7 +75,8 @@ public class EditableDicomAttributes implements Serializable {
     private static final String BASE_ATTR_MODEL_NAME = "BASE";
     private static Logger log = LoggerFactory.getLogger(EditableDicomAttributes.class);
     
-    private static Map<String,DicomObject> allEditableAttrs;
+    private static Map<String,DicomObject> allEditableAttrs = new HashMap<String,DicomObject>();
+    private static Map<String,Long> fileLastModified = new HashMap<String, Long>();
     private DicomObject editableAttrs;
     
     public EditableDicomAttributes(String attrModelName) {
@@ -83,16 +84,10 @@ public class EditableDicomAttributes implements Serializable {
     }
 
     private void prepare(String attrModelName) {
-        if (allEditableAttrs == null) {
-            allEditableAttrs = new HashMap<String,DicomObject>();
-            load(BASE_ATTR_MODEL_NAME);
-        }
+        load(attrModelName);
         editableAttrs = allEditableAttrs.get(attrModelName);
-        if (editableAttrs == null) {
-            editableAttrs = load(attrModelName);
-            if (editableAttrs == null) {
-                editableAttrs = allEditableAttrs.get(BASE_ATTR_MODEL_NAME);
-            }
+        if (editableAttrs == null && !BASE_ATTR_MODEL_NAME.equals(attrModelName)) {
+            editableAttrs = load(BASE_ATTR_MODEL_NAME);
         }
         log.info("Select Attribute filter for modeName:"+attrModelName);
         AttributeFilter filter = "PatientModel".equals(attrModelName) ? AttributeFilter.getPatientAttributeFilter() :
@@ -114,7 +109,21 @@ public class EditableDicomAttributes implements Serializable {
         File f = FileUtils.resolve(new File(WebCfgDelegate.getInstance().getWebConfigPath(), fn));
         InputStream is = null;
         try {
-            is = f.isFile() ? new FileInputStream(f) : EditableDicomAttributes.class.getResourceAsStream(fn);
+            if (f.isFile()) {
+                Long lastModified = fileLastModified.get(f.getPath());
+                if ( lastModified != null && f.lastModified() == lastModified) {
+                    return allEditableAttrs.get(attrModelName);
+                }
+                fileLastModified.put(f.getPath(), f.lastModified());
+                is = new FileInputStream(f);
+            } else {
+                if (fileLastModified.containsKey(f.getPath()) ) {
+                    fileLastModified.remove(f.getPath());
+                } else if (allEditableAttrs.containsKey(attrModelName)) {
+                    return allEditableAttrs.get(attrModelName);
+                }
+                is = EditableDicomAttributes.class.getResourceAsStream(fn);
+            }
         } catch (FileNotFoundException ignore) {}
         if (is != null) {
             DicomObject attrs = new BasicDicomObject();
@@ -136,6 +145,7 @@ public class EditableDicomAttributes implements Serializable {
     
     public static void clear() {
         allEditableAttrs.clear();
+        fileLastModified.clear();
         load(BASE_ATTR_MODEL_NAME);
     }
 
