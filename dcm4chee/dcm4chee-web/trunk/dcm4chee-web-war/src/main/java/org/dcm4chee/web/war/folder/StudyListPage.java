@@ -809,6 +809,9 @@ public class StudyListPage extends Panel {
 
             @Override
             public void onConfirmation(AjaxRequestTarget target, final SelectedEntities selected) {
+// TODO: 
+                if (selected.hasTooOld()) 
+                    logSecurityAlert(null, true, StudyListPage.tooOldAuditMessageText);
                 
                 this.setStatus(new StringResourceModel("folder.message.delete.running", StudyListPage.this, null));
                 messageWindowPanel.getOkBtn().setVisible(false);
@@ -842,7 +845,7 @@ public class StudyListPage extends Panel {
                 }
             }
         };
-        confirmDelete.setInitialHeight(150);
+        confirmDelete.setInitialHeight(200);
         form.add(confirmDelete);
 
         AjaxButton deleteBtn = new AjaxButton("deleteBtn") {
@@ -851,9 +854,23 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+
                 boolean hasIgnored = selected.update(studyPermissionHelper.isUseStudyPermissions(), 
-                        viewport.getPatients(), StudyPermission.DELETE_ACTION);
+                        viewport.getPatients(), StudyPermission.DELETE_ACTION);               
                 selected.deselectChildsOfSelectedEntities();
+                selected.computeTooOld();
+                if ((hasIgnored ||selected.hasDicomSelection() || selected.hasPPS()) 
+                        && selected.hasTooOld()) {
+                    if (StudyPermissionHelper.get().ignoreEditTimeLimit()) {
+                        confirmDelete.confirm(target, new StringResourceModel("folder.message.tooOld.delete", this, null, new Object[]{selected}), selected);                    
+                    } else {
+                        msgWin.setInfoMessage(getString("folder.message.tooOld.delete.denied"));
+                        msgWin.setColor("#FF0000");
+                        msgWin.show(target);
+                    }
+                    return;
+                }
+                
                 confirmDelete.setRemark(hasIgnored ? new StringResourceModel("folder.message.deleteNotAllowed",this, null) : null);
                 if (selected.hasPPS()) {
                     confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.message.confirmPpsDelete",this, null,new Object[]{selected}), selected);
@@ -1332,7 +1349,7 @@ public class StudyListPage extends Panel {
                     .add(new SecurityBehavior(getModuleName() + ":webviewerPatientLink")));
             row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
-                
+
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -1484,7 +1501,7 @@ public class StudyListPage extends Panel {
             item.setOutputMarkupId(true);
  
             final PPSModel ppsModel = (PPSModel) item.getModelObject();
-            final boolean tooOld = tooOld(ppsModel);
+            final boolean tooOld = selected.tooOld(ppsModel);
             
             WebMarkupContainer row = new WebMarkupContainer("row");
             AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
@@ -1977,7 +1994,7 @@ public class StudyListPage extends Panel {
     
     private Link<Object> getEditLink(final ModalWindow modalWindow, final AbstractEditableDicomModel model, TooltipBehaviour tooltip) {
 
-        final boolean tooOld = tooOld(model);
+        final boolean tooOld = selected.tooOld(model);
 
         int[] winSize = WebCfgDelegate.getInstance().getWindowSize("dcmEdit");
         ModalWindowLink editLink = new ModalWindowLink("edit", modalWindow, winSize[0], winSize[1]) {
@@ -2195,23 +2212,6 @@ public class StudyListPage extends Panel {
             }
         }
     }
-
-    private boolean tooOld(final AbstractEditableDicomModel model) {
-        try {
-            if (model.getCreatedTime() != null) {
-                Calendar then = Calendar.getInstance();
-                then.setTime(model.getCreatedTime());
-                long tooOldLimit = WebCfgDelegate.getInstance().getTooOldLimit();
-                return tooOldLimit == 0 ? 
-                        false 
-                        : (Calendar.getInstance().getTimeInMillis() - then.getTimeInMillis()) 
-                            > tooOldLimit;
-            }
-        } catch (Exception e) {
-            log.error("Error obtaining time difference", e);
-        }
-        return true;
-    } 
     
     @Override
     protected void onBeforeRender() {

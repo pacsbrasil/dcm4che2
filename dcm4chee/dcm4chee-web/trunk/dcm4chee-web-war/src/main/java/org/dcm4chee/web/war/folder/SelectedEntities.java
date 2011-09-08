@@ -39,6 +39,7 @@
 package org.dcm4chee.web.war.folder;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +47,7 @@ import java.util.Set;
 
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.model.FileModel;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
@@ -68,6 +70,8 @@ public class SelectedEntities implements Serializable {
     private Set<SeriesModel> seriess = new HashSet<SeriesModel>();
     private Set<InstanceModel> instances = new HashSet<InstanceModel>();
     private Set<FileModel> files = new HashSet<FileModel>();
+
+    private boolean hasTooOld = false;
 
     public boolean update(boolean useStudyPermissions, List<PatientModel> allPatients, String action) {
         return update(useStudyPermissions, allPatients, action, false);
@@ -269,6 +273,52 @@ public class SelectedEntities implements Serializable {
         m.refresh();
     }
     
+    public void computeTooOld() {
+        
+        for (InstanceModel m : instances) {
+            hasTooOld = tooOld(m);
+            if (hasTooOld) 
+                return;
+        }
+        for (SeriesModel m : seriess) {
+            hasTooOld = tooOld(m);
+            if (hasTooOld) 
+                return;
+        }
+        for (PPSModel m : ppss) {
+            hasTooOld = tooOld(m);
+            if (hasTooOld) 
+                return;
+        }
+        for (StudyModel m : studies) {
+            hasTooOld = tooOld(m);
+            if (hasTooOld) 
+                return;
+        }
+        for (PatientModel m : patients) {
+            hasTooOld = tooOld(m);
+            if (hasTooOld) 
+                return;
+        }
+    }
+
+    public boolean hasTooOld() {
+        return hasTooOld;
+    }
+    
+    public boolean tooOld(final AbstractEditableDicomModel model) {
+        if (model.getCreatedTime() != null) {
+            Calendar then = Calendar.getInstance();
+            then.setTime(model.getCreatedTime());
+            long tooOldLimit = WebCfgDelegate.getInstance().getTooOldLimit();
+            return tooOldLimit == 0 ? 
+                    false 
+                    : (Calendar.getInstance().getTimeInMillis() - then.getTimeInMillis()) 
+                        > tooOldLimit;
+        }
+        return true;
+    } 
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         if (patients.size()>0) sb.append(" Patients:").append(patients.size());
