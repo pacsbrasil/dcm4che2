@@ -1,0 +1,46 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+        <artifactId>dcm4chee-web</artifactId>
+        <groupId>dcm4che.dcm4chee</groupId>
+        <version>3.0.1</version>
+  </parent>
+  <groupId>dcm4che.dcm4chee</groupId>
+  <artifactId>dcm4chee-web-dist</artifactId>
+  <packaging>pom</packaging>
+  <version>3.0.1</version>
+  <name>Assemble Distribution for WEB3</name>
+  <dependencies>
+    <dependency>
+      <groupId>dcm4che.dcm4chee</groupId>
+      <artifactId>dcm4chee-web-ear</artifactId>
+      <classifier>${db}</classifier>
+      <type>ear</type>
+      <version>3.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>dcm4che.dcm4chee</groupId>
+      <artifactId>dcm4chee-web-urlprovider</artifactId>
+      <version>3.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>dcm4che.dcm4chee</groupId>
+      <artifactId>dcm4chee-web-licenseprovider</artifactId>
+      <version>3.0.1</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <finalName>dcm4chee-web-${version}</finalName>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>src/main/assembly/bin.xml</descriptor>
+          </descriptors>
+        </configuration>
+      </plugin>    
+    </plugins>
+  </build>
+</project>
