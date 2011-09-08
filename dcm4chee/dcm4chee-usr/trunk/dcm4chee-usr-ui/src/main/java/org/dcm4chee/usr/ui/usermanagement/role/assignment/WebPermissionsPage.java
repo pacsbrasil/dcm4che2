@@ -122,7 +122,7 @@ public class WebPermissionsPage extends SecureWebPage {
             
             principalRows.add((rowParent = new WebMarkupContainer(principalRows.newChildId()))
                     .add(new Label("principalname", key == null ? new Model<String>(principal) : 
-                        new ResourceModel(key + ".name"))
+                        new ResourceModel(key + ".name", principal))
                     .add(new AttributeModifier("title", true, key == null ? new Model<String>(principal) : 
                         new ResourceModel(key + ".tooltip", key)))
                     )
