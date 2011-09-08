@@ -9,6 +9,10 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
 {
 // KEY: swarm.principal.FolderRead
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.StudyListPage", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerPatientLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerStudyLink", "render, enable";    
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerSeriesLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerInstanceLink", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "FolderWrite"
@@ -25,21 +29,17 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:wadoImageWindow", "render, enable";
 // Permissions for edit patient
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:editPatientLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerPatientLink", "render, enable";
 // Permissions for edit study
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:editStudyLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:imageSelectionStudyLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerStudyLink", "render, enable";
 // Permissions for edit pps
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:editPPSLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:emulatePPSLink", "render, enable";
 // Permissions for edit series
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:editSeriesLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:imageSelectionSeriesLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerSeriesLink", "render, enable";
 // Permissions for edit instance
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:editInstanceLink", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerInstanceLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:wadoImageInstanceLink", "render, enable";
 };
 
