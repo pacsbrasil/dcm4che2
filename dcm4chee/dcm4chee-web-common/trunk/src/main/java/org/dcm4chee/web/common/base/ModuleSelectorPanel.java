@@ -180,7 +180,7 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
         }.add(new Label("logoutLabel", 
             new StringResourceModel("logout", ModuleSelectorPanel.this, null, 
                     new Object[] { 
-                        ((SecureSession) RequestCycle.get().getSession()).getUsername().toString()
+                        ((SecureSession) RequestCycle.get().getSession()).getUsername()
                     })
         )));
 
