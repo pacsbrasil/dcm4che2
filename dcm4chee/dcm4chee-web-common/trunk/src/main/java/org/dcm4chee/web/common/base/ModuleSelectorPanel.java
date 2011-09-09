@@ -61,6 +61,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.protocol.http.WebRequest;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.apache.wicket.security.swarm.SwarmWebApplication;
@@ -176,10 +177,11 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
             public boolean isVisible() {
                 return showLogout;
             }
-        }.add(new Label("logoutLabel", new ResourceModel("logout").wrapOnAssignment(this).getObject() 
-                + " (" 
-                + ((SecureSession) RequestCycle.get().getSession()).getUsername()
-                + ")"
+        }.add(new Label("logoutLabel", 
+            new StringResourceModel("logout", ModuleSelectorPanel.this, null, 
+                    new Object[] { 
+                        ((SecureSession) RequestCycle.get().getSession()).getUsername().toString()
+                    })
         )));
 
         List<String> languages = new ArrayList<String>();
