@@ -587,7 +587,8 @@ public class TrashListPage extends Panel {
                         log.error("Exception restoring entry:"+t.getMessage(), t);                    
                     }
                 } else {
-                    msgWin.show(target, getString("trash.message.noSelection"));
+                    msgWin.setInfoMessage(getString("trash.message.noSelection")); 
+                    msgWin.show(target);
                 }
             }
         };
@@ -671,7 +672,8 @@ public class TrashListPage extends Panel {
                 if (selected.hasDicomSelection()) {
                     confirmDelete.confirm(target, new StringResourceModel("trash.message.confirmDelete",this, null,new Object[]{selected}), selected);
                 } else {
-                    msgWin.show(target, getString("trash.message.noSelection"));
+                    msgWin.setInfoMessage(getString("trash.message.noSelection")); 
+                    msgWin.show(target);
                 }
             }
         };
