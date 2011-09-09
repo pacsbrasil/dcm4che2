@@ -127,27 +127,35 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
     
     // TODO: change this to generic version using JPA 2.0 implementation
     @SuppressWarnings("unchecked")
-    public void grantForPatient(long pk, String action, String role) {
-        for (String studyInstanceUID : (List<String>) 
-                em.createQuery("SELECT s.studyInstanceUID FROM Study s WHERE s.patientFk = :pk AND s.studyInstanceUID NOT IN(SELECT sp.studyInstanceUID FROM StudyPermission sp WHERE sp.action = :action AND sp.role = :role)")
-                    .setParameter("pk", pk)
-                    .setParameter("action", action)
-                    .setParameter("role", role)
-                    .getResultList()) {
+    public List<String> grantForPatient(long pk, String action, String role) {
+        List<String> suids = (List<String>) em.createQuery("SELECT s.studyInstanceUID FROM Study s WHERE s.patientFk = :pk AND s.studyInstanceUID NOT IN(SELECT sp.studyInstanceUID FROM StudyPermission sp WHERE sp.action = :action AND sp.role = :role)")
+        .setParameter("pk", pk)
+        .setParameter("action", action)
+        .setParameter("role", role)
+        .getResultList();
+        for (String studyInstanceUID : suids) {
             StudyPermission sp = new StudyPermission();
             sp.setAction(action);
             sp.setRole(role);
             sp.setStudyInstanceUID(studyInstanceUID);
             em.persist(sp);
         }
+        return suids;
     }
     
-    public void revokeForPatient(long pk, String action, String role) {
+    @SuppressWarnings("unchecked")
+    public List<String> revokeForPatient(long pk, String action, String role) {
+        List<String> suids = (List<String>) em.createQuery("SELECT s.studyInstanceUID FROM Study s WHERE s.patientFk = :pk AND s.studyInstanceUID NOT IN(SELECT sp.studyInstanceUID FROM StudyPermission sp WHERE sp.action = :action AND sp.role = :role)")
+        .setParameter("pk", pk)
+        .setParameter("action", action)
+        .setParameter("role", role)
+        .getResultList();
         this.em.createQuery("DELETE FROM StudyPermission sp WHERE sp.studyInstanceUID IN(SELECT s.studyInstanceUID FROM Study s WHERE s.patientFk = :pk) AND sp.action = :action AND sp.role = :role")
         .setParameter("pk", pk)
         .setParameter("action", action)
         .setParameter("role", role)
         .executeUpdate();
+        return suids;
     }
     
     public long countStudiesOfPatient(long pk) {

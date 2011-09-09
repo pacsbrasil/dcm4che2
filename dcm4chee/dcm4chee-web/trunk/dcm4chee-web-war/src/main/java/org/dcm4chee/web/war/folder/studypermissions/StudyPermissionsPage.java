@@ -63,12 +63,16 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.security.components.SecureWebPage;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
@@ -81,6 +85,7 @@ import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.dao.folder.StudyPermissionsLocal;
+import org.dcm4chee.web.service.common.HttpUserInfo;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.StudyPermissionHelper.StudyPermissionRight;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
@@ -102,16 +107,15 @@ public class StudyPermissionsPage extends SecureWebPage {
     
     private static Logger log = LoggerFactory.getLogger(StudyPermissionsPage.class);
 
-    private boolean forPatient = false;
+    private PatientModel patModel;
     private long studyCountForPatient = -1;
    
-    List<StudyPermission> currentStudyPermissions;
-    ListModel<Role> allDicomRoles;
+    private List<StudyPermission> currentStudyPermissions;
+    private ListModel<Role> allDicomRoles;
     
-    long pk;
-    String studyInstanceUID;
+    private String studyInstanceUID;
     
-    Set<String> studyPermissionActions = new LinkedHashSet<String>();
+    private Set<String> studyPermissionActions = new LinkedHashSet<String>();
     private ConfirmationWindow<Role> confirmationWindow;
     
     public StudyPermissionsPage(AbstractEditableDicomModel model) {
@@ -184,17 +188,16 @@ public class StudyPermissionsPage extends SecureWebPage {
             return;
         }
         if (model instanceof org.dcm4chee.web.war.folder.model.PatientModel) {
-            pk = ((PatientModel) model).getPk();
-            forPatient = true;
+            patModel = (PatientModel) model;
         } else if (model instanceof org.dcm4chee.web.war.folder.model.StudyModel) {
             studyInstanceUID = ((StudyModel) model).getStudyInstanceUID();
         } else
             log.error(this.getClass() + ": No valid model for StudyPermission assignment");
         
-        add(new WebMarkupContainer("studyPermissions-patient").setVisible(forPatient));
-        add(new WebMarkupContainer("studyPermissions-study").setVisible(!forPatient));
+        add(new WebMarkupContainer("studyPermissions-patient").setVisible(patModel != null));
+        add(new WebMarkupContainer("studyPermissions-study").setVisible(patModel == null));
         
-        add(new Label("for-description", (forPatient ? 
+        add(new Label("for-description", (patModel != null ? 
                 new StringResourceModel("folder.studyPermissions.description.patient", this, null,new Object[]{((PatientModel) model).getName()}) : 
                     new StringResourceModel("folder.studyPermissions.description.study", this, null,new Object[]{((StudyModel) model).getStudyInstanceUID()})
                 )
@@ -202,12 +205,11 @@ public class StudyPermissionsPage extends SecureWebPage {
         );
 
         StudyPermissionsLocal dao = (StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME);
-        if (forPatient) {
-            long pk = ((PatientModel) model).getPk();
-            currentStudyPermissions = dao.getStudyPermissionsForPatient(pk);
-            studyCountForPatient = dao.countStudiesOfPatient(pk);
+        if (patModel != null) {
+            currentStudyPermissions = dao.getStudyPermissionsForPatient(patModel.getPk());
+            studyCountForPatient = dao.countStudiesOfPatient(patModel.getPk());
         } else 
-            currentStudyPermissions = dao.getStudyPermissions(((StudyModel) model).getStudyInstanceUID());            
+            currentStudyPermissions = dao.getStudyPermissions(studyInstanceUID);            
 
         studyPermissionActions.add(StudyPermission.APPEND_ACTION);
         studyPermissionActions.add(StudyPermission.DELETE_ACTION);
@@ -281,7 +283,14 @@ public class StudyPermissionsPage extends SecureWebPage {
             Iterator<String> iterator = studyPermissionActions.iterator();
             while (iterator.hasNext()) {
                 final String action = iterator.next();
-                final Label countLabel = new Label("number-of-studies-label", new Model<String>(forPatient ? (countStudies(role, action) + "/" + studyCountForPatient) : ""));
+                final Label countLabel = new Label("number-of-studies-label", 
+                        new AbstractReadOnlyModel<String>() {
+                            private static final long serialVersionUID = 1L;
+                            @Override
+                            public String getObject() {
+                                return patModel == null ? "" : 
+                                    (countStudies(role, action) + "/" + studyCountForPatient);
+                            }});
                 AjaxCheckBox roleCheckbox = new AjaxCheckBox("study-permission-checkbox", new HasStudyPermissionModel(role, action)) {
 
                     private static final long serialVersionUID = 1L;
@@ -294,7 +303,7 @@ public class StudyPermissionsPage extends SecureWebPage {
                     @Override
                     protected void onUpdate(AjaxRequestTarget target) {
                         target.addComponent(this);
-                        target.addComponent(countLabel.setDefaultModel(new Model<String>(forPatient ? (countStudies(role, action) + "/" + studyCountForPatient) : "")));
+                        target.addComponent(countLabel);
                     }
                       
                     @Override
@@ -309,7 +318,7 @@ public class StudyPermissionsPage extends SecureWebPage {
                         .add(roleCheckbox)
                         .add(countLabel
                             .setOutputMarkupId(true)
-                            .setVisible(forPatient)
+                            .setVisible(patModel != null)
                         )
                 );
             }
@@ -343,34 +352,58 @@ public class StudyPermissionsPage extends SecureWebPage {
         
         @Override
         public void setObject(Boolean hasStudyPermission) {
-            if (forPatient) {
-                StudyPermissionsLocal dao = (StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME);
-                if (hasStudyPermission) 
-                    dao.grantForPatient(pk, action, role.getRolename());
-                else
-                    dao.revokeForPatient(pk, action, role.getRolename());
-                currentStudyPermissions = dao.getStudyPermissionsForPatient(pk);
-            } else {
-                if (hasStudyPermission) {
-                    StudyPermission sp = new StudyPermission();
-                    sp.setStudyInstanceUID(studyInstanceUID);
-                    sp.setRole(role.getRolename());
-                    sp.setAction(action);
-                    ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).grant(sp);
-                    currentStudyPermissions.add(sp);
+            String desc = hasStudyPermission ? "Grant" : "Revoke";
+            try {
+                if (patModel != null) {
+                    desc += " StudyPermissions for patient patId:"+patModel.getId()+"/"+patModel.getIssuer()+
+                    " role="+role.getRolename()+" action:"+action+".";
+                    List<String> suids;
+                    StudyPermissionsLocal dao = (StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME);
+                    if (hasStudyPermission) {
+                        suids = dao.grantForPatient(patModel.getPk(), action, role.getRolename());
+                    } else {
+                        suids = dao.revokeForPatient(patModel.getPk(), action, role.getRolename());
+                    }
+                    desc += " Effected StudyIuids: " + (suids.isEmpty() ? "NONE" : toString(suids));
+                    currentStudyPermissions = dao.getStudyPermissionsForPatient(patModel.getPk());
                 } else {
-                    for (StudyPermission sp : currentStudyPermissions) 
-                        if (sp.getRole().equals(role.getRolename()) && sp.getAction().equals(action)) {
-                            ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).revoke(sp.getPk());
-                            currentStudyPermissions.remove(sp);
-                            return;
+                    desc += " StudyPermission: StudyIuid="+studyInstanceUID+" role="+role.getRolename()+" action:"+action+".";
+                    if (hasStudyPermission) {
+                        StudyPermission sp = new StudyPermission();
+                        sp.setStudyInstanceUID(studyInstanceUID);
+                        sp.setRole(role.getRolename());
+                        sp.setAction(action);
+                        ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).grant(sp);
+                        currentStudyPermissions.add(sp);
+                    } else {
+                        for (StudyPermission sp : currentStudyPermissions) {
+                            if (sp.getRole().equals(role.getRolename()) && sp.getAction().equals(action)) {
+                                ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).revoke(sp.getPk());
+                                currentStudyPermissions.remove(sp);
+                                break;
+                            }
                         }
+                    }
                 }
+                logSecurityAlert(true, desc);
+            } catch (Exception x) {
+                log.error(desc+" failed!", x);
+                logSecurityAlert(false, desc);
             }
         }
         
         @Override
-        public void detach() {
+        public void detach() {}
+        
+        protected String toString(List<String> l) {
+            if (l == null || l.isEmpty())
+                return "";
+            StringBuffer sb = new StringBuffer();
+            for ( int i=0, len=l.size() ; i < len ; i++ ) {
+                sb.append(l.get(i)).append(',');
+            }
+            sb.setLength(sb.length()-1);
+            return sb.toString();
         }
     }
 
@@ -405,5 +438,23 @@ public class StudyPermissionsPage extends SecureWebPage {
     
     public static String getModuleName() {
         return "studypermissions";
+    }
+    private void logSecurityAlert(boolean success, String desc) {
+        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+        SecurityAlertMessage msg = new SecurityAlertMessage(
+                SecurityAlertMessage.OBJECT_SECURITY_ATTRIBUTES_CHANGED);
+        msg.setOutcomeIndicator(AuditEvent.OutcomeIndicator.SUCCESS);
+        msg.addReportingProcess(AuditMessage.getProcessID(),
+                AuditMessage.getLocalAETitles(),
+                AuditMessage.getProcessName(),
+                AuditMessage.getLocalHostName());
+        if ( userInfo.getHostName() != null ) {
+                msg.addPerformingPerson(userInfo.getUserId(), null, null, userInfo.getHostName());
+        } else {
+            msg.addPerformingNode(AuditMessage.getLocalHostName());
+        }
+        msg.addAlertSubjectWithNodeID(AuditMessage.getLocalNodeID(), desc);
+        msg.validate();
+        LoggerFactory.getLogger("auditlog").info(msg.toString());
     }
 }

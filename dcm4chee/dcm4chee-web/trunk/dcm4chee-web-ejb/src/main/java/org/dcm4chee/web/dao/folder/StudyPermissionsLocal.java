@@ -59,8 +59,8 @@ public interface StudyPermissionsLocal {
     public List<StudyPermission> getStudyPermissionsForPatient(long pk);
     public void grant(StudyPermission studyPermission);
     public void revoke(long pk);
-    public void grantForPatient(long pk, String action, String role);
-    public void revokeForPatient(long pk, String action, String role);
+    public List<String> grantForPatient(long pk, String action, String role);
+    public List<String> revokeForPatient(long pk, String action, String role);
     public long countStudiesOfPatient(long pk);
     
     public List<String> getAllDicomRolenames();
