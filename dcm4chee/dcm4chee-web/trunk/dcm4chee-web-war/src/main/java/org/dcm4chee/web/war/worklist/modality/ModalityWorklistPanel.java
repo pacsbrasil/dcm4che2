@@ -605,8 +605,16 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 List<DicomObject> result = queryAET(viewport.getWorklistProvider(), viewport.getFilter());
                 if (result != null) {
                     viewport.setTotal(result.size());
+                    int failures = 0;
+                    Exception failure = null;
                     for (DicomObject obj : result) {
-                        current.add(new MWLItemModel(obj));
+                        try {
+                            current.add(new MWLItemModel(obj));
+                        } catch (Exception x) {
+                            if (failure == null)
+                                failure = x;
+                            failures++;
+                        }
                     }
                     Collections.sort(current, new Comparator<MWLItemModel>() {
                         public int compare(MWLItemModel o1, MWLItemModel o2) {
@@ -621,6 +629,10 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                             return c;
                         }
                     });
+                    if (failure != null) {
+                        msgWin.show(target, new WicketExceptionWithMsgKey("mw.search.msg.resultErrors", failure)
+                        .setMsgParams(new Integer[]{failures}), true);
+                    }
                 } else {
                     viewport.setTotal(-1);
                 }

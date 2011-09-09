@@ -89,6 +89,11 @@ public class MWLItemModel extends AbstractEditableDicomModel implements Serializ
             }
         }
         spsItem = dataset.getNestedDicomObject(Tag.ScheduledProcedureStepSequence);
+        if (spsItem == null) {
+            String msg = "Missing Scheduled Procedure Step Sequence (0040,0100) in MWL Item!";
+            log.error(msg+" Dataset:{}", dataset);
+            throw new RuntimeException(msg);
+        }
     }
 
     public String getSPSDescription() {
