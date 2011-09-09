@@ -148,6 +148,7 @@ public abstract class CompressCmd extends CodecCmd {
         }
 
         protected void initWriteParam(ImageWriteParam param) {
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             param.setCompressionType(JPEG_LOSSLESS);
         }
     };
@@ -166,6 +167,7 @@ public abstract class CompressCmd extends CodecCmd {
         }
 
         protected void initWriteParam(ImageWriteParam param) {
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             param.setCompressionType(JPEG_LS);
         }
     }
@@ -273,6 +275,7 @@ public abstract class CompressCmd extends CodecCmd {
         }
 
         protected void initWriteParam(ImageWriteParam param) {
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             param.setCompressionType("JPEG");
             param.setCompressionQuality(quality);
         }
