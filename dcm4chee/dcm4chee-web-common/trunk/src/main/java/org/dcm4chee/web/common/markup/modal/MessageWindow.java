@@ -120,7 +120,8 @@ public class MessageWindow extends AutoOpenModalWindow {
             }
         }
         if (x instanceof WicketExceptionWithMsgKey) {
-            msgModel = new StringResourceModel(((WicketExceptionWithMsgKey) x).getMsgKey(), this, detail);
+            WicketExceptionWithMsgKey we = (WicketExceptionWithMsgKey) x;
+            msgModel = new StringResourceModel(we.getMsgKey(), this, detail, we.getMsgParams());
         } else {
             String msg = detail == null ? getExceptionMessage(x) : 
                 PropertyVariableInterpolator.interpolate(getExceptionMessage(x), detail.getObject());

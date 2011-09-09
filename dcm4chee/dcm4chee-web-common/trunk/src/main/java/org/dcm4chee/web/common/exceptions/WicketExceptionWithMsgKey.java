@@ -46,6 +46,7 @@ package org.dcm4chee.web.common.exceptions;
 public class WicketExceptionWithMsgKey extends RuntimeException{
     private static final long serialVersionUID = 1L;
     private String msgKey;
+    private Object[] msgParams;
 
     public WicketExceptionWithMsgKey(String msgKey) {
         super();
@@ -62,7 +63,7 @@ public class WicketExceptionWithMsgKey extends RuntimeException{
         this.msgKey = msgKey;
     }
 
-    public WicketExceptionWithMsgKey(String msgKey, String message,Throwable t) {
+    public WicketExceptionWithMsgKey(String msgKey, String message, Throwable t) {
         super(message, t);
         this.msgKey = msgKey;
     }
@@ -71,6 +72,15 @@ public class WicketExceptionWithMsgKey extends RuntimeException{
         return msgKey;
     }
     
+    public Object[] getMsgParams() {
+        return msgParams;
+    }
+
+    public WicketExceptionWithMsgKey setMsgParams(Object[] msgParams) {
+        this.msgParams = msgParams;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "WicketExceptionWithMsgKey msgKey:'"+msgKey+"' - ExceptionMessage:"+getMessage()+" cause:"+getCause();
