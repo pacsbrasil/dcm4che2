@@ -11,6 +11,7 @@ public interface XDSConstants {
 	public static final String XDS_A_STATUS_FAILURE = "Failure";
 	public static final String XDS_B_STATUS_SUCCESS = "urn:oasis:names:tc:ebxml-regrep:ResponseStatusType:Success";
 	public static final String XDS_B_STATUS_FAILURE = "urn:oasis:names:tc:ebxml-regrep:ResponseStatusType:Failure";
+	public static final String XDS_B_STATUS_PARTIAL_SUCCESS = "urn:oasis:names:tc:ebxml-regrep:ResponseStatusType:PartialSuccess";
 	public static final String SUBMIT_OBJECTS_REQUEST = "SubmitObjectsRequest";
 	public static final String SOAP_HEADER_ACTION = "Action";
 	public static final String SOAP_HEADER_TO = "To";

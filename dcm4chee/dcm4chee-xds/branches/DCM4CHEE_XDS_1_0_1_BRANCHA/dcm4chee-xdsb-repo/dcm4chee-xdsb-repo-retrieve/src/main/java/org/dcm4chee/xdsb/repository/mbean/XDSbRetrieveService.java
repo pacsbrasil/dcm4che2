@@ -205,6 +205,8 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
         List<RetrieveDocumentSetRequestType.DocumentRequest> reqDocList;
         Map<String, List<RetrieveDocumentSetRequestType.DocumentRequest>> remoteDocRequests = 
             new HashMap<String, List<RetrieveDocumentSetRequestType.DocumentRequest>>();
+        int failedRequestCount = 0;
+        int requestCount = req.getDocumentRequest().size();
         for ( RetrieveDocumentSetRequestType.DocumentRequest docReq : req.getDocumentRequest() ) {
             reqRepoUid = docReq.getRepositoryUniqueId();
             docUid = docReq.getDocumentUniqueId();
@@ -232,14 +234,13 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                 } else {
                 	String msg = "Document not found! document UID:"+docUid;
                     log.warn(msg);
-                    throw new XDSException(XDSConstants.XDS_ERR_DOCUMENT_UNIQUE_ID, msg, null);
+                    failedRequestCount++;
                 }
                 perfLogger.endSubEvent();
             } else if ( mapExternalRepositories == null ) {
                 String msg = "DocumentRepositoryUID="+reqRepoUid+" is unknown! This repository unique ID:"+repositoryUniqueId;
                 log.warn(msg);
-                throw new XDSException(XDSConstants.XDS_ERR_WRONG_REPOSITORY_UNIQUE_ID,
-                        msg, null);
+                failedRequestCount++;
             } else {
                 log.info("Retrieve Document Request for other Repository!("+docReq.getRepositoryUniqueId()+
                         ") docUid:"+docUid);
@@ -253,9 +254,15 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
         }
         if (!remoteDocRequests.isEmpty()) {
             try {
-                addRemoteRetrieveRequests(rsp, remoteDocRequests, perfLogger);
+                if (addRemoteRetrieveRequests(rsp, remoteDocRequests, perfLogger).getRegistryResponse().getStatus() == XDSConstants.XDS_B_STATUS_PARTIAL_SUCCESS) {
+                    // if some requests failed, update the failed request count so that
+                    // the overall status can be set correctly
+                    failedRequestCount++;
+                }
             } catch (Exception e) {
                 log.error("Remote Document Retrieve failed!",e);
+                // assume all remote requests failed
+                failedRequestCount += rsp.getDocumentResponse().size();
             }
         }        
         perfLogger.startSubEvent("AuditAndCreateResponse");
@@ -263,7 +270,13 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
             logRetrieve(localDocUids,true,repositoryUniqueId);
         }
         RegistryResponseType regRsp = objFac.createRegistryResponseType();
-        regRsp.setStatus(XDSConstants.XDS_B_STATUS_SUCCESS);
+        if (failedRequestCount >= requestCount) {
+            throw new XDSException(XDSConstants.XDS_ERR_DOCUMENT_UNIQUE_ID, "None of the requested documents were found", null);
+        } else if (failedRequestCount > 0) {
+            regRsp.setStatus(XDSConstants.XDS_B_STATUS_PARTIAL_SUCCESS);
+        } else {
+            regRsp.setStatus(XDSConstants.XDS_B_STATUS_SUCCESS);
+        }
         rsp.setRegistryResponse(regRsp);
         if ( logResponseMessage) {
             log.info(InfoSetUtil.getLogMessage(rsp));
@@ -321,6 +334,8 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
         DocumentRepositoryPortType port;
         String extRepositoryURI;
         List<DocumentRequest> unknownRepositoryRequests = new ArrayList<DocumentRequest>();
+        int requestCount = remoteDocRequests.size();
+        int failedRequestCount = 0;
         for ( Map.Entry entry : remoteDocRequests.entrySet()) {
             extRepositoryURI = mapExternalRepositories.get( entry.getKey());
             if ( extRepositoryURI != null ) {
@@ -351,13 +366,25 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                 if ( checkResponse(rsp.getRegistryResponse()) ) {
                     log.info("Add "+rsp.getDocumentResponse().size()+" documents from remote repository!");
                     mainResp.getDocumentResponse().addAll(rsp.getDocumentResponse());
+                } else {
+                    failedRequestCount++;
                 }
             } else {
                 log.info("Unknown remote XDS.b Repository:"+extRepositoryURI);
                 unknownRepositoryRequests.addAll((List<DocumentRequest>) entry.getValue());
+                failedRequestCount++;
             }
         }
         perfLogger.endSubEvent();
+        RegistryResponseType regRsp = objFac.createRegistryResponseType();
+        if (failedRequestCount == requestCount) {
+            throw new XDSException(XDSConstants.XDS_ERR_DOCUMENT_UNIQUE_ID, "None of the requested foreign documents were found", null);
+        } else if (failedRequestCount > 0) {
+            regRsp.setStatus(XDSConstants.XDS_B_STATUS_PARTIAL_SUCCESS);
+        } else {
+        regRsp.setStatus(XDSConstants.XDS_B_STATUS_SUCCESS);
+        }
+        mainResp.setRegistryResponse(regRsp);
         return mainResp;
     }
 
