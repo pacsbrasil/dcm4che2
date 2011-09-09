@@ -38,8 +38,6 @@
 
 package org.dcm4chee.web.common.markup.modal;
 
-import java.text.MessageFormat;
-
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
@@ -52,7 +50,6 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.util.string.interpolator.PropertyVariableInterpolator;
 import org.dcm4chee.web.common.exceptions.WicketExceptionWithMsgKey;
-import org.dcm4chee.web.common.markup.modal.AutoOpenModalWindow;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>

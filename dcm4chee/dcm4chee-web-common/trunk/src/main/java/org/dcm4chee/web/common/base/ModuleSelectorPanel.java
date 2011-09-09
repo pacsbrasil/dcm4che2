@@ -153,7 +153,7 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
             parser.parse(new InputSource(is));
         } catch (Exception ignore) {
         }
-
+        
         add(new AjaxFallbackLink<Object>("logout") {
             
             private static final long serialVersionUID = 1L;
@@ -176,7 +176,11 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
             public boolean isVisible() {
                 return showLogout;
             }
-        }.add(new Label("logoutLabel", new ResourceModel("logout"))));
+        }.add(new Label("logoutLabel", new ResourceModel("logout").wrapOnAssignment(this).getObject() 
+                + " (" 
+                + ((SecureSession) RequestCycle.get().getSession()).getUsername()
+                + ")"
+        )));
 
         List<String> languages = new ArrayList<String>();
         languages.add("en");
