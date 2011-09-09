@@ -672,6 +672,7 @@ public class Transcoder {
 
     private ImageWriteParam getWriteParam() {
         ImageWriteParam wParam = writer.getDefaultWriteParam();
+        wParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
         if (encodeTS.equals(UIDs.JPEGBaseline)
                 || encodeTS.equals(UIDs.JPEGExtended)) {
             wParam.setCompressionType("JPEG");
