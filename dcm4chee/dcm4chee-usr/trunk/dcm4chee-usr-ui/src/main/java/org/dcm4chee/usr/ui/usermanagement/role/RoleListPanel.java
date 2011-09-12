@@ -215,6 +215,7 @@ public class RoleListPanel extends Panel {
                     .add(new Label("rolename", role.getRolename())
                     .add(new AttributeModifier("title", true, new Model<String>(role.getDescription()))))
             );
+            rowParent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))));
             
             if (role.isSuperuser())
                 rowParent.add(new SecurityBehavior(getModuleName() + ":superuserRoleRow"));
@@ -262,8 +263,9 @@ public class RoleListPanel extends Panel {
             .add(new SecurityBehavior(getModuleName() + ":removeRoleLink")));
 
             winSize = windowsizeMap.get("webPermissions");
-            rowParent.add((new WebMarkupContainer("webrole-cell")
-            .add((new ModalWindowLink("webrole-link", webroleWindow, winSize[0], winSize[1]) {
+            WebMarkupContainer webroleCell = new WebMarkupContainer("webrole-cell");
+            webroleCell
+            .add(new ModalWindowLink("webrole-link", webroleWindow, winSize[0], winSize[1]) {
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -283,31 +285,34 @@ public class RoleListPanel extends Panel {
                         });
                     super.onClick(target);
                 }
-            }).add(new Image("rolelist.webrole.image", ImageManager.IMAGE_USER_WEB_PERMISSIONS)
+            }.add(new Image("rolelist.webrole.image", ImageManager.IMAGE_USER_WEB_PERMISSIONS)
                 .add(new TooltipBehaviour("rolelist.", "webrole-link", new Model<String>(role.getRolename()))))
                 .setVisible(role.isWebRole())
                 .add(new SecurityBehavior(getModuleName() + ":webroleLink"))
-            )
-            .add(new AttributeModifier("style", true, new Model<String>("background-color: " + 
-                    (role.isWebRole() ? webRoleColor : "white")
-            )))));
-
-            rowParent.add((new WebMarkupContainer("dicomrole-cell")
-            .add((new AjaxCheckBox("dicomrole-checkbox", new Model<Boolean>(role.isDicomRole())) {
+            );
+            if (role.isWebRole())
+                webroleCell.add(new AttributeModifier("style", true, 
+                        new Model<String>("background-color: " + webRoleColor)));
+            rowParent.add(webroleCell);
+            
+            WebMarkupContainer dicomroleCell = new WebMarkupContainer("dicomrole-cell");
+            dicomroleCell.add(new AjaxCheckBox("dicomrole-checkbox", new Model<Boolean>(role.isDicomRole())) {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
-                }}.setEnabled(false))
-            )
-            .add(new AttributeModifier("style", true, new Model<String>("background-color: " + 
-                    (role.isDicomRole() ? dicomRoleColor : "white")
-            )))));
+                }}.setEnabled(false)
+            );
+            if (role.isDicomRole())
+                dicomroleCell.add(new AttributeModifier("style", true, 
+                        new Model<String>("background-color: " + dicomRoleColor)));
+            rowParent.add(dicomroleCell);
 
             winSize = windowsizeMap.get("aetGroupAssignment");
-            rowParent.add((new WebMarkupContainer("aetrole-cell")
-            .add((new ModalWindowLink("aetrole-link", aetroleWindow, winSize[0], winSize[1]) {
+            
+            WebMarkupContainer aetroleCell = new WebMarkupContainer("aetrole-cell");
+            aetroleCell.add((new ModalWindowLink("aetrole-link", aetroleWindow, winSize[0], winSize[1]) {
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -331,10 +336,11 @@ public class RoleListPanel extends Panel {
                 .add(new TooltipBehaviour("rolelist.", "aetrole-link", new Model<String>(role.getRolename()))))
                 .setVisible(role.isAETRole())
                 .add(new SecurityBehavior(getModuleName() + ":aetroleLink"))
-            )
-            .add(new AttributeModifier("style", true, new Model<String>("background-color: " + 
-                    (role.isAETRole() ? aetRoleColor : "white")
-            )))));
+            );
+            if (role.isAETRole())
+                aetroleCell.add(new AttributeModifier("style", true, 
+                        new Model<String>("background-color: " + aetRoleColor)));
+            rowParent.add(aetroleCell);
 
             RepeatingView groupContentCells = new RepeatingView("group-content-cells");
             rowParent.add(groupContentCells);
@@ -346,13 +352,13 @@ public class RoleListPanel extends Panel {
                 CheckBox groupCheckbox = new CheckBox("group-checkbox");
                 groupCheckbox.setEnabled(false);
                 groupCheckbox.setModel(new Model<Boolean>(role.getRoleGroups().contains(group.getUuid())));
+                WebMarkupContainer groupContentCell = new WebMarkupContainer(groupContentCells.newChildId());
                 groupContentCells
-                    .add(new WebMarkupContainer(groupContentCells.newChildId())
-                    .add(groupCheckbox)
-                    .add(new AttributeModifier("style", true, new Model<String>("background-color: " + 
-                            (role.getRoleGroups().contains(group.getUuid()) ? group.getColor() : "white")
-                            )))
-                    );
+                    .add(groupContentCell
+                    .add(groupCheckbox));
+                if (role.getRoleGroups().contains(group.getUuid()))
+                    groupContentCell.add(new AttributeModifier("style", true, 
+                                new Model<String>("background-color: " + group.getColor())));
             }
         }
     }
