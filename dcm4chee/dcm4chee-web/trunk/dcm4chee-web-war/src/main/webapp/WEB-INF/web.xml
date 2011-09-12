@@ -49,6 +49,7 @@
 		<param-value>deployment</param-value>
 		<!-- <param-value>development</param-value> -->
 	</context-param>
+	<!--
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Static resources for form based login</web-resource-name>
@@ -82,6 +83,7 @@
             <form-error-page>/login.jsp?loginFailed=true</form-error-page>
         </form-login-config>
     </login-config>
+    -->
     <!--
     <login-config>
         <auth-method>BASIC</auth-method>
