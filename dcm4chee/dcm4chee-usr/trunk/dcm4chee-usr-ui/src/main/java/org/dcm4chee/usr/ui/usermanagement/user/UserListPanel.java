@@ -183,7 +183,7 @@ public class UserListPanel extends Panel {
                     .add(new AttributeModifier("title", true, new Model<String>(new ResourceModel("userlist.change_password.tooltip").wrapOnAssignment(this).getObject()))
              );           
             rowParent.add(changePasswordLink)
-            .add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))));
+                .add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))));
             changePasswordLink.add(new SecurityBehavior(getModuleName() + ":changePasswordLink"));
             
             AjaxFallbackLink<Object> removeUserLink 
