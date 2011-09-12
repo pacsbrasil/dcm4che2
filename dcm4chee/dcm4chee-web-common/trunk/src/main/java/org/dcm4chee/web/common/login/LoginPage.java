@@ -41,9 +41,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.apache.wicket.Application;
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.authentication.panel.SignInPanel;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.resource.loader.ClassStringResourceLoader;
 import org.apache.wicket.resource.loader.PackageStringResourceLoader;
@@ -92,8 +94,8 @@ public class LoginPage extends BaseWicketPage {
                 Component user = LoginPage.this.get("signInPanel:signInForm:username");
                 user.add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour());
             }
-        });
-        this.get("signInPanel:signInForm").add(new FocusOnLoadBehaviour());
+        }.add(new AttributeModifier("align", true, new Model<String>("left"))));
+        this.get("signInPanel:signInForm").add(new FocusOnLoadBehaviour());        
     }
     
     protected String getBrowserTitle() {
