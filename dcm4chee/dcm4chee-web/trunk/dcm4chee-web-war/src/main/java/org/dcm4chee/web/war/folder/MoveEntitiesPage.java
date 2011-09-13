@@ -143,6 +143,7 @@ public class MoveEntitiesPage extends SecureWebPage {
     
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
 
+    @SuppressWarnings("unchecked")
     public MoveEntitiesPage(ModalWindow window, SelectedEntities selectedEntities, List<PatientModel> all) {
         super();
         
@@ -752,7 +753,6 @@ public class MoveEntitiesPage extends SecureWebPage {
             int level;
             for (AbstractDicomModel m : emptySourceParents) {
                 toDel = m;
-                m = toDel.getParent();
                 log.debug("Model to delete:{}",toDel);
                 while ((m = m.getParent()) != null) {
                     m.expand();
