@@ -92,7 +92,7 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
     
     private static Logger log = LoggerFactory.getLogger(ModuleSelectorPanel.class);
     
-    private static final long LAST_REFRESHED_TIMEOUT = 10000l;
+    private static final long LAST_REFRESHED_TIMEOUT = 5000l;
 
     ConfirmationWindow<List<ProgressProvider>> confirmLogout = new ConfirmationWindow<List<ProgressProvider>>("confirmLogout") {
 
@@ -253,9 +253,9 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
                 for (int i = 0, len = providers.size() ; i < len ; i++) {
                     pageID = providers.get(i).getPopupPageId();
                     log.info("Provider has status: " + providers.get(i).getStatus());
-                    if (providers.get(i).getStatus() == ProgressProvider.NOT_STARTED
-                            || providers.get(i).getStatus() == ProgressProvider.FINISHED) 
-                        continue;
+                    //if (providers.get(i).getStatus() == ProgressProvider.NOT_STARTED
+                    //        || providers.get(i).getStatus() == ProgressProvider.FINISHED) 
+                    //    continue;
                     if (pageID != null) {
                         Page p = ModuleSelectorPanel.this.getSession().getPage(pageID, 0);
                         log.info("Found open popup page:"+p);
@@ -283,8 +283,8 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
                         Page p = ModuleSelectorPanel.this.getSession().getPage(pageID, 0);
                         if (p != null && (p instanceof CloseRequestSupport) && !((CloseRequestSupport)p).isClosed()) {
                             //check refresh timeout in case popup is closed without removing page in pagemap.(e.g. window close button)
-                            if (System.currentTimeMillis() - providers.get(i).getLastRefreshedTimeInMillis() > LAST_REFRESHED_TIMEOUT)
-                                return true;
+                            return (System.currentTimeMillis() - providers.get(i).getLastRefreshedTimeInMillis() < LAST_REFRESHED_TIMEOUT);
+                                
                         }
                     }
                 }
