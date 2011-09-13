@@ -866,6 +866,33 @@
          <value value="NEVER"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getZipEntryTemplate"
+      setMethod="setZipEntryTemplate">
+      <description><![CDATA[Path template for zip entries used by file export.<br />
+      	Format: filePath with template parameters: patID, patName, studyIuid, seriesIuid, sopIuid.<br />
+      	Template parameter must be enclosed with {}. A leading '#' means the hashcode of the value in hex.<br>
+      	e.g.: {patID}/{#studyIuid}/{#sopIuid} 
+      	Note: sopIuid is required!
+      ]]></description>
+      <name>ZipEntryTemplate</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="{#studyIuid}/{#seriesIuid}/{#sopIuid}"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getBufferSize"
+      setMethod="setBufferSize">
+      <description><![CDATA[Buffer size used by file export.<br />
+      	
+      ]]></description>
+      <name>BufferSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="8192"/>
+      </descriptors>
+   </attribute>
 
    <!-- Operations -->
    <operation impact="ACTION">

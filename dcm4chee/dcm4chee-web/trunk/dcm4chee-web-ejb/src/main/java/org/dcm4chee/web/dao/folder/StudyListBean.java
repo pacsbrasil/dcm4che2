@@ -41,7 +41,6 @@ package org.dcm4chee.web.dao.folder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -50,7 +49,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.StorageStatus;
@@ -450,48 +448,27 @@ public class StudyListBean implements StudyListLocal {
     }
     
     @SuppressWarnings("unchecked")
-    public List<Instance> getDownloadableInstances(String uid, Class clazz) {
+    public List<Instance> getDownloadableInstances(String[] studyIuids, String[] seriesIuids, String[] sopIuids) {
         List<Instance> instances = null;
-        
-        if (clazz.equals(Instance.class)) {
-            instances = new ArrayList<Instance>(1);
-            instances.add((Instance) em
-                    .createQuery("SELECT i FROM Instance i LEFT JOIN FETCH i.files WHERE i.sopInstanceUID = :uid")
-                    .setParameter("uid", uid)
-                    .getSingleResult());
-        } else if (clazz.equals(Series.class)) {
-            instances = (List<Instance>) em
-                .createQuery("SELECT i FROM Instance i LEFT JOIN FETCH i.files WHERE i.series.seriesInstanceUID = :uid")
-                .setParameter("uid", uid)
-                .getResultList();
-        } else if (clazz.equals(Study.class)) {
-            instances = (List<Instance>) em
-            .createQuery("SELECT i FROM Instance i LEFT JOIN FETCH i.files WHERE i.series.study.studyInstanceUID = :uid")
-            .setParameter("uid", uid)
-            .getResultList();
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT DISTINCT i FROM Instance i LEFT JOIN FETCH i.files JOIN FETCH i.series s JOIN FETCH s.study st JOIN FETCH st.patient WHERE ");
+        String[] uids;
+        if (sopIuids != null) {
+            uids = sopIuids;
+            sb.append("i.sopInstanceUID");
+        } else if (seriesIuids != null) {
+            uids = seriesIuids;
+            sb.append("i.series.seriesInstanceUID");
+        } else if (studyIuids != null) {
+            uids = studyIuids;
+            sb.append("i.series.study.studyInstanceUID");
         } else 
             return null;
-
+        QueryUtil.appendIN(sb, uids.length);
+        Query q = em.createQuery(sb.toString());
+        QueryUtil.setParametersForIN(q, uids);
+        instances = (List<Instance>) q.getResultList();
         for (Instance instance : instances) {
-            DicomObject mergedObject = instance.getAttributes(false);
-            
-            Series series = instance.getSeries();
-            Iterator<DicomElement> iterator = series.getAttributes(false).datasetIterator();
-            while (iterator.hasNext()) 
-                mergedObject.add(iterator.next());
-            
-            Study study = series.getStudy();
-            iterator = study.getAttributes(false).datasetIterator();
-            while (iterator.hasNext()) 
-                mergedObject.add(iterator.next());
-
-            Patient patient = study.getPatient();
-            iterator = patient.getAttributes().datasetIterator();
-            while (iterator.hasNext()) 
-                mergedObject.add(iterator.next());
-            
-            instance.setAttributes(mergedObject);
-            
             for (File file : instance.getFiles()) 
                 file.getFileSystem().getDirectoryPath();
         }       

@@ -216,6 +216,9 @@ public class WebCfgService extends ServiceMBeanSupport implements
     private int autoWildcard;
 
     private int hasNotificationListener;
+    
+    private String zipEntryTemplate;
+    private int bufferSize;
 
     public WebCfgService() throws MalformedObjectNameException {
         timerServiceName = new ObjectName(DEFAULT_TIMER_SERVICE);
@@ -1236,6 +1239,24 @@ public class WebCfgService extends ServiceMBeanSupport implements
             return new int[] { 800, 600 };
         }
         return size;
+    }
+
+    public String getZipEntryTemplate() {
+        return zipEntryTemplate;
+    }
+
+    public void setZipEntryTemplate(String zipPathTemplate) {
+        if (zipPathTemplate.indexOf("sopIuid") == -1) 
+            throw new IllegalArgumentException("Missing template parameter: sopIuid");
+        this.zipEntryTemplate = zipPathTemplate;
+    }
+    
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    public void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
     }
 
     protected int[] parseSize(String s) {

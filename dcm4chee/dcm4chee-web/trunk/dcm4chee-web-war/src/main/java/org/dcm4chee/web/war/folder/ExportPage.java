@@ -39,15 +39,16 @@
 package org.dcm4chee.web.war.folder;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
@@ -74,12 +75,13 @@ import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.apache.wicket.security.components.SecureWebPage;
 import org.apache.wicket.util.time.Duration;
-import org.dcm4che2.data.DicomElement;
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.io.DicomInputStream;
@@ -89,10 +91,10 @@ import org.dcm4che2.net.Association;
 import org.dcm4che2.net.CommandUtils;
 import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.util.StringUtils;
+import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
-import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -105,6 +107,7 @@ import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.StudyPermissionHelper;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.delegate.ExportDelegate;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
@@ -345,7 +348,8 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             }
         });
         add(JavascriptPackageResource.getHeaderContribution(ExportPage.class, "popupcloser.js"));
-        
+        final Label downloadError = new Label("downloadError", new Model<String>(""));
+        form.add(downloadError);
         form.add(new Link<Object>("downloadLink") {
 
             private static final long serialVersionUID = 1L;
@@ -357,7 +361,11 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
 
             @Override
             public void onClick() {
-
+                final List<FileToExport> files = getFilesToExport();
+                if (files == null || files.isEmpty()) {
+                    downloadError.setDefaultModel(new ResourceModel("export.download.missingFile"));
+                    return;
+                }
                 RequestCycle.get().setRequestTarget(new IRequestTarget() {
                        
                     public void detach(RequestCycle requestCycle) {
@@ -365,67 +373,30 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
 
                     public void respond(RequestCycle requestCycle) {
                         
-                        ZipOutputStream zos = null;
+                        OutputStream out = null;
                         try {
                             Response response = requestCycle.getResponse();
-                            response.setContentType("application/zip");
-                            ((WebResponse) response).setAttachmentHeader("dicom.zip");
-
-                            zos = new ZipOutputStream(response.getOutputStream());
-                       
-                            StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-                            Set<Instance> instances = new HashSet<Instance>(exportInfo.getMoveRequests().size());
-
-                            for (MoveRequest moveRequest : exportInfo.getMoveRequests()) {
-                                if (moveRequest.sopIUIDs != null)
-                                    for (String sopIUID : moveRequest.sopIUIDs) 
-                                        instances.addAll(dao.getDownloadableInstances(sopIUID, Instance.class));
-                                else if (moveRequest.seriesIUIDs != null)
-                                    for (String seriesIUID : moveRequest.seriesIUIDs) 
-                                        instances.addAll(dao.getDownloadableInstances(seriesIUID, Series.class));
-                                else if (moveRequest.studyIUIDs != null)
-                                    for (String studyIUID : moveRequest.studyIUIDs) 
-                                        instances.addAll(dao.getDownloadableInstances(studyIUID, Study.class));
-                            }
-                            
-                            Iterator<Instance> iterator = instances.iterator();
-                            while (iterator.hasNext()) {
-                                Instance instance = iterator.next(); 
-                                for (File file : instance.getFiles()) {
-                                    java.io.File originalFile = new java.io.File(file.getFileSystem().getDirectoryPath() + 
-                                            "/" + 
-                                            file.getFilePath());
-                                    if (!FileUtils.resolve(originalFile).exists()) { 
-                                        log.error("Dicom file does not exist: " + FileUtils.resolve(originalFile));
-                                        continue;
-                                    }
-                                    DicomInputStream dis = new DicomInputStream(new FileInputStream(FileUtils.resolve(originalFile)));
-                                    dis.setHandler(new StopTagInputHandler(Tag.PixelData));
-                                    DicomObject disObject = dis.readDicomObject();
-                                    DicomObject blobData = instance.getAttributes(false);
-                                    Iterator<DicomElement> blobAttributes = blobData.datasetIterator();
-                                    while (blobAttributes.hasNext()) 
-                                        disObject.add(blobAttributes.next());
-                                    ZipEntry entry = new ZipEntry(originalFile.getPath());
+                            byte[] buf = new byte[WebCfgDelegate.getInstance().getDefaultFolderPagesize()];
+                            HashSet<Integer> sopHash = new HashSet<Integer>();
+                            if (files.size() > 1) {
+                                response.setContentType("application/zip");
+                                ((WebResponse) response).setAttachmentHeader("dicom.zip");
+                                ZipOutputStream zos = new ZipOutputStream(response.getOutputStream());
+                                out = zos;
+                                for (FileToExport fto : files) {
+                                    log.debug("Write file to zip:{}", fto.file);
+                                    ZipEntry entry = new ZipEntry(getZipEntryName(fto.instance, sopHash));
                                     zos.putNextEntry(entry);                                
-                                    zos.write(dis.getPreamble());
-                                    zos.write("DICM".getBytes());
-                                    DicomOutputStream dos = new DicomOutputStream(zos);
-                                    dos.setAutoFinish(false);
-                                    dos.writeDataset(disObject.fileMetaInfo(), dis.getTransferSyntax().uid());
-                                    dos.writeDataset(disObject, dis.getTransferSyntax().uid());
-                                    dos.flush();
-                                    long disCounter = 0;
-                                    while (dis.available() > 0) {
-                                        disCounter += dis.available();
-                                        byte[] b = new byte[dis.available()];
-                                        dis.read(b);
-                                        zos.write(b);
-                                    }
+                                    writeDicomFile(fto.file, fto.instance, zos, buf);
                                     zos.closeEntry();
                                 }
+                            } else {
+                                response.setContentType("application/dicom");
+                                ((WebResponse) response).setAttachmentHeader(
+                                        getTemplateParam(files.get(0).instance, "#sopIuid", sopHash)+".dcm");
+                                out = response.getOutputStream();
+                                writeDicomFile(files.get(0).file, files.get(0).instance, out, buf);
                             }
-                            zos.close();
                         } catch (ZipException ze) {
                             log.warn("Problem creating zip file: " + ze);
                         } catch (ClientAbortException cae) {
@@ -434,7 +405,8 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                             log.error("An error occurred while attempting to stream zip file for download: ", e);
                         } finally {
                             try {
-                                zos.close();
+                                if (out != null)
+                                    out.close();
                             } catch (Exception ignore) {}
                         }
                     }
@@ -443,6 +415,128 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         }
         .add(new Label("downloadLabel", new ResourceModel("export.downloadBtn.text")))
         );
+    }
+
+    private List<FileToExport> getFilesToExport() {
+        StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        List<Instance> instances = new ArrayList<Instance>();
+        for (MoveRequest rq : exportInfo.getMoveRequests()) {
+           instances.addAll(dao.getDownloadableInstances(rq.studyIUIDs, rq.seriesIUIDs, rq.sopIUIDs));
+        }
+        log.debug("found instances for file export:{}",instances.size());
+        ArrayList<FileToExport> files = new ArrayList<FileToExport>(instances.size());
+        Instance instance;
+        java.io.File dcmFile;
+        for (int i=0,len=instances.size() ; i < len ; i++) {
+            instance = instances.get(i); 
+            dcmFile = getDicomFile(instance.getFiles());
+            if (dcmFile == null) {
+                log.warn("Instance {} has no existing file for export!", instance);
+                return null;
+            }
+            files.add(new FileToExport(instance, dcmFile));
+        }
+        return files;
+    }
+    
+    private java.io.File getDicomFile(List<File> files) {
+        java.io.File dcmFile = null;
+        int bestAvail = Availability.OFFLINE.ordinal();
+        long lastPk = -1;
+        int fsAvail;
+        File bestFile = null;
+        for ( File file : files) {
+            fsAvail = file.getFileSystem().getAvailability().ordinal();
+            if (fsAvail < bestAvail || (fsAvail == bestAvail && file.getPk() > lastPk)) {
+                java.io.File f = new java.io.File(file.getFileSystem().getDirectoryPath(), file.getFilePath());
+                if (file.getFileSystem().getDirectoryPath().startsWith("tar:")) {
+                    dcmFile = f;
+                } else {
+                     f = FileUtils.resolve(f);
+                    if (!f.exists()) { 
+                        log.debug("Dicom file does not exist: {}", f);
+                        continue;
+                    }
+                    dcmFile = f;
+                }
+                bestAvail = fsAvail;
+                bestFile = file;
+                lastPk = file.getPk();
+            }
+        }
+        if (dcmFile != null && dcmFile.getPath().startsWith("tar:")) {
+            try {
+                dcmFile = ExportDelegate.getInstance().retrieveFileFromTar(bestFile, 
+                        WebCfgDelegate.getInstance().getObjectName("tarRetrieveServiceName", null));
+            } catch (Exception x) {
+                log.error("Retrieve file from tar failed!", x);
+                dcmFile = null;
+            }
+        }
+        return dcmFile;
+    }
+
+    private String getZipEntryName(Instance instance, HashSet<Integer> sopHash) {
+        String tmpl = WebCfgDelegate.getInstance().getZipEntryTemplate();
+        int pos0 = 0;
+        int pos1, pos2;
+        StringBuilder sb = new StringBuilder();
+        while ((pos1 = tmpl.indexOf('{', pos0)) != -1) {
+            pos2 = tmpl.indexOf("}", pos1);
+            if (pos2 == -1)
+                throw new IllegalArgumentException("Missing '}' in zip entry name template");
+            sb.append(tmpl.substring(pos0, pos1++));
+            sb.append(getTemplateParam(instance, tmpl.substring(pos1, pos2++), sopHash));
+            pos0 = pos2;
+        }
+        return sb.toString();
+    }
+    
+    private String getTemplateParam(Instance instance, String param, HashSet<Integer> sopHash) {
+        boolean useHash = param.charAt(0) == '#';
+        String value;
+        if (param.endsWith("patID")) {
+            value = instance.getSeries().getStudy().getPatient().getPatientID();
+        } else if (param.endsWith("patName")) {
+            value = instance.getSeries().getStudy().getPatient().getPatientName();
+        } else if (param.endsWith("studyIuid")) {
+            value = instance.getSeries().getStudy().getStudyInstanceUID();
+        } else if (param.endsWith("seriesIuid")) {
+            value = instance.getSeries().getSeriesInstanceUID();
+        } else if (param.endsWith("sopIuid")) {
+            value = instance.getSOPInstanceUID();
+            if (useHash) {
+                int hash;
+                for(hash = value.hashCode() ; !sopHash.add(hash) ; hash++);
+                return FileUtils.toHex(hash);
+            }
+        } else {
+            throw new IllegalArgumentException("Unknown zip entry template parameter:"+param);
+        }
+        return useHash ? FileUtils.toHex(value == null ? -1 : value.hashCode()) : value;
+    }
+
+    private void writeDicomFile(java.io.File dcmFile, Instance instance, OutputStream out, byte[] buf) throws FileNotFoundException, IOException {
+        DicomInputStream dis = new DicomInputStream(new FileInputStream(FileUtils.resolve(dcmFile)));
+        dis.setHandler(new StopTagInputHandler(Tag.PixelData));
+        DicomObject blobAttrs = new BasicDicomObject();
+        instance.getAttributes(false).copyTo(blobAttrs);
+        instance.getSeries().getAttributes(false).copyTo(blobAttrs);
+        instance.getSeries().getStudy().getAttributes(false).copyTo(blobAttrs);
+        instance.getSeries().getStudy().getPatient().getAttributes().copyTo(blobAttrs);
+        DicomObject attrs = dis.readDicomObject();
+        blobAttrs.copyTo(attrs);
+        DicomOutputStream dos = new DicomOutputStream(out);
+        dos.setAutoFinish(false);//we have an DeflaterOutputStream
+        dos.writeDicomFile(attrs);
+        if (dis.tag() >= Tag.PixelData) {
+            dos.writeHeader(dis.tag(), dis.vr(), dis.valueLength());
+        }
+        int len;
+        while (dis.available() > 0) {
+            len = dis.read(buf);
+            out.write(buf, 0, len);
+        }
     }
     
     private void initDestinationAETs() {
@@ -936,4 +1030,18 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             return sb.toString();
         }
     }    
+    
+    private class FileToExport {
+        private Instance instance;
+        private java.io.File file;
+        
+        private FileToExport(Instance instance, java.io.File file) {
+            this.instance = instance;
+            this.file = file;
+        }
+        
+        public String toString() {
+            return "FileToExport pk:"+instance.getPk()+" file:"+file.getPath();
+        }
+    }
 }

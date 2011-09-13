@@ -38,7 +38,15 @@
 
 package org.dcm4chee.web.war.folder.delegate;
 
+import java.io.IOException;
+
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
+
 import org.dcm4che2.net.DimseRSPHandler;
+import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
 
 /**
@@ -63,6 +71,12 @@ public class ExportDelegate extends BaseMBeanDelegate {
                     DimseRSPHandler.class.getName(), boolean.class.getName()});
     }
 
+    public java.io.File retrieveFileFromTar(File file, ObjectName tarRetrieverServicename) throws Exception {
+        return (java.io.File) server.invoke(tarRetrieverServicename, "retrieveFileFromTAR", 
+                new Object[]{file.getFileSystem().getDirectoryPath(), file.getFilePath()}, 
+                new String[]{String.class.getName(), String.class.getName()});
+        
+    }
     @Override
     public String getServiceNameCfgAttribute() {
         return "moveScuServiceName";

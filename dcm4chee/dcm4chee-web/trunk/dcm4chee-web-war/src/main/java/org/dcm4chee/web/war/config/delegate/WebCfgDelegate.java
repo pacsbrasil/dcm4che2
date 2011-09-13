@@ -301,6 +301,22 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         }
     }
 
+    public String getZipEntryTemplate() {
+        return getString("ZipEntryTemplate");
+    }
+    
+    public int getBuffersize() {
+        if (server == null)
+            return 8192;
+        try {
+            return (Integer) server.getAttribute(serviceObjectName,
+                    "Buffersize");
+        } catch (Exception x) {
+            log.warn("Cant get DefaultFolderPagesize attribute! return 10 as default!", x);
+            return 8192;
+        }
+    }
+    
     @SuppressWarnings("unchecked")
     private Map<String, String> getStringMap(String name) {
         if (server != null) {
