@@ -48,6 +48,8 @@ import org.jboss.system.server.ServerConfigLocator;
  * @since May 27, 2010
  */
 public class FileUtils {
+    private static char[] HEX_DIGIT = { '0', '1', '2', '3', '4', '5', '6', '7',
+        '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
     
     public static File resolve(File f) {
         if (f.isAbsolute())
@@ -64,4 +66,11 @@ public class FileUtils {
         return resolve(new File(unixPath.replace('/', File.separatorChar)));
     }
 
+    public static String toHex(int val) {
+        char[] ch8 = new char[8];
+        for (int i = 8; --i >= 0; val >>= 4) {
+            ch8[i] = HEX_DIGIT[val & 0xf];
+        }
+        return String.valueOf(ch8);
+    }
 }
