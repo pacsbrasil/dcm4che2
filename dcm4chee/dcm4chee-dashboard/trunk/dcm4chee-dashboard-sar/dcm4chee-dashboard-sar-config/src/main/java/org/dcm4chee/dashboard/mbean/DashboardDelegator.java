@@ -187,6 +187,12 @@ public final class DashboardDelegator {
                         new String[] { java.lang.String.class.getName(), java.lang.String.class.getName() });
     }
     
+    public String[] listQueueDepthcolors() throws InstanceNotFoundException, ReflectionException, MBeanException {
+        return (String[]) this.server.invoke(
+                        this.objectName, 
+                        "listQueueDepthColors", null, null);
+    }
+
     public int getReportTablePagesize() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException, AttributeNotFoundException {
         return (Integer) server.getAttribute(
                         this.objectName,

@@ -97,6 +97,16 @@ Java;Version;java.version</value>
             <value>20</value>
         </descriptors>
     </attribute>   
+    <attribute access="read-write" getMethod="getQueueDepthColors" setMethod="setQueueDepthColors">
+        <description>
+            Represents configured colors for specific queue depths, 
+            as strings, separated by newline, 
+            with format: depth:color 
+            f.e. 10:red
+        </description>
+        <name>queueDepthColors</name>
+        <type>java.lang.String</type>
+    </attribute>
    <operation>
       <description>MBean Operation.</description>
       <name>listAllFileSystemGroups</name>
@@ -203,5 +213,10 @@ Java;Version;java.version</value>
          <type>java.lang.String</type>
       </parameter>
 	  <return-type>[I</return-type>
+   </operation>
+   <operation>
+      <description>MBean Operation.</description>
+      <name>listQueueDepthColors</name>
+      <return-type>[Ljava.lang.String;</return-type>
    </operation>
 </mbean>

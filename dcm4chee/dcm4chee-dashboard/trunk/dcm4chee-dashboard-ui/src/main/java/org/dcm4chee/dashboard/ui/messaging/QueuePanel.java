@@ -39,7 +39,17 @@
 package org.dcm4chee.dashboard.ui.messaging;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -54,6 +64,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ResourceReference;
@@ -69,6 +80,7 @@ import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
@@ -93,11 +105,33 @@ public class QueuePanel extends Panel {
     
     public static final String CONNECTION_FACTORY = "java:ConnectionFactory";
 
+    private Map<Integer,String> queueDepthColors = new TreeMap<Integer,String>();
+    
     public QueuePanel(String id) {
         super(id);
         
         if (QueuePanel.DashboardCSS != null)
             add(CSSPackageResource.getHeaderContribution(QueuePanel.DashboardCSS));
+        
+        try {
+            DashboardDelegator dashboardDelegator = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName")));
+            String[] queueDepthColorsStrings = dashboardDelegator.listQueueDepthcolors();
+            for (int i = 0; i < queueDepthColorsStrings.length; i++) {
+                String[] depthColorPair = queueDepthColorsStrings[i].split(":");
+                if (!(depthColorPair.length == 2)) {
+                    log.warn("Wrong entry in queue depth colors detected: " + queueDepthColorsStrings[i]);
+                    continue;
+                } else {
+                    try {
+                        queueDepthColors.put(new Integer(depthColorPair[0]), depthColorPair[1]);                       
+                    } catch (Exception e) {
+                        log.warn("Wrong entry in queue depth colors detected: " + queueDepthColorsStrings[i]);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error fetching queue depth colors from DashboardService", e);
+        }
     }
     
     @SuppressWarnings("unchecked")
@@ -114,19 +148,26 @@ public class QueuePanel extends Panel {
                                     .createSession(false, Session.AUTO_ACKNOWLEDGE);
 
                 DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new QueueModel());
-
                 DashboardDelegator dashboardDelegator = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName")));
                 for (String[] queueName : dashboardDelegator.listQueueNames()) {
-                        int[] counts = dashboardDelegator.listQueueAttributes(queueName[0], queueName[1]);
-                        QueueModel queueModel = new QueueModel(queueName[0], queueName[1]);
-                        DefaultMutableTreeNode queueNode;
-                        queueModel.setQueue(true);
-                        queueModel.setMessageCount(counts == null ? -1 : counts[0]);
-                        queueModel.setDeliveringCount(counts == null ? -1 : counts[1]);
-                        queueModel.setScheduledMessageCount(counts == null ? -1 : counts[2]);
-                        queueModel.setConsumerCount(counts == null ? -1 : counts[3]);
-                        rootNode.add(queueNode = new DefaultMutableTreeNode(queueModel));
+                    int[] counts = dashboardDelegator.listQueueAttributes(queueName[0], queueName[1]);
+                    QueueModel queueModel = new QueueModel(queueName[0], queueName[1]);
+                    DefaultMutableTreeNode queueNode;
+                    queueModel.setQueue(true);
+                    queueModel.setMessageCount(counts == null ? -1 : counts[0]);
+                    queueModel.setDeliveringCount(counts == null ? -1 : counts[1]);
+                    queueModel.setScheduledMessageCount(counts == null ? -1 : counts[2]);
+                    queueModel.setConsumerCount(counts == null ? -1 : counts[3]);
+                    rootNode.add(queueNode = new DefaultMutableTreeNode(queueModel));
 
+                    Iterator<Entry<Integer, String>> i = queueDepthColors.entrySet().iterator();
+                    while (i.hasNext()) {
+                        Entry<Integer, String> entry = i.next();
+                        if (entry.getKey() <= queueModel.getMessageCount()) 
+                            queueModel.setColor(entry.getValue());
+                        else
+                            break;
+                    }                      
                     try {
                         Enumeration<Message> e = session.createBrowser((Queue) new InitialContext().lookup("/queue/" + queueName)).getEnumeration();
                         while(e.hasMoreElements()) {
@@ -202,6 +243,14 @@ public class QueuePanel extends Panel {
         }
 
         @Override
+        protected void populateTreeItem(WebMarkupContainer item, int level) {
+            super.populateTreeItem(item, level);
+            QueueModel queueModel = (QueueModel) ((DefaultMutableTreeNode) item.getDefaultModelObject()).getUserObject();
+            if (queueModel.getColor() != null)
+                item.add(new AttributeModifier("style", true, new Model<String>("background-color: " + queueModel.getColor())));
+        }
+        
+        @Override
         protected Component newNodeIcon(MarkupContainer parent, String id, final TreeNode node) {
 
             return new WebMarkupContainer(id) {
@@ -218,8 +267,6 @@ public class QueuePanel extends Panel {
                                     : getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_QUEUE_MESSAGE)) 
                                     +"')"
                     );
-                    QueueModel queueModel = (QueueModel) ((DefaultMutableTreeNode) node).getUserObject();
-                    tag.put("title", (queueModel.getDomainName() != null ? queueModel.getDomainName() + ":" : "") + queueModel.getJndiName());
                 }
             };
         }
@@ -238,6 +285,8 @@ public class QueuePanel extends Panel {
         private int consumerCount;
         
         private boolean isQueue;
+
+        private String color;
         
         public QueueModel() {}
         
@@ -304,6 +353,14 @@ public class QueuePanel extends Panel {
 
         public boolean isQueue() {
             return isQueue;
+        }
+
+        public void setColor(String color) {
+            this.color = color;
+        }
+
+        public String getColor() {
+            return color;
         }
     }
     
