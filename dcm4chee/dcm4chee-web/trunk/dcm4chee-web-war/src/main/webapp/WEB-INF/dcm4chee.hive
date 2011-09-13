@@ -130,6 +130,9 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "A
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "AEEdit"
 {
 // KEY: swarm.principal.AEEdit
+    permission ${ComponentPermission} "org.dcm4chee.web.war.ae.AEPanel", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.ae.AEListPanel", "render, enable";
+//
     permission ${ComponentPermission} "org.dcm4chee.web.war.ae.CreateOrEditAETPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:aelist:editAETLink", "render, enable";
 };
@@ -137,6 +140,9 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "A
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "AEAddRemove"
 {
 // KEY: swarm.principal.AEAddRemove
+    permission ${ComponentPermission} "org.dcm4chee.web.war.ae.AEPanel", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.ae.AEListPanel", "render, enable";
+//
     permission ${ComponentPermission} "org.dcm4chee.web.war.ae.CreateOrEditAETPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:aelist:newAETLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:aelist:removeAETLink", "render, enable";  
@@ -145,12 +151,15 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "A
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "AEGroupRead"
 {
 // KEY: swarm.principal.AEGroupRead
+    permission ${ComponentPermission} "org.dcm4chee.web.war.ae.AEPanel", "render, enable";
+//
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.aet.AETGroupListPanel", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "AEGroupWrite"
 {
 // KEY: swarm.principal.AEGroupWrite
+    permission ${ComponentPermission} "org.dcm4chee.web.war.ae.AEPanel", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.aet.AETGroupListPanel", "render, enable";
 //
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.aet.CreateOrEditAETGroupPage", "render, enable";
