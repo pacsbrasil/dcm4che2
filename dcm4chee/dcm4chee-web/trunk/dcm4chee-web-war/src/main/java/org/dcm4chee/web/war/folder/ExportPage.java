@@ -81,6 +81,9 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.apache.wicket.security.components.SecureWebPage;
 import org.apache.wicket.util.time.Duration;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.DataExportMessage;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -95,6 +98,7 @@ import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
+import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -106,6 +110,7 @@ import org.dcm4chee.web.common.util.CloseRequestSupport;
 import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
+import org.dcm4chee.web.service.common.HttpUserInfo;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.delegate.ExportDelegate;
@@ -372,7 +377,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                     }
 
                     public void respond(RequestCycle requestCycle) {
-                        
+                        boolean success = false;
                         OutputStream out = null;
                         try {
                             Response response = requestCycle.getResponse();
@@ -397,6 +402,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                                 out = response.getOutputStream();
                                 writeDicomFile(files.get(0).file, files.get(0).instance, out, buf);
                             }
+                            success = true;
                         } catch (ZipException ze) {
                             log.warn("Problem creating zip file: " + ze);
                         } catch (ClientAbortException cae) {
@@ -404,6 +410,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                         } catch (Exception e) {
                             log.error("An error occurred while attempting to stream zip file for download: ", e);
                         } finally {
+                            logExport(files, success);
                             try {
                                 if (out != null)
                                     out.close();
@@ -618,6 +625,38 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         return isClosed;
     }
 
+    private void logExport(List<FileToExport> files, boolean success) {
+        try {
+            HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+    
+            DataExportMessage msg = new DataExportMessage();
+            msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS : AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+            msg.addExporterProcess(AuditMessage.getProcessID(), AuditMessage.getLocalAETitles(),
+                    AuditMessage.getProcessName(), true, AuditMessage.getLocalHostName());
+            msg.addDestinationMedia(userInfo.getUserId(), null, null, false, userInfo.getHostName());
+            HashSet<Study> studies = new HashSet<Study>();
+            HashSet<Patient> patients = new HashSet<Patient>();
+            Study study;
+            Patient pat;
+            for (FileToExport fte : files) {
+                study = fte.instance.getSeries().getStudy();
+                if (studies.add(study)) {
+                    msg.addStudy(study.getStudyInstanceUID(), null);
+                }
+            }
+            for (Study st : studies) {
+                pat = st.getPatient();
+                if (patients.add(pat)) {
+                    msg.addPatient(pat.getPatientID(), pat.getPatientName());
+                }
+            }
+            msg.validate();
+            LoggerFactory.getLogger("auditlog").info(msg.toString());
+        } catch (Exception ignore) {
+            log.warn("Audit log of DataExport failed!", ignore);
+        }
+    }
+    
     private class ExportInfo implements Serializable {
         
         private static final long serialVersionUID = 1L;
