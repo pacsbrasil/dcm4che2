@@ -91,6 +91,7 @@ public class MwlReplicaService extends AbstractScuService {
 
     private static final int PCID = 1;
     private static final int MSG_ID = 1;
+    private static final int MAX_ERRORLIST_SIZE = 1000;
 
     private static Logger log = Logger.getLogger(MwlReplicaService.class.getName());
     private SimpleDateFormat dfDA = new SimpleDateFormat("yyyy/MM/dd");
@@ -107,7 +108,16 @@ public class MwlReplicaService extends AbstractScuService {
     private boolean debugMode;
     private long msBefore = -1;
     private long msAfter = -1;
-    private List errorHistory = new ArrayList();
+    private List<String> errorHistory = new ArrayList<String>() {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public boolean add(String s) {
+            if (size() > MAX_ERRORLIST_SIZE)
+                remove(0);
+            return super.add(s);
+        }
+    };
 
     /** Holds the AET of modality worklist service. */
     private String[] calledAETs;
