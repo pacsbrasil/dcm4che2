@@ -560,6 +560,8 @@ public class ContentEditService extends ServiceMBeanSupport {
             }
             this.moveStudiesToPatient(studyPks, pat.getPk());
         }
+        log.debug("forwardModifiedToAETs:", forwardModifiedToAETs);
+        log.debug("fwdIANs:", fwdIANs);
         if (this.forwardModifiedToAETs != null && fwdIANs != null) {
             for (Iterator<DicomObject> it = fwdIANs.values().iterator() ; it.hasNext() ;) {
                 this.scheduleForward(it.next());
@@ -932,11 +934,7 @@ public class ContentEditService extends ServiceMBeanSupport {
             ProcedureRecordMessage msg = new ProcedureRecordMessage(actionCode);
             msg.addUserPerson(userInfo.getUserId(), null, null, userInfo
                     .getHostName(), true);
-            PersonName pn = new PersonName(patAttrs.getString(Tag.PatientName));
-            String pname = pn.get(PersonName.GIVEN);
-            pname = pname == null ? pname = pn.get(PersonName.FAMILY) :
-                pname+" "+pn.get(PersonName.FAMILY);
-            msg.addPatient(patAttrs.getString(Tag.PatientID), pname);
+            msg.addPatient(patAttrs.getString(Tag.PatientID), patAttrs.getString(Tag.PatientName));
             ParticipantObjectDescription poDesc = new ParticipantObjectDescription();
             if (accNr != null)
                 poDesc.addAccession(accNr);

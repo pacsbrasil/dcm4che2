@@ -52,11 +52,9 @@ import javax.management.ReflectionException;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
-import org.apache.wicket.Response;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
-import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
@@ -66,12 +64,10 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClo
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.AbstractTextComponent;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -83,7 +79,10 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
-import org.apache.wicket.util.string.JavascriptUtils;
+import org.dcm4che2.audit.message.AuditEvent;
+import org.dcm4che2.audit.message.AuditEvent.ActionCode;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.OrderRecordMessage;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DateRange;
 import org.dcm4che2.data.DicomElement;
@@ -110,6 +109,7 @@ import org.dcm4chee.web.common.validators.UIDValidator;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
+import org.dcm4chee.web.service.common.HttpUserInfo;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.common.EditDicomObjectPanel;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
@@ -230,6 +230,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             public void onConfirmation(AjaxRequestTarget target, MWLItemModel mwlItemModel) {
                 ((ModalityWorklistLocal) JNDIUtils.lookup(ModalityWorklistLocal.JNDI_NAME))
                     .removeMWLItem(mwlItemModel.getPk());
+                logOrderRecord(mwlItemModel, AuditEvent.ActionCode.DELETE, true);
                 ModalityWorklistPanel.this.setOutputMarkupId(true);
                 queryMWLItems(target);
                 target.addComponent(ModalityWorklistPanel.this);
@@ -763,14 +764,24 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     
                        @Override
                        protected void onApply() {
-                           mwlItemModel.update(getDicomObject());
+                           update();
                        }
 
                        @Override
                        protected void onSubmit() {
-                           mwlItemModel.update(getDicomObject());
+                           update();
                            super.onCancel();
                        }                       
+
+                       private void update() {
+                           try {
+                               mwlItemModel.update(getDicomObject());
+                               logOrderRecord(mwlItemModel, AuditEvent.ActionCode.UPDATE, true);
+                           } catch (RuntimeException x) {
+                               logOrderRecord(mwlItemModel, AuditEvent.ActionCode.UPDATE, false);
+                               throw x;
+                           }
+                       }
                     });
                     modalWindow.show(target);
                     super.onClick(target);
@@ -829,5 +840,21 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         target.addComponent(navPanel);
         target.addComponent(listPanel);
     }
-    
+
+    protected void logOrderRecord(MWLItemModel mwlItemModel, ActionCode action, boolean success) {
+        try {
+            HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+            OrderRecordMessage msg = new OrderRecordMessage(action);
+            msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS : AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+            msg.addUserProcess(AuditMessage.getProcessID(), AuditMessage.getLocalAETitles(),
+                        AuditMessage.getProcessName(), AuditMessage.getLocalHostName(), false);
+            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo.getHostName(), true);
+            DicomObject obj = mwlItemModel.getPatientAttributes();
+            msg.addPatient(obj.getString(Tag.PatientID), obj.getString(Tag.PatientName));
+            msg.validate();
+            LoggerFactory.getLogger("auditlog").info(msg.toString());
+        } catch (Exception ignore) {
+            log.warn("Audit log of OrderRecord failed!", ignore);
+        }
+    }
 }
