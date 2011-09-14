@@ -346,13 +346,15 @@ public class FileDataSource implements DataSource {
                         || tsUID.equals(tsOrig)
                         || tsUID.equals(UIDs.ImplicitVRLittleEndian))) {
                     tsUID = UIDs.ExplicitVRLittleEndian;
-                    fmi.putUI(Tags.TransferSyntaxUID, tsUID);
                     patchJpegLS = false;
                 }
+                fmi.putUI(Tags.TransferSyntaxUID, tsUID);
+
                 if (patchJpegLS && patchJpegLSNewImplCUID != null)
                     fmi.putUI(Tags.ImplementationClassUID,
                             patchJpegLSNewImplCUID);
             }
+            log.debug("using transfersyntx:" + tsUID);
             DcmEncodeParam enc = DcmEncodeParam.valueOf(tsUID);
             if (!hasPixelData) {
                 log.debug("Dataset:\n");
