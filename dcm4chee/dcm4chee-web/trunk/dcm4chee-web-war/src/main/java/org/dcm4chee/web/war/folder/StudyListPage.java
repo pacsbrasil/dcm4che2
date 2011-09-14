@@ -163,6 +163,7 @@ import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.dao.folder.StudyListFilter;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
+import org.dcm4chee.web.service.common.HttpUserInfo;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.StudyPermissionHelper.StudyPermissionRight;
@@ -2048,14 +2049,23 @@ public class StudyListPage extends Panel {
            private static final long serialVersionUID = 1L;
 
            @Override
+           protected void onApply() {
+               update();
+           }
+
+           @Override
            protected void onSubmit() {
+               update();
+               super.onCancel();
+           }                       
+           
+           private void update() {
                model.update(getDicomObject());
                try {
                    ContentEditDelegate.getInstance().doAfterDicomEdit(model);
                } catch (Exception x) {
                    log.warn("doAfterDicomEdit failed!", x);
                }
-               super.onCancel();
            }
         };
     }
@@ -2269,8 +2279,8 @@ public class StudyListPage extends Panel {
 
     private void logSecurityAlert(AbstractDicomModel model, boolean success, String description) {
         try {
-            org.dcm4chee.web.service.common.HttpUserInfo userInfo = 
-                new org.dcm4chee.web.service.common.HttpUserInfo(AuditMessage.isEnableDNSLookups());
+            HttpUserInfo userInfo = 
+                new HttpUserInfo(AuditMessage.isEnableDNSLookups());
     
             SecurityAlertMessage msg = new SecurityAlertMessage(
                     SecurityAlertMessage.OBJECT_SECURITY_ATTRIBUTES_CHANGED);
