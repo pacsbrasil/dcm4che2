@@ -11,27 +11,31 @@
     <body>  
 		<form style="clear: both" wicket:id="form" class="msgWindow">
 	  		<span wicket:id="label">LABEL</span>
-	  		<table>
+	  		<table class="export">
 	  		    <tr>
-		  		  <th wicket:id="selectedItems">LABEL</th>
+		  		  <th colspan="4" wicket:id="selectedItems">LABEL</th>
 		  		</tr>
 	  			<tr>
-	  				<td wicket:id="selectedPats">Patients</td>
+	  				<td wicket:id="selectedPats" class="selected">Patients</td>
 	  				<td wicket:id="selectedPatsValue">0</td>
 	  				<td wicket:id="deniedPatsValue" class="invalid">0</td>
 				</tr>
 	  			<tr>
-	  				<td wicket:id="selectedStudies">Patients</td>
+	  				<td wicket:id="selectedStudies" class="selected">Patients</td>
 	  				<td wicket:id="selectedStudiesValue">0</td>
 	  				<td wicket:id="deniedStudiesValue" class="invalid">0</td>
+	  				<td class="total">
+		  				<span wicket:id="totInstances">totInstances</span>
+		  				<span wicket:id="totInstancesValue">0</span>
+	  				</td>
 				</tr>
 	  			<tr>
-	  				<td wicket:id="selectedSeries">Patients</td>
+	  				<td wicket:id="selectedSeries" class="selected">Patients</td>
 	  				<td wicket:id="selectedSeriesValue">0</td>
 	  				<td wicket:id="deniedSeriesValue" class="invalid">0</td>
 				</tr>
 	  			<tr>
-	  				<td wicket:id="selectedInstances">Patients</td>
+	  				<td wicket:id="selectedInstances" class="selected">Patients</td>
 	  				<td wicket:id="selectedInstancesValue">0</td>
 	  				<td wicket:id="deniedInstancesValue" class="invalid">0</td>
 				</tr>

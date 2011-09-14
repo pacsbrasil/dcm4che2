@@ -218,6 +218,8 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         form.add( new Label("selectedInstancesValue", new PropertyModel<Integer>(exportInfo, "nrOfInstances")));
         form.add( new Label("deniedInstancesValue", new PropertyModel<Integer>(exportInfo, "deniedNrOfInstances"))
             .setVisible(studyPermissionHelper.isUseStudyPermissions()));
+        form.addLabel("totInstances");
+        form.add( new Label("totInstancesValue", new PropertyModel<Integer>(exportInfo, "totNrOfInstances")));
         form.add(new DropDownChoice<AE>("destinationAETs", destinationModel, destinationAETs, new IChoiceRenderer<AE>(){
             private static final long serialVersionUID = 1L;
 
@@ -663,6 +665,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         
         List<MoveRequest> requests;
         int nrPat, nrStudy, nrSeries, nrInstances;
+        long totNrInstances;
         int NOTnrPat, NOTnrStudy, NOTnrSeries, NOTnrInstances;
         
         StudyListLocal dao;
@@ -676,6 +679,9 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                 } else {
                     prepareStudyRequests(pat.getStudies());
                 }
+            }
+            for (MoveRequest rq : requests) {
+                totNrInstances += dao.countDownloadableInstances(rq.studyIUIDs, rq.seriesIUIDs, rq.sopIUIDs);
             }
         }
         
@@ -705,6 +711,11 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         @SuppressWarnings("unused")
         public int getNrOfInstances() {
             return nrInstances;
+        }
+
+        @SuppressWarnings("unused")
+        public long getTotNrOfInstances() {
+            return totNrInstances;
         }
 
         @SuppressWarnings("unused")
