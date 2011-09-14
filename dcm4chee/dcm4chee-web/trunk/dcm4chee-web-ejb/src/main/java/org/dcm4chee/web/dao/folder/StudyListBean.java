@@ -449,9 +449,9 @@ public class StudyListBean implements StudyListLocal {
     
     @SuppressWarnings("unchecked")
     public List<Instance> getDownloadableInstances(String[] studyIuids, String[] seriesIuids, String[] sopIuids) {
-        List<Instance> instances = null;
+        List<Instance> instances;
         StringBuilder sb = new StringBuilder();
-        sb.append("SELECT DISTINCT i FROM Instance i LEFT JOIN FETCH i.files JOIN FETCH i.series s JOIN FETCH s.study st JOIN FETCH st.patient WHERE ");
+        sb.append("SELECT i FROM Instance i JOIN FETCH i.series s JOIN FETCH s.study st JOIN FETCH st.patient WHERE ");
         String[] uids;
         if (sopIuids != null) {
             uids = sopIuids;
