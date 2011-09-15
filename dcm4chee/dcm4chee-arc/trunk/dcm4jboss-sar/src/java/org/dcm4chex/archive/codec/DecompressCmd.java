@@ -196,16 +196,11 @@ public class DecompressCmd extends CodecCmd {
         ImageReader reader = null;
         BufferedImage bi = null;
         boolean patchJpegLS = false;
-        boolean codecSemaphoreAquired = false;
-        boolean decompressSemaphoreAquired = false;
+        boolean semaphoreAquired = false;
         try {
-            log.debug("acquire codec semaphore");
-            codecSemaphore.acquire();
-            codecSemaphoreAquired = true;
-            decompressSemaphore.acquire();
-            decompressSemaphoreAquired = true;
+            semaphoreAquired = acquireSemaphore();
             log.info("start decompression of image: " + rows + "x" + columns
-                    + "x" + frames + " (concurrency:" + (nrOfConcurrentCodec.incrementAndGet())+")");
+                    + "x" + frames + " (concurrency:" + nrOfConcurrentCodec.get()+")");
             t1 = System.currentTimeMillis();
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(tsuid);
@@ -245,17 +240,33 @@ public class DecompressCmd extends CodecCmd {
                 reader.dispose();
             if (bi != null)
                 biPool.returnBufferedImage(bi);
-            if (decompressSemaphoreAquired) {
-                decompressSemaphore.release();
-            }
-            if (codecSemaphoreAquired) {
-                log.debug("release codec semaphore");
-                codecSemaphore.release();
-                nrOfConcurrentCodec.decrementAndGet();
-            }
+            if (semaphoreAquired)
+                releaseSemaphore();
         }
         long t2 = System.currentTimeMillis();
         log.info("finished decompression in " + (t2 - t1) + "ms." + " (remaining concurrency:"+nrOfConcurrentCodec+")");
+    }
+
+    public static boolean acquireSemaphore() throws InterruptedException {
+        log.debug("acquire codec semaphore");
+        boolean success = false;
+        codecSemaphore.acquire();
+        try {
+            decompressSemaphore.acquire();
+            success = true;
+        } finally {
+            if (!success)
+                codecSemaphore.release();
+        }
+        nrOfConcurrentCodec.incrementAndGet();
+        return success;
+    }
+
+    public static void releaseSemaphore() {
+        log.debug("release codec semaphore");
+        decompressSemaphore.release();
+        codecSemaphore.release();
+        nrOfConcurrentCodec.decrementAndGet();
     }
 
     private void write(WritableRaster raster, OutputStream out,

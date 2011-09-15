@@ -99,6 +99,7 @@ import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
+import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.DictionaryFactory;
 import org.dcm4che.dict.TagDictionary;
 import org.dcm4che.dict.Tags;
@@ -107,6 +108,7 @@ import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4cheri.imageio.plugins.DcmImageReadParamImpl;
 import org.dcm4cheri.imageio.plugins.SimpleYBRColorSpace;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.codec.DecompressCmd;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
@@ -154,6 +156,12 @@ public class WADOSupport implements NotificationListener {
     public static final String CONTENT_TYPE_MPEG = "video/mpeg";
 
     private static final String SUBJECT_CONTEXT_KEY = "javax.security.auth.Subject.container";
+    
+    private static final String[] COMPRESSED_TRANSFER_SYNTAXES = {
+        UIDs.JPEGBaseline, UIDs.JPEGExtended, UIDs.JPEGLossless14, UIDs.JPEGLossless,
+        UIDs.JPEGLSLossless, UIDs.JPEGLSLossy, UIDs.JPEG2000Lossless, UIDs.JPEG2000Lossy,
+        UIDs.RLELossless
+    };
 
     private static final String ERROR_INVALID_SIMPLE_FRAME_LIST =
         "Error: simpleFrameList parameter is invalid! Must be a comma " +
@@ -1294,6 +1302,7 @@ public class WADOSupport implements NotificationListener {
             return null; // TODO more useful stuff
         }
         ImageInputStream in = new FileImageInputStream(file);
+        boolean semaphoreAquired = false;
         try {
             reader.setInput(in, false);
             BufferedImage bi = null;
@@ -1318,13 +1327,14 @@ public class WADOSupport implements NotificationListener {
                 }
 
                 Dataset data = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
-
                 if (windowWidth != null && windowCenter != null) {
                     data.putDS(Tags.WindowWidth, windowWidth);
                     data.putDS(Tags.WindowCenter, windowCenter);
                 }
 
                 DcmImageReadParamImpl dcmParam = (DcmImageReadParamImpl) param;
+                if (isCompressed(data))
+                    semaphoreAquired = DecompressCmd.acquireSemaphore();
                 bi = reader.read(frame, dcmParam);
             } catch (Exception x) {
                 log.error("Can't read image:", x);
@@ -1336,10 +1346,24 @@ public class WADOSupport implements NotificationListener {
             }
             return resize(bi, rows, columns, reader.getAspectRatio(frame));
         } finally {
+            if (semaphoreAquired)
+                DecompressCmd.releaseSemaphore();
             // !!!! without this, we get "too many open files" when generating
             // icons in a tight loop
             in.close();
         }
+    }
+
+    private static boolean isCompressed(Dataset data) {
+        FileMetaInfo fmi = data.getFileMetaInfo();
+        if (fmi == null)
+            return false;
+        
+        String tsuid = fmi.getTransferSyntaxUID();
+        for (String ctsuid : COMPRESSED_TRANSFER_SYNTAXES)
+            if (ctsuid.equals(tsuid))
+                return false;
+        return false;
     }
 
     private ImageReader getDicomImageReader() {
