@@ -446,12 +446,39 @@ public class StudyListBean implements StudyListLocal {
         mpps.setAttributes(attrs);
         return mpps;
     }
-    
+
+    public long countDownloadableInstances(String[] studyIuids, String[] seriesIuids, String[] sopIuids) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT count(i) FROM Instance i WHERE ");
+        String[] uids = appendUIDs(studyIuids, seriesIuids, sopIuids, sb);
+        if (uids == null)
+            return -1;
+        Query q = em.createQuery(sb.toString());
+        QueryUtil.setParametersForIN(q, uids);
+        return (Long) q.getSingleResult();
+    }
+
+
     @SuppressWarnings("unchecked")
     public List<Instance> getDownloadableInstances(String[] studyIuids, String[] seriesIuids, String[] sopIuids) {
         List<Instance> instances;
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT i FROM Instance i JOIN FETCH i.series s JOIN FETCH s.study st JOIN FETCH st.patient WHERE ");
+        String[] uids = appendUIDs(studyIuids, seriesIuids, sopIuids, sb);
+        if (uids == null)
+            return null;
+        Query q = em.createQuery(sb.toString());
+        QueryUtil.setParametersForIN(q, uids);
+        instances = (List<Instance>) q.getResultList();
+        for (Instance instance : instances) {
+            for (File file : instance.getFiles()) 
+                file.getFileSystem().getDirectoryPath();
+        }       
+        return instances;
+    }
+
+    private String[] appendUIDs(String[] studyIuids, String[] seriesIuids,
+            String[] sopIuids, StringBuilder sb) {
         String[] uids;
         if (sopIuids != null) {
             uids = sopIuids;
@@ -462,16 +489,10 @@ public class StudyListBean implements StudyListLocal {
         } else if (studyIuids != null) {
             uids = studyIuids;
             sb.append("i.series.study.studyInstanceUID");
-        } else 
+        } else {
             return null;
+        }
         QueryUtil.appendIN(sb, uids.length);
-        Query q = em.createQuery(sb.toString());
-        QueryUtil.setParametersForIN(q, uids);
-        instances = (List<Instance>) q.getResultList();
-        for (Instance instance : instances) {
-            for (File file : instance.getFiles()) 
-                file.getFileSystem().getDirectoryPath();
-        }       
-        return instances;
+        return uids;
     }
 }
