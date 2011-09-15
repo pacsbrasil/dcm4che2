@@ -64,6 +64,11 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
+import net.sf.json.JsonConfig;
+
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
@@ -83,6 +88,8 @@ import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
+import org.dcm4chee.dashboard.model.QueueDepthModel;
+import org.dcm4chee.dashboard.model.QueueDepthTupel;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
 import org.dcm4chee.icons.ImageManager;
@@ -105,7 +112,7 @@ public class QueuePanel extends Panel {
     
     public static final String CONNECTION_FACTORY = "java:ConnectionFactory";
 
-    private Map<Integer,String> queueDepthColors = new TreeMap<Integer,String>();
+    private Map<String,List<QueueDepthTupel>> queueDepthConfig = new HashMap<String,List<QueueDepthTupel>>();
     
     public QueuePanel(String id) {
         super(id);
@@ -115,19 +122,22 @@ public class QueuePanel extends Panel {
         
         try {
             DashboardDelegator dashboardDelegator = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName")));
-            String[] queueDepthColorsStrings = dashboardDelegator.listQueueDepthcolors();
-            for (int i = 0; i < queueDepthColorsStrings.length; i++) {
-                String[] depthColorPair = queueDepthColorsStrings[i].split(":");
-                if (!(depthColorPair.length == 2)) {
-                    log.warn("Wrong entry in queue depth colors detected: " + queueDepthColorsStrings[i]);
-                    continue;
-                } else {
-                    try {
-                        queueDepthColors.put(new Integer(depthColorPair[0]), depthColorPair[1]);                       
-                    } catch (Exception e) {
-                        log.warn("Wrong entry in queue depth colors detected: " + queueDepthColorsStrings[i]);
-                    }
-                }
+
+            String[] queueModelStrings = dashboardDelegator.listQueueDepthConfig();
+            for (int i = 0; i < queueModelStrings.length; i++) {
+                QueueDepthModel queueDepthModel = 
+                    (QueueDepthModel) JSONObject.toBean(
+                            JSONObject.fromObject(queueModelStrings[i]), 
+                            QueueDepthModel.class);
+                Iterator<JSONObject> iterator = JSONArray.fromObject(queueDepthModel.getDepths()).listIterator();
+                List<QueueDepthTupel> tupelList = new ArrayList<QueueDepthTupel>();
+                while (iterator.hasNext()) 
+                    tupelList.add( 
+                        (QueueDepthTupel) JSONObject.toBean(
+                                JSONObject.fromObject(iterator.next().toString()),
+                                QueueDepthTupel.class));                   
+                Collections.sort(tupelList);
+                queueDepthConfig.put(queueDepthModel.getDomain() + ":" + queueDepthModel.getName(), tupelList);
             }
         } catch (Exception e) {
             log.error("Error fetching queue depth colors from DashboardService", e);
@@ -160,14 +170,18 @@ public class QueuePanel extends Panel {
                     queueModel.setConsumerCount(counts == null ? -1 : counts[3]);
                     rootNode.add(queueNode = new DefaultMutableTreeNode(queueModel));
 
-                    Iterator<Entry<Integer, String>> i = queueDepthColors.entrySet().iterator();
-                    while (i.hasNext()) {
-                        Entry<Integer, String> entry = i.next();
-                        if (entry.getKey() <= queueModel.getMessageCount()) 
-                            queueModel.setColor(entry.getValue());
-                        else
-                            break;
-                    }                      
+                    List<QueueDepthTupel> tupelList = queueDepthConfig.get(queueModel.getDomainName() + ":" + queueModel.getJndiName());
+                    if (tupelList != null) {
+                        Iterator<QueueDepthTupel> iterator = tupelList.iterator();
+                        while (iterator.hasNext()) {
+                            QueueDepthTupel tupel = iterator.next();
+                            if (tupel.getDepth() <= queueModel.getMessageCount()) 
+                                queueModel.setColor(tupel.getColor());
+                            else
+                                break;
+                        }
+                    }
+                    
                     try {
                         Enumeration<Message> e = session.createBrowser((Queue) new InitialContext().lookup("/queue/" + queueName)).getEnumeration();
                         while(e.hasMoreElements()) {

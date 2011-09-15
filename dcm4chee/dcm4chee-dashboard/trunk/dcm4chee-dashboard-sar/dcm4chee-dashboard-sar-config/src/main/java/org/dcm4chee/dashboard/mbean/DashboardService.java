@@ -94,7 +94,7 @@ public class DashboardService extends ServiceMBeanSupport {
 
     private int reportTablePagesize;
     
-    private String[] queueDepthColors = new String[0];
+    private String[] queueDepthConfig = new String[0];
     
     public void setDomainNames(String domainNames) {
         this.domainNames = tokenize(domainNames);
@@ -160,12 +160,12 @@ public class DashboardService extends ServiceMBeanSupport {
         this.reportTablePagesize = reportTablePagesize;
     }
     
-    public void setQueueDepthColors(String queueDepthColors) {
-        this.queueDepthColors = tokenize(queueDepthColors);
+    public void setQueueDepthConfig(String queueDepthConfig) {
+        this.queueDepthConfig = tokenize(queueDepthConfig);
     }
 
-    public String getQueueDepthColors() {
-        return arrayToString(this.queueDepthColors);
+    public String getQueueDepthConfig() {
+        return arrayToString(this.queueDepthConfig);
     }
 
     public String[] listAllFileSystemGroups() throws MalformedObjectNameException, NullPointerException {
@@ -375,8 +375,8 @@ public class DashboardService extends ServiceMBeanSupport {
         return queueAttributesList;        
     }
 
-    public String[] listQueueDepthColors() throws MalformedObjectNameException, NullPointerException {
-        return this.queueDepthColors;
+    public String[] listQueueDepthConfig() throws MalformedObjectNameException, NullPointerException {
+        return this.queueDepthConfig;
     }
 
     private String[] tokenize(String sourceString) {

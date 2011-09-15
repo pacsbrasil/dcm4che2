@@ -97,14 +97,19 @@ Java;Version;java.version</value>
             <value>20</value>
         </descriptors>
     </attribute>   
-    <attribute access="read-write" getMethod="getQueueDepthColors" setMethod="setQueueDepthColors">
+    <attribute access="read-write" getMethod="getQueueDepthConfig" setMethod="setQueueDepthConfig">
         <description>
             Represents configured colors for specific queue depths, 
-            as strings, separated by newline, 
-            with format: depth:color 
-            f.e. 10:red
+            configured for each queue separately, 
+            separated by newline, 
+            using json format, f.e.:
+            {
+                "domain":"dcm4chee.archive",
+                "name":"StudyMgtScu",
+                "depths":[{"color":"yellow","depth":10},{"color":"red","depth":20}]
+            } 
         </description>
-        <name>queueDepthColors</name>
+        <name>queueDepthConfig</name>
         <type>java.lang.String</type>
     </attribute>
    <operation>
@@ -216,7 +221,7 @@ Java;Version;java.version</value>
    </operation>
    <operation>
       <description>MBean Operation.</description>
-      <name>listQueueDepthColors</name>
+      <name>listQueueDepthConfig</name>
       <return-type>[Ljava.lang.String;</return-type>
    </operation>
 </mbean>
