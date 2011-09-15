@@ -467,7 +467,7 @@ public class TrashListPage extends Panel {
                         Math.min(viewport.getOffset() + pagesize.getObject(), viewport.getTotal()),
                         viewport.getTotal()};
             }
-        }));
+        }).setEscapeModelStrings(false));
     }
 
     private void addActions(final BaseForm form) {

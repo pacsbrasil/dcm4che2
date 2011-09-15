@@ -254,7 +254,7 @@ public class ImageSelectionWindow extends ModalWindow {
                             new Object[] {from, to, seriesList.size()})
                     .getObject();
                 }
-            }));
+            }).setEscapeModelStrings(false));
             add(new SelectAllLink("selectAll", seriesList,SeriesModel.INSTANCE_LEVEL, true, datacontainer)
                 .add(new TooltipBehaviour("folder.imageselect.", "selectInAllSeries")));
             add(new SelectAllLink("deselectAll", seriesList,SeriesModel.INSTANCE_LEVEL, false, datacontainer)

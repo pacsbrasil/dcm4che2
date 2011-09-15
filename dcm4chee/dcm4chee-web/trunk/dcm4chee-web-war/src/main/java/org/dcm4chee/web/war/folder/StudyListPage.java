@@ -762,7 +762,7 @@ public class StudyListPage extends Panel {
                         Math.min(viewport.getOffset() + pagesize.getObject(), viewport.getTotal()),
                         viewport.getTotal()};
             }
-        }));
+        }).setEscapeModelStrings(false));
         
         confirmEdit = new ConfirmationWindow<AbstractEditableDicomModel>("confirmEdit") {
 

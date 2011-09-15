@@ -559,7 +559,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                         Math.min(viewport.getOffset() + pagesize.getObject(), viewport.getTotal()),
                         viewport.isInternalWorklistProvider() ? String.valueOf(viewport.getTotal()) : "?" };
             }
-        }));
+        }).setEscapeModelStrings(false));
         form.clearParent();
     }
 
