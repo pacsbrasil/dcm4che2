@@ -256,9 +256,12 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                                 panel.replace(p);
                                 target.addComponent(p);
                                 return;
+                            } else {
+                                doLink(mwlItemModel, pats.get(0));
                             }
+                        } else {
+                            doLink(mwlItemModel, null);
                         }
-                        doLink(mwlItemModel, null);
                         target.addComponent(comp);
                         close(target);
                     } catch (Exception e) {
