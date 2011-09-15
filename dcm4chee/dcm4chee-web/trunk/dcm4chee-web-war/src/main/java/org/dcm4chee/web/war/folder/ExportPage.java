@@ -87,6 +87,7 @@ import org.dcm4che2.audit.message.DataExportMessage;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
 import org.dcm4che2.io.StopTagInputHandler;
@@ -534,6 +535,16 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         instance.getSeries().getStudy().getAttributes(false).copyTo(blobAttrs);
         instance.getSeries().getStudy().getPatient().getAttributes().copyTo(blobAttrs);
         DicomObject attrs = dis.readDicomObject();
+        if (!blobAttrs.getString(Tag.SOPInstanceUID).equals(attrs.getString(Tag.MediaStorageSOPInstanceUID))) {
+            log.info("SOPInstanceUID has been changed! correct MediaStorageSOPInstanceUID from "
+                    +attrs.getString(Tag.MediaStorageSOPInstanceUID)+" to "+blobAttrs.getString(Tag.SOPInstanceUID));
+            attrs.putString(Tag.MediaStorageSOPInstanceUID, VR.UI, blobAttrs.getString(Tag.SOPInstanceUID));
+        }
+        if (!blobAttrs.getString(Tag.SOPClassUID).equals(attrs.getString(Tag.MediaStorageSOPClassUID))) {
+            log.info("SOPClassUID has been changed! correct MediaStorageSOPClassUID from "
+                    +attrs.getString(Tag.MediaStorageSOPClassUID)+" to "+blobAttrs.getString(Tag.SOPClassUID));
+            attrs.putString(Tag.MediaStorageSOPClassUID, VR.UI, blobAttrs.getString(Tag.SOPClassUID));
+        }
         blobAttrs.copyTo(attrs);
         DicomOutputStream dos = new DicomOutputStream(out);
         dos.setAutoFinish(false);//we have an DeflaterOutputStream
