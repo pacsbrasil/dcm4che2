@@ -2257,6 +2257,7 @@ public class StudyListPage extends Panel {
             filter.setPpsWithoutMwl(Boolean.valueOf(paras.getString("ppsWithoutMwl")));
             filter.setWithoutPps(Boolean.valueOf(paras.getString("withoutPps")));
             filter.setExactModalitiesInStudy(Boolean.valueOf(paras.getString("exactModalitiesInStudy")));
+            filter.setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
             if (Boolean.valueOf(paras.getString("query"))) {
                 queryStudies(null);
             }
