@@ -43,6 +43,7 @@ import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
@@ -241,7 +242,8 @@ public class UserListPanel extends Panel {
     }
     private List<User> getAllUsers() {
         List<User> allUsers = new ArrayList<User>();
-        allUsers.addAll(((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).getAllUsers());
+        allUsers.addAll(((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME))
+                .getAllUsers(((SecureSession) RequestCycle.get().getSession()).getUsername()));
         return allUsers;
     }
     
