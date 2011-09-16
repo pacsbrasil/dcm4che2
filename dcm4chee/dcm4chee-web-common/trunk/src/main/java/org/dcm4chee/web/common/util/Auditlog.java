@@ -279,6 +279,10 @@ public class Auditlog {
         msg.addAlertSubjectWithNodeID(AuditMessage.getLocalNodeID(), desc);
         return msg;
     }
+    
+    public static void logSoftwareConfiguration(boolean success, String desc) {
+        logSecurityAlert(SecurityAlertMessage.SOFTWARE_CONFIGURATION, success, desc);
+    }
 
     private static ParticipantObjectDescription getStudyDescription(DicomObject obj) {
         ParticipantObjectDescription desc = new ParticipantObjectDescription();
