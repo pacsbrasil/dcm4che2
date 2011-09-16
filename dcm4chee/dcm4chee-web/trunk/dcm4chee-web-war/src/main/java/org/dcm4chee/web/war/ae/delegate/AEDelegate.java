@@ -49,12 +49,14 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.protocol.http.WebRequestCycle;
+import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
+import org.dcm4chee.web.common.util.Auditlog;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +69,6 @@ import org.slf4j.LoggerFactory;
 public class AEDelegate extends BaseMBeanDelegate {
 
     private static Logger log = LoggerFactory.getLogger(AEDelegate.class);
-    private static Logger auditLog = LoggerFactory.getLogger("auditlog");
     private static AEDelegate singleton;
     
     private static String newline = System.getProperty("line.separator");
@@ -93,7 +94,7 @@ public class AEDelegate extends BaseMBeanDelegate {
     
     public void delete(AE ae) {
         ((AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME)).removeAET(ae.getPk());
-        logActorConfig("Delete AE:" + ae);
+        Auditlog.logSecurityAlert(AuditEvent.TypeCode.NETWORK_CONFIGURATION, true, "Delete AE:" + ae);
         clearCache();
     }
 
@@ -104,45 +105,7 @@ public class AEDelegate extends BaseMBeanDelegate {
         String updOrCreate = ae.getPk() == -1 ? "Create new AE:" : "Update AE:";
         ((AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME)).updateOrCreateAET(ae);
         updateSchedule(ae.getTitle());
-        logActorConfig(updOrCreate + ae);
-    }
-    
-    private void logActorConfig(String desc) {
-        log.info(desc);
-        try {
-            HttpServletRequest rq = ((WebRequestCycle)RequestCycle.get()).getWebRequest().getHttpServletRequest();
-            String userId = rq.getRemoteUser();
-            if (userId == null || userId.length() < 1)
-                userId = "UNKNOWN_USER";
-            String xForward = (String) rq.getHeader("x-forwarded-for");
-            String ip, hostName;
-            if (xForward != null) {
-                int pos = xForward.indexOf(',');
-                ip = (pos > 0 ? xForward.substring(0,pos) : xForward).trim();
-            } else {
-                ip = rq.getRemoteAddr();
-            }
-            if (AuditMessage.isEnableDNSLookups()) {
-                try {
-                    hostName = InetAddress.getByName(ip).getHostName();
-                } catch (UnknownHostException ignore) {
-                    hostName = ip;
-                }
-            } else {
-                hostName = ip;
-            }
-            SecurityAlertMessage msg = new SecurityAlertMessage(SecurityAlertMessage.NETWORK_CONFIGURATION);
-            msg.addReportingProcess(AuditMessage.getProcessID(),
-                    AuditMessage.getLocalAETitles(),
-                    AuditMessage.getProcessName(),
-                    AuditMessage.getLocalHostName());
-            msg.addPerformingPerson(userId, null, null, hostName);
-            msg.addAlertSubjectWithNodeID(AuditMessage.getLocalNodeID(), desc);
-            msg.validate();
-            auditLog.info(msg.toString());
-        } catch (Exception e) {
-            log.warn("Failed to log ActorConfig:", e);
-        }
+        Auditlog.logSecurityAlert(AuditEvent.TypeCode.NETWORK_CONFIGURATION, true, updOrCreate + ae);
     }
     
     public void clearCache() {

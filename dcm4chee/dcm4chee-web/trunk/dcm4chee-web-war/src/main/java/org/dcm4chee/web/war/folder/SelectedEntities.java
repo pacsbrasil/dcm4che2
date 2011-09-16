@@ -39,6 +39,7 @@
 package org.dcm4chee.web.war.folder;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashSet;
@@ -300,6 +301,30 @@ public class SelectedEntities implements Serializable {
             if (hasTooOld) 
                 return;
         }
+    }
+    public Set<StudyModel> getStudiesTooOld() {
+        HashSet<StudyModel> toOld = new HashSet<StudyModel>();
+        for (InstanceModel m : instances) {
+            if (tooOld(m))
+                toOld.add(m.getSeries().getPPS().getStudy());
+        }
+        for (SeriesModel m : seriess) {
+            if (tooOld(m))
+                toOld.add(m.getPPS().getStudy());
+        }
+        for (PPSModel m : ppss) {
+            if (tooOld(m))
+                toOld.add(m.getStudy());
+        }
+        for (StudyModel m : studies) {
+            if (tooOld(m))
+                toOld.add(m);
+        }
+        for (PatientModel m : patients) {
+            if (tooOld(m))
+                toOld.addAll(m.getStudies());
+        }
+        return toOld;
     }
 
     public boolean hasTooOld() {

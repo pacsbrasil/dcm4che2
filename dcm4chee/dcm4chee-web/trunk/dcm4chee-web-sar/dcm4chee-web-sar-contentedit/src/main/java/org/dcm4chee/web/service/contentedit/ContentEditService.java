@@ -60,15 +60,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
 import org.dcm4che2.audit.message.AuditEvent;
-import org.dcm4che2.audit.message.AuditEvent.ActionCode;
-import org.dcm4che2.audit.message.AuditMessage;
-import org.dcm4che2.audit.message.InstancesAccessedMessage;
-import org.dcm4che2.audit.message.ParticipantObject;
-import org.dcm4che2.audit.message.ParticipantObjectDescription;
-import org.dcm4che2.audit.message.PatientRecordMessage;
-import org.dcm4che2.audit.message.ProcedureRecordMessage;
-import org.dcm4che2.audit.message.StudyDeletedMessage;
-import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
@@ -88,6 +79,7 @@ import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.web.common.util.Auditlog;
 import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.common.DicomEditLocal;
 import org.dcm4chee.web.dao.folder.MppsToMwlLinkLocal;
@@ -96,7 +88,6 @@ import org.dcm4chee.web.dao.vo.EntityTree;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.service.common.DicomActionNotification;
 import org.dcm4chee.web.service.common.FileImportOrder;
-import org.dcm4chee.web.service.common.HttpUserInfo;
 import org.dcm4chee.web.service.common.XSLTUtils;
 import org.dcm4chee.web.service.common.delegate.TemplatesDelegate;
 import org.jboss.system.ServiceMBeanSupport;
@@ -338,10 +329,9 @@ public class ContentEditService extends ServiceMBeanSupport {
     public List<MPPS> deletePps(long[] ppsPks) {
         List<MPPS> mppss = lookupDicomEditLocal().deletePps(ppsPks);
         for (MPPS mpps : mppss) {
-            logProcedureRecord(mpps.getPatient().getAttributes(), 
+            Auditlog.logProcedureRecord(AuditEvent.ActionCode.UPDATE, true, mpps.getPatient().getAttributes(), 
                 mpps.getAttributes().getString(new int[]{Tag.ScheduledStepAttributesSequence,0,Tag.StudyInstanceUID}),
-                mpps.getAccessionNumber(), 
-                ProcedureRecordMessage.UPDATE, "MPPS deleted");
+                mpps.getAccessionNumber(), "MPPS deleted");
         }
         return mppss;
     }
@@ -402,7 +392,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         EntityTree entityTree = lookupDicomEditLocal().moveStudiesToPatient(studyPks, patPk);
         if (!entityTree.isEmpty()) {
             DicomObject kos = getRejectionNotes(entityTree)[0];
-            logInstancesAccessed(kos, InstancesAccessedMessage.UPDATE, true, "Studies moved to patient:");
+            Auditlog.logInstancesAccessed(AuditEvent.ActionCode.UPDATE, true, kos, true, "Studies moved to patient:");
             scheduleMoveStudyToPatient(entityTree);
         }
         return entityTree.getAllInstances().size();
@@ -431,7 +421,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         EntityTree entityTree = lookupDicomEditLocal().moveStudyToPatient(studyIUID, patId, issuer);
         if (!entityTree.isEmpty()) {
             DicomObject kos = getRejectionNotes(entityTree)[0];
-            logInstancesAccessed(kos, InstancesAccessedMessage.UPDATE, true, "Studies moved to patient:");
+            Auditlog.logInstancesAccessed(AuditEvent.ActionCode.UPDATE, true, kos, true, "Studies moved to patient:");
             scheduleMoveStudyToPatient(entityTree);
         }
         return entityTree.getAllInstances().size();
@@ -603,9 +593,8 @@ public class ContentEditService extends ServiceMBeanSupport {
             for ( int i = 0, len = ssaSQ.countItems() ; i < len ; i++) {
                 sb.append(ssaSQ.getDicomObject(i).getString(Tag.ScheduledProcedureStepID)).append(", ");
             }
-            logProcedureRecord(patAttrs, ssaSQ.getDicomObject().getString(Tag.StudyInstanceUID),
-                    mpps.getAccessionNumber(), 
-                    ProcedureRecordMessage.UPDATE, sb.substring(0,sb.length()-2));
+            Auditlog.logProcedureRecord(AuditEvent.ActionCode.UPDATE, true, patAttrs, ssaSQ.getDicomObject().getString(Tag.StudyInstanceUID),
+                    mpps.getAccessionNumber(), sb.substring(0,sb.length()-2));
             MppsToMwlLinkResult result = new MppsToMwlLinkResult();
             result.addMppsAttributes(mpps);
             this.sendJMXNotification(result);
@@ -821,96 +810,11 @@ public class ContentEditService extends ServiceMBeanSupport {
         return mpps2mwl;
     }
 
-    private void logInstancesAccessed(DicomObject kos,
-            AuditEvent.ActionCode actionCode, boolean addIUID, String detailMessage) {
-        if (!auditEnabled )
-            return;
-        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
-                .isEnableDNSLookups());
-        log.debug("log instances Accessed! actionCode:" + actionCode);
-        try {
-            InstancesAccessedMessage msg = new InstancesAccessedMessage(
-                    actionCode);
-            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo
-                    .getHostName(), true);
-            msg.addPatient(kos.getString(Tag.PatientID), kos.getString(Tag.PatientName));
-            ParticipantObject study;
-            DicomElement crpeSeq = kos.get(Tag.CurrentRequestedProcedureEvidenceSequence);
-            DicomObject item;
-            for ( int i = 0, len = crpeSeq.countItems() ; i < len ; i++ ) {
-                item = crpeSeq.getDicomObject(i);
-                study = msg.addStudy(item.getString(Tag.StudyInstanceUID),
-                        getStudyDescription(item, addIUID));
-                if ( detailMessage != null )
-                    study.addParticipantObjectDetail("Description", getStudySeriesDetail(detailMessage, item));
-            }
-            msg.validate();
-            LoggerFactory.getLogger("auditlog").info(msg.toString());
-        } catch (Exception x) {
-            log.warn("Audit Log 'Instances Accessed' (actionCode:" + actionCode
-                    + ") failed:", x);
-        }
-    }
-    private void logDicomObjectUpdated(String patId, String patName, String[] studyIUIDs, DicomObject obj, String detailMessage) {
-        if (!auditEnabled )
-            return;
-        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-        log.debug("Audit log 'Instances Accessed' for DICOM Object updated! patient:"+patName+" ("+patId+"):"+detailMessage);
-        try {
-            InstancesAccessedMessage msg = new InstancesAccessedMessage(InstancesAccessedMessage.UPDATE);
-            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo
-                    .getHostName(), true);
-            msg.addPatient(patId, patName);
-            ParticipantObject study;
-            for ( int i = 0; i < studyIUIDs.length ; i++ ) {
-                study = msg.addStudy(studyIUIDs[i], getStudyDescription(obj));
-                if ( detailMessage != null )
-                    study.addParticipantObjectDetail("Description", detailMessage);
-            }
-            msg.validate();
-            LoggerFactory.getLogger("auditlog").info(msg.toString());
-        } catch (Exception x) {
-            log.warn("Audit Log 'Instances Accessed' (actionCode:U) failed:", x);
-        }
-    }
-    
     private void logPatientDeleted(EntityTree entityTree) {
         Set<Patient> pats = entityTree.getEntityTreeMap().keySet();
         for (Patient pat : pats) {
-            logPatientRecord(pat.getPatientID(), pat.getPatientName(), PatientRecordMessage.DELETE);
+            Auditlog.logPatientRecord(AuditEvent.ActionCode.DELETE, true, pat.getPatientID(), pat.getPatientName());
         }
-    }
-
-    private void logPatientRecord(String patId, String patName, AuditEvent.ActionCode actionCode) {
-        if (!auditEnabled )
-            return;
-        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-        log.debug("log Patient Record! actionCode:" + actionCode);
-        try {
-            PatientRecordMessage msg = new PatientRecordMessage(actionCode);
-            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo
-                    .getHostName(), true);
-            msg.addPatient(patId, patName);
-            msg.validate();
-            LoggerFactory.getLogger("auditlog").info(msg.toString());
-        } catch (Exception x) {
-            log.warn("Audit Log 'Patient Record' (actionCode:" + actionCode
-                    + ") failed:", x);
-        }
-    }
-
-    private ParticipantObjectDescription getStudyDescription(DicomObject obj) {
-        ParticipantObjectDescription desc = new ParticipantObjectDescription();
-        if (obj.containsValue(Tag.AccessionNumber)) {
-            desc.addAccession(obj.getString(Tag.AccessionNumber));
-        }
-        if (obj.containsValue(Tag.SOPClassUID)) {
-            ParticipantObjectDescription.SOPClass sopClass = 
-                new ParticipantObjectDescription.SOPClass(obj.getString(Tag.SOPClassUID));
-            sopClass.addInstance(obj.getString(Tag.SOPInstanceUID));
-            desc.addSOPClass(sopClass);
-        }
-        return desc;
     }
 
     public void logMppsLinkRecord(MppsToMwlLinkResult result ) {
@@ -921,111 +825,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         DicomObject patAttrs = mwl.getPatient().getAttributes();
         for ( MPPS mpps : result.getMppss()) {
             String desc = "MPPS "+mpps.getSopInstanceUID()+" linked with MWL entry "+spsId;
-            logProcedureRecord(patAttrs, studyIuid, accNr, ProcedureRecordMessage.UPDATE, desc);
-        }
-    }
-    
-    private void logProcedureRecord(DicomObject patAttrs, String studyIuid, 
-            String accNr, ActionCode actionCode, String desc) {
-        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
-                .isEnableDNSLookups());
-        log.debug("log Procedure Record! actionCode:" + actionCode);
-        try {
-            ProcedureRecordMessage msg = new ProcedureRecordMessage(actionCode);
-            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo
-                    .getHostName(), true);
-            msg.addPatient(patAttrs.getString(Tag.PatientID), patAttrs.getString(Tag.PatientName));
-            ParticipantObjectDescription poDesc = new ParticipantObjectDescription();
-            if (accNr != null)
-                poDesc.addAccession(accNr);
-            ParticipantObject study = msg.addStudy(studyIuid, poDesc);
-            study.addParticipantObjectDetail("Description", desc);
-            msg.validate();
-            LoggerFactory.getLogger("auditlog").info(msg.toString());
-        } catch (Exception x) {
-            log.warn("Audit Log 'Procedure Record' failed:", x);
-        }
-    }
-
-    private String getStudySeriesDetail(String detailMessage, DicomObject crpeSeqItem) {
-        DicomElement refSeries = crpeSeqItem.get(Tag.ReferencedSeriesSequence);
-        StringBuffer sb = new StringBuffer();
-        sb.append(detailMessage);
-        int len = refSeries.countItems();
-        if ( len > 0 ) {
-            sb.append(refSeries.getDicomObject(0).getString(Tag.SeriesInstanceUID));
-            for (int i = 1; i < len; i++) {
-                sb.append(", ").append(refSeries.getDicomObject(i).getString(Tag.SeriesInstanceUID));
-            }
-        }
-        return sb.toString();
-    }
-
-    private void logStudyDeleted(DicomObject kos) {
-        if (!auditEnabled)
-            return;
-        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
-                .isEnableDNSLookups());
-        try {
-            String patId = kos.getString(Tag.PatientID);
-            String patName = kos.getString(Tag.PatientName);
-            StudyDeletedMessage msg; 
-            DicomElement crpeSeq = kos.get(Tag.CurrentRequestedProcedureEvidenceSequence);
-            for ( int i = 0, len = crpeSeq.countItems() ; i < len ; i++ ) {
-                msg = new StudyDeletedMessage();
-                msg.addUserPerson(userInfo.getUserId(), null, null, userInfo
-                        .getHostName(), true);
-                msg.addPatient(patId, patName);
-                DicomObject crpeSeqItem = kos.get(Tag.CurrentRequestedProcedureEvidenceSequence).getDicomObject(i);
-                msg.addStudy(crpeSeqItem.getString(Tag.StudyInstanceUID),
-                        getStudyDescription(crpeSeqItem, true));
-                msg.validate();
-                LoggerFactory.getLogger("auditlog").info(msg.toString());
-            }
-        } catch (Exception x) {
-            log.warn("Audit Log 'Study Deleted' failed:", x);
-        }
-    }
-
-    private ParticipantObjectDescription getStudyDescription(DicomObject crpeSeqItem, boolean addIUID) {
-        ParticipantObjectDescription desc = new ParticipantObjectDescription();
-        String accNr = crpeSeqItem.getString(Tag.AccessionNumber);
-        if (accNr != null)
-            desc.addAccession(accNr);
-        addSOPClassInfo(desc, crpeSeqItem, addIUID);
-        return desc;
-    }
-
-    private void addSOPClassInfo(ParticipantObjectDescription desc,
-            DicomObject studyMgtDs, boolean addIUID) {
-        DicomElement refSeries = studyMgtDs.get(Tag.ReferencedSeriesSequence);
-        if (refSeries == null)
-            return;
-        String suid = studyMgtDs.getString(Tag.StudyInstanceUID);
-        InstanceSorter sorter = new InstanceSorter();
-        DicomObject ds;
-        DicomElement refSopSeq;
-        for (int i = 0, len = refSeries.countItems(); i < len; i++) {
-            refSopSeq = refSeries.getDicomObject(i).get(Tag.ReferencedSOPSequence);
-            if (refSopSeq != null) {
-                for (int j = 0, jlen = refSopSeq.countItems(); j < jlen; j++) {
-                    ds = refSopSeq.getDicomObject(j);
-                    sorter.addInstance(suid,
-                            ds.getString(Tag.ReferencedSOPClassUID),
-                            ds.getString(Tag.ReferencedSOPInstanceUID), null);
-                }
-            }
-        }
-        
-        for (String cuid : sorter.getCUIDs(suid)) {
-            ParticipantObjectDescription.SOPClass sopClass = new ParticipantObjectDescription.SOPClass(cuid);
-            sopClass.setNumberOfInstances(sorter.countInstances(suid, cuid));
-            if ( addIUID ) {
-                for ( String iuid : sorter.getIUIDs(suid, cuid) ) {
-                    sopClass.addInstance(iuid);
-                }
-            }
-            desc.addSOPClass(sopClass);
+            Auditlog.logProcedureRecord(AuditEvent.ActionCode.UPDATE, true, patAttrs, studyIuid, accNr, desc);
         }
     }
     
@@ -1052,9 +852,9 @@ public class ContentEditService extends ServiceMBeanSupport {
             if (kos == null)
                 continue;
             if (study) {
-                logStudyDeleted(kos);
+                Auditlog.logStudyDeleted(kos, true);
             } else {
-                logInstancesAccessed(kos, InstancesAccessedMessage.DELETE, true, auditDetails);
+                Auditlog.logInstancesAccessed(AuditEvent.ActionCode.DELETE, true, kos, true, auditDetails);
             }
             processRejectionNote(kos);
         }
@@ -1112,9 +912,9 @@ public class ContentEditService extends ServiceMBeanSupport {
     public void doAfterDicomEdit(String patId, String patName, String[] studyIUIDs, DicomObject obj, String qrLevel) {
         sendDicomActionNotification(obj, DicomActionNotification.UPDATE, qrLevel);
         if ("PATIENT".equals(qrLevel)) {
-            logPatientRecord(patId, patName, PatientRecordMessage.UPDATE);
+            Auditlog.logPatientRecord(AuditEvent.ActionCode.UPDATE, true, patId, patName);
        } else {
-            logDicomObjectUpdated(patId, patName, studyIUIDs, obj, "Dicom Attributes updated on "+qrLevel+" level!");
+            Auditlog.logDicomObjectUpdated(true, patId, patName, studyIUIDs, obj, "Dicom Attributes updated on "+qrLevel+" level!");
             if ("STUDY".equals(qrLevel) || "SERIES".equals(qrLevel) || "IMAGE".equals(qrLevel)) {
                 obj.putString(Tag.QueryRetrieveLevel, VR.CS, qrLevel);
                 try {

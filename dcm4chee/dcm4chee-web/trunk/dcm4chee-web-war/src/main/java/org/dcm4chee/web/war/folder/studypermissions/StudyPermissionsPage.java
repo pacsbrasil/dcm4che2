@@ -84,8 +84,8 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
+import org.dcm4chee.web.common.util.Auditlog;
 import org.dcm4chee.web.dao.folder.StudyPermissionsLocal;
-import org.dcm4chee.web.service.common.HttpUserInfo;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.StudyPermissionHelper.StudyPermissionRight;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
@@ -385,10 +385,10 @@ public class StudyPermissionsPage extends SecureWebPage {
                         }
                     }
                 }
-                logSecurityAlert(true, desc);
+                Auditlog.logSecurityAlert(SecurityAlertMessage.OBJECT_SECURITY_ATTRIBUTES_CHANGED, true, desc);
             } catch (Exception x) {
                 log.error(desc+" failed!", x);
-                logSecurityAlert(false, desc);
+                Auditlog.logSecurityAlert(SecurityAlertMessage.OBJECT_SECURITY_ATTRIBUTES_CHANGED, false, desc);
             }
         }
         
@@ -438,23 +438,5 @@ public class StudyPermissionsPage extends SecureWebPage {
     
     public static String getModuleName() {
         return "studypermissions";
-    }
-    private void logSecurityAlert(boolean success, String desc) {
-        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-        SecurityAlertMessage msg = new SecurityAlertMessage(
-                SecurityAlertMessage.OBJECT_SECURITY_ATTRIBUTES_CHANGED);
-        msg.setOutcomeIndicator(AuditEvent.OutcomeIndicator.SUCCESS);
-        msg.addReportingProcess(AuditMessage.getProcessID(),
-                AuditMessage.getLocalAETitles(),
-                AuditMessage.getProcessName(),
-                AuditMessage.getLocalHostName());
-        if ( userInfo.getHostName() != null ) {
-                msg.addPerformingPerson(userInfo.getUserId(), null, null, userInfo.getHostName());
-        } else {
-            msg.addPerformingNode(AuditMessage.getLocalHostName());
-        }
-        msg.addAlertSubjectWithNodeID(AuditMessage.getLocalNodeID(), desc);
-        msg.validate();
-        LoggerFactory.getLogger("auditlog").info(msg.toString());
     }
 }

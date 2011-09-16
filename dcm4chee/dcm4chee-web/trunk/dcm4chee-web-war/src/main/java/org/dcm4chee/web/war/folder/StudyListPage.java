@@ -121,10 +121,6 @@ import org.apache.wicket.util.lang.Classes;
 import org.apache.wicket.util.string.AppendingStringBuffer;
 import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.audit.message.AuditEvent;
-import org.dcm4che2.audit.message.AuditMessage;
-import org.dcm4che2.audit.message.ParticipantObject;
-import org.dcm4che2.audit.message.ParticipantObjectDescription;
-import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.validator.AbstractValidator;
 import org.dcm4che2.data.DateRange;
@@ -157,13 +153,13 @@ import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.common.util.Auditlog;
 import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.common.validators.UIDValidator;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.dao.folder.StudyListFilter;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.util.QueryUtil;
-import org.dcm4chee.web.service.common.HttpUserInfo;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.StudyPermissionHelper.StudyPermissionRight;
@@ -811,9 +807,10 @@ public class StudyListPage extends Panel {
             @Override
             public void onConfirmation(AjaxRequestTarget target, final SelectedEntities selected) {
 
-                if (selected.hasTooOld()) 
-                    logSecurityAlert(null, true, StudyListPage.tooOldAuditMessageText);
-                
+                if (selected.hasTooOld()) {
+                    for (StudyModel st : selected.getStudiesTooOld())
+                        logSecurityAlert(st, true, StudyListPage.tooOldAuditMessageText);
+                }
                 this.setStatus(new StringResourceModel("folder.message.delete.running", StudyListPage.this, null));
                 messageWindowPanel.getOkBtn().setVisible(false);
                 messageWindowPanel.getRemarkLabel().setVisible(false);
@@ -2278,26 +2275,8 @@ public class StudyListPage extends Panel {
         return d;
     }
 
-    private void logSecurityAlert(AbstractDicomModel model, boolean success, String description) {
+    private void logSecurityAlert(AbstractDicomModel model, boolean success, String desc) {
         try {
-            HttpUserInfo userInfo = 
-                new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-    
-            SecurityAlertMessage msg = new SecurityAlertMessage(
-                    SecurityAlertMessage.OBJECT_SECURITY_ATTRIBUTES_CHANGED);
-            msg.setOutcomeIndicator(AuditEvent.OutcomeIndicator.SUCCESS);
-            msg.addReportingProcess(AuditMessage.getProcessID(),
-                    AuditMessage.getLocalAETitles(),
-                    AuditMessage.getProcessName(),
-                    AuditMessage.getLocalHostName());
-            
-            if ( userInfo.getHostName() != null ) {
-                msg.addPerformingPerson(userInfo.getUserId(), null, null, userInfo.getHostName());
-            } else {
-                msg.addPerformingNode(AuditMessage.getLocalHostName());
-            }
-            msg.addAlertSubjectWithNodeID(AuditMessage.getLocalNodeID(), description);
-    
             PatientModel patInfoModel;
             AbstractDicomModel studyInfoModel = null;
             if (model.levelOfModel() > AbstractDicomModel.PATIENT_LEVEL) {
@@ -2308,13 +2287,9 @@ public class StudyListPage extends Panel {
             } else {
                 patInfoModel = (PatientModel) model;
             }
-            msg.addParticipantObject(ParticipantObject.createPatient(patInfoModel.getId(), patInfoModel.getName()));
-            if (studyInfoModel != null) {
-                msg.addParticipantObject(ParticipantObject.createStudy(
-                        studyInfoModel.getAttributeValueAsString(Tag.StudyInstanceUID), null));
-            }
-            msg.validate();
-            LoggerFactory.getLogger("auditlog").info(msg.toString());
+            String studyIUID = studyInfoModel == null ? null : studyInfoModel.getAttributeValueAsString(Tag.StudyInstanceUID);
+            Auditlog.logSecurityAlert(AuditEvent.TypeCode.OBJECT_SECURITY_ATTRIBUTES_CHANGED, success, desc, 
+                    patInfoModel.getId(), patInfoModel.getName(), studyIUID);
         } catch (Exception ignore) {
             log.warn("Audit log of SecurityAlert for overriding editing time limit failed!", ignore);
         }

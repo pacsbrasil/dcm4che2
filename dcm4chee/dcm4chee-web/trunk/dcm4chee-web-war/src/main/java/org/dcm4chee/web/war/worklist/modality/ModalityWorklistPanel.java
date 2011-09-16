@@ -105,11 +105,11 @@ import org.dcm4chee.web.common.markup.SimpleDateTimeField;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.common.util.Auditlog;
 import org.dcm4chee.web.common.validators.UIDValidator;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistFilter;
 import org.dcm4chee.web.dao.worklist.modality.ModalityWorklistLocal;
-import org.dcm4chee.web.service.common.HttpUserInfo;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.common.EditDicomObjectPanel;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
@@ -842,19 +842,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     }
 
     protected void logOrderRecord(MWLItemModel mwlItemModel, ActionCode action, boolean success) {
-        try {
-            HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-            OrderRecordMessage msg = new OrderRecordMessage(action);
-            msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS : AuditEvent.OutcomeIndicator.MINOR_FAILURE);
-            msg.addUserProcess(AuditMessage.getProcessID(), AuditMessage.getLocalAETitles(),
-                        AuditMessage.getProcessName(), AuditMessage.getLocalHostName(), false);
-            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo.getHostName(), true);
-            DicomObject obj = mwlItemModel.getPatientAttributes();
-            msg.addPatient(obj.getString(Tag.PatientID), obj.getString(Tag.PatientName));
-            msg.validate();
-            LoggerFactory.getLogger("auditlog").info(msg.toString());
-        } catch (Exception ignore) {
-            log.warn("Audit log of OrderRecord failed!", ignore);
-        }
+        Auditlog.logProcedureRecord(action, success, mwlItemModel.getPatientAttributes(), 
+           mwlItemModel.getAttributeValueAsString(Tag.StudyInstanceUID), mwlItemModel.getAccessionNumber(), null);
     }
 }

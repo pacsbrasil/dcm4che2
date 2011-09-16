@@ -81,9 +81,6 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.apache.wicket.security.components.SecureWebPage;
 import org.apache.wicket.util.time.Duration;
-import org.dcm4che2.audit.message.AuditEvent;
-import org.dcm4che2.audit.message.AuditMessage;
-import org.dcm4che2.audit.message.DataExportMessage;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -99,7 +96,6 @@ import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
-import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -107,11 +103,11 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.model.ProgressProvider;
 import org.dcm4chee.web.common.secure.SecureSession;
+import org.dcm4chee.web.common.util.Auditlog;
 import org.dcm4chee.web.common.util.CloseRequestSupport;
 import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
-import org.dcm4chee.web.service.common.HttpUserInfo;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.delegate.ExportDelegate;
@@ -393,17 +389,17 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                                 out = zos;
                                 for (FileToExport fto : files) {
                                     log.debug("Write file to zip:{}", fto.file);
-                                    ZipEntry entry = new ZipEntry(getZipEntryName(fto.instance, sopHash));
+                                    ZipEntry entry = new ZipEntry(getZipEntryName(fto.blobAttrs, sopHash));
                                     zos.putNextEntry(entry);                                
-                                    writeDicomFile(fto.file, fto.instance, zos, buf);
+                                    writeDicomFile(fto.file, fto.blobAttrs, zos, buf);
                                     zos.closeEntry();
                                 }
                             } else {
                                 response.setContentType("application/dicom");
                                 ((WebResponse) response).setAttachmentHeader(
-                                        getTemplateParam(files.get(0).instance, "#sopIuid", sopHash)+".dcm");
+                                        getTemplateParam(files.get(0).blobAttrs, "#sopIuid", sopHash)+".dcm");
                                 out = response.getOutputStream();
-                                writeDicomFile(files.get(0).file, files.get(0).instance, out, buf);
+                                writeDicomFile(files.get(0).file, files.get(0).blobAttrs, out, buf);
                             }
                             success = true;
                         } catch (ZipException ze) {
@@ -486,7 +482,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         return dcmFile;
     }
 
-    private String getZipEntryName(Instance instance, HashSet<Integer> sopHash) {
+    private String getZipEntryName(DicomObject blobAttrs, HashSet<Integer> sopHash) {
         String tmpl = WebCfgDelegate.getInstance().getZipEntryTemplate();
         int pos0 = 0;
         int pos1, pos2;
@@ -496,25 +492,25 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             if (pos2 == -1)
                 throw new IllegalArgumentException("Missing '}' in zip entry name template");
             sb.append(tmpl.substring(pos0, pos1++));
-            sb.append(getTemplateParam(instance, tmpl.substring(pos1, pos2++), sopHash));
+            sb.append(getTemplateParam(blobAttrs, tmpl.substring(pos1, pos2++), sopHash));
             pos0 = pos2;
         }
         return sb.toString();
     }
     
-    private String getTemplateParam(Instance instance, String param, HashSet<Integer> sopHash) {
+    private String getTemplateParam(DicomObject blobAttrs, String param, HashSet<Integer> sopHash) {
         boolean useHash = param.charAt(0) == '#';
         String value;
         if (param.endsWith("patID")) {
-            value = instance.getSeries().getStudy().getPatient().getPatientID();
+            value = blobAttrs.getString(Tag.PatientID);
         } else if (param.endsWith("patName")) {
-            value = instance.getSeries().getStudy().getPatient().getPatientName();
+            value = blobAttrs.getString(Tag.PatientName);
         } else if (param.endsWith("studyIuid")) {
-            value = instance.getSeries().getStudy().getStudyInstanceUID();
+            value = blobAttrs.getString(Tag.StudyInstanceUID);
         } else if (param.endsWith("seriesIuid")) {
-            value = instance.getSeries().getSeriesInstanceUID();
+            value = blobAttrs.getString(Tag.SeriesInstanceUID);
         } else if (param.endsWith("sopIuid")) {
-            value = instance.getSOPInstanceUID();
+            value = blobAttrs.getString(Tag.SOPInstanceUID);
             if (useHash) {
                 int hash;
                 for(hash = value.hashCode() ; !sopHash.add(hash) ; hash++);
@@ -526,14 +522,9 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         return useHash ? FileUtils.toHex(value == null ? -1 : value.hashCode()) : value;
     }
 
-    private void writeDicomFile(java.io.File dcmFile, Instance instance, OutputStream out, byte[] buf) throws FileNotFoundException, IOException {
+    private void writeDicomFile(java.io.File dcmFile, DicomObject blobAttrs, OutputStream out, byte[] buf) throws FileNotFoundException, IOException {
         DicomInputStream dis = new DicomInputStream(new FileInputStream(FileUtils.resolve(dcmFile)));
         dis.setHandler(new StopTagInputHandler(Tag.PixelData));
-        DicomObject blobAttrs = new BasicDicomObject();
-        instance.getAttributes(false).copyTo(blobAttrs);
-        instance.getSeries().getAttributes(false).copyTo(blobAttrs);
-        instance.getSeries().getStudy().getAttributes(false).copyTo(blobAttrs);
-        instance.getSeries().getStudy().getPatient().getAttributes().copyTo(blobAttrs);
         DicomObject attrs = dis.readDicomObject();
         if (!blobAttrs.getString(Tag.SOPInstanceUID).equals(attrs.getString(Tag.MediaStorageSOPInstanceUID))) {
             log.info("SOPInstanceUID has been changed! correct MediaStorageSOPInstanceUID from "
@@ -640,31 +631,11 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
 
     private void logExport(List<FileToExport> files, boolean success) {
         try {
-            HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-    
-            DataExportMessage msg = new DataExportMessage();
-            msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS : AuditEvent.OutcomeIndicator.MINOR_FAILURE);
-            msg.addExporterProcess(AuditMessage.getProcessID(), AuditMessage.getLocalAETitles(),
-                    AuditMessage.getProcessName(), true, AuditMessage.getLocalHostName());
-            msg.addDestinationMedia(userInfo.getUserId(), null, null, false, userInfo.getHostName());
-            HashSet<Study> studies = new HashSet<Study>();
-            HashSet<Patient> patients = new HashSet<Patient>();
-            Study study;
-            Patient pat;
+            ArrayList<DicomObject> objs = new ArrayList<DicomObject>(files.size());
             for (FileToExport fte : files) {
-                study = fte.instance.getSeries().getStudy();
-                if (studies.add(study)) {
-                    msg.addStudy(study.getStudyInstanceUID(), null);
-                }
+                objs.add(fte.blobAttrs);
             }
-            for (Study st : studies) {
-                pat = st.getPatient();
-                if (patients.add(pat)) {
-                    msg.addPatient(pat.getPatientID(), pat.getPatientName());
-                }
-            }
-            msg.validate();
-            LoggerFactory.getLogger("auditlog").info(msg.toString());
+            Auditlog.logExport("WEB export", objs, success);
         } catch (Exception ignore) {
             log.warn("Audit log of DataExport failed!", ignore);
         }
@@ -1093,16 +1064,20 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
     }    
     
     private class FileToExport {
-        private Instance instance;
+        private DicomObject blobAttrs;
         private java.io.File file;
         
         private FileToExport(Instance instance, java.io.File file) {
-            this.instance = instance;
+            blobAttrs = new BasicDicomObject();
+            instance.getAttributes(false).copyTo(blobAttrs);
+            instance.getSeries().getAttributes(false).copyTo(blobAttrs);
+            instance.getSeries().getStudy().getAttributes(false).copyTo(blobAttrs);
+            instance.getSeries().getStudy().getPatient().getAttributes().copyTo(blobAttrs);
             this.file = file;
         }
         
         public String toString() {
-            return "FileToExport pk:"+instance.getPk()+" file:"+file.getPath();
+            return "FileToExport sopIuid:"+blobAttrs.getString(Tag.SOPInstanceUID)+" file:"+file.getPath();
         }
     }
 }
