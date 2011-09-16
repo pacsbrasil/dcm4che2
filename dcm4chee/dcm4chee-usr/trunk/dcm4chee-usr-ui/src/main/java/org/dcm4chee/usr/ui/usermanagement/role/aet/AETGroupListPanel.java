@@ -89,6 +89,7 @@ import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.common.util.Auditlog;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -134,6 +135,7 @@ public class AETGroupListPanel extends Panel {
             @Override
             public void onConfirmation(AjaxRequestTarget target, AETGroup aetGroup) {
                 userAccess.removeAETGroup(aetGroup);
+                Auditlog.logSoftwareConfiguration(true, "AEGroup "+aetGroup+" removed.");
                 target.addComponent(AETGroupListPanel.this);
                 allAETGroups.setObject(userAccess.getAllAETGroups());
             }

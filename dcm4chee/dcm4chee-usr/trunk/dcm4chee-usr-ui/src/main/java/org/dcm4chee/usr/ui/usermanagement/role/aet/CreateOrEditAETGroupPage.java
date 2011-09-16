@@ -57,6 +57,7 @@ import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.util.Auditlog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,10 +126,12 @@ public class CreateOrEditAETGroupPage extends SecureWebPage {
                             AETGroup newAETGroup = new AETGroup(groupname.getObject());
                             newAETGroup.setDescription(description.getObject());
                             userAccess.addAETGroup(newAETGroup);
+                            Auditlog.logSoftwareConfiguration(true, "AEGroup "+newAETGroup+" created.");
                         } else {
                             aetGroup.setGroupname(groupname.getObject());
                             aetGroup.setDescription(description.getObject());
                             userAccess.updateAETGroup(aetGroup);
+                            Auditlog.logSoftwareConfiguration(true, "AEGroup "+aetGroup+" updated.");
                         }
                         allAETGroupnames.setObject(userAccess.getAllAETGroups());
                         window.close(target);

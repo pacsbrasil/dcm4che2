@@ -63,6 +63,7 @@ import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.common.util.Auditlog;
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
@@ -160,6 +161,7 @@ public class AETAssignmentPage extends SecureWebPage {
                 aets.remove(aet);
             aetGroup.setAets(aets);
             userAccess.updateAETGroup(aetGroup);
+            Auditlog.logSoftwareConfiguration(true, "AEGroup "+aetGroup+": AET "+aet+(hasAET ? " added" : " removed"));
         }
 
         @Override
