@@ -78,6 +78,7 @@ import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.AETGroup;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.license.ae.AELicenseProviderManager;
+import org.dcm4chee.web.common.license.ae.spi.AELicenseProviderSPI;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
@@ -168,13 +169,17 @@ public class AEListPanel extends Panel {
         );
         add(newAET);
         newAET.add(new SecurityBehavior(getModuleName() + ":newAETLink"));
+
+        List<String> aetTypes = AELicenseProviderManager.get(null).getProvider().getAETypes(WebCfgDelegate.getInstance().getAETTypes());
+        final boolean mayModifyAETs = ((aetTypes.size() > 0) || AELicenseProviderManager.get(null).getProvider().getName().equals("NOPLicenseProvider"));
+        newAET.setEnabled(mayModifyAETs);
         
         add(new Label("type.filter.label", new StringResourceModel("ae.type.filter.label", AEListPanel.this, null, new Object[]{1} ) ) );
-        add(new DropDownChoice<String>("type-selection",
+        DropDownChoice<String> typeSelection = null;
+        add((typeSelection = new DropDownChoice<String>("type-selection",
                 typeSelectionModel,
-                AELicenseProviderManager.get(null).getProvider().getAETypes(
-                WebCfgDelegate.getInstance().getAETTypes())
-        )
+                aetTypes
+        ))
         .setNullValid(true)
         .add(new AjaxFormComponentUpdatingBehavior("onchange") {
             
@@ -186,7 +191,7 @@ public class AEListPanel extends Panel {
                 target.addComponent(AEListPanel.this);
             }
         }));
-
+        
         add( new Label("titleHdr.label", new ResourceModel("ae.titleHdr.label")));
         add( new Label("typeHdr.label", new ResourceModel("ae.typeHdr.label")));
         add( new Label("hostHdr.label", new ResourceModel("ae.hostHdr.label")));
@@ -260,7 +265,8 @@ public class AEListPanel extends Panel {
                     .add(new TooltipBehaviour("ae."))
                     .add(new SecurityBehavior(getModuleName() + ":editAETLink"))
                 );
-
+                editAET.setEnabled(mayModifyAETs);
+                
                 AjaxLink<?> removeAET = new AjaxLink<Object>("removeAET") {
     
                     private static final long serialVersionUID = 1L;

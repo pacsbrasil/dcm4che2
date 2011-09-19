@@ -39,6 +39,7 @@
 package org.dcm4chee.web.war.ae;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -71,6 +72,7 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.license.ae.AELicenseProviderManager;
+import org.dcm4chee.web.common.license.ae.spi.AELicenseProviderSPI;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.validators.UrlValidator1;
 import org.dcm4chee.web.dao.fs.FileSystemHomeLocal;
@@ -92,6 +94,7 @@ public class CreateOrEditAETPage extends SecureWebPage {
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     
     private Model<String> resultMessage;
+//    private final IModel<String> typeSelectionModel = new Model<String>();
     
     public CreateOrEditAETPage(final ModalWindow window, final AE ae, final AEListPanel panel) {
         super();
@@ -109,27 +112,39 @@ public class CreateOrEditAETPage extends SecureWebPage {
         form.setDefaultModel(model);
         form.addLabeledTextField("title").add(new AETitleValidator())
             .setRequired(true).add(FocusOnLoadBehaviour.newFocusAndSelectBehaviour());
+
         form.add(new Label("type.label", new StringResourceModel("ae.type.label", CreateOrEditAETPage.this, null, new Object[]{1} ) ) );
-        form.add(new DropDownChoice<String>("type-selection",
+        AELicenseProviderSPI provider = AELicenseProviderManager.get(null).getProvider();
+        List<String> aetTypes = provider.getAETypes(WebCfgDelegate.getInstance().getAETTypes());
+        final String providerName = provider.getName();
+        DropDownChoice<String> typeSelection = null;
+        form.add((typeSelection  = new DropDownChoice<String>("type-selection",
                 new PropertyModel<String>(ae, "aeGroup"),
-                AELicenseProviderManager.get(null).getProvider().getAETypes(
-                WebCfgDelegate.getInstance().getAETTypes())
-        ).setNullValid(true).add( new AbstractValidator<String>() {
+                aetTypes
+        ))
+        .setNullValid(providerName.equals("NOPLicenseProvider"))
+        .add( new AbstractValidator<String>() {
             private static final long serialVersionUID = 1L;
 
             @Override
             protected void onValidate(IValidatable<String> validatable) {
                 String newType = validatable.getValue();
-                if (ae.getPk() != -1 && (oldType == null ? newType == null : oldType.equals(newType)))
-                    return;
+                if ((ae.getPk() != -1) 
+                        && (oldType == null ? newType == null : oldType.equals(newType)))
+                    return;                
                 if (!AELicenseProviderManager.get(null).getProvider().allowAETCreation(newType)) {
                     HashMap<String,Object> vars = new HashMap<String, Object>();
                     vars.put("type", newType);
                     this.error(validatable, "ae.error.aetTypeDenied", vars);
                 }
             }
-            
         }));
+        if (aetTypes.size() > 0) {
+            if ((ae.getAeGroup() == null && !typeSelection.isNullValid()))  
+                typeSelection.getModel().setObject(aetTypes.get(0));
+        } else
+            typeSelection.setEnabled(false);
+         
         form.addLabeledTextField("hostName").setRequired(true); 
         form.addLabeledNumberTextField("port").add(new RangeValidator<Integer>(1,65535));
         form.add(new Label("ciphers1.label", new StringResourceModel("ae.ciphers", CreateOrEditAETPage.this, null, new Object[]{1} ) ) );
