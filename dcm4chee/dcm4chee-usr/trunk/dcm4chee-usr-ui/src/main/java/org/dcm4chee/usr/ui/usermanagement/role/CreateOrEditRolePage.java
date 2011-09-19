@@ -68,6 +68,7 @@ import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.common.util.Auditlog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -194,7 +195,9 @@ public class CreateOrEditRolePage extends SecureWebPage {
                             if (newRole.isAETRole())
                                 newRole.setAETGroups(aetGroups);
                             userAccess.addRole(newRole);
+                            Auditlog.logSoftwareConfiguration(true, "Role "+newRole+" created.");
                         } else {
+                            String updInfo = getUpdateInfo(role, groupList, aetGroups);
                             role.setRolename(rolename.getObject());
                             role.setDescription(description.getObject());
                             role.setSuperuser(superuserCheckbox.getModelObject());
@@ -205,6 +208,7 @@ public class CreateOrEditRolePage extends SecureWebPage {
                             if (role.isAETRole() && (role.getAETGroups() == null || role.getAETGroups().size() == 0))
                                 role.setAETGroups(aetGroups);
                             userAccess.updateRole(role);
+                            Auditlog.logSoftwareConfiguration(true, "Role "+role+" updated.");
                         }
                         allRolenames.setObject(userAccess.getAllRoles());
                         window.close(target);
@@ -218,6 +222,18 @@ public class CreateOrEditRolePage extends SecureWebPage {
                 protected void onError(AjaxRequestTarget target, Form<?> form) {
                     target.addComponent(form);
                 }
+                
+                private String getUpdateInfo(Role role, List<String> groupList, Set<String> aetGroups) {
+                    StringBuilder sb = new StringBuilder("Role ").append(role).append(" updated.");
+                    boolean changed = Auditlog.addChange(sb, false, "rolename", role.getRolename(), rolename.getObject());
+                    Auditlog.addChange(sb, changed, "description", role.getDescription(), description.getObject());
+                    Auditlog.addChange(sb, changed, "superuser", role.isSuperuser(), superuserCheckbox.getModelObject());
+                    Auditlog.addChange(sb, changed, "WEB role", role.isWebRole(), groupList.contains(webRoleUuid.toString()));
+                    Auditlog.addChange(sb, changed, "DICOM role", role.isDicomRole(), groupList.contains(dicomRoleUuid.toString()));
+                    Auditlog.addChange(sb, changed, "AET role", role.isAETRole(), groupList.contains(aetRoleUuid.toString()));
+                    return sb.toString();
+                }
+
             });
         }
     };

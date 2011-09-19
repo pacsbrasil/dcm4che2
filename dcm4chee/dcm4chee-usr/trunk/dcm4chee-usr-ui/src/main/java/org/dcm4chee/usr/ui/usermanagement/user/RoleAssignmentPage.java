@@ -70,6 +70,7 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.common.util.Auditlog;
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
@@ -172,10 +173,12 @@ public class RoleAssignmentPage extends SecureWebPage {
                 for (UserRoleAssignment role : this.user.getRoles()) {
                     if (role.getRole().equals(this.rolename)) {
                         this.user.getRoles().remove(role);
-                        return;
+                        break;
                     }
                 }
             }
+            Auditlog.logSoftwareConfiguration(true, "User "+ura.getUserID()+
+                    ": Role "+ura.getRole()+(hasRole ? " assigned" : " unassigned"));
         }
 
         @Override

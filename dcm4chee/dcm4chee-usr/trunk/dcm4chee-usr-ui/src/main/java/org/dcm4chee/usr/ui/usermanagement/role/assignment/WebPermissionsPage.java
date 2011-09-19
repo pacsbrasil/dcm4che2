@@ -66,6 +66,7 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.common.util.Auditlog;
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
@@ -175,6 +176,7 @@ public class WebPermissionsPage extends SecureWebPage {
                 swarmPrincipals.remove(principalname);
             role.setSwarmPrincipals(swarmPrincipals);
             userAccess.updateRole(role);
+            Auditlog.logSoftwareConfiguration(true, "Role "+role+": WEB right "+principalname+" "+ (hasPrincipal ? " assigned" : "unassigned"));
         }
 
         @Override

@@ -61,6 +61,7 @@ import org.dcm4chee.usr.ui.validator.UserValidator;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.util.Auditlog;
 import org.dcm4chee.web.common.util.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,6 +124,7 @@ public class AddUserPage extends SecureWebPage {
                         user.setPassword(SecurityUtils.encodePassword(password.getObject()));
                         user.setRoles(new ArrayList<UserRoleAssignment>());
                         ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).createUser(user);
+                        Auditlog.logSoftwareConfiguration(true, "User "+user.getUserID()+" created.");
                         List<User> currentUsers = allUsers.getObject();
                         currentUsers.add(user);
                         allUsers.setObject(currentUsers);

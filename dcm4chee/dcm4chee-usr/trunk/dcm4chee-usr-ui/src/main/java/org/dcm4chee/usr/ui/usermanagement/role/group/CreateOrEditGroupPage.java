@@ -58,6 +58,7 @@ import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.util.Auditlog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,12 +134,17 @@ public class CreateOrEditGroupPage extends SecureWebPage {
                             newGroup.setDescription(description.getObject());
                             newGroup.setColor(colorPicker.getColorValue());
                             userAccess.addGroup(newGroup);
-                            
+                            Auditlog.logSoftwareConfiguration(true, "Role Group "+newGroup+" created.");
                         } else {
+                            StringBuilder sb = new StringBuilder("Role Group ").append(groupname).append(" updated.");
+                            boolean changed = Auditlog.addChange(sb, false, "rolename", group.getGroupname(), groupname.getObject());
+                            Auditlog.addChange(sb, changed, "description", group.getDescription(), description.getObject());
+                            Auditlog.addChange(sb, changed, "color", group.getColor(), colorPicker.getColorValue());
                             group.setGroupname(groupname.getObject());
                             group.setDescription(description.getObject());
                             group.setColor(colorPicker.getColorValue());
                             userAccess.updateGroup(group);
+                            Auditlog.logSoftwareConfiguration(true, "Role Group "+groupname+" updated.");
                         }
                         allGroupnames.setObject(userAccess.getAllGroups());
                         window.close(target);

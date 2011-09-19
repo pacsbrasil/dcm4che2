@@ -79,6 +79,7 @@ import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.common.util.Auditlog;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -132,6 +133,7 @@ public class UserListPanel extends Panel {
             @Override
             public void onConfirmation(AjaxRequestTarget target, User userObject) {
                 ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).deleteUser(userObject.getUserID());
+                Auditlog.logSoftwareConfiguration(true, "User "+userObject.getUserID()+" deleted.");
                 target.addComponent(UserListPanel.this);
                 allUsers.setObject(getAllUsers());
             }

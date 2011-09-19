@@ -76,6 +76,7 @@ import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.common.util.Auditlog;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -116,6 +117,7 @@ public class GroupListPanel extends Panel {
             @Override
             public void onConfirmation(AjaxRequestTarget target, Group group) {
                 userAccess.removeGroup(group);
+                Auditlog.logSoftwareConfiguration(true, "Role Group "+group.getGroupname()+" removed.");
                 target.addComponent(GroupListPanel.this);
                 allGroups.setObject(getAllGroups());
             }

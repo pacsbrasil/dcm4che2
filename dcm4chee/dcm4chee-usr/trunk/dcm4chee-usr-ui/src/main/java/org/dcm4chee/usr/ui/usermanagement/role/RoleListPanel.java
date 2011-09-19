@@ -88,6 +88,7 @@ import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.common.util.Auditlog;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -140,6 +141,7 @@ public class RoleListPanel extends Panel {
             @Override
             public void onConfirmation(AjaxRequestTarget target, Role role) {
                 userAccess.removeRole(role);
+                Auditlog.logSoftwareConfiguration(true, "Role "+role+" removed.");
                 target.addComponent(RoleListPanel.this);
                 allRoles.setObject(getAllRoles());
             }

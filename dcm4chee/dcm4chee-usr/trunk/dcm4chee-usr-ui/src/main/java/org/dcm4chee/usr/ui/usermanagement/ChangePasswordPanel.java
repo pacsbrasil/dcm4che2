@@ -60,6 +60,7 @@ import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.secure.SecureSession;
+import org.dcm4chee.web.common.util.Auditlog;
 import org.dcm4chee.web.common.util.SecurityUtils;
 
 /**
@@ -138,6 +139,7 @@ public class ChangePasswordPanel extends Panel {
                     UserAccess dao = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);
                     String encodedPassword = SecurityUtils.encodePassword(newPassword.getObject());
                     dao.updateUser(userToChange.getUserID(), encodedPassword);
+                    Auditlog.logSoftwareConfiguration(true, "User "+userToChange.getUserID()+": password changed.");
                     userToChange.setPassword(encodedPassword);
                     if (window != null)
                         window.close(target);

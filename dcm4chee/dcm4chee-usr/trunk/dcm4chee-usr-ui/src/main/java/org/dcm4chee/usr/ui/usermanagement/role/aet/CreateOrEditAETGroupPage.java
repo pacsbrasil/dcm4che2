@@ -128,10 +128,14 @@ public class CreateOrEditAETGroupPage extends SecureWebPage {
                             userAccess.addAETGroup(newAETGroup);
                             Auditlog.logSoftwareConfiguration(true, "AEGroup "+newAETGroup+" created.");
                         } else {
+                            StringBuilder sb = new StringBuilder("AEGroup ").append(aetGroup.getGroupname())
+                            .append(" updated. ");
+                            boolean changed = Auditlog.addChange(sb, false, "group name", aetGroup.getGroupname(), groupname.getObject());
+                            Auditlog.addChange(sb, changed, "description", aetGroup.getDescription(), aetGroup.getDescription());
                             aetGroup.setGroupname(groupname.getObject());
                             aetGroup.setDescription(description.getObject());
                             userAccess.updateAETGroup(aetGroup);
-                            Auditlog.logSoftwareConfiguration(true, "AEGroup "+aetGroup+" updated.");
+                            Auditlog.logSoftwareConfiguration(true, sb.toString());
                         }
                         allAETGroupnames.setObject(userAccess.getAllAETGroups());
                         window.close(target);

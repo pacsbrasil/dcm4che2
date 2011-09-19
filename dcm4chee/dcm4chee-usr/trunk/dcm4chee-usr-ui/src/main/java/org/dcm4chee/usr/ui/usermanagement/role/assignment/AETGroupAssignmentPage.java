@@ -68,6 +68,7 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.common.util.Auditlog;
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
@@ -193,6 +194,7 @@ public class AETGroupAssignmentPage extends SecureWebPage {
             role.setAETGroups(aetGroups);
             role.setAETRole((aetGroups.size() > 0));
             userAccess.updateRole(role);
+            Auditlog.logSoftwareConfiguration(true, "Role "+role+": AET role "+ (role.isAETRole() ? " assigned" : "unassigned"));
         }
 
         @Override
