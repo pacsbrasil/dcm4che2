@@ -38,6 +38,9 @@
 
 package org.dcm4chee.web.common.util;
 
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -55,12 +58,15 @@ import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.message.ParticipantObjectDescription.SOPClass;
 import org.dcm4che2.audit.message.PatientRecordMessage;
 import org.dcm4che2.audit.message.ProcedureRecordMessage;
+import org.dcm4che2.audit.message.QueryMessage;
 import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.dcm4che2.audit.message.StudyDeletedMessage;
 import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
+import org.dcm4che2.io.DicomOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,6 +79,26 @@ import org.slf4j.LoggerFactory;
 public class Auditlog {
     private static Logger auditLog = LoggerFactory.getLogger("auditlog");
     private static Logger log = LoggerFactory.getLogger(Auditlog.class);
+
+    public static void logQuery(boolean success, String cuid, DicomObject query) {
+        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+        try {
+            QueryMessage msg = new QueryMessage();
+            msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS : AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+            msg.addDestinationProcess(AuditMessage.getProcessID(), null,
+                    AuditMessage.getProcessName(), userInfo.getHostName(), false);
+
+            msg.addSourceProcess(AuditMessage.getProcessID(), null, AuditMessage.getProcessName(), AuditMessage.getLocalHostName(), true);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            DicomOutputStream dos = new DicomOutputStream(bos);
+            dos.writeDataset(query, UID.ExplicitVRLittleEndian);
+            msg.addQuerySOPClass(cuid, UID.ExplicitVRLittleEndian, bos.toByteArray());
+            msg.validate();
+            auditLog.info(msg.toString());
+        } catch (Exception x) {
+            log.warn("Audit Log 'Query' failed:", x);
+        }
+    }
 
     public static void logInstancesAccessed(AuditEvent.ActionCode actionCode, boolean success, DicomObject kos, boolean addIUID, String detailMessage) {
         HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
@@ -284,6 +310,64 @@ public class Auditlog {
         logSecurityAlert(SecurityAlertMessage.SOFTWARE_CONFIGURATION, success, desc);
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static boolean addChangeOfCollection(StringBuilder sb, boolean changed, String valueName, 
+            Collection oldValue, Collection newValue) {
+        if (oldValue == null && newValue == null) {
+            return false;
+        }
+        Collection addedValues = null;
+        Collection removedValues = null;
+        if (oldValue == null) {
+            addedValues = newValue;
+        } else if (newValue == null) {
+            removedValues = oldValue;
+        } else {
+            if (newValue.size() >= oldValue.size() && newValue.containsAll(oldValue)) {
+                if (newValue.size() == oldValue.size()) {
+                    return false;
+                } else {
+                    addedValues = new ArrayList(newValue.size());
+                    addedValues.addAll(newValue);
+                    addedValues.removeAll(oldValue);
+                }
+            } else {
+                addedValues = new ArrayList(newValue.size());
+                addedValues.addAll(newValue);
+                addedValues.removeAll(oldValue);
+                removedValues = new ArrayList(oldValue.size());
+                addedValues.addAll(oldValue);
+                addedValues.removeAll(newValue);
+            }
+        }
+        sb.append(changed ? " ; " : "Change ").append(valueName).append(":");
+        if (removedValues != null && removedValues.size() > 0) {
+            sb.append(" removed:[");
+            for (Object o : removedValues) {
+                sb.append(o).append(',');
+            }
+            sb.setLength(sb.length()-1);
+            sb.append("]");
+        }
+        if (addedValues != null && addedValues.size() > 0) {
+            sb.append(" added:[");
+            for (Object o : addedValues) {
+                sb.append(o).append(',');
+            }
+            sb.setLength(sb.length()-1);
+            sb.append("]");
+        }
+        return true;
+    }
+
+    public static boolean addChange(StringBuilder sb, boolean changed, String valueName, Object oldValue, Object newValue) {
+        if (oldValue == newValue || oldValue!= null && oldValue.equals(newValue)) {
+            return false;
+        }
+        sb.append(changed ? " ; " : "Change ").append(valueName).append(" from ").append(oldValue).append(" to ").append(newValue);
+        return true;
+    }
+    
     private static ParticipantObjectDescription getStudyDescription(DicomObject obj) {
         ParticipantObjectDescription desc = new ParticipantObjectDescription();
         if (obj.containsValue(Tag.AccessionNumber)) {
