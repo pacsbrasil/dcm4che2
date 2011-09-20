@@ -88,6 +88,7 @@ import org.dcm4che2.data.DateRange;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.common.SPSStatus;
 import org.dcm4chee.archive.entity.MWLItem;
@@ -763,17 +764,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                        private static final long serialVersionUID = 1L;
     
                        @Override
-                       protected void onApply() {
-                           update();
-                       }
-
-                       @Override
                        protected void onSubmit() {
-                           update();
-                           super.onCancel();
-                       }                       
-
-                       private void update() {
                            try {
                                mwlItemModel.update(getDicomObject());
                                logOrderRecord(mwlItemModel, AuditEvent.ActionCode.UPDATE, true);
@@ -781,7 +772,8 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                                logOrderRecord(mwlItemModel, AuditEvent.ActionCode.UPDATE, false);
                                throw x;
                            }
-                       }
+                           super.onCancel();
+                       }                       
                     });
                     modalWindow.show(target);
                     super.onClick(target);
@@ -833,6 +825,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         viewport.setOffset(0);
         viewport.getFilter().setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
         queryMWLItems(target);
+        Auditlog.logQuery(true, UID.ModalityWorklistInformationModelFIND, viewport.getFilter().getQueryDicomObject());
     }
 
     private void addAfterQueryComponents(final AjaxRequestTarget target) {

@@ -127,6 +127,7 @@ import org.dcm4che2.data.DateRange;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4chee.archive.common.PrivateTag;
@@ -627,6 +628,7 @@ public class StudyListPage extends Panel {
                 viewport.setOffset(0);
                 viewport.getFilter().setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
                 queryStudies(target);
+                Auditlog.logQuery(true, UID.StudyRootQueryRetrieveInformationModelFIND, viewport.getFilter().getQueryDicomObject());
                 target.addComponent(form);
             }
             
@@ -2046,24 +2048,15 @@ public class StudyListPage extends Panel {
            private static final long serialVersionUID = 1L;
 
            @Override
-           protected void onApply() {
-               update();
-           }
-
-           @Override
            protected void onSubmit() {
-               update();
-               super.onCancel();
-           }                       
-           
-           private void update() {
                model.update(getDicomObject());
                try {
                    ContentEditDelegate.getInstance().doAfterDicomEdit(model);
                } catch (Exception x) {
                    log.warn("doAfterDicomEdit failed!", x);
                }
-           }
+               super.onCancel();
+           }                       
         };
     }
     
