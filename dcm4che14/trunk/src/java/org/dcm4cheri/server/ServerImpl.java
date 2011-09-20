@@ -80,7 +80,8 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
     private int port = 104;
     private List hcl = null;
     private List hfl = null;
-    private ServerSocketFactory ssf = ServerSocketFactory.getDefault();
+    private ServerSocketFactory ssf = ServerSocketFactory.getDefault();    
+    private int sslHandshakeSoTimeout = 0;
     private int soRcvBuf;
     private int soSndBuf;
     private boolean tcpNoDelay = true;
@@ -94,13 +95,21 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
         if (handler == null)
             throw new NullPointerException();
         
-        if (handler == null)
-            throw new NullPointerException();
-        
         this.handler = handler;
     }
     
     // Public --------------------------------------------------------
+    public void setSSLHandshakeSoTimeout(int timeout){
+        if (timeout < 0) {
+            throw new IllegalArgumentException("timeout: " + timeout);
+        }
+        this.sslHandshakeSoTimeout = timeout;
+    }
+
+    public int getSSLHandshakeSoTimeout(){
+        return sslHandshakeSoTimeout;
+    }
+    
     public final int getReceiveBufferSize() {
         return soRcvBuf;
     }
@@ -339,6 +348,7 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
         }
         InetAddress remoteAddr = s.getInetAddress();
         try {
+        	s.setSoTimeout(sslHandshakeSoTimeout);
             s.startHandshake();
             if (log.isInfoEnabled()) {
                 SSLSession se = s.getSession();
@@ -363,6 +373,9 @@ class ServerImpl implements LF_ThreadPool.Handler, Server {
                 }
                 throw e;
             }
+        } finally {
+            // Delegate timeout management to the handler
+            s.setSoTimeout(0);
         }
     }
         

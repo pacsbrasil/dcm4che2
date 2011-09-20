@@ -52,8 +52,11 @@ import org.dcm4che.util.HandshakeFailedListener;
  * @since    May, 2002
  * @version    $Revision$ $Date$
  */
-public interface Server
+public interface Server 
 {
+    int getSSLHandshakeSoTimeout();
+    
+    void setSSLHandshakeSoTimeout(int timeout);
     
     int getReceiveBufferSize();
     
