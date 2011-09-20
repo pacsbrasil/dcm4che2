@@ -43,10 +43,17 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DateRange;
+import org.dcm4che2.data.DicomElement;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.conf.AttributeFilter;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.AETGroup;
 import org.dcm4chee.usr.util.JNDIUtils;
+import org.dcm4chee.web.dao.util.QueryUtil;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -69,7 +76,7 @@ public class ModalityWorklistFilter implements Serializable {
     private String scheduledStationAET;
     private String scheduledStationName;
     private boolean latestItemsFirst;
-    private String SPSStatus;
+    private String spsStatus;
     private Date startDateMin;
     private Date startDateMax;
     private boolean fuzzyPN;
@@ -83,7 +90,7 @@ public class ModalityWorklistFilter implements Serializable {
     public void clear() {
         patientName = patientID = issuerOfPatientID = accessionNumber = 
             studyInstanceUID = modality = scheduledStationAET = 
-                scheduledStationName = SPSStatus = null;
+                scheduledStationName = spsStatus = null;
         startDateMin = startDateMax = birthDateMin = birthDateMax = null;
         latestItemsFirst = false;
         isStudyIuidQuery = false;
@@ -210,11 +217,11 @@ public class ModalityWorklistFilter implements Serializable {
     }
 
     public String getSPSStatus() {
-        return SPSStatus;
+        return spsStatus;
     }
 
     public void setSPSStatus(String SPSStatus) {
-        this.SPSStatus = SPSStatus;
+        this.spsStatus = SPSStatus;
     }
 
     public Date getStartDateMin() {
@@ -256,5 +263,28 @@ public class ModalityWorklistFilter implements Serializable {
 
     public void setStudyIuidQuery(boolean b) {
         this.isStudyIuidQuery = b;
+    }
+
+    public DicomObject getQueryDicomObject() {
+        DicomObject obj = new BasicDicomObject();
+        obj.putString(Tag.QueryRetrieveLevel, VR.CS, "STUDY");
+        if (extendedQuery && isStudyIuidQuery) {
+            obj.putString(Tag.StudyInstanceUID, VR.UI, studyInstanceUID);
+        } else {
+            obj.putString(Tag.PatientName, VR.PN, QueryUtil.checkAutoWildcard(patientName, isPNAutoWildcard()));
+            obj.putString(Tag.PatientID, VR.LO, QueryUtil.checkAutoWildcard(patientID, isAutoWildcard()));
+            obj.putString(Tag.IssuerOfPatientID, VR.LO, QueryUtil.checkAutoWildcard(issuerOfPatientID, isAutoWildcard()));
+            if (extendedQuery) {
+                obj.putDateRange(Tag.PatientBirthDate, VR.DA, new DateRange(birthDateMin, birthDateMax));
+            }
+            DicomObject item = obj.putSequence(Tag.ScheduledProcedureStepSequence).addDicomObject(new BasicDicomObject());
+            item.putString(Tag.AccessionNumber, VR.SH, QueryUtil.checkAutoWildcard(accessionNumber, isAutoWildcard()));
+            item.putString(Tag.Modality, VR.CS, modality);
+            item.putString(Tag.ScheduledStationAETitle, VR.AE, scheduledStationAET);
+            item.putString(Tag.ScheduledStationName, VR.SH, scheduledStationName);
+            item.putString(Tag.ScheduledProcedureStepStatus, VR.CS, spsStatus);
+            item.putDateRange(Tag.ScheduledProcedureStepStartDateTime, VR.DT, new DateRange(startDateMin, startDateMax));
+        }
+        return obj;
     }
 }

@@ -43,10 +43,16 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DateRange;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.conf.AttributeFilter;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.AETGroup;
 import org.dcm4chee.usr.util.JNDIUtils;
+import org.dcm4chee.web.dao.util.QueryUtil;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -316,5 +322,36 @@ public class StudyListFilter implements Serializable {
 
     public void setSeriesIuidQuery(boolean b) {
         this.isSeriesIuidQuery = b;
+    }
+    
+    public DicomObject getQueryDicomObject() {
+        DicomObject obj = new BasicDicomObject();
+        if (patientQuery) {
+            obj.putString(Tag.QueryRetrieveLevel, VR.CS, "PATIENT");
+            addPatientAttrs(obj);
+        } else if (extendedQuery && isSeriesIuidQuery && !isStudyIuidQuery) {
+            obj.putString(Tag.QueryRetrieveLevel, VR.CS, "SERIES");
+            obj.putString(Tag.SeriesInstanceUID, VR.UI, seriesInstanceUID);
+        } else if (extendedQuery && isStudyIuidQuery) {
+            obj.putString(Tag.QueryRetrieveLevel, VR.CS, "STUDY");
+            obj.putString(Tag.StudyInstanceUID, VR.UI, studyInstanceUID);
+        } else {
+            obj.putString(Tag.QueryRetrieveLevel, VR.CS, "STUDY");
+            addPatientAttrs(obj);
+            obj.putString(Tag.AccessionNumber, VR.SH, QueryUtil.checkAutoWildcard(accessionNumber, isAutoWildcard()));
+            obj.putDateRange(Tag.StudyDate, VR.DA, new DateRange(studyDateMin, studyDateMax));
+            obj.putDateRange(Tag.StudyTime, VR.TM, new DateRange(studyDateMin, studyDateMax));
+            obj.putString(Tag.Modality, VR.CS, modality);
+        }
+        return obj;
+    }
+
+    private void addPatientAttrs(DicomObject obj) {
+        obj.putString(Tag.PatientName, VR.PN, QueryUtil.checkAutoWildcard(patientName, isPNAutoWildcard()));
+        obj.putString(Tag.PatientID, VR.LO, QueryUtil.checkAutoWildcard(patientID, isAutoWildcard()));
+        obj.putString(Tag.IssuerOfPatientID, VR.LO, QueryUtil.checkAutoWildcard(issuerOfPatientID, isAutoWildcard()));
+        if (extendedQuery) {
+            obj.putDateRange(Tag.PatientBirthDate, VR.DA, new DateRange(birthDateMin, birthDateMax));
+        }
     }
 }
