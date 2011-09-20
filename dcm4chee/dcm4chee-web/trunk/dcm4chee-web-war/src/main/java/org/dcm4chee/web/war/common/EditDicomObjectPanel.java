@@ -129,20 +129,6 @@ public class EditDicomObjectPanel extends Panel {
             }
         };
         table.add(rv);
-        form.add(new AjaxFallbackButton("apply", new ResourceModel("applyBtn"), form){
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                try {
-                    EditDicomObjectPanel.this.onApply();
-                } catch (Exception e) {
-                    resultMessage.setObject(e.getLocalizedMessage());
-                    target.addComponent(EditDicomObjectPanel.this);
-                }
-            }
-        });
         form.add(new AjaxFallbackButton("submit", new ResourceModel("saveBtn"), form) {
 
             private static final long serialVersionUID = 1L;
@@ -188,8 +174,6 @@ public class EditDicomObjectPanel extends Panel {
     protected DicomObject getDicomObject() {
         return dcmObj;
     }
-
-    protected void onApply() {}
 
     protected void onSubmit() {}
 
