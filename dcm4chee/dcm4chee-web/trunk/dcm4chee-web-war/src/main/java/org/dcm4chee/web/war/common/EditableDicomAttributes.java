@@ -78,9 +78,12 @@ public class EditableDicomAttributes implements Serializable {
     private static Map<String,DicomObject> allEditableAttrs = new HashMap<String,DicomObject>();
     private static Map<String,Long> fileLastModified = new HashMap<String, Long>();
     private DicomObject editableAttrs;
+    private boolean useNullForRemoveTag;
     
     public EditableDicomAttributes(String attrModelName) {
         prepare(attrModelName == null ? BASE_ATTR_MODEL_NAME : attrModelName);
+        useNullForRemoveTag = "PatientModel".equals(attrModelName) || "StudyModel".equals(attrModelName) || 
+        "SeriesModel".equals(attrModelName) || "InstanceModel".equals(attrModelName);
     }
 
     private void prepare(String attrModelName) {
@@ -179,6 +182,10 @@ public class EditableDicomAttributes implements Serializable {
             }
         }
         return true;
+    }
+
+    public boolean isUseNullForRemoveTag() {
+        return useNullForRemoveTag;
     }
 
     private static void loadDicomObject(InputStream is, DicomObject dcmobj) throws FactoryConfigurationError, ParserConfigurationException, 

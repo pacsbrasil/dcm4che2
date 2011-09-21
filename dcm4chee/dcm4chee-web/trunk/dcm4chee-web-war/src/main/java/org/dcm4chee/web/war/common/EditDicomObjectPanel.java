@@ -232,7 +232,7 @@ public class EditDicomObjectPanel extends Panel {
             add(new Label("tag", TagUtils.toString(tag)));
             add(new Label("vr", el.vr().toString()));
             add(new Label("length", Integer.toString(el.length())));
-            Model<String> model = 
+            final Model<String> model = 
                 el.hasItems() ? 
                         new Model<String>("") 
                       : new DicomElementModel(el, cs, tagPath);
@@ -247,7 +247,11 @@ public class EditDicomObjectPanel extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    EditDicomObjectPanel.this.dcmObj.remove(tagPath);
+                    if (editable.isUseNullForRemoveTag()) {
+                        model.setObject(null);
+                    } else {
+                        EditDicomObjectPanel.this.dcmObj.remove(tagPath);
+                    }
                     if (target != null) {
                         target.addComponent(table);
                     }
