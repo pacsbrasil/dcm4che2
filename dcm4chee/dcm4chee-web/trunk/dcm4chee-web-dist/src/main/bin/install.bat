@@ -35,5 +35,7 @@ copy "%WEB3_SERV%\lib\*.jar" "%DCM4CHEE_SERV%\lib"
 
 copy "%WEB3_SERV%\deploy\dcm4chee-web-ear-%VERS%-*.ear" "%DCM4CHEE_SERV%\deploy"
 
+copy "%WEB3_SERV%\conf\auditlog\*.xml" "%DCM4CHEE_SERV%\conf\dcm4chee-auditlog"
+
 :end
 if "%OS%" == "Windows_NT" endlocal

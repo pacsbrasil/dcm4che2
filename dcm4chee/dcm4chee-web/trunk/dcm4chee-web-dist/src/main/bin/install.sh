@@ -38,3 +38,4 @@ fi
 cp -v "$WEB3_SERV"/deploy/dcm4chee-web-ear-${VERS}-${WEB3_DB}.ear "$DCM4CHEE_SERV"/deploy
 
 cp -v "$WEB3_SERV"/lib/*.jar "$DCM4CHEE_SERV"/lib
+cp -v "$WEB3_SERV"/conf/auditlog/*.xml "$DCM4CHEE_SERV"/conf/dcm4chee-auditlog

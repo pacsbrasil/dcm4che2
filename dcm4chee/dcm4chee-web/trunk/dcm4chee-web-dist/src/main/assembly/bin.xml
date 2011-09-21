@@ -25,9 +25,87 @@
       <lineEnding>lf</lineEnding>
       <fileMode>0755</fileMode>
     </fileSet>
+    <fileSet>
+      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-webcfg/target</directory>
+      <outputDirectory>server/default/conf</outputDirectory>
+      <includes>
+        <include>auditlog/*.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-contentedit/target</directory>
+      <outputDirectory>server/default/conf</outputDirectory>
+      <includes>
+        <include>auditlog/*.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-echo/target</directory>
+      <outputDirectory>server/default/conf</outputDirectory>
+      <includes>
+        <include>auditlog/*.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-hl7send/target</directory>
+      <outputDirectory>server/default/conf</outputDirectory>
+      <includes>
+        <include>auditlog/*.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-ianscu/target</directory>
+      <outputDirectory>server/default/conf</outputDirectory>
+      <includes>
+        <include>auditlog/*.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-modify/target</directory>
+      <outputDirectory>server/default/conf</outputDirectory>
+      <includes>
+        <include>auditlog/*.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-movescu/target</directory>
+      <outputDirectory>server/default/conf</outputDirectory>
+      <includes>
+        <include>auditlog/*.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-rejnotescu/target</directory>
+      <outputDirectory>server/default/conf</outputDirectory>
+      <includes>
+        <include>auditlog/*.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-tlscfg/target</directory>
+      <outputDirectory>server/default/conf</outputDirectory>
+      <includes>
+        <include>auditlog/*.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-mwlscu/target</directory>
+      <outputDirectory>server/default/conf</outputDirectory>
+      <includes>
+        <include>auditlog/*.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-bridge/dcm4chee-web-sar-bridge-store/target</directory>
+      <outputDirectory>server/default/conf</outputDirectory>
+      <includes>
+        <include>auditlog/*.xml</include>
+      </includes>
+    </fileSet>
   </fileSets>
   <dependencySets>
     <dependencySet>
+	  <useProjectArtifact>false</useProjectArtifact>
       <outputDirectory>server/default/lib</outputDirectory>
       <includes>
         <include>dcm4che.dcm4chee:dcm4chee-web-urlprovider</include>
@@ -35,6 +113,7 @@
       </includes>
     </dependencySet>
     <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
       <outputDirectory>server/default/deploy</outputDirectory>
       <includes>
         <include>dcm4che.dcm4chee:dcm4chee-web-ear:ear:${db}</include>
