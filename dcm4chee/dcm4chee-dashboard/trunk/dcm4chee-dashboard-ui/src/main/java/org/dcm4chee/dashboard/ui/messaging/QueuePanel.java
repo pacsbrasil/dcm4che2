@@ -74,13 +74,17 @@ import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.WicketRuntimeException;
+import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation;
 import org.apache.wicket.extensions.markup.html.tree.table.IColumn;
+import org.apache.wicket.extensions.markup.html.tree.table.IRenderable;
 import org.apache.wicket.extensions.markup.html.tree.table.PropertyRenderableColumn;
 import org.apache.wicket.extensions.markup.html.tree.table.PropertyTreeColumn;
+import org.apache.wicket.extensions.markup.html.tree.table.TreeTable;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Alignment;
 import org.apache.wicket.extensions.markup.html.tree.table.ColumnLocation.Unit;
 import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.MarkupStream;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -252,18 +256,37 @@ public class QueuePanel extends Panel {
 
         private static final long serialVersionUID = 1L;
 
+        private IColumn[] columns;
+        
         public QueueTreeTable(String id, TreeModel model, IColumn[] columns) {
             super(id, model, columns);
+            this.columns = columns;
         }
 
         @Override
         protected void populateTreeItem(WebMarkupContainer item, int level) {
             super.populateTreeItem(item, level);
-            QueueModel queueModel = (QueueModel) ((DefaultMutableTreeNode) item.getDefaultModelObject()).getUserObject();
-            if (queueModel.getColor() != null)
-                item.add(new AttributeModifier("style", true, new Model<String>("background-color: " + queueModel.getColor())));
+
+            final TreeNode node = (TreeNode) item.getDefaultModelObject();
+            SideColumnsView sideColumns = new SideColumnsView("sideColumns", node);
+            item.addOrReplace(sideColumns);
+            if (columns != null)
+                for (int i = 0; i < columns.length; i++) {
+                    IColumn column = columns[i];
+                    if (column.getLocation().getAlignment() == Alignment.LEFT ||
+                        column.getLocation().getAlignment() == Alignment.RIGHT) {
+                        Component component;
+                        IRenderable renderable = column.newCell(node, level);
+                        if (renderable == null) {
+                            component = column.newCell(sideColumns, "" + i, node, level);
+                            sideColumns.add(component);
+                        } else 
+                            component = null;
+                        sideColumns.addColumn(column, component, renderable);
+                    }
+                }
         }
-        
+
         @Override
         protected Component newNodeIcon(MarkupContainer parent, String id, final TreeNode node) {
 
