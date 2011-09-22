@@ -39,8 +39,11 @@
 package org.dcm4chee.web.war.ae;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
@@ -170,7 +173,11 @@ public class AEListPanel extends Panel {
         add(newAET);
         newAET.add(new SecurityBehavior(getModuleName() + ":newAETLink"));
 
-        List<String> aetTypes = AELicenseProviderManager.get(null).getProvider().getAETypes(WebCfgDelegate.getInstance().getAETTypes());
+        Set<String> aetTypeSet = new LinkedHashSet<String>();
+        aetTypeSet.addAll(WebCfgDelegate.getInstance().getAETTypes());
+        aetTypeSet.addAll(AELicenseProviderManager.get(null).getProvider().getAETypes(WebCfgDelegate.getInstance().getAETTypes()));
+        List<String> aetTypes = new ArrayList<String>(aetTypeSet);
+
         final boolean mayModifyAETs = ((aetTypes.size() > 0) || AELicenseProviderManager.get(null).getProvider().getName().equals("NOPLicenseProvider"));
         newAET.setEnabled(mayModifyAETs);
         
