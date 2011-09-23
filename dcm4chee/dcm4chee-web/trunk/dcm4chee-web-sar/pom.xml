@@ -29,6 +29,7 @@
     <name>JMX services for dcm4chee-web</name>
   <properties>
     <db>mysql</db>
+    <sar_home>${basedir}</sar_home>
   </properties>
     <dependencies>
     </dependencies>

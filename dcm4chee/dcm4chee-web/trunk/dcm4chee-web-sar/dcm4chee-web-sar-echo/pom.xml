@@ -78,6 +78,9 @@
               				</fileMappers>
                         </transformationSet>
                     </transformationSets>
+					<catalogs>
+						<catalog>../src/main/catalog.xml</catalog>
+					</catalogs>
                 </configuration>
             </plugin> 
 		</plugins>
