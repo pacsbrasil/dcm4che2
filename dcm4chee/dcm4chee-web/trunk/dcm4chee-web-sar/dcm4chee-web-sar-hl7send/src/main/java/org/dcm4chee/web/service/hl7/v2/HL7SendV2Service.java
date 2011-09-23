@@ -43,6 +43,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -141,7 +142,6 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
     private String charsetName;
     
     private static final TransformerFactory tf = TransformerFactory.newInstance();
-    private Map<String, Templates[]> templatesCache = new HashMap<String, Templates[]>();
 
     private boolean oneORMperSPS;
     protected TemplatesDelegate templatesDelegate = new TemplatesDelegate(this);
@@ -262,7 +262,6 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         if ( fn == null || NONE.equals(fn)) {
             xslFilenames = null;
         }
-        templatesCache.clear();
         StringTokenizer st = new StringTokenizer(fn, " \r\n\t;");
         xslFilenames = new HashMap<String, String>(st.countTokens());
         String tk;
@@ -570,29 +569,29 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         }
     }
     
-    private Templates[] toTemplates(String msgTypeID, String receiver) throws InstanceNotFoundException, MBeanException, ReflectionException, TransformerConfigurationException {
-        Templates[] tpls = templatesCache.get(msgTypeID);
-        if (tpls == null) {
-            boolean dcm14Version = false;;
-            String xslName = xslFilenames.get(msgTypeID);
-            log.info("Get template for url:"+xslName);
-            if (xslName == null)
-                throw new IllegalArgumentException("Unknown msgTypeID! You need to map a XSL URL to msgTypeID:"+msgTypeID);
-            int pos = xslName.lastIndexOf('|');
-            if (pos != -1) {
-                dcm14Version = "|14".equals(xslName.substring(pos));
-                xslName = xslName.substring(0,pos);
-            }
-            Templates tpl;
-            if (xslName.startsWith("resource:") || xslName.startsWith("file:")) {
-                tpl = tf.newTemplates(new StreamSource(xslName));
-            } else {
-                tpl = this.templatesDelegate.getTemplatesForAET(receiver, xslName);
-            }
-            tpls = dcm14Version ? new Templates[]{dcm2To14Tpl, tpl} : new Templates[]{tpl};
-            templatesCache.put(msgTypeID, tpls);
+    private Templates[] toTemplates(String msgTypeID, String receiver) throws InstanceNotFoundException, 
+        MBeanException, ReflectionException, TransformerConfigurationException, FileNotFoundException {
+        boolean dcm14Version = false;;
+        String xslName = xslFilenames.get(msgTypeID);
+        log.info("Get template for url:"+xslName);
+        if (xslName == null)
+            throw new IllegalArgumentException("Unknown msgTypeID! You need to map a XSL URL to msgTypeID:"+msgTypeID);
+        int pos = xslName.lastIndexOf('|');
+        if (pos != -1) {
+            dcm14Version = "|14".equals(xslName.substring(pos));
+            xslName = xslName.substring(0,pos);
         }
-        return tpls;
+        Templates tpl;
+        if (xslName.startsWith("resource:") || xslName.startsWith("file:")) {
+            tpl = tf.newTemplates(new StreamSource(xslName));
+        } else {
+            tpl = this.templatesDelegate.getTemplatesForAET(receiver, xslName);
+            if (tpl == null) {
+                log.error("Template not found! url:"+xslName);
+                throw new FileNotFoundException(xslName);
+            }
+        }
+        return dcm14Version ? new Templates[]{dcm2To14Tpl, tpl} : new Templates[]{tpl};
     }
 
     public boolean sendHL7File(String receiver, String filename) throws IOException, InstanceNotFoundException, MBeanException, ReflectionException, InterruptedException, GeneralSecurityException, SAXException {
