@@ -862,7 +862,14 @@ public class StudyListPage extends Panel {
                 if ((hasIgnored ||selected.hasDicomSelection() || selected.hasPPS()) 
                         && selected.hasTooOld()) {
                     if (StudyPermissionHelper.get().ignoreEditTimeLimit()) {
-                        confirmDelete.confirm(target, new StringResourceModel("folder.message.tooOld.delete", this, null, new Object[]{selected}), selected);                    
+                        if (selected.hasPPS()) {
+                            confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.message.tooOld.confirmPpsDelete",this, null,new Object[]{selected}), selected);
+                        } else if (selected.hasDicomSelection()) {
+                            confirmDelete.confirm(target, new StringResourceModel("folder.message.tooOld.delete", this, null, new Object[]{selected}), selected);
+                        } else {
+                            msgWin.setInfoMessage(getString("folder.message.deleteNotAllowed"));
+                            msgWin.setColor("#FF0000");
+                        }
                     } else {
                         msgWin.setInfoMessage(getString("folder.message.tooOld.delete.denied"));
                         msgWin.setColor("#FF0000");
