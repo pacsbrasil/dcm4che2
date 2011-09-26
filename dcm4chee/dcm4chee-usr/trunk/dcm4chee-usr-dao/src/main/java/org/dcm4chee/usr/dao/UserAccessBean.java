@@ -190,10 +190,11 @@ public class UserAccessBean implements UserAccess {
 
         if (!superuser && (superusers.size() > 0)) 
             return this.em.createQuery("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles r " +
-                "WHERE r.role NOT IN (:superusers) ORDER BY u.userID")
+                    "WHERE u.roles IS EMPTY OR r.role NOT IN (:superusers) " + 
+                    "ORDER BY u.userID")
                 .setParameter("superusers", superusers)
                 .getResultList();
-
+        
         return this.em.createQuery("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles ORDER BY u.userID")
             .getResultList();
     }
