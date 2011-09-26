@@ -612,7 +612,7 @@ public class DicomEditBean implements DicomEditLocal {
         log.debug("findFirstOnlineInstance with query:{} with iuid:{}", query, uid);
         log.debug("Found instances: {}", l.size());
         for (int i = 0, len=l.size() ; i < len ; i++) {
-            if (l.get(i).getAvailability() == Availability.ONLINE) {
+            if (l.get(i).getAvailability().ordinal() <= Availability.NEARLINE.ordinal()) {
                 return l.get(i);
             }
         }

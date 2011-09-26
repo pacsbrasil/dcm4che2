@@ -345,13 +345,13 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
     private void addToResult(Map<String, DicomObject> result, Series series,
             Study study) {
         Instance instance = null;
-        for (Iterator<Instance> it = series.getInstances().iterator() ; it.hasNext();) {
+        for (Iterator<Instance> it = series.getInstances().iterator() ; it.hasNext(); instance = null) {
             instance = it.next();
-            if (instance.getAvailability() == Availability.ONLINE)
+            if (instance.getAvailability().ordinal() <= Availability.NEARLINE.ordinal())
                 break;
         }
-        if (instance.getAvailability() != Availability.ONLINE) {
-            log.warn("No ONLINE instance found for series:"+series.getSeriesInstanceUID()+"!");
+        if (instance == null) {
+            log.warn("No ONLINE or NEARLINE instance found for series:"+series.getSeriesInstanceUID()+"!");
             return;
         }
         DicomObject ian = result.get(study.getStudyInstanceUID());

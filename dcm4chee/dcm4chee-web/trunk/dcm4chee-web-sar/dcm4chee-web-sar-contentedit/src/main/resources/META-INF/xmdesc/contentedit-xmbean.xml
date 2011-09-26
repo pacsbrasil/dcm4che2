@@ -87,17 +87,6 @@
          <value value="NONE" />
       </descriptors>
    </attribute>
-   <attribute access="read-write"
-      getMethod="isAuditEnabled"
-      setMethod="setAuditEnabled">
-      <description>Enable/Disable Audit logging.
-      </description>
-      <name>AuditLogEnabled</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
 
    <attribute access="read-write"
       getMethod="getModifyingSystem"

@@ -117,8 +117,6 @@ public class ContentEditService extends ServiceMBeanSupport {
     private DicomEditLocal dicomEdit;
     private MppsToMwlLinkLocal mpps2mwl;
 
-    private boolean auditEnabled = true;
-
     private boolean forceNewRejNoteStudyIUID;
     
     private ObjectName rejNoteServiceName;
@@ -181,14 +179,6 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     public void setForwardModifiedToAETs(String aets) {
         this.forwardModifiedToAETs = NONE.equals(aets) ? null : StringUtils.split(aets, '\\');
-    }
-
-    public boolean isAuditEnabled() {
-        return auditEnabled;
-    }
-
-    public void setAuditEnabled(boolean auditEnabled) {
-        this.auditEnabled = auditEnabled;
     }
 
     public boolean isForceNewRejNoteStudyIUID() {
@@ -611,19 +601,23 @@ public class ContentEditService extends ServiceMBeanSupport {
         String studyIuid = mpps.getString(Tag.StudyInstanceUID);
         String seriesIuid, iuid;
         DicomElement mppsSeriesSq = mpps.get(Tag.PerformedSeriesSequence);
-        for (int i=0, len=mppsSeriesSq.countItems() ; i < len ; i++) {
-            DicomObject mppsSeriesItem = mppsSeriesSq.getDicomObject(i);
-            DicomElement mppsInstanceSq = mppsSeriesItem.get(Tag.ReferencedImageSequence);
-            if (mppsInstanceSq.isEmpty()) 
-                mppsInstanceSq = mppsSeriesItem.get(Tag.ReferencedNonImageCompositeSOPInstanceSequence);
-            if (mppsInstanceSq.isEmpty()) {
-                log.warn("Referenced series ("+mppsSeriesItem.getString(Tag.SeriesInstanceUID)+") in MPPS "
-                        +mpps.getString(Tag.SOPInstanceUID)+" has no instance reference!");
-                continue;
+        if (mppsSeriesSq != null) {
+            for (int i=0, len=mppsSeriesSq.countItems() ; i < len ; i++) {
+                DicomObject mppsSeriesItem = mppsSeriesSq.getDicomObject(i);
+                DicomElement mppsInstanceSq = mppsSeriesItem.get(Tag.ReferencedImageSequence);
+                if (mppsInstanceSq.isEmpty()) 
+                    mppsInstanceSq = mppsSeriesItem.get(Tag.ReferencedNonImageCompositeSOPInstanceSequence);
+                if (mppsInstanceSq.isEmpty()) {
+                    log.warn("Referenced series ("+mppsSeriesItem.getString(Tag.SeriesInstanceUID)+") in MPPS "
+                            +mpps.getString(Tag.SOPInstanceUID)+" has no instance reference!");
+                    continue;
+                }
+                seriesIuid = mppsSeriesItem.getString(Tag.SeriesInstanceUID);
+                iuid = mppsInstanceSq.getDicomObject(0).getString(Tag.ReferencedSOPInstanceUID);
+                scheduleForward(patId, studyIuid, seriesIuid, new String[]{iuid});
             }
-            seriesIuid = mppsSeriesItem.getString(Tag.SeriesInstanceUID);
-            iuid = mppsInstanceSq.getDicomObject(0).getString(Tag.ReferencedSOPInstanceUID);
-            scheduleForward(patId, studyIuid, seriesIuid, new String[]{iuid});
+        } else {
+            log.warn("Forward of modified Object ignored! Reason: Missing PerformedSeriesSequence in MPPS "+mpps);
         }
     }
 
@@ -936,7 +930,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     private void scheduleForward(DicomObject fwdIan) {
         log.info("fwdIan:"+fwdIan);
         if (fwdIan == null) {
-            log.warn("Forward of modified Object ignored! Reason: No ONLINE instance found!");
+            log.warn("Forward of modified Object ignored! Reason: No ONLINE or NEARLINE instance found!");
         } else {
             for (int i = 0 ; i < forwardModifiedToAETs.length ; i++) {
                 try {
