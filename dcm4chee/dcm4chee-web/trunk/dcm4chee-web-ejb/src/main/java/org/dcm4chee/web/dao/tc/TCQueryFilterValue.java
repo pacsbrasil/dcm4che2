@@ -334,7 +334,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
     }
 
     public static enum YesNo implements DicomCodeEnum {
-        Yes("SRT", "R-0038D"), No("SRT", "R-00339D");
+        Yes("R-0038D", "SRT"), No("R-00339D", "SRT");
 
         private Code code;
 
