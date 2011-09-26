@@ -62,6 +62,8 @@ public class HSMFileBasedModule extends AbstractHSMModule {
     private static final String NEWLINE = System.getProperty("line.separator", "\n");
     private static final String CAL_FIELD_NAMES = "yMd";
     private static final int[] CAL_FIELDS = new int[]{Calendar.YEAR,Calendar.MONTH,Calendar.DAY_OF_MONTH};
+    private String mountFailedCheckFile = "NO_MOUNT";
+    
     private byte[] buf = new byte[8192];
 
     private int[] retentionTime = new int[2];
@@ -141,13 +143,31 @@ public class HSMFileBasedModule extends AbstractHSMModule {
         this.checkMD5forStatusChange = checkMD5forStatusChange;
     }
 
+    public final String getMountFailedCheckFile() {
+        return mountFailedCheckFile;
+    }
+
+    public final void setMountFailedCheckFile(String mountFailedCheckFile) {
+        this.mountFailedCheckFile = mountFailedCheckFile;
+    }
+    
+    private void checkMount(String fsID) throws HSMException {
+        File nomount = new File(stripTarIdentifier(fsID), mountFailedCheckFile);
+        if (nomount.exists()) {
+            log.warn("Mount on " + fsID + " seems broken! mountFailedCheckFile file exists:" + mountFailedCheckFile);
+            throw new HSMException("Filesystem not mounted! fsID:"+fsID);
+        }
+    }
+    
     @Override
-    public File prepareHSMFile(String fsID, String filePath) {
+    public File prepareHSMFile(String fsID, String filePath) throws HSMException {
+        checkMount(fsID);
         return FileUtils.toFile(stripTarIdentifier(fsID), filePath);
     }
 
     @Override
     public String storeHSMFile(File file, String fsID, String filePath) throws HSMException {
+        checkMount(fsID);
         if (setAccessTimeAfterSetReadonly)
             file.setReadOnly();
         if (accessTimeCmd != null) {
@@ -171,9 +191,8 @@ public class HSMFileBasedModule extends AbstractHSMModule {
 
     @Override
     public File fetchHSMFile(String fsID, String filePath) throws HSMException {
-        if (fsID.startsWith("tar:"))
-            fsID=fsID.substring(4);
-        return FileUtils.toFile(fsID, filePath);
+        checkMount(fsID);
+        return FileUtils.toFile(stripTarIdentifier(fsID), filePath);
     }
 
     @Override
@@ -181,7 +200,8 @@ public class HSMFileBasedModule extends AbstractHSMModule {
     }
 
     @Override
-    public Integer queryStatus(String fsID, String filePath, String userInfo) {
+    public Integer queryStatus(String fsID, String filePath, String userInfo) throws HSMException {
+        checkMount(fsID);
         boolean isTar = fsID.startsWith("tar:");
         for ( Map.Entry<String,Integer> entry : extensionStatusMap.entrySet()) {
             if (FileUtils.toFile(isTar ? fsID.substring(4) : fsID, filePath+entry.getKey()).exists()) {
