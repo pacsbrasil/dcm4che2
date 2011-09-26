@@ -160,6 +160,14 @@ public class DcmServerService extends ServiceMBeanSupport implements Notificatio
     public void setPackPDVs(boolean newPackPDVs) {
         handler.setPackPDVs(newPackPDVs);
     }
+    
+    public final int getSSLHandshakeSoTimeout(){
+    	return dcmsrv.getSSLHandshakeSoTimeout();
+    }
+    
+    public final void setSSLHandshakeSoTimeout(int soTimeout){
+    	dcmsrv.setSSLHandshakeSoTimeout(soTimeout);
+    }
 
     public final int getReceiveBufferSize() {
         return dcmsrv.getReceiveBufferSize();        

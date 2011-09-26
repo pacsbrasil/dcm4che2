@@ -61,6 +61,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getSSLHandshakeSoTimeout"
+      setMethod="setSSLHandshakeSoTimeout">
+      <description>Sets the socket timeout during the SSL handshake in milliseconds. 0 = no timeout.
+      </description>
+      <name>SSLHandshakeSocketTimeout</name>
+      <type>int</type>
+      <descriptors>
+         <value value="0" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getDimseTimeout"
       setMethod="setDimseTimeout">
       <description>DIMSE message timeout in milliseconds. 0 = no timeout.
