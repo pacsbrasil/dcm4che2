@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 
@@ -86,6 +87,8 @@ public class FileCopyService extends AbstractFileCopyService {
     private ObjectName hsmModuleServicename = null;
     private ArrayList<ObjectName> registeredModules = new ArrayList<ObjectName>();
     private boolean isReady;
+    private String businessHours;
+    
     public String getRegisteredHSMModules() {
         StringBuilder sb = new StringBuilder();
         for (ObjectName on : registeredModules) {
@@ -107,6 +110,23 @@ public class FileCopyService extends AbstractFileCopyService {
         return isReady;
     }
     
+    public String getBusinessHours() {
+        return businessHours == null ? NONE : businessHours;
+    }
+
+    public void setBusinessHours(String businessHours) {
+        if (NONE.equals(businessHours)) {
+            this.businessHours = null;
+        } else {
+            int pos = businessHours.indexOf('-');
+            if (pos == -1)
+                throw new IllegalArgumentException("BusinessHours: Wrong format! must be [0-24]-[0-24]:"+businessHours);
+            Integer.parseInt(businessHours.substring(0, pos));
+            Integer.parseInt(businessHours.substring(++pos));
+            this.businessHours = businessHours;
+        }
+    }
+
     public void registerHSMModule(ObjectName module) throws Exception {
         registeredModules.add(module);
         isReady = isReady | hsmModuleServicename == null | module.equals(hsmModuleServicename);
@@ -168,7 +188,8 @@ public class FileCopyService extends AbstractFileCopyService {
             if ( ds != null ) {
                 ian.putUI(Tags.StudyInstanceUID, ds.getString(Tags.StudyInstanceUID));
                 refSeries.putUI(Tags.SeriesInstanceUID, ds.getString(Tags.SeriesInstanceUID));
-                schedule(createOrder(ian),0l);
+                schedule(createOrder(ian), businessHours == null ? 0l : 
+                    ForwardingRules.afterBusinessHours(Calendar.getInstance(), businessHours));
                 log.info("Copy files of series "+seriesIUID+" scheduled!");
                 return true;
             } else {
