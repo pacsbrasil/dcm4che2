@@ -159,7 +159,7 @@ public class Webviewer  {
             case AbstractDicomModel.PATIENT_LEVEL:
                 if (provider.supportPatientLevel()) {
                     PatientModel pat = (PatientModel) model;
-                    return provider.getUrlForPatient(pat.getId(), pat.getId());
+                    return provider.getUrlForPatient(pat.getId(), pat.getIssuer());
                 }
                 break;
             case AbstractDicomModel.STUDY_LEVEL:
