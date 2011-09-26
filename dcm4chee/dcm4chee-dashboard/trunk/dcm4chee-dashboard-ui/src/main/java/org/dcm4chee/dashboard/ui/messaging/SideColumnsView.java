@@ -37,7 +37,7 @@ import org.dcm4chee.dashboard.ui.messaging.QueuePanel.QueueModel;
 
 /**
  * Class that renders cell of columns aligned to the left or to the right.
- * Extended to include tree column color highlighting
+ * Extended to include message count column color highlighting
  * 
  * @author Matej Knopp
  * @author Robert David
@@ -131,17 +131,20 @@ final class SideColumnsView extends WebMarkupContainer
             {
                 // for the first left column we have different style class
                 // (without the left border)
-                
-                QueueModel queueModel = (QueueModel) ((DefaultMutableTreeNode) node).getUserObject();
-                response.write("<span class=\"d_\"" + 
-                        (queueModel.getColor() == null ? "" : 
-                        "style=\"background-color: " + queueModel.getColor() + ";\"")
-                		+ ">");
+                response.write("<span class=\"d_\">");
                 firstLeft = false;
             }
             else
             {
-                response.write("<span class=\"c_\">");
+                if (i == 3) {
+                    QueueModel queueModel = (QueueModel) ((DefaultMutableTreeNode) node).getUserObject();
+                    response.write("<span class=\"c_\"" + 
+                            (queueModel.getColor() == null ? "" : 
+                            "style=\"background-color: " + queueModel.getColor() + ";\"")
+                            + ">");
+                }
+                else
+                    response.write("<span class=\"c_\">");
             }
 
             if (component != null)
