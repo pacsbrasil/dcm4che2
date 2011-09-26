@@ -151,7 +151,7 @@ public class HSMFileBasedModule extends AbstractHSMModule {
         this.mountFailedCheckFile = mountFailedCheckFile;
     }
     
-    private void checkMount(String fsID) throws HSMException {
+    protected void checkMount(String fsID) throws HSMException {
         File nomount = new File(stripTarIdentifier(fsID), mountFailedCheckFile);
         if (nomount.exists()) {
             log.warn("Mount on " + fsID + " seems broken! mountFailedCheckFile file exists:" + mountFailedCheckFile);

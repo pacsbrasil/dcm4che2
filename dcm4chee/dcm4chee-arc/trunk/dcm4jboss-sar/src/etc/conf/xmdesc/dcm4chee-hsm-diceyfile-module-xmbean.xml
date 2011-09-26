@@ -122,6 +122,17 @@
       </descriptors>
    </attribute>   
    
+  <attribute access="read-write" getMethod="getMountFailedCheckFile"
+    setMethod="setMountFailedCheckFile">
+    <description><![CDATA[If the specified file exists in the root of an filesystem, this signals a failed mount.]]>
+    </description>
+    <name>MountFailedCheckFile</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value value="NO_MOUNT" />
+    </descriptors>
+  </attribute>
+
    <attribute access="read-write"
       getMethod="getFileCopyServiceName"
       setMethod="setFileCopyServiceName">

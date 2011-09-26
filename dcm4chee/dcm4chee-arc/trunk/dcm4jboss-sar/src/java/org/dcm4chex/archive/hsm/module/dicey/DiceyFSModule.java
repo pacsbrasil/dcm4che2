@@ -34,28 +34,52 @@ public class DiceyFSModule extends HSMFileBasedModule {
     public final void setReadTimeout(int to) {
     	 this.readTimeout = to;
     }
-  
+
+    @Override
+    protected void checkMount(final String fsID) throws HSMException {
+        final Boolean[] notMounted = new Boolean[]{null};
+        Thread t = new Thread() {
+            public void run() {
+                notMounted[0] = new File(stripTarIdentifier(fsID), getMountFailedCheckFile()).exists();
+            }
+        };
+        t.start();
+        try {
+            t.join(readTimeout*1000);
+        } catch (InterruptedException e) {
+            log.warn("checkMount thread interrupted!", e);
+        }
+        if (notMounted[0] == null) {
+            t.interrupt();
+            log.warn("Accessibility of " + fsID + " seems broken! Timeout during mount check!");
+            throw new HSMException("Filesystem accessibility broken! fsID:"+fsID);
+        } else if (notMounted[0]) {
+            log.warn("Mount on " + fsID + " seems broken! mountFailedCheckFile file exists:" + getMountFailedCheckFile());
+            throw new HSMException("Filesystem not mounted! fsID:"+fsID);
+        }
+    }
+    
+
     @Override
     public File fetchHSMFile(String fsID, String filePath) throws HSMException {
-            if (absIncomingDir.mkdirs()) {
-                log.info("M-WRITE "+absIncomingDir);
-            }
-            File tarFile;
-            File fileToFetch;
-            try {
-                tarFile = File.createTempFile("hsm_", ".tar", absIncomingDir);
-            } catch (IOException x) {
-                throw new HSMException("Failed to create temp file in "+absIncomingDir, x);
-            }
-            if (fsID.startsWith("tar:"))
-                fsID=fsID.substring(4);
-            fileToFetch = FileUtils.toFile(fsID, filePath);
-            try {
-                FileIOTimeOut.copy(fileToFetch, tarFile, readTimeout) ;
-            } catch (IOException x) {
-                throw new HSMException("Failed to retrieve "+fileToFetch, x);
-            }
-            return tarFile;
+        checkMount(fsID);
+        if (absIncomingDir.mkdirs()) {
+            log.info("M-WRITE "+absIncomingDir);
+        }
+        File tarFile;
+        File fileToFetch;
+        try {
+            tarFile = File.createTempFile("hsm_", ".tar", absIncomingDir);
+        } catch (IOException x) {
+            throw new HSMException("Failed to create temp file in "+absIncomingDir, x);
+        }
+        fileToFetch = FileUtils.toFile(stripTarIdentifier(fsID), filePath);
+        try {
+            FileIOTimeOut.copy(fileToFetch, tarFile, readTimeout) ;
+        } catch (IOException x) {
+            throw new HSMException("Failed to retrieve "+fileToFetch, x);
+        }
+        return tarFile;
     }
     
     @Override
