@@ -165,7 +165,9 @@ public class ImageToolbar extends javax.swing.JPanel {
         } else if (e.getKeyCode() == KeyEvent.VK_S) {
             doStack();
         } else if (e.getKeyCode() == KeyEvent.VK_D) {
-            doRuler();
+            doRuler(false);
+        } else if (e.getKeyCode() == KeyEvent.VK_A) {
+            doRuler(true);
         } else if (e.getKeyCode() == KeyEvent.VK_T) {
             doPan();
         }
@@ -201,6 +203,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         rulerButton = new javax.swing.JButton();
         rectangleButton = new javax.swing.JButton();
         ellipseButton = new javax.swing.JButton();
+        arrowButton = new javax.swing.JButton();
         clearAllMeasurement = new javax.swing.JButton();
         deleteMeasurement = new javax.swing.JButton();
         moveMeasurement = new javax.swing.JButton();
@@ -447,6 +450,21 @@ public class ImageToolbar extends javax.swing.JPanel {
             }
         });
         jToolBar3.add(ellipseButton);
+
+        arrowButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/arrow.png"))); // NOI18N
+        arrowButton.setToolTipText("Arrow");
+        arrowButton.setActionCommand("arrow");
+        arrowButton.setFocusable(false);
+        arrowButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        arrowButton.setPreferredSize(new java.awt.Dimension(45, 45));
+        arrowButton.setRequestFocusEnabled(false);
+        arrowButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        arrowButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                arrowButtonActionPerformed(evt);
+            }
+        });
+        jToolBar3.add(arrowButton);
 
         clearAllMeasurement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/clear_all_annotation.png"))); // NOI18N
         clearAllMeasurement.setToolTipText("Clear All Measurement");
@@ -739,6 +757,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     private void probeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_probeButtonActionPerformed
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.annotationPanel.setAddLine(false);
+            ApplicationContext.annotationPanel.setAddArrow(false);
             ApplicationContext.annotationPanel.setAddEllipse(false);
             ApplicationContext.annotationPanel.setAddRect(false);
             ApplicationContext.annotationPanel.stopPanning();
@@ -756,6 +775,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         toolsButtonGroup.clearSelection();
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.annotationPanel.setAddLine(false);
+            ApplicationContext.annotationPanel.setAddArrow(false);
             ApplicationContext.annotationPanel.setAddEllipse(false);
             ApplicationContext.annotationPanel.setAddRect(false);
             ApplicationContext.imgPanel.doPan();
@@ -784,23 +804,36 @@ public class ImageToolbar extends javax.swing.JPanel {
     }
     private void rulerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rulerButtonActionPerformed
 
-        doRuler();
+        doRuler(false);
 }//GEN-LAST:event_rulerButtonActionPerformed
 
-    public void doRuler() {
+    public void doRuler(boolean addArrow) {
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.annotationPanel.stopPanning();
             ApplicationContext.imgPanel.setToolsToNull();
             ApplicationContext.annotationPanel.setMouseLocX1(-1);
             toolsButtonGroup.clearSelection();
-            if (!ApplicationContext.annotationPanel.isAddLine()) {
-                ApplicationContext.annotationPanel.setAddLine(true);
-                ApplicationContext.annotationPanel.setAddEllipse(false);
-                ApplicationContext.annotationPanel.setAddRect(false);
+            if(addArrow){
+                if (!ApplicationContext.annotationPanel.isAddArrow()) {
+                    ApplicationContext.annotationPanel.setAddArrow(true);
+                    ApplicationContext.annotationPanel.setAddLine(false);
+                    ApplicationContext.annotationPanel.setAddEllipse(false);
+                    ApplicationContext.annotationPanel.setAddRect(false);
+                } else {
+                    ApplicationContext.annotationPanel.setAddArrow(false);
+                }
+                toolsButtonGroup.setSelected(arrowButton.getModel(), true);
             } else {
-                ApplicationContext.annotationPanel.setAddLine(false);
+                if (!ApplicationContext.annotationPanel.isAddLine()) {
+                    ApplicationContext.annotationPanel.setAddArrow(false);
+                    ApplicationContext.annotationPanel.setAddLine(true);
+                    ApplicationContext.annotationPanel.setAddEllipse(false);
+                    ApplicationContext.annotationPanel.setAddRect(false);
+                } else {
+                    ApplicationContext.annotationPanel.setAddLine(false);
+                }
+                toolsButtonGroup.setSelected(rulerButton.getModel(), true);
             }
-            toolsButtonGroup.setSelected(rulerButton.getModel(), true);
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
         }
@@ -887,6 +920,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             ApplicationContext.annotationPanel.stopPanning();
             storeAnnotationHook();
             ApplicationContext.annotationPanel.setAddLine(false);
+            ApplicationContext.annotationPanel.setAddArrow(false);
             ApplicationContext.annotationPanel.setAddEllipse(false);
             ApplicationContext.annotationPanel.setAddRect(false);
             ApplicationContext.imgPanel.doStack();
@@ -962,6 +996,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             ApplicationContext.annotationPanel.setMouseLocX1(-1);
             if (!ApplicationContext.annotationPanel.isAddRect()) {
                 ApplicationContext.annotationPanel.setAddLine(false);
+                ApplicationContext.annotationPanel.setAddArrow(false);
                 ApplicationContext.annotationPanel.setAddEllipse(false);
                 ApplicationContext.annotationPanel.setAddRect(true);
             } else {
@@ -982,6 +1017,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             ApplicationContext.annotationPanel.setMouseLocX1(-1);
             if (!ApplicationContext.annotationPanel.isAddEllipse()) {
                 ApplicationContext.annotationPanel.setAddLine(false);
+                ApplicationContext.annotationPanel.setAddArrow(false);
                 ApplicationContext.annotationPanel.setAddEllipse(true);
                 ApplicationContext.annotationPanel.setAddRect(false);
             } else {
@@ -1032,10 +1068,11 @@ public class ImageToolbar extends javax.swing.JPanel {
         }
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             if (actionCommand != null) {
-                if (actionCommand.equalsIgnoreCase("ruler") || actionCommand.equalsIgnoreCase("rectangle") || actionCommand.equalsIgnoreCase("ellipse") || actionCommand.equalsIgnoreCase("deleteMeasurement") || actionCommand.equalsIgnoreCase("moveMeasurement")) {
+                if (actionCommand.equalsIgnoreCase("ruler") || actionCommand.equalsIgnoreCase("arrow") || actionCommand.equalsIgnoreCase("rectangle") || actionCommand.equalsIgnoreCase("ellipse") || actionCommand.equalsIgnoreCase("deleteMeasurement") || actionCommand.equalsIgnoreCase("moveMeasurement")) {
                     ApplicationContext.annotationPanel.setAddLine(false);
                     ApplicationContext.annotationPanel.setAddEllipse(false);
                     ApplicationContext.annotationPanel.setAddRect(false);
+                    ApplicationContext.annotationPanel.setAddArrow(false);
                     ApplicationContext.annotationPanel.stopPanning();
                     ApplicationContext.imgPanel.doWindowing();
                     toolsButtonGroup.clearSelection();
@@ -1049,6 +1086,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         toolsButtonGroup.clearSelection();
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.annotationPanel.setAddLine(false);
+            ApplicationContext.annotationPanel.setAddArrow(false);
             ApplicationContext.annotationPanel.setAddEllipse(false);
             ApplicationContext.annotationPanel.setAddRect(false);
             ApplicationContext.annotationPanel.stopPanning();
@@ -1198,6 +1236,10 @@ public class ImageToolbar extends javax.swing.JPanel {
     private void synchronizeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_synchronizeButtonActionPerformed
         ApplicationContext.imgPanel.doSynchronize();
     }//GEN-LAST:event_synchronizeButtonActionPerformed
+
+    private void arrowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_arrowButtonActionPerformed
+        doRuler(true);
+    }//GEN-LAST:event_arrowButtonActionPerformed
     private void designPresetContext() {
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ArrayList presetList = ApplicationContext.databaseRef.getPresetValueForModality(ApplicationContext.imgPanel.getModality());
@@ -1235,6 +1277,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton annotationVisibility;
+    private javax.swing.JButton arrowButton;
     private javax.swing.JButton clearAllMeasurement;
     private javax.swing.JButton cube3DButton;
     private javax.swing.JButton deleteMeasurement;

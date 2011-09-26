@@ -50,6 +50,7 @@ import java.util.ArrayList;
 public class Annotation implements Serializable{
 
     private ArrayList<AnnotationObj> line;
+    private ArrayList<AnnotationObj> arrow;
     private ArrayList<AnnotationObj> rect;
     private ArrayList<AnnotationObj> ellipse;
     private ArrayList<AnnotationObj> text;
@@ -57,6 +58,7 @@ public class Annotation implements Serializable{
     //Construct the Annotation object
     public Annotation() {
         line = new ArrayList<AnnotationObj>();
+        arrow = new ArrayList<AnnotationObj>();
         rect = new ArrayList<AnnotationObj>();
         ellipse = new ArrayList<AnnotationObj>();
     }
@@ -75,6 +77,14 @@ public class Annotation implements Serializable{
 
     public void setLine(ArrayList<AnnotationObj> line) {
         this.line = line;
+    }
+    
+    public ArrayList<AnnotationObj> getArrow() {
+        return arrow;
+    }
+
+    public void setArrow(ArrayList<AnnotationObj> arrow) {
+        this.arrow = arrow;
     }
 
     public ArrayList<AnnotationObj> getRect() {

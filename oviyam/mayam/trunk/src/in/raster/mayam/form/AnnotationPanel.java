@@ -39,15 +39,16 @@
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
+import in.raster.mayam.delegate.AnnotationDelegate;
 import in.raster.mayam.form.shapes.ShapeCoordinates;
 import in.raster.mayam.util.measurement.Annotation;
 import in.raster.mayam.util.measurement.AnnotationObj;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Menu;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
@@ -83,9 +84,11 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     private int lineCount = 0;
     private int rectCount = 0;
     private int ellipticalCount = 0;
+    private int arrowCount=0;
     private static boolean addLine = false;
     private static boolean addRect = false;
     private static boolean addEllipse = false;
+    private static boolean addArrow=false;
     private boolean deleteMeasurement = false;
     private boolean resizeMeasurement = false;
     private static boolean moveMeasurement = false;
@@ -100,6 +103,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     private Rectangle boundingRect = null;
     private Cursor curCursor;
     private ArrayList<AnnotationObj> lineObj;
+    private ArrayList<AnnotationObj> arrowObj;
     private ArrayList<AnnotationObj> rectObj;
     private ArrayList<AnnotationObj> ellipseObj;
     private ArrayList<AnnotationObj> scoutObj;
@@ -122,6 +126,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         this.addMouseMotionListener(this);
         this.addMouseWheelListener(this);
         lineObj = new ArrayList<AnnotationObj>();
+        arrowObj = new ArrayList<AnnotationObj>();
         rectObj = new ArrayList<AnnotationObj>();
         ellipseObj = new ArrayList<AnnotationObj>();
         scoutObj = new ArrayList<AnnotationObj>();
@@ -222,6 +227,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         deleteRectangle(evt);
         deleteEllipse(evt);
         deleteLine(evt);
+        deleteArrow(evt);
     }
 
     /**
@@ -261,6 +267,26 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                 break;
             }
 
+        }
+    }
+    /**
+     * This routine used to deleted Arrow selected.
+     * @param evt
+     */
+    private void deleteArrow(java.awt.event.MouseEvent evt) {
+        Iterator<AnnotationObj> ite = arrowObj.iterator();
+        while (ite.hasNext()) {
+            AnnotationObj t = ite.next();
+            int mousePointBoxSize = 2;
+            Shape arrowObject = new Line2D.Float(t.getX1(), t.getY1(), t.getX2(), t.getY2());
+            int pointX = evt.getX() - mousePointBoxSize / 2;
+            int pointY = evt.getY() - mousePointBoxSize / 2;
+            int width = mousePointBoxSize;
+            int height = mousePointBoxSize;
+            if (arrowObject.intersects(pointX, pointY, width, height)) {
+                arrowObj.remove(t);
+                break;
+            }
         }
     }
 
@@ -311,10 +337,12 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     private void measurementMove(java.awt.event.MouseEvent evt) {
         addShapeToArray();
         moveLine(evt);
+        moveArrow(evt);
         moveRectangle(evt);
         moveEllipse(evt);
     }
     private String selectedShapeOrientation = "left";
+    private String selectedArrowOrientString="";
 
     /**
      * This routine used to move the line.
@@ -347,8 +375,41 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                 lineObj.remove(t);
                 break;
             }
-
-
+        }
+    }
+    /**
+     * This routine used to move the Arrow.
+     * @param evt
+     */
+    private void moveArrow(java.awt.event.MouseEvent evt) {
+        Iterator<AnnotationObj> ite = arrowObj.iterator();
+        while (ite.hasNext()) {
+            AnnotationObj t = ite.next();
+            ShapeCoordinates shapeCoordinates = new ShapeCoordinates(t.getX1(), t.getY1(), t.getX2(), t.getY2());
+            int mousePointBoxSize = 2;
+            Shape lineObject = new Line2D.Float(t.getX1(), t.getY1(), t.getX2(), t.getY2());
+            int pointX = evt.getX() - mousePointBoxSize / 2;
+            int pointY = evt.getY() - mousePointBoxSize / 2;
+            int width = mousePointBoxSize;
+            int height = mousePointBoxSize;
+            if (lineObject.intersects(pointX, pointY, width, height)) {
+                Shape test = new Rectangle2D.Float(shapeCoordinates.getX(), shapeCoordinates.getY(), shapeCoordinates.getWidth(), shapeCoordinates.getHeight());
+                int diffX = t.getX2() - t.getX1();
+                int diffY = t.getY2() - t.getY1();
+                if ((diffX < 0 && diffY < 0) || (diffX > 0 && diffY > 0) || (diffX == 0 && diffY > 0) || (diffY == 0 && diffX > 0)) {
+                    selectedShapeOrientation = "left";
+                } else {
+                    selectedShapeOrientation = "right";
+                }
+                boundingRect = test.getBounds();
+                seletedShape = test;
+                selectedShapeType = "arrow";
+                selectedShapeDisplayStringValue = t.getLength();
+                selectedArrowOrientString = setArrowFlipText(t.getX1(), t.getY1(), t.getX2(), t.getY2(), selectedShapeOrientation);
+                t.setText(selectedArrowOrientString);
+                arrowObj.remove(t);
+                break;
+            }
         }
     }
 
@@ -445,6 +506,34 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                 lineCount++;
                 seletedShape = null;
                 boundingRect = null;
+            } else if(selectedShapeType.equalsIgnoreCase("arrow")){
+                AnnotationObj newArrow = new AnnotationObj();
+                newArrow.setMidX(SHAPEORIGIN);
+                newArrow.setMidY(SHAPEORIGIN);
+                int x1,y1,x2,y2;
+                if (selectedShapeOrientation.equalsIgnoreCase("left")) {
+                    x1= seletedShape.getBounds().x;
+                    y1= seletedShape.getBounds().y;
+                    x2 = seletedShape.getBounds().x + seletedShape.getBounds().width;
+                    y2 = seletedShape.getBounds().y + seletedShape.getBounds().height;
+                    if(selectedArrowOrientString.equalsIgnoreCase("flip")){
+                        newArrow.setLocation(x2, y2, x1, y1);
+                    } else newArrow.setLocation(x1, y1, x2, y2);
+                } else {
+                    x1= seletedShape.getBounds().x + seletedShape.getBounds().width;
+                    y1= seletedShape.getBounds().y;
+                    x2 = seletedShape.getBounds().x;
+                    y2 = seletedShape.getBounds().y + seletedShape.getBounds().height;
+                    if(selectedArrowOrientString.equalsIgnoreCase("flip")){
+                        newArrow.setLocation(x2, y2, x1, y1);
+                    } else newArrow.setLocation(x1, y1, x2, y2);
+                }
+                newArrow.setType("arrow");
+                newArrow.setLength(selectedShapeDisplayStringValue);
+                arrowObj.add(newArrow);
+                arrowCount++;
+                seletedShape = null;
+                boundingRect = null;
             } else if (selectedShapeType.equalsIgnoreCase("rect")) {
                 AnnotationObj newRect = new AnnotationObj();
                 newRect.setMidX(SHAPEORIGIN);
@@ -488,6 +577,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             addEllipse = false;
             addLine = false;
             addRect = false;
+            addArrow=false;
         }
     }
 
@@ -529,6 +619,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             addEllipse = false;
             addLine = false;
             addRect = false;
+            addArrow=false;
             deleteMeasurement = false;
             moveMeasurement = false;
         }
@@ -545,6 +636,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             addEllipse = false;
             addLine = false;
             addRect = false;
+            addArrow = false;
             deleteMeasurement = false;
             resizeMeasurement = false;
         }
@@ -596,6 +688,14 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     public boolean isAddLine() {
         return addLine;
     }
+    
+    /**
+     * This routine used to find out the mode whether a line can be added to the overlay.
+     * @return
+     */
+    public boolean isAddArrow() {
+        return addArrow;
+    }
 
     /**
      * This routine used to set the annotation overlay mode to draw the line based on the coordinates.
@@ -604,6 +704,15 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     public void setAddLine(boolean addLine) {
         this.addLine = addLine;
         resetEditMeasurement();
+    }
+    
+    /**
+     * This routine used to set the annotation overlay mode to draw the line based on the coordinates.
+     * @param addLine
+     */
+    public void setAddArrow(boolean addArrow) {
+        this.addArrow = addArrow;
+        //resetEditMeasurement();
     }
 
     public boolean isAddRect() {
@@ -621,6 +730,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     public void doRotateRight() {
         addShapeToArray();
         rotateLineRight();
+        rotateArrowRight();
         rotateRectangleRight();
         rotateEllipseRight();
         resetMousePoints();
@@ -691,6 +801,20 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             t.setCenterBasedLocation(x1, y1, x2, y2);
         }
     }
+    /**
+     * This routine used to rotate all the arrow to 90 degree right
+     */
+    private void rotateArrowRight() {
+        Iterator<AnnotationObj> ite = arrowObj.iterator();
+        while (ite.hasNext()) {
+            AnnotationObj t = ite.next();
+            int x1 = -1 * t.getCenterBasedY1();
+            int y1 = 1 * t.getCenterBasedX1();
+            int x2 = -1 * t.getCenterBasedY2();
+            int y2 = 1 * t.getCenterBasedX2();
+            t.setCenterBasedLocation(x1, y1, x2, y2);
+        }
+    }
 
     /**
      * This routine used to rotate the rectangle to 90 degree right
@@ -728,6 +852,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     public void doRotateLeft() {
         addShapeToArray();
         rotateLineLeft();
+        rotateArrowLeft();
         rotateRectangleLeft();
         rotateEllipseLeft();
         resetMousePoints();
@@ -739,6 +864,20 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
      */
     private void rotateLineLeft() {
         Iterator<AnnotationObj> ite = lineObj.iterator();
+        while (ite.hasNext()) {
+            AnnotationObj t = ite.next();
+            int x1 = 1 * t.getCenterBasedY1();
+            int y1 = -1 * t.getCenterBasedX1();
+            int x2 = 1 * t.getCenterBasedY2();
+            int y2 = -1 * t.getCenterBasedX2();
+            t.setCenterBasedLocation(x1, y1, x2, y2);
+        }
+    }
+    /**
+     * This routine used to rotate all the lines to 90 degree left
+     */
+    private void rotateArrowLeft() {
+        Iterator<AnnotationObj> ite = arrowObj.iterator();
         while (ite.hasNext()) {
             AnnotationObj t = ite.next();
             int x1 = 1 * t.getCenterBasedY1();
@@ -785,6 +924,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     public void doFlipVertical() {
         addShapeToArray();
         flipLineVertical();
+        flipArrowVertical();
         flipRectangleVertical();
         flipEllipseVertical();
         resetMousePoints();
@@ -796,6 +936,20 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
      */
     private void flipLineVertical() {
         Iterator<AnnotationObj> ite = lineObj.iterator();
+        while (ite.hasNext()) {
+            AnnotationObj t = ite.next();
+            int x1 = 1 * t.getCenterBasedX1();
+            int y1 = -1 * t.getCenterBasedY1();
+            int x2 = 1 * t.getCenterBasedX2();
+            int y2 = -1 * t.getCenterBasedY2();
+            t.setCenterBasedLocation(x1, y1, x2, y2);
+        }
+    }
+    /**
+     * This routine used to flip all Arrows vertically
+     */
+    private void flipArrowVertical() {
+        Iterator<AnnotationObj> ite = arrowObj.iterator();
         while (ite.hasNext()) {
             AnnotationObj t = ite.next();
             int x1 = 1 * t.getCenterBasedX1();
@@ -842,6 +996,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     public void doFlipHorizontal() {
         addShapeToArray();
         flipLineHorizontal();
+        flipArrowHorizontal();
         flipRectangleHorizontal();
         flipEllipseHorizontal();
         resetMousePoints();
@@ -854,6 +1009,20 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
      */
     private void flipLineHorizontal() {
         Iterator<AnnotationObj> ite = lineObj.iterator();
+        while (ite.hasNext()) {
+            AnnotationObj t = ite.next();
+            int x1 = -1 * t.getCenterBasedX1();
+            int y1 = 1 * t.getCenterBasedY1();
+            int x2 = -1 * t.getCenterBasedX2();
+            int y2 = 1 * t.getCenterBasedY2();
+            t.setCenterBasedLocation(x1, y1, x2, y2);
+        }
+    }
+    /**
+     * This routine used to flip all the Arrows horizontally
+     */
+    private void flipArrowHorizontal() {
+        Iterator<AnnotationObj> ite = arrowObj.iterator();
         while (ite.hasNext()) {
             AnnotationObj t = ite.next();
             int x1 = -1 * t.getCenterBasedX1();
@@ -905,6 +1074,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
      */
     public void clearAllMeasurement() {
         lineObj = new ArrayList<AnnotationObj>();
+        arrowObj = new ArrayList<AnnotationObj>();
         rectObj = new ArrayList<AnnotationObj>();
         ellipseObj = new ArrayList<AnnotationObj>();
         mouseLocX1 = 0;
@@ -968,6 +1138,19 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                 g.fill(new Ellipse2D.Double(t.getX1() - 3.0, t.getY1() - 3.0, 6.0, 6.0));
                 g.fill(new Ellipse2D.Double(t.getX2() - 3.0, t.getY2() - 3.0, 6.0, 6.0));
             }
+            //Condition used to draw new arrow as per the arrow flag values and coordinates of the annotation mouse point
+            if ((mouseLocX1 != -1 && mouseLocX2 != -1 && mouseLocY1 != -1 && mouseLocY2 != -1) && addArrow) {
+                Point startPoint=new Point((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()));
+                Point endPoint= new Point((int) (mouseLocX2 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY2 / this.layeredCanvas.imgpanel.getScaleFactor()));
+                AnnotationDelegate.renderArrow(endPoint, startPoint, Color.getColor("114,143,206"), new BasicStroke(2), g);
+            }
+            // As per the arrowObj present in the tile it will display the lines
+            if(arrowObj!=null){
+            Iterator<AnnotationObj> iae = arrowObj.iterator();
+            while (iae.hasNext()) {
+                AnnotationObj t = iae.next();
+                AnnotationDelegate.renderArrow(new Point(t.getX2(), t.getY2()), new Point(t.getX1(), t.getY1()),Color.getColor("114,143,206"),new BasicStroke(2),g);
+            }}
             //Condition used to check the coordinate position and rectangle flag
             if ((mouseLocX1 != -1 && mouseLocX2 != -1 && mouseLocY1 != -1 && mouseLocY2 != -1) && addRect) {
 
@@ -1018,9 +1201,10 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             }
             // Selecting the annotations
             if (boundingRect != null) {
-                if (selectedShapeType.equalsIgnoreCase("line")) {
+                if (selectedShapeType.equalsIgnoreCase("line") || selectedShapeType.equalsIgnoreCase("arrow")) {
                     drawHighlightLines(g, boundingRect);
-                } else {
+                } /**else if(selectedShapeType.equalsIgnoreCase("arrow")){
+                } */else {
                     drawHighlightSquares(g, boundingRect);
                 }
             }
@@ -1037,6 +1221,22 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                     }
                     // gs.drawString("Length:" + selectedShapeDisplayStringValue + " cm", seletedShape.getBounds().x, seletedShape.getBounds().y - 20);
                     // g.draw(seletedShape);
+                } else if(selectedShapeType.equalsIgnoreCase("arrow")){
+                    Point startPoint = null;
+                    Point endPoint = null;
+                    if (selectedShapeOrientation.equalsIgnoreCase("left")) {
+                        startPoint = new Point(seletedShape.getBounds().x, seletedShape.getBounds().y);
+                        endPoint = new Point(seletedShape.getBounds().x + seletedShape.getBounds().width, seletedShape.getBounds().y + seletedShape.getBounds().height);
+                        //gs.drawLine(seletedShape.getBounds().x, seletedShape.getBounds().y, seletedShape.getBounds().x + seletedShape.getBounds().width, seletedShape.getBounds().y + seletedShape.getBounds().height);
+                    } else {
+                        startPoint = new Point(seletedShape.getBounds().x + seletedShape.getBounds().width, seletedShape.getBounds().y);
+                        endPoint = new Point(seletedShape.getBounds().x, seletedShape.getBounds().y + seletedShape.getBounds().height);
+                        //gs.drawLine(seletedShape.getBounds().x + seletedShape.getBounds().width, seletedShape.getBounds().y, seletedShape.getBounds().x, seletedShape.getBounds().y + seletedShape.getBounds().height);
+                    }
+                    if(selectedArrowOrientString.equalsIgnoreCase("flip")){
+                        AnnotationDelegate.renderArrow(startPoint, endPoint, Color.red, new BasicStroke(2), g);
+                    } else AnnotationDelegate.renderArrow(endPoint, startPoint, Color.red, new BasicStroke(2), g);
+                    //AnnotationDelegate.renderArrow(endPoint, startPoint, Color.red, new BasicStroke(2), g);
                 } else if (selectedShapeType.equalsIgnoreCase("ellipse")) {
                     //Used to draw the area,mean and std dev values in the annotation panel                    
                     gs.drawString("Area:" + selectedShapeDisplayStringValue, seletedShape.getBounds().x, seletedShape.getBounds().y - 60);
@@ -1128,7 +1328,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                 mouseLocY1 = mouseLocY2;
                 repaint();
             }
-        } else if (this.isAddEllipse() || this.isAddRect() || this.isAddLine()) {
+        } else if (this.isAddEllipse() || this.isAddRect() || this.isAddLine() || this.isAddArrow()) {
             if (!startAnnotation) {
                 mouseLocX2 = e.getX();
                 mouseLocY2 = e.getY();
@@ -1359,6 +1559,14 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     public void setLineObj(ArrayList<AnnotationObj> lineObj) {
         this.lineObj = lineObj;
     }
+    
+    public ArrayList<AnnotationObj> getArrowObj() {
+        return arrowObj;
+    }
+
+    public void setArrowObj(ArrayList<AnnotationObj> arrowObj) {
+        this.arrowObj = arrowObj;
+    }
 
     public ArrayList<AnnotationObj> getRectObj() {
         return rectObj;
@@ -1377,6 +1585,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         annotation.setEllipse(ellipseObj);
         annotation.setRect(rectObj);
         annotation.setLine(lineObj);
+        annotation.setArrow(arrowObj);
         resetCursorPoints();
         return annotation;
     }
@@ -1395,10 +1604,12 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         if (annotation != null) {
             this.annotation = annotation;
             lineObj = annotation.getLine();
+            arrowObj = annotation.getArrow();
             rectObj = annotation.getRect();
             ellipseObj = annotation.getEllipse();
         } else {
             lineObj = new ArrayList<AnnotationObj>();
+            arrowObj = new ArrayList<AnnotationObj>();
             rectObj = new ArrayList<AnnotationObj>();
             ellipseObj = new ArrayList<AnnotationObj>();
         }
@@ -1420,7 +1631,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             mouseLocY1 = e.getY();
             measurementMove(e);
         }
-        if (addLine || addRect || addEllipse) {
+        if (addLine || addRect || addEllipse || addArrow) {
             if (startAnnotation) {
                 mouseLocX1 = e.getX();
                 mouseLocY1 = e.getY();
@@ -1435,10 +1646,11 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
         this.addEllipse = false;
         this.addLine = false;
         this.addRect = false;
+        this.addArrow=false;
     }
 
     public void mouseReleased(MouseEvent e) {
-        if (addLine || addRect || addEllipse) {
+        if (addLine || addRect || addEllipse || addArrow) {
 
             if (!startAnnotation) {
                 startAnnotation = true;
@@ -1454,6 +1666,20 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
                         newLine.setLength(calculateDiff((int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (e.getX() / this.layeredCanvas.imgpanel.getScaleFactor()), (int) (e.getY() / this.layeredCanvas.imgpanel.getScaleFactor())));
                         lineObj.add(newLine);
                         lineCount++;
+                    }
+                    if (addArrow) {
+                        AnnotationObj newArrow = new AnnotationObj();
+                        newArrow.setMidX(SHAPEORIGIN);
+                        newArrow.setMidY(SHAPEORIGIN);
+                        int x1 = (int) (mouseLocX1 / this.layeredCanvas.imgpanel.getScaleFactor());
+                        int y1 = (int) (mouseLocY1 / this.layeredCanvas.imgpanel.getScaleFactor());
+                        int x2 = (int) (e.getX() / this.layeredCanvas.imgpanel.getScaleFactor());
+                        int y2 = (int) (e.getY() / this.layeredCanvas.imgpanel.getScaleFactor());
+                        newArrow.setLocation(x1, y1, x2, y2);
+                        newArrow.setType("arrow");
+                        //newArrow.setText(setArrowFlipText(x1,y1,x2,y2,selectedShapeOrientation));
+                        arrowObj.add(newArrow);
+                        arrowCount++;
                     }
                     if (addRect) {
                         AnnotationObj newRect = new AnnotationObj();
@@ -1505,6 +1731,24 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             }//
         }
         this.layeredCanvas.imgpanel.mouseReleased(e);
+    }
+    private String setArrowFlipText(int x1,int y1,int x2,int y2, String orientation){
+        String doFlip="";
+//        System.out.println("X1 ,Y1 ,X2 ,Y2 :"+x1+" ,"+y1+" ,"+x2+" ,"+y2);
+//        System.out.println("Orientation : " + orientation);
+        if (x1 > x2 && y1 == y2) {
+            doFlip = "flip";
+        } else if(x1 > x2 && y1 > y2){
+            doFlip = "flip";
+        } else if(x1 > x2 && y1 < y2 && orientation.equalsIgnoreCase("left")){
+            doFlip = "flip";
+        } else if(x1 == x2 && y1 > y2){
+            doFlip = "flip";
+        } else if(x1 < x2 && y1 > y2){
+            doFlip = "flip";
+        } else doFlip="";
+//        System.out.println("Text :"+doFlip);
+        return doFlip;
     }
 
     public void mouseEntered(MouseEvent e) {

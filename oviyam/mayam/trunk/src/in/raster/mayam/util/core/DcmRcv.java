@@ -38,7 +38,6 @@
 package in.raster.mayam.util.core;
 
 import in.raster.mayam.delegate.NetworkQueueUpdateDelegate;
-import in.raster.mayam.form.MainScreen;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
