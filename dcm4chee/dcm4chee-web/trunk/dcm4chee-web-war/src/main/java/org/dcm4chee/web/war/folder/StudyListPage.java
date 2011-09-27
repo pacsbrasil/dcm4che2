@@ -1650,7 +1650,7 @@ public class StudyListPage extends Panel {
                     return StudyPermissionHelper.get().ignoreEditTimeLimit() || !tooOld;
                 }
             };
-            image = tooOld ? new Image("unlinkImg", ImageManager.IMAGE_FOLDER_TIMELIMIT_LINK) : 
+            image = tooOld ? new Image("unlinkImg", ImageManager.IMAGE_FOLDER_TIMELIMIT_UNLINK) : 
                 new Image("unlinkImg", ImageManager.IMAGE_FOLDER_UNLINK);
             image.add(new ImageSizeBehaviour());
             if (tooOld && !StudyPermissionHelper.get().ignoreEditTimeLimit())
