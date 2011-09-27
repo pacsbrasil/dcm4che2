@@ -24,6 +24,12 @@
             <type>ejb</type>
             <classifier>${db}</classifier>
             <version>3.0.1</version>
+            <exclusions>
+	            <exclusion>
+		            <groupId>dcm4che</groupId>
+		            <artifactId>dcm4che-core</artifactId>
+	            </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
@@ -38,17 +44,39 @@
             <type>ejb</type>
             <version>3.0.1</version>
         </dependency>
+		<dependency>
+			<groupId>dcm4che.dcm4chee</groupId>
+			<artifactId>dcm4chee-web-common</artifactId>
+			<version>3.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>dcm4che.dcm4chee</groupId>
+			<artifactId>dcm4chee-web-sar-common</artifactId>
+			<version>3.0.1</version>
+		</dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-ejb</artifactId>
             <type>ejb</type>
             <version>3.0.1</version>
+            <exclusions>
+	            <exclusion>
+		            <groupId>dcm4che</groupId>
+		            <artifactId>dcm4che-core</artifactId>
+	            </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-war</artifactId>
             <type>war</type>
             <version>3.0.1</version>
+            <exclusions>
+	            <exclusion>
+		            <groupId>dcm4che</groupId>
+		            <artifactId>dcm4che-core</artifactId>
+	            </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
@@ -67,66 +95,136 @@
             <artifactId>dcm4chee-web-sar-bridge-store</artifactId>
             <type>sar</type>
             <version>3.0.1</version>
+            <exclusions>
+	            <exclusion>
+		            <groupId>dcm4che</groupId>
+		            <artifactId>dcm4che-core</artifactId>
+	            </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-contentedit</artifactId>
             <type>sar</type>
             <version>3.0.1</version>
+            <exclusions>
+	            <exclusion>
+		            <groupId>dcm4che</groupId>
+		            <artifactId>dcm4che-core</artifactId>
+	            </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-echo</artifactId>
             <type>sar</type>
             <version>3.0.1</version>
+            <exclusions>
+	            <exclusion>
+		            <groupId>dcm4che</groupId>
+		            <artifactId>dcm4che-core</artifactId>
+	            </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-hl7send</artifactId>
             <type>sar</type>
             <version>3.0.1</version>
+            <exclusions>
+	            <exclusion>
+					<groupId>org.regenstrief</groupId>
+					<artifactId>xhl7</artifactId>
+	            </exclusion>
+	            <exclusion>
+		            <groupId>dcm4che</groupId>
+		            <artifactId>dcm4che-core</artifactId>
+	            </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-ianscu</artifactId>
             <type>sar</type>
             <version>3.0.1</version>
+            <exclusions>
+	            <exclusion>
+		            <groupId>dcm4che</groupId>
+		            <artifactId>dcm4che-core</artifactId>
+	            </exclusion>
+            </exclusions>
         </dependency>
     	<dependency>
       		<groupId>dcm4che.dcm4chee</groupId>
       		<artifactId>dcm4chee-web-sar-movescu</artifactId>
       		<type>sar</type>
       		<version>3.0.1</version>
+            <exclusions>
+	            <exclusion>
+		            <groupId>dcm4che</groupId>
+		            <artifactId>dcm4che-core</artifactId>
+	            </exclusion>
+            </exclusions>
     	</dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-rejnotescu</artifactId>
             <type>sar</type>
             <version>3.0.1</version>
+            <exclusions>
+	            <exclusion>
+		            <groupId>dcm4che</groupId>
+		            <artifactId>dcm4che-core</artifactId>
+	            </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-tlscfg</artifactId>
             <type>sar</type>
             <version>3.0.1</version>
+            <exclusions>
+	            <exclusion>
+		            <groupId>dcm4che</groupId>
+		            <artifactId>dcm4che-core</artifactId>
+	            </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-webcfg</artifactId>
             <type>sar</type>
             <version>3.0.1</version>
+            <exclusions>
+	            <exclusion>
+		            <groupId>dcm4che</groupId>
+		            <artifactId>dcm4che-core</artifactId>
+	            </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-modify</artifactId>
             <type>sar</type>
             <version>3.0.1</version>
+            <exclusions>
+	            <exclusion>
+		            <groupId>dcm4che</groupId>
+		            <artifactId>dcm4che-core</artifactId>
+	            </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-mwlscu</artifactId>
             <type>sar</type>
             <version>3.0.1</version>
+            <exclusions>
+	            <exclusion>
+		            <groupId>dcm4che</groupId>
+		            <artifactId>dcm4che-core</artifactId>
+	            </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>net.sf.json-lib</groupId>
