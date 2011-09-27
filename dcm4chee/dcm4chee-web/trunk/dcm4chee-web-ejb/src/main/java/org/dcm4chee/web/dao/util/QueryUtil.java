@@ -149,7 +149,7 @@ public class QueryUtil {
             String token = tokens.nextToken();
             switch (token.charAt(0)) {
             case '%':
-                param.append("\\%");
+                param.append("\\\\%");
                 break;
             case '*':
                 param.append('%');
@@ -158,7 +158,7 @@ public class QueryUtil {
                 param.append('_');
                 break;
             case '_':
-                param.append("\\_");
+                param.append("\\\\_");
                 break;
             default:
                 param.append(token);
@@ -177,7 +177,7 @@ public class QueryUtil {
             } else if (containsWildcard(value)) {
                 ql.append(" LIKE ");
                 if (needEscape(value)) {
-                    ql.append("'").append(toLike(value)).append("' ESCAPE '\\'");
+                    ql.append("'").append(toLike(value)).append("' ESCAPE '\\\\' ");
                 } else {
                     ql.append(toVarName(fieldName,varName));
                 }
@@ -191,7 +191,7 @@ public class QueryUtil {
         if (value!=null
                 && !"-".equals(value)
                 && !isMustNotNull(value)
-                && !needEscape(value)) {
+                && !(containsWildcard(value) && needEscape(value))) {
             query.setParameter(varName,
                     containsWildcard(value)
                             ? toLike(value)
@@ -207,7 +207,7 @@ public class QueryUtil {
         if (patientName!=null) {
             ql.append(" AND ").append(fieldName).append(" LIKE ");
             if (needEscape(patientName)) {
-                ql.append("'").append(toPatientNameQueryString(patientName)).append("' ESCAPE '\\'");
+                ql.append("'").append(toPatientNameQueryString(patientName)).append("' ESCAPE '\\\\' ");
             } else {
                 ql.append(toVarName(fieldName, varName));
             }
@@ -430,7 +430,7 @@ public class QueryUtil {
             String token = tokens.nextToken();
             switch (token.charAt(0)) {
             case '%':
-                param.append("\\%");
+                param.append("\\\\%");
                 break;
             case '*':
                 param.append('%');
@@ -443,7 +443,7 @@ public class QueryUtil {
                 param.append('^');
                 break;
             case '_':
-                param.append("\\_");
+                param.append("\\\\_");
                 break;
             default:
                 param.append(token);
