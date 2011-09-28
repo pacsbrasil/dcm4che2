@@ -131,10 +131,18 @@ public class ContentEditService extends ServiceMBeanSupport {
     
     private String addMwlAttrsToMppsXsl;
     
+    public boolean isUpdateMwlStatus() {
+        return updateMwlStatus;
+    }
+
+    public void setUpdateMwlStatus(boolean updateMwlStatus) {
+        this.updateMwlStatus = updateMwlStatus;
+    }
     private String[] forwardModifiedToAETs;
     
     private String modifyingSystem;
     private String modifyReason;
+    private boolean updateMwlStatus;
         
     private static final TransformerFactory tf = TransformerFactory.newInstance();
     protected TemplatesDelegate templates = new TemplatesDelegate(this);
@@ -493,7 +501,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, long mwlPk, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsPks, mwlPk, 
+        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsPks, mwlPk, updateMwlStatus,
                 emptyAsDefault(system, modifyingSystem), emptyAsDefault(reason, modifyReason));
         doAfterLinkMppsToMwl(result);
         return result;
@@ -506,7 +514,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public void linkMppsToMwl(String mppsIUID, String rpId, String spsId, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsIUID, rpId, spsId, 
+        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().linkMppsToMwl(mppsIUID, rpId, spsId, updateMwlStatus,
                 emptyAsDefault(system, modifyingSystem), emptyAsDefault(reason, modifyReason));
         doAfterLinkMppsToMwl(result);
     }
@@ -573,7 +581,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
     public boolean unlinkMpps(long pk) {
-        MPPS mpps = lookupMppsToMwlLinkLocal().unlinkMpps(pk, modifyingSystem, modifyReason);
+        MPPS mpps = lookupMppsToMwlLinkLocal().unlinkMpps(pk, updateMwlStatus, modifyingSystem, modifyReason);
         if (mpps != null) {
             DicomObject mppsAttrs = mpps.getAttributes();
             DicomObject patAttrs = mpps.getPatient().getAttributes();

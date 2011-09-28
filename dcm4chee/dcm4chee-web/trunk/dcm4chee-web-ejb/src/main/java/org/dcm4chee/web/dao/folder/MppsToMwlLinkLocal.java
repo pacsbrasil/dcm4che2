@@ -58,10 +58,10 @@ public interface MppsToMwlLinkLocal {
 
     String JNDI_NAME = "dcm4chee-web-ear/MppsToMwlLinkBean/local";
 
-    MppsToMwlLinkResult linkMppsToMwl(String mppsIUID, String rpId, String spsId, String modifyingSystem, String reason);
-    MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, long mwlPk, String modifyingSystem, String reason);
+    MppsToMwlLinkResult linkMppsToMwl(String mppsIUID, String rpId, String spsId, boolean updateMwlStatus, String modifyingSystem, String reason);
+    MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, long mwlPk, boolean updateMwlStatus, String modifyingSystem, String reason);
     MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, DicomObject mwlAttrs, Patient mwlPat, String modifyingSystem, String reason);
-    MPPS unlinkMpps(long pk, String modifyingSystem, String modifyReason);
+    MPPS unlinkMpps(long pk, boolean updateMwlStatus, String modifyingSystem, String modifyReason);
     Map<String, DicomObject> updateSeriesAndStudyAttributes(String[] mppsIuids, DicomObject coerce);
     void updateMPPSAttributes(MPPS mpps, DicomObject attrs);
     List<Patient> selectOrCreatePatient(DicomObject mwlAttrs);

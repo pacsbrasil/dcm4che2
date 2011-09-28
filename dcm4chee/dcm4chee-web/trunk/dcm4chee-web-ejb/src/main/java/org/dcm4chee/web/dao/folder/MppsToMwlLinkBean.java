@@ -86,24 +86,26 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
     private EntityManager em;
 
     @SuppressWarnings("unchecked")
-    public MppsToMwlLinkResult linkMppsToMwl(String mppsIUID, String rpId, String spsId, String modifyingSystem, String reason) {
+    public MppsToMwlLinkResult linkMppsToMwl(String mppsIUID, String rpId, String spsId, boolean updateMwlStatus,
+            String modifyingSystem, String reason) {
         Query qMwl = em.createQuery("select object(m) from MWLItem m where requestedProcedureID = :rpId and scheduledProcedureStepID = :spsId");
         qMwl.setParameter("rpId", rpId).setParameter("spsId", spsId);
         MWLItem mwl = (MWLItem) qMwl.getSingleResult();
         Query qMpps = em.createQuery("select object(m) from MPPS m where sopInstanceUID = :mppsIUID");
         qMpps.setParameter("mppsIUID", mppsIUID);
         List<MPPS> mppss = (List<MPPS>) qMpps.getResultList();
-        return link(mppss, mwl, modifyingSystem, reason);
+        return link(mppss, mwl, updateMwlStatus, modifyingSystem, reason);
     }   
             
     @SuppressWarnings("unchecked")
-    public MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, long mwlPk, String modifyingSystem, String reason) {
+    public MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, long mwlPk, boolean updateMwlStatus, 
+            String modifyingSystem, String reason) {
         Query qMwl = em.createQuery("select object(m) from MWLItem m where pk = :pk");
         qMwl.setParameter("pk", mwlPk);
         MWLItem mwl = (MWLItem) qMwl.getSingleResult();
         Query qMpps = QueryUtil.getQueryForPks(em,"select object(m) from MPPS m where pk ", mppsPks);
         List<MPPS> mppss = (List<MPPS>) qMpps.getResultList(); 
-        return link(mppss, mwl, modifyingSystem, reason);
+        return link(mppss, mwl, updateMwlStatus, modifyingSystem, reason);
     }
 
     @SuppressWarnings("unchecked")
@@ -129,19 +131,26 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         return result;
     }
 
-    private MppsToMwlLinkResult link(List<MPPS> mppss, MWLItem mwl, String modifyingSystem, String reason) {
+    private MppsToMwlLinkResult link(List<MPPS> mppss, MWLItem mwl, boolean updateMwlStatus, String modifyingSystem, String reason) {
         Patient patMpps;
         Patient mwlPat = mwl.getPatient();
         MppsToMwlLinkResult result = new MppsToMwlLinkResult();
         result.setMwl(mwl);
+        DicomObject mwlAttrs = mwl.getAttributes();
         for (MPPS mpps : mppss) {
             patMpps = mpps.getPatient();
             if ( patMpps.getPk() != mwlPat.getPk()) {
                 log.warn("Patient of MPPS("+patMpps.getPatientID()+") and MWL("+mwlPat.getPatientName()+") are different!");
                 result.addStudyToMove(mpps.getSeries().iterator().next().getStudy());
             }
-            link(mpps, mwl.getAttributes(), modifyingSystem, reason);
+            link(mpps, mwlAttrs, modifyingSystem, reason);
             result.addMppsAttributes(mpps);
+        }
+        if (updateMwlStatus) {
+            mwlAttrs.get(Tag.ScheduledProcedureStepSequence).getDicomObject()
+                .putString(Tag.ScheduledProcedureStepStatus, VR.CS, "COMPLETED");
+            mwl.setAttributes(mwlAttrs);
+            em.merge(mwl);
         }
         return result;
     }
@@ -227,7 +236,7 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         }
     }
 
-    public MPPS unlinkMpps(long pk, String modifyingSystem, String modifyReason) {
+    public MPPS unlinkMpps(long pk, boolean updateMwlStatus, String modifyingSystem, String modifyReason) {
         MPPS mpps = em.find(MPPS.class, pk);
         MPPS mppsSav = new MPPS();
         mppsSav.setAttributes(mpps.getAttributes());
@@ -247,16 +256,18 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
             spsId = item.getString(Tag.ScheduledProcedureStepID);
             if (spsId != null) {
                 rpspsIDs.add(rpId+"_"+spsId);
-                try {
-                    qMwl.setParameter("rpId", rpId).setParameter("spsId", spsId);
-                    mwlItem = (MWLItem)qMwl.getSingleResult();
-                    mwlAttrs = mwlItem.getAttributes();
-                    mwlAttrs.get(Tag.ScheduledProcedureStepSequence).getDicomObject()
-                        .putString(Tag.ScheduledProcedureStepStatus, VR.CS, "SCHEDULED");
-                    mwlItem.setAttributes(mwlAttrs);
-                    em.merge(mwlItem);
-                } catch (Exception ignore) {
-                    log.warn("Can't update MWLItem status to SCHEDULED! MWL:"+mwlItem, ignore);
+                if (updateMwlStatus) {
+                    try {
+                        qMwl.setParameter("rpId", rpId).setParameter("spsId", spsId);
+                        mwlItem = (MWLItem)qMwl.getSingleResult();
+                        mwlAttrs = mwlItem.getAttributes();
+                        mwlAttrs.get(Tag.ScheduledProcedureStepSequence).getDicomObject()
+                            .putString(Tag.ScheduledProcedureStepStatus, VR.CS, "SCHEDULED");
+                        mwlItem.setAttributes(mwlAttrs);
+                        em.merge(mwlItem);
+                    } catch (Exception ignore) {
+                        log.warn("Can't update MWLItem status to SCHEDULED! MWL:"+mwlItem, ignore);
+                    }
                 }
             }
         }
