@@ -103,7 +103,7 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     private static final String STRING = String.class.getName();
 
-    private static java.util.logging.Logger log = LoggerFactory.getLogger(ContentEditService.class);
+    private static Logger log = LoggerFactory.getLogger(ContentEditService.class);
     
     private static final String NONE ="NONE";
     private static final String MWL2STORE_XSL = "mwl-cfindrsp2cstorerq.xsl";
