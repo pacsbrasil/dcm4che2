@@ -13,8 +13,6 @@
 	</head>
 	<body>  
         <wicket:panel>
-			<div wicket:id="modal-window" />
-			<div wicket:id="msgWin" />
 			<div class="mpps-info" wicket:id="mppsInfo">
 				<div class="info-title"><span wicket:id="mppsInfoTitle" >[INFO]</span></div>
 				<span class="info-desc" wicket:id="patientName.label" >Patient name:</span>
@@ -149,7 +147,7 @@
 						</td>
 						<td style="text-align: right;" colspan="2">
 							<input type="text" autocomplete="false" style="border:0px; width: 0px; height: 0px; visibility: collapse; display: compact;"/>
-							<input wicket:id="defaultSubmit" type="submit" value="" style="border:0px; width: 0px; height: 0px; visibility: collapse; display: compact;">
+							<input wicket:id="defaultSubmit" type="submit" value="" class="IE_DEFAULT_SUBMIT" />
 								<div wicket:id="aetSelect.label" class="search-header">MWL SCP AETs:</div>
 								<select wicket:id="aetSelect" style="margin-left: 5px;"/>
          						<button wicket:id="resetBtn" >
@@ -221,6 +219,8 @@
 					</tbody>
 			   </table>
 			</div>
+			<div wicket:id="modal-window" />
+			<div wicket:id="msgWin" />
         </wicket:panel>	
     </body>
 </html>

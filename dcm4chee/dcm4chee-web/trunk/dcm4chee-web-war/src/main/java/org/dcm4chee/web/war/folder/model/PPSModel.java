@@ -307,4 +307,9 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
         numberOfInstances = 0;
         return this;
     }    
+
+    @Override
+    public String toString() {
+        return "MPPS: "+this.getUid();
+    }
 }
