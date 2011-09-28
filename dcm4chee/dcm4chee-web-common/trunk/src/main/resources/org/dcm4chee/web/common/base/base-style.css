@@ -115,3 +115,6 @@ div.edit-content div.edit-table-panel { width: 100%; }
 div.edit-table-panel div.edit-table-row { float: left; width: 100%; background: #A0D8C4; height: 30px;}
 .edit-attrname { border: none; float: left; text-align: left; vertical-align: middle; margin: 2px 6px 0px; width: 50%;}
 div.edit-buttons { background: none #AAAAAA; width: 100%; height: 20px; text-align: center; vertical-align: middle; float: left;}
+
+input.IE_DEFAULT_SUBMIT {color: #FFFFFF; background-color: #FFFFFF; border: none; width: 1px; height: 1px; }
+	
