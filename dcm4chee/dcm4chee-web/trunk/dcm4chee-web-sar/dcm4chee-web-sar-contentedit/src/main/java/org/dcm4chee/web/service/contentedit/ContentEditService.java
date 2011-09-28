@@ -103,7 +103,7 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     private static final String STRING = String.class.getName();
 
-    private static Logger log = LoggerFactory.getLogger(ContentEditService.class);
+    private static java.util.logging.Logger log = LoggerFactory.getLogger(ContentEditService.class);
     
     private static final String NONE ="NONE";
     private static final String MWL2STORE_XSL = "mwl-cfindrsp2cstorerq.xsl";
@@ -571,6 +571,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                 for (MPPS mpps : mppss) {
                     mppsAttrs = mpps.getAttributes();
                     CoercionUtil.coerceAttributes(mppsAttrs, coerce);
+                    log.info("MPPS attributes with MWL attributes:"+mppsAttrs);
                     lookupMppsToMwlLinkLocal().updateMPPSAttributes(mpps, mppsAttrs);
                 }
             } else {
