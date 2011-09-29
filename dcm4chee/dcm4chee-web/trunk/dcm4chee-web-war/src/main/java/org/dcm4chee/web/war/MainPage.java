@@ -123,10 +123,11 @@ public class MainPage extends SecureWicketPage {
             Properties properties = new Properties();
             properties.load(((BaseWicketApplication) getApplication()).getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));
             selectorPanel.get("img_logo").add(new AttributeModifier("title", true, 
-                    new Model<String>((
-                            (properties.getProperty("Implementation-Title") == null ? "" : properties.getProperty("Implementation-Title"))
-                            + ": "
-                            + (properties.getProperty("Implementation-Build") == null ? "" : properties.getProperty("Implementation-Build"))))));            
+                    new Model<String>(
+                            properties.getProperty("Implementation-Title", "")
+                            + " : " + properties.getProperty("Implementation-Build", "")
+                            + " (" + properties.getProperty("SCM-Revision", "?")+")"
+                            )));            
         } catch (Exception ignore) {}
     }    
 }

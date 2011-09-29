@@ -241,11 +241,16 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.0</version>
+                <version>2.0.2</version>
                 <configuration>
+			        <manifest>
+			        	<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+			        </manifest>
                     <archive> 
                         <manifestEntries>
+                            <Implementation-Title>DCM4CHEE-WEB</Implementation-Title>
                             <Implementation-Build>${pom.version}</Implementation-Build>
+                            <SCM-Revision>${buildNumber}</SCM-Revision>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -254,9 +259,30 @@
                 <groupId>org.mortbay.jetty</groupId>
                 <artifactId>maven-jetty-plugin</artifactId>
             </plugin>
+			<plugin>
+			  <groupId>org.codehaus.mojo</groupId>
+			  <artifactId>buildnumber-maven-plugin</artifactId>
+			  <version>1.0</version>
+			  <executions>
+			    <execution>
+			      <phase>validate</phase>
+			      <goals>
+			        <goal>create</goal>
+			      </goals>
+			    </execution>
+			  </executions>
+			  <configuration>
+			    <doCheck>false</doCheck>
+			    <doUpdate>false</doUpdate>
+			  </configuration>
+			</plugin>
         </plugins>
     </build>
     <properties>
         <jetty.version>6.1.4</jetty.version>
     </properties>
+	<scm>
+		<connection>scm:svn:http://dcm4che.svn.sourceforge.net/svnroot</connection>
+		<url>scm:svn:http://dcm4che.svn.sourceforge.net/svnroot</url>
+	</scm>
 </project>
