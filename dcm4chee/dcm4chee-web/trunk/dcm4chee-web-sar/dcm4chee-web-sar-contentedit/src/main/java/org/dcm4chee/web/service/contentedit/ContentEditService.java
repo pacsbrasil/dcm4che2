@@ -566,15 +566,20 @@ public class ContentEditService extends ServiceMBeanSupport {
                 DicomObject coerce = new BasicDicomObject();
                 Templates[] tpls = dcm14xsl ? new Templates[]{dcm2To14Tpl,tpl,dcm14To2Tpl} : new Templates[]{tpl};
                 XSLTUtils.xslt(result.getMwl().getAttributes(), tpls, coerce, null);
-                List<MPPS> mppss = result.getMppss();
-                DicomObject mppsAttrs;
-                for (MPPS mpps : mppss) {
-                    mppsAttrs = mpps.getAttributes();
-                    log.info("MPPS attributes before addMwlAttrs2Mpps:"+mppsAttrs);
-                    log.info("Coercion Attrs:"+coerce);
-                    CoercionUtil.coerceAttributes(mppsAttrs, coerce);
-                    log.info("MPPS attributes with MWL attributes:"+mppsAttrs);
-                    lookupMppsToMwlLinkLocal().updateMPPSAttributes(mpps, mppsAttrs);
+                if (coerce.isEmpty()) {
+                    log.warn("No coercion dataset from MWL via addMwlAttrsToMppsXsl:"+addMwlAttrsToMppsXsl);
+                    log.warn("Please check stylesheet! (dcm4che14 vs. dcm4che2 xml format)");
+                } else {
+                    List<MPPS> mppss = result.getMppss();
+                    DicomObject mppsAttrs;
+                    for (MPPS mpps : mppss) {
+                        mppsAttrs = mpps.getAttributes();
+                        log.debug("MPPS attributes before addMwlAttrs2Mpps:"+mppsAttrs);
+                        log.debug("Coercion Attrs:"+coerce);
+                        CoercionUtil.coerceAttributes(mppsAttrs, coerce);
+                        log.debug("MPPS attributes with MWL attributes:"+mppsAttrs);
+                        lookupMppsToMwlLinkLocal().updateMPPSAttributes(mpps, mppsAttrs);
+                    }
                 }
             } else {
                 log.info("Can not add MWL attributes to MPPS Linked notification! addMwlAttrsToMppsXsl stylesheet file not found! file:"+f);
