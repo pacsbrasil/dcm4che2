@@ -1016,11 +1016,8 @@ public class StudyListPage extends Panel {
                 try {
                     if (ContentEditDelegate.getInstance().unlink(ppsModel)) {
                         setStatus(new StringResourceModel("folder.message.unlinkDone", StudyListPage.this,null));
-                        if (selected.hasPatients()) {
-                            viewport.getPatients().clear();
-                            queryStudies(target);
-                        } else
-                            selected.refreshView(true);
+                        ppsModel.getStudy().expand();
+                        ppsModel.getStudy().refresh();
                     } else 
                         setStatus(new StringResourceModel("folder.message.unlinkFailed", StudyListPage.this,null));
                 } catch (Throwable t) {

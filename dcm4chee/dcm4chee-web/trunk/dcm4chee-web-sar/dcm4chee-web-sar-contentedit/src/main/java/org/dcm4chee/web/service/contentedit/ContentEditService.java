@@ -570,6 +570,8 @@ public class ContentEditService extends ServiceMBeanSupport {
                 DicomObject mppsAttrs;
                 for (MPPS mpps : mppss) {
                     mppsAttrs = mpps.getAttributes();
+                    log.info("MPPS attributes before addMwlAttrs2Mpps:"+mppsAttrs);
+                    log.info("Coercion Attrs:"+coerce);
                     CoercionUtil.coerceAttributes(mppsAttrs, coerce);
                     log.info("MPPS attributes with MWL attributes:"+mppsAttrs);
                     lookupMppsToMwlLinkLocal().updateMPPSAttributes(mpps, mppsAttrs);
