@@ -155,7 +155,7 @@ public class HPNavigationGroup {
     }
     
     public void updateDicomObject() {
-        if (navDisplaySet != null) {
+        if (navDisplaySet == null) {
             dcmobj.remove(Tag.NavigationDisplaySet);
         } else {
             dcmobj.putInt(Tag.NavigationDisplaySet, VR.US,
