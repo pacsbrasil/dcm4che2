@@ -191,7 +191,7 @@ public final class AttributeFilter {
         this.noFilter = noFilter;
     }
     
-    final boolean isExclude() {
+    public final boolean isExclude() {
         return exclude;
     }
     
