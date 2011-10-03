@@ -251,8 +251,8 @@ public abstract class StorageBean implements SessionBean {
         } catch (ObjectNotFoundException e) {
             try {
                 sofHome.create(studyHome.findByStudyIuid(siud), fs);
-            } catch (CreateException ignore) {
-                // Check if concurrent create
+            } catch (Exception ignore) {
+                log.info("Create StudyOnFS failed! Check if concurrent create.", ignore);
                 sofHome.findByStudyAndFileSystem(siud, dirPath).touch();
             }
         }

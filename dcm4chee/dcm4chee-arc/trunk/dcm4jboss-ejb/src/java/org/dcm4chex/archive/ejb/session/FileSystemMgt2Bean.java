@@ -1163,8 +1163,8 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             try {
                 sofHome.create(studyHome.findByStudyIuid(siud), fileSystemHome
                         .findByDirectoryPath(dirPath));
-            } catch (CreateException ignore) {
-                // Check if concurrent create
+            } catch (Exception ignore) {
+                log.info("Create StudyOnFS failed! Check if concurrent create.", ignore);
                 sofHome.findByStudyAndFileSystem(siud, dirPath).touch();
             }
         }
