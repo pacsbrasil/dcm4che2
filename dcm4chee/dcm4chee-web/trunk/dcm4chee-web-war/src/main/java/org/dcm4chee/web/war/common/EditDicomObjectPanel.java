@@ -44,6 +44,7 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
@@ -59,6 +60,7 @@ import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4che2.data.BasicDicomObject;
@@ -74,6 +76,7 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
+import org.dcm4chee.web.common.secure.SecurityBehavior;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -109,6 +112,17 @@ public class EditDicomObjectPanel extends Panel {
             title = new Model<String>("DICOM Edit");
         }
         add(new Label("title", title));
+        add(new AjaxCheckBox("allowAll", new PropertyModel<Boolean>(editable, "allowAll")) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                System.out.println("allowAll changed: allowAll"+editable.isAllowAll());
+                target.addComponent(table);
+            }
+            
+        }.add(new SecurityBehavior("edit:allowAll")));
+        add(new Label("allowAllLabel", new ResourceModel("edit.allowAll")).add(new SecurityBehavior("edit:allowAll")));
         this.dcmObj = new BasicDicomObject();
         dcmObj.copyTo(this.dcmObj);
         Form<?> form = new Form<Object>("form");

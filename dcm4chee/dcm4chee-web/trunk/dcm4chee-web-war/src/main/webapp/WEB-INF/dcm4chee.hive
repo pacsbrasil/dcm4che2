@@ -307,3 +307,9 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "E
     permission ${ComponentPermission} "org.dcm4chee.web.common.base.ExternalWebAppGroupPanel", "render, enable";
     permission ${ComponentPermission} "org.apache.wicket.markup.html.panel.EmptyPanel", "render, enable";
 };
+
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "EditAllowAll"
+{
+// KEY: swarm.principal.EditAllowAll
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:edit:allowAll", "render, enable";
+};

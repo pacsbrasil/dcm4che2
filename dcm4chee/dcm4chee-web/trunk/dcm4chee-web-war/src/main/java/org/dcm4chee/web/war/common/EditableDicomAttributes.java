@@ -75,10 +75,12 @@ public class EditableDicomAttributes implements Serializable {
     private static final String BASE_ATTR_MODEL_NAME = "BASE";
     private static Logger log = LoggerFactory.getLogger(EditableDicomAttributes.class);
     
+    private String attrModelName;
     private static Map<String,DicomObject> allEditableAttrs = new HashMap<String,DicomObject>();
     private static Map<String,Long> fileLastModified = new HashMap<String, Long>();
     private DicomObject editableAttrs;
     private boolean useNullForRemoveTag;
+    private boolean allowAll;
     
     public EditableDicomAttributes(String attrModelName) {
         prepare(attrModelName == null ? BASE_ATTR_MODEL_NAME : attrModelName);
@@ -87,12 +89,22 @@ public class EditableDicomAttributes implements Serializable {
     }
 
     private void prepare(String attrModelName) {
+        this.attrModelName = attrModelName;
         load(attrModelName);
         editableAttrs = allEditableAttrs.get(attrModelName);
         if (editableAttrs == null && !BASE_ATTR_MODEL_NAME.equals(attrModelName)) {
             editableAttrs = load(BASE_ATTR_MODEL_NAME);
         }
         log.info("Select Attribute filter for modeName:"+attrModelName);
+        AttributeFilter filter = getAttributeFilter(attrModelName);
+            log.info("selected Attribute Filter:"+filter);
+        if (editableAttrs != null && filter != null) {
+            editableAttrs = filter.filter(editableAttrs);
+        }
+        log.info("(filtered) Editable DICOM attributes for modelName "+attrModelName+":"+editableAttrs);
+    }
+
+    private AttributeFilter getAttributeFilter(String attrModelName) {
         AttributeFilter filter = "PatientModel".equals(attrModelName) ? AttributeFilter.getPatientAttributeFilter() :
             "StudyModel".equals(attrModelName) ? AttributeFilter.getStudyAttributeFilter() :
             "SeriesModel".equals(attrModelName) ? AttributeFilter.getSeriesAttributeFilter() :
@@ -100,11 +112,7 @@ public class EditableDicomAttributes implements Serializable {
             "PPSModel".equals(attrModelName) ? AttributeFilter.getExcludePatientAttributeFilter() :
             "MWLItemModel".equals(attrModelName) ? AttributeFilter.getExcludePatientAttributeFilter() :
             null;
-            log.info("selected Attribute Filter:"+filter);
-        if (editableAttrs != null && filter != null) {
-            editableAttrs = filter.filter(editableAttrs);
-        }
-        log.info("(filtered) Editable DICOM attributes for modelName "+attrModelName+":"+editableAttrs);
+        return filter;
     }
     
     public static DicomObject load(String attrModelName) {
@@ -153,7 +161,12 @@ public class EditableDicomAttributes implements Serializable {
     }
 
     public boolean isEditable(int[] tagPath) {
-        return editableAttrs == null ? true : isEditable(tagPath, null);
+        if (allowAll || editableAttrs == null) {
+            AttributeFilter filter = getAttributeFilter(attrModelName);
+            return filter == null ? true : filter.hasTag(tagPath[0]) ^ filter.isExclude();
+        } else {
+            return isEditable(tagPath, null);
+        }
     }
 
     private boolean isEditable(int[] tagPath, Integer childTag) {
@@ -186,6 +199,14 @@ public class EditableDicomAttributes implements Serializable {
 
     public boolean isUseNullForRemoveTag() {
         return useNullForRemoveTag;
+    }
+
+    public boolean isAllowAll() {
+        return allowAll;
+    }
+
+    public void setAllowAll(boolean allowAll) {
+        this.allowAll = allowAll;
     }
 
     private static void loadDicomObject(InputStream is, DicomObject dcmobj) throws FactoryConfigurationError, ParserConfigurationException, 

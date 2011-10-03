@@ -12,7 +12,13 @@
 	<body>
 		<wicket:panel>
 			<div class="msgWindow">
-				<div wicket:id="title" class="edit-title" />
+				<div class="edit-title">
+					<span wicket:id="title">Edit DIOCOM object</span>
+				</div>
+				<div class="edit-title-right">
+					<input type="checkbox" wicket:id="allowAll" />
+					<span wicket:id="allowAllLabel">Allow all</span>
+				</div>
 			  	<form wicket:id="form">
 				  <table wicket:id="table" class="content-table">
 				    <thead>
