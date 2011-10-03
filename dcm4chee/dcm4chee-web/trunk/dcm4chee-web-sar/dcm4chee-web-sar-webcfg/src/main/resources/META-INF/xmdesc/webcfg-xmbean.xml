@@ -301,6 +301,7 @@
       	<dd>wado:      WADO image window</dd>
       	<dd>aeEdit:    Edit window in AE Managment</dd>
       	<dd>mpps2mwl:  MPPS to MWL link window</dd>
+      	<dd>linkToOld: MPPS to MWL 'Too old' confirmation window</dd>
       	<dd>move:      Move Entities Window</dd>
       	<dd>studyPerm: Study Permission window in Folder</dd>
       	<dd>addDicomRole: Add dicom role window in study permission window</dd>
@@ -329,6 +330,7 @@
          	aeEdit:960x700
          	mwEdit:1024x768
          	mpps2mwl:1024x600
+         	linkToOld:480x200
          	move:900x320
             addDicomRole:570x350
             addUser:400x300

@@ -1587,6 +1587,8 @@ public class StudyListPage extends Panel {
                 public void onClick(AjaxRequestTarget target) {
                     log.debug("#### linkBtn clicked!");
                     if (tooOld) {
+                        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("linkToOld");
+                        confirmLinkMpps.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
                         confirmLinkMpps.confirm(target, 
                                 new StringResourceModel("folder.message.tooOld.link",this, null), 
                                 ppsModel);
