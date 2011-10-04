@@ -90,6 +90,7 @@ import org.dcm4che2.io.StopTagInputHandler;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.entity.MPPS;
+import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.service.common.delegate.JMSDelegate;
@@ -724,16 +725,16 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
         if ((unlink && unlinkMsgType != null) || (!unlink && linkMsgType != null)) {
             log.info("scheduleMPPS2ORM mppss:"+mppss);
             for (MPPS mpps : mppss) {
-                scheduleMPPS2ORM(mpps, unlink);
+                scheduleMPPS2ORM(mpps, result.getMwl(), unlink);
             }
         } else {
             log.info("Link notification ignored! "+(unlink ? "UNLINK" : "LINK")+" is disabled!");
         }
     }
 
-    private void scheduleMPPS2ORM(MPPS mpps, boolean unlink) throws Exception {
+    private void scheduleMPPS2ORM(MPPS mpps, MWLItem mwl, boolean unlink) throws Exception {
         DicomObject mppsAttrs = mpps.getAttributes();
-        DicomObject patAttrs = mpps.getPatient().getAttributes(); 
+        DicomObject patAttrs = mwl != null ? mwl.getPatient().getAttributes() : mpps.getPatient().getAttributes(); 
         patAttrs.copyTo(mppsAttrs);
         DicomElement ssaSq = mppsAttrs.get(Tag.ScheduledStepAttributesSequence);
         log.info("ScheduledStepAttributesSequence:"+ssaSq);
