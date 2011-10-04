@@ -1948,6 +1948,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
         currentInstanceNo--;
         Instance instance = instanceArray.get(currentInstanceNo);
+        if(instance!=null)
+            dicomFileUrl=instance.getFilepath();
         if (instance.isMultiframe()) {
             this.getCanvas().getLayeredCanvas().textOverlay.multiframeStatusDisplay(true);
             this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setFramePosition((instance.getCurrentFrameNum() + 1) + "/" + instance.getTotalNumFrames());
@@ -1984,6 +1986,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             currentInstanceNo = 0;
         }
         Instance instance = instanceArray.get(currentInstanceNo);
+        if(instance!=null)
+            dicomFileUrl=instance.getFilepath();
         if (instance.isMultiframe()) {
             this.getCanvas().getLayeredCanvas().textOverlay.multiframeStatusDisplay(true);
             this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setFramePosition((instance.getCurrentFrameNum() + 1) + "/" + instance.getTotalNumFrames());

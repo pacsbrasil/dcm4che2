@@ -918,6 +918,8 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         }
         currentInstanceNo--;
         Instance instance = instanceArray.get(currentInstanceNo);
+        if(instance!=null)
+            ApplicationContext.mainScreen.getCanvas().setFilePath(instance.getFilepath());        
         dicomFileUrl = instance.getFilepath();
         if (instance.isMultiframe()) {
             this.getCanvas().getLayeredCanvas().textOverlay.multiframeStatusDisplay(true);
@@ -940,6 +942,8 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
             currentInstanceNo = 0;
         }
         Instance instance = instanceArray.get(currentInstanceNo);
+        if(instance!=null)
+            ApplicationContext.mainScreen.getCanvas().setFilePath(instance.getFilepath());
         dicomFileUrl = instance.getFilepath();
         if (instance.isMultiframe()) {
             this.getCanvas().getLayeredCanvas().textOverlay.multiframeStatusDisplay(true);
