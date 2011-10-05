@@ -95,7 +95,6 @@ public class CreateOrEditAETPage extends SecureWebPage {
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     
     private Model<String> resultMessage;
-//    private final IModel<String> typeSelectionModel = new Model<String>();
     
     public CreateOrEditAETPage(final ModalWindow window, final AE ae, final AEListPanel panel) {
         super();
