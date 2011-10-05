@@ -60,6 +60,8 @@ public class QueryUtil {
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
     
+    private static final String ESCAPE_CHAR = "|";
+    
     public static Query getQueryForPks(EntityManager em, String base, long[] pks) {
         Query q;
         int len=pks.length;
@@ -149,7 +151,7 @@ public class QueryUtil {
             String token = tokens.nextToken();
             switch (token.charAt(0)) {
             case '%':
-                param.append("\\\\%");
+                param.append(ESCAPE_CHAR+"%");
                 break;
             case '*':
                 param.append('%');
@@ -158,7 +160,7 @@ public class QueryUtil {
                 param.append('_');
                 break;
             case '_':
-                param.append("\\\\_");
+                param.append(ESCAPE_CHAR+"_");
                 break;
             default:
                 param.append(token);
@@ -177,7 +179,7 @@ public class QueryUtil {
             } else if (containsWildcard(value)) {
                 ql.append(" LIKE ");
                 if (needEscape(value)) {
-                    ql.append("'").append(toLike(value)).append("' ESCAPE '\\\\' ");
+                    ql.append("'").append(toLike(value)).append("' ESCAPE '"+ESCAPE_CHAR+"' ");
                 } else {
                     ql.append(toVarName(fieldName,varName));
                 }
@@ -207,7 +209,7 @@ public class QueryUtil {
         if (patientName!=null) {
             ql.append(" AND ").append(fieldName).append(" LIKE ");
             if (needEscape(patientName)) {
-                ql.append("'").append(toPatientNameQueryString(patientName)).append("' ESCAPE '\\\\' ");
+                ql.append("'").append(toPatientNameQueryString(patientName)).append("' ESCAPE '"+ESCAPE_CHAR+"' ");
             } else {
                 ql.append(toVarName(fieldName, varName));
             }
@@ -430,7 +432,7 @@ public class QueryUtil {
             String token = tokens.nextToken();
             switch (token.charAt(0)) {
             case '%':
-                param.append("\\\\%");
+                param.append(ESCAPE_CHAR+"%");
                 break;
             case '*':
                 param.append('%');
@@ -443,7 +445,7 @@ public class QueryUtil {
                 param.append('^');
                 break;
             case '_':
-                param.append("\\\\_");
+                param.append(ESCAPE_CHAR+"_");
                 break;
             default:
                 param.append(token);
