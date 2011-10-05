@@ -96,6 +96,11 @@ public class WeasisLinkProvider extends WebviewerLinkProviderSPI {
     }
 
     @Override
+    public boolean supportStructuredReport() {
+        return false;
+    }
+
+    @Override
     public String getUrlForPatient(String patientId, String issuer) {
         return baseUrl + "patientID=" + patientId;
     }
@@ -124,4 +129,10 @@ public class WeasisLinkProvider extends WebviewerLinkProviderSPI {
     public String getUrlForKeyObjectSelection(String iuid) {
         return null;
     }
+
+    @Override
+    public String getUrlForStructuredReport(String arg0) {
+        return null;
+    }
+
 }
