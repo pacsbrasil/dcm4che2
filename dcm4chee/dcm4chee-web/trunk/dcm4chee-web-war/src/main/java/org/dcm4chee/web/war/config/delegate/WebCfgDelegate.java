@@ -272,6 +272,10 @@ public class WebCfgDelegate extends BaseCfgDelegate {
     public List<String> getTCRestrictedSourceAETList() {
         return getStringList("getTCRestrictedSourceAETList");
     }
+    
+    public Map<String, String> getTCKeywordCataloguesAsString() {
+        return getStringMap("getTCKeywordCataloguesMap");
+    }
 
     public Map<String, KeywordCatalogue> getTCKeywordCatalogues() {
         Map<String, String> map = getStringMap("getTCKeywordCataloguesMap");

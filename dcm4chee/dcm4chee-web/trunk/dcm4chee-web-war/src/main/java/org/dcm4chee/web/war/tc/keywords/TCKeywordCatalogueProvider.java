@@ -77,48 +77,142 @@ public class TCKeywordCatalogueProvider {
     private static TCKeywordCatalogueProvider instance;
 
     private final WebCfgDelegate configDelegate;
+    
+    private String customCataloguePath;
+    
+    private Map<String, TCKeywordCatalogue> idsToCatalogues;
 
-    private Map<String, TCKeywordCatalogue> catalogues;
+    private Map<TCQueryFilterKey, TCKeywordCatalogue> keysToCatalogues;
 
-    private Map<TCQueryFilterKey, TCKeywordCatalogue> catalogueMap;
-
+    private Map<String, String> keysToCatalogueIds;
+    
     private TCKeywordCatalogueProvider() {
         configDelegate = WebCfgDelegate.getInstance();
-        catalogues = new HashMap<String, TCKeywordCatalogue>();
-        catalogueMap = new HashMap<TCQueryFilterKey, TCKeywordCatalogue>();
+        customCataloguePath = configDelegate.getTCKeywordCataloguesPath();
+        idsToCatalogues = readAllCatalogues(customCataloguePath);
+        keysToCatalogues = assignCatalogues(idsToCatalogues);
+    }
 
-        Map<String, KeywordCatalogue> configuredCatalogues = configDelegate
-                .getTCKeywordCatalogues();
+    public static synchronized TCKeywordCatalogueProvider getInstance() {
+        if (instance == null) {
+            instance = new TCKeywordCatalogueProvider();
+        }
 
-        if (configuredCatalogues != null && !configuredCatalogues.isEmpty()) {
-            // read in ACR keyword catalogue
-            ACRCatalogue acr = ACRCatalogue.getInstance();
-            catalogues.put(acr.getDesignatorId() + ID_DELIMITER + acr.getId(),
-                    acr);
+        return instance;
+    }
 
-            log.info("Added teaching-file keyword catalogue: " + acr);
+    public boolean hasCatalogue(TCQueryFilterKey key) {
+        checkAndInitCatalogues();
+        
+        return keysToCatalogues.containsKey(key);
+    }
 
-            // read in custom keyword catalogues
-            List<TCKeywordCatalogue> customCatalogues = findCustomInstances(configDelegate
-                    .getTCKeywordCataloguesPath());
-            for (TCKeywordCatalogue c : customCatalogues) {
-                catalogues.put(c.getDesignatorId() + ID_DELIMITER + c.getId(),
-                        c);
+    public TCKeywordCatalogue getCatalogue(TCQueryFilterKey key) {
+        checkAndInitCatalogues();
+        
+        return keysToCatalogues.get(key);
+    }
+    
+    private void checkAndInitCatalogues()
+    {
+        // if the custom catalogue path OR the number of catalogues (i.e files) has changed
+        // -> need to read all catalogues again
+        String confPath = configDelegate.getTCKeywordCataloguesPath();
+        if (!customCataloguePath.equals(confPath) ||
+            idsToCatalogues.size()-1!=getNumberOfCustomCatalogues(confPath))
+        {
+            customCataloguePath = confPath;
+            idsToCatalogues = readAllCatalogues(confPath);
+            keysToCatalogues = assignCatalogues(idsToCatalogues);
+            
+            log.info("Full update of tc keyword catalogues and settings");
+        }
+        else
+        {
+            // check, if the one of the custom catalogue's source file has changed
+            // -> if so, need to re-read the catalogue
+            Map<String, File> toRead = null;
+            for (Map.Entry<String, TCKeywordCatalogue> me : idsToCatalogues.entrySet())
+            {
+                TCKeywordCatalogue c = me.getValue();
+                if (c instanceof ICustomTCKeywordCatalogue)
+                {
+                    ICustomTCKeywordCatalogue custom = (ICustomTCKeywordCatalogue) c;
+                    File sourceFile = custom.getSourceFile();
+                    
+                    if (sourceFile!=null && sourceFile.lastModified()!=custom.getLastModified())
+                    {
+                        if (toRead==null)
+                        {
+                            toRead = new HashMap<String, File>(2);
+                        }
+                        
+                        if (!toRead.containsKey(me.getKey()))
+                        {
+                            toRead.put(me.getKey(), sourceFile);
+                        }
+                    }
+                }
             }
+            
+            if (toRead!=null)
+            {
+                for (Map.Entry<String, File> me : toRead.entrySet())
+                {
+                    try 
+                    {
+                        TCKeywordCatalogue cat = readCustomCatalogue(me.getValue());
+                        
+                        if (cat!=null)
+                        {
+                            idsToCatalogues.remove(me.getKey());
+                            idsToCatalogues.put(cat.getDesignatorId() + ID_DELIMITER + cat.getId(), cat);
 
-            for (Map.Entry<String, KeywordCatalogue> me : configuredCatalogues
-                    .entrySet()) {
+                            log.info("Updated teaching-file keyword catalogue: "
+                                    + cat);
+                        }
+                    } 
+                    catch (Exception e) {
+                        log.error(
+                                "Parsing teaching-file keyword catalogue failed! Invalid syntax in file "
+                                        + me.getValue().getAbsolutePath(), e);
+                    }
+                }
+            }
+            
+            // and finally check, if the assignment of tc keys -> catalogues has changed
+            // if so, re-assign catalogues again
+            if (toRead!=null || !keysToCatalogueIds.equals(configDelegate.getTCKeywordCataloguesAsString()))
+            {
+                keysToCatalogues = assignCatalogues(idsToCatalogues);
+                
+                log.info("Updated teaching-file keyword catalogue assignments");
+            }
+        }
+    }
+        
+    
+    private Map<TCQueryFilterKey, TCKeywordCatalogue> assignCatalogues(Map<String, TCKeywordCatalogue> idsToCatalogues)
+    {
+        Map<TCQueryFilterKey, TCKeywordCatalogue> assignedCatalogues = new HashMap<TCQueryFilterKey, TCKeywordCatalogue>();
+        
+        if (idsToCatalogues!=null && !idsToCatalogues.isEmpty())
+        {
+            keysToCatalogueIds = configDelegate.getTCKeywordCataloguesAsString();
+            
+            Map<String, KeywordCatalogue> configuredCatalogues = configDelegate.getTCKeywordCatalogues();
+            
+            for (Map.Entry<String, KeywordCatalogue> me : configuredCatalogues.entrySet()) {
                 try {
-                    TCQueryFilterKey key = TCQueryFilterKey
-                            .valueOf(me.getKey());
-
+                    TCQueryFilterKey key = TCQueryFilterKey.valueOf(me.getKey());
+    
                     if (key != null) {
-                        TCKeywordCatalogue catalogue = catalogues.get(me
+                        TCKeywordCatalogue catalogue = idsToCatalogues.get(me
                                 .getValue().getDesignator()
                                 + ID_DELIMITER
                                 + me.getValue().getId());
                         if (catalogue != null) {
-                            catalogueMap.put(key, catalogue);
+                            assignedCatalogues.put(key, catalogue);
                         } else {
                             log.warn("Configured keyword catalogue not supported: "
                                     + me.getValue().toString());
@@ -132,87 +226,60 @@ public class TCKeywordCatalogueProvider {
                 }
             }
         }
+        
+        return assignedCatalogues;
     }
+    
+    
+    private Map<String, TCKeywordCatalogue> readAllCatalogues(String customCataloguePath)
+    {
+        Map<String, TCKeywordCatalogue> catalogues = new HashMap<String, TCKeywordCatalogue>();
+        
+        // read in ACR keyword catalogue
+        ACRCatalogue acr = ACRCatalogue.getInstance();
+        catalogues.put(acr.getDesignatorId() + ID_DELIMITER + acr.getId(),
+                acr);
 
-    public static synchronized TCKeywordCatalogueProvider getInstance() {
-        if (instance == null) {
-            instance = new TCKeywordCatalogueProvider();
+        log.info("Added teaching-file keyword catalogue: " + acr);
+
+        // read in custom keyword catalogues
+        if (customCataloguePath!=null && !customCataloguePath.isEmpty())
+        {
+            catalogues.putAll(readCustomCatalogues(customCataloguePath));
         }
-
-        return instance;
+        
+        return catalogues;
     }
+    
 
-    public boolean hasCatalogue(TCQueryFilterKey key) {
-        return catalogueMap.containsKey(key);
-    }
-
-    public TCKeywordCatalogue getCatalogue(TCQueryFilterKey key) {
-        return catalogueMap.get(key);
-    }
-
-    private List<TCKeywordCatalogue> findCustomInstances(String path) {
+    private Map<String, TCKeywordCatalogue> readCustomCatalogues(String path) {
         if (path != null) {
             File file = FileUtils.resolve(new File(path));
 
             if (file.exists()) {
-                List<TCKeywordCatalogue> catalogues = new ArrayList<TCKeywordCatalogue>();
+                Map<String, TCKeywordCatalogue> catalogues = new HashMap<String, TCKeywordCatalogue>();
 
                 File[] candidates = file.isDirectory() ? file.listFiles()
                         : new File[] { file };
                 if (candidates != null) {
                     for (File f : candidates) {
                         if (f.getAbsolutePath().endsWith(".xml")) {
-                            FileInputStream fis = null;
-
-                            try {
-                                fis = new FileInputStream(f);
-
-                                DocumentBuilderFactory dbf = DocumentBuilderFactory
-                                        .newInstance();
-
-                                dbf.setValidating(false);
-                                dbf.setIgnoringComments(true);
-                                dbf.setIgnoringElementContentWhitespace(true);
-                                dbf.setNamespaceAware(true);
-
-                                Document doc = dbf.newDocumentBuilder().parse(
-                                        fis);
-
-                                if (doc.getElementsByTagName("simple-list").getLength() > 0) //$NON-NLS-1$
+                            try 
+                            {
+                                TCKeywordCatalogue cat = readCustomCatalogue(f);
+                                
+                                if (cat!=null)
                                 {
-                                    TCKeywordCatalogue cat = TCKeywordCatalogueXMLList
-                                            .createInstance(doc);
-
-                                    catalogues.add(cat);
+                                    catalogues.put(cat.getDesignatorId() + ID_DELIMITER + cat.getId(), cat);
 
                                     log.info("Added teaching-file keyword catalogue: "
                                             + cat);
-                                } else if (doc.getElementsByTagName(
-                                        "simple-tree").getLength() > 0) //$NON-NLS-1$
-                                {
-                                    TCKeywordCatalogue cat = TCKeywordCatalogueXMLTree
-                                            .createInstance(doc);
-
-                                    catalogues.add(cat);
-
-                                    log.info("Added teaching-file keyword catalogue: "
-                                            + cat);
-                                } else {
-                                    throw new UnsupportedOperationException(
-                                            "Unsupported XML format!"); //$NON-NLS-1$
                                 }
-                            } catch (Exception e) {
+                            } 
+                            catch (Exception e) {
                                 log.error(
                                         "Parsing teaching-file keyword catalogue failed! Invalid syntax in file "
                                                 + file.getAbsolutePath(), e);
-                            } finally {
-                                if (fis != null) {
-                                    try {
-                                        fis.close();
-                                    } catch (Exception e) {
-                                        log.error(null, e);
-                                    }
-                                }
                             }
                         }
                     }
@@ -222,12 +289,96 @@ public class TCKeywordCatalogueProvider {
             }
         }
 
-        return Collections.emptyList();
+        return Collections.emptyMap();
     }
+    
+    
+    private TCKeywordCatalogue readCustomCatalogue(File f) throws Exception
+    {
+        FileInputStream fis = null;
 
-    private static class TCKeywordCatalogueXMLList extends TCKeywordCatalogue {
+        try {
+            fis = new FileInputStream(f);
+
+            DocumentBuilderFactory dbf = DocumentBuilderFactory
+                    .newInstance();
+
+            dbf.setValidating(false);
+            dbf.setIgnoringComments(true);
+            dbf.setIgnoringElementContentWhitespace(true);
+            dbf.setNamespaceAware(true);
+
+            Document doc = dbf.newDocumentBuilder().parse(
+                    fis);
+
+            if (doc.getElementsByTagName("simple-list").getLength() > 0) //$NON-NLS-1$
+            {
+                TCKeywordCatalogueXMLList c = TCKeywordCatalogueXMLList.createInstance(doc);
+                c.setSourceFile(f);
+                
+                return c;
+            } 
+            else if (doc.getElementsByTagName(
+                    "simple-tree").getLength() > 0) //$NON-NLS-1$
+            {
+                TCKeywordCatalogueXMLTree c = TCKeywordCatalogueXMLTree.createInstance(doc);
+                c.setSourceFile(f);
+                
+                return c;
+            } 
+            else {
+                throw new UnsupportedOperationException(
+                        "Unsupported XML format!"); //$NON-NLS-1$
+            }
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (Exception e) {
+                    log.error(null, e);
+                }
+            }
+        }
+    }
+    
+    private int getNumberOfCustomCatalogues(String path)
+    {
+        int n = 0;
+        
+        if (path != null) {
+            File file = FileUtils.resolve(new File(path));
+
+            if (file.exists()) {
+                File[] candidates = file.isDirectory() ? file.listFiles()
+                        : new File[] { file };
+                if (candidates != null) {
+                    for (File f : candidates) {
+                        if (f.getAbsolutePath().endsWith(".xml")) {
+                            n++;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return n;
+    }
+    
+    
+    private static interface ICustomTCKeywordCatalogue
+    {
+        void setSourceFile(File f);
+        File getSourceFile();
+        long getLastModified();
+    }
+    
+
+    private static class TCKeywordCatalogueXMLList extends TCKeywordCatalogue implements ICustomTCKeywordCatalogue {
         private List<TCKeyword> keywords;
-
+        
+        private File f;
+        private long lastModified;
+        
         private TCKeywordCatalogueXMLList(String id, String designatorId,
                 String designatorName, List<TCKeyword> keywords) {
             super(id, designatorId, designatorName);
@@ -297,11 +448,33 @@ public class TCKeywordCatalogueProvider {
 
             return null;
         }
+        
+        @Override
+        public void setSourceFile(File f)
+        {
+            this.f = f;
+            this.lastModified = f.lastModified();
+        }
+        
+        @Override
+        public File getSourceFile()
+        {
+            return f;
+        }
+        
+        @Override
+        public long getLastModified()
+        {
+            return lastModified;
+        }
     }
 
-    private static class TCKeywordCatalogueXMLTree extends TCKeywordCatalogue {
+    private static class TCKeywordCatalogueXMLTree extends TCKeywordCatalogue implements ICustomTCKeywordCatalogue{
         private TCKeywordNode root;
-
+        
+        private File f;
+        private long lastModified;
+        
         private TCKeywordCatalogueXMLTree(String id, String designatorId,
                 String designatorName, TCKeywordNode root) {
             super(id, designatorId, designatorName);
@@ -356,6 +529,25 @@ public class TCKeywordCatalogueProvider {
         @Override
         public TCKeyword findKeyword(String value) {
             return findKeyword(value, root);
+        }
+        
+        @Override
+        public void setSourceFile(File f)
+        {
+            this.f = f;
+            this.lastModified = f.lastModified();
+        }
+        
+        @Override
+        public File getSourceFile()
+        {
+            return f;
+        }
+        
+        @Override
+        public long getLastModified()
+        {
+            return lastModified;
         }
 
         private TCKeyword findKeyword(String value, TCKeywordNode node) {
