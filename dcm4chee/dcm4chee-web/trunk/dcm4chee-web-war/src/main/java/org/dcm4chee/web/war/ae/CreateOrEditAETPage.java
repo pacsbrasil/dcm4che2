@@ -75,7 +75,9 @@ import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.license.ae.AELicenseProviderManager;
 import org.dcm4chee.web.common.license.ae.spi.AELicenseProviderSPI;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.validators.UrlValidator1;
+import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.fs.FileSystemHomeLocal;
 import org.dcm4chee.web.war.ae.delegate.AEDelegate;
 import org.dcm4chee.web.war.ae.model.CipherModel;
@@ -94,6 +96,7 @@ public class CreateOrEditAETPage extends SecureWebPage {
 
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     
+    private MessageWindow msgWin = new MessageWindow("msgWin");
     private Model<String> resultMessage;
     
     public CreateOrEditAETPage(final ModalWindow window, final AE ae, final AEListPanel panel) {
@@ -101,6 +104,8 @@ public class CreateOrEditAETPage extends SecureWebPage {
         final String oldType = ae.getAeGroup();
         if (CreateOrEditAETPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(CreateOrEditAETPage.BaseCSS));
+        msgWin.setTitle("");
+        add(msgWin);
         add(new WebMarkupContainer("create-ae-title").setVisible(ae.getPk() == -1));
         add(new WebMarkupContainer("edit-ae-title").setVisible(ae.getPk() != -1));
 
@@ -237,13 +242,18 @@ public class CreateOrEditAETPage extends SecureWebPage {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
+                    if ( ae.getPk() == -1) {
+                        try {
+                            ((AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME)).findByTitle(ae.getTitle());
+                            msgWin.show(target, new ResourceModel("ae.error.duplicateAE").wrapOnAssignment(this));
+                            return;
+                        } catch (Exception ignore) {}
+                    }
                     AEDelegate.getInstance().updateOrCreate(ae);
                     panel.updateAETList();
                     window.close(target);
                 } catch (Exception e) {
-                    resultMessage.setObject(e.getLocalizedMessage());
-                    if (target != null)
-                        target.addComponent(CreateOrEditAETPage.this);
+                    msgWin.show(target, new ResourceModel(ae.getPk() == -1 ? "ae.error.create.failed" : "ae.error.update.failed").wrapOnAssignment(this));
                 }
             }
 
