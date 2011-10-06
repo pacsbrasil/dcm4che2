@@ -39,16 +39,23 @@
 package org.dcm4chee.web.common.markup.modal;
 
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.Page;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.util.string.interpolator.PropertyVariableInterpolator;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.exceptions.WicketExceptionWithMsgKey;
 
 /**
@@ -65,6 +72,7 @@ public class MessageWindow extends AutoOpenModalWindow {
     public static final String TITLE_WARNING="msgwindow.title.warn";
     public static final String TITLE_ERROR="msgwindow.title.error";
     
+    private static final ResourceReference baseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private IModel<String> msgModel;
     private IModel<String> colorModel = new Model<String>("");
 
@@ -82,7 +90,15 @@ public class MessageWindow extends AutoOpenModalWindow {
         setInitialWidth(300);
         setInitialHeight(200);
         setTitle(new ResourceModel(TITLE_INFO,TITLE_DEFAULT));
-        setContent(new MessageWindowPanel("content"));
+        setPageCreator(new ModalWindow.PageCreator() {
+            
+            private static final long serialVersionUID = 1L;
+              
+            @Override
+            public Page createPage() {
+                return new MessagePage();
+            }
+        });
     }
     
     public void setMessage(String msg) {
@@ -175,11 +191,12 @@ public class MessageWindow extends AutoOpenModalWindow {
         show(target);
     }
 
-    public class MessageWindowPanel extends Panel {
+    public class MessagePage extends WebPage {
         private static final long serialVersionUID = 0L;
 
-        public MessageWindowPanel(String id) {
-            super(id);
+        public MessagePage() {
+            if (MessageWindow.baseCSS != null)
+                add(CSSPackageResource.getHeaderContribution(MessageWindow.baseCSS));
             add(new Label("msg", new AbstractReadOnlyModel<String>(){
 
                 private static final long serialVersionUID = 1L;
