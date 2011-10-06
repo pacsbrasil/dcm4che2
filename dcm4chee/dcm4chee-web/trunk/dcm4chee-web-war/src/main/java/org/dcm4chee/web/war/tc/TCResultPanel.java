@@ -80,7 +80,6 @@ import org.dcm4chee.web.dao.tc.TCQueryFilter;
 import org.dcm4chee.web.dao.tc.TCQueryLocal;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
-import org.dcm4chee.web.war.folder.StudyListPage;
 import org.dcm4chee.web.war.folder.webviewer.Webviewer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -170,7 +169,7 @@ public class TCResultPanel extends Panel {
                 item.add(Webviewer.getLink(tc, webviewerLinkProviders,
                         stPermHelper,
                         new TooltipBehaviour("tc.result.table.", "webviewer"), modalWindow)
-                        .add(new SecurityBehavior(StudyListPage.getModuleName()
+                        .add(new SecurityBehavior(TCPanel.getModuleName()
                                 + ":webviewerInstanceLink")));
 
                 item.add(new AbstractDefaultAjaxBehavior() {
