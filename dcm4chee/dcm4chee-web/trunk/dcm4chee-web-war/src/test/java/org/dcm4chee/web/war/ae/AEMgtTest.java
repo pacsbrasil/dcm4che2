@@ -95,6 +95,7 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
         wicketTester.getComponentFromLastRenderedPage("form").getSession().setLocale(new Locale("en"));
         FormTester formTester = wicketTester.newFormTester("form");
         formTester.setValue("title", "");
+        formTester.setValue("type-selection", null);
         formTester.setValue("hostName", "");
         formTester.setValue("port", "0");
         formTester.submit();
@@ -113,6 +114,7 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
         wicketTester.getComponentFromLastRenderedPage("form").getSession().setLocale(new Locale("en"));
         FormTester formTester = wicketTester.newFormTester("form");
         formTester.setValue("title", "AE_TEST_TO_LONGLONG");
+        formTester.setValue("type-selection", "TEST");
         formTester.setValue("hostName", "");
         formTester.setValue("port", "100000000");
         formTester.setValue("wadoURL", "http://127.0.0.1.1/wado");
@@ -133,6 +135,7 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
             wicketTester.startPage(new CreateOrEditAETPage(new ModalWindow("test"), new AE(), new AEListPanel("dummy")));
             FormTester formTester = wicketTester.newFormTester("form");
             formTester.setValue("title", ae.getTitle());
+            formTester.setValue("type-selection", null);
             formTester.setValue("hostName", ae.getHostName());
             formTester.setValue("port", String.valueOf(ae.getPort()));
             getEntityManager().getTransaction().begin();
