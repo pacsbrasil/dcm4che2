@@ -380,13 +380,12 @@
       setMethod="setAETTypes">
       <description><![CDATA[List of AET Types.<br/>
       	Format: &lt;AET Type&gt;[|&lt;AET Type&gt[|..]]<br/>
-      	NONE is used for an empty list.<br />
       	EMPTY can be used to allow AE's without AET Type.
       ]]></description>
       <name>aetTypes</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="NONE"/>
+         <value value="EMPTY"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
