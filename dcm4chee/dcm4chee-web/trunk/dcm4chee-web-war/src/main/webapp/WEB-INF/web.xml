@@ -38,7 +38,11 @@
 	    <init-param>
 	      <param-name>pageExpiredPageClass</param-name>
 	      <param-value>org.dcm4chee.web.war.MainPage</param-value>
-	    </init-param> 
+	    </init-param>
+        <init-param>
+          <param-name>PagemapTimeout</param-name>
+          <param-value>5</param-value>
+        </init-param> 
  	</filter>
     <filter-mapping>
         <filter-name>wicket.dcm4chee-web</filter-name>

@@ -44,6 +44,7 @@ import org.apache.wicket.Page;
 import org.apache.wicket.Request;
 import org.apache.wicket.Response;
 import org.apache.wicket.security.authentication.LoginException;
+import org.apache.wicket.util.time.Duration;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.login.LoginContextSecurityHelper;
 import org.dcm4chee.web.common.login.SSOLoginContext;
@@ -77,6 +78,7 @@ public class WicketApplication extends BaseWicketApplication {
                 log.error(getClass().getName() + ": Failed login", x);
             }
         }
+        getRequestCycleSettings().setTimeout(Duration.minutes(Long.valueOf(getInitParameter("PagemapTimeout"))));         
         return session;
     }
 }
