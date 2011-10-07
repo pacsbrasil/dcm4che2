@@ -385,25 +385,41 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
         }
     }
 
-    public static enum AcquisitionModality implements DicomStringEnum {
-        CT("CT"), MR("MR"), CR("CR"), NM("NM"), US("US"), PT("PT"), XA("XA"), RF(
-                "RF"), DX("DX"), MG("MG"), ECG("ECG"), OT("OT");
+    public static enum AcquisitionModality implements DicomCodeEnum {
+        CR("DCM", "CR"),
+        CT("DCM", "CT"),
+        DG("DCM", "DG"),
+        DX("DCM", "DX"),
+        ECG("DCM", "ECG"),
+        ES("DCM", "ES"),
+        GM("DCM", "GM"),
+        IVUS("DCM", "IVUS"),
+        MG("DCM", "MG"),
+        MR("DCM", "MR"),
+        NM("DCM", "NM"),
+        PT("DCM", "PT"),
+        RF("DCM", "RF"),
+        RG("DCM", "RG"),
+        SM("DCM", "SM"),
+        US("DCM", "US"),
+        XA("DCM", "XA"),
+        XC("DCM", "XC");
 
-        private String value;
+        private Code code;
 
-        private AcquisitionModality(String v) {
-            this.value = v;
+        private AcquisitionModality(String d, String v) {
+            this.code = createCode(d, v, null);
         }
 
-        public String getString() {
-            return value;
+        public Code getCode() {
+            return code;
         }
 
-        public static AcquisitionModality get(String value) {
-            if (value != null) {
-                for (AcquisitionModality m : values()) {
-                    if (value.equals(m.getString())) {
-                        return m;
+        public static AcquisitionModality get(Code code) {
+            if (code != null) {
+                for (AcquisitionModality mod : values()) {
+                    if (TCQueryFilterValue.equals(code, mod.getCode())) {
+                        return mod;
                     }
                 }
             }

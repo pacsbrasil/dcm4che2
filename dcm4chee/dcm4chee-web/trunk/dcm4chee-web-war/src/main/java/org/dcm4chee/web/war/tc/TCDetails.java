@@ -467,21 +467,6 @@ public class TCDetails implements Serializable {
                                     .getCode())) {
                                 abstr = getTextValue(item);
                             } else if (conceptName
-                                    .equals(TCQueryFilterKey.AcquisitionModality
-                                            .getCode())) {
-                                AcquisitionModality m = AcquisitionModality
-                                        .get(getTextValue(item));
-
-                                if (m != null) {
-                                    if (acquisitionModalities == null) {
-                                        acquisitionModalities = new ArrayList<AcquisitionModality>();
-                                    }
-
-                                    if (!acquisitionModalities.contains(m)) {
-                                        acquisitionModalities.add(m);
-                                    }
-                                }
-                            } else if (conceptName
                                     .equals(TCQueryFilterKey.Anatomy.getCode())) {
                                 anatomy = getTextValue(item);
                             } else if (conceptName
@@ -563,6 +548,21 @@ public class TCDetails implements Serializable {
                                     .getCode())) {
                                 category = Category.get(getCodeValue(item)
                                         .toCode());
+                            } else if (conceptName
+                                    .equals(TCQueryFilterKey.AcquisitionModality
+                                            .getCode())) {
+                                AcquisitionModality m = AcquisitionModality
+                                        .get(getCodeValue(item).toCode());
+
+                                if (m != null) {
+                                    if (acquisitionModalities == null) {
+                                        acquisitionModalities = new ArrayList<AcquisitionModality>();
+                                    }
+
+                                    if (!acquisitionModalities.contains(m)) {
+                                        acquisitionModalities.add(m);
+                                    }
+                                }
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.DiagnosisConfirmed
                                             .getCode())) {
