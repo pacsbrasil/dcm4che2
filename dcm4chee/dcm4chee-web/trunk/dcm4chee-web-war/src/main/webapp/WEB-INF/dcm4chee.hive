@@ -222,6 +222,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:grouplist:newGroupLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:grouplist:editGroupLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:grouplist:removeGroupLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.CreateOrEditRolePage:roletypes:superuserCheckbox", "render";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "Superuser"
@@ -229,6 +230,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "S
 // KEY: swarm.principal.Superuser
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:rolelist:superuserRoleRow", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.user.RoleAssignmentPage:roleassignment:superuserRoleRow", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.role.CreateOrEditRolePage:roletypes:superuserCheckbox", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "FileSystem"
