@@ -261,13 +261,19 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
             logRetrieve(localDocUids,true,repositoryUniqueId);
         }
         RegistryResponseType regRsp = objFac.createRegistryResponseType();
-        int nrOfDocs = rsp.getDocumentResponse().size();
-        if (nrOfDocs == 0) {
-            throw new XDSException(XDSConstants.XDS_ERR_DOCUMENT_UNIQUE_ID, "None of the requested documents were found", null);
-        } else if (nrOfDocs < requestCount) {
-            regRsp.setStatus(XDSConstants.XDS_B_STATUS_PARTIAL_SUCCESS);
-        } else {
+        
+        if (requestCount == 0) {
             regRsp.setStatus(XDSConstants.XDS_B_STATUS_SUCCESS);
+            log.debug("No documents were requested.");
+        } else {
+            int nrOfDocs = rsp.getDocumentResponse().size();
+            if (nrOfDocs == 0) {
+                throw new XDSException(XDSConstants.XDS_ERR_DOCUMENT_UNIQUE_ID, "None of the requested documents were found", null);
+            } else if (nrOfDocs < requestCount) {
+                regRsp.setStatus(XDSConstants.XDS_B_STATUS_PARTIAL_SUCCESS);
+            } else {
+                regRsp.setStatus(XDSConstants.XDS_B_STATUS_SUCCESS);
+            }
         }
         rsp.setRegistryResponse(regRsp);
         if ( logResponseMessage) {
