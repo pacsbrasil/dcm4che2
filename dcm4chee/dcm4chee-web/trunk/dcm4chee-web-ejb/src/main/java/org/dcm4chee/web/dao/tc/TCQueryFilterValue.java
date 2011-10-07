@@ -76,7 +76,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
             public QueryParam[] appendSQLWhereConstraint(TCQueryFilterKey key,
                     StringBuilder sb) {
                 QueryParam searchStringParam = new QueryParam("searchString",
-                        "%" + getValue() + "%");
+                        "%" + getValue().toUpperCase() + "%");
                 QueryParam conceptNameValueParam = new QueryParam(
                         "conceptNameValue", key.getCode().getCodeValue());
                 QueryParam conceptNameDesignatorParam = new QueryParam(
@@ -88,7 +88,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
                 sb.append(" INNER JOIN content_item.conceptName concept_name");
                 sb.append(" WHERE (instance.sopInstanceUID = content_item.instance.sopInstanceUID)");
                 sb.append(" AND (content_item.relationshipType = 'CONTAINS')");
-                sb.append(" AND (content_item.textValue LIKE :"
+                sb.append(" AND (upper(content_item.textValue) LIKE :"
                         + searchStringParam.getKey() + ")");
                 sb.append(" AND (concept_name.codeValue = :"
                         + conceptNameValueParam.getKey() + ")");
@@ -98,7 +98,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
 
                 if (key.supportsCodeValue()) {
                     QueryParam conceptCodeMeaningParam = new QueryParam(
-                            "conceptCodeMeaning", "%" + getValue() + "%");
+                            "conceptCodeMeaning", "%" + getValue().toUpperCase() + "%");
 
                     sb.append(" OR ");
 
@@ -112,7 +112,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
                             + conceptNameValueParam.getKey() + ")");
                     sb.append(" AND (concept_name.codingSchemeDesignator = :"
                             + conceptNameDesignatorParam.getKey() + ")");
-                    sb.append(" AND (concept_code.codeMeaning LIKE :"
+                    sb.append(" AND (upper(concept_code.codeMeaning) LIKE :"
                             + conceptCodeMeaningParam.getKey() + ")");
                     sb.append(")");
 
@@ -143,7 +143,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
                         "conceptCodeDesignator", getValue()
                                 .getCodingSchemeDesignator());
                 QueryParam searchStringParam = new QueryParam("searchString",
-                        "%" + getValue().getCodeValue() + "%");
+                        "%" + getValue().getCodeValue().toUpperCase() + "%");
 
                 sb.append("EXISTS (");
                 sb.append("FROM ContentItem content_item");
@@ -168,7 +168,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
                 sb.append(" INNER JOIN content_item.conceptName concept_name");
                 sb.append(" WHERE (instance.sopInstanceUID = content_item.instance.sopInstanceUID)");
                 sb.append(" AND (content_item.relationshipType = 'CONTAINS')");
-                sb.append(" AND (content_item.textValue LIKE :"
+                sb.append(" AND (upper(content_item.textValue) LIKE :"
                         + searchStringParam.getKey() + ")");
                 sb.append(" AND (concept_name.codeValue = :"
                         + conceptNameValueParam.getKey() + ")");
@@ -234,7 +234,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
             public QueryParam[] appendSQLWhereConstraint(TCQueryFilterKey key,
                     StringBuilder sb) {
                 QueryParam searchStringParam = new QueryParam("searchString",
-                        getValue().getString());
+                        getValue().getString().toUpperCase());
                 QueryParam conceptNameValueParam = new QueryParam(
                         "conceptNameValue", key.getCode().getCodeValue());
                 QueryParam conceptNameDesignatorParam = new QueryParam(
@@ -246,7 +246,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
                 sb.append(" INNER JOIN content_item.conceptName concept_name");
                 sb.append(" WHERE (instance.sopInstanceUID = content_item.instance.sopInstanceUID)");
                 sb.append(" AND (content_item.relationshipType = 'CONTAINS')");
-                sb.append(" AND (content_item.textValue = :"
+                sb.append(" AND (upper(content_item.textValue) = :"
                         + searchStringParam.getKey() + ")");
                 sb.append(" AND (concept_name.codeValue = :"
                         + conceptNameValueParam.getKey() + ")");
