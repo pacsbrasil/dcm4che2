@@ -129,15 +129,15 @@ public class CreateOrEditRolePage extends SecureWebPage {
             );
             add(descriptionTextField);
 
-            final CheckBox superuserCheckbox;
+            final CheckBox superuserCheckbox = new CheckBox("superuser-checkbox", superuser);
             superuser.setObject(role != null && role.isSuperuser());
-            add(superuserCheckbox = new CheckBox("superuser-checkbox", superuser));
-            
             if (role != null) {
                 rolenameTextField.setModelObject(role.getRolename());
                 descriptionTextField.setModelObject(role.getDescription());
                 superuserCheckbox.setModelObject(role.isSuperuser());
             }
+            superuserCheckbox.add(new SecurityBehavior(getModuleName() + ":superuserCheckbox"));
+            add(superuserCheckbox);
             
             final StringBuffer webRoleUuid = new StringBuffer();
             final StringBuffer dicomRoleUuid = new StringBuffer();
@@ -145,7 +145,7 @@ public class CreateOrEditRolePage extends SecureWebPage {
             
             groupCheckboxList = new ArrayList<CheckBox>(groups.size());
             RepeatingView groupRows = new RepeatingView("group-rows");
-            add(groupRows);
+            add(groupRows);           
             for (final Group group : groups) {
                 WebMarkupContainer rowParent;            
                 groupRows.add((rowParent = new WebMarkupContainer(groupRows.newChildId())));
