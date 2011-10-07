@@ -163,7 +163,8 @@ public class InstanceViewPage extends SecureWebPage {
                     super.onComponentTag(tag);
                     log.debug("Set URL for iframe:{}",mimeCtr.getURL());
                     tag.put("src", mimeCtr.getURL());
-                    tag.put("height", height+"px");
+                    tag.put("width", "100%");
+                    tag.put("height", "100%");
                 }
             };
             mimeCtr = new MimeController("mimeCtr", iframe);
