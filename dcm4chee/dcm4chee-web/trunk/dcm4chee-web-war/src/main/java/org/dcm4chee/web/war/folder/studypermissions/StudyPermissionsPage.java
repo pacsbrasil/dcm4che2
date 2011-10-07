@@ -126,6 +126,8 @@ public class StudyPermissionsPage extends SecureWebPage {
 
         setOutputMarkupId(true);
 
+        ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).updateDicomRoles();
+
         this.allDicomRoles = new ListModel<Role>(getAllDicomRoles());
         
         add(confirmationWindow = new ConfirmationWindow<Role>("confirmation-window") {
