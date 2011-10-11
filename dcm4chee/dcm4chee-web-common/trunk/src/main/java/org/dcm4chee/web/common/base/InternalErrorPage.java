@@ -38,10 +38,11 @@
 
 package org.dcm4chee.web.common.base;
 
-import org.apache.wicket.Application;
 import org.apache.wicket.Page;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.model.ResourceModel;
 
 /**
@@ -70,13 +71,16 @@ public class InternalErrorPage extends BaseWicketPage {
         
         add(new Label("exception-message", new ResourceModel("application.internal_error.throwable").wrapOnAssignment(this).getObject() + (this.throwable == null ? "" : throwable.getLocalizedMessage())));
         add(new Label("exception-page", new ResourceModel("application.internal_error.page").wrapOnAssignment(this).getObject() + (this.page == null ? "" : Page.class.toString())));
-        add( new Link<Object>("home") {
+        add( new AjaxFallbackLink<Object>("home") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onClick() {
-                setResponsePage(Application.get().getHomePage());
+            public void onClick(AjaxRequestTarget target) {
+                if (page.getId().equals("0"))
+                    setResponsePage(getApplication().getHomePage());
+                else
+                    ModalWindow.closeCurrent(target);
             }
         }.add(new Label("homeLabel", new ResourceModel("application.home"))));
     }
