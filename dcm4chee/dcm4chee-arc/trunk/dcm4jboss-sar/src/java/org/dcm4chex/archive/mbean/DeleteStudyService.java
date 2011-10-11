@@ -363,6 +363,11 @@ public class DeleteStudyService extends ServiceMBeanSupport
                 }
             }
         }
+        try {
+            fsMgt.removeStudyOnFSRecord(order);
+        } catch (Exception x) {
+            log.warn("Remove StudyOnFS record failed for "+order, x);
+        }
     }
     
     static FileSystemMgt2 fileSystemMgt() throws Exception {
