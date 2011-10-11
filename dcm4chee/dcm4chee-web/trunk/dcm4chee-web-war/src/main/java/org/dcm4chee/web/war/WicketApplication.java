@@ -78,7 +78,9 @@ public class WicketApplication extends BaseWicketApplication {
                 log.error(getClass().getName() + ": Failed login", x);
             }
         }
-        getRequestCycleSettings().setTimeout(Duration.minutes(Long.valueOf(getInitParameter("PagemapTimeout"))));         
+        String timeout = getInitParameter("PagemapTimeout");
+        if (timeout != null)
+            getRequestCycleSettings().setTimeout(Duration.minutes(Long.valueOf(timeout)));         
         return session;
     }
 }

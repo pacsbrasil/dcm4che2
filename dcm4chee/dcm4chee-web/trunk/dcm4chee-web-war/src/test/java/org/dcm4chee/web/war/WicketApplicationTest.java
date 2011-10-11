@@ -77,6 +77,7 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
         wicketTester = WASPTestUtil.getWicketTester(testApplicaton);
         MockServletContext ctx =(MockServletContext)wicketTester.getApplication().getServletContext();
         ctx.addInitParameter("WebCfgServiceName", "dcm4chee.web:service=WebConfig");
+        ctx.addInitParameter("PagemapTimeout", "5");
     }
     
     private void initDummyMBean() {
