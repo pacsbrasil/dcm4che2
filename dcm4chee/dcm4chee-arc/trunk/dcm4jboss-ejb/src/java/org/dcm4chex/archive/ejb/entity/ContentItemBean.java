@@ -139,19 +139,22 @@ public abstract class ContentItemBean implements EntityBean {
     /**
      * @ejb.create-method
      */
-    public Long ejbCreate(Dataset item, int maxLength) throws CreateException {
+    public Long ejbCreate(Dataset item) throws CreateException {
         setRelationshipType(item.getString(Tags.RelationshipType));
-        setTextValue(truncate(item.getString(Tags.TextValue), maxLength));
+        String s = item.getString(Tags.TextValue);
+        if (s != null) {
+            AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(null);
+            int maxLength = filter.getContentItemTextValueMaxLength();
+            if (s.length() > maxLength )
+                s = s.substring(0, maxLength);
+            if (filter.isICase(Tags.TextValue))
+                s = s.toUpperCase();
+        }
+        setTextValue(s);
         return null;
     }
 
-    private String truncate(String s, int maxLength) {
-        return s != null && s.length() > maxLength
-                ? s.substring(0, maxLength)
-                : s;
-    }
-
-    public void ejbPostCreate(Dataset item, int maxLength) throws CreateException {
+    public void ejbPostCreate(Dataset item) throws CreateException {
         try {
             setConceptName(CodeBean.valueOf(codeHome,
                     item.getItem(Tags.ConceptNameCodeSeq)));

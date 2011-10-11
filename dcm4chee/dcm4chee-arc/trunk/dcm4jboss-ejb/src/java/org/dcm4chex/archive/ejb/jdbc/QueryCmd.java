@@ -868,7 +868,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
             for (int i = 0, n = contentSeq.countItems(); i < n; i++) {
                 Dataset item = contentSeq.getItem(i);
                 String relType = item.getString(Tags.RelationshipType);
-                String textValue = item.getString(Tags.TextValue);
+                String textValue = filter.getString(item, Tags.TextValue);
                 Dataset conceptName = item.getItem(Tags.ConceptNameCodeSeq);
                 if (!isMatchCode(conceptName))
                     conceptName = null;

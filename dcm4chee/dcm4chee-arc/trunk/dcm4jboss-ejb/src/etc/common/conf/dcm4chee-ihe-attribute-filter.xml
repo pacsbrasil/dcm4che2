@@ -95,6 +95,7 @@
         <attr tag="0040A491"/> <!-- Completion Flag -->
         <attr tag="0040A493"/> <!-- Verification Flag -->
         <attr tag="0040A525"/> <!-- Identical Documents Sequence -->
+        <attr seq="0040A730" tag="0040A160" case-sensitive="false"/> <!-- Text Value -->
         <attr tag="00420010"/> <!-- Document Title-->
         <attr tag="00420012"/> <!-- MIME Type of Encapsulated Document -->
         <attr tag="00700080"/> <!-- Content Label -->

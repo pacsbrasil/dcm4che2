@@ -495,10 +495,7 @@ public abstract class InstanceBean implements EntityBean {
             throws CreateException {
         updateSrCode(null, ds.getItem(Tags.ConceptNameCodeSeq));
         updateVerifyingObservers(null, ds.get(Tags.VerifyingObserverSeq));
-        updateContentItems(ds.get(Tags.ContentSeq),
-                AttributeFilter.getInstanceAttributeFilter(
-                        ds.getString(Tags.SOPClassUID))
-                                .getContentItemTextValueMaxLength());
+        updateContentItems(ds.get(Tags.ContentSeq));
         setSeries(series);
         setArchived(false);
         log.info("Created " + prompt());
@@ -545,7 +542,7 @@ public abstract class InstanceBean implements EntityBean {
         return true;
     }
 
-    private void updateContentItems(DcmElement items, int maxTextValueLength) {
+    private void updateContentItems(DcmElement items) {
         Collection<ContentItemLocal> c = getContentItems();
         if (!c.isEmpty()) {
              for (ContentItemLocal item : new ArrayList<ContentItemLocal>(c))
@@ -565,7 +562,7 @@ public abstract class InstanceBean implements EntityBean {
             String valueType = item.getString(Tags.ValueType);
             if ("CODE".equals(valueType) || "TEXT".equals(valueType))
                 try {
-                    c.add(contentItemHome.create(item, maxTextValueLength));
+                    c.add(contentItemHome.create(item));
                 } catch (CreateException e) {
                     throw new EJBException(e);
                 }
@@ -679,8 +676,7 @@ public abstract class InstanceBean implements EntityBean {
        AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(
                newAttrs.getString(Tags.SOPClassUID,
                        oldAttrs.getString(Tags.SOPClassUID)));
-       updateContentItems(newAttrs.get(Tags.ContentSeq),
-               filter.getContentItemTextValueMaxLength());
+       updateContentItems(newAttrs.get(Tags.ContentSeq));
        if (!AttrUtils.updateAttributes(oldAttrs, filter.filter(newAttrs),
                modifiedAttrs, log) )
            return false;
@@ -802,8 +798,7 @@ public abstract class InstanceBean implements EntityBean {
         updateSrCode(oldSrCode, attrs.getItem(Tags.ConceptNameCodeSeq));
         updateVerifyingObservers(oldObservers,
                 attrs.get(Tags.VerifyingObserverSeq));
-        updateContentItems(attrs.get(Tags.ContentSeq),
-                filter.getContentItemTextValueMaxLength());
+        updateContentItems(attrs.get(Tags.ContentSeq));
     }
 
     /**
