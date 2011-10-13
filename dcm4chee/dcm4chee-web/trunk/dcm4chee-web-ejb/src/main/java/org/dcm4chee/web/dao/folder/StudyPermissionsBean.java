@@ -203,8 +203,33 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
                                           : em.createQuery("SELECT DISTINCT sp.role FROM StudyPermission sp WHERE sp.role NOT IN(:dicomRoles)")
                                               .setParameter("dicomRoles", dicomRolenames)
                                               .getResultList();
-        for (String rolename : newRoles)
-            addDicomRole(rolename);
+
+        List<Role> roles = new ArrayList<Role>();
+        BufferedReader reader = null;
+        try {
+            String line;
+            reader = new BufferedReader(new FileReader(dicomRolesFile));
+            while ((line = reader.readLine()) != null) {
+                Role role = (Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class);
+                if (newRoles.contains(role.getRolename())) {
+                    role.setDicomRole(true);
+                    newRoles.remove(role.getRolename());
+                }
+                roles.add(role);
+            }
+            for (String rolename : newRoles) {
+                Role role = new Role(rolename);
+                role.setDicomRole(true);
+                roles.add(role);
+            }
+            Collections.sort(roles);
+            save(roles);
+        } catch (Exception e) {
+            log.error("Can't get roles from roles file!", e);
+            return;
+        } finally {
+            close(reader, "roles file reader");
+        }
     }
 
     public void addDicomRole(String rolename) {
@@ -238,28 +263,32 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
         } finally {
             close(reader, "roles file reader");
         }
-        if (roles.remove(role)) {
-            BufferedWriter writer = null;
-            try {
-                File tmpFile = File.createTempFile(dicomRolesFile.getName(), null, dicomRolesFile.getParentFile());
-                writer = new BufferedWriter(new FileWriter(tmpFile, true));
-                JSONObject jsonObject;
-                for (int i=0,len=roles.size() ; i < len ; i++) {
-                    jsonObject = JSONObject.fromObject(roles.get(i));
-                    writer.write(jsonObject.toString());
-                    writer.newLine();
-                }
-                if (close(writer, "Temporary roles file"))
-                    writer = null;
-                dicomRolesFile.delete();
-                tmpFile.renameTo(dicomRolesFile);
-            } catch (IOException e) {
-                log.error("Can't save roles in roles file!", e);
-            } finally {
-                close(writer, "Temporary roles file (in finally block)");
-            }
-        } else 
+        if (roles.remove(role)) 
+            save(roles);
+        else 
             log.warn("Role "+role+" already removed from roles file!");
+    }
+    
+    private void save(List<Role> roles) {
+        BufferedWriter writer = null;
+        try {
+            File tmpFile = File.createTempFile(dicomRolesFile.getName(), null, dicomRolesFile.getParentFile());
+            writer = new BufferedWriter(new FileWriter(tmpFile, true));
+            JSONObject jsonObject;
+            for (int i=0,len=roles.size() ; i < len ; i++) {
+                jsonObject = JSONObject.fromObject(roles.get(i));
+                writer.write(jsonObject.toString());
+                writer.newLine();
+            }
+            if (close(writer, "Temporary roles file"))
+                writer = null;
+            dicomRolesFile.delete();
+            tmpFile.renameTo(dicomRolesFile);
+        } catch (IOException e) {
+            log.error("Can't save roles in roles file!", e);
+        } finally {
+            close(writer, "Temporary roles file (in finally block)");
+        }        
     }
     
     private boolean close(Closeable toClose, String desc) {
