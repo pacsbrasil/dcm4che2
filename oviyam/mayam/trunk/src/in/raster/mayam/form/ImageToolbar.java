@@ -116,9 +116,9 @@ public class ImageToolbar extends javax.swing.JPanel {
         cineTimer = new CineTimer();
         this.imgView = imgView;
         designPopup();
+        layoutButton.setArrowPopupMenu(jPopupMenu1);
         textOverlayContext();
         // presetButton.setVisible(false);
-        jComboBox1.setVisible(false);
         addKeyEventDispatcher();
     }
 
@@ -187,10 +187,9 @@ public class ImageToolbar extends javax.swing.JPanel {
         jPopupMenu3 = new javax.swing.JPopupMenu();
         jPopupMenu4 = new javax.swing.JPopupMenu();
         jToolBar3 = new javax.swing.JToolBar();
-        layoutButton = new javax.swing.JButton();
+        layoutButton = new in.raster.mayam.form.JComboButton();
         windowing = new javax.swing.JButton();
         presetButton = new javax.swing.JButton();
-        jComboBox1 = new javax.swing.JComboBox();
         probeButton = new javax.swing.JButton();
         verticalFlip = new javax.swing.JButton();
         horizontalFlip = new javax.swing.JButton();
@@ -224,18 +223,12 @@ public class ImageToolbar extends javax.swing.JPanel {
         jToolBar3.setRollover(true);
 
         layoutButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/layout.png"))); // NOI18N
+        layoutButton.setText("");
         layoutButton.setToolTipText("Layout");
-        layoutButton.setComponentPopupMenu(jPopupMenu1);
-        layoutButton.setFocusable(false);
         layoutButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        layoutButton.setIconTextGap(2);
         layoutButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        layoutButton.setRequestFocusEnabled(false);
         layoutButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        layoutButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                layoutButtonMouseClicked(evt);
-            }
-        });
         jToolBar3.add(layoutButton);
 
         windowing.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/windowing.png"))); // NOI18N
@@ -270,16 +263,6 @@ public class ImageToolbar extends javax.swing.JPanel {
             }
         });
         jToolBar3.add(presetButton);
-
-        jComboBox1.setModel(new WindowingComboModel(ApplicationContext.databaseRef.getPresets()));
-        jComboBox1.setMinimumSize(new java.awt.Dimension(20, 3));
-        jComboBox1.setPreferredSize(new java.awt.Dimension(47, 3));
-        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jComboBox1ActionPerformed(evt);
-            }
-        });
-        jToolBar3.add(jComboBox1);
 
         probeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/probe.png"))); // NOI18N
         probeButton.setToolTipText("Probe");
@@ -803,7 +786,6 @@ public class ImageToolbar extends javax.swing.JPanel {
         }
     }
     private void rulerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rulerButtonActionPerformed
-
         doRuler(false);
 }//GEN-LAST:event_rulerButtonActionPerformed
 
@@ -895,6 +877,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         panButton.setEnabled(false);
         invert.setEnabled(false);
         rulerButton.setEnabled(false);
+        arrowButton.setEnabled(false);
         rectangleButton.setEnabled(false);
         ellipseButton.setEnabled(false);
         clearAllMeasurement.setEnabled(false);
@@ -989,6 +972,9 @@ public class ImageToolbar extends javax.swing.JPanel {
         }
     }
     private void rectangleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rectangleButtonActionPerformed
+        doRectangle();
+}//GEN-LAST:event_rectangleButtonActionPerformed
+    public void doRectangle(){
         toolsButtonGroup.clearSelection();
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.annotationPanel.stopPanning();
@@ -1006,10 +992,11 @@ public class ImageToolbar extends javax.swing.JPanel {
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
         }
-
-}//GEN-LAST:event_rectangleButtonActionPerformed
-
+    }
     private void ellipseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ellipseButtonActionPerformed
+        doEllipse();
+}//GEN-LAST:event_ellipseButtonActionPerformed
+    public void doEllipse(){
         toolsButtonGroup.clearSelection();
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.annotationPanel.stopPanning();
@@ -1027,8 +1014,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
         }
-}//GEN-LAST:event_ellipseButtonActionPerformed
-
+    }
     private void clearAllMeasurementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearAllMeasurementActionPerformed
         if (ApplicationContext.annotationPanel != null) {
             ApplicationContext.annotationPanel.clearAllMeasurement();
@@ -1047,6 +1033,7 @@ public class ImageToolbar extends javax.swing.JPanel {
 }//GEN-LAST:event_annotationVisibilityActionPerformed
 
     public void showAnnotationTools() {
+        arrowButton.setEnabled(true);
         rulerButton.setEnabled(true);
         rectangleButton.setEnabled(true);
         ellipseButton.setEnabled(true);
@@ -1056,6 +1043,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     }
 
     public void hideAnnotationTools() {
+        arrowButton.setEnabled(false);
         rulerButton.setEnabled(false);
         rectangleButton.setEnabled(false);
         ellipseButton.setEnabled(false);
@@ -1129,28 +1117,16 @@ public class ImageToolbar extends javax.swing.JPanel {
     private void moveMeasurementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveMeasurementActionPerformed
         toolsButtonGroup.clearSelection();
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
-            ApplicationContext.imgPanel.tool = "";
-            ApplicationContext.annotationPanel.tool = "";
+            ImagePanel.tool = "";
+            AnnotationPanel.tool = "";
             ApplicationContext.annotationPanel.doMoveMeasurement();
-            if (ApplicationContext.annotationPanel.isMoveMeasurement()) {
+            if (AnnotationPanel.isMoveMeasurement()) {
                 toolsButtonGroup.setSelected(moveMeasurement.getModel(), true);
             }
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
         }
 }//GEN-LAST:event_moveMeasurementActionPerformed
-
-    private void layoutButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_layoutButtonMouseClicked
-        if (layoutButton.isEnabled()) {
-            int x = evt.getX();
-            int y = evt.getY();
-            long z = evt.getWhen();
-            int mo = evt.getModifiers();
-            int cc = evt.getClickCount();
-            layoutButton.dispatchEvent(new java.awt.event.MouseEvent(this.layoutButton, MouseEvent.MOUSE_CLICKED, z, mo, x, y, cc, true));
-            storeAnnotationHook();
-        }
-}//GEN-LAST:event_layoutButtonMouseClicked
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
@@ -1184,15 +1160,6 @@ public class ImageToolbar extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Tile selected is not valid for this process");
         }
     }//GEN-LAST:event_metaDataButtonActionPerformed
-
-    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
-        PresetModel presetModel = ApplicationContext.databaseRef.getPreset((String) ((JComboBox) evt.getSource()).getSelectedItem());
-        if (presetModel.getPresetName() != null) {
-            ApplicationContext.imgPanel.windowChanged(Integer.parseInt(presetModel.getWindowLevel()), Integer.parseInt(presetModel.getWindowWidth()));
-        } else {
-            ApplicationContext.imgPanel.resetWindowing();
-        }
-    }//GEN-LAST:event_jComboBox1ActionPerformed
 
     private void scoutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scoutButtonActionPerformed
         doScout();
@@ -1285,13 +1252,12 @@ public class ImageToolbar extends javax.swing.JPanel {
     private javax.swing.JButton exportButton;
     private javax.swing.JButton horizontalFlip;
     private javax.swing.JButton invert;
-    private javax.swing.JComboBox jComboBox1;
-    private javax.swing.JPopupMenu jPopupMenu1;
+    public javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JPopupMenu jPopupMenu2;
     private javax.swing.JPopupMenu jPopupMenu3;
     private javax.swing.JPopupMenu jPopupMenu4;
     private javax.swing.JToolBar jToolBar3;
-    private javax.swing.JButton layoutButton;
+    private in.raster.mayam.form.JComboButton layoutButton;
     private javax.swing.JButton leftRotate;
     private javax.swing.JCheckBox loopCheckbox;
     private javax.swing.JSlider loopSlider;

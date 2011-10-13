@@ -142,7 +142,7 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
      */
     private void retrieveInfo() {
         synchronized (this) {
-            if(dataset==null)readDicomFile(new File(fileUrl));;
+            if(dataset==null) readDicomFile(new File(fileUrl));
             studyUID = dataset.getString(Tags.StudyInstanceUID);
             seriesUID = dataset.getString(Tags.SeriesInstanceUID);
             if (ApplicationContext.databaseRef.getMultiframeStatus()) {

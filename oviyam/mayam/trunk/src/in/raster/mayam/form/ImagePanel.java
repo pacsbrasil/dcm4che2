@@ -68,7 +68,6 @@ import org.dcm4che.image.ColorModelParam;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -93,6 +92,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.MenuElement;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4che2.data.Tag;
@@ -1836,14 +1836,16 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         mousePressed = true;
         if (e.isPopupTrigger()) {
             designContext();
-            addContextItem();
             jPopupMenu1.show(this, e.getX(), e.getY());
         }
     }
+    private PopupMenuListener popupListener = new PopupMenuListener();
     public void addContextItem(){
+        MenuElement[] me = jPopupMenu1.getSubElements();
         JMenu menu;
-        if(widowingFlag){
+        if (me.length > 0) {
             ArrayList presetList = ApplicationContext.databaseRef.getPresetValueForModality(ApplicationContext.imgPanel.getModality());
+            if(presetList.size()>0){
             menu = new JMenu("Window Width & Level");
             //menu.setEnabled(false);
             jPopupMenu1.addSeparator();
@@ -1853,7 +1855,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                     JMenuItem menu1 = new JMenuItem(presetModel.getPresetName());
                     menu.add(menu1);
                     menu1.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
+                        public void actionPerformed(ActionEvent e) {                           
                             ApplicationContext.imgPanel.windowChanged(Integer.parseInt(presetModel.getWindowLevel()), 
                                     Integer.parseInt(presetModel.getWindowWidth()));
                         }
@@ -1861,6 +1863,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 }
             }
             jPopupMenu1.add(menu);
+            }
         }
     }
     public void mouseReleased(MouseEvent e) {
@@ -2420,6 +2423,9 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             });
         }
         jPopupMenu1.removeAll();
+        popupListener.createPopupMenu(jPopupMenu1);
+        addContextItem();
+        jPopupMenu1.addSeparator();
         jPopupMenu1.add(menu);
 
         createOtherPatientStudiesMenu(jPopupMenu1);
