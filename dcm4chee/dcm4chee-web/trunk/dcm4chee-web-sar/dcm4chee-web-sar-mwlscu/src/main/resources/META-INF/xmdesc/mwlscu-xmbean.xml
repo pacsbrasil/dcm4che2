@@ -3,7 +3,7 @@
 
 <!--  Version $Revision:$ $Date:$ -->
 <mbean>
-    <description><![CDATA[<b>Instance Availability Notification (IAN) SCU Service</b>
+    <description><![CDATA[<b>Modality Worklist (MWL) SCU Service</b>
 		]]> </description>
 
     <descriptors>
@@ -54,6 +54,18 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="&lt;intern&gt;" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="isBindToCallingAET"
+      setMethod="setBindToCallingAET">
+      <description>Bind socket to address of CallingAET.
+      </description>
+      <name>BindToCallingAET</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true" />
       </descriptors>
    </attribute>
 
