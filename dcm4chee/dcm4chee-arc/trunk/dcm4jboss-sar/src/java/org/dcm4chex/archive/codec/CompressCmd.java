@@ -461,6 +461,7 @@ public abstract class CompressCmd extends CodecCmd {
             codecSemaphore.acquire();
             codecSemaphoreAquired = true;
             compressSemaphore.acquire();
+            compressSemaphoreAquired = true;
             log.info("start compression of image: " + rows + "x" + columns
                     + "x" + frames + " (concurrency:" + (nrOfConcurrentCodec.incrementAndGet())+")");
             t1 = System.currentTimeMillis();
