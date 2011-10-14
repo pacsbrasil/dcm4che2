@@ -86,13 +86,8 @@ public class WADOService extends AbstractCacheService {
     private static final String NONE = "NONE";
     private WADOSupport support = new WADOSupport(this.server);
 
-    private final NotificationListener seriesStoredListener =
-        new NotificationListener() {
-        public void handleNotification(Notification notif, Object handback) {
-            SeriesStored seriesStored = (SeriesStored) notif.getUserData();
-            onSeriesStored(seriesStored);
-        }
-    };
+    private NotificationListener seriesStoredListener;
+    
     private boolean clearCacheForReceivedSeries = false;
 
     public WADOService() {
@@ -333,19 +328,32 @@ public class WADOService extends AbstractCacheService {
     public void setEnableClearCacheForReceivedSeries(boolean b) throws InstanceNotFoundException, ListenerNotFoundException {
         if (b != clearCacheForReceivedSeries) {
             clearCacheForReceivedSeries = b;
-            if (b) {
-                server.addNotificationListener(getStoreScpServiceName(),
-                        seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
-            } else {
-                server.removeNotificationListener(getStoreScpServiceName(),
-                        seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
-            }
+            if (server != null)
+                updateEnableClearCacheForReceivedSeries();
         }
     }
+
     public boolean isEnableClearCacheForReceivedSeries() {
         return clearCacheForReceivedSeries;
     }
 
+    private void updateEnableClearCacheForReceivedSeries() throws InstanceNotFoundException, ListenerNotFoundException {
+        if (clearCacheForReceivedSeries) {
+            seriesStoredListener = new NotificationListener() {
+                public void handleNotification(Notification notif, Object handback) {
+                    SeriesStored seriesStored = (SeriesStored) notif.getUserData();
+                    onSeriesStored(seriesStored);
+                }
+            };
+            server.addNotificationListener(getStoreScpServiceName(),
+                    seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
+        } else if (seriesStoredListener != null) {
+            server.removeNotificationListener(getStoreScpServiceName(),
+                    seriesStoredListener, SeriesStored.NOTIF_FILTER, null);
+            seriesStoredListener = null;
+        }
+    }
+    
     /**
      * Getter for the name of the StoreScp Service Name.
      * <p>
@@ -551,5 +559,9 @@ public class WADOService extends AbstractCacheService {
 
     public void setRenderOverlays(boolean b) {
         support.setRenderOverlays(b);
+    }
+    
+    protected void startService() throws InstanceNotFoundException, ListenerNotFoundException {
+        updateEnableClearCacheForReceivedSeries();
     }
 }
