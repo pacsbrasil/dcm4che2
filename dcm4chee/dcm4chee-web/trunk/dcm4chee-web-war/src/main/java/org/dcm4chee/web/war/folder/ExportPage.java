@@ -744,7 +744,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             }
 
             log.debug("Selected for export: Studies of Patient:{} StudyUIDs:{}", pat.getId(), uids);
-            requests.add(new MoveRequest().setStudyMoveRequest(pat.getId(), toArray(uids)));
+            requests.add(new MoveRequest().setStudyMoveRequest(pat.getId(), uids.isEmpty() ? null : toArray(uids)));
         }
 
         private void prepareStudyRequests(List<StudyModel> studies) {

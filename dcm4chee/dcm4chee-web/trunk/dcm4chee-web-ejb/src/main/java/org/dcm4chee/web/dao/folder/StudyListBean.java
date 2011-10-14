@@ -448,11 +448,11 @@ public class StudyListBean implements StudyListLocal {
     }
 
     public long countDownloadableInstances(String[] studyIuids, String[] seriesIuids, String[] sopIuids) {
+        if (studyIuids == null && seriesIuids == null && sopIuids == null)
+            return 0;
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT count(i) FROM Instance i WHERE ");
         String[] uids = appendUIDs(studyIuids, seriesIuids, sopIuids, sb);
-        if (uids == null)
-            return -1;
         Query q = em.createQuery(sb.toString());
         QueryUtil.setParametersForIN(q, uids);
         return (Long) q.getSingleResult();
