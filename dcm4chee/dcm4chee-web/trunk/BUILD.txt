@@ -8,14 +8,17 @@ http://maven.apache.org/download.html for building dcm4chee-web-3.0.0.
 If you are behind a http proxy, you have to configure Maven, to use it for
 http downloads (s.  http://maven.apache.org/guides/mini/guide-proxies.html ).
 
-The complete dcm4chee-web3 source package consists of 6 modules bundled in a single source package.
+The complete dcm4chee-web3 source package consists of 6 modules bundled in a 
+single source package.
 
 Download and unzip the source package in a working directory.
 
 $ cd <work directory>/dcm4chee-web
 $ mvn -Pall -Ddb=<database> install
 
-will assembly the binary distribution package in a zip file.
+(will download necessary artifacts from public Maven Repositories by http,
+before building MBean and WEB components and install them in your 
+local repository (default: ~/.m2/repository))
 
 Finally
 $ cd dcm4chee-web-dist
