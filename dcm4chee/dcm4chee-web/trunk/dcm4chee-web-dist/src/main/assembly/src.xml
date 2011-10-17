@@ -32,6 +32,7 @@
         <include>dcm4chee-web-weasis/pom.xml</include>
         <include>dcm4chee-web-weasis/src/*/**</include>
         <include>dcm4chee-web-sar/pom.xml</include>
+        <include>dcm4chee-web-sar/src/*/**</include>
         <include>dcm4chee-web-sar/dcm4chee-web-sar-bridge/pom.xml</include>
         <include>dcm4chee-web-sar/dcm4chee-web-sar-bridge/dcm4chee-web-sar-bridge-interface/pom.xml</include>
         <include>dcm4chee-web-sar/dcm4chee-web-sar-bridge/dcm4chee-web-sar-bridge-interface/src/*/**</include>
@@ -58,7 +59,7 @@
         <include>dcm4chee-web-sar/dcm4chee-web-sar-tlscfg/pom.xml</include>
         <include>dcm4chee-web-sar/dcm4chee-web-sar-tlscfg/src/*/**</include>
         <include>dcm4chee-web-sar/dcm4chee-web-sar-webcfg/pom.xml</include>
-        <include>dcm4chee-web-sar/dcm4chee-web-sar-webcgf/src/*/**</include>
+        <include>dcm4chee-web-sar/dcm4chee-web-sar-webcfg/src/*/**</include>
       </includes>
       <useDefaultExcludes>true</useDefaultExcludes>
     </fileSet>
