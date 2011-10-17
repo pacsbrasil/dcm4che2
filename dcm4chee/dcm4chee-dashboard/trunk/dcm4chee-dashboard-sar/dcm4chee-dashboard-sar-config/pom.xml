@@ -54,6 +54,7 @@
 						<configuration>
 							<groupId>dcm4che.dcm4chee</groupId>
 							<artifactId>dcm4chee-dashboard-sar-auditlog</artifactId>
+							<classifier>config-xmbean</classifier>
 							<version>3.0.1</version>
 							<packaging>xml</packaging>
 							<file>${project.build.directory}/auditlog/web3-DashboardService-xmbean.xml</file>
