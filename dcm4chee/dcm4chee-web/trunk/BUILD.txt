@@ -8,10 +8,34 @@ http://maven.apache.org/download.html for building dcm4chee-web-3.0.0.
 If you are behind a http proxy, you have to configure Maven, to use it for
 http downloads (s.  http://maven.apache.org/guides/mini/guide-proxies.html ).
 
-The complete dcm4chee-web3 source package consists of 6 modules with individual source packages.
-Download and unzip each module in a working directory and use maven to build the modules.
+The complete dcm4chee-web3 source package consists of 6 modules bundled in a single source package.
 
-The modules have to be built in a specific order, 
+Download and unzip the source package in a working directory.
+
+$ cd <work directory>/dcm4chee-web
+$ mvn -Pall -Ddb=<database> install
+
+will assembly the binary distribution package in a zip file.
+
+Finally
+$ cd dcm4chee-web-dist
+$ mvn -Ddb=<database> assembly:assembly
+
+will assembly the binary distribution package in a zip file.
+
+Supported <database> arguments:
+  db2, firebird, hsql, mssql, mysql, oracle, psql
+
+Example:
+$ cd ~/work/dcm4chee-web
+$ mvn -Pall -Ddb=mysql install
+$ cd dcm4chee-web-dist
+$ mvn -Ddb=mysql assembly:assembly
+
+---------------------------------------------------------------------
+
+You may build the six modules individually.
+In this case the modules have to be built in a specific order, 
 from first to last:
 
   dcm4chee-icons
@@ -25,26 +49,20 @@ Maven build:
 $ cd <module>
 $ mvn -Ddb=<database> install
 
-(dcm4chee-web3 is database specific and therefore an additional db=<database> argument is required!)
-
-Supported <database> arguments:
-  db2, firebird, hsql, mssql, mysql, oracle, psql
 
 Example:
-$ cd dcm4chee-icons
+$ cd ~/work/dcm4chee-icons
 $ mvn -Ddb=mysql install
 
-(will download necessary artifacts from public Maven Repositories by http,
-before building MBean and WEB components)
+---------------------------------------------------------------------
 
-Finally,
-
-$ cd dcm4chee-web-dist
-$ mvn -Ddb=<database> assembly:assembly
-
-will assembly the binary distribution package in a zip file.
-
+Standalone modules:
 Additional, there are standalone modules for the UserManagement and the Dashboard functionality, 
 found in the dcm4chee-usr/dcm4chee-usr-ear/target and dcm4chee-dashboard/dcm4chee-dashboard-ear/target 
 after building.
 
+---------------------------------------------------------------------
+
+Building the source distribution package:
+$ cd ~/work/dcm4chee-web/dcm4chee-web-dist
+$ mvn -Psrc assembly:assembly
