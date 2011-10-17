@@ -47,7 +47,6 @@
 		        <module>../dcm4chee-arc3-entities</module>
 		        <module>../dcm4chee-icons</module>
 		        <module>../dcm4chee-web-common</module>
-		        <module>../dcm4chee-web-common</module>
 		        <module>../dcm4chee-dashboard</module>
 		        <module>../dcm4chee-usr</module>
 		    
