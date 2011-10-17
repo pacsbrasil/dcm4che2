@@ -83,6 +83,27 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>install-auditlog-xml</id>
+						<phase>install</phase>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<configuration>
+							<groupId>dcm4che.dcm4chee</groupId>
+							<artifactId>dcm4chee-web-sar-auditlog</artifactId>
+							<classifier>hl7send-xmbean</classifier>
+							<version>3.0.1</version>
+							<packaging>xml</packaging>
+							<file>${project.build.directory}/auditlog/web3-hl7send-xmbean.xml</file>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>xml-maven-plugin</artifactId>
 				<executions>

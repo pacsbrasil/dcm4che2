@@ -25,83 +25,6 @@
       <lineEnding>lf</lineEnding>
       <fileMode>0755</fileMode>
     </fileSet>
-    <fileSet>
-      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-webcfg/target</directory>
-      <outputDirectory>server/default/conf</outputDirectory>
-      <includes>
-        <include>auditlog/*.xml</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-contentedit/target</directory>
-      <outputDirectory>server/default/conf</outputDirectory>
-      <includes>
-        <include>auditlog/*.xml</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-echo/target</directory>
-      <outputDirectory>server/default/conf</outputDirectory>
-      <includes>
-        <include>auditlog/*.xml</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-hl7send/target</directory>
-      <outputDirectory>server/default/conf</outputDirectory>
-      <includes>
-        <include>auditlog/*.xml</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-ianscu/target</directory>
-      <outputDirectory>server/default/conf</outputDirectory>
-      <includes>
-        <include>auditlog/*.xml</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-modify/target</directory>
-      <outputDirectory>server/default/conf</outputDirectory>
-      <includes>
-        <include>auditlog/*.xml</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-movescu/target</directory>
-      <outputDirectory>server/default/conf</outputDirectory>
-      <includes>
-        <include>auditlog/*.xml</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-rejnotescu/target</directory>
-      <outputDirectory>server/default/conf</outputDirectory>
-      <includes>
-        <include>auditlog/*.xml</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-tlscfg/target</directory>
-      <outputDirectory>server/default/conf</outputDirectory>
-      <includes>
-        <include>auditlog/*.xml</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-mwlscu/target</directory>
-      <outputDirectory>server/default/conf</outputDirectory>
-      <includes>
-        <include>auditlog/*.xml</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>../dcm4chee-web-sar/dcm4chee-web-sar-bridge/dcm4chee-web-sar-bridge-store/target</directory>
-      <outputDirectory>server/default/conf</outputDirectory>
-      <includes>
-        <include>auditlog/*.xml</include>
-      </includes>
-    </fileSet>
   </fileSets>
   <dependencySets>
     <dependencySet>
@@ -125,6 +48,23 @@
       <outputFileNameMapping>web3-dashboard-xmbean.xml</outputFileNameMapping>
       <includes>
         <include>dcm4che.dcm4chee:dcm4chee-dashboard-sar-auditlog:xml</include>
+      </includes>
+    </dependencySet>
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <outputDirectory>server/default/conf/auditlog</outputDirectory>
+      <includes>
+        <include>dcm4che.dcm4chee:dcm4chee-web-sar-auditlog:xml:bridgestore-xmbean</include>
+        <include>dcm4che.dcm4chee:dcm4chee-web-sar-auditlog:xml:contentedit-xmbean</include>
+        <include>dcm4che.dcm4chee:dcm4chee-web-sar-auditlog:xml:echo-xmbean</include>
+        <include>dcm4che.dcm4chee:dcm4chee-web-sar-auditlog:xml:hl7send-xmbean</include>
+        <include>dcm4che.dcm4chee:dcm4chee-web-sar-auditlog:xml:ianscu-xmbean</include>
+        <include>dcm4che.dcm4chee:dcm4chee-web-sar-auditlog:xml:attrmod-xmbean</include>
+        <include>dcm4che.dcm4chee:dcm4chee-web-sar-auditlog:xml:movescu-xmbean</include>
+        <include>dcm4che.dcm4chee:dcm4chee-web-sar-auditlog:xml:mwlscu-xmbean</include>
+        <include>dcm4che.dcm4chee:dcm4chee-web-sar-auditlog:xml:rejnotescu-xmbean</include>
+        <include>dcm4che.dcm4chee:dcm4chee-web-sar-auditlog:xml:tlscfg-xmbean</include>
+        <include>dcm4che.dcm4chee:dcm4chee-web-sar-auditlog:xml:webcfg-xmbean</include>
       </includes>
     </dependencySet>
   </dependencySets>
