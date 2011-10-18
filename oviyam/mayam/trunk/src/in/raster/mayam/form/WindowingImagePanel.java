@@ -56,9 +56,12 @@ import org.dcm4che.image.ColorModelParam;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Transparency;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelListener;
@@ -410,9 +413,16 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
                     imageIcon = new ImageIcon();
                     imageIcon.setImage(currentbufferedimage);
                     loadedImage = imageIcon.getImage();
-                    image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
-                    Graphics2D g2 = image.createGraphics();
-                    g2.drawImage(loadedImage, 0, 0, null);
+                    GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+                    BufferedImage temp = gc.createCompatibleImage(loadedImage.getWidth(null), loadedImage.getHeight(null),Transparency.BITMASK);
+                    Graphics2D g2 = temp.createGraphics();
+                    //g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    g2.drawImage(loadedImage, 0, 0, temp.getWidth(), temp.getHeight(), null);
+                    g2.dispose();
+                    image = temp;
+                    //image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
+                    //Graphics2D g2 = image.createGraphics();
+                    //g2.drawImage(loadedImage, 0, 0, null);
                 }
                 if (dataset.getString(Tags.SOPClassUID)!=null&&dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
                     readDicom(selFile);
@@ -523,9 +533,10 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         super.paintComponent(gs);
         Graphics2D g = (Graphics2D) gs;
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         if (image != null) {
-            calculateNewHeightAndWidthBasedonAspectRatio();
+            if(!measured)
+                calculateNewHeightAndWidthBasedonAspectRatio();
             g.drawImage(image, startX, startY, thumbWidth, thumbHeight, null);
 
         }
@@ -545,7 +556,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
     }
     int finalHeight;
     int finalWidth;
-
+    boolean measured=false;
     private void calculateNewHeightAndWidthBasedonAspectRatio() {
         thumbRatio = thumbWidth / thumbHeight;
         double imageWidth = image.getWidth();
@@ -570,6 +581,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         }
         startX = (maxWidth - thumbWidth) / 2;
         startY = (maxHeight - thumbHeight) / 2;
+        measured=true;
     }
 
     public double getCurrentScaleFactor() {
@@ -592,9 +604,16 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
 
         imageIcon = new ImageIcon(currentbufferedimage);
         loadedImage = imageIcon.getImage();
-        image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2 = image.createGraphics();
+        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+        BufferedImage temp = gc.createCompatibleImage(loadedImage.getWidth(null), loadedImage.getHeight(null));
+        Graphics2D g2 = temp.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g2.drawImage(loadedImage, 0, 0, null);
+        g2.dispose();
+        image=temp;
+//        image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
+//        Graphics2D g2 = image.createGraphics();
+//        g2.drawImage(loadedImage, 0, 0, null);
         imageIcon = null;
         loadedImage = null;
 

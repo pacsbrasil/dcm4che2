@@ -77,11 +77,16 @@ public class ApplicationFacade {
         if (Platform.getCurrentPlatform().equals(Platform.MAC)) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", ApplicationContext.applicationName);
-            System.setProperty("apple.awt.brushMetalLook", "true");
-            System.setProperty("com.sun.media.jai.disableMediaLib", "true");
-            System.setProperty("apple.awt.graphics.EnableLazyPixelConversion.TYPE_3BYTE_BGR", "false");
-            System.setProperty("apple.awt.graphics.EnableLazyDrawing", "false");
-            System.setProperty("apple.awt.rendering", "speed");
+            System.setProperty("apple.awt.antialiasing", "true");
+            System.setProperty("apple.awt.textantialiasing", "true");
+//            System.setProperty("apple.awt.brushMetalLook", "true");
+//            System.setProperty("com.sun.media.jai.disableMediaLib", "true");
+//            System.setProperty("apple.awt.graphics.EnableLazyPixelConversion.TYPE_3BYTE_BGR", "false");
+//            System.setProperty("apple.awt.graphics.EnableLazyDrawing", "false");
+//            System.setProperty("apple.awt.rendering", "VALUE_RENDER_SPEED");
+//            System.setProperty("apple.awt.interpolation", "VALUE_INTERPOLATION_BILINEAR");
+//            System.setProperty("apple.awt.graphics.EnableQ2DX", "true");
+//            System.setProperty("apple.awt.graphics.UseQuartz", "true");
         }
     }    
 

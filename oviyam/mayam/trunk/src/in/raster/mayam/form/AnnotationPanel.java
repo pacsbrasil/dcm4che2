@@ -1311,7 +1311,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     }
 
     public void mouseDragged(MouseEvent e) {
-        System.out.println("Mouse dragged.");
+        //System.out.println("Mouse dragged.");
         if (tool.equalsIgnoreCase("panning")) {
             mouseLocX2 = e.getX();
             mouseLocY2 = e.getY();
@@ -1622,7 +1622,7 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
     }
 
     public void mousePressed(MouseEvent e) {
-        System.out.println("Mouse Pressed.");
+        //System.out.println("Mouse Pressed.");
         this.requestFocus();
         this.layeredCanvas.imgpanel.mousePressed(e);
         if (tool.equalsIgnoreCase("panning")) {

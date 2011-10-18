@@ -67,8 +67,8 @@ import javax.swing.border.LineBorder;
  */
 public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseListener, ComponentListener {
 
-    private static int ImageHeight = 512;
-    private static int ImageWidth = 512;
+    public static int ImageHeight = 512;
+    public static int ImageWidth = 512;
     public ImagePanel imgpanel;
     public AnnotationPanel annotationPanel;
     public TextOverlay textOverlay;
@@ -97,7 +97,7 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
         createLayers();
         this.addComponentListener(this);
     }
-
+    
     /**
      * This routine used to create the component once again for another series.
      * @param filePath

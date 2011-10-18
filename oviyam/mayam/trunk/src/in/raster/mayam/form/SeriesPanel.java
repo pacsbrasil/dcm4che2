@@ -46,7 +46,10 @@ import in.raster.mayam.util.DicomTags;
 import in.raster.mayam.util.DicomTagsReader;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -188,9 +191,16 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
                     imageIcon = new ImageIcon();
                     imageIcon.setImage(currentbufferedimage);
                     loadedImage = imageIcon.getImage();
-                    image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
-                    Graphics2D g2 = image.createGraphics();
-                    g2.drawImage(loadedImage, 0, 0, null);
+                    GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+                    BufferedImage temp = gc.createCompatibleImage(loadedImage.getWidth(null), loadedImage.getHeight(null));
+                    Graphics2D g2 = temp.createGraphics();
+                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    g2.drawImage(loadedImage, 0, 0, temp.getWidth(), temp.getHeight(), null);
+                    g2.dispose();
+                    image = temp;
+                    //image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
+                    //Graphics2D g2 = image.createGraphics();
+                    //g2.drawImage(loadedImage, 0, 0, null);
                 }
                 if (dataset.getString(Tag.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
                     isEncapsulatedDocument = true;
