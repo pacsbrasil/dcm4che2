@@ -267,7 +267,7 @@ public class FileCopyByQueryService extends ServiceMBeanSupport implements Notif
                     log.debug("IAN for series pk="+seriesPks.get(i)+" IAN:");log.debug(ian);
                 }
                 if (ian != null) {
-                    if (scheduleFilecopyOrder(ian, 0L))
+                    if (scheduleFilecopyOrder(ian))
                         nrOfOrders++;
                     else
                         notScheduledOrders++;
@@ -289,10 +289,10 @@ public class FileCopyByQueryService extends ServiceMBeanSupport implements Notif
         return sqlCmd == null ? "QueryFilecopyCmd not set!" : sqlCmd.formatSql();
     }
 
-    protected boolean scheduleFilecopyOrder(Dataset ian, long scheduledTime) {
+    protected boolean scheduleFilecopyOrder(Dataset ian) {
         try {
            return (Boolean) server.invoke(filecopyServiceName, "scheduleByIAN", new Object[] {
-                    ian, new Long(scheduledTime) },
+                    ian, -1L },
                     new String[] { Dataset.class.getName(), long.class.getName() });
         } catch (Exception e) {
             log.error("Schedule FileCopy Order failed:", e);

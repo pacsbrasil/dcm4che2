@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.hsm;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -247,8 +248,7 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
             }
         }
         
-        schedule(createOrder(seriesStored.getIAN()), isReady() ?
-        		ForwardingRules.toScheduledTime(destination) : notReadyDelay);
+        schedule(createOrder(seriesStored.getIAN()), -1l);
     }
     
     public boolean scheduleByIAN(Dataset ian, long scheduleTime) {
@@ -257,10 +257,21 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
         }
         return schedule(createOrder(ian), scheduleTime);
     }
+    
+    protected boolean schedule(BaseJmsOrder order) {
+        return schedule(order, isReady() ?
+                ForwardingRules.toScheduledTime(destination) : notReadyDelay);
+    }
 
     protected boolean schedule(BaseJmsOrder order, long scheduledTime) {
+        if (!isReady()) {
+            scheduledTime = notReadyDelay;
+        } else if (scheduledTime < 0) {
+            scheduledTime = ForwardingRules.toScheduledTime(destination);
+        }
         try {
-            log.info("Scheduling " + order);
+            log.info("Scheduling " + order + (scheduledTime == 0 ? 
+                    " now" : " at "+new Date(scheduledTime)) );
             jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY,
                     scheduledTime);
             return true;
