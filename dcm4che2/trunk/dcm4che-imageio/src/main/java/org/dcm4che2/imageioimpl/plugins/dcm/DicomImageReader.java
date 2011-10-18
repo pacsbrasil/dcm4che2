@@ -460,6 +460,11 @@ public class DicomImageReader extends ImageReader {
         return width;
     }
 
+    public String getTransferSyntaxUID() throws IOException {
+        readMetaData();
+        return tsuid;
+    }
+    
     /**
      * Exposes the window center value that was determined during the last
      * {@link #read(int, ImageReadParam)} call.
