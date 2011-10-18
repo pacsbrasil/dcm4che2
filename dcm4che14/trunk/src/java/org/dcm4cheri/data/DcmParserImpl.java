@@ -716,7 +716,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
         if (fixInvalidExposureDoseSeq != null && tag == Tags.ExposureDoseSeq) {
             if (log.isDebugEnabled())
                 log.debug("Switch Transfer Syntax back to EVR_LE");
-            setDcmDecodeParam(DcmDecodeParam.EVR_LE);
+            setDcmDecodeParam(fixInvalidExposureDoseSeq);
             fixInvalidExposureDoseSeq = null;
         }
         return lread;
