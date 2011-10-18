@@ -53,3 +53,7 @@ div.diagram-panel {
 div.table-panel {
     margin: 20px;   
 }
+
+span.c_ {
+    text-align: left;
+}
