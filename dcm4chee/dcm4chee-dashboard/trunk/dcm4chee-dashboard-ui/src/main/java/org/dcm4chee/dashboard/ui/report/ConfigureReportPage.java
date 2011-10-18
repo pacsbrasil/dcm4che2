@@ -225,14 +225,13 @@ public class ConfigureReportPage extends SecureWebPage {
     
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                    
                     String message = null;
                     try {
                         if (report.getDataSource() == null) {
                             message = new ResourceModel("dashboard.report.configure.form.statement-test-submit.no-datasource-message").wrapOnAssignment(this.getParent()).getObject();
                             return;
                         }
-                        window.redirectToInterceptPage(new DynamicDisplayPage(report, parameters, diagram, table));
+                        window.setResponsePage(new DynamicDisplayPage(report, parameters, diagram, table));
                     } catch (Exception e) {
                       message = e.getLocalizedMessage();
                       log.debug("Exception: ", e);

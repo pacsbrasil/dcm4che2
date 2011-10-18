@@ -108,11 +108,12 @@ public class DisplayReportTablePanel extends Panel {
 
     public DisplayReportTablePanel(String id, ReportModel report, final Map<String, String> parameters) {
         super(id);
+        
         this.report = report;
         this.parameters = parameters;
         
         setOutputMarkupId(true);
-        
+
         Connection jdbcConnection = null;
         try {
             add(new Link<Object>("table-download-xml") {
@@ -261,9 +262,9 @@ public class DisplayReportTablePanel extends Panel {
             RepeatingView columnHeaders = new RepeatingView("column-headers"); 
             add(columnHeaders);
             add(new RepeatingView("report-rows"));
-            
+
             pagesize = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).getReportTablePagesize();
-            
+
             jdbcConnection = DatabaseUtils.getDatabaseConnection(report.getDataSource());
             ResultSet resultSet = DatabaseUtils.getResultSet(jdbcConnection, report.getStatement(), parameters);
             resultSet.last();
@@ -274,12 +275,11 @@ public class DisplayReportTablePanel extends Panel {
                 columnHeaders.add(new Label(columnHeaders.newChildId(), resultSet.getMetaData().getColumnName(i)));
             }
             resultSet.close();
-            
             refreshView();
-            
+
             add(new Label("error-message", "").setVisible(false));
             add(new Label("error-reason", "").setVisible(false));
-        } catch (Exception e) {
+        } catch (Exception e) {           
             log.error("Exception: " + e.getMessage());
             add(new Label("error-message", new ResourceModel("dashboard.report.reporttable.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
             add(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
@@ -293,7 +293,6 @@ public class DisplayReportTablePanel extends Panel {
     }
     
     private void refreshView() {
-
         int start = offset + 1;
         int end = Math.min((offset + pagesize), total);
         
@@ -305,20 +304,19 @@ public class DisplayReportTablePanel extends Panel {
             jdbcConnection = DatabaseUtils.getDatabaseConnection(report.getDataSource());
             ResultSet resultSet = DatabaseUtils.getResultSet(jdbcConnection, report.getStatement(), parameters);
             resultSet.first();
-//            int rowCount = resultSet.getRow();
-//            while (rowCount <= end) {
-            while((resultSet.getRow() <= end) && !resultSet.isAfterLast()) {
-                if (resultSet.getRow() >= start) {
-                    WebMarkupContainer parent = new WebMarkupContainer(reportRows.newChildId());
-                    parent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(resultSet.getRow() - 1))));
-                    reportRows.add(parent);
-                    RepeatingView columnValues = new RepeatingView("column-values");
-                    parent.add(columnValues);
-                    for (int i = 1; i <= headers.size(); i++) 
-                        columnValues.add(new WebMarkupContainer(columnValues.newChildId()).add(new Label("column-value", resultSet.getString(i))));
+            if (resultSet.getRow() > 0)
+                while((resultSet.getRow() <= end) && !resultSet.isAfterLast()) {
+                    if (resultSet.getRow() >= start) {
+                        WebMarkupContainer parent = new WebMarkupContainer(reportRows.newChildId());
+                        parent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(resultSet.getRow() - 1))));
+                        reportRows.add(parent);
+                        RepeatingView columnValues = new RepeatingView("column-values");
+                        parent.add(columnValues);
+                        for (int i = 1; i <= headers.size(); i++) 
+                            columnValues.add(new WebMarkupContainer(columnValues.newChildId()).add(new Label("column-value", resultSet.getString(i))));
+                    }
+                    resultSet.next();
                 }
-                resultSet.next();
-            }
         } catch (Exception e) {
             log.error("Exception: " + e.getMessage());
             log.debug(getClass() + ": ", e);
