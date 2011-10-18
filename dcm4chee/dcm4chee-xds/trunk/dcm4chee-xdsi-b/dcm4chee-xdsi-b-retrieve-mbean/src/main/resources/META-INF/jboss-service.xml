@@ -8,7 +8,7 @@
          xmbean-dd="">
 
     <depends>dcm4chee.xds:service=XdsHttpCfgService</depends>
-    <depends>jboss.j2ee:module=dcm4chee-xdsi-b-retrieve-ejb-1.0.2.jar,service=EJB3</depends>
+    <depends>jboss.j2ee:module=dcm4chee-xdsi-b-retrieve-ejb-1.0.3.jar,service=EJB3</depends>
     <xmbean>
       <description><![CDATA[<b>XDS-I.b Imaging Source Retrieve MBeanService</b><br/>
 		Provides a XDS-I.b 'Retrieve Imaging Document Set' Service.<br/>.
