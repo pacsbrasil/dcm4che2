@@ -47,7 +47,7 @@
 	<property name="dcm4chee-hl7.jar" value="${dcm4chee-hl7.home}/target/lib/dcm4chee-hl7.jar" />
 	
     <!-- Override with your local Maven2 repository location -->
-    <property name="infoset-version" value="1.0.2"/>
+    <property name="infoset-version" value="1.0.3"/>
     <property name="m2.repos" value="${user.home}/.m2/repository"/>
     <property name="dcm4chee-xds-infoset-v30.lib" 
         value="${m2.repos}/dcm4che/dcm4chee-xds-infoset-v30/${infoset-version}"/>

@@ -34,7 +34,7 @@
 	<property name="dcm4chee.jar" value="${dcm4chee-sar.target}/lib/dcm4chee.jar" />
 
 	<!-- Override with your local Maven2 repository location -->
-	<property name="docstore-version" value="1.0.2"/>
+	<property name="docstore-version" value="1.0.3"/>
     <property name="m2.repos" value="${user.home}/.m2/repository"/>
 	<property name="dcm4chee-docstore.lib" 
 	    value="${m2.repos}/dcm4che/dcm4chee-docstore-store/${docstore-version}"/>
