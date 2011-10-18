@@ -104,7 +104,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     
     private ByteArrayOutputStream unBuf = null;
 
-    private boolean fixInvalidExposureDoseSeq;
+    private DcmDecodeParam fixInvalidExposureDoseSeq;
     
     public DcmParserImpl(InputStream in) {
         this.in = in instanceof DataInput ? (DataInput)in
@@ -412,8 +412,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                                 if (log.isDebugEnabled())
                                     log.debug("Detect invalid VR 'OB' of " + Tags.toString(rTag)
                                             + " - switch Transfer Syntax to IVR_LE");
+                                fixInvalidExposureDoseSeq = decodeParam;
                                 setDcmDecodeParam(DcmDecodeParam.IVR_LE);
-                                fixInvalidExposureDoseSeq = true;
                             case Tags.AcquisitionType:
                             case Tags.XRayTubeCurrentInuA:
                             case Tags.SingleCollimationWidth:
@@ -713,11 +713,11 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
 //        rLen = sqLen; // restore rLen value
         if (handler != null && unBuf == null)
             handler.endSequence(sqLen);
-        if (fixInvalidExposureDoseSeq && tag == Tags.ExposureDoseSeq) {
+        if (fixInvalidExposureDoseSeq != null && tag == Tags.ExposureDoseSeq) {
             if (log.isDebugEnabled())
                 log.debug("Switch Transfer Syntax back to EVR_LE");
             setDcmDecodeParam(DcmDecodeParam.EVR_LE);
-            fixInvalidExposureDoseSeq = false;
+            fixInvalidExposureDoseSeq = null;
         }
         return lread;
     }
