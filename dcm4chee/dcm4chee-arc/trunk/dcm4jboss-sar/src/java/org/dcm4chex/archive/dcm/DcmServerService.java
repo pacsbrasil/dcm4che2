@@ -272,6 +272,7 @@ public class DcmServerService extends ServiceMBeanSupport implements Notificatio
     public void handleNotification(Notification msg, Object arg1) {
         if (msg.getType().equals(org.jboss.system.server.Server.START_NOTIFICATION_TYPE)) {
             startDicomServer();
+            jbossStarted = true;
         }
     }
 
