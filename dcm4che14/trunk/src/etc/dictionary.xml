@@ -859,6 +859,7 @@
   <element tag="(0018,9343)" name="Contrast/Bolus Agent Detected" vr="CS" vm="1" key="ContrastBolusAgentDetected" />
   <element tag="(0018,9344)" name="Contrast/Bolus Agent Phase" vr="CS" vm="1" key="ContrastBolusAgentPhase" />
   <element tag="(0018,9345)" name="CTDIvol" vr="FD" vm="1" key="CTDIvol" />
+  <element tag="(0018,9346)" name="CTDI Phantom Type Code Sequence" vr="SQ" vm="1" key="CTDIPhantomTypeCodeSeq" />
   <element tag="(0018,9401)" name="Projection Pixel Calibration Sequence" vr="SQ" vm="1" key="ProjectionPixelCalibrationSeq" />
   <element tag="(0018,9402)" name="Distance Source to Isocenter" vr="FL" vm="1" key="DistanceSourceToIsocenter" />
   <element tag="(0018,9403)" name="Distance Object to Table Top" vr="FL" vm="1" key="DistanceObjectToTableTop" />
