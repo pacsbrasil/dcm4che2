@@ -45,6 +45,7 @@ import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -127,6 +128,11 @@ public class VOIUtils {
             DicomObject pr, int frame) {
         if (pr != null)
             return pr;
+        
+        if (isModalityLUTcontainsPixelIntensityRelationshipLUT(img)) {
+            return new BasicDicomObject();
+        }
+        
         DicomElement framed = img.get(Tag.PerFrameFunctionalGroupsSequence);
         if (framed != null) {
             int size = framed.countItems();

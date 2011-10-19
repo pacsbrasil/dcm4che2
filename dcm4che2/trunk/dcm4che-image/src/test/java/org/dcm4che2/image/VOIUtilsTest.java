@@ -6,7 +6,9 @@ import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
+import org.dcm4che2.image.VOIUtils;
 import org.junit.Test;
 
 public class VOIUtilsTest {
@@ -79,47 +81,81 @@ public class VOIUtilsTest {
 
         assertSame(sharedVoiLut, VOIUtils.selectVoiObject(obj, null, 2));
     }
-    
+
     @Test
     public void testSelectVOIObjectShouldReturnNullIfNoVoiDataIsFound() {
         assertNull(VOIUtils.selectVoiObject(new BasicDicomObject(), null, 1));
     }
-    
+
     @Test
     public void testGetLUTShouldReturnTheSpecifiedLutSequence() {
         DicomObject mlut = new BasicDicomObject();
         mlut.putInts(Tag.LUTDescriptor, VR.US, new int[] { 1, 0, 8 });
         mlut.putInts(Tag.LUTData, VR.US, new int[] { 255 });
         mlut.putString(Tag.ModalityLUTSequence, VR.LO, "HU");
-        
+
         DicomObject obj = new BasicDicomObject();
         obj.putNestedDicomObject(Tag.ModalityLUTSequence, mlut);
-        
+
         assertSame(mlut, VOIUtils.getLUT(obj, Tag.ModalityLUTSequence));
     }
-    
+
     @Test
     public void testGetLUTShouldReturnNullIfLutDataIsMissing() {
         DicomObject mlut = new BasicDicomObject();
         mlut.putInts(Tag.LUTDescriptor, VR.US, new int[] { 1, 0, 8 });
         mlut.putString(Tag.ModalityLUTSequence, VR.LO, "HU");
-        
+
         DicomObject obj = new BasicDicomObject();
         obj.putNestedDicomObject(Tag.ModalityLUTSequence, mlut);
-        
+
         assertNull(VOIUtils.getLUT(obj, Tag.ModalityLUTSequence));
     }
-    
+
     @Test
     public void testGetLUTShouldReturnNullIfLutDescriptorIsMissing() {
         DicomObject mlut = new BasicDicomObject();
         mlut.putInts(Tag.LUTData, VR.US, new int[] { 255 });
         mlut.putString(Tag.ModalityLUTSequence, VR.LO, "HU");
-        
+
         DicomObject obj = new BasicDicomObject();
         obj.putNestedDicomObject(Tag.ModalityLUTSequence, mlut);
-        
+
         assertNull(VOIUtils.getLUT(obj, Tag.ModalityLUTSequence));
+    }
+
+    @Test
+    public void testSelectModalityLUTObjectShouldReturnPrIfAvailable() {
+        BasicDicomObject pr = new BasicDicomObject();
+        pr.putSequence(Tag.ModalityLUTSequence);
+        BasicDicomObject img = new BasicDicomObject();
+        img.putString(Tag.SOPClassUID, VR.UI, UID.XRayAngiographicImageStorage);
+
+        assertSame(pr, VOIUtils.selectModalityLUTObject(img, pr, 0));
+    }
+
+    @Test
+    public void testSelectModalityLUTObjectShouldReturnImageIfImageIsARegularNonXaImage() {
+        BasicDicomObject pr = new BasicDicomObject();
+        pr.putSequence(Tag.ModalityLUTSequence);
+        BasicDicomObject img = new BasicDicomObject();
+        img.putString(Tag.SOPClassUID, VR.UI, UID.ComputedRadiographyImageStorage);
+
+        DicomObject actual = VOIUtils.selectModalityLUTObject(img, null, 0);
+        assertSame(img, actual);
+    }
+
+    @Test
+    public void testSelectModalityLUTObjectShouldReturnEmptyLutObjectIfImageIsXaAndNoPr() {
+        BasicDicomObject pr = new BasicDicomObject();
+        pr.putSequence(Tag.ModalityLUTSequence);
+        BasicDicomObject img = new BasicDicomObject();
+        img.putString(Tag.SOPClassUID, VR.UI, UID.XRayAngiographicImageStorage);
+
+        DicomObject actual = VOIUtils.selectModalityLUTObject(img, null, 0);
+        assertNotSame(pr, actual);
+        assertNotSame(img, actual);
+        assertTrue(actual.isEmpty());
     }
 
     private void addFrame(DicomElement frameGroupSequence, DicomObject voiLutGroup) {
