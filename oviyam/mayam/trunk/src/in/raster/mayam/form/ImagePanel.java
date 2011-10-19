@@ -1094,8 +1094,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     @Override
     public void paintComponent(Graphics gs) {
         Graphics2D g = (Graphics2D) gs;
-        if (!in.raster.mayam.facade.Platform.getCurrentPlatform().equals(in.raster.mayam.facade.Platform.MAC))
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         if (isRotate) {
             if (rotateRightAngle == 90) {
@@ -1132,7 +1131,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 op.filter(image, filteredImage);
                 image = filteredImage;
             }
-            calculateNewHeightAndWidthBasedonAspectRatio();
+            //if(!sizeSeted)
+                calculateNewHeightAndWidthBasedonAspectRatio();
             g.drawImage(image, startX, startY, thumbWidth, thumbHeight, null);
             if (displayScout) {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -1178,8 +1178,12 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         scoutLine2Y2 = line2Y2;
         repaint();
     }
-
+    private boolean sizeSeted=false;
     private void calculateNewHeightAndWidthBasedonAspectRatio() {
+//        thumbHeight = this.getCanvas().getLayeredCanvas().textOverlay.getHeight();
+//        thumbWidth = this.getCanvas().getLayeredCanvas().textOverlay.getWidth();
+//        maxHeight = thumbHeight;
+//        maxWidth = thumbWidth;
         thumbRatio = thumbWidth / thumbHeight;
         double imageWidth = image.getWidth();
         double imageHeight = image.getHeight();
@@ -1203,6 +1207,11 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
         startX = (maxWidth - thumbWidth) / 2;
         startY = (maxHeight - thumbHeight) / 2;
+//        if(thumbHeight>512){
+//            this.setSize(maxWidth, maxHeight);
+//            this.scaleFactor=getCurrentScaleFactor();
+//            sizeSeted=true;
+//        }
         displayZoomLevel();
     }
 

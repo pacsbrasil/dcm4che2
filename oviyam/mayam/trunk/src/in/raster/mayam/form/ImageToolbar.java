@@ -56,7 +56,6 @@ import in.raster.mayam.model.Instance;
 import in.raster.mayam.model.PresetModel;
 import in.raster.mayam.model.Series;
 import in.raster.mayam.model.Study;
-import in.raster.mayam.model.combo.WindowingComboModel;
 import in.raster.mayam.util.core.TranscoderMain;
 import java.awt.Color;
 import java.awt.Font;
@@ -79,7 +78,6 @@ import java.util.Timer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -1363,7 +1361,7 @@ public class ImageToolbar extends javax.swing.JPanel {
 
     public void jb1ActionPerformed(ActionEvent e) {
         changeLayout(1, 1);
-
+        
     }
 
     public void storeAnnotationHook() {

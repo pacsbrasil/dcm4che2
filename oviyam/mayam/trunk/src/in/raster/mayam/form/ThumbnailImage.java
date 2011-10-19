@@ -45,7 +45,11 @@ import in.raster.mayam.model.Instance;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.RenderingHints;
+import java.awt.Transparency;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
@@ -109,10 +113,17 @@ public class ThumbnailImage extends javax.swing.JPanel implements MouseListener,
     {
         this.img=img;
         instanceNo=img.getInstance_no();
-        fileUrl=img.getFilepath();        
-                image = new BufferedImage(img.getPixelData().getWidth(null), img.getPixelData().getHeight(null), BufferedImage.TYPE_INT_RGB);
-                Graphics2D g2 = image.createGraphics();
-                g2.drawImage(img.getPixelData(),0,0,null);     
+        fileUrl=img.getFilepath();
+        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+        BufferedImage temp = gc.createCompatibleImage(loadedImage.getWidth(null), loadedImage.getHeight(null),Transparency.BITMASK);
+        Graphics2D g2 = temp.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.drawImage(loadedImage, 0, 0, temp.getWidth(), temp.getHeight(), null);
+        g2.dispose();
+        image = temp;
+//        image = new BufferedImage(img.getPixelData().getWidth(null), img.getPixelData().getHeight(null), BufferedImage.TYPE_INT_RGB);
+//        Graphics2D g2 = image.createGraphics();
+//        g2.drawImage(img.getPixelData(),0,0,null);     
         initComponents();
         this.addListeners();
     }
@@ -156,9 +167,16 @@ public class ThumbnailImage extends javax.swing.JPanel implements MouseListener,
                 imageIcon = new ImageIcon();
                 imageIcon.setImage(currentbufferedimage);
                 loadedImage = imageIcon.getImage();
-                image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
-                Graphics2D g2 = image.createGraphics();
-                g2.drawImage(loadedImage,0,0,null);
+                GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+                BufferedImage temp = gc.createCompatibleImage(loadedImage.getWidth(null), loadedImage.getHeight(null),Transparency.BITMASK);
+                Graphics2D g2 = temp.createGraphics();
+                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                g2.drawImage(loadedImage, 0, 0, temp.getWidth(), temp.getHeight(), null);
+                g2.dispose();
+                image = temp;
+//                image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
+//                Graphics2D g2 = image.createGraphics();
+//                g2.drawImage(loadedImage,0,0,null);
             } catch (RuntimeException e) {
                 System.out.println("while Reading Image " + e.getMessage());
             }
@@ -209,6 +227,8 @@ public class ThumbnailImage extends javax.swing.JPanel implements MouseListener,
     @Override
     public void paintComponent(Graphics gs) {
         Graphics2D g = (Graphics2D) gs;
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         setHeaders();
         if (image != null) {
             g.drawImage(image, (this.getSize().width - 70) / 2, 35, 70, 70, null);

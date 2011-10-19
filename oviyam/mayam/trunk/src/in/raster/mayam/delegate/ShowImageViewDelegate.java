@@ -89,6 +89,15 @@ public class ShowImageViewDelegate extends Thread {
         ((Canvas) ApplicationContext.imgPanel.getCanvas()).setSelection();
         ApplicationContext.imgView.jTabbedPane1.setSelectedComponent(container);
         ApplicationContext.imgView.getImageToolbar().setWindowing();
+        try {
+            sleep(150);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+        ApplicationContext.imgPanel.doZoomIn();
+        ApplicationContext.annotationPanel.doZoomIn();
+        ApplicationContext.imgPanel.repaint();
+        ApplicationContext.imgPanel.invalidate();
         ApplicationContext.imgView.setVisible(true);
     }
 }

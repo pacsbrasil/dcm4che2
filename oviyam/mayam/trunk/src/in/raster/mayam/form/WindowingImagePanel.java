@@ -416,7 +416,7 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
                     GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
                     BufferedImage temp = gc.createCompatibleImage(loadedImage.getWidth(null), loadedImage.getHeight(null),Transparency.BITMASK);
                     Graphics2D g2 = temp.createGraphics();
-                    //g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
                     g2.drawImage(loadedImage, 0, 0, temp.getWidth(), temp.getHeight(), null);
                     g2.dispose();
                     image = temp;
@@ -558,6 +558,10 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
     int finalWidth;
     boolean measured=false;
     private void calculateNewHeightAndWidthBasedonAspectRatio() {
+        thumbWidth = this.getCanvas().getLayeredCanvas().textOverlay.getWidth();
+        thumbHeight = this.getCanvas().getLayeredCanvas().textOverlay.getHeight();
+        maxHeight=thumbHeight;
+        maxWidth=thumbWidth;
         thumbRatio = thumbWidth / thumbHeight;
         double imageWidth = image.getWidth();
         double imageHeight = image.getHeight();
@@ -576,12 +580,25 @@ public class WindowingImagePanel extends javax.swing.JPanel implements MouseWhee
         imageRatio = imageWidth / imageHeight;
         if (thumbRatio < imageRatio) {
             thumbHeight = (int) Math.round((thumbWidth + 0.00f) / imageRatio);
+            if(thumbHeight> this.getCanvas().getLayeredCanvas().textOverlay.getHeight()){
+                thumbHeight= maxHeight-5;
+                thumbWidth = (int) Math.round((thumbHeight + 0.00f) * imageRatio);
+            }
         } else {
             thumbWidth = (int) Math.round((thumbHeight + 0.00f) * imageRatio);
+            if(thumbWidth> this.getCanvas().getLayeredCanvas().textOverlay.getWidth()){
+                thumbWidth= maxWidth-5;
+                thumbHeight = (int) Math.round((thumbWidth + 0.00f) / imageRatio);
+            }
         }
         startX = (maxWidth - thumbWidth) / 2;
         startY = (maxHeight - thumbHeight) / 2;
-        measured=true;
+        if (startX < 0) startX = 5;
+        if (startY < 0) startY = 5;
+        if (thumbHeight > 384 || thumbWidth > 384) {
+            this.setSize(maxWidth, maxHeight);
+            measured = true;
+        }
     }
 
     public double getCurrentScaleFactor() {
