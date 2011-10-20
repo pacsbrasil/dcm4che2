@@ -151,7 +151,7 @@
         <repository>
             <id>jboss</id>
             <name>jboss Repository</name>
-      		<url>https://repository.jboss.org/nexus/content/groups/public</url>
+      		<url>http://repository.jboss.org/nexus/content/groups/public</url>
         </repository>
 	    <repository>
 	      <id>maven2-repository.dev.java.net</id>
