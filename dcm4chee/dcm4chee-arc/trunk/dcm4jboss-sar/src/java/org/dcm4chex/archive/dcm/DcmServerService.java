@@ -256,15 +256,15 @@ public class DcmServerService extends ServiceMBeanSupport implements Notificatio
     }
 
     protected void startService() throws Exception {
-        dcmsrv.addHandshakeFailedListener(tlsConfig.handshakeFailedListener());
-        dcmsrv.addHandshakeCompletedListener(tlsConfig.handshakeCompletedListener());
-        dcmsrv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol
-                .getCipherSuites()));
         // Start the DICOM server if this service is started after JBoss is already started (restart of this service)
         if (jbossStarted) {
             log.info("Start DICOM server after restart of DcmServer service!");
             startDicomServer();
         } else {
+            dcmsrv.addHandshakeFailedListener(tlsConfig.handshakeFailedListener());
+            dcmsrv.addHandshakeCompletedListener(tlsConfig.handshakeCompletedListener());
+            dcmsrv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol
+                    .getCipherSuites()));
             server.addNotificationListener(ServerImplMBean.OBJECT_NAME, this, null, null);
         }
     }
@@ -273,6 +273,9 @@ public class DcmServerService extends ServiceMBeanSupport implements Notificatio
         if (msg.getType().equals(org.jboss.system.server.Server.START_NOTIFICATION_TYPE)) {
             startDicomServer();
             jbossStarted = true;
+            try {
+                server.removeNotificationListener(ServerImplMBean.OBJECT_NAME, this);
+            } catch (Exception ignore) {}
         }
     }
 
@@ -286,7 +289,6 @@ public class DcmServerService extends ServiceMBeanSupport implements Notificatio
 
     protected void stopService() throws Exception {
         dcmsrv.stop();
-        server.removeNotificationListener(ServerImplMBean.OBJECT_NAME, this);
     }
     
 }

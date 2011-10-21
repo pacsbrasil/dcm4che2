@@ -360,28 +360,30 @@ public class HL7ServerService extends ServiceMBeanSupport implements
     }
 
     protected void startService() throws Exception {
-        logDir = new File(System.getProperty("jboss.server.log.dir")); 
-        hl7srv.addHandshakeFailedListener(tlsConfig.handshakeFailedListener());
-        hl7srv.addHandshakeCompletedListener(tlsConfig.handshakeCompletedListener());
-        hl7srv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol
-                .getCipherSuites()));
         if (jbossStarted) {
             log.info("Start HL7 server after restart of HL7Server service!");
             startHL7Server();
         } else {
+            logDir = new File(System.getProperty("jboss.server.log.dir")); 
+            hl7srv.addHandshakeFailedListener(tlsConfig.handshakeFailedListener());
+            hl7srv.addHandshakeCompletedListener(tlsConfig.handshakeCompletedListener());
+            hl7srv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol
+                    .getCipherSuites()));
             server.addNotificationListener(ServerImplMBean.OBJECT_NAME, this, null, null);
         }
     }
 
     protected void stopService() throws Exception {
         hl7srv.stop();
-        server.removeNotificationListener(ServerImplMBean.OBJECT_NAME, this);
     }
 
     public void handleNotification(Notification msg, Object arg1) {
         if (msg.getType().equals(org.jboss.system.server.Server.START_NOTIFICATION_TYPE)) {
             startHL7Server();
             jbossStarted = true;
+            try {
+                server.removeNotificationListener(ServerImplMBean.OBJECT_NAME, this);
+            } catch (Exception ignore) {}
         }
     }
     
