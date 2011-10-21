@@ -82,6 +82,8 @@ public class DcmServerService extends ServiceMBeanSupport implements Notificatio
 
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
+    private boolean jbossStarted;
+
     private DicomSecurityDelegate dicomSecurity =
             new DicomSecurityDelegate(this);
 
@@ -246,26 +248,40 @@ public class DcmServerService extends ServiceMBeanSupport implements Notificatio
     }
 
     protected void startService() throws Exception {
-        dcmsrv.addHandshakeFailedListener(tlsConfig.handshakeFailedListener());
-        dcmsrv.addHandshakeCompletedListener(tlsConfig.handshakeCompletedListener());
-        dcmsrv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol
-                .getCipherSuites()));
-        server.addNotificationListener(ServerImplMBean.OBJECT_NAME, this, null, null);
+        // Start the DICOM server if this service is started after JBoss is already started (restart of this service)
+        if (jbossStarted) {
+            log.info("Start DICOM server after restart of DcmServer service!");
+            startDicomServer();
+        }
+        else {
+            dcmsrv.addHandshakeFailedListener(tlsConfig.handshakeFailedListener());
+            dcmsrv.addHandshakeCompletedListener(tlsConfig.handshakeCompletedListener());
+            dcmsrv.setServerSocketFactory(tlsConfig.serverSocketFactory(protocol
+                    .getCipherSuites()));
+            server.addNotificationListener(ServerImplMBean.OBJECT_NAME, this, null, null);
+        }
     }
     
     public void handleNotification(Notification msg, Object arg1) {
         if (msg.getType().equals(org.jboss.system.server.Server.START_NOTIFICATION_TYPE)) {
+            startDicomServer();
+            jbossStarted = true;
             try {
-                dcmsrv.start();
-            } catch (IOException x) {
-                log.error("Start DICOM Server failed!", x);
-            }
+                server.removeNotificationListener(ServerImplMBean.OBJECT_NAME, this);
+            } catch (Exception ignore) {}
+        }
+    }
+
+    private void startDicomServer() {
+        try {
+            dcmsrv.start();
+        } catch (IOException x) {
+            log.error("Start DICOM Server failed!", x);
         }
     }
 
     protected void stopService() throws Exception {
         dcmsrv.stop();
-        server.removeNotificationListener(ServerImplMBean.OBJECT_NAME, this);
     }
     
 }
