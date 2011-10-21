@@ -1664,6 +1664,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
                 }
                 if (cause instanceof RemoteException) {
                     rex = (RemoteException)cause;
+                } else {
+                    break;
                 }
             }
             throw ex;
