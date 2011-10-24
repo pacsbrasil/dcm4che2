@@ -99,7 +99,7 @@ public class SSOLoginContext extends LoginContext {
             if (!LoginContextSecurityHelper.checkLoginAllowed(subject)) {
                 session.invalidate();
                 RequestCycle.get().getResponse().redirect("");
-                log.warn("Failed to authorize subject for login, denied. See 'LoginAllowed' rolename attribute in Web Config Service.");
+                log.warn("Failed to authorize subject for login, denied. See 'LoginAllowedRolename' parameter in web.xml.");
             } else
                 session.extendedLogin(subject);
         } catch (Exception e) {

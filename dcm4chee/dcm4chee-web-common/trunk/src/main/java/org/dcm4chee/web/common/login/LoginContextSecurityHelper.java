@@ -120,7 +120,9 @@ public class LoginContextSecurityHelper {
     }
 
     static boolean checkLoginAllowed(DefaultSubject subject) {
-        return subject.getPrincipals().contains(new SimplePrincipal(BaseCfgDelegate.getInstance().getLoginAllowedRolename())); 
+        String loginAllowedRolename = BaseCfgDelegate.getInstance().getLoginAllowedRolename();
+        return loginAllowedRolename == null ? false : 
+            subject.getPrincipals().contains(new SimplePrincipal(loginAllowedRolename)); 
     }
 
     public static Subject getJaasSubject() {
