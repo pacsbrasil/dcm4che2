@@ -57,3 +57,7 @@ div.table-panel {
 span.c_ {
     text-align: left;
 }
+
+div#reportTableCell {
+	text-align: left;
+}
