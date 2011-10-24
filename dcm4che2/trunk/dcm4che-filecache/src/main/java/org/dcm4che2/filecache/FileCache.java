@@ -133,8 +133,8 @@ public class FileCache {
     /** Record a file in the journaling cache, touching it to update the timestamp if update is true. */
     public synchronized void record(File f, boolean update)
             throws IOException {
-        String path = f.getPath().substring(
-                    cacheRootDir.getPath().length() + 1);
+        String path = f.getAbsolutePath().substring(
+                    cacheRootDir.getAbsolutePath().length() + 1);
         long time = System.currentTimeMillis();
         File journalDir = getJournalDirectory(time);
         File journalFile = new File(journalDir, journalFileName);
