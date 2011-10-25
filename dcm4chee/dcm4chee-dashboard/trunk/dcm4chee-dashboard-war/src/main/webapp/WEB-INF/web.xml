@@ -20,6 +20,10 @@
           <param-name>WebCfgServiceName</param-name>
           <param-value>dcm4chee.dashboard:service=WebConfig</param-value>
         </init-param>
+        <init-param>
+          <param-name>LoginAllowedRolename</param-name>
+          <param-value>LoginAllowed</param-value>
+        </init-param>
 	</filter>
 	<filter-mapping>
 		<filter-name>wicket.dcm4chee-dashboard</filter-name>

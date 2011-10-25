@@ -65,7 +65,6 @@ public class WebCfgService extends ServiceMBeanSupport {
     
     protected static final long serialVersionUID = 1L;
 
-    protected String loginAllowedRolename;
     protected boolean manageUsers;
     protected String webConfigPath;
     
@@ -74,14 +73,6 @@ public class WebCfgService extends ServiceMBeanSupport {
     protected static final String NONE = "NONE";
     protected final String NEWLINE = System.getProperty("line.separator", "\n");
     
-    public void setLoginAllowedRolename(String loginAllowedRolename) {
-        this.loginAllowedRolename = loginAllowedRolename;
-    }
-
-    public String getLoginAllowedRolename() {
-        return loginAllowedRolename;
-    }
-
     public void setManageUsers(boolean manageUsers) {
         this.manageUsers = manageUsers;
     }
