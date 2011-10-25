@@ -121,7 +121,12 @@ public class LoginContextSecurityHelper {
 
     static boolean checkLoginAllowed(DefaultSubject subject) {
         String loginAllowedRolename = 
-                ((BaseWicketApplication) RequestCycle.get().getApplication())
+                BaseWicketApplication.get()
+                .getInitParameter("LoginAllowedRolename");
+        // TODO: this is a workaround because of wicket tests in dcm4chee-web
+        if (loginAllowedRolename == null)
+            loginAllowedRolename =
+                BaseWicketApplication.get()
                 .getServletContext()
                 .getInitParameter("LoginAllowedRolename");
         return loginAllowedRolename == null ? false : 
