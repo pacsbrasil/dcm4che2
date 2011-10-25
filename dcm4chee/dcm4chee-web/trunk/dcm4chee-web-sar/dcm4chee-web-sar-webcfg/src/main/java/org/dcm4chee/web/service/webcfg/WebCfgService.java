@@ -92,8 +92,6 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     protected static final long serialVersionUID = 1L;
 
-    protected String loginAllowedRolename;
-
     protected boolean manageUsers;
 
     protected String webConfigPath;
@@ -982,7 +980,6 @@ public class WebCfgService extends ServiceMBeanSupport implements
                     .parseIntervalOrNever(emptyTrashInterval);
             if (timespan > 0L && interval > 0L) {
                 if (trashCleanerTimerId == null) {
-                    // TODO: here flies the Exception (NullPointerException)
                     trashCleanerTimerId = (Integer) server
                             .invoke(timerServiceName,
                                     "addNotification",
@@ -1090,14 +1087,6 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     public boolean isUseStudyPermissions() {
         return useStudyPermissions;
-    }
-
-    public void setLoginAllowedRolename(String loginAllowedRolename) {
-        this.loginAllowedRolename = loginAllowedRolename;
-    }
-
-    public String getLoginAllowedRolename() {
-        return loginAllowedRolename;
     }
 
     public void setManageUsers(boolean manageUsers) {

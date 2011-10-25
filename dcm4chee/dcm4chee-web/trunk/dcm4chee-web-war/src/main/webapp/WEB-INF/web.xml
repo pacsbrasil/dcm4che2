@@ -42,7 +42,11 @@
         <init-param>
           <param-name>PagemapTimeout</param-name>
           <param-value>5</param-value>
-        </init-param> 
+        </init-param>
+        <init-param>
+          <param-name>LoginAllowedRolename</param-name>
+          <param-value>LoginAllowed</param-value>
+        </init-param>
  	</filter>
     <filter-mapping>
         <filter-name>wicket.dcm4chee-web</filter-name>

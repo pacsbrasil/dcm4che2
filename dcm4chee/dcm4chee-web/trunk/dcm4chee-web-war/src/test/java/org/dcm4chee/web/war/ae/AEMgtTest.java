@@ -47,7 +47,8 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
         wicketTester = WASPTestUtil.getWicketTester(testApplicaton);
         MockServletContext ctx =(MockServletContext)wicketTester.getApplication().getServletContext();
         ctx.addInitParameter("WebCfgServiceName", "dcm4chee.web:service=WebConfig");
-
+        ctx.addInitParameter("LoginAllowedRolename", "LoginAllowed");
+        
         aeList.add(getTestAE("AE_TEST", "localhost", 11112));
         //aeList.add(getTestAE("AE_FAILED", "localhost", 12222));
         //aeList.add(getTestAE("AE_TEST2", "localhost", 11113));

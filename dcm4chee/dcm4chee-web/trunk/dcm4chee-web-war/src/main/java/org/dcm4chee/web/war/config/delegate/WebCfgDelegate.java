@@ -80,10 +80,6 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return getBoolean("manageUsers", true);
     }
 
-    public String getLoginAllowedRolename() {
-        return getString("LoginAllowed");
-    }
-
     public long getTooOldLimit() {
         return RetryIntervalls.parseIntervalOrNever(getString("tooOldLimit"));
     }

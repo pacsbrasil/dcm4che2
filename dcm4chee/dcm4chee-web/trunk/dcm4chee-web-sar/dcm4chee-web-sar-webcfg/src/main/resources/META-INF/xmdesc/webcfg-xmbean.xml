@@ -731,17 +731,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getLoginAllowedRolename"
-      setMethod="setLoginAllowedRolename">
-      <description><![CDATA[Rolename for which login is allowed.
-      ]]></description>
-      <name>loginAllowedRolename</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="LoginAllowed"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getStudyPermissionsAllRolename"
       setMethod="setStudyPermissionsAllRolename">
       <description><![CDATA[Rolename that can manage all study permissions.
