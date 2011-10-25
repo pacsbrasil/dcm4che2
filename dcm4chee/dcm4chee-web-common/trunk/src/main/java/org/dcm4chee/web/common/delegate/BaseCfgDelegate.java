@@ -47,9 +47,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import org.apache.wicket.Application;
-import org.apache.wicket.RequestCycle;
 import org.apache.wicket.protocol.http.WebApplication;
-import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,10 +73,6 @@ public class BaseCfgDelegate {
         if (singleton == null)
             singleton = new BaseCfgDelegate();
         return singleton;
-    }
-
-    public String getLoginAllowedRolename() {
-        return ((BaseWicketApplication) RequestCycle.get().getApplication()).getInitParameter("LoginAllowedRolename");
     }
 
     public boolean getManageUsers() {

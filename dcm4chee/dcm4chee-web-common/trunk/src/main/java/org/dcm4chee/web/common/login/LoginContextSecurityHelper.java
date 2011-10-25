@@ -29,7 +29,7 @@ import org.apache.wicket.RequestCycle;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.security.hive.authentication.DefaultSubject;
 import org.apache.wicket.security.hive.authorization.SimplePrincipal;
-import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.jboss.system.server.ServerConfigLocator;
 import org.slf4j.Logger;
@@ -120,7 +120,10 @@ public class LoginContextSecurityHelper {
     }
 
     static boolean checkLoginAllowed(DefaultSubject subject) {
-        String loginAllowedRolename = BaseCfgDelegate.getInstance().getLoginAllowedRolename();
+        String loginAllowedRolename = 
+                ((BaseWicketApplication) RequestCycle.get().getApplication())
+                .getServletContext()
+                .getInitParameter("LoginAllowedRolename");
         return loginAllowedRolename == null ? false : 
             subject.getPrincipals().contains(new SimplePrincipal(loginAllowedRolename)); 
     }
