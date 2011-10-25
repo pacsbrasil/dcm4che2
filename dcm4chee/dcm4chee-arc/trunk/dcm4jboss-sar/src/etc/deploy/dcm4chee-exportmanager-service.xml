@@ -10,6 +10,9 @@
   <mbean code="org.jboss.jms.server.destination.QueueService"
     name="dcm4chee.archive:service=Queue,name=ExportManager"
     xmbean-dd="xmdesc/Queue-xmbean.xml">
+	<attribute name="FullSize">500</attribute>
+	<attribute name="PageSize">100</attribute>
+	<attribute name="DownCacheSize">100</attribute>
     <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
     <depends>jboss.messaging:service=PostOffice</depends>
   </mbean>
