@@ -258,6 +258,7 @@ public class FileCopyByQueryService extends ServiceMBeanSupport implements Notif
         int nrOfOrders = 0;
         int notScheduledOrders = 0;
         try {
+            log.debug("SQL used to find series for copy:"+sqlCmd.getSQL());
             List<Long> seriesPks = sqlCmd.getSeriesPKs(delay < 0 ? null : new Long(System.currentTimeMillis()-delay), lastSeriesPk);
             log.info("Found "+seriesPks.size()+" Series for FileCopy! lastSeriesPk:"+lastSeriesPk);
             Dataset ian;
