@@ -891,6 +891,8 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                 if ( this.nrOfMoverequests == 0) {
                     sb.append(totalRequests).append(" C-MOVE requests done in ")
                     .append(end-start).append(" ms!\n");
+                    // TODO:
+                    start = 0;
                 } else {
                     sb.append(moveRequests.size()).append(" of ").append(totalRequests)
                     .append(" C-MOVE requests pending!\n");
