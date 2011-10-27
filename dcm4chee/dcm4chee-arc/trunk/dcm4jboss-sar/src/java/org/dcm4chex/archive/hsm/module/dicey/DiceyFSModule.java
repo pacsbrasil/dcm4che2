@@ -40,7 +40,7 @@ public class DiceyFSModule extends HSMFileBasedModule {
         final Boolean[] notMounted = new Boolean[]{null};
         Thread t = new Thread() {
             public void run() {
-                notMounted[0] = new File(stripTarIdentifier(fsID), getMountFailedCheckFile()).exists();
+                notMounted[0] = FileUtils.toFile(stripTarIdentifier(fsID), getMountFailedCheckFile()).exists();
             }
         };
         t.start();
