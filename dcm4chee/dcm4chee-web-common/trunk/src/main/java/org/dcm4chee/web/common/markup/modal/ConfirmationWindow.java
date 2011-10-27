@@ -182,6 +182,8 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         private Label msgLabel;
         private Label remarkLabel;
         
+        private boolean logout = false;
+        
         public MessageWindowPanel(String id) {
             super(id);
             
@@ -224,7 +226,8 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
                             close(target);
                         }
                     } catch (Exception x) {
-                        messageWindowPanel.msg =new Model<String>(x.getMessage());
+                        logout = true;
+                        setStatus(new Model<String>(x.getMessage()));
                         target.addComponent(MessageWindowPanel.this);
                     }
                 }
@@ -266,7 +269,7 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
                 public boolean isVisible() {
                     return !hasStatus;
                 }
-            }.add(new Label("declineLabel", decline)) );
+            }.add(new Label("declineLabel", decline)));
             
             add(new AjaxFallbackLink<Object>("cancel"){
                 private static final long serialVersionUID = 1L;
@@ -283,13 +286,16 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
                 }
             }.add(new Label("cancelLabel", cancel)) );
             
-            add(okBtn = new AjaxFallbackLink<Object>("ok") {
+            add(okBtn = new IndicatingAjaxFallbackLink<Object>("ok") {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    onOk(target);
+                    if (logout)   
+                        onConfirmation(target, userObject);
+                    else 
+                        onOk(target);
                     msg = null;
                     close(target);
                 }
@@ -297,6 +303,16 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
                 @Override
                 public boolean isVisible() {
                     return hasStatus;
+                }
+                
+                @Override
+                protected IAjaxCallDecorator getAjaxCallDecorator() {
+                    try {
+                        return macb.getAjaxCallDecorator();
+                    } catch (Exception e) {
+                        log.error("Failed to get IAjaxCallDecorator: ", e);
+                    }
+                    return null;
                 }
             });
             getOkBtn().add(new Label("okLabel", new ResourceModel("okBtn")));

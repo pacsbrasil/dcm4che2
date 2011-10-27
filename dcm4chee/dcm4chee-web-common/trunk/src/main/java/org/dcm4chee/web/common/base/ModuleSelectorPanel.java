@@ -100,10 +100,11 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
 
         @Override
         public void onConfirmation(AjaxRequestTarget target,
-                List<ProgressProvider> providers) {
+                List<ProgressProvider> providers) {            
             if (closePopups(providers)) {
                 throw new IllegalStateException(ModuleSelectorPanel.this.getString("logout.logout"));
-            } else if (isPopupOpen(providers)) {
+            }
+            else if (isPopupOpen(providers)) {
                 throw new IllegalStateException(ModuleSelectorPanel.this.getString("logout.waiting"));
             }
             doLogout();
@@ -245,6 +246,7 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
         showLogout = show;
         return this;
     }
+    
     private boolean closePopups(List<ProgressProvider> providers) {
         boolean b = false;
         if (providers != null) {
