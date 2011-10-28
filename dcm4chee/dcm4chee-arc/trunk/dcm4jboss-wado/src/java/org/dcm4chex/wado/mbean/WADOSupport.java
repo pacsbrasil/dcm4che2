@@ -1333,8 +1333,12 @@ public class WADOSupport implements NotificationListener {
                 }
 
                 DcmImageReadParamImpl dcmParam = (DcmImageReadParamImpl) param;
-                if (isCompressed(data))
+                if (isCompressed(data)) {
                     semaphoreAquired = DecompressCmd.acquireSemaphore();
+                    log.info("start decompression of image: " + rows + "x" + columns +
+                            " (current codec tasks: compress&decompress:" + DecompressCmd.getNrOfConcurrentCodec()+
+                            " compress:" + DecompressCmd.getNrOfConcurrentDecompress()+")");
+                }
                 bi = reader.read(frame, dcmParam);
             } catch (Exception x) {
                 log.error("Can't read image:", x);
@@ -1346,8 +1350,11 @@ public class WADOSupport implements NotificationListener {
             }
             return resize(bi, rows, columns, reader.getAspectRatio(frame));
         } finally {
-            if (semaphoreAquired)
+            if (semaphoreAquired) {
                 DecompressCmd.releaseSemaphore();
+                log.info("finished decompression. (remaining codec tasks: compress&decompress:"+DecompressCmd.getNrOfConcurrentCodec()+
+                        " decompress:"+DecompressCmd.getNrOfConcurrentDecompress()+")");
+            }
             // !!!! without this, we get "too many open files" when generating
             // icons in a tight loop
             in.close();

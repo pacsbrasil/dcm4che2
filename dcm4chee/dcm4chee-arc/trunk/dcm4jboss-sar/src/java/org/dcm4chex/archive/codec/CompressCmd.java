@@ -56,6 +56,7 @@ import java.io.OutputStream;
 import java.nio.ByteOrder;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageWriteParam;
@@ -96,7 +97,7 @@ public abstract class CompressCmd extends CodecCmd {
 
     private static int maxConcurrentCompress = 1;
     private static Semaphore compressSemaphore = new FIFOSemaphore(maxConcurrentCompress);
-
+    private static AtomicInteger nrOfConcurrentCompress = new AtomicInteger();
     private static final byte[] ITEM_TAG = { (byte) 0xfe, (byte) 0xff,
             (byte) 0x00, (byte) 0xe0 };
     private static final String[] DERIVED_PRIMARY = { "DERIVED", "PRIMARY" };
@@ -463,7 +464,8 @@ public abstract class CompressCmd extends CodecCmd {
             compressSemaphore.acquire();
             compressSemaphoreAquired = true;
             log.info("start compression of image: " + rows + "x" + columns
-                    + "x" + frames + " (concurrency:" + (nrOfConcurrentCodec.incrementAndGet())+")");
+                    + "x" + frames + " (current codec tasks: compress&decompress:" + (nrOfConcurrentCodec.incrementAndGet())+
+                    " compress:"+(nrOfConcurrentCompress.incrementAndGet())+")");
             t1 = System.currentTimeMillis();
             ImageOutputStream ios = new MemoryCacheImageOutputStream(out);
             ios.setByteOrder(ByteOrder.LITTLE_ENDIAN);
@@ -518,6 +520,7 @@ public abstract class CompressCmd extends CodecCmd {
                 biPool.returnBufferedImage(bi);
             if (compressSemaphoreAquired) {
                 compressSemaphore.release();
+                nrOfConcurrentCompress.decrementAndGet();
             }
             if (codecSemaphoreAquired) {
                 log.debug("release codec semaphore");
@@ -528,7 +531,8 @@ public abstract class CompressCmd extends CodecCmd {
         long t2 = System.currentTimeMillis();
         int pixelDataLength = frameLength * frames;
         log.info("finished compression " + ((float) pixelDataLength / end)
-                + " : 1 in " + (t2 - t1) + "ms." + " (remaining concurrency:"+nrOfConcurrentCodec+")");
+                + " : 1 in " + (t2 - t1) + "ms." + " (remaining codec tasks: compress&decompress:"+nrOfConcurrentCodec+
+                " compress:"+nrOfConcurrentCompress+")");
         if (compressionRatio != null && compressionRatio.length > 0)
             compressionRatio[0] =
                 (float) pixelDataLength * bitsUsed() / bitsAllocated / end;

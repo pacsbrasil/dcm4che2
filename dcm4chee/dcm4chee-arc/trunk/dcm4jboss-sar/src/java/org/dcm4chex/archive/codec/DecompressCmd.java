@@ -53,6 +53,7 @@ import java.nio.ByteOrder;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
@@ -99,6 +100,7 @@ public class DecompressCmd extends CodecCmd {
 
     private static int maxConcurrentDecompress = 1;
     private static FIFOSemaphore decompressSemaphore = new FIFOSemaphore(maxConcurrentDecompress);
+    private static AtomicInteger nrOfConcurrentDecompress = new AtomicInteger();
 
     public static void setMaxConcurrentDecompression(int maxConcurrentDecompress) {
         decompressSemaphore = new FIFOSemaphore(maxConcurrentDecompress);
@@ -200,7 +202,8 @@ public class DecompressCmd extends CodecCmd {
         try {
             semaphoreAquired = acquireSemaphore();
             log.info("start decompression of image: " + rows + "x" + columns
-                    + "x" + frames + " (concurrency:" + nrOfConcurrentCodec.get()+")");
+                    + "x" + frames + " (current codec tasks: compress&decompress:" + nrOfConcurrentCodec.get()+
+                    " decompress:"+nrOfConcurrentDecompress.get()+")");
             t1 = System.currentTimeMillis();
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(tsuid);
@@ -244,7 +247,8 @@ public class DecompressCmd extends CodecCmd {
                 releaseSemaphore();
         }
         long t2 = System.currentTimeMillis();
-        log.info("finished decompression in " + (t2 - t1) + "ms." + " (remaining concurrency:"+nrOfConcurrentCodec+")");
+        log.info("finished decompression in " + (t2 - t1) + "ms." + " (remaining codec tasks: compress&decompress:"+nrOfConcurrentCodec+
+                " decompress:"+nrOfConcurrentDecompress+")");
     }
 
     public static boolean acquireSemaphore() throws InterruptedException {
@@ -254,11 +258,13 @@ public class DecompressCmd extends CodecCmd {
         try {
             decompressSemaphore.acquire();
             success = true;
+            nrOfConcurrentDecompress.incrementAndGet();
         } finally {
             if (!success)
                 codecSemaphore.release();
+            else
+                nrOfConcurrentCodec.incrementAndGet();
         }
-        nrOfConcurrentCodec.incrementAndGet();
         return success;
     }
 
@@ -267,6 +273,14 @@ public class DecompressCmd extends CodecCmd {
         decompressSemaphore.release();
         codecSemaphore.release();
         nrOfConcurrentCodec.decrementAndGet();
+        nrOfConcurrentDecompress.decrementAndGet();
+    }
+    
+    public static int getNrOfConcurrentCodec() {
+        return nrOfConcurrentCodec.get();
+    }
+    public static int getNrOfConcurrentDecompress() {
+        return nrOfConcurrentDecompress.get();
     }
 
     private void write(WritableRaster raster, OutputStream out,
