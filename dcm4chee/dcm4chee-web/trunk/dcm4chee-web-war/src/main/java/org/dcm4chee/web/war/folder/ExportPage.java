@@ -427,7 +427,9 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         List<Instance> instances = new ArrayList<Instance>();
         for (MoveRequest rq : exportInfo.getMoveRequests()) {
-           instances.addAll(dao.getDownloadableInstances(rq.studyIUIDs, rq.seriesIUIDs, rq.sopIUIDs));
+            List<Instance> downloadableInstances = dao.getDownloadableInstances(rq.studyIUIDs, rq.seriesIUIDs, rq.sopIUIDs);
+            if (downloadableInstances != null)
+                instances.addAll(downloadableInstances);
         }
         log.debug("found instances for file export:{}",instances.size());
         ArrayList<FileToExport> files = new ArrayList<FileToExport>(instances.size());
@@ -597,11 +599,8 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
     }
     
     private List<Study> getStudiesOfPatient(PatientModel pat) {
-        StudyListLocal dao = (StudyListLocal)
-            JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        return dao.findStudiesOfPatient(pat.getPk(), true, 
-                StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
-                        null : StudyPermissionHelper.get().getDicomRoles());
+        return ((StudyListLocal)
+                JNDIUtils.lookup(StudyListLocal.JNDI_NAME)).findStudiesOfPatient(pat.getPk(), true, null);
     }
 
     private boolean isExportInactive() {
@@ -672,7 +671,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
         }
 
         public boolean hasSelection() {
-            return (nrPat | nrStudy | nrSeries | nrInstances) != 0;
+            return totNrInstances > 0;
         }
         
         @SuppressWarnings("unused")
@@ -891,7 +890,6 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                 if ( this.nrOfMoverequests == 0) {
                     sb.append(totalRequests).append(" C-MOVE requests done in ")
                     .append(end-start).append(" ms!\n");
-                    // TODO:
                     start = 0;
                 } else {
                     sb.append(moveRequests.size()).append(" of ").append(totalRequests)
