@@ -56,6 +56,7 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
+import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
@@ -293,8 +294,8 @@ public class RoleListPanel extends Panel {
                 .add(new SecurityBehavior(getModuleName() + ":webroleLink"))
             );
             if (role.isWebRole())
-                webroleCell.add(new AttributeModifier("style", true, 
-                        new Model<String>("background-color: " + webRoleColor)));
+                webroleCell.add(new AttributeAppender("style",  
+                        new Model<String>("background-color: " + webRoleColor), " "));
             rowParent.add(webroleCell);
             
             WebMarkupContainer dicomroleCell = new WebMarkupContainer("dicomrole-cell");
@@ -307,8 +308,8 @@ public class RoleListPanel extends Panel {
                 }}.setEnabled(false)
             );
             if (role.isDicomRole())
-                dicomroleCell.add(new AttributeModifier("style", true, 
-                        new Model<String>("background-color: " + dicomRoleColor)));
+                dicomroleCell.add(new AttributeAppender("style", 
+                        new Model<String>("background-color: " + dicomRoleColor), " "));
             rowParent.add(dicomroleCell);
 
             winSize = windowsizeMap.get("aetGroupAssignment");
@@ -340,8 +341,8 @@ public class RoleListPanel extends Panel {
                 .add(new SecurityBehavior(getModuleName() + ":aetroleLink"))
             );
             if (role.isAETRole())
-                aetroleCell.add(new AttributeModifier("style", true, 
-                        new Model<String>("background-color: " + aetRoleColor)));
+                aetroleCell.add(new AttributeAppender("style",  
+                        new Model<String>("background-color: " + aetRoleColor), " "));
             rowParent.add(aetroleCell);
 
             RepeatingView groupContentCells = new RepeatingView("group-content-cells");
@@ -359,8 +360,8 @@ public class RoleListPanel extends Panel {
                     .add(groupContentCell
                     .add(groupCheckbox));
                 if (role.getRoleGroups().contains(group.getUuid()))
-                    groupContentCell.add(new AttributeModifier("style", true, 
-                                new Model<String>("background-color: " + group.getColor())));
+                    groupContentCell.add(new AttributeAppender("style",  
+                                new Model<String>("background-color: " + group.getColor()), " "));
             }
         }
     }
