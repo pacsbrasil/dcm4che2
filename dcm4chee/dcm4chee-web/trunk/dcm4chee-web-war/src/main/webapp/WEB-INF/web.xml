@@ -47,7 +47,19 @@
           <param-name>LoginAllowedRolename</param-name>
           <param-value>LoginAllowed</param-value>
         </init-param>
- 	</filter>
+        <init-param>
+          <param-name>StudyPermissionsAllRolename</param-name>
+          <param-value>StudyPermissionsAll</param-value>
+        </init-param>
+        <init-param>
+          <param-name>StudyPermissionsOwnRolename</param-name>
+          <param-value>StudyPermissionsOwn</param-value>
+        </init-param>
+        <init-param>
+          <param-name>StudyPermissionsPropagationRolename</param-name>
+          <param-value>StudyPermissionsPropagation</param-value>
+        </init-param>
+    </filter>
     <filter-mapping>
         <filter-name>wicket.dcm4chee-web</filter-name>
         <url-pattern>/*</url-pattern>

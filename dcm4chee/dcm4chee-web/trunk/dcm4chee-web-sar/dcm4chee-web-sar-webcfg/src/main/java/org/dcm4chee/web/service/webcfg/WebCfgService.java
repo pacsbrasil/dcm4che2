@@ -190,10 +190,6 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     private boolean useFamilyAndGivenNameQueryFields;
 
-    private String studyPermissionsAllRolename;
-
-    private String studyPermissionsOwnRolename;
-
     private boolean manageStudyPermissions;
 
     private boolean useStudyPermissions;
@@ -1053,24 +1049,6 @@ public class WebCfgService extends ServiceMBeanSupport implements
         } else {
             System.setProperty("dcm4chee-usr.cfg.adminrole", name);
         }
-    }
-
-    public void setStudyPermissionsAllRolename(
-            String studyPermissionsAllRolename) {
-        this.studyPermissionsAllRolename = studyPermissionsAllRolename;
-    }
-
-    public String getStudyPermissionsAllRolename() {
-        return studyPermissionsAllRolename;
-    }
-
-    public void setStudyPermissionsOwnRolename(
-            String studyPermissionsOwnRolename) {
-        this.studyPermissionsOwnRolename = studyPermissionsOwnRolename;
-    }
-
-    public String getStudyPermissionsOwnRolename() {
-        return studyPermissionsOwnRolename;
     }
 
     public void setManageStudyPermissions(boolean manageStudyPermissions) {

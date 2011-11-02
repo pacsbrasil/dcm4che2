@@ -281,8 +281,8 @@ public class StudyPermissionHelper implements Serializable {
     
     private void setStudyPermissionRight(org.apache.wicket.security.hive.authentication.Subject webSubject) {
         studyPermissionRight = StudyPermissionRight.NONE;
-        String studyPermissionsAll = WebCfgDelegate.getInstance().getStudyPermissionsAllRolename();
-        String studyPermissionsOwn = WebCfgDelegate.getInstance().getStudyPermissionsOwnRolename();
+        String studyPermissionsAll = BaseWicketApplication.get().getInitParameter("StudyPermissionsAllRolename");
+        String studyPermissionsOwn = BaseWicketApplication.get().getInitParameter("StudyPermissionsOwnRolename");       
         if (studyPermissionsAll != null || studyPermissionsOwn != null) {
             Iterator<org.apache.wicket.security.hive.authorization.Principal> i = webSubject.getPrincipals().iterator();
             while (i.hasNext()) {

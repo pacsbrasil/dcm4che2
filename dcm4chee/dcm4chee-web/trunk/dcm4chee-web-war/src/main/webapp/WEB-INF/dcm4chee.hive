@@ -58,6 +58,14 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "S
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsStudyLink", "render, enable";
 };
 
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "StudyPermissionsPropagation"
+{
+// KEY: swarm.principal.StudyPermissionsPropagation
+    permission ${ComponentPermission} "org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage:studypermissions:changeStudyPermissionAssignmentCheckbox", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsPatientLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsStudyLink", "render, enable";
+};
+
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "StudyPermissionsOwn"
 {
 // KEY: swarm.principal.StudyPermissionsOwn

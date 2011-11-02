@@ -731,28 +731,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getStudyPermissionsAllRolename"
-      setMethod="setStudyPermissionsAllRolename">
-      <description><![CDATA[Rolename that can manage all study permissions.
-      ]]></description>
-      <name>studyPermissionsAllRolename</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="StudyPermissionsAll"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getStudyPermissionsOwnRolename"
-      setMethod="setStudyPermissionsOwnRolename">
-      <description><![CDATA[Rolename that can manage own study permissions.
-      ]]></description>
-      <name>studyPermissionsOwnRolename</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="StudyPermissionsOwn"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getUserMgtUserRole"
       setMethod="setUserMgtUserRole">
       <description><![CDATA[User Rolename for User Management.
