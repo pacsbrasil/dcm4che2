@@ -32,39 +32,6 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getLoginAllowedRolename"
-      setMethod="setLoginAllowedRolename">
-      <description><![CDATA[Rolename for which login is allowed.
-      ]]></description>
-      <name>loginAllowedRolename</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="LoginAllowed"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getStudyPermissionsAllRolename"
-      setMethod="setStudyPermissionsAllRolename">
-      <description><![CDATA[Rolename who can manage all study permissions.
-      ]]></description>
-      <name>studyPermissionsAllRolename</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="StudyPermissionsAll"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
-      getMethod="getStudyPermissionsOwnRolename"
-      setMethod="setStudyPermissionsOwnRolename">
-      <description><![CDATA[Rolename who can manage own study permissions.
-      ]]></description>
-      <name>studyPermissionsOwnRolename</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="StudyPermissionsOwn"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="getRolesMappingFilename"
       setMethod="setRolesMappingFilename">
       <description><![CDATA[Filename path for the roles mapping file (JSON format).<br/>
