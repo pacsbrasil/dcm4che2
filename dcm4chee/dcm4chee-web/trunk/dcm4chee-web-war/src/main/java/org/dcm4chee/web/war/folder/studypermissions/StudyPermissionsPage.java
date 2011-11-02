@@ -39,6 +39,7 @@
 package org.dcm4chee.web.war.folder.studypermissions;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -111,6 +112,7 @@ public class StudyPermissionsPage extends SecureWebPage {
     private long studyCountForPatient = -1;
    
     private List<StudyPermission> currentStudyPermissions;
+    private HashSet<String> allowedActions = new HashSet<String>(7);
     private ListModel<Role> allDicomRoles;
     
     private String studyInstanceUID;
@@ -154,7 +156,7 @@ public class StudyPermissionsPage extends SecureWebPage {
 
             @Override
             public boolean isEnabled() {
-                return checkStudyPermissionRights(null, true);
+                return checkStudyPermissionRights();
             }
             
             @Override
@@ -212,7 +214,9 @@ public class StudyPermissionsPage extends SecureWebPage {
             studyCountForPatient = dao.countStudiesOfPatient(patModel.getPk());
         } else 
             currentStudyPermissions = dao.getStudyPermissions(studyInstanceUID);            
-
+        for (StudyPermission sp : currentStudyPermissions) {
+            allowedActions.add(sp.getAction());
+        }
         studyPermissionActions.add(StudyPermission.APPEND_ACTION);
         studyPermissionActions.add(StudyPermission.DELETE_ACTION);
         studyPermissionActions.add(StudyPermission.EXPORT_ACTION);
@@ -253,7 +257,7 @@ public class StudyPermissionsPage extends SecureWebPage {
 
                 @Override
                 public boolean isEnabled() {
-                    return checkStudyPermissionRights(role, true);
+                    return checkStudyPermissionRights();
                 }
                 
                 @Override
@@ -299,7 +303,7 @@ public class StudyPermissionsPage extends SecureWebPage {
 
                     @Override
                     public boolean isEnabled() {
-                        return checkStudyPermissionRights(role, false);
+                        return checkStudyPermissionEditable(role, action);
                     }
                     
                     @Override
@@ -409,14 +413,18 @@ public class StudyPermissionsPage extends SecureWebPage {
         }
     }
 
-    private boolean checkStudyPermissionRights(Role role, boolean permitOnlyGrantAll) {
+    private boolean checkStudyPermissionRights() {
         StudyPermissionHelper sph = StudyPermissionHelper.get();
-        if (!sph.isUseStudyPermissions() || sph.getStudyPermissionRight().equals(StudyPermissionRight.ALL))
+        return (!sph.isUseStudyPermissions() || 
+                sph.getStudyPermissionRight().equals(StudyPermissionRight.ALL));
+    }
+    private boolean checkStudyPermissionEditable(Role role, String action) {
+        if (checkStudyPermissionRights()) 
             return true;
-        if ((permitOnlyGrantAll) || (role == null)) 
-            return false;
+        StudyPermissionHelper sph = StudyPermissionHelper.get();
         if (sph.getStudyPermissionRight().equals(StudyPermissionRight.OWN))
-            return sph.getDicomRoles().contains(role.getRolename());
+            return (sph.isPropagationAllowed() || sph.getDicomRoles().contains(role.getRolename())) 
+                && allowedActions.contains(action);
         return false;
     }
     

@@ -91,6 +91,7 @@ public class StudyPermissionHelper implements Serializable {
     
     private boolean manageStudyPermissions;
     private boolean useStudyPermissions;
+    private boolean allowPropagation;
     
     private boolean ignoreEditTimeLimit;
     
@@ -229,6 +230,10 @@ public class StudyPermissionHelper implements Serializable {
         return studyPermissionRight;
     }
     
+    public boolean isPropagationAllowed() {
+        return allowPropagation;
+    }
+
     public boolean ignoreEditTimeLimit() {
         return ignoreEditTimeLimit;
     }
@@ -282,7 +287,8 @@ public class StudyPermissionHelper implements Serializable {
     private void setStudyPermissionRight(org.apache.wicket.security.hive.authentication.Subject webSubject) {
         studyPermissionRight = StudyPermissionRight.NONE;
         String studyPermissionsAll = BaseWicketApplication.get().getInitParameter("StudyPermissionsAllRolename");
-        String studyPermissionsOwn = BaseWicketApplication.get().getInitParameter("StudyPermissionsOwnRolename");       
+        String studyPermissionsOwn = BaseWicketApplication.get().getInitParameter("StudyPermissionsOwnRolename");
+        String studyPermissionsPropagation = BaseWicketApplication.get().getInitParameter("StudyPermissionsPropagationRolename");
         if (studyPermissionsAll != null || studyPermissionsOwn != null) {
             Iterator<org.apache.wicket.security.hive.authorization.Principal> i = webSubject.getPrincipals().iterator();
             while (i.hasNext()) {
@@ -290,8 +296,10 @@ public class StudyPermissionHelper implements Serializable {
                 if (rolename.equals(studyPermissionsAll)) {
                     studyPermissionRight = StudyPermissionRight.ALL;
                     break;
-                } else if (rolename.equals(studyPermissionsOwn))
+                } else if (rolename.equals(studyPermissionsOwn)) {
                     studyPermissionRight = StudyPermissionRight.OWN;
+                } else if (rolename.equals(studyPermissionsPropagation))
+                    allowPropagation = true;
             }
         }
     }
