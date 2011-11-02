@@ -598,6 +598,7 @@ public class StudyListPage extends Panel {
 
                 form.clearInput();
                 retainSelectedPatients();
+                viewport.getFilter().clear();
                 ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("modality")).setModelObject("*");
                 DropDownChoice sourceAETDropDownChoice = ((DropDownChoice) ((WebMarkupContainer) form.get("searchDropdowns")).get("sourceAET"));
                 if (sourceAETDropDownChoice.getChoices().size() > 0)
