@@ -194,13 +194,15 @@ public class DecompressCmd extends CodecCmd {
 
     public void decompress(ByteOrder byteOrder, OutputStream out)
             throws Exception {
-        long t1;
+        long t1 = System.currentTimeMillis();
         ImageReader reader = null;
         BufferedImage bi = null;
         boolean patchJpegLS = false;
         boolean semaphoreAquired = false;
         try {
             semaphoreAquired = acquireSemaphore();
+            if (log.isDebugEnabled()) 
+                log.debug("codec semaphore acquired after "+(System.currentTimeMillis() - t1)+"ms!");
             log.info("start decompression of image: " + rows + "x" + columns
                     + "x" + frames + " (current codec tasks: compress&decompress:" + nrOfConcurrentCodec.get()+
                     " decompress:"+nrOfConcurrentDecompress.get()+")");
@@ -243,16 +245,20 @@ public class DecompressCmd extends CodecCmd {
                 reader.dispose();
             if (bi != null)
                 biPool.returnBufferedImage(bi);
+            long t2 = System.currentTimeMillis();
+            log.info("finished decompression in " + (t2 - t1) + "ms." + " (remaining codec tasks: compress&decompress:"+nrOfConcurrentCodec+
+                    " decompress:"+nrOfConcurrentDecompress+")");
             if (semaphoreAquired)
                 releaseSemaphore();
         }
-        long t2 = System.currentTimeMillis();
-        log.info("finished decompression in " + (t2 - t1) + "ms." + " (remaining codec tasks: compress&decompress:"+nrOfConcurrentCodec+
-                " decompress:"+nrOfConcurrentDecompress+")");
     }
 
     public static boolean acquireSemaphore() throws InterruptedException {
-        log.debug("acquire codec semaphore");
+        if (log.isDebugEnabled()) {
+            log.debug("acquire codec semaphore");
+            log.debug("#####codecSemaphore.permits():"+codecSemaphore.permits());
+            log.debug("#####decompressSemaphore.permits():"+decompressSemaphore.permits());
+        }
         boolean success = false;
         codecSemaphore.acquire();
         try {

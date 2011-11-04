@@ -451,18 +451,25 @@ public abstract class CompressCmd extends CodecCmd {
 
     public int compress(ByteOrder byteOrder, InputStream in, OutputStream out,
             float[] compressionRatio) throws Exception {
-        long t1;
+        long t1 = System.currentTimeMillis();
         ImageWriter w = null;
         BufferedImage bi = null;
         boolean codecSemaphoreAquired = false;
         boolean compressSemaphoreAquired = false;
         long end = 0;
+        int pixelDataLength;
         try {
-            log.debug("acquire codec semaphore");
+            if (log.isDebugEnabled()) {
+                log.debug("acquire codec semaphore:");
+                log.debug("#####codecSemaphore.permits():"+codecSemaphore.permits());
+                log.debug("#####compressSemaphore.permits():"+compressSemaphore.permits());
+            }
             codecSemaphore.acquire();
             codecSemaphoreAquired = true;
             compressSemaphore.acquire();
             compressSemaphoreAquired = true;
+            if (log.isDebugEnabled()) 
+                log.debug("codec semaphore acquired after "+(System.currentTimeMillis() - t1)+"ms!");
             log.info("start compression of image: " + rows + "x" + columns
                     + "x" + frames + " (current codec tasks: compress&decompress:" + (nrOfConcurrentCodec.incrementAndGet())+
                     " compress:"+(nrOfConcurrentCompress.incrementAndGet())+")");
@@ -518,6 +525,11 @@ public abstract class CompressCmd extends CodecCmd {
                 w.dispose();
             if (bi != null)
                 biPool.returnBufferedImage(bi);
+            long t2 = System.currentTimeMillis();
+            pixelDataLength = frameLength * frames;
+            log.info("finished compression " + ((float) pixelDataLength / end)
+                    + " : 1 in " + (t2 - t1) + "ms." + " (remaining codec tasks: compress&decompress:"+nrOfConcurrentCodec+
+                    " compress:"+nrOfConcurrentCompress+")");
             if (compressSemaphoreAquired) {
                 compressSemaphore.release();
                 nrOfConcurrentCompress.decrementAndGet();
@@ -528,11 +540,6 @@ public abstract class CompressCmd extends CodecCmd {
                 nrOfConcurrentCodec.decrementAndGet();
             }
         }
-        long t2 = System.currentTimeMillis();
-        int pixelDataLength = frameLength * frames;
-        log.info("finished compression " + ((float) pixelDataLength / end)
-                + " : 1 in " + (t2 - t1) + "ms." + " (remaining codec tasks: compress&decompress:"+nrOfConcurrentCodec+
-                " compress:"+nrOfConcurrentCompress+")");
         if (compressionRatio != null && compressionRatio.length > 0)
             compressionRatio[0] =
                 (float) pixelDataLength * bitsUsed() / bitsAllocated / end;
