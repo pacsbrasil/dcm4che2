@@ -59,6 +59,7 @@ public class PatientNameField extends FormComponentPanel<String> {
     private static final long serialVersionUID = 1L;
     
     private boolean useFnGn;
+    private TextField<String> pnField;
     private TextField<String> fnField;
     private TextField<String> gnField;
 
@@ -68,19 +69,15 @@ public class PatientNameField extends FormComponentPanel<String> {
         super(id, model);
         this.useFnGn = useFnGn;
         setType(String.class);
+        
+        add(new Label("pnLabel", new ResourceModel("patientname.label")).setVisible(!useFnGn));
+        pnField = new TextField<String>("pnField", model);
+        add(pnField.setVisible(!useFnGn));
+        
         add(new Label("fnLabel", new ResourceModel("familyname.label")).setVisible(useFnGn));
-        fnField = new TextField<String>("fnField", useFnGn ? new FamilyNameModel(this) : model) {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onComponentTag(ComponentTag tag) {
-                super.onComponentTag(tag);
-                if ( tag.getAttribute("class") == null )
-                    tag.put("class", useFnGn ? "patient_fn" : "patient_full");
-            }
-
-        };
-        add(fnField);
+        fnField = new TextField<String>("fnField", new FamilyNameModel(this));
+        add(fnField.setVisible(useFnGn));
+        
         add(new Label("gnLabel", new ResourceModel("givenname.label")).setVisible(useFnGn));
         gnField = new TextField<String>("gnField", new GivenNameModel(this));
         add(gnField.setVisible(useFnGn));
@@ -103,7 +100,7 @@ public class PatientNameField extends FormComponentPanel<String> {
     
     @Override
     public String getInput() {
-        return fnField.getInput() + "^" + gnField.getInput();
+        return (useFnGn) ? fnField.getInput() + "^" + gnField.getInput() : pnField.getInput();
     }
     
     @Override
@@ -112,7 +109,7 @@ public class PatientNameField extends FormComponentPanel<String> {
         String converted;
         int pos;
         if (!useFnGn) {
-            converted = fn;
+            converted = pnField.getConvertedInput();
         } else if (fn != null && (pos = fn.indexOf('^')) != -1) { //if fn contains '^' ignore gn and set full name!
             if (pos == fn.lastIndexOf('^')) { //if fn contains only fn and gn -> add * to each.
                 converted = fn.substring(0, pos)+"*"+fn.substring(pos)+"*";
