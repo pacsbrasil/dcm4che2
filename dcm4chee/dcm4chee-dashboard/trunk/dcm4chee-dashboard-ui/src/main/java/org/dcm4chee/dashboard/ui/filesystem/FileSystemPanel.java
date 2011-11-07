@@ -194,37 +194,37 @@ public class FileSystemPanel extends Panel {
             FileSystemTreeTable fileSystemTreeTable = new FileSystemTreeTable("filesystem-tree-table", 
                     new DefaultTreeModel(rootNode), new IColumn[] {
                 new PropertyTreeColumn(new ColumnLocation(
-                        Alignment.LEFT, 16, Unit.PERCENT), 
+                        Alignment.LEFT, 25, Unit.PERCENT), 
                         new ResourceModel(
                                 "dashboard.filesystem.table.column.name").wrapOnAssignment(this).getObject(), 
                                 "userObject.directoryPath"),
                 new ImageRenderableColumn(new ColumnLocation(
-                        Alignment.MIDDLE, 33, Unit.PROPORTIONAL), 
+                        Alignment.MIDDLE, 30, Unit.PROPORTIONAL), 
                         new ResourceModel(
                                 "dashboard.filesystem.table.column.image").wrapOnAssignment(this).getObject(),
                                 "userObject.directoryPath"),
                 new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 8, Unit.PERCENT),
+                        Alignment.RIGHT, 7, Unit.PERCENT),
                         new ResourceModel(
                                 "dashboard.filesystem.table.column.overall").wrapOnAssignment(this).getObject(),
                                 "userObject.overallDiskSpaceString"), 
                 new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 8, Unit.PERCENT),
+                        Alignment.RIGHT, 7, Unit.PERCENT),
                         new ResourceModel(
                                 "dashboard.filesystem.table.column.used").wrapOnAssignment(this).getObject(),
                                 "userObject.usedDiskSpaceString"),
                 new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 8, Unit.PERCENT),
+                        Alignment.RIGHT, 7, Unit.PERCENT),
                         new ResourceModel(
                                 "dashboard.filesystem.table.column.free").wrapOnAssignment(this).getObject(),
                                 "userObject.freeDiskSpaceString"),
                 new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 8, Unit.PERCENT),
+                        Alignment.RIGHT, 7, Unit.PERCENT),
                         new ResourceModel(
                                 "dashboard.filesystem.table.column.minimumfree").wrapOnAssignment(this).getObject(),
                                 "userObject.minimumFreeDiskSpaceString"),
                 new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 8, Unit.PERCENT),
+                        Alignment.RIGHT, 7, Unit.PERCENT),
                         new ResourceModel(
                                 "dashboard.filesystem.table.column.usable").wrapOnAssignment(this).getObject(),
                                 "userObject.usableDiskSpaceString"), 
