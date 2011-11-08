@@ -111,12 +111,15 @@ public class WebPermissionsPage extends SecureWebPage {
         boolean manageStudyPermissions = UsrCfgDelegate.getInstance().getManageStudyPermissions();
         String studyPermissionsAll = BaseWicketApplication.get().getInitParameter("StudyPermissionsAllRolename");
         String studyPermissionsOwn = BaseWicketApplication.get().getInitParameter("StudyPermissionsOwnRolename");
-
+        String studyPermissionsPropagation = BaseWicketApplication.get().getInitParameter("StudyPermissionsPropagationRolename");
+        
         int i = 0;
         while(principals.hasNext()) {
             String principal = principals.next();
 
-            if (!manageStudyPermissions && (principal.equals(studyPermissionsAll) || principal.equals(studyPermissionsOwn)))
+            if (!manageStudyPermissions && (principal.equals(studyPermissionsAll) 
+                    || principal.equals(studyPermissionsOwn)
+                    || principal.equals(studyPermissionsPropagation)))
                 continue;
             
             WebMarkupContainer rowParent;
