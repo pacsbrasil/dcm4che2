@@ -319,7 +319,7 @@
         <dd>reportDiagram:   size of the report diagram window</dd>
         <dd>reportDiagramImage:   size of the diagram image</dd>
         <dd>reportTable:   size of the report table window</dd>
-        <dd>reportTable:   size of the window displaying both diagram image and report table</dd>
+        <dd>reportDiagramandtable:   size of the window displaying both diagram image and report table</dd>
       ]]></description>
       <name>WindowSizeConfig</name>
       <type>java.lang.String</type>
