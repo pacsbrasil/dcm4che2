@@ -249,24 +249,25 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
     }
 
     public void removeDicomRole(Role role) {
+                
         List<Role> roles = new ArrayList<Role>();
         BufferedReader reader = null;
         try {
             String line;
             reader = new BufferedReader(new FileReader(dicomRolesFile));
-            while ((line = reader.readLine()) != null) 
-                roles.add((Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class));
-            Collections.sort(roles);
+            while ((line = reader.readLine()) != null) { 
+                Role currentRole = (Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class);
+                if (currentRole.equals(role))
+                    currentRole.setDicomRole(false);
+                roles.add(currentRole);
+            }
         } catch (Exception e) {
             log.error("Can't get roles from roles file!", e);
             return;
         } finally {
             close(reader, "roles file reader");
         }
-        if (roles.remove(role)) 
-            save(roles);
-        else 
-            log.warn("Role "+role+" already removed from roles file!");
+        save(roles);
     }
     
     private void save(List<Role> roles) {
