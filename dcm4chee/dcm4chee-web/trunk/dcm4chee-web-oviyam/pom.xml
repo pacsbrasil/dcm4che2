@@ -17,7 +17,7 @@
     <dependencies>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
-            <artifactId>dcm4chee-web-common</artifactId>
+            <artifactId>dcm4chee-web-urlprovider</artifactId>
             <version>3.0.1</version>
         </dependency>
     </dependencies>
