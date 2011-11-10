@@ -121,31 +121,35 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @author Robert David <robert.david@agfa.com>
- * @version $Revision$ $Date$
+ * @version $Revision$ $Date: 2011-10-05 16:47:47 +0200 (Mit, 05. Okt
+ *          2011) $
  * @since May 10, 2010
  */
 public class TrashListPage extends Panel {
 
     private static Logger log = LoggerFactory.getLogger(TrashListPage.class);
 
-    private static final ResourceReference CSS = new CompressedResourceReference(TrashListPage.class, "trash-style.css");
+    private static final ResourceReference CSS = new CompressedResourceReference(
+            TrashListPage.class, "trash-style.css");
 
     private Model<Integer> pagesize = new Model<Integer>();
-    
+
     private static final String MODULE_NAME = "trash";
     private static final long serialVersionUID = 1L;
-    private ViewPort viewport = ((AuthenticatedWebSession) AuthenticatedWebSession.get()).getTrashViewPort();
+    private ViewPort viewport = ((AuthenticatedWebSession) AuthenticatedWebSession
+            .get()).getTrashViewPort();
     private TrashListHeader header = new TrashListHeader("thead");
     private PrivSelectedEntities selected = new PrivSelectedEntities();
-    
+
     private boolean showSearch = true;
     private boolean notSearched = true;
     private MessageWindow msgWin = new MessageWindow("msgWin");
-    
+
     private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
-    
-    TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
-    
+
+    TrashListLocal dao = (TrashListLocal) JNDIUtils
+            .lookup(TrashListLocal.JNDI_NAME);
+
     final MaskingAjaxCallBehavior macb = new MaskingAjaxCallBehavior();
 
     private TextField<String> accessionNumber;
@@ -158,13 +162,14 @@ public class TrashListPage extends Panel {
             add(CSSPackageResource.getHeaderContribution(TrashListPage.CSS));
 
         add(macb);
-        
+
         final TrashListFilter filter = viewport.getFilter();
-        final BaseForm form = new BaseForm("form", new CompoundPropertyModel<Object>(filter));
+        final BaseForm form = new BaseForm("form",
+                new CompoundPropertyModel<Object>(filter));
         form.setResourceIdPrefix("trash.");
         form.setOutputMarkupId(true);
         add(form);
-        
+
         form.add(new AjaxFallbackLink<Object>("searchToggle") {
 
             private static final long serialVersionUID = 1L;
@@ -173,83 +178,88 @@ public class TrashListPage extends Panel {
             public void onClick(AjaxRequestTarget target) {
                 showSearch = !showSearch;
                 for (WebMarkupContainer wmc : searchTableComponents)
-                    wmc.setVisible(showSearch);               
+                    wmc.setVisible(showSearch);
                 target.addComponent(form);
             }
-        }
-        .add((new Image("searchToggleImg", new AbstractReadOnlyModel<ResourceReference>() {
+        }.add((new Image("searchToggleImg",
+                new AbstractReadOnlyModel<ResourceReference>() {
 
-                private static final long serialVersionUID = 1L;
+                    private static final long serialVersionUID = 1L;
 
-                @Override
-                public ResourceReference getObject() {
-                    return showSearch ? ImageManager.IMAGE_COMMON_COLLAPSE : 
-                        ImageManager.IMAGE_COMMON_EXPAND;
-                }
-        })
-        .add(new TooltipBehaviour("trash", "searchToggleImg", new AbstractReadOnlyModel<Boolean>() {
+                    @Override
+                    public ResourceReference getObject() {
+                        return showSearch ? ImageManager.IMAGE_COMMON_COLLAPSE
+                                : ImageManager.IMAGE_COMMON_EXPAND;
+                    }
+                }).add(new TooltipBehaviour("trash", "searchToggleImg",
+                new AbstractReadOnlyModel<Boolean>() {
 
-            private static final long serialVersionUID = 1L;
+                    private static final long serialVersionUID = 1L;
 
-            @Override
-            public Boolean getObject() {
-                return showSearch;
-            }
-        })))
-        .add(new ImageSizeBehaviour())));
+                    @Override
+                    public Boolean getObject() {
+                        return showSearch;
+                    }
+                }))).add(new ImageSizeBehaviour())));
 
         addQueryFields(filter, form);
         addQueryOptions(form);
         addNavigation(form);
         addActions(form);
-        
+
         form.add(header);
         form.add(new PatientListView("patients", viewport.getPatients()));
         msgWin.setTitle(MessageWindow.TITLE_WARNING);
         add(msgWin);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void addQueryFields(final TrashListFilter filter, BaseForm form) {
-        IModel<Boolean> enabledModelPat = new AbstractReadOnlyModel<Boolean>(){
+        IModel<Boolean> enabledModelPat = new AbstractReadOnlyModel<Boolean>() {
             private static final long serialVersionUID = 1L;
+
             @Override
             public Boolean getObject() {
                 return QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
             }
         };
-        IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>(){
+        IModel<Boolean> enabledModel = new AbstractReadOnlyModel<Boolean>() {
             private static final long serialVersionUID = 1L;
+
             @Override
             public Boolean getObject() {
-                return !filter.isPatientQuery() && QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
+                return !filter.isPatientQuery()
+                        && QueryUtil.isUniversalMatch(filter
+                                .getStudyInstanceUID());
             }
         };
-        
+
         searchTableComponents.add(form.createAjaxParent("searchLabels"));
-        
+
         form.addInternalLabel("patientName");
         form.addInternalLabel("patientIDDescr");
         form.addInternalLabel("accessionNumber");
         form.addInternalLabel("sourceAET");
-        
+
         searchTableComponents.add(form.createAjaxParent("searchFields"));
-        
-        form.addPatientNameField("patientName", new PropertyModel<String>(filter, "patientName"),
-                WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModelPat, false);
+
+        form.addPatientNameField("patientName", new PropertyModel<String>(
+                filter, "patientName"), WebCfgDelegate.getInstance()
+                .useFamilyAndGivenNameQueryFields(), enabledModelPat, false);
         form.addTextField("patientID", enabledModelPat, true);
         form.addTextField("issuerOfPatientID", enabledModelPat, true);
-        accessionNumber = form.addTextField("accessionNumber", enabledModel, false);
-        
+        accessionNumber = form.addTextField("accessionNumber", enabledModel,
+                false);
+
         List<String> aetChoices = viewport.getAetChoices();
         if (aetChoices.size() > 0)
-            (sourceAET = 
-                form.addDropDownChoice("sourceAET", null, new Model<ArrayList<String>>(new ArrayList(aetChoices)), enabledModel, false))
-            .setModelObject(aetChoices.get(0));
+            (sourceAET = form.addDropDownChoice("sourceAET", null,
+                    new Model<ArrayList<String>>(new ArrayList(aetChoices)),
+                    enabledModel, false)).setModelObject(aetChoices.get(0));
         else
-            (sourceAET =
-                form.addDropDownChoice("sourceAET", null, new Model<ArrayList<String>>(new ArrayList(aetChoices)), new Model<Boolean>(false), false))
-            .setNullValid(true);
+            (sourceAET = form.addDropDownChoice("sourceAET", null,
+                    new Model<ArrayList<String>>(new ArrayList(aetChoices)),
+                    new Model<Boolean>(false), false)).setNullValid(true);
 
         searchTableComponents.add(form.createAjaxParent("searchFooter"));
     }
@@ -257,41 +267,50 @@ public class TrashListPage extends Panel {
     private void addQueryOptions(final BaseForm form) {
 
         final Model<String> searchOptionSelected = new Model<String>();
-        
-        form.addDropDownChoice("queryType", searchOptionSelected, new Model<ArrayList<String>>() {
 
-            private static final long serialVersionUID = 1L;
+        form.addDropDownChoice("queryType", searchOptionSelected,
+                new Model<ArrayList<String>>() {
 
-            public ArrayList<String> getObject() {
+                    private static final long serialVersionUID = 1L;
 
-                final ArrayList<String> searchOptionsStrings = new ArrayList<String>(2);
-                searchOptionsStrings.add(new StringResourceModel("trash.searchOptions.patient", TrashListPage.this, null).getObject());
-                searchOptionsStrings.add(new StringResourceModel("trash.searchOptions.study", TrashListPage.this, null).getObject());
-                if (!searchOptionsStrings.contains(searchOptionSelected.getObject())) 
-                        searchOptionSelected.setObject(searchOptionsStrings.get(1));
-                return searchOptionsStrings;                
-            }
-        }, new Model<Boolean>(true), true)
-        .add(new AjaxFormComponentUpdatingBehavior("onchange") {
-            
-            private static final long serialVersionUID = 1L;
+                    public ArrayList<String> getObject() {
 
-                @SuppressWarnings("unchecked")
-                protected void onUpdate(AjaxRequestTarget target) {
-                    boolean b = ((DropDownChoice<String>) getComponent())
-                        .getChoices().get(0).equals(searchOptionSelected.getObject());
-                    viewport.getFilter().setPatientQuery(b);
-                    target.addComponent(accessionNumber.setEnabled(!b));
-                    target.addComponent(sourceAET.setEnabled(!b));
-                }
-        });
+                        final ArrayList<String> searchOptionsStrings = new ArrayList<String>(
+                                2);
+                        searchOptionsStrings.add(new StringResourceModel(
+                                "trash.searchOptions.patient",
+                                TrashListPage.this, null).getObject());
+                        searchOptionsStrings.add(new StringResourceModel(
+                                "trash.searchOptions.study",
+                                TrashListPage.this, null).getObject());
+                        if (!searchOptionsStrings.contains(searchOptionSelected
+                                .getObject()))
+                            searchOptionSelected.setObject(searchOptionsStrings
+                                    .get(1));
+                        return searchOptionsStrings;
+                    }
+                }, new Model<Boolean>(true), true).add(
+                new AjaxFormComponentUpdatingBehavior("onchange") {
+
+                    private static final long serialVersionUID = 1L;
+
+                    @SuppressWarnings("unchecked")
+                    protected void onUpdate(AjaxRequestTarget target) {
+                        boolean b = ((DropDownChoice<String>) getComponent())
+                                .getChoices().get(0)
+                                .equals(searchOptionSelected.getObject());
+                        viewport.getFilter().setPatientQuery(b);
+                        target.addComponent(accessionNumber.setEnabled(!b));
+                        target.addComponent(sourceAET.setEnabled(!b));
+                    }
+                });
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void addNavigation(final BaseForm form) {
-        
+
         Button resetBtn = new AjaxButton("resetBtn") {
-            
+
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -299,35 +318,39 @@ public class TrashListPage extends Panel {
 
                 form.clearInput();
                 retainSelectedPatients();
-                DropDownChoice sourceAETDropDownChoice = ((DropDownChoice) ((WebMarkupContainer) form.get("searchFields")).get("sourceAET"));
+                DropDownChoice sourceAETDropDownChoice = ((DropDownChoice) ((WebMarkupContainer) form
+                        .get("searchFields")).get("sourceAET"));
                 if (sourceAETDropDownChoice.getChoices().size() > 0)
-                    sourceAETDropDownChoice.setModelObject(sourceAETDropDownChoice.getChoices().get(0));
+                    sourceAETDropDownChoice
+                            .setModelObject(sourceAETDropDownChoice
+                                    .getChoices().get(0));
                 else
                     sourceAETDropDownChoice.setNullValid(true);
-                pagesize.setObject(WebCfgDelegate.getInstance().getDefaultFolderPagesize());
+                pagesize.setObject(WebCfgDelegate.getInstance()
+                        .getDefaultFolderPagesize());
                 notSearched = true;
                 form.setOutputMarkupId(true);
                 target.addComponent(form);
             }
         };
         resetBtn.setDefaultFormProcessing(false);
-        resetBtn.add(new Image("resetImg",ImageManager.IMAGE_COMMON_RESET)
-        .add(new ImageSizeBehaviour("vertical-align: middle;"))
-        );
-        resetBtn.add(new Label("resetText", new ResourceModel("trash.searchFooter.resetBtn.text"))
-            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
-        );
+        resetBtn.add(new Image("resetImg", ImageManager.IMAGE_COMMON_RESET)
+                .add(new ImageSizeBehaviour("vertical-align: middle;")));
+        resetBtn.add(new Label("resetText", new ResourceModel(
+                "trash.searchFooter.resetBtn.text")).add(new AttributeModifier(
+                "style", true, new Model<String>("vertical-align: middle"))));
         form.addComponent(resetBtn);
-        
+
         IndicatingAjaxButton searchBtn = new IndicatingAjaxButton("searchBtn") {
-            
+
             private static final long serialVersionUID = 1L;
-            
+
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
                     viewport.setOffset(0);
-                    viewport.getFilter().setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
+                    viewport.getFilter().setAutoWildcard(
+                            WebCfgDelegate.getInstance().getAutoWildcard());
                     queryStudies();
                 } catch (Throwable t) {
                     log.error("search failed: ", t);
@@ -352,53 +375,58 @@ public class TrashListPage extends Panel {
             }
         };
         searchBtn.setOutputMarkupId(true);
-        searchBtn.add(new Image("searchImg",ImageManager.IMAGE_COMMON_SEARCH)
-            .add(new ImageSizeBehaviour("vertical-align: middle;"))
-        );
-        searchBtn.add(new Label("searchText", new ResourceModel("trash.searchFooter.searchBtn.text"))
-            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
-        );
+        searchBtn.add(new Image("searchImg", ImageManager.IMAGE_COMMON_SEARCH)
+                .add(new ImageSizeBehaviour("vertical-align: middle;")));
+        searchBtn.add(new Label("searchText", new ResourceModel(
+                "trash.searchFooter.searchBtn.text"))
+                .add(new AttributeModifier("style", true, new Model<String>(
+                        "vertical-align: middle;"))));
         form.addComponent(searchBtn);
         form.setDefaultButton(searchBtn);
-        
+
         form.clearParent();
 
-        pagesize.setObject(WebCfgDelegate.getInstance().getDefaultFolderPagesize());
-        form.addDropDownChoice("pagesize", pagesize, 
-                new Model<ArrayList<String>>(new ArrayList(WebCfgDelegate.getInstance().getPagesizeList())), 
-                new Model<Boolean>(true), 
-                true)
-        .setNullValid(false)
-        .add(new IndicatingAjaxFormSubmitBehavior(form, "onchange", searchBtn) {
+        pagesize.setObject(WebCfgDelegate.getInstance()
+                .getDefaultFolderPagesize());
+        form.addDropDownChoice(
+                "pagesize",
+                pagesize,
+                new Model<ArrayList<String>>(new ArrayList(WebCfgDelegate
+                        .getInstance().getPagesizeList())),
+                new Model<Boolean>(true), true)
+                .setNullValid(false)
+                .add(new IndicatingAjaxFormSubmitBehavior(form, "onchange",
+                        searchBtn) {
 
-            private static final long serialVersionUID = 1L;
+                    private static final long serialVersionUID = 1L;
 
-            @Override
-            protected void onSubmit(AjaxRequestTarget target) {
-                if (!WebCfgDelegate.getInstance().isQueryAfterPagesizeChange())
-                    return;
-                try {
-                    queryStudies();
-                } catch (Throwable t) {
-                    log.error("search failed: ", t);
-                }
-                target.addComponent(form);
-            }
+                    @Override
+                    protected void onSubmit(AjaxRequestTarget target) {
+                        if (!WebCfgDelegate.getInstance()
+                                .isQueryAfterPagesizeChange())
+                            return;
+                        try {
+                            queryStudies();
+                        } catch (Throwable t) {
+                            log.error("search failed: ", t);
+                        }
+                        target.addComponent(form);
+                    }
 
-            @Override
-            protected void onError(AjaxRequestTarget target) {
-            }
-            
-            @Override
-            protected IAjaxCallDecorator getAjaxCallDecorator() {
-                try {
-                    return macb.getAjaxCallDecorator();
-                } catch (Exception e) {
-                    log.error("Failed to get IAjaxCallDecorator: ", e);
-                }
-                return null;
-            }
-        });
+                    @Override
+                    protected void onError(AjaxRequestTarget target) {
+                    }
+
+                    @Override
+                    protected IAjaxCallDecorator getAjaxCallDecorator() {
+                        try {
+                            return macb.getAjaxCallDecorator();
+                        } catch (Exception e) {
+                            log.error("Failed to get IAjaxCallDecorator: ", e);
+                        }
+                        return null;
+                    }
+                });
 
         form.add(new Link<Object>("prev") {
 
@@ -406,20 +434,19 @@ public class TrashListPage extends Panel {
 
             @Override
             public void onClick() {
-                viewport.setOffset(Math.max(0, viewport.getOffset() - pagesize.getObject()));
-                queryStudies();               
+                viewport.setOffset(Math.max(0,
+                        viewport.getOffset() - pagesize.getObject()));
+                queryStudies();
             }
-            
+
             @Override
             public boolean isVisible() {
                 return (!notSearched && !(viewport.getOffset() == 0));
             }
-        }
-        .add(new Image("prevImg", ImageManager.IMAGE_COMMON_BACK)
-        .add(new ImageSizeBehaviour("vertical-align: middle;"))
-        .add(new TooltipBehaviour("trash.search.")))
-        );
- 
+        }.add(new Image("prevImg", ImageManager.IMAGE_COMMON_BACK).add(
+                new ImageSizeBehaviour("vertical-align: middle;")).add(
+                new TooltipBehaviour("trash.search."))));
+
         form.add(new Link<Object>("next") {
 
             private static final long serialVersionUID = 1L;
@@ -432,50 +459,53 @@ public class TrashListPage extends Panel {
 
             @Override
             public boolean isVisible() {
-                return (!notSearched && !(viewport.getTotal() - viewport.getOffset() <= pagesize.getObject()));
+                return (!notSearched && !(viewport.getTotal()
+                        - viewport.getOffset() <= pagesize.getObject()));
             }
-        }
-        .add(new Image("nextImg", ImageManager.IMAGE_COMMON_FORWARD)
-        .add(new ImageSizeBehaviour("vertical-align: middle;"))
-        .add(new TooltipBehaviour("trash.search.")))
-        .setVisible(!notSearched)
-        );
+        }.add(new Image("nextImg", ImageManager.IMAGE_COMMON_FORWARD).add(
+                new ImageSizeBehaviour("vertical-align: middle;")).add(
+                new TooltipBehaviour("trash.search.")))
+                .setVisible(!notSearched));
 
-        //viewport label: use StringResourceModel with key substitution to select 
-        //property key according notSearched and getTotal.
+        // viewport label: use StringResourceModel with key substitution to
+        // select
+        // property key according notSearched and getTotal.
         Model<?> keySelectModel = new Model<Serializable>() {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             public Serializable getObject() {
-                return notSearched ? "trash.search.notSearched" : 
-                    viewport.getFilter().isPatientQuery() ? 
-                            (viewport.getTotal() == 0 ? "trash.search.noMatchingPatientsFound" : 
-                            "trash.search.patientsFound")
-                            : (viewport.getTotal() == 0 ? "trash.search.noMatchingStudiesFound" : 
-                                "trash.search.studiesFound");
+                return notSearched ? "trash.search.notSearched"
+                        : viewport.getFilter().isPatientQuery() ? (viewport
+                                .getTotal() == 0 ? "trash.search.noMatchingPatientsFound"
+                                : "trash.search.patientsFound")
+                                : (viewport.getTotal() == 0 ? "trash.search.noMatchingStudiesFound"
+                                        : "trash.search.studiesFound");
             }
         };
-        form.add(new Label("viewport", new StringResourceModel("${}", TrashListPage.this, keySelectModel,new Object[]{"dummy"}){
+        form.add(new Label("viewport", new StringResourceModel("${}",
+                TrashListPage.this, keySelectModel, new Object[] { "dummy" }) {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             protected Object[] getParameters() {
-                return new Object[]{viewport.getOffset()+1,
-                        Math.min(viewport.getOffset() + pagesize.getObject(), viewport.getTotal()),
-                        viewport.getTotal()};
+                return new Object[] {
+                        viewport.getOffset() + 1,
+                        Math.min(viewport.getOffset() + pagesize.getObject(),
+                                viewport.getTotal()), viewport.getTotal() };
             }
         }).setEscapeModelStrings(false));
     }
 
     private void addActions(final BaseForm form) {
-        
-        final ConfirmationWindow<List<PrivateFile>> confirmRestore = new ConfirmationWindow<List<PrivateFile>>("confirmRestore") {
+
+        final ConfirmationWindow<List<PrivateFile>> confirmRestore = new ConfirmationWindow<List<PrivateFile>>(
+                "confirmRestore") {
 
             private static final long serialVersionUID = 1L;
-            
+
             @Override
             public void onOk(AjaxRequestTarget target) {
                 setRemark(null);
@@ -487,60 +517,87 @@ public class TrashListPage extends Panel {
                 target.addComponent(form);
                 super.close(target);
             }
-            
-            @Override
-            public void onConfirmation(AjaxRequestTarget target, List<PrivateFile> files) {
 
-                this.setStatus(new StringResourceModel("trash.message.restore.running", TrashListPage.this, null));
+            @Override
+            public void onConfirmation(AjaxRequestTarget target,
+                    List<PrivateFile> files) {
+
+                this.setStatus(new StringResourceModel(
+                        "trash.message.restore.running", TrashListPage.this,
+                        null));
                 messageWindowPanel.getOkBtn().setVisible(false);
-                
+
                 try {
                     FileImportOrder fio = new FileImportOrder();
                     if (files.size() > 0) {
                         Collections.sort(files, new Comparator<PrivateFile>() {
                             public int compare(PrivateFile f1, PrivateFile f2) {
-                                return f2.getFileSystem().getAvailability().compareTo(f1.getFileSystem().getAvailability());
-                            }});
-                        
-                        boolean allOnline = true;                    
+                                return f2
+                                        .getFileSystem()
+                                        .getAvailability()
+                                        .compareTo(
+                                                f1.getFileSystem()
+                                                        .getAvailability());
+                            }
+                        });
+
+                        boolean allOnline = true;
                         for (PrivateFile privateFile : files) {
-                            DicomObject dio = dao.getDicomAttributes(privateFile.getPk());
+                            DicomObject dio = dao
+                                    .getDicomAttributes(privateFile.getPk());
                             File file = new File();
                             file.setFilePath(privateFile.getFilePath());
                             file.setFileSize(privateFile.getFileSize());
                             file.setFileStatus(privateFile.getFileStatus());
                             file.setFileSystem(privateFile.getFileSystem());
                             file.setMD5Sum(privateFile.getFileMD5());
-                            file.setTransferSyntaxUID(privateFile.getTransferSyntaxUID());
+                            file.setTransferSyntaxUID(privateFile
+                                    .getTransferSyntaxUID());
                             Instance instance = new Instance();
                             file.setInstance(instance);
                             fio.addFile(file, dio);
-    
-                            if (allOnline && privateFile.getFileSystem().getAvailability().equals(Availability.ONLINE))  
-                                if (!FileUtils.resolve(new java.io.File(privateFile.getFileSystem().getDirectoryPath(), privateFile.getFilePath())).exists())
+
+                            if (allOnline
+                                    && privateFile.getFileSystem()
+                                            .getAvailability()
+                                            .equals(Availability.ONLINE))
+                                if (!FileUtils.resolve(
+                                        new java.io.File(privateFile
+                                                .getFileSystem()
+                                                .getDirectoryPath(),
+                                                privateFile.getFilePath()))
+                                        .exists())
                                     allOnline = false;
                         }
-                        
-                        if (!allOnline) 
-                            setRemark(new StringResourceModel("trash.message.notAllOnline", TrashListPage.this, null));
+
+                        if (!allOnline)
+                            setRemark(new StringResourceModel(
+                                    "trash.message.notAllOnline",
+                                    TrashListPage.this, null));
                         StoreBridgeDelegate.getInstance().importFile(fio);
-                        removeRestoredEntries();                            
-                        setStatus(new StringResourceModel("trash.message.restoreDone", TrashListPage.this, null));
+                        removeRestoredEntries();
+                        setStatus(new StringResourceModel(
+                                "trash.message.restoreDone",
+                                TrashListPage.this, null));
                         if (selected.hasPatients()) {
                             viewport.getPatients().clear();
                             queryStudies();
                         } else
                             selected.refreshView(true);
                     } else {
-                        setStatus(new StringResourceModel("trash.message.restoreNotPossible", TrashListPage.this, null));
+                        setStatus(new StringResourceModel(
+                                "trash.message.restoreNotPossible",
+                                TrashListPage.this, null));
                     }
                 } catch (Throwable t) {
-                    setStatus(new StringResourceModel("trash.message.restoreFailed", TrashListPage.this, null));
-                    while (t instanceof javax.management.MBeanException) 
+                    setStatus(new StringResourceModel(
+                            "trash.message.restoreFailed", TrashListPage.this,
+                            null));
+                    while (t instanceof javax.management.MBeanException)
                         t = ((javax.management.MBeanException) t).getCause();
-                    if (t != null) 
+                    if (t != null)
                         setRemark(new Model<String>(t.getLocalizedMessage()));
-                    log.error("Exception restoring entry:"+t.getMessage(), t);                    
+                    log.error("Exception restoring entry:" + t.getMessage(), t);
                 }
                 target.addComponent(messageWindowPanel.getMsgLabel());
                 target.addComponent(messageWindowPanel.getOkBtn());
@@ -548,7 +605,7 @@ public class TrashListPage extends Panel {
         };
         confirmRestore.setInitialHeight(150);
         form.add(confirmRestore);
-        
+
         AjaxButton restoreBtn = new AjaxButton("restoreBtn") {
 
             private static final long serialVersionUID = 1L;
@@ -562,47 +619,76 @@ public class TrashListPage extends Panel {
                         Set<Study> studiesInFolder = new HashSet<Study>();
                         List<PrivateFile> files = getFilesToRestore(studiesInFolder);
                         log.debug("Files to restore: {}", files);
-                        log.debug("Trash restore studiesInFolder: {}", studiesInFolder);
+                        log.debug("Trash restore studiesInFolder: {}",
+                                studiesInFolder);
                         if (files.size() > 0) {
                             if (studiesInFolder.isEmpty()) {
-                                confirmRestore.confirm(target, new StringResourceModel("trash.message.confirmRestore", this, null,new Object[]{selected}), files);
+                                confirmRestore.confirm(target,
+                                        new StringResourceModel(
+                                                "trash.message.confirmRestore",
+                                                this, null,
+                                                new Object[] { selected }),
+                                        files);
                             } else {
                                 StringBuilder suids = new StringBuilder();
                                 for (Study st : studiesInFolder) {
-                                    suids.append(st.getStudyInstanceUID()).append(", ");
+                                    suids.append(st.getStudyInstanceUID())
+                                            .append(", ");
                                 }
                                 suids.setLength(suids.length() - 2);
-                                confirmRestore.confirm(target, new StringResourceModel("trash.message.confirmRestoreStudyExists", this, null,
-                                        new Object[]{selected, studiesInFolder.size(), suids}), files);
+                                confirmRestore
+                                        .confirm(
+                                                target,
+                                                new StringResourceModel(
+                                                        "trash.message.confirmRestoreStudyExists",
+                                                        this,
+                                                        null,
+                                                        new Object[] {
+                                                                selected,
+                                                                studiesInFolder
+                                                                        .size(),
+                                                                suids }), files);
                             }
                         } else {
-                            msgWin.show(target, getString("trash.message.restoreNotPossible"));
+                            msgWin.show(
+                                    target,
+                                    getString("trash.message.restoreNotPossible"));
                         }
                     } catch (Throwable t) {
-                        while (t instanceof javax.management.MBeanException) 
-                            t = ((javax.management.MBeanException) t).getCause();
-                        if (t != null) 
-                            msgWin.show(target, new StringResourceModel("trash.message.restoreFailedWithReason", TrashListPage.this, 
-                                    null, new Object[]{t.getLocalizedMessage()}));
-                        log.error("Exception restoring entry:"+t.getMessage(), t);                    
+                        while (t instanceof javax.management.MBeanException)
+                            t = ((javax.management.MBeanException) t)
+                                    .getCause();
+                        if (t != null)
+                            msgWin.show(
+                                    target,
+                                    new StringResourceModel(
+                                            "trash.message.restoreFailedWithReason",
+                                            TrashListPage.this, null,
+                                            new Object[] { t
+                                                    .getLocalizedMessage() }));
+                        log.error(
+                                "Exception restoring entry:" + t.getMessage(),
+                                t);
                     }
                 } else {
-                    msgWin.setInfoMessage(getString("trash.message.noSelection")); 
+                    msgWin.setInfoMessage(getString("trash.message.noSelection"));
                     msgWin.show(target);
                 }
             }
         };
-        restoreBtn.add(new Image("restoreImg",ImageManager.IMAGE_TRASH_RESTORE)
-            .add(new ImageSizeBehaviour("vertical-align: middle;"))
-        );
-        restoreBtn.add(new Label("restoreText", new ResourceModel("trash.restoreBtn.text"))
-            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
-        );
+        restoreBtn
+                .add(new Image("restoreImg", ImageManager.IMAGE_TRASH_RESTORE)
+                        .add(new ImageSizeBehaviour("vertical-align: middle;")));
+        restoreBtn.add(new Label("restoreText", new ResourceModel(
+                "trash.restoreBtn.text")).add(new AttributeModifier("style",
+                true, new Model<String>("vertical-align: middle"))));
         form.add(restoreBtn);
-        restoreBtn.add(new SecurityBehavior(getModuleName() + ":restoreButton"));
+        restoreBtn
+                .add(new SecurityBehavior(getModuleName() + ":restoreButton"));
 
-        final ConfirmationWindow<PrivSelectedEntities> confirmDelete = new ConfirmationWindow<PrivSelectedEntities>("confirmDelete") {
- 
+        final ConfirmationWindow<PrivSelectedEntities> confirmDelete = new ConfirmationWindow<PrivSelectedEntities>(
+                "confirmDelete") {
+
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -617,23 +703,32 @@ public class TrashListPage extends Panel {
             }
 
             @Override
-            public void onConfirmation(AjaxRequestTarget target, final PrivSelectedEntities selected) {
-           
-                this.setStatus(new StringResourceModel("trash.message.delete.running", TrashListPage.this, null));
+            public void onConfirmation(AjaxRequestTarget target,
+                    final PrivSelectedEntities selected) {
+
+                this.setStatus(new StringResourceModel(
+                        "trash.message.delete.running", TrashListPage.this,
+                        null));
                 messageWindowPanel.getOkBtn().setVisible(false);
-           
+
                 try {
-                    if (selected == null ? removeTrashAll() : removeTrashItems(selected)) {
-                        setStatus(new StringResourceModel("trash.message.deleteDone", TrashListPage.this,null));
-                        if (selected == null || selected.hasPatients()) {
+                    if (selected == null ? removeTrashAll()
+                            : removeTrashItems(selected)) {
+                        setStatus(new StringResourceModel(
+                                "trash.message.deleteDone", TrashListPage.this,
+                                null));
+                        if (selected == null || selected.hasPatients()) 
                             viewport.getPatients().clear();
-                            queryStudies();
-                        } else
+                        else 
                             selected.refreshView(true);
+                        queryStudies();
                     } else
-                        setStatus(new StringResourceModel("trash.message.deleteFailed", TrashListPage.this,null));
+                        setStatus(new StringResourceModel(
+                                "trash.message.deleteFailed",
+                                TrashListPage.this, null));
                 } catch (Throwable t) {
-                    log.error((selected == null ? "removeTrashAll" : "removeTrashItems") + " failed: ", t);
+                    log.error((selected == null ? "removeTrashAll"
+                            : "removeTrashItems") + " failed: ", t);
                 }
                 target.addComponent(messageWindowPanel.getMsgLabel());
                 target.addComponent(messageWindowPanel.getOkBtn());
@@ -648,17 +743,19 @@ public class TrashListPage extends Panel {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                confirmDelete.confirm(target, new StringResourceModel("trash.message.confirmDeleteAll",this, null), null);
+                confirmDelete.confirm(target, new StringResourceModel(
+                        "trash.message.confirmDeleteAll", this, null), null);
             }
         };
-        deleteAllBtn.add(new Image("deleteAllImg",ImageManager.IMAGE_TRASH_EMPTY)
-            .add(new ImageSizeBehaviour("vertical-align: middle;"))
-        );
-        deleteAllBtn.add(new Label("deleteAllText", new ResourceModel("trash.deleteAllBtn.text"))
-            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
-        );
+        deleteAllBtn.add(new Image("deleteAllImg",
+                ImageManager.IMAGE_TRASH_EMPTY).add(new ImageSizeBehaviour(
+                "vertical-align: middle;")));
+        deleteAllBtn.add(new Label("deleteAllText", new ResourceModel(
+                "trash.deleteAllBtn.text")).add(new AttributeModifier("style",
+                true, new Model<String>("vertical-align: middle"))));
         form.add(deleteAllBtn);
-        deleteAllBtn.add(new SecurityBehavior(getModuleName() + ":deleteAllButton"));
+        deleteAllBtn.add(new SecurityBehavior(getModuleName()
+                + ":deleteAllButton"));
 
         AjaxButton deleteBtn = new AjaxButton("deleteBtn") {
 
@@ -668,32 +765,36 @@ public class TrashListPage extends Panel {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 selected.update(viewport.getPatients());
                 selected.deselectChildsOfSelectedEntities();
-                log.info("Selected Entities: :"+selected);
+                log.info("Selected Entities: :" + selected);
                 if (selected.hasDicomSelection()) {
-                    confirmDelete.confirm(target, new StringResourceModel("trash.message.confirmDelete",this, null,new Object[]{selected}), selected);
+                    confirmDelete.confirm(target, new StringResourceModel(
+                            "trash.message.confirmDelete", this, null,
+                            new Object[] { selected }), selected);
                 } else {
-                    msgWin.setInfoMessage(getString("trash.message.noSelection")); 
+                    msgWin.setInfoMessage(getString("trash.message.noSelection"));
                     msgWin.show(target);
                 }
             }
         };
-        deleteBtn.add(new Image("deleteImg", ImageManager.IMAGE_TRASH_DELETE_SELECTED)
-            .add(new ImageSizeBehaviour("vertical-align: middle;"))
-        );
-        deleteBtn.add(new Label("deleteText", new ResourceModel("trash.deleteBtn.text"))
-            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
-        );
+        deleteBtn.add(new Image("deleteImg",
+                ImageManager.IMAGE_TRASH_DELETE_SELECTED)
+                .add(new ImageSizeBehaviour("vertical-align: middle;")));
+        deleteBtn.add(new Label("deleteText", new ResourceModel(
+                "trash.deleteBtn.text")).add(new AttributeModifier("style",
+                true, new Model<String>("vertical-align: middle"))));
         form.add(deleteBtn);
         deleteBtn.add(new SecurityBehavior(getModuleName() + ":deleteButton"));
     }
 
     private void queryStudies() {
-        List<String> dicomSecurityRoles = (StudyPermissionHelper.get().applyStudyPermissions() ?
-                    StudyPermissionHelper.get().getDicomRoles() : null);
+        List<String> dicomSecurityRoles = (StudyPermissionHelper.get()
+                .applyStudyPermissions() ? StudyPermissionHelper.get()
+                .getDicomRoles() : null);
         viewport.setTotal(dao.count(viewport.getFilter(), dicomSecurityRoles));
-        updatePatients(dao.findPatients(viewport.getFilter(), pagesize.getObject(), viewport.getOffset(), dicomSecurityRoles));
-        header.expandToLevel(viewport.getFilter().isPatientQuery() ? 
-                AbstractDicomModel.PATIENT_LEVEL : AbstractDicomModel.STUDY_LEVEL);
+        updatePatients(dao.findPatients(viewport.getFilter(),
+                pagesize.getObject(), viewport.getOffset(), dicomSecurityRoles));
+        header.expandToLevel(viewport.getFilter().isPatientQuery() ? AbstractDicomModel.PATIENT_LEVEL
+                : AbstractDicomModel.STUDY_LEVEL);
         updateAutoExpandLevel();
         notSearched = false;
     }
@@ -703,15 +804,20 @@ public class TrashListPage extends Panel {
         for (PrivatePatient patient : patients) {
             PrivPatientModel patientModel = addPatient(patient);
             if (viewport.getFilter().isPatientQuery()) {
-                patientModel.setExpandable(dao.countStudiesOfPatient(patient.getPk(), 
-                        (StudyPermissionHelper.get().applyStudyPermissions() ?
-                                StudyPermissionHelper.get().getDicomRoles() : null)) > 0);
+                patientModel.setExpandable(dao.countStudiesOfPatient(patient
+                        .getPk(), (StudyPermissionHelper.get()
+                        .applyStudyPermissions() ? StudyPermissionHelper.get()
+                        .getDicomRoles() : null)) > 0);
             } else {
-                StudyListLocal folderDao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-                for (PrivateStudy study : patient.getStudies()) {               
-                    List<String> actions = folderDao.findStudyPermissionActions((study).getStudyInstanceUID(), StudyPermissionHelper.get().getDicomRoles());
+                StudyListLocal folderDao = (StudyListLocal) JNDIUtils
+                        .lookup(StudyListLocal.JNDI_NAME);
+                for (PrivateStudy study : patient.getStudies()) {
+                    List<String> actions = folderDao
+                            .findStudyPermissionActions(
+                                    (study).getStudyInstanceUID(),
+                                    StudyPermissionHelper.get().getDicomRoles());
                     if (!StudyPermissionHelper.get().applyStudyPermissions()
-                            || actions.contains("Q")) {  
+                            || actions.contains("Q")) {
                         addStudy(study, patientModel);
                         patientModel.setExpandable(true);
                     }
@@ -733,14 +839,15 @@ public class TrashListPage extends Panel {
     }
 
     private void retainSelectedPatients() {
-        for (Iterator<PrivPatientModel> it = viewport.getPatients().iterator(); it.hasNext();) {
+        for (Iterator<PrivPatientModel> it = viewport.getPatients().iterator(); it
+                .hasNext();) {
             PrivPatientModel patient = it.next();
             patient.retainSelectedStudies();
             if (patient.isCollapsed() && !patient.isSelected()) {
                 it.remove();
             }
         }
-     }
+    }
 
     private PrivPatientModel addPatient(PrivatePatient patient) {
         long pk = patient.getPk();
@@ -753,35 +860,37 @@ public class TrashListPage extends Panel {
         viewport.getPatients().add(patientModel);
         return patientModel;
     }
-    
+
     private boolean expandLevelChanged(AbstractDicomModel model) {
         int currLevel = header.getExpandAllLevel();
         int level = model.levelOfModel();
         if (model.isCollapsed() || currLevel > level) {
-            level = getExpandedLevel( 0, viewport.getPatients());
+            level = getExpandedLevel(0, viewport.getPatients());
         } else {
-            level = getExpandedLevel( ++level, model.getDicomModelsOfNextLevel());
+            level = getExpandedLevel(++level, model.getDicomModelsOfNextLevel());
         }
         header.setExpandAllLevel(level);
         return level != currLevel;
     }
-    
-    private int getExpandedLevel(int startLevel, List<? extends AbstractDicomModel> list) {
-        int level = startLevel; 
+
+    private int getExpandedLevel(int startLevel,
+            List<? extends AbstractDicomModel> list) {
+        int level = startLevel;
         if (list != null) {
             startLevel++;
             int l;
-            for ( AbstractDicomModel m1 : list ) {
+            for (AbstractDicomModel m1 : list) {
                 if (!m1.isCollapsed()) {
-                    l = getExpandedLevel( startLevel, m1.getDicomModelsOfNextLevel());
-                    if ( l > level) 
+                    l = getExpandedLevel(startLevel,
+                            m1.getDicomModelsOfNextLevel());
+                    if (l > level)
                         level = l;
                 }
             }
         }
         return level;
     }
-    
+
     private void updateAutoExpandLevel() {
         int level = AbstractDicomModel.PATIENT_LEVEL;
         pat: for (PrivPatientModel patient : viewport.getPatients()) {
@@ -796,14 +905,14 @@ public class TrashListPage extends Panel {
                             level = se.getInstances().get(0).levelOfModel();
                             break pat;
                         }
-                
+
                     }
                 }
             }
         }
         header.setExpandAllLevel(level);
     }
-    
+
     public static String getModuleName() {
         return MODULE_NAME;
     }
@@ -819,8 +928,9 @@ public class TrashListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
-            
-            final PrivPatientModel patModel = (PrivPatientModel) item.getModelObject();
+
+            final PrivPatientModel patModel = (PrivPatientModel) item
+                    .getModelObject();
             WebMarkupContainer row = new WebMarkupContainer("row");
             AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
 
@@ -831,28 +941,31 @@ public class TrashListPage extends Panel {
                     target.addComponent(this.getParent());
                 }
             };
-            row.add(new SelectableTableRowBehaviour(selChkBox, "patient", "patient_selected"));
+            row.add(new SelectableTableRowBehaviour(selChkBox, "patient",
+                    "patient_selected"));
             item.add(row);
-            WebMarkupContainer cell = new WebMarkupContainer("cell"){
+            WebMarkupContainer cell = new WebMarkupContainer("cell") {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 protected void onComponentTag(ComponentTag tag) {
-                   super.onComponentTag(tag);
-                   tag.put("rowspan", patModel.getRowspan());
+                    super.onComponentTag(tag);
+                    tag.put("rowspan", patModel.getRowspan());
                 }
             };
             cell.add(new ExpandCollapseLink("expand", patModel, item)
-                .setVisible(patModel.isExpandable()));
+                    .setVisible(patModel.isExpandable()));
             row.add(cell);
-            
-            TooltipBehaviour tooltip = new TooltipBehaviour("trash.content.data.patient.");
-            
+
+            TooltipBehaviour tooltip = new TooltipBehaviour(
+                    "trash.content.data.patient.");
+
             row.add(new Label("name").add(tooltip));
             row.add(new Label("id").add(tooltip));
             row.add(new Label("issuer").add(tooltip));
-            row.add(new DateTimeLabel("birthdate").setWithoutTime(true).add(tooltip));
+            row.add(new DateTimeLabel("birthdate").setWithoutTime(true).add(
+                    tooltip));
             row.add(new Label("sex").add(tooltip));
             row.add(new Label("comments").add(tooltip));
             row.add(new AjaxFallbackLink<Object>("toggledetails") {
@@ -866,12 +979,12 @@ public class TrashListPage extends Panel {
                         target.addComponent(item);
                     }
                 }
-            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour())
-            .add(tooltip)));
+            }.add(new Image("detailImg",
+                    ImageManager.IMAGE_COMMON_DICOM_DETAILS).add(
+                    new ImageSizeBehaviour()).add(tooltip)));
             row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
-                
+
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -880,7 +993,8 @@ public class TrashListPage extends Panel {
                 }
             };
             item.add(details);
-            details.add(new DicomObjectPanel("dicomobject", patModel.getDataset(), false));
+            details.add(new DicomObjectPanel("dicomobject", patModel
+                    .getDataset(), false));
             item.add(new StudyListView("studies", patModel.getStudies(), item));
         }
     }
@@ -888,7 +1002,7 @@ public class TrashListPage extends Panel {
     private final class StudyListView extends PropertyListView<Object> {
 
         private static final long serialVersionUID = 1L;
-        
+
         private final ListItem<?> patientListItem;
 
         private StudyListView(String id, List<PrivStudyModel> list,
@@ -900,8 +1014,9 @@ public class TrashListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
-            
-            final PrivStudyModel studyModel = (PrivStudyModel) item.getModelObject();
+
+            final PrivStudyModel studyModel = (PrivStudyModel) item
+                    .getModelObject();
             WebMarkupContainer row = new WebMarkupContainer("row");
             AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
 
@@ -912,23 +1027,26 @@ public class TrashListPage extends Panel {
                     target.addComponent(this.getParent());
                 }
             };
-            row.add(new SelectableTableRowBehaviour(selChkBox, "study", "study_selected"));
+            row.add(new SelectableTableRowBehaviour(selChkBox, "study",
+                    "study_selected"));
             item.add(row);
-            WebMarkupContainer cell = new WebMarkupContainer("cell"){
+            WebMarkupContainer cell = new WebMarkupContainer("cell") {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 protected void onComponentTag(ComponentTag tag) {
-                   super.onComponentTag(tag);
-                   tag.put("rowspan", studyModel.getRowspan());
+                    super.onComponentTag(tag);
+                    tag.put("rowspan", studyModel.getRowspan());
                 }
             };
-            cell.add(new ExpandCollapseLink("expand", studyModel, patientListItem));
+            cell.add(new ExpandCollapseLink("expand", studyModel,
+                    patientListItem));
             row.add(cell);
-            
-            TooltipBehaviour tooltip = new TooltipBehaviour("trash.content.data.study.");
-            
+
+            TooltipBehaviour tooltip = new TooltipBehaviour(
+                    "trash.content.data.study.");
+
             row.add(new DateTimeLabel("datetime").add(tooltip));
             row.add(new Label("id").add(tooltip));
             row.add(new Label("accessionNumber").add(tooltip));
@@ -948,12 +1066,12 @@ public class TrashListPage extends Panel {
                         target.addComponent(patientListItem);
                     }
                 }
-            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour())
-            .add(tooltip)));
+            }.add(new Image("detailImg",
+                    ImageManager.IMAGE_COMMON_DICOM_DETAILS).add(
+                    new ImageSizeBehaviour()).add(tooltip)));
             row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
-                
+
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -962,15 +1080,17 @@ public class TrashListPage extends Panel {
                 }
             };
             item.add(details);
-            details.add(new DicomObjectPanel("dicomobject", studyModel.getDataset(), false));
-            item.add(new SeriesListView("series",
-                    studyModel.getSeries(), patientListItem));
+            details.add(new DicomObjectPanel("dicomobject", studyModel
+                    .getDataset(), false));
+            item.add(new SeriesListView("series", studyModel.getSeries(),
+                    patientListItem));
         }
     }
+
     private final class SeriesListView extends PropertyListView<Object> {
 
         private static final long serialVersionUID = 1L;
-        
+
         private final ListItem<?> patientListItem;
 
         private SeriesListView(String id, List<PrivSeriesModel> list,
@@ -982,8 +1102,9 @@ public class TrashListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
-            
-            final PrivSeriesModel seriesModel = (PrivSeriesModel) item.getModelObject();
+
+            final PrivSeriesModel seriesModel = (PrivSeriesModel) item
+                    .getModelObject();
             WebMarkupContainer row = new WebMarkupContainer("row");
             AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
 
@@ -994,23 +1115,26 @@ public class TrashListPage extends Panel {
                     target.addComponent(this.getParent());
                 }
             };
-            row.add(new SelectableTableRowBehaviour(selChkBox, "series", "series_selected"));
+            row.add(new SelectableTableRowBehaviour(selChkBox, "series",
+                    "series_selected"));
             item.add(row);
-            WebMarkupContainer cell = new WebMarkupContainer("cell"){
+            WebMarkupContainer cell = new WebMarkupContainer("cell") {
 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 protected void onComponentTag(ComponentTag tag) {
-                   super.onComponentTag(tag);
-                   tag.put("rowspan", seriesModel.getRowspan());
+                    super.onComponentTag(tag);
+                    tag.put("rowspan", seriesModel.getRowspan());
                 }
             };
-            cell.add(new ExpandCollapseLink("expand", seriesModel, patientListItem));
+            cell.add(new ExpandCollapseLink("expand", seriesModel,
+                    patientListItem));
             row.add(cell);
-            
-            TooltipBehaviour tooltip = new TooltipBehaviour("trash.content.data.series.");
-            
+
+            TooltipBehaviour tooltip = new TooltipBehaviour(
+                    "trash.content.data.series.");
+
             row.add(new DateTimeLabel("datetime").add(tooltip));
             row.add(new Label("seriesNumber").add(tooltip));
             row.add(new Label("sourceAET").add(tooltip));
@@ -1030,12 +1154,12 @@ public class TrashListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour())
-            .add(tooltip)));
+            }.add(new Image("detailImg",
+                    ImageManager.IMAGE_COMMON_DICOM_DETAILS).add(
+                    new ImageSizeBehaviour()).add(tooltip)));
             row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
-                
+
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -1044,16 +1168,17 @@ public class TrashListPage extends Panel {
                 }
             };
             item.add(details);
-            details.add(new DicomObjectPanel("dicomobject", seriesModel.getDataset(), false));
-            item.add(new InstanceListView("instances",
-                    seriesModel.getInstances(), patientListItem));
+            details.add(new DicomObjectPanel("dicomobject", seriesModel
+                    .getDataset(), false));
+            item.add(new InstanceListView("instances", seriesModel
+                    .getInstances(), patientListItem));
         }
     }
 
     private final class InstanceListView extends PropertyListView<Object> {
 
         private static final long serialVersionUID = 1L;
-        
+
         private final ListItem<?> patientListItem;
 
         private InstanceListView(String id, List<PrivInstanceModel> list,
@@ -1065,8 +1190,9 @@ public class TrashListPage extends Panel {
         @Override
         protected void populateItem(final ListItem<Object> item) {
             item.setOutputMarkupId(true);
-            
-            final PrivInstanceModel instModel = (PrivInstanceModel) item.getModelObject();
+
+            final PrivInstanceModel instModel = (PrivInstanceModel) item
+                    .getModelObject();
             WebMarkupContainer row = new WebMarkupContainer("row");
             AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
 
@@ -1077,11 +1203,13 @@ public class TrashListPage extends Panel {
                     target.addComponent(this.getParent());
                 }
             };
-            row.add(new SelectableTableRowBehaviour(selChkBox, "instance", "instance_selected"));
+            row.add(new SelectableTableRowBehaviour(selChkBox, "instance",
+                    "instance_selected"));
             item.add(row);
 
-            TooltipBehaviour tooltip = new TooltipBehaviour("trash.content.data.instance.");
-            
+            TooltipBehaviour tooltip = new TooltipBehaviour(
+                    "trash.content.data.instance.");
+
             row.add(new DateTimeLabel("datetime").add(tooltip));
             row.add(new Label("instanceNumber").add(tooltip));
             row.add(new Label("sopClassUID").add(tooltip));
@@ -1099,53 +1227,57 @@ public class TrashListPage extends Panel {
                     }
                 }
 
-            }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-            .add(new ImageSizeBehaviour())
-            .add(tooltip)));
+            }.add(new Image("detailImg",
+                    ImageManager.IMAGE_COMMON_DICOM_DETAILS).add(
+                    new ImageSizeBehaviour()).add(tooltip)));
             row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
-                
+
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 public boolean isVisible() {
                     return instModel.isDetails();
                 }
-                
+
             };
             item.add(details);
-            details.add(new DicomObjectPanel("dicomobject", instModel.getDataset(), false));
+            details.add(new DicomObjectPanel("dicomobject", instModel
+                    .getDataset(), false));
         }
     }
 
     private class ExpandCollapseLink extends AjaxFallbackLink<Object> {
 
         private static final long serialVersionUID = 1L;
-        
+
         private AbstractDicomModel model;
         private ListItem<?> patientListItem;
-        
-        private ExpandCollapseLink(String id, AbstractDicomModel m, ListItem<?> patientListItem) {
+
+        private ExpandCollapseLink(String id, AbstractDicomModel m,
+                ListItem<?> patientListItem) {
             super(id);
             this.model = m;
             this.patientListItem = patientListItem;
-            add( new Image(id+"Img", new AbstractReadOnlyModel<ResourceReference>() {
+            add(new Image(id + "Img",
+                    new AbstractReadOnlyModel<ResourceReference>() {
 
-                private static final long serialVersionUID = 1L;
+                        private static final long serialVersionUID = 1L;
 
-                @Override
-                public ResourceReference getObject() {
-                    return model.isCollapsed() ? ImageManager.IMAGE_COMMON_EXPAND : 
-                        ImageManager.IMAGE_COMMON_COLLAPSE;
-                }
-            })
-            .add(new ImageSizeBehaviour()));
+                        @Override
+                        public ResourceReference getObject() {
+                            return model.isCollapsed() ? ImageManager.IMAGE_COMMON_EXPAND
+                                    : ImageManager.IMAGE_COMMON_COLLAPSE;
+                        }
+                    }).add(new ImageSizeBehaviour()));
         }
-        
+
         @Override
         public void onClick(AjaxRequestTarget target) {
-            if (model.isCollapsed()) model.expand();
-            else model.collapse();
+            if (model.isCollapsed())
+                model.expand();
+            else
+                model.collapse();
             if (target != null) {
                 target.addComponent(patientListItem);
                 if (expandLevelChanged(model))
@@ -1153,7 +1285,7 @@ public class TrashListPage extends Panel {
             }
         }
     }
-    
+
     private boolean removeTrashItems(PrivSelectedEntities selected) {
         try {
             List<Long> pks = new ArrayList<Long>();
@@ -1165,7 +1297,7 @@ public class TrashListPage extends Panel {
             for (PrivSeriesModel seriesModel : selected.getSeries())
                 pks.add(seriesModel.getPk());
             dao.removeTrashEntities(pks, PrivateSeries.class, false);
-            
+
             pks = new ArrayList<Long>();
             for (PrivStudyModel studyModel : selected.getStudies())
                 pks.add(studyModel.getPk());
@@ -1176,28 +1308,29 @@ public class TrashListPage extends Panel {
                 pks.add(patientModel.getPk());
             dao.removeTrashEntities(pks, PrivatePatient.class, false);
         } catch (Exception x) {
-            log.error("Delete failed! Reason:"+x.getMessage(),x);
+            log.error("Delete failed! Reason:" + x.getMessage(), x);
             return false;
         }
         return true;
     }
-    
+
     private boolean removeTrashAll() {
         try {
             dao.removeTrashAll();
         } catch (Exception x) {
-            log.error("Delete failed! Reason:"+x.getMessage(),x);
+            log.error("Delete failed! Reason:" + x.getMessage(), x);
             return false;
         }
         return true;
     }
-    
+
     private List<PrivateFile> getFilesToRestore(Set<Study> studiesInFolder) {
 
         List<PrivateFile> files = new ArrayList<PrivateFile>();
         if (selected.hasPatients()) {
             for (PrivPatientModel pp : selected.getPatients()) {
-                files.addAll(dao.getFilesForEntity(pp.getPk(), PrivatePatient.class));
+                files.addAll(dao.getFilesForEntity(pp.getPk(),
+                        PrivatePatient.class));
                 List<PrivStudyModel> studies = pp.getStudies();
                 if (!studies.isEmpty()) {
                     String[] suids = new String[studies.size()];
@@ -1210,20 +1343,28 @@ public class TrashListPage extends Panel {
         }
         if (selected.hasStudies()) {
             for (PrivStudyModel pst : selected.getStudies()) {
-                files.addAll(dao.getFilesForEntity(pst.getPk(), PrivateStudy.class));
-                studiesInFolder.addAll(dao.getStudiesInFolder(new String[]{pst.getStudyInstanceUID()}));
+                files.addAll(dao.getFilesForEntity(pst.getPk(),
+                        PrivateStudy.class));
+                studiesInFolder.addAll(dao
+                        .getStudiesInFolder(new String[] { pst
+                                .getStudyInstanceUID() }));
             }
         }
         if (selected.hasSeries()) {
             for (PrivSeriesModel pse : selected.getSeries()) {
-                files.addAll(dao.getFilesForEntity(pse.getPk(), PrivateSeries.class));
-                studiesInFolder.addAll(dao.getStudiesInFolder(new String[]{pse.getStudy().getStudyInstanceUID()}));
+                files.addAll(dao.getFilesForEntity(pse.getPk(),
+                        PrivateSeries.class));
+                studiesInFolder.addAll(dao
+                        .getStudiesInFolder(new String[] { pse.getStudy()
+                                .getStudyInstanceUID() }));
             }
         }
         if (selected.hasInstances()) {
             for (PrivInstanceModel pi : selected.getInstances()) {
-                files.addAll(dao.getFilesForEntity(pi.getPk(), PrivateInstance.class));
-                studiesInFolder.addAll(dao.getStudiesInFolder(new String[]{pi.getSeries().getStudy().getStudyInstanceUID()}));
+                files.addAll(dao.getFilesForEntity(pi.getPk(),
+                        PrivateInstance.class));
+                studiesInFolder.addAll(dao.getStudiesInFolder(new String[] { pi
+                        .getSeries().getStudy().getStudyInstanceUID() }));
             }
         }
         return files;

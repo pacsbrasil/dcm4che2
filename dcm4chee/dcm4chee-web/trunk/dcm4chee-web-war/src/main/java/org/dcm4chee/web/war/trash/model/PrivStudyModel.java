@@ -179,6 +179,10 @@ public class PrivStudyModel extends AbstractDicomModel implements Serializable {
                 JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
         for (PrivateSeries series : dao.findSeriesOfStudy(getPk())) {
             seriess.add(new PrivSeriesModel(series, this));
+            
+System.out.println("FETCHING SERIES FOR STUDY: " + getPk());
+for (PrivateSeries series1 : dao.findSeriesOfStudy(getPk())) 
+    System.out.println("FETCHING SERIES FOR STUDY: " + series);
         }
     }
 
