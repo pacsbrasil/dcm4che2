@@ -455,41 +455,52 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                
     public long parseDataset(DcmDecodeParam param, int stopTag)
             throws IOException {
-        if (param != null)
-            setDcmDecodeParam(param);
-        if (handler != null) {
-            handler.startDataset();
-            handler.setDcmDecodeParam(decodeParam);
-        }
-        long read = doParse(stopTag, -1);
-        if (handler != null)
-            handler.endDataset();
-        return read;
+         return parseDataset(param, stopTag, -1);
     }
+	
+    public long parseDataset(DcmDecodeParam param, int stopTag, int length)
+			throws IOException {
+		if (param != null)
+			setDcmDecodeParam(param);
+		if (handler != null) {
+			handler.startDataset();
+			handler.setDcmDecodeParam(decodeParam);
+		}
+		long read = doParse(stopTag, length);
+		if (handler != null)
+			handler.endDataset();
+		return read;
+	}    
+
 
     public long parseDcmFile(FileFormat format, int stopTag)
             throws IOException {
-       if (format == null) {
-           format = detectFileFormat();
-       }
-       if (handler != null)
-           handler.startDcmFile();
-       DcmDecodeParam param = format.decodeParam;
-       rPos = 0L;
-       if (format.hasFileMetaInfo) {
-           tsUID = null;
-           parseFileMetaInfo(format.hasPreamble, format.decodeParam);
-           if (tsUID == null)
-               log.warn("Missing Transfer Syntax UID in FMI");
-           else
-               param = DcmDecodeParam.valueOf(tsUID);
-       }
-       parseDataset(param, stopTag);
-       if (handler != null)
-           handler.endDcmFile();
-       return rPos;
+        return parseDcmFile(format, stopTag, -1);
     }
 
+    public long parseDcmFile(FileFormat format, int stopTag, int length)
+			throws IOException {
+		if (format == null) {
+			format = detectFileFormat();
+		}
+		if (handler != null)
+			handler.startDcmFile();
+		DcmDecodeParam param = format.decodeParam;
+		rPos = 0L;
+		if (format.hasFileMetaInfo) {
+			tsUID = null;
+			parseFileMetaInfo(format.hasPreamble, format.decodeParam);
+			if (tsUID == null)
+				log.warn("Missing Transfer Syntax UID in FMI");
+			else
+				param = DcmDecodeParam.valueOf(tsUID);
+		}
+		parseDataset(param, stopTag, length);
+		if (handler != null)
+			handler.endDcmFile();
+		return rPos;
+	}    
+	
     public long parseItemDataset() throws IOException {
         in.readFully(b12, 0, 8);
         rPos += 8;
