@@ -185,6 +185,11 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
         return expandable;
     }
     
+    public boolean isActionForAllStudiesAllowed(String action) {
+        return dao.isActionForAllStudiesOfPatientAllowed(getPk(), action, 
+            StudyPermissionHelper.get().applyStudyPermissions() ? StudyPermissionHelper.get().getDicomRoles() : null);
+    }
+    
     @Override
     public String toString() {
         return "Patient: "+getName()+" (ID:"+getId()+")";

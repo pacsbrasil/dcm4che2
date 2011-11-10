@@ -287,6 +287,19 @@ public class StudyListBean implements StudyListLocal {
         return query;
     }
 
+    public boolean isActionForAllStudiesOfPatientAllowed(long patPk, String action, List<String> roles) {
+        if (roles == null)
+            return true;
+        StringBuilder ql = new StringBuilder(64);
+        ql.append("SELECT COUNT(s) FROM Study s WHERE s.patient.pk = ?1")
+        .append(" AND (s.studyInstanceUID NOT IN (SELECT sp.studyInstanceUID FROM StudyPermission sp WHERE sp.action = ?2 AND sp.role IN (:roles)))");
+        Query query = em.createQuery(ql.toString());
+        query.setParameter(1, patPk);
+        query.setParameter(2, action);
+        query.setParameter("roles", roles);
+        return (((Number) query.getSingleResult()).intValue() == 0);
+    }
+    
     @SuppressWarnings("unchecked")
     public List<String> findStudyPermissionActions(String studyInstanceUID, List<String> roles) {
         if(roles == null) return null;

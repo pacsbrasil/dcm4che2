@@ -64,10 +64,12 @@ public interface StudyListLocal {
 
     List<Patient> findPatients(StudyListFilter filter, int offset, int limit, List<String> roles);
 
-    public int countStudiesOfPatient(long pk, List<String> roles);
+    int countStudiesOfPatient(long pk, List<String> roles);
     
     List<Study> findStudiesOfPatient(long pk, boolean latestStudyFirst, List<String> roles);
 
+    boolean isActionForAllStudiesOfPatientAllowed(long patPk, String action, List<String> roles);
+    
     List<String> findStudyPermissionActions(String studyInstanceUID, List<String> roles);
     
     List<Series> findSeriesOfStudy(long pk);
