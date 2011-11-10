@@ -318,6 +318,7 @@ public class TrashListPage extends Panel {
 
                 form.clearInput();
                 retainSelectedPatients();
+                viewport.getFilter().clear();
                 DropDownChoice sourceAETDropDownChoice = ((DropDownChoice) ((WebMarkupContainer) form
                         .get("searchFields")).get("sourceAET"));
                 if (sourceAETDropDownChoice.getChoices().size() > 0)
