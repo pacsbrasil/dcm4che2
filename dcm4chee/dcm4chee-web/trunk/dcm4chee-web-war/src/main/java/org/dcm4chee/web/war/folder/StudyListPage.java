@@ -1667,7 +1667,7 @@ public class StudyListPage extends Panel {
                 public void onClick(AjaxRequestTarget target) {
                     confirmEmulateMpps.confirm(target, 
                             new StringResourceModel(ppsModel.hasForeignPpsInfo() ? 
-                                    "folder.message.confirmEmulate" : "folder.message.confirmForcedEmulate"
+                                    "folder.message.confirmForcedEmulate" : "folder.message.confirmEmulate"
                                     ,this, null), ppsModel);
                     
                 }
