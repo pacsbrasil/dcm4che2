@@ -96,6 +96,8 @@ public interface DcmParser {
     long parseDataset(DcmDecodeParam param, int stopTag) throws IOException;
 
     long parseDcmFile(FileFormat format, int stopTag) throws IOException;
+    
+    long parseDcmFile(FileFormat format, int stopTag, int length) throws IOException;
 
     long parseItemDataset() throws IOException;
 
