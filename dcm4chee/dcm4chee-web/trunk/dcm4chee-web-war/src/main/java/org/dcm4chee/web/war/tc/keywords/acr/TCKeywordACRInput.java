@@ -78,6 +78,8 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
 
     private static final long serialVersionUID = 1L;
 
+    private TextField<TCKeyword> text;
+    
     public TCKeywordACRInput(final String id) {
         this(id, null);
     }
@@ -86,7 +88,7 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
         super(id, selectedKeyword != null ? new Model<TCKeyword>(
                 selectedKeyword) : new Model<TCKeyword>());
 
-        final TextField<TCKeyword> text = new TextField<TCKeyword>("text",
+        text = new TextField<TCKeyword>("text",
                 selectedKeyword != null ? new Model<TCKeyword>(selectedKeyword)
                         : new Model<TCKeyword>(), TCKeyword.class) {
             @Override
@@ -187,6 +189,7 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
     @Override
     public void resetSelectedKeyword() {
         getModel().setObject(null);
+        text.getModel().setObject(null);
     }
 
     @Override
