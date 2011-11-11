@@ -62,4 +62,6 @@ public interface AEHomeLocal {
     AE updateOrCreateAET(AE ae);
 
     void removeAET(long pk);
+    
+    List<String> listAeTypes();
 }

@@ -174,8 +174,11 @@ public class AEListPanel extends Panel {
         newAET.add(new SecurityBehavior(getModuleName() + ":newAETLink"));
 
         Set<String> aetTypeSet = new LinkedHashSet<String>();
+        AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
+        aetTypeSet.addAll(aeHome.listAeTypes());
         aetTypeSet.addAll(WebCfgDelegate.getInstance().getAETTypes());
         aetTypeSet.addAll(AELicenseProviderManager.get(null).getProvider().getAETypes(WebCfgDelegate.getInstance().getAETTypes()));
+        aetTypeSet.remove(null);
         List<String> aetTypes = new ArrayList<String>(aetTypeSet);
 
         add(new Label("type.filter.label", new StringResourceModel("ae.type.filter.label", AEListPanel.this, null, new Object[]{1} ) ) );
