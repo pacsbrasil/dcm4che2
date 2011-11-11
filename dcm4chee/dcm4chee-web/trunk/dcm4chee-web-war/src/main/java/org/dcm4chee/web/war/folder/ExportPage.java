@@ -285,6 +285,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 getSession().setMetaData(LAST_DESTINATION_AET_ATTRIBUTE, destinationAET);
                 exportSelected();
+                target.addComponent(form);
             }
         }.setOutputMarkupId(true));
         form.add(new AjaxButton("close", new ResourceModel("export.closeBtn.text")){
