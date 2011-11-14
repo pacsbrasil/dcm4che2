@@ -76,7 +76,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
             public QueryParam[] appendSQLWhereConstraint(TCQueryFilterKey key,
                     StringBuilder sb) {
                 QueryParam searchStringParam = new QueryParam("searchString",
-                        "%" + getValue().toUpperCase() + "%");
+                        "%" + getValue().replaceAll("\\*","%").toUpperCase() + "%");
                 QueryParam conceptNameValueParam = new QueryParam(
                         "conceptNameValue", key.getCode().getCodeValue());
                 QueryParam conceptNameDesignatorParam = new QueryParam(
@@ -98,7 +98,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
 
                 if (key.supportsCodeValue()) {
                     QueryParam conceptCodeMeaningParam = new QueryParam(
-                            "conceptCodeMeaning", "%" + getValue().toUpperCase() + "%");
+                            "conceptCodeMeaning", "%" + getValue().replaceAll("\\*","%").toUpperCase() + "%");
 
                     sb.append(" OR ");
 
