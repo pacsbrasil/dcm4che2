@@ -46,6 +46,7 @@ import java.util.Locale;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -60,6 +61,7 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.convert.IConverter;
 import org.dcm4chee.web.war.tc.TCPanel;
@@ -134,7 +136,19 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
         final Tree tree = new Tree("keyword-tree", new DefaultTreeModel(root)) {
 
             private static final long serialVersionUID = 1L;
-
+            @Override
+            protected void populateTreeItem(WebMarkupContainer item, int level) {
+                super.populateTreeItem(item, level);
+                
+                //(WEB-429) workaround: disable browser-native drag and drop
+                item.add(new AttributeModifier("onmousedown", true, new AbstractReadOnlyModel<String>() {
+                    @Override
+                    public String getObject()
+                    {
+                        return "return false;";
+                    }
+                }));
+            }
             @Override
             public void onNodeLinkClicked(AjaxRequestTarget target,
                     TreeNode node) {
@@ -162,8 +176,6 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
         popup.setTree(tree);
         popup.add(tree);
 
-        add(JavascriptPackageResource.getHeaderContribution(TCPanel.class,
-                "tc-utils.js"));
         add(text);
         add(new AjaxButton("chooser-button", new Model<String>("...")) {
 

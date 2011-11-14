@@ -51,6 +51,7 @@ import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteSettings;
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteTextField;
+import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.Form;
@@ -148,6 +149,14 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
             protected String getNullValidKey() {
                 return "tc.search.null.text";
             }
+            @Override
+            protected void onComponentTag(ComponentTag tag)
+            {
+                super.onComponentTag(tag);
+                
+              //(WEB-429) workaround: disable browser-native drag and drop
+                tag.put("onmousedown", "return false;");
+            }
         };
         keywordList.setOutputMarkupId(true);
         keywordList.setNullValid(true);
@@ -177,9 +186,6 @@ public class TCKeywordListInput extends Panel implements TCKeywordInput {
         });
 
         PopupCloseables.getInstance().addCloseable(popup);
-
-        add(JavascriptPackageResource.getHeaderContribution(TCPanel.class,
-                "tc-utils.js"));
 
         add(text);
         add(new AjaxButton("chooser-button", new Model<String>("...")) {
