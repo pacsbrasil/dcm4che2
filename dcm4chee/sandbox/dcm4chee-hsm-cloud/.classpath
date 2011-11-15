@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="DCM4CHEE_RUNTIME/lib/jboss-system.jar"/>
+	<classpathentry kind="var" path="DCM4CHEE_RUNTIME/lib/jboss-jmx.jar" sourcepath="/JBOSS_SRC/jmx/src/main"/>
+	<classpathentry kind="var" path="DCM4CHEE_RUNTIME/lib/jboss-common.jar" sourcepath="/JBOSS_SRC/system/src/main"/>
+	<classpathentry kind="var" path="DCM4CHEE_RUNTIME/server/default/lib/log4j.jar"/>
+	<classpathentry kind="var" path="DCM4CHEE_RUNTIME/server/default/lib/dcm4che.jar"/>
+	<classpathentry kind="var" path="DCM4CHEE_RUNTIME/server/default/lib/dcm4chee.jar"/>
+	<classpathentry kind="var" path="DCM4CHEE_RUNTIME/server/default/lib/jboss-j2ee.jar"/>
+	<classpathentry kind="lib" path="lib/aws-java-sdk-1.2.5.jar"/>
+	<classpathentry kind="var" path="DCM4CHEE_RUNTIME/server/default/lib/commons-io-1.3.1.jar"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>
