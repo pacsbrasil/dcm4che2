@@ -48,15 +48,14 @@ public class ImageDiff {
 		assert i1 != null;
 		assert i1.getWidth() == i2.getWidth();
 		assert i1.getHeight() == i2.getHeight();
-		computeDiffs(i1, i2, null);
+        BufferedImage i3 = new BufferedImage(i1.getWidth(), i1.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+		computeDiffs(i1, i2, i3);
 		if (writeImage) {
 			writeImage(i2, fileBase);
 		}
 		
-		BufferedImage i3 = null;
 		if (writeDiff) {
 			// Difference object is always a byte array
-			i3 = new BufferedImage(i1.getWidth(), i1.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
 			writeImage(i3, fileBase + "-diff");
 		}
 		if (writeInfo) {
