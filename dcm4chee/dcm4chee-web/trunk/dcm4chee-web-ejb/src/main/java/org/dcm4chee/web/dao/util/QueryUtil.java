@@ -49,6 +49,7 @@ import javax.persistence.TemporalType;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.conf.AttributeFilter;
+import org.dcm4chee.archive.entity.BaseEntity;
 
 /**
  * @author Franz Willer <fwiller@gmail.com>
@@ -467,6 +468,50 @@ public class QueryUtil {
             varName = ":"+varName;
         }
         return varName;
+    }
+    
+    /**
+     * Compare String values numeric.
+     * Rules:
+     * 1) null values are greater (sort to end). (both null - > compare pk's)
+     * 2) both values numeric -> compare numeric (if equal compare pk's)
+     * 3) none numeric values are always greater than numeric values
+     * 4) both values not numeric -> compare textual (if equal compare pk's)
+     * @param o1 BaseEntity 1 to compare pk's
+     * @param o2 BaseEntity 2 to compare pk's
+     * @param is1 String value 1
+     * @param is2 String value 2
+     * @return <0 if o1 < o2, 0 if o1 = o2 and >0 if o1 > o2
+     */
+    public static int compareIntegerStringAndPk(long pk1, long pk2, String is1, String is2) {
+        if (is1 != null) {
+            if (is2 != null) {
+                try {
+                    Integer i1 = new Integer(is1);
+                    try {
+                        int i = i1.compareTo(new Integer(is2));
+                        if (i != 0)  
+                            return i;
+                    } catch (NumberFormatException x) {
+                        return -1; 
+                    }
+                } catch (NumberFormatException x) {
+                    try {
+                        Integer.parseInt(is2);
+                        return 1;
+                    } catch (NumberFormatException x1) {
+                        int i = is1.compareTo(is2);
+                        if (i != 0)
+                            return i;
+                    }
+                }
+            } else {
+                return -1;
+            }
+        } else if ( is2 != null) {
+            return 1;
+        }
+        return new Long(pk1).compareTo(new Long(pk2));
     }
     
 }

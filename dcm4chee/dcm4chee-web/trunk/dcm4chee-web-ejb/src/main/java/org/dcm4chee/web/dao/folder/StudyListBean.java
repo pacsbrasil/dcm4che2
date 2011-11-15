@@ -77,61 +77,17 @@ public class StudyListBean implements StudyListLocal {
         public int compare(Instance o1, Instance o2) {
             String in1 = o1.getInstanceNumber();
             String in2 = o2.getInstanceNumber();
-            return compareIntegerStringAndPk(o1, o2, in1, in2);
+            return QueryUtil.compareIntegerStringAndPk(o1.getPk(), o2.getPk(), in1, in2);
         }
     };
     private static Comparator<Series> seriesComparator = new Comparator<Series>() {
         public int compare(Series o1, Series o2) {
             String in1 = o1.getSeriesNumber();
             String in2 = o2.getSeriesNumber();
-            return compareIntegerStringAndPk(o1, o2, in1, in2);
+            return QueryUtil.compareIntegerStringAndPk(o1.getPk(), o2.getPk(), in1, in2);
         }
 
     };
-    /**
-     * Compare String values numeric.
-     * Rules:
-     * 1) null values are greater (sort to end). (both null - > compare pk's)
-     * 2) both values numeric -> compare numeric (if equal compare pk's)
-     * 3) none numeric values are always greater than numeric values
-     * 4) both values not numeric -> compare textual (if equal compare pk's)
-     * @param o1 BaseEntity 1 to compare pk's
-     * @param o2 BaseEntity 2 to compare pk's
-     * @param is1 String value 1
-     * @param is2 String value 2
-     * @return <0 if o1 < o2, 0 if o1 = o2 and >0 if o1 > o2
-     */
-    private static int compareIntegerStringAndPk(BaseEntity o1, BaseEntity o2, String is1,
-            String is2) {
-        if (is1 != null) {
-            if (is2 != null) {
-                try {
-                    Integer i1 = new Integer(is1);
-                    try {
-                        int i = i1.compareTo(new Integer(is2));
-                        if (i != 0)  
-                            return i;
-                    } catch (NumberFormatException x) {
-                        return -1; 
-                    }
-                } catch (NumberFormatException x) {
-                    try {
-                        Integer.parseInt(is2);
-                        return 1;
-                    } catch (NumberFormatException x1) {
-                        int i = is1.compareTo(is2);
-                        if (i != 0)
-                            return i;
-                    }
-                }
-            } else {
-                return -1;
-            }
-        } else if ( is2 != null) {
-            return 1;
-        }
-        return new Long(o1.getPk()).compareTo(new Long(o2.getPk()));
-    }
 
     @PersistenceContext(unitName="dcm4chee-arc")
     private EntityManager em;

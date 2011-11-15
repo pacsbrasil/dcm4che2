@@ -40,6 +40,8 @@ package org.dcm4chee.web.war.trash.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -49,6 +51,7 @@ import org.dcm4chee.archive.entity.PrivatePatient;
 import org.dcm4chee.archive.entity.PrivateStudy;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.dao.trash.TrashListLocal;
+import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
@@ -64,6 +67,26 @@ public class PrivPatientModel extends AbstractDicomModel implements Serializable
     private List<PrivStudyModel> studies = new ArrayList<PrivStudyModel>();
 
     TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
+
+    public static Comparator<PrivStudyModel> studyComparator = new Comparator<PrivStudyModel>() {
+        public int compare(PrivStudyModel o1, PrivStudyModel o2) {
+            String d1 = toStudyDateTimeString(o1);
+            String d2 = toStudyDateTimeString(o2);
+            return QueryUtil.compareIntegerStringAndPk(o1.getPk(), o2.getPk(), d1, d2);
+        }
+
+        private String toStudyDateTimeString(PrivStudyModel o) {
+            String d = o.getAttributeValueAsString(Tag.StudyDate);
+            if (d != null) {
+                String t = o.getAttributeValueAsString(Tag.StudyTime);
+                if (t != null) {
+                    d += t;
+                }
+            }
+            return d;
+        }
+
+    };
 
     private boolean expandable;
 
@@ -137,6 +160,7 @@ public class PrivPatientModel extends AbstractDicomModel implements Serializable
                         StudyPermissionHelper.get().getDicomRoles() : null)) {
             this.studies.add(new PrivStudyModel(study, this));
         }
+        sortStudies();
     }
 
     @Override
@@ -154,5 +178,9 @@ public class PrivPatientModel extends AbstractDicomModel implements Serializable
     }
     public void setExpandable(boolean expandable) {
         this.expandable = expandable;
+    }
+    
+    public void sortStudies() {
+        Collections.sort(studies, studyComparator);
     }
 }

@@ -39,6 +39,8 @@
 package org.dcm4chee.web.dao.trash;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
@@ -48,6 +50,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.common.PrivateTag;
 import org.dcm4chee.archive.entity.BaseEntity;
@@ -71,6 +74,24 @@ public class TrashListBean implements TrashListLocal {
 
     @PersistenceContext(unitName="dcm4chee-arc")
     private EntityManager em;
+
+    private static Comparator<PrivateInstance> instanceComparator = new Comparator<PrivateInstance>() {
+        public int compare(PrivateInstance o1, PrivateInstance o2) {
+            String in1 = o1.getAttributes().getString(Tag.InstanceNumber);
+            String in2 = o2.getAttributes().getString(Tag.InstanceNumber);
+            return QueryUtil.compareIntegerStringAndPk(o1.getPk(), o2.getPk(), in1, in2);
+        }
+
+    };
+
+    private static Comparator<PrivateSeries> seriesComparator = new Comparator<PrivateSeries>() {
+        public int compare(PrivateSeries o1, PrivateSeries o2) {
+            String in1 = o1.getAttributes().getString(Tag.SeriesNumber);
+            String in2 = o2.getAttributes().getString(Tag.SeriesNumber);
+            return QueryUtil.compareIntegerStringAndPk(o1.getPk(), o2.getPk(), in1, in2);
+        }
+
+    };
 
     public int count(TrashListFilter filter, List<String> roles) {
         if ((roles != null) && (roles.size() == 0)) return 0;
@@ -189,16 +210,19 @@ public class TrashListBean implements TrashListLocal {
 
     @SuppressWarnings("unchecked")
     public List<PrivateSeries> findSeriesOfStudy(long pk) {
-        return em.createQuery("FROM PrivateSeries s WHERE s.study.pk=?1 ORDER BY s.pk")
-                .setParameter(1, pk)
-                .getResultList();
+        List<PrivateSeries> l = em.createQuery("FROM PrivateSeries s WHERE s.study.pk=?1 ORDER BY s.pk")
+                .setParameter(1, pk).getResultList();
+        Collections.sort(l, seriesComparator);
+        return l;
     }
 
     @SuppressWarnings("unchecked")
     public List<PrivateInstance> findInstancesOfSeries(long pk) {
-        return em.createQuery("FROM PrivateInstance i WHERE i.series.pk=?1 ORDER BY i.pk")
+        List<PrivateInstance> l = em.createQuery("FROM PrivateInstance i WHERE i.series.pk=?1 ORDER BY i.pk")
                 .setParameter(1, pk)
                 .getResultList();
+        Collections.sort(l, instanceComparator);
+        return l;
    }
 
     @SuppressWarnings("unchecked")
@@ -354,4 +378,6 @@ public class TrashListBean implements TrashListLocal {
         .setParameter("seriesPk", seriesPk)
         .getSingleResult();
     }
+    
+    
 }

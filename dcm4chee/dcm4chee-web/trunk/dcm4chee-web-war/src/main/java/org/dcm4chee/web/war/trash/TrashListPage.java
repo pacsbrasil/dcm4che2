@@ -824,6 +824,7 @@ public class TrashListPage extends Panel {
                     }
 
                 }
+                patientModel.sortStudies();
             }
         }
     }
