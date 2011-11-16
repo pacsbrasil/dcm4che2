@@ -385,7 +385,7 @@
       <name>aetTypes</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="EMPTY"/>
+         <value value="-"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
