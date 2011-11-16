@@ -34,7 +34,8 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
- * ***** END LICENSE BLOCK ***** */
+ * ***** END LICENSE BLOCK ***** 
+ */
 
 package org.dcm4chex.archive.ejb.jdbc;
 
@@ -45,7 +46,7 @@ import java.util.Date;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.PersonName;
 
-/**
+/** 
  * @author Gunter.Zeilinger <gunterze@gmail.com>
  * @author Franz Willer <franz.willer@agfa.com>
  * @author Harald.Metterlein@heicare.com
@@ -53,7 +54,7 @@ import org.dcm4che.data.PersonName;
  * @version $Revision$ $Date$
  * @since 26.08.2003
  */
-class SqlBuilder {
+public class SqlBuilder {
 
     public static final boolean TYPE1 = false;
     public static final boolean TYPE2 = true;

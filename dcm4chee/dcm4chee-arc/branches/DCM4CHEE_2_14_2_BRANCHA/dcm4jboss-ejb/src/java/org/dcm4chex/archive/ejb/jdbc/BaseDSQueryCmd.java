@@ -61,7 +61,7 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
     /** Contains supported matching keys of sequence Items. key=SQ tag, value=list of supported tags) */
     protected final HashMap seqMatchingKeys = new HashMap();
 
-    protected final SqlBuilder sqlBuilder = new SqlBuilder();
+    protected final SqlBuilder sqlBuilder = createSqlBuilder();
 
     protected final boolean filterResult;
 
@@ -86,6 +86,9 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
         return sqlBuilder.isMatchNotSupported();
     }
     
+    public SqlBuilder createSqlBuilder() { 
+    	return new SqlBuilder();
+    }    
     /**
      * Check if this QueryCmd use an unsupported matching key.
      * 
