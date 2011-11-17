@@ -125,8 +125,9 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
             }
 
         if (!found) {
-            ((WebResponse) RequestCycle.get().getResponse()).addCookie(new Cookie("WEB3LOCALE", "en"));
-            getSession().setLocale(new Locale("en"));
+            Cookie c = new Cookie("WEB3LOCALE", getSession().getLocale().getCountry().toLowerCase());
+            c.setMaxAge(Integer.MAX_VALUE);
+            ((WebResponse) RequestCycle.get().getResponse()).addCookie(c);
         }
         
         add(confirmLogout);
@@ -206,7 +207,9 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
 
             @Override
             protected void onSelectionChanged(String newSelection) {
-                ((WebResponse) RequestCycle.get().getResponse()).addCookie(new Cookie("WEB3LOCALE", newSelection));
+                Cookie c = new Cookie("WEB3LOCALE", newSelection);
+                c.setMaxAge(Integer.MAX_VALUE);
+                ((WebResponse) RequestCycle.get().getResponse()).addCookie(c);
                 getSession().setLocale(new Locale(newSelection));
             }
         };
