@@ -164,6 +164,8 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     private List<String> aetTypes = new ArrayList<String>();
     
+    private String aeManagementDefault = new String();
+    
     private List<String> stationNames = new ArrayList<String>();
 
     private boolean autoUpdateModalities;
@@ -458,6 +460,14 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     public void setAETTypes(String s) {
         updateList(aetTypes, s, "|");
+    }
+
+    public String getAEManagementDefault() {
+        return aeManagementDefault;
+    }
+
+    public void setAEManagementDefault(String aeManagementDefault) {
+        this.aeManagementDefault = aeManagementDefault;
     }
 
     public String getStationNames() {

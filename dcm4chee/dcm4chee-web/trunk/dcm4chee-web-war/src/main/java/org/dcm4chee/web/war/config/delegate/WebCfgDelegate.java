@@ -166,6 +166,10 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return getStringList("getAETTypesList");
     }
 
+    public String getAEManagementDefault() {
+        return getString("aeManagementDefault");
+    }
+
     public List<String> getStationNameList() {
         List<String> names = getStringList("getStationNameList");
         names.add(0, "*");

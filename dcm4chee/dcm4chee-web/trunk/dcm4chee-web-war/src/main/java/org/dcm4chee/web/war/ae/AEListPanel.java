@@ -108,7 +108,7 @@ public class AEListPanel extends Panel {
     private Map<String, String> mppsEmulatedAETs;
     
     private final IModel<String> typeSelectionModel = new Model<String>();
-    
+
     public AEListPanel(String id) {
         super(id);
         
@@ -173,6 +173,8 @@ public class AEListPanel extends Panel {
         add(newAET);
         newAET.add(new SecurityBehavior(getModuleName() + ":newAETLink"));
 
+        String aeManagementDefault = WebCfgDelegate.getInstance().getAEManagementDefault();
+        
         Set<String> aetTypeSet = new LinkedHashSet<String>();
         AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
         aetTypeSet.addAll(aeHome.listAeTypes());
@@ -181,6 +183,9 @@ public class AEListPanel extends Panel {
         aetTypeSet.remove(null);
         List<String> aetTypes = new ArrayList<String>(aetTypeSet);
 
+        if (!"ANY".equals(aeManagementDefault) && !"NONE".equals(aeManagementDefault))
+            typeSelectionModel.setObject(aeManagementDefault);
+        
         add(new Label("type.filter.label", new StringResourceModel("ae.type.filter.label", AEListPanel.this, null, new Object[]{1} ) ) );
         DropDownChoice<String> typeSelection = null;
         add((typeSelection = new DropDownChoice<String>("type-selection",
@@ -304,7 +309,8 @@ public class AEListPanel extends Panel {
                 );
             }
         }));
-        updateAETList();
+        if (!"NONE".equals(aeManagementDefault)) 
+            updateAETList();
     }
 
     @Override

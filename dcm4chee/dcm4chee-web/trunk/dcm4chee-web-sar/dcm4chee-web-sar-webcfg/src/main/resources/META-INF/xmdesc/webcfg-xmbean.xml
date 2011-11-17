@@ -389,6 +389,20 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getAEManagementDefault"
+      setMethod="setAEManagementDefault">
+      <description><![CDATA[Default to be shown in the AE Management list.<br/>
+        ANY: Display all AETs after opening AE Management<br/>
+        NONE: Do not display any AET after opening AE Management
+        On other entries, the given is selected as a type in the "Filter by" dropdown list.
+      ]]></description>
+      <name>aeManagementDefault</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="ANY"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getStationNames"
       setMethod="setStationNames">
       <description><![CDATA[List of Station AETs.<br/>
