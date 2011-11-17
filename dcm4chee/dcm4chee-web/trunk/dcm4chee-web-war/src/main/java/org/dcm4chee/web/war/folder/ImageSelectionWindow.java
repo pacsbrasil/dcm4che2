@@ -228,7 +228,7 @@ public class ImageSelectionWindow extends ModalWindow {
                                     new Object[] {from, to, sm.getInstances().size()})
                             .getObject();
                         }
-                    }));
+                    }).setEscapeModelStrings(false));
                     item.add(new AjaxPagingNavigator("instanceNavigator", instListView){
                         private static final long serialVersionUID = 1L;
                         @Override
