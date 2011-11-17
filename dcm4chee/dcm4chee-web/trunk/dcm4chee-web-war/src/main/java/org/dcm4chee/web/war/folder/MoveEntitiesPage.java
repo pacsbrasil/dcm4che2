@@ -316,7 +316,7 @@ public class MoveEntitiesPage extends SecureWebPage {
         return attrs;
     }
     
-    private void needNewStudy(DicomObject presetDS, final PatientModel pat) {
+    private void needNewStudy(final DicomObject presetDS, final PatientModel pat) {
         missingState = missingState | MISSING_STUDY;
         studyModel = new StudyModel(null, pat, null);
         newStudyPanel = 
@@ -343,6 +343,7 @@ public class MoveEntitiesPage extends SecureWebPage {
                 @Override
                 protected void onSubmit() {
                     studyModel.update(getDicomObject());
+                    dao.copyStudyPermissions(presetDS.getString(Tag.StudyInstanceUID), studyModel.getStudyInstanceUID());
                     selected.getPatients().clear();
                     selected.getStudies().add(studyModel);
                     missingState = missingState & ~MISSING_STUDY;

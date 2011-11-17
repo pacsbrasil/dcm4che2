@@ -243,7 +243,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
                 JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         Study s = null;
         if (getPk() == -1) {
-            s = dao.addStudy(getPatient().getPk(), dicomObject, StudyPermissionHelper.get().getDicomRoles());
+            s = dao.addStudy(getPatient().getPk(), dicomObject);
             setPk(s.getPk());
             this.getPatient().getStudies().add(this);
         } else {

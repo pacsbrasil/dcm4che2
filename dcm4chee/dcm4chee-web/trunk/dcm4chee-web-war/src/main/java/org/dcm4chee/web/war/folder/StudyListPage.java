@@ -2160,6 +2160,7 @@ public class StudyListPage extends Panel {
                 });
                 modalWindow.add(new ModalWindowLink.DisableDefaultConfirmBehavior());
                 modalWindow.setTitle("");
+                modalWindow.setCloseButtonCallback(null);
                 modalWindow.show(target);
             }
             

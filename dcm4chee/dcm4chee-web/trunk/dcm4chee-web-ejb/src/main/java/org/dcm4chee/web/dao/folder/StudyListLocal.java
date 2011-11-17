@@ -94,7 +94,7 @@ public interface StudyListLocal {
 
     Study updateStudy(long pk, DicomObject dataset);
     Study addStudy(long patPk, DicomObject dataset);
-    Study addStudy(long pk, DicomObject dicomObject, List<String> authorizedRoles);
+    void copyStudyPermissions(String srcStudyIuid, String destStudyIuid);
     
     Series getSeries(long pk);
 

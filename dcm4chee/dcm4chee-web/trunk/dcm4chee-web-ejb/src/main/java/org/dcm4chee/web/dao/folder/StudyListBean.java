@@ -350,27 +350,19 @@ public class StudyListBean implements StudyListLocal {
         return study;
     }
 
-    public Study addStudy(long patPk, DicomObject attrs, List<String> authorizedRoles) {
-        Study study  = addStudy(patPk, attrs);
-        if (authorizedRoles != null) {
-            String[] actions = new String[] {
-                StudyPermission.APPEND_ACTION, 
-                StudyPermission.DELETE_ACTION, 
-                StudyPermission.EXPORT_ACTION, 
-                StudyPermission.QUERY_ACTION, 
-                StudyPermission.READ_ACTION, 
-                StudyPermission.UPDATE_ACTION};
-            for (String role : authorizedRoles) {
-                for (String action : actions) {
-                    StudyPermission studyPermission = new StudyPermission();
-                    studyPermission.setAction(action);
-                    studyPermission.setRole(role);
-                    studyPermission.setStudyInstanceUID(study.getStudyInstanceUID());
-                    em.persist(studyPermission);
-                }
-            }
+    public void copyStudyPermissions(String srcStudyIuid, String destStudyIuid) {
+        Query query = em.createQuery("SELECT sp FROM StudyPermission sp WHERE studyInstanceUID=?1");
+        query.setParameter(1, srcStudyIuid);
+        @SuppressWarnings("unchecked")
+        List<StudyPermission> l = (List<StudyPermission>)query.getResultList();
+        StudyPermission studyPermission;
+        for (StudyPermission sp : l) {
+            studyPermission = new StudyPermission();
+            studyPermission.setAction(sp.getAction());
+            studyPermission.setRole(sp.getRole());
+            studyPermission.setStudyInstanceUID(destStudyIuid);
+            em.persist(studyPermission);
         }
-        return study;
     }
 
     public Series getSeries(long pk) {
