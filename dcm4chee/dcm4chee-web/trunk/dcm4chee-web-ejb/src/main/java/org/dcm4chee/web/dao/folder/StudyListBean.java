@@ -198,7 +198,9 @@ public class StudyListBean implements StudyListLocal {
                 QueryUtil.setSourceAETQueryParameter(query, filter.getSourceAETs());
             }
             if ((roles != null) && !filter.isPatientQuery())
-                query.setParameter("roles", roles);        
+                query.setParameter("roles", roles);
+            if (filter.isExactModalitiesInStudy()) 
+                query.setParameter("modality", filter.getModality());
         }
     }
 

@@ -1085,12 +1085,11 @@ public class StudyListPage extends Panel {
             }
             notSearched = false;
         } catch (Throwable x) {
-            if ((x instanceof EJBException) && x.getCause() != null) {
+            if ((x instanceof EJBException) && x.getCause() != null) 
                 x = x.getCause();
-            }
-            if ((x instanceof IllegalArgumentException) && x.getMessage() != null && x.getMessage().indexOf("fuzzy") != -1) {
+            if ((x instanceof IllegalArgumentException) && x.getMessage() != null && x.getMessage().indexOf("fuzzy") != -1) 
                 x = new WicketExceptionWithMsgKey("fuzzyError", x);
-            }
+            log.error("Error on queryStudies: ", x);
             msgWin.show(target, new WicketExceptionWithMsgKey("folder.message.searcherror", x), true);
         }
     }

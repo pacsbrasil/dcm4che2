@@ -49,7 +49,6 @@ import javax.persistence.TemporalType;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.conf.AttributeFilter;
-import org.dcm4chee.archive.entity.BaseEntity;
 
 /**
  * @author Franz Willer <fwiller@gmail.com>
@@ -367,7 +366,7 @@ public class QueryUtil {
 
     public static void appendModalitiesInStudyExactFilter(StringBuilder ql, String modality) {
         if (!isUniversalMatch(modality)) {
-            ql.append(" AND s.modalitiesInStudy = :modality)");
+            ql.append(" AND s.modalitiesInStudy = :modality");
         }
     }
 
@@ -513,5 +512,4 @@ public class QueryUtil {
         }
         return new Long(pk1).compareTo(new Long(pk2));
     }
-    
 }
