@@ -1370,7 +1370,7 @@ public class WADOSupport implements NotificationListener {
         String tsuid = fmi.getTransferSyntaxUID();
         for (String ctsuid : COMPRESSED_TRANSFER_SYNTAXES)
             if (ctsuid.equals(tsuid))
-                return false;
+                return true;
         return false;
     }
 
