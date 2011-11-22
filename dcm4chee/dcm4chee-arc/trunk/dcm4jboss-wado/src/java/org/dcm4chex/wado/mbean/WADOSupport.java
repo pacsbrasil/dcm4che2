@@ -1351,9 +1351,10 @@ public class WADOSupport implements NotificationListener {
             return resize(bi, rows, columns, reader.getAspectRatio(frame));
         } finally {
             if (semaphoreAquired) {
-                DecompressCmd.releaseSemaphore();
+                DecompressCmd.finished();
                 log.info("finished decompression. (remaining codec tasks: compress&decompress:"+DecompressCmd.getNrOfConcurrentCodec()+
                         " decompress:"+DecompressCmd.getNrOfConcurrentDecompress()+")");
+                DecompressCmd.releaseSemaphore();
             }
             // !!!! without this, we get "too many open files" when generating
             // icons in a tight loop

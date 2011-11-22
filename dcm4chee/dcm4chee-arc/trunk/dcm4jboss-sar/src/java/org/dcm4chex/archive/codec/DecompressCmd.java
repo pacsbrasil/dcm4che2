@@ -246,6 +246,7 @@ public class DecompressCmd extends CodecCmd {
             if (bi != null)
                 biPool.returnBufferedImage(bi);
             long t2 = System.currentTimeMillis();
+            finished();
             log.info("finished decompression in " + (t2 - t1) + "ms." + " (remaining codec tasks: compress&decompress:"+nrOfConcurrentCodec+
                     " decompress:"+nrOfConcurrentDecompress+")");
             if (semaphoreAquired)
@@ -274,12 +275,14 @@ public class DecompressCmd extends CodecCmd {
         return success;
     }
 
-    public static void releaseSemaphore() {
-        log.debug("release codec semaphore");
-        decompressSemaphore.release();
-        codecSemaphore.release();
+    public static void finished() {
+        log.debug("finished: decrement nrOfConcurrentCodec and nrOfConcurrentDecompress");
         nrOfConcurrentCodec.decrementAndGet();
         nrOfConcurrentDecompress.decrementAndGet();
+    }
+    public static void releaseSemaphore() {
+        decompressSemaphore.release();
+        codecSemaphore.release();
     }
     
     public static int getNrOfConcurrentCodec() {

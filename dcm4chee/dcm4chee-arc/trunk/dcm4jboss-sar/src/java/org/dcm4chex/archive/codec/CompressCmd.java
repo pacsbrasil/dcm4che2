@@ -527,17 +527,17 @@ public abstract class CompressCmd extends CodecCmd {
                 biPool.returnBufferedImage(bi);
             long t2 = System.currentTimeMillis();
             pixelDataLength = frameLength * frames;
+            nrOfConcurrentCompress.decrementAndGet();
+            nrOfConcurrentCodec.decrementAndGet();
             log.info("finished compression " + ((float) pixelDataLength / end)
                     + " : 1 in " + (t2 - t1) + "ms." + " (remaining codec tasks: compress&decompress:"+nrOfConcurrentCodec+
                     " compress:"+nrOfConcurrentCompress+")");
             if (compressSemaphoreAquired) {
                 compressSemaphore.release();
-                nrOfConcurrentCompress.decrementAndGet();
             }
             if (codecSemaphoreAquired) {
                 log.debug("release codec semaphore");
                 codecSemaphore.release();
-                nrOfConcurrentCodec.decrementAndGet();
             }
         }
         if (compressionRatio != null && compressionRatio.length > 0)
