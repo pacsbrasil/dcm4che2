@@ -1309,10 +1309,10 @@ public class WADOSupport implements NotificationListener {
             Rectangle regionRectangle = null;
             try {
                 ImageReadParam param = reader.getDefaultReadParam();
+                int totWidth = reader.getWidth(0);
+                int totHeight = reader.getHeight(0);
                 if (region != null) {
                     String[] ss = StringUtils.split(region, ',');
-                    int totWidth = reader.getWidth(0);
-                    int totHeight = reader.getHeight(0);
 
                     int topX = (int) Math.round(Double.parseDouble(ss[0]) * totWidth); // top left X value
                     int topY = (int) Math.round(Double.parseDouble(ss[1]) * totHeight); // top left Y value
@@ -1335,7 +1335,7 @@ public class WADOSupport implements NotificationListener {
                 DcmImageReadParamImpl dcmParam = (DcmImageReadParamImpl) param;
                 if (isCompressed(data)) {
                     semaphoreAquired = DecompressCmd.acquireSemaphore();
-                    log.info("start decompression of image: " + rows + "x" + columns +
+                    log.info("start decompression of image: " + totHeight + "x" + totWidth +
                             " (current codec tasks: compress&decompress:" + DecompressCmd.getNrOfConcurrentCodec()+
                             " compress:" + DecompressCmd.getNrOfConcurrentDecompress()+")");
                 }
