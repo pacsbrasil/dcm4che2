@@ -276,8 +276,8 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
     public int checkRequest() {
         if (getRequestType() == null
                 || !"WADO".equalsIgnoreCase(getRequestType())
-                || studyUID == null || studyUID.trim().length() == 0
-                || seriesUID == null || seriesUID.trim().length() == 0
+                || studyUID == null
+                || seriesUID == null
                 || instanceUID == null || instanceUID.trim().length() == 0
         ) {
             setErrorMsg("Not a WADO URL!");
