@@ -38,21 +38,27 @@
 
 package org.dcm4chee.web.common.markup.modal;
 
+import org.apache.wicket.Page;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
+import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,8 +84,10 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
     protected boolean hasStatus;
     private boolean showCancel = false;
     
-    public MessageWindowPanel<T> messageWindowPanel;
+    public MessageWindowPanel messageWindowPanel;
     
+    private static final ResourceReference baseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+
     public ConfirmationWindow(String id, String titleResource) {
         this(id);
         setTitle(new ResourceModel(titleResource));
@@ -123,8 +131,16 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         setInitialWidth(400);
         setInitialHeight(300);
         
-        messageWindowPanel = new MessageWindowPanel<T>("content");
-        setContent(messageWindowPanel);
+        messageWindowPanel = new MessageWindowPanel("panel");
+        
+        setPageCreator(new ModalWindow.PageCreator() {
+            
+            private static final long serialVersionUID = 1L;
+              
+            public Page createPage() {
+                return new ConfirmPage();
+            }
+        });
         add(new DisableDefaultConfirmBehavior());
     }
 
@@ -168,8 +184,15 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         this.remark = remark;
     }
 
+    public class ConfirmPage extends WebPage {
+        public ConfirmPage() {
+            if (ConfirmationWindow.baseCSS != null)
+                add(CSSPackageResource.getHeaderContribution(ConfirmationWindow.baseCSS));
+            add(messageWindowPanel);
+        }
+    }
     @SuppressWarnings("hiding")
-    public class MessageWindowPanel<T> extends Panel {
+    public class MessageWindowPanel extends Panel {
         
         private static final long serialVersionUID = 1L;
         
@@ -343,7 +366,7 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         }
     }
     
-    public MessageWindowPanel<T> getMessageWindowPanel() {
+    public MessageWindowPanel getMessageWindowPanel() {
         return messageWindowPanel;
     }    
 
