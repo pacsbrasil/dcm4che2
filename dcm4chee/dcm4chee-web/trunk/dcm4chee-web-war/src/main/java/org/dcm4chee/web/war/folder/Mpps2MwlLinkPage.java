@@ -49,13 +49,16 @@ import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -73,15 +76,18 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
+import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
@@ -108,31 +114,57 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     private static final long serialVersionUID = 1L;
     
     private static final long ONE_DAY_IN_MILLIS = 60000*60*24;
+    private static final ResourceReference baseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    private static final ResourceReference folderCSS = new CompressedResourceReference(Mpps2MwlLinkPage.class, "folder-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(Mpps2MwlLinkPage.class, "mpps-link-style.css");
     
     private Mpps2MwlLinkPanelM linkPanel = new Mpps2MwlLinkPanelM("panel");
-    private ContentPanel panel = new ContentPanel();
+    private ContentPanel panel = new ContentPanel("contentPanel");
     private List<PPSModel> ppsModels;
     private PPSModel ppsModelForInfo;
     private PatientModel ppsPatModelForInfo;
     private Component comp;
-    
+    private ConfirmationWindow<MWLItemModel> confirmLink;
+    private AjaxLink<String> closeLink;
+    private boolean linkDone = false;
     private static Logger log = LoggerFactory.getLogger(Mpps2MwlLinkPage.class);
     
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-
+    
     public Mpps2MwlLinkPage(String id) {
         super(id);
         
-        if (Mpps2MwlLinkPage.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(Mpps2MwlLinkPage.CSS));
-        setContent(panel);
+        setPageCreator(new ModalWindow.PageCreator() {
+            private static final long serialVersionUID = 1L;
+              
+            public Page createPage() {
+                return new LinkPage();
+            }
+        });
     }
 
     public Button getSearchButton() {
         return linkPanel.getSearchButton();
     }
+    
+    public AjaxLink<String> getCloseLink() {
+        if (closeLink == null) {
+            closeLink = new AjaxLink<String>("close") {
+                private static final long serialVersionUID = 1L;
+        
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    Mpps2MwlLinkPage.this.close(target);
+                }
+                
+            };
+            closeLink.setOutputMarkupId(true);
+        }
+        return closeLink;
+    }
+    
     public void show(AjaxRequestTarget target, PPSModel ppsModel, Component c) {
+        linkDone = false;
         ppsModels  = toList(ppsModel);
         ppsModelForInfo = ppsModels.get(0);
         ppsPatModelForInfo = ppsModelForInfo.getStudy().getPatient();
@@ -203,10 +235,22 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                     sm.refresh().expand();
                     studies.add(sm);
                 }
+                ppsPatModelForInfo.collapse();
+                ppsPatModelForInfo.expand();
             }
         }
     }
 
+    public class LinkPage extends WebPage {
+        public LinkPage() {
+            add(CSSPackageResource.getHeaderContribution(Mpps2MwlLinkPage.baseCSS));
+            add(CSSPackageResource.getHeaderContribution(Mpps2MwlLinkPage.folderCSS));
+            add(CSSPackageResource.getHeaderContribution(Mpps2MwlLinkPage.CSS));
+            add(panel);
+            add(getCloseLink());
+        }
+    }
+    
     public class Mpps2MwlLinkPanelM extends ModalityWorklistPanel {
 
         private static final long serialVersionUID = 1L;
@@ -216,7 +260,6 @@ public class Mpps2MwlLinkPage extends ModalWindow {
             this.setOutputMarkupId(true);
             addMppsInfoPanel();
         }
-        
         public Button getSearchButton() {
             return searchBtn;
         }
@@ -238,36 +281,14 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                 private static final long serialVersionUID = 1L;
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    log.info("Link MPPS to MWL!:"+mwlItemModel);
-                    try {
-                        if (mwlItemModel.getPk() == -1) {
-                            final List<Patient> pats = ContentEditDelegate.getInstance().selectPatient(mwlItemModel.getPatientAttributes());
-                            if (pats.size() > 1) {
-                                IModel<List<Patient>> pm = new AbstractReadOnlyModel<List<Patient>>(){
-                                    private static final long serialVersionUID = 1L;
-
-                                    @Override
-                                    public List<Patient> getObject() {
-                                        return pats;
-                                    }
-                                    
-                                };
-                                Panel p = new SelectPatientWindowPanel("panel", pm, mwlItemModel);
-                                panel.replace(p);
-                                target.addComponent(p);
-                                return;
-                            } else {
-                                doLink(mwlItemModel, pats.get(0));
-                            }
-                        } else {
-                            doLink(mwlItemModel, null);
-                        }
-                        target.addComponent(comp);
-                        close(target);
-                    } catch (Exception e) {
-                        log.error("MPPS to MWL link failed!", e);
-                        close(target);
-                        target.appendJavascript("alert('"+this.getString("link.message.linkFailed")+"');");
+                    confirmLink.confirm(target, getConfirmMsg(), mwlItemModel);
+                }
+                
+                private IModel<String> getConfirmMsg() {
+                    if (ppsPatModelForInfo.getDataset().equals(mwlItemModel.getPatientAttributes())) {
+                        return new StringResourceModel("link.message.confirm",this, null, new Object[]{});
+                    } else {
+                        return new StringResourceModel("link.message.confirm.patient",this, null, new Object[]{});
                     }
                 }
                 
@@ -394,8 +415,56 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     private class ContentPanel extends Panel {
         private static final long serialVersionUID = 1L;
     
-        private ContentPanel() {
-            super(getContentId());
+        private ContentPanel(String id) {
+            super(id);
+            confirmLink = new ConfirmationWindow<MWLItemModel>("confirmLink") {
+                
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+                public void onConfirmation(AjaxRequestTarget target, final MWLItemModel mwlItemModel) {
+                    log.info("Link MPPS to MWL!:"+mwlItemModel);
+                    try {
+                        if (mwlItemModel.getPk() == -1) {
+                            final List<Patient> pats = ContentEditDelegate.getInstance().selectPatient(mwlItemModel.getPatientAttributes());
+                            if (pats.size() > 1) {
+                                IModel<List<Patient>> pm = new AbstractReadOnlyModel<List<Patient>>(){
+                                    private static final long serialVersionUID = 1L;
+
+                                    @Override
+                                    public List<Patient> getObject() {
+                                        return pats;
+                                    }
+                                    
+                                };
+                                Panel p = new SelectPatientWindowPanel("panel", pm, mwlItemModel);
+                                panel.replace(p);
+                                target.addComponent(p);
+                                return;
+                            } else {
+                                doLink(mwlItemModel, pats.get(0));
+                            }
+                        } else {
+                            doLink(mwlItemModel, null);
+                        }
+                        target.addComponent(comp);
+                        confirmLink.setStatus(new ResourceModel("link.message.linked").wrapOnAssignment(this));
+                        linkDone = true;
+                    } catch (Exception e) {
+                        log.error("MPPS to MWL link failed!", e);
+                        confirmLink.setStatus(new ResourceModel("link.message.linkFailed").wrapOnAssignment(this));
+                    }
+                }
+            };
+            confirmLink.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {
+                private static final long serialVersionUID = 1L;
+                public void onClose(AjaxRequestTarget target) {
+                    if (linkDone)
+                        target.appendJavascript("document.getElementById('" + closeLink.getMarkupId() +
+                            "').click();");
+                }
+            });
+            add(confirmLink.setInitialHeight(150).setInitialWidth(410));
             add(linkPanel);
         }
     }
@@ -451,11 +520,10 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     try {
                         doLink(mwlItemModel, patList.getModelObject().get(group.getModelObject()));
-                        close(target);
+                        confirmLink.setStatus(new ResourceModel("link.message.linked").wrapOnAssignment(this));
                     } catch (Exception e) {
                         log.error("MPPS to MWL link failed!", e);
-                        close(target);
-                        target.appendJavascript("alert('"+this.getString("link.message.linkFailed")+"');");
+                        confirmLink.setStatus(new ResourceModel("link.message.linkFailed").wrapOnAssignment(this));
                     }
                 }
             });

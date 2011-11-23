@@ -526,7 +526,7 @@ public class TrashListPage extends Panel {
                 this.setStatus(new StringResourceModel(
                         "trash.message.restore.running", TrashListPage.this,
                         null));
-                messageWindowPanel.getOkBtn().setVisible(false);
+                getMessageWindowPanel().getOkBtn().setVisible(false);
 
                 try {
                     FileImportOrder fio = new FileImportOrder();
@@ -600,8 +600,8 @@ public class TrashListPage extends Panel {
                         setRemark(new Model<String>(t.getLocalizedMessage()));
                     log.error("Exception restoring entry:" + t.getMessage(), t);
                 }
-                target.addComponent(messageWindowPanel.getMsgLabel());
-                target.addComponent(messageWindowPanel.getOkBtn());
+                target.addComponent(getMessageWindowPanel().getMsgLabel());
+                target.addComponent(getMessageWindowPanel().getOkBtn());
             }
         };
         confirmRestore.setInitialHeight(150);
@@ -710,7 +710,7 @@ public class TrashListPage extends Panel {
                 this.setStatus(new StringResourceModel(
                         "trash.message.delete.running", TrashListPage.this,
                         null));
-                messageWindowPanel.getOkBtn().setVisible(false);
+                getMessageWindowPanel().getOkBtn().setVisible(false);
 
                 try {
                     if (selected == null ? removeTrashAll()
@@ -731,8 +731,8 @@ public class TrashListPage extends Panel {
                     log.error((selected == null ? "removeTrashAll"
                             : "removeTrashItems") + " failed: ", t);
                 }
-                target.addComponent(messageWindowPanel.getMsgLabel());
-                target.addComponent(messageWindowPanel.getOkBtn());
+                target.addComponent(getMessageWindowPanel().getMsgLabel());
+                target.addComponent(getMessageWindowPanel().getOkBtn());
             }
         };
         confirmDelete.setInitialHeight(150);

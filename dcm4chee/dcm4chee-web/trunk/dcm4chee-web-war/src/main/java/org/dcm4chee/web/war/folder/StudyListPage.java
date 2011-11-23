@@ -815,8 +815,8 @@ public class StudyListPage extends Panel {
                         logSecurityAlert(st, true, StudyListPage.tooOldAuditMessageText);
                 }
                 this.setStatus(new StringResourceModel("folder.message.delete.running", StudyListPage.this, null));
-                messageWindowPanel.getOkBtn().setVisible(false);
-                messageWindowPanel.getRemarkLabel().setVisible(false);
+                getMessageWindowPanel().getOkBtn().setVisible(false);
+                getMessageWindowPanel().getRemarkLabel().setVisible(false);
                 
                 try {
                     if (getDelegate().moveToTrash(selected)) {
@@ -831,8 +831,8 @@ public class StudyListPage extends Panel {
                 } catch (Throwable t) {
                     log.error("moveToTrash failed: ", t);
                 }
-                target.addComponent(messageWindowPanel.getMsgLabel());
-                target.addComponent(messageWindowPanel.getOkBtn());
+                target.addComponent(getMessageWindowPanel().getMsgLabel());
+                target.addComponent(getMessageWindowPanel().getOkBtn());
             }
             
             @Override
@@ -1012,7 +1012,7 @@ public class StudyListPage extends Panel {
                 logSecurityAlert(ppsModel, true, StudyListPage.tooOldAuditMessageText);
                 
                 this.setStatus(new StringResourceModel("folder.message.unlink.running", StudyListPage.this, null));
-                messageWindowPanel.getOkBtn().setVisible(false);
+                getMessageWindowPanel().getOkBtn().setVisible(false);
 
                 try {
                     if (ContentEditDelegate.getInstance().unlink(ppsModel)) {
@@ -1024,8 +1024,8 @@ public class StudyListPage extends Panel {
                 } catch (Throwable t) {
                     log.error("Unlink of MPPS failed:"+ppsModel, t);
                 }
-                target.addComponent(messageWindowPanel.getMsgLabel());
-                target.addComponent(messageWindowPanel.getOkBtn());
+                target.addComponent(getMessageWindowPanel().getMsgLabel());
+                target.addComponent(getMessageWindowPanel().getOkBtn());
             }
         };
         form.add(confirmUnlinkMpps.setInitialHeight(150));
