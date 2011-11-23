@@ -132,11 +132,16 @@ public class RLEImageReader extends ImageReader {
     }
 
     @Override
-    public BufferedImage read(int imageIndex, ImageReadParam param)
+    public WritableRaster readRaster(int imageIndex, ImageReadParam param)
+            throws IOException {
+        BufferedImage bi = getReadImage(param);
+        return readRasterInternal(bi,imageIndex,param);
+    }
+
+    protected WritableRaster readRasterInternal(BufferedImage bi, int imageIndex, ImageReadParam param)
             throws IOException {
         if (input == null)
             throw new IllegalStateException("Input not set");
-        BufferedImage bi = getReadImage(param);
         readRLEHeader();
         nSegs = header[0];
         checkDestination(nSegs, bi);
@@ -164,11 +169,21 @@ public class RLEImageReader extends ImageReader {
             unrle(ss, 0);
         }
         seekInputToEndOfRLEData();
+        return raster;
+    }
+
+    @Override
+    public BufferedImage read(int imageIndex, ImageReadParam param) 
+            throws IOException {
+        BufferedImage bi = getReadImage(param);
+        readRasterInternal(bi,imageIndex,param);
+           
         BufferedImage retImage = getDestination(param, bi);
         if (retImage == bi) {
             log.debug("Returning raw, unconverted image.");
             return retImage;
         }
+        log.debug("RLE image being converted.");
         if (retImage.getColorModel().getNumComponents() == 3) {
             convertColorSpaceToRGB(param, bi, retImage);
         } else {
@@ -326,7 +341,7 @@ public class RLEImageReader extends ImageReader {
         }
         int type = BufferedImage.TYPE_BYTE_GRAY;
         if (convertSpace || readImage.getColorModel().getNumComponents() == 3) {
-            type = BufferedImage.TYPE_3BYTE_BGR;
+            type = BufferedImage.TYPE_INT_RGB;
         } else if (readImage.getColorModel().getComponentSize(0) > 8) {
             type = BufferedImage.TYPE_USHORT_GRAY;
         }
@@ -502,6 +517,11 @@ public class RLEImageReader extends ImageReader {
             log.warn("RLE Segment #{} too short, set missing {} bytes to 0",
                     Integer.valueOf(curSeg), Integer.valueOf(ss.length - pos));
         }
+    }
+
+    @Override
+    public boolean canReadRaster() {
+        return true;
     }
 
 }
