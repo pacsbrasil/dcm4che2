@@ -214,6 +214,25 @@ public abstract class MPPSManagerBean implements SessionBean {
         Dataset attrs = mpps.getAttributes();
         attrs.putAll(ds);
         mpps.setAttributes(attrs);
+        if ("COMPLETED".equals(ds.getString(Tags.PPSStatus))) {
+            try {
+                Collection seriess = seriesHome.listBySeriesIUIDsWithoutPPS(getPerfSeriesIUIDs(ds));
+                SeriesLocal s;
+                for (Iterator it = seriess.iterator() ; it.hasNext() ; ) {
+                    s = (SeriesLocal) it.next();
+                    Dataset ds1 = s.getAttributes(true);
+                    DcmElement sq = ds1.putSQ(Tags.RefPPSSeq);
+                    Dataset item = sq.addNewItem();
+                    item.putUI(Tags.SOPInstanceUID, mpps.getSopIuid());
+                    ds1.putDA(Tags.PPSStartDate, mpps.getPpsStartDateTime());
+                    ds1.putTM(Tags.PPSStartTime, mpps.getPpsStartDateTime());
+                    s.setAttributes(ds1);
+                }
+                mpps.setSeries(seriess);
+            } catch (FinderException e) {
+                log.warn("Update referenced series failed!", e);
+            }
+        }
     }
 
     /**
@@ -1035,6 +1054,15 @@ public abstract class MPPSManagerBean implements SessionBean {
             dstsq.addItem(sq.getItem(i));
         }
         return true;
+    }
+
+    private String[] getPerfSeriesIUIDs(Dataset ds) {
+        DcmElement sq = ds.get(Tags.PerformedSeriesSeq);
+        ArrayList l = new ArrayList();
+        for (int i=0, len=sq.countItems() ; i < len ; i++) {
+            l.add(sq.getItem(i).getString(Tags.SeriesInstanceUID));
+        }
+        return (String[]) l.toArray(new String[l.size()]);
     }
 
 }

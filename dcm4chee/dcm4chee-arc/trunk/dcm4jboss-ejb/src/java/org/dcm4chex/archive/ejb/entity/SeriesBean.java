@@ -787,6 +787,21 @@ public abstract class SeriesBean implements EntityBean {
         return ejbSelectGeneric(jbossQl.toString(), params.toArray());
     }
 
+    /**
+     * @ejb.home-method
+     */
+    public Collection ejbHomeListBySeriesIUIDsWithoutPPS(String[] seriesIUIDs) throws FinderException {
+        if (seriesIUIDs == null || seriesIUIDs.length < 1) {
+            return new ArrayList();
+        }
+        StringBuffer sb = new StringBuffer();
+        sb.append("SELECT OBJECT(s) FROM Series s WHERE s.ppsIuid IS NULL AND s.seriesIuid");
+        ArrayList params = new ArrayList();
+        addIN(sb, params, 1, seriesIUIDs);
+        log.debug("Execute JBossQL: " + sb);
+        return ejbSelectGeneric(sb.toString(), params.toArray());
+    }
+
     private int addIN(StringBuffer jbossQl, List params, int idx, String[] values) {
         params.add(values[0]);
         if (values.length > 1) {
