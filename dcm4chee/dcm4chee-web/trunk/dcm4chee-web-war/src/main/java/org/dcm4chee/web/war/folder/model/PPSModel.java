@@ -188,13 +188,8 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
     
     public boolean hasForeignPpsInfo() {
         if (hasForeignPpsInfo == null) {
-            hasForeignPpsInfo = false;
-            for (int i = 0, len = seriess.size() ; i < len ; i++) {
-                if (seriess.get(i).getPPSUid() != null) {
-                    hasForeignPpsInfo = true;
-                    break;
-                }
-            }
+            StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+            hasForeignPpsInfo = dao.hasStudyForeignPpsInfo(this.getStudy().getPk());
         }
         return hasForeignPpsInfo.booleanValue();
     }

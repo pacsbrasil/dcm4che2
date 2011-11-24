@@ -111,4 +111,6 @@ public interface StudyListLocal {
     
     long countDownloadableInstances(String[] studyIuids, String[] seriesIuids, String[] sopIuids);
     List<Instance> getDownloadableInstances(String[] studyIuids, String[] seriesIuids, String[] sopIuids);
+    
+    boolean hasStudyForeignPpsInfo(long studyPk);
 }

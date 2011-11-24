@@ -52,7 +52,6 @@ import javax.persistence.Query;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.StorageStatus;
-import org.dcm4chee.archive.entity.BaseEntity;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
@@ -438,6 +437,11 @@ public class StudyListBean implements StudyListLocal {
                 file.getFileSystem().getDirectoryPath();
         }       
         return instances;
+    }
+    
+    public boolean hasStudyForeignPpsInfo(long studyPk) {
+        return ((Long)em.createQuery("SELECT count(s) FROM Series s WHERE s.study.pk=?1 AND s.performedProcedureStepInstanceUID IS NOT NULL AND s.modalityPerformedProcedureStep IS NULL")
+                .setParameter(1, studyPk).getSingleResult()) > 0l;
     }
 
     private String[] appendUIDs(String[] studyIuids, String[] seriesIuids,
