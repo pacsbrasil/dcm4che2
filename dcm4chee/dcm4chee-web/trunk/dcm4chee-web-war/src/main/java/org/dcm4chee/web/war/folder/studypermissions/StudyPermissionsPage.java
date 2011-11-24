@@ -113,12 +113,10 @@ public class StudyPermissionsPage extends SecureWebPage {
    
     private List<StudyPermission> currentStudyPermissions;
     private HashSet<String> allowedActions = new HashSet<String>(7);
-    private ListModel<Role> allDicomRoles;
     
     private String studyInstanceUID;
     
     private Set<String> studyPermissionActions = new LinkedHashSet<String>();
-    private ConfirmationWindow<Role> confirmationWindow;
     
     public StudyPermissionsPage(AbstractEditableDicomModel model) {
         super();
@@ -129,56 +127,6 @@ public class StudyPermissionsPage extends SecureWebPage {
         setOutputMarkupId(true);
 
         ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).updateDicomRoles();
-
-        this.allDicomRoles = new ListModel<Role>(getAllDicomRoles());
-        
-        add(confirmationWindow = new ConfirmationWindow<Role>("confirmation-window") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onConfirmation(AjaxRequestTarget target, Role role) {
-                ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME))
-                    .removeDicomRole(role);
-                refreshDicomRoles();
-            }
-
-            @Override
-            public void onDecline(AjaxRequestTarget target, Role role) {
-            }
-        });
-
-        final ModalWindow addRoleModalWindow = new ModalWindow("modal-window");
-        add(addRoleModalWindow);
-        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("addDicomRole");
-        add(new ModalWindowLink("toggle-dicom-role-form-link", addRoleModalWindow, winSize[0], winSize[1]) {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public boolean isEnabled() {
-                return checkStudyPermissionRights();
-            }
-            
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                addRoleModalWindow
-                .setPageCreator(new ModalWindow.PageCreator() {
-                    
-                    private static final long serialVersionUID = 1L;
-                      
-                    @Override
-                    public Page createPage() {
-                        return new CreateDicomRolePage(addRoleModalWindow, allDicomRoles);
-                    }
-                });
-                super.onClick(target);
-            }
-        }
-        .add(new Image("toggle-dicom-role-form-image", ImageManager.IMAGE_USER_ROLE_ADD)
-        .add(new ImageSizeBehaviour("vertical-align: middle;")))
-        .add(new Label("studypermission.add-dicom-role.title", new ResourceModel("studypermission.add-dicom-role.title")))
-        .add(new TooltipBehaviour("studypermission."))
-        );
 
         try {
             List<?> servers = MBeanServerFactory.findMBeanServer(null);
@@ -251,38 +199,7 @@ public class StudyPermissionsPage extends SecureWebPage {
                     .add(new Label("rolename", role.getRolename()))
             );
 
-            rowParent.add((new ModalWindowLink("remove-dicom-role-link", confirmationWindow, 400, 300) {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public boolean isEnabled() {
-                    return checkStudyPermissionRights();
-                }
-                
-                @Override
-                public void onClick(AjaxRequestTarget target) {
-
-                    confirmationWindow
-                    .setPageCreator(new ModalWindow.PageCreator() {
-                        
-                        private static final long serialVersionUID = 1L;
-                          
-                        @Override
-                        public Page createPage() {
-                            return new ConfirmationWrapperPage(confirmationWindow);
-                        }
-                    });
-                    confirmationWindow.confirm(target, new Model<String>(new ResourceModel("studypermission.remove-dicom-role-link.confirmation").wrapOnAssignment(this.getParent()).getObject()), role);
-                    super.onClick(target);
-                }
-            }
-            .add(new Image("studypermission.table.delete.image", ImageManager.IMAGE_COMMON_REMOVE)
-            .add(new TooltipBehaviour("studypermission.", "remove-dicom-role-link", new Model<String>(role.getRolename()))))
-            .add(new ImageSizeBehaviour()))
-            .add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i++))))
-            );
-
+            rowParent.add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i++))));
             RepeatingView actionDividers = new RepeatingView("action-dividers");
             rowParent.add(actionDividers);
            

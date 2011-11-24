@@ -304,7 +304,6 @@
       	<dd>linkToOld: MPPS to MWL 'Too old' confirmation window</dd>
       	<dd>move:      Move Entities Window</dd>
       	<dd>studyPerm: Study Permission window in Folder</dd>
-      	<dd>addDicomRole: Add dicom role window in study permission window</dd>
         <dd>addUser: Add user in User Management</dd>
         <dd>changePassword: Change password in User Management</dd>
         <dd>manageRoles: Manage roles in User Management</dd>
@@ -332,7 +331,6 @@
          	mpps2mwl:1024x600
          	linkToOld:480x200
          	move:900x320
-            addDicomRole:570x350
             addUser:400x300
             changePassword:400x300
             manageRoles:300x700
