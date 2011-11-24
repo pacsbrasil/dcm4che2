@@ -357,7 +357,7 @@ public class MoveEntitiesPage extends SecureWebPage {
         DicomObject attrs = editor.getDicomObject();
         editor.addPresetChoice(Tag.AccessionNumber, "Accession Number", srcAttrs.getString(Tag.AccessionNumber));
         editor.addPresetChoice(Tag.StudyID, "Study ID", srcAttrs.getString(Tag.StudyID));
-        attrs.putString(Tag.StudyDescription, VR.LO, srcAttrs.getString(Tag.StudyDescription));
+        attrs.putString(Tag.StudyDescription, VR.LO, srcAttrs.getString(Tag.SeriesDescription));
         editor.addPresetChoice(Tag.StudyDescription, "Study Description", srcAttrs.getString(Tag.StudyDescription));
         editor.addPresetChoice(Tag.StudyDescription, "Series Description", srcAttrs.getString(Tag.SeriesDescription));
         boolean dateNotPresetted = true;
