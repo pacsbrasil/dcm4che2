@@ -228,7 +228,7 @@ public abstract class MPPSManagerBean implements SessionBean {
                     ds1.putTM(Tags.PPSStartTime, mpps.getPpsStartDateTime());
                     s.setAttributes(ds1);
                 }
-                mpps.setSeries(seriess);
+                mpps.getSeries().addAll(seriess);
             } catch (FinderException e) {
                 log.warn("Update referenced series failed!", e);
             }
