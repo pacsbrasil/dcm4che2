@@ -295,13 +295,13 @@ public class UID {
     public static final String StudyComponentManagementSOPClassRetired = "1.2.840.10008.3.1.2.3.2";
 
     /** Modality Performed Procedure Step SOP Class - SOP Class */
-    public static final String ModalityPerformedProcedureStepSOPClass = "1.­2.840.10008.3.1.2.3.3";
+    public static final String ModalityPerformedProcedureStepSOPClass = "1.2.840.10008.3.1.2.3.3";
 
     /** Modality Performed Procedure Step Retrieve SOP Class - SOP Class */
-    public static final String ModalityPerformedProcedureStepRetrieveSOPClass = "1.­2.840.10008.3.1.2.3.4";
+    public static final String ModalityPerformedProcedureStepRetrieveSOPClass = "1.2.840.10008.3.1.2.3.4";
 
     /** Modality Performed Procedure Step Notification SOP Class - SOP Class */
-    public static final String ModalityPerformedProcedureStepNotificationSOPClass = "1.­2.840.10008.3.1.2.3.5";
+    public static final String ModalityPerformedProcedureStepNotificationSOPClass = "1.2.840.10008.3.1.2.3.5";
 
     /** Detached Results Management SOP Class (Retired) - SOP Class */
     public static final String DetachedResultsManagementSOPClassRetired = "1.2.840.10008.3.1.2.5.1";
