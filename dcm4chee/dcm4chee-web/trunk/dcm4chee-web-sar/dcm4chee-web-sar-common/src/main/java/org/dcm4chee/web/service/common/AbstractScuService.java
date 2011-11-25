@@ -112,7 +112,7 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
     public void setBindToCallingAET(boolean bindToCallingAET) {
         this.bindToCallingAET = bindToCallingAET;
     }
-
+    
     public int getMaxPDULengthReceive() {
         return localNAE.getMaxPDULengthReceive();
     }
@@ -266,7 +266,9 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
         if (bindToCallingAET) {
             try {
                 AE callingAE = this.lookupAEHome().findByTitle(localNAE.getAETitle());
+                log.info("Try to bind socket to callingAE:"+callingAE+" hostname:"+callingAE.getHostName());
                 localConn.setHostname(callingAE.getHostName());
+                log.info("Socket bound to "+callingAE.getHostName());
             } catch (Exception x) {
                 log.warn("Socket can not be bound to IP of calling AET!", x);
             }
