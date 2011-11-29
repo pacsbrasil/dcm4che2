@@ -94,20 +94,27 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
     
     private static final long LAST_REFRESHED_TIMEOUT = 5000l;
 
+    private boolean popupsClosed = false;
+    
     ConfirmationWindow<List<ProgressProvider>> confirmLogout = new ConfirmationWindow<List<ProgressProvider>>("confirmLogout") {
 
         private static final long serialVersionUID = 1L;
 
         @Override
-        public void onConfirmation(AjaxRequestTarget target,
-                List<ProgressProvider> providers) {            
+        public void onConfirmation(AjaxRequestTarget target, List<ProgressProvider> providers) {
+
+            if (popupsClosed) {
+                getSession().invalidate();
+                return;
+            }
+            
             if (closePopups(providers)) {
+                popupsClosed = true;
                 throw new IllegalStateException(ModuleSelectorPanel.this.getString("logout.logout"));
             }
             else if (isPopupOpen(providers)) {
                 throw new IllegalStateException(ModuleSelectorPanel.this.getString("logout.waiting"));
             }
-            doLogout();
         }
     };
 
@@ -173,8 +180,10 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
                         return;
                     }
                 }
-                doLogout();
+                getSession().invalidate();
+                setResponsePage(getApplication().getHomePage());
             }
+
             @Override
             public boolean isVisible() {
                 return showLogout;
@@ -258,9 +267,6 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
                 for (int i = 0, len = providers.size() ; i < len ; i++) {
                     pageID = providers.get(i).getPopupPageId();
                     log.info("Provider has status: " + providers.get(i).getStatus());
-                    //if (providers.get(i).getStatus() == ProgressProvider.NOT_STARTED
-                    //        || providers.get(i).getStatus() == ProgressProvider.FINISHED) 
-                    //    continue;
                     if (pageID != null) {
                         Page p = ModuleSelectorPanel.this.getSession().getPage(pageID, 0);
                         log.info("Found open popup page:"+p);
@@ -296,10 +302,5 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
             }
         }
         return false;
-    }
-    
-    private void doLogout() {
-        getSession().invalidate();
-        setResponsePage(getApplication().getHomePage());
     }
 }
