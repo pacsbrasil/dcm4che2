@@ -2879,7 +2879,7 @@
   <uid value="1.2.124.113532.3500.7" name="Agfa Attribute Presentation State" key="AgfaAttributePresentationState" />
   <uid value="1.2.124.113532.5.1.1.1.3" name="Agfa Cluster Link Query" key="AgfaClusterLinkQuery" />
   <uid value="1.3.12.2.1107.5.9.1" name="Siemens CSA Non-Image Storage" key="SiemensCSANonImageStorage" />
-
+  <uid value="1.2.392.200036.9116.7.8.1.1.1" name="Toshiba US Private Data Storage" key="ToshibaUSPrivateDataStorage" />
 </uids>
 
 <uids type="MetaSOPClass">
