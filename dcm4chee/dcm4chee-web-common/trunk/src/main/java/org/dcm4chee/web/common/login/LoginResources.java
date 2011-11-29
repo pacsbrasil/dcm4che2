@@ -1,5 +1,6 @@
 package org.dcm4chee.web.common.login;
 
+import java.io.InputStream;
 import java.util.PropertyResourceBundle;
 
 import org.slf4j.Logger;
@@ -12,16 +13,17 @@ public class LoginResources {
     PropertyResourceBundle prb;
     
     public LoginResources() {
-        try {
-            prb = new PropertyResourceBundle(this.getClass().getResourceAsStream("locale/login_en.properties"));
-        } catch (Exception e) {
-            log.error("Error processing default locale for login page: ", e);
-        }
+        setLocale("en");
     }
 
     public void setLocale(String locale) {
         try {
-            prb = new PropertyResourceBundle(this.getClass().getResourceAsStream("locale/login_" + locale + ".properties"));
+            InputStream resource = this.getClass().getResourceAsStream("locale/login_" + locale + ".properties");
+            if (resource == null) {
+                log.warn("Could not get locale " + locale + " for login page");
+                return;
+            }
+            prb = new PropertyResourceBundle(resource);
         } catch (Exception e) {
             log.error("Error processing locale " + locale + " for login page: ", e);
         }
