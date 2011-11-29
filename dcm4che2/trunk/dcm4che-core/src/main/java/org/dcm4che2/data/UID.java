@@ -3579,6 +3579,9 @@ public class UID {
     /** Siemens CSA Non-Image Storage - SOP Class */
     public static final String SiemensCSANonImageStorage = "1.3.12.2.1107.5.9.1";
 
+    /** Toshiba US Private Data Storage - SOP Class */
+    public static final String ToshibaUSPrivateDataStorage = "1.2.392.200036.9116.7.8.1.1.1";
+
     /** No Pixel Data - Transfer Syntax */
     public static final String NoPixelData = "1.2.840.10008.1.2.4.96";
 
