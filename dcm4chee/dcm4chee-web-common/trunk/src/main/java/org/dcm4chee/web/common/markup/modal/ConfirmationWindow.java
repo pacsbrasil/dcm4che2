@@ -76,6 +76,11 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
     public static final String FOCUS_ON_DECLINE = "content:decline";
     public static final String FOCUS_ON_CANCEL = "content:cancel";
 
+    public static final int UNCONFIRMED = 0;
+    public static final int CONFIRMED = 1;
+    public static final int DECLINED = 2;
+    public static final int CANCELED = 3;
+
     private T userObject;
     private String focusElementId;
 
@@ -83,6 +88,7 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
     
     protected boolean hasStatus;
     private boolean showCancel = false;
+    private int state = UNCONFIRMED;
     
     public MessageWindowPanel messageWindowPanel;
     
@@ -183,6 +189,14 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
     public void setRemark(IModel<?> remark) {
         this.remark = remark;
     }
+    
+    public T getUserObject() {
+        return userObject;
+    }    
+    
+    public int getState() {
+        return state;
+    }
 
     public class ConfirmPage extends WebPage {
         public ConfirmPage() {
@@ -242,6 +256,7 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
                 public void onClick(AjaxRequestTarget target) {
                     try {
                         onConfirmation(target, userObject);
+                        state = CONFIRMED;
                         if (hasStatus) {
                             target.addComponent(MessageWindowPanel.this);
                         } else {
@@ -281,6 +296,7 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     onDecline(target, userObject);
+                    state = DECLINED;
                     if (hasStatus) {
                         target.addComponent(MessageWindowPanel.this);
                     } else {
@@ -300,6 +316,7 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     onCancel(target, userObject);
+                    state = CANCELED;
                     msg = null;
                     close(target);
                 }
@@ -378,5 +395,5 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         public void renderHead(IHeaderResponse response) {
             response.renderOnDomReadyJavascript ("Wicket.Window.unloadConfirmation = false");
         }
-    }    
+    }
 }
