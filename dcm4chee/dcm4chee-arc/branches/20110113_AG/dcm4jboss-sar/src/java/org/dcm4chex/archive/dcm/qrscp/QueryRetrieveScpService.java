@@ -1639,7 +1639,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return null;
     }
 
-    void prefetchTars(Collection<List<FileInfo>> localFiles) throws Exception {
+    protected void prefetchTars(Collection<List<FileInfo>> localFiles) throws Exception {
         HashSet<String> tarPaths = null;
         for (List<FileInfo> list : localFiles) {
             FileInfo fileInfo = list.get(0);

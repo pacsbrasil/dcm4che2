@@ -91,7 +91,7 @@ public class MoveTask implements Runnable {
 
     private final int movePcid;
 
-    private final Dataset moveRqData;
+    protected final Dataset moveRqData;
 
     private final String moveOriginatorAET;
 
@@ -128,7 +128,7 @@ public class MoveTask implements Runnable {
 
     private boolean directForwarding;
 
-    private RetrieveInfo retrieveInfo;
+    protected RetrieveInfo retrieveInfo;
 
     private Dataset stgCmtActionInfo;
     
@@ -192,7 +192,7 @@ public class MoveTask implements Runnable {
         	findInvalidUIDsInRequest(moveRqData, fileInfo);
     }
 
-    private ActiveAssociation openAssociation() throws Exception {
+    protected ActiveAssociation openAssociation() throws Exception {
         AssociationFactory asf = AssociationFactory.getInstance();
         Association a = asf.newRequestor(
                 service.createSocket(moveCalledAET, aeData));
