@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<element tag="00181411" keyword="ExposureIndex" vr="DS" vm="1">Exposure Index</element>
-<element tag="00181412" keyword="TargetExposureIndex" vr="DS" vm="1">Target Exposure Index</element>
-<element tag="00181413" keyword="DeviationIndex" vr="DS" vm="1">Deviation Index</element>
