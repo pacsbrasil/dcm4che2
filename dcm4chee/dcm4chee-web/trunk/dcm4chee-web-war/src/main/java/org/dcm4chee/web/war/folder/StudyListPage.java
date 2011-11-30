@@ -770,13 +770,17 @@ public class StudyListPage extends Panel {
             @Override
             public void onConfirmation(AjaxRequestTarget target, final AbstractEditableDicomModel model) {
                 logSecurityAlert(model, true, StudyListPage.tooOldAuditMessageText);
-                
-                modalWindow.setContent(getEditDicomObjectPanel(model));
-                modalWindow.setTitle("");
-                modalWindow.show(target);
-                setStatus(new Model<String>(""));
             }
         };
+        confirmEdit.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {
+            private static final long serialVersionUID = 1L;
+            public void onClose(AjaxRequestTarget target) {
+                if (confirmEdit.getState() == ConfirmationWindow.CONFIRMED) {
+                    modalWindow.setContent(getEditDicomObjectPanel(confirmEdit.getUserObject()));
+                    modalWindow.show(target);
+                }
+            }
+        });
         confirmEdit.setInitialHeight(150);
         form.add(confirmEdit);
     }
