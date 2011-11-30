@@ -187,7 +187,7 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     
     public boolean isActionForAllStudiesAllowed(String action) {
         return dao.isActionForAllStudiesOfPatientAllowed(getPk(), action, 
-            StudyPermissionHelper.get().applyStudyPermissions() ? StudyPermissionHelper.get().getDicomRoles() : null);
+            StudyPermissionHelper.get().isUseStudyPermissions() ? StudyPermissionHelper.get().getDicomRoles() : null);
     }
     
     @Override
