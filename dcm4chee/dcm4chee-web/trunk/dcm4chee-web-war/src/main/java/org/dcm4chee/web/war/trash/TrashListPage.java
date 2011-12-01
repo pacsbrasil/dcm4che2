@@ -121,8 +121,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @author Robert David <robert.david@agfa.com>
- * @version $Revision$ $Date: 2011-10-05 16:47:47 +0200 (Mit, 05. Okt
- *          2011) $
+ * @version $Revision$ $Date$
  * @since May 10, 2010
  */
 public class TrashListPage extends Panel {
@@ -327,6 +326,12 @@ public class TrashListPage extends Panel {
                                     .getChoices().get(0));
                 else
                     sourceAETDropDownChoice.setNullValid(true);
+                DropDownChoice queryTypeDropDownChoice = ((DropDownChoice) ((WebMarkupContainer) form
+                        .get("searchFooter"))
+                        .get("queryType"));
+                queryTypeDropDownChoice
+                            .setModelObject(queryTypeDropDownChoice
+                                    .getChoices().get(1));
                 pagesize.setObject(WebCfgDelegate.getInstance()
                         .getDefaultFolderPagesize());
                 notSearched = true;
