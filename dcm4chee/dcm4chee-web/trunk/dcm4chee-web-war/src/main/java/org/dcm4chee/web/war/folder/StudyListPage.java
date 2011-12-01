@@ -450,6 +450,7 @@ public class StudyListPage extends Panel {
             }
         }.add(new UIDValidator(true)).add(new UIDFieldBehavior(form)));
         extendedFilter.add(new CheckBox("exactSeriesIuid"));
+        extendedFilter.add(new Label("exactSeriesIuid.label", new ResourceModel("folder.extendedFilter.exactSeriesIuid.label")));
         form.add(extendedFilter);
         
         searchTableComponents.add(form.createAjaxParent("searchFooter"));
