@@ -108,7 +108,7 @@ public class WebPermissionsPage extends SecureWebPage {
         Map<String, String> principalsAndKeys = ((SecureSession) getSession()).getAllSwarmPrincipals();
         Iterator<String> principals = principalsAndKeys.keySet().iterator();
 
-        boolean manageStudyPermissions = UsrCfgDelegate.getInstance().getManageStudyPermissions();
+        boolean showStudyPermissionRights = UsrCfgDelegate.getInstance().getShowStudyPermissionRights();
         String studyPermissionsAll = BaseWicketApplication.get().getInitParameter("StudyPermissionsAllRolename");
         String studyPermissionsOwn = BaseWicketApplication.get().getInitParameter("StudyPermissionsOwnRolename");
         String studyPermissionsPropagation = BaseWicketApplication.get().getInitParameter("StudyPermissionsPropagationRolename");
@@ -117,7 +117,7 @@ public class WebPermissionsPage extends SecureWebPage {
         while(principals.hasNext()) {
             String principal = principals.next();
 
-            if (!manageStudyPermissions && (principal.equals(studyPermissionsAll) 
+            if (!showStudyPermissionRights && (principal.equals(studyPermissionsAll)
                     || principal.equals(studyPermissionsOwn)
                     || principal.equals(studyPermissionsPropagation)))
                 continue;
