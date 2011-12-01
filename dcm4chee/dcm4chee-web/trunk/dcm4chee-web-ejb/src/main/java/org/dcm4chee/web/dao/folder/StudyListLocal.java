@@ -73,13 +73,15 @@ public interface StudyListLocal {
     List<String> findStudyPermissionActions(String studyInstanceUID, List<String> roles);
     
     List<Series> findSeriesOfStudy(long pk);
+    int countSeriesOfStudy(long pk);
 
     List<Series> findSeriesOfMpps(String uid);
     
     Series findSeriesByIuid(String seriesIuid);
 
     List<Instance> findInstancesOfSeries(long pk);
-
+    int countInstancesOfSeries(long pk);
+    
     List<File> findFilesOfInstance(long pk);
 
     List<String> selectDistinctSourceAETs();

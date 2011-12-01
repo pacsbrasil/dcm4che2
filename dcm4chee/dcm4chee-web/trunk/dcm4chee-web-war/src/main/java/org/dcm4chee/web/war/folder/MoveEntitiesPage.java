@@ -735,13 +735,21 @@ public class MoveEntitiesPage extends SecureWebPage {
             for (AbstractDicomModel m : modifiedModels) {
                 if (m.levelOfModel() == AbstractDicomModel.PPS_LEVEL) {
                     m.getParent().expand();
+                    if (dao.countSeriesOfStudy(m.getParent().getPk()) == 0) {
+                        emptySourceParents.add(m.getParent());
+                    }
                 } else {
                     m.expand();
+                    if ( (m.levelOfModel() == AbstractDicomModel.PATIENT_LEVEL && 
+                            dao.countStudiesOfPatient(m.getPk(), null) == 0) ||
+                         (m.levelOfModel() == AbstractDicomModel.STUDY_LEVEL && 
+                            dao.countSeriesOfStudy(m.getPk()) == 0) ||
+                         (m.levelOfModel() == AbstractDicomModel.SERIES_LEVEL && 
+                            dao.countInstancesOfSeries(m.getPk()) == 0) ) {
+                        emptySourceParents.add(m);
+                    }
                 }
                 refreshStudyAndSeries(m);
-                if (m.isCollapsed()) {
-                    emptySourceParents.add(m);
-                }
             }
         }
         @SuppressWarnings({ "unchecked" })
@@ -750,20 +758,25 @@ public class MoveEntitiesPage extends SecureWebPage {
             AbstractDicomModel toDel;
             HashSet<AbstractDicomModel>[] modelsToDel = new HashSet[4];
             String[] moveCmds = {"movePatientsToTrash","moveStudiesToTrash",
-                    "moveSeriesOfPpsToTrash","moveSeriesToTrash"};
+                    null,"moveSeriesToTrash"};
             int level;
             for (AbstractDicomModel m : emptySourceParents) {
                 toDel = m;
-                log.debug("Model to delete:{}",toDel);
-                while ((m = m.getParent()) != null) {
-                    m.expand();
-                    if (m.getDicomModelsOfNextLevel().size() > 1)
-                        break;
-                    if (m.getDataset() != null) {
-                        log.debug("set parent Model to delete:{}",m);
+                log.debug("Model to delete:{}", toDel);
+                m = m.getParent();
+                if(m.levelOfModel() == AbstractDicomModel.PPS_LEVEL)
+                    m = m.getParent();
+                if(m.levelOfModel() == AbstractDicomModel.STUDY_LEVEL) {
+                    if (dao.countSeriesOfStudy(m.getPk()) == 1) {
+                        log.debug("set empty StudyModel to delete:{}", m);
                         toDel = m;
-                    } else {
-                        log.debug("Skip parent Model without Dataset:{}",m);
+                        m = m.getParent();
+                    }
+                }
+                if(m.levelOfModel() == AbstractDicomModel.PATIENT_LEVEL) {
+                    if (dao.countStudiesOfPatient(m.getPk(), null) == 1) {
+                        log.debug("set empty PatientModel to delete:{}", m);
+                        toDel = m;
                     }
                 }
                 level = toDel.levelOfModel();
@@ -777,8 +790,7 @@ public class MoveEntitiesPage extends SecureWebPage {
                 log.debug("Delete level {} :", i, modelsToDel[i]);
                 if (modelsToDel[i] != null) {
                     try {
-                        ContentEditDelegate.getInstance()
-                        .moveToTrash(moveCmds[i], toPks(modelsToDel[i]));
+                        ContentEditDelegate.getInstance().moveToTrash(moveCmds[i], toPks(modelsToDel[i]));
                         if (i==0) {
                             allPatients.removeAll(modelsToDel[i]);
                         } else {

@@ -268,6 +268,11 @@ public class StudyListBean implements StudyListLocal {
                 .setParameter(1, pk)
                 .getResultList());
     }
+    public int countSeriesOfStudy(long pk) {
+        return ((Number) em.createQuery("SELECT COUNT(s) FROM Series s WHERE s.study.pk=?1")
+                .setParameter(1, pk)
+                .getSingleResult()).intValue();
+    }
     
     public Series findSeriesByIuid(String iuid) {
         Query q = em.createQuery("FROM Series s LEFT JOIN FETCH s.modalityPerformedProcedureStep WHERE s.seriesInstanceUID = :iuid");
@@ -294,8 +299,14 @@ public class StudyListBean implements StudyListLocal {
                 .getResultList();
         Collections.sort(l, instanceComparator);
         return l;
-   }
+    }
 
+    public int countInstancesOfSeries(long pk) {
+        return ((Number) em.createQuery("SELECT COUNT(i) FROM Instance i WHERE i.series.pk=?1")
+                .setParameter(1, pk)
+                .getSingleResult()).intValue();
+    }
+    
     @SuppressWarnings("unchecked")
     public List<File> findFilesOfInstance(long pk) {
         return em.createQuery("FROM File f JOIN FETCH f.fileSystem WHERE f.instance.pk=?1 ORDER BY f.pk")
