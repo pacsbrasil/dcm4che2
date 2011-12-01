@@ -97,6 +97,15 @@ public class SelectedEntities implements Serializable {
                     patients.add(patient);
                 } else {
                     ignoredNotAllowedEntities = true;
+                    if (patient.isCollapsed()) {
+                        patient.expand();
+                    }
+                    for (StudyModel study : patient.getStudies()) {
+                        if  (useStudyPermissions && !study.getStudyPermissionActions().contains(action)) {
+                            continue;
+                        }
+                        studies.add(study);
+                    }
                 }
             }
             if (allowSrcInTarget || !patient.isSelected()) {
