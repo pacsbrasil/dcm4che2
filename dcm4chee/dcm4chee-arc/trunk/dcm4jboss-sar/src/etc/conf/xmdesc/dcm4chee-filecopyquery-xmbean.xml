@@ -42,8 +42,8 @@
       	SELECT DISTINCT series.pk FROM series, instance, files 
          	WHERE series.series_status = 0 AND series.pk = instance.series_fk AND instance.pk = files.instance_fk
          	    AND series.updated_time < ?
-         		AND NOT EXISTS (SELECT pk FROM files WHERE files.instance_fk=instance.pk AND files.filesystem_fk=2)
-        Mote: The first column in the SELECT statement must be: series.pk!<br />
+         		AND NOT EXISTS (SELECT pk FROM files WHERE files.instance_fk=instance.pk AND files.filesystem_fk=2) <br />
+        <b>Note:</b> The first column in the SELECT statement must be: series.pk!<br />
         If limit > 0 the SQL statement is extended with: <br />
         1) a database specific LIMIT <br /> 
         2) a 'series.pk > ?' as first criteria in WHERE clause (if sql hasn't already a 'pk > ?')<br />
