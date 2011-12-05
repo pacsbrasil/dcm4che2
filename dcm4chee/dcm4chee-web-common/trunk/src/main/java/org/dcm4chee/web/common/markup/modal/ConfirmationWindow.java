@@ -246,7 +246,15 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
                 public Object getObject() {
                     return remark == null ? null : remark.getObject();
                 }
-            })).setOutputMarkupId(true));
+            }){
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public boolean isVisible() {
+                    return !hasStatus;
+                }
+
+            }).setOutputMarkupId(true));
 
             confirmBtn = new IndicatingAjaxFallbackLink<Object>("confirm") {
 
