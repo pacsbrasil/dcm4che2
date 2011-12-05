@@ -109,9 +109,11 @@ public class SelectedEntities implements Serializable {
                 }
             }
             if (allowSrcInTarget || !patient.isSelected()) {
+                boolean actionDenied;
                 studyLoop: for (StudyModel study : patient.getStudies()) {
+                    actionDenied = useStudyPermissions && !study.getStudyPermissionActions().contains(action);
                     if (study.isSelected()) {
-                        if  (useStudyPermissions && !study.getStudyPermissionActions().contains(action)) {
+                        if (actionDenied) {
                             ignoredNotAllowedEntities = true;
                             continue studyLoop;
                         }
@@ -120,17 +122,29 @@ public class SelectedEntities implements Serializable {
                     if (allowSrcInTarget || !study.isSelected()) {
                         for ( PPSModel pps : study.getPPSs()) {
                             if (pps.isSelected()) {
-                               ppss.add(pps);
+                                if (actionDenied) {
+                                    ignoredNotAllowedEntities = true;
+                                    continue studyLoop;
+                                }
+                                ppss.add(pps);
                             }
                             if (allowSrcInTarget || !pps.isSelected()) {
                                 for ( SeriesModel series : pps.getSeries()) {
                                     if (series.isSelected()) {
+                                        if (actionDenied) {
+                                            ignoredNotAllowedEntities = true;
+                                            continue studyLoop;
+                                        }
                                         seriess.add(series);
                                     }
                                     if (allowSrcInTarget || !series.isSelected()) {
                                         for (InstanceModel inst : series.getInstances()) {
                                             if (inst.isSelected()) {
-                                                instances.add(inst);
+                                                if (actionDenied) {
+                                                    ignoredNotAllowedEntities = true;
+                                                    continue studyLoop;
+                                                }
+                                               instances.add(inst);
                                             }
                                         }
                                     }

@@ -821,8 +821,6 @@ public class StudyListPage extends Panel {
                         logSecurityAlert(st, true, StudyListPage.tooOldAuditMessageText);
                 }
                 this.setStatus(new StringResourceModel("folder.message.delete.running", StudyListPage.this, null));
-                getMessageWindowPanel().getOkBtn().setVisible(false);
-                getMessageWindowPanel().getRemarkLabel().setVisible(false);
                 
                 try {
                     if (getDelegate().moveToTrash(selected)) {
