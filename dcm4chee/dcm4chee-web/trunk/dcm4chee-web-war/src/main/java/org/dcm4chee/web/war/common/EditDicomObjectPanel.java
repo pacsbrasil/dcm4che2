@@ -245,7 +245,12 @@ public class EditDicomObjectPanel extends Panel {
             add(new Label("name", nesting + dict.nameOf(tag)));
             add(new Label("tag", TagUtils.toString(tag)));
             add(new Label("vr", el.vr().toString()));
-            add(new Label("length", Integer.toString(el.length())));
+            Label len = new Label("length", Integer.toString(el.length()));
+            add(len);
+            if (!el.hasItems() && el.length() > 64) {
+                len.add(new AttributeModifier("title", true, 
+                        new Model<String>(el.getValueAsString(cs, 256))));
+            }
             final Model<String> model = 
                 el.hasItems() ? 
                         new Model<String>("") 
@@ -253,7 +258,7 @@ public class EditDicomObjectPanel extends Panel {
             add(new TextField<String>("value", model)
                                               .add(new AttributeModifier("title", true, model))
                                               .setVisible(!el.hasItems())
-                                              .setEnabled(editable.isEditable(tagPath)));
+                                              .setEnabled(el.length() < 65 && editable.isEditable(tagPath)));
             
             AjaxFallbackLink<?> removeLink = new AjaxFallbackLink<Object>("remove"){
                 
