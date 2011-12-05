@@ -282,7 +282,39 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             }
 
             @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+            protected void onSubmit(AjaxRequestTarget target, final Form<?> form) {
+                
+                form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(700)) {
+                
+                    private static final long serialVersionUID = 1L;
+                
+                    @Override
+                    protected void onTimer(AjaxRequestTarget target) {
+                        if (closeRequest) {
+                            removeProgressProvider(getExportResults().remove(resultId), true);
+                            getPage().getPageMap().remove(ExportPage.this);
+                            target.appendJavascript("javascript:self.close()");
+                            isClosed = true;
+                        } else {
+                            ExportResult result = getExportResults().get(resultId);
+                            result.updateRefreshed();
+                            if (result != null && !result.isRendered) {
+                                target.addComponent(form.get("exportResult"));
+                                if (result.nrOfMoverequests == 0) {
+                                    target.addComponent(form.get("export"));
+                                    target.addComponent(form.get("destinationAETs"));
+                                    if (closeOnFinished && result.failedRequests.isEmpty()) {
+                                        removeProgressProvider(getExportResults().remove(resultId), false);
+                                        getPage().getPageMap().remove(ExportPage.this);
+                                        target.appendJavascript("javascript:self.close()");
+                                    }
+                                }
+                                result.isRendered = true;
+                            }
+                        }
+                    }
+                });
+                
                 getSession().setMetaData(LAST_DESTINATION_AET_ATTRIBUTE, destinationAET);
                 exportSelected();
                 target.addComponent(form);
@@ -321,37 +353,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             
         }.setEnabled(exportInfo.hasSelection()));
         form.addLabel("closeOnFinishedLabel");
-        
-        form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(700)){
 
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected void onTimer(AjaxRequestTarget target) {
-                if (closeRequest) {
-                    removeProgressProvider(getExportResults().remove(resultId), true);
-                    getPage().getPageMap().remove(ExportPage.this);
-                    target.appendJavascript("javascript:self.close()");
-                    isClosed = true;
-                } else {
-                    ExportResult result = getExportResults().get(resultId);
-                    result.updateRefreshed();
-                    if (result != null && !result.isRendered) {
-                        target.addComponent(form.get("exportResult"));
-                        if (result.nrOfMoverequests == 0) {
-                            target.addComponent(form.get("export"));
-                            target.addComponent(form.get("destinationAETs"));
-                            if (closeOnFinished && result.failedRequests.isEmpty()) {
-                                removeProgressProvider(getExportResults().remove(resultId), false);
-                                getPage().getPageMap().remove(ExportPage.this);
-                                target.appendJavascript("javascript:self.close()");
-                            }
-                        }
-                        result.isRendered = true;
-                    }
-                }
-            }
-        });
         add(JavascriptPackageResource.getHeaderContribution(ExportPage.class, "popupcloser.js"));
         final Label downloadError = new Label("downloadError", new Model<String>(""));
         form.add(downloadError);
