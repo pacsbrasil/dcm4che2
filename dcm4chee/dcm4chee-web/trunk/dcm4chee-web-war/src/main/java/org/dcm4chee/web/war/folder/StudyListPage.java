@@ -874,6 +874,7 @@ public class StudyListPage extends Panel {
                         } else {
                             msgWin.setInfoMessage(getString("folder.message.deleteNotAllowed"));
                             msgWin.setColor("#FF0000");
+                            msgWin.show(target);
                         }
                     } else {
                         msgWin.setInfoMessage(getString("folder.message.tooOld.delete.denied"));
