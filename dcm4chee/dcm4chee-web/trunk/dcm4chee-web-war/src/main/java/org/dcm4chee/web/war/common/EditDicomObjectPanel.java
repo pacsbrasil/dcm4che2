@@ -204,8 +204,11 @@ public class EditDicomObjectPanel extends Panel {
             System.arraycopy(itemPath, 0, tagPath, 0, itemPath.length);
             WebMarkupContainer elrow = new WebMarkupContainer(rv.newChildId());
             rv.add(elrow);
-            elrow.add(
-                    new ElementFragment("fragment", el, cs, tagPath, nesting));
+            elrow.add(new ElementFragment("fragment", el, cs, tagPath, nesting));
+            if (!el.hasItems()) {
+                elrow.add(new AttributeModifier("title", true, 
+                        new Model<String>(el.getValueAsString(cs, 256))));
+            }
             if (el.hasDicomObjects()) {
                 int numitems = el.countItems();
                 for (int i = 0; i < numitems; i++) {
@@ -245,18 +248,12 @@ public class EditDicomObjectPanel extends Panel {
             add(new Label("name", nesting + dict.nameOf(tag)));
             add(new Label("tag", TagUtils.toString(tag)));
             add(new Label("vr", el.vr().toString()));
-            Label len = new Label("length", Integer.toString(el.length()));
-            add(len);
-            if (!el.hasItems() && el.length() > 64) {
-                len.add(new AttributeModifier("title", true, 
-                        new Model<String>(el.getValueAsString(cs, 256))));
-            }
+            add(new Label("length", Integer.toString(el.length())));
             final Model<String> model = 
                 el.hasItems() ? 
                         new Model<String>("") 
                       : new DicomElementModel(el, cs, tagPath);
             add(new TextField<String>("value", model)
-                                              .add(new AttributeModifier("title", true, model))
                                               .setVisible(!el.hasItems())
                                               .setEnabled(el.length() < 65 && editable.isEditable(tagPath)));
             
