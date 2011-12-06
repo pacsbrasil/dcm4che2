@@ -763,20 +763,22 @@ public class MoveEntitiesPage extends SecureWebPage {
             for (AbstractDicomModel m : emptySourceParents) {
                 toDel = m;
                 log.debug("Model to delete:{}", toDel);
-                m = m.getParent();
-                if(m.levelOfModel() == AbstractDicomModel.PPS_LEVEL)
+                if (toDel.levelOfModel() > AbstractDicomModel.PATIENT_LEVEL) {
                     m = m.getParent();
-                if(m.levelOfModel() == AbstractDicomModel.STUDY_LEVEL) {
-                    if (dao.countSeriesOfStudy(m.getPk()) == 1) {
-                        log.debug("set empty StudyModel to delete:{}", m);
-                        toDel = m;
+                    if(m.levelOfModel() == AbstractDicomModel.PPS_LEVEL)
                         m = m.getParent();
+                    if(m.levelOfModel() == AbstractDicomModel.STUDY_LEVEL) {
+                        if (dao.countSeriesOfStudy(m.getPk()) == 1) {
+                            log.debug("set empty StudyModel to delete:{}", m);
+                            toDel = m;
+                            m = m.getParent();
+                        }
                     }
-                }
-                if(m.levelOfModel() == AbstractDicomModel.PATIENT_LEVEL) {
-                    if (dao.countStudiesOfPatient(m.getPk(), null) == 1) {
-                        log.debug("set empty PatientModel to delete:{}", m);
-                        toDel = m;
+                    if(m.levelOfModel() == AbstractDicomModel.PATIENT_LEVEL) {
+                        if (dao.countStudiesOfPatient(m.getPk(), null) == 1) {
+                            log.debug("set empty PatientModel to delete:{}", m);
+                            toDel = m;
+                        }
                     }
                 }
                 level = toDel.levelOfModel();
