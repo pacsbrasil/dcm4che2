@@ -60,7 +60,6 @@ import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.Response;
 import org.apache.wicket.Session;
-import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
@@ -80,7 +79,6 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.apache.wicket.security.components.SecureWebPage;
-import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -99,6 +97,7 @@ import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.web.common.ajax.AjaxIntervalBehaviour;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.model.ProgressProvider;
@@ -282,39 +281,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             }
 
             @Override
-            protected void onSubmit(AjaxRequestTarget target, final Form<?> form) {
-                
-                form.add(new AbstractAjaxTimerBehavior(Duration.milliseconds(700)) {
-                
-                    private static final long serialVersionUID = 1L;
-                
-                    @Override
-                    protected void onTimer(AjaxRequestTarget target) {
-                        if (closeRequest) {
-                            removeProgressProvider(getExportResults().remove(resultId), true);
-                            getPage().getPageMap().remove(ExportPage.this);
-                            target.appendJavascript("javascript:self.close()");
-                            isClosed = true;
-                        } else {
-                            ExportResult result = getExportResults().get(resultId);
-                            result.updateRefreshed();
-                            if (result != null && !result.isRendered) {
-                                target.addComponent(form.get("exportResult"));
-                                if (result.nrOfMoverequests == 0) {
-                                    target.addComponent(form.get("export"));
-                                    target.addComponent(form.get("destinationAETs"));
-                                    if (closeOnFinished && result.failedRequests.isEmpty()) {
-                                        removeProgressProvider(getExportResults().remove(resultId), false);
-                                        getPage().getPageMap().remove(ExportPage.this);
-                                        target.appendJavascript("javascript:self.close()");
-                                    }
-                                }
-                                result.isRendered = true;
-                            }
-                        }
-                    }
-                });
-                
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 getSession().setMetaData(LAST_DESTINATION_AET_ATTRIBUTE, destinationAET);
                 exportSelected();
                 target.addComponent(form);
@@ -353,7 +320,38 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             
         }.setEnabled(exportInfo.hasSelection()));
         form.addLabel("closeOnFinishedLabel");
+        
+        form.add(new AjaxIntervalBehaviour(700) {
 
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onTimer(AjaxRequestTarget target) {
+                log.debug("########### Export timer for resultId:", resultId);
+                if (closeRequest) {
+                    removeProgressProvider(getExportResults().remove(resultId), true);
+                    getPage().getPageMap().remove(ExportPage.this);
+                    target.appendJavascript("javascript:self.close()");
+                    isClosed = true;
+                } else {
+                    ExportResult result = getExportResults().get(resultId);
+                    result.updateRefreshed();
+                    if (result != null && !result.isRendered) {
+                        target.addComponent(form.get("exportResult"));
+                        if (result.nrOfMoverequests == 0) {
+                            target.addComponent(form.get("export"));
+                            target.addComponent(form.get("destinationAETs"));
+                            if (closeOnFinished && result.failedRequests.isEmpty()) {
+                                removeProgressProvider(getExportResults().remove(resultId), false);
+                                getPage().getPageMap().remove(ExportPage.this);
+                                target.appendJavascript("javascript:self.close()");
+                            }
+                        }
+                        result.isRendered = true;
+                    }
+                }
+            }
+        });
         add(JavascriptPackageResource.getHeaderContribution(ExportPage.class, "popupcloser.js"));
         final Label downloadError = new Label("downloadError", new Model<String>(""));
         form.add(downloadError);
