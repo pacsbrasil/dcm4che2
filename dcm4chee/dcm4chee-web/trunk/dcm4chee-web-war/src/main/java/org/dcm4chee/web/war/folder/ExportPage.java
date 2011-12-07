@@ -341,6 +341,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
                         if (result.nrOfMoverequests == 0) {
                             target.addComponent(form.get("export"));
                             target.addComponent(form.get("destinationAETs"));
+                            target.addComponent(form.get("downloadLink"));
                             if (closeOnFinished && result.failedRequests.isEmpty()) {
                                 removeProgressProvider(getExportResults().remove(resultId), false);
                                 getPage().getPageMap().remove(ExportPage.this);
@@ -421,6 +422,7 @@ public class ExportPage extends SecureWebPage implements CloseRequestSupport {
             }
         }
         .add(new Label("downloadLabel", new ResourceModel("export.downloadBtn.text")))
+        .setOutputMarkupId(true)
         );
     }
 
