@@ -177,6 +177,7 @@ public class AEListPanel extends Panel {
         
         Set<String> aetTypeSet = new LinkedHashSet<String>();
         AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
+        aetTypeSet.add("<NONE>");
         aetTypeSet.addAll(aeHome.listAeTypes());
         aetTypeSet.addAll(WebCfgDelegate.getInstance().getAETTypes());
         aetTypeSet.addAll(AELicenseProviderManager.get(null).getProvider().getAETypes(WebCfgDelegate.getInstance().getAETTypes()));

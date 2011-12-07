@@ -70,9 +70,9 @@ public class AEHomeBean implements AEHomeLocal {
     @SuppressWarnings("unchecked")
     public List<AE> findAll(String filter) {
         String filterQuery = filter == null ? "" : 
-            "-".equals(filter) ? "WHERE aeGroup IS NULL" : "WHERE aeGroup = :filter";
+            "<NONE>".equals(filter) ? "WHERE aeGroup IS NULL" : "WHERE aeGroup = :filter";
         Query query = em.createQuery("FROM AE ae " + filterQuery + " ORDER BY ae.title, ae.aeGroup");
-        if (filter != null && !"-".equals(filter)) query.setParameter("filter", filter);
+        if (filter != null && !"<NONE>".equals(filter)) query.setParameter("filter", filter);
         List<AE> l = query.getResultList();
         em.clear();
         return l;
