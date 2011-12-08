@@ -65,6 +65,16 @@ public class ByteLookupTable extends LookupTable {
         return tmp <= 0 ? data[0] : tmp >= data.length ? data[data.length - 1]
                 : data[tmp];
     }
+    
+    /**
+     * Looks up a raw value, not a pixel-encoded value.  Useful if this is being used to combine LUTs etc
+     */
+	public short lookupRawShort(int in) {
+        int tmp = in - off;
+        return tmp <= 0 ? data[0] : tmp >= data.length ? data[data.length - 1]
+                : data[tmp];
+	}
+
 
     @Override
     public final short lookupShort(int in) {
@@ -364,4 +374,5 @@ public class ByteLookupTable extends LookupTable {
         return new ShortLookupTable(inBits, signbit != 0, off, outBits,
                 newData);
     }
+
 }
