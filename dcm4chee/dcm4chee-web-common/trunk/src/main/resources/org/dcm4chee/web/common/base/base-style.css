@@ -21,26 +21,68 @@ div.signin table { width: 100%; padding: 60px 90px 10px 0px; background-color: #
 div.signin tr, div.signin td { width: 50%; height: 35px; border-style: none; }
 div.signin span.login-desc { font-size: 20px; font-weight: bold; }
 
-div.module-selector { width: 100%; min-height: 48px; background: #FFF url("images/menu-bg.gif") top left repeat-x; font-weight: bold; list-style-type: none; margin: 0px; padding: 0px; z-index: 1; }
-div.module-selector span.login-desc { margin: 13px 0px 0px 0px; padding: 0px 10px 0px 10px; float: left; font-size: 16px; }
-div.module-selector div.tab-logo { margin: 13px 0px 0px 0px; padding: 0px 10px 0px 10px; height: 43px; float: right; }
-div.module-selector div.tab-lang { margin: 13px 0px 0px 0px; height: 43px; float: right; }
-div.module-selector div.tab-lang img { border: none; }
-div.module-selector div.tab-lang a { color: #666;}
-
-div.tabpanel div.tab-row li { margin: 0px; display: block; float: left; list-style-type: none; }
-div.tabpanel div.tab-row a:link, div.tabpanel div.tab-row a:visited {
-    float: left; padding: 5px 15px 0px; 
-    background: #FFF url("images/menu-bg.gif") top left repeat-x;
-    font-size: 12px;
-    line-height: 38px;
+div.module-selector {
+    width: 100%;
+    min-height: 48px;
     font-weight: bold;
+    margin-bottom: 10px;
+    padding-top: 0px;
+    padding-right: 0px;
+    padding-bottom: 0px;
+    padding-left: 0px;
+    z-index: 1;
+    background-color: #ffffff;
+    background-image: url("images/menu-bg.gif");
+    background-repeat: repeat-x;
+    background-attachment: scroll;
+    background-position: left top;
+    background-clip: border-box;
+    background-origin: padding-box;
+    background-size: auto auto;
+}
+
+div.module-selector table.tabpanel tr.tab-row td { 
+    white-space: nowrap; 
+    margin: 0px; 
+    min-height: 48px;
+}
+
+div.module-selector table.tabpanel {
+    float: left;
+	margin-top: -6px;
+    margin-left: 38px;
+}
+
+div.module-selector table.tabpanel tr.tab-row a:link, 
+div.module-selector table.tabpanel tr.tab-row a:visited {
+    float: left; 
+    padding: 3px 15px 0px;
+    line-height: 43px;
     color: #666;
 }
-div.tabpanel div.tab-row li.selected a:link, div.tabpanel div.tab-row a:visited.active {
-    float: left; height: 38px; color: #FFF; background: #FFF url("images/current-bg.gif") top left repeat-x; padding: 5px 15px 0px; 
+
+div.module-selector table.tabpanel tr.tab-row td.selected a:link, 
+div.module-selector table.tabpanel tr.tab-row a:visited.active {
+    float: left; 
+    color: #FFF; 
+    background: #aaa url("images/current-bg.gif") bottom left repeat-x; 
 }
-div.tabpanel div.tab-row a:hover { background: #aaa; }
+
+div.module-selector table.tabpanel tr.tab-row a:hover { background: #aaa; }
+
+div.module-selector table.menu-right { float: right; }
+div.module-selector table.menu-right td { 
+    padding: 0px 15px 0px;
+    line-height: 43px;
+}
+
+div.module-selector table.menu-right div.menu-item a {
+    color: #666; 
+}
+
+div.module-selector table.menu-right div.menu-item img {
+    margin-top: 18px; 
+}
 
 div.module-panel { width: 100%; background: none #E1E0DE; padding-top: 1px; }
 
