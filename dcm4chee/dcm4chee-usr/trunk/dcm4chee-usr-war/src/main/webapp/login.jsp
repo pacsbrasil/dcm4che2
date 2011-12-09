@@ -24,7 +24,7 @@
 			        <ul>
 		            </ul>
                 </div>
-		        <div class="tab-logo" style="margin-top: 13px; padding-right: 10px; padding-left: 10px;">
+		        <div class="tab-logo" style="float: right; margin-top: 12px; height: 43px; padding-right: 10px; padding-left: 10px;">
 		           <img alt="dcm4che.org" src="resources/org.dcm4chee.web.common.base.BaseWicketPage/images/logo.gif" /><br/>
 		        </div>
 	       </div>
