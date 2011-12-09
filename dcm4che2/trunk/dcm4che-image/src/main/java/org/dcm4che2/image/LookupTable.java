@@ -660,14 +660,10 @@ public abstract class LookupTable {
         int len = desc[0] == 0 ? 0x10000 : desc[0];
         int off = desc[1];
         int bits = desc[2];
-        log.warn("LUT descriptor found, off="+off+" inbits="+inBits);
         if( off>0x7F00 && (signed || inBits < 16) ) {
         	// This happens when there is a VOI LUT with some sort of modality LUT which outputs negative values
         	// The spec says to use unsigned, but it really needs to be 2's complement SS signed value.
         	off = off-0x10000;
-        	new Exception("LUT").printStackTrace();
-        	
-        	log.warn("off now "+off);
         }
         if (inBits == 0) {
             // ignore offset for P-LUT
@@ -696,7 +692,6 @@ public abstract class LookupTable {
             short[] sdata = ds.bigEndian() ? ByteUtils.bytesBE2shorts(data)
                     : ByteUtils.bytesLE2shorts(data);
 
-            log.warn("sdata.length="+sdata.length+" len="+len+" bits="+bits+" last val="+sdata[sdata.length-1]+" first "+sdata[0]);
             // Get the actual number of bits in this lookup table.
             bits = 0;
             for (int maxVal = Math.max(sdata[0] & 0xFFFF,
@@ -705,7 +700,6 @@ public abstract class LookupTable {
             }
 
             if (pixelPaddingValue != null) {
-            	log.warn("Pixel padding data "+minMaxPixelPadding[0]+","+minMaxPixelPadding[1]);
                 len = sdata.length;
                 int t = (minMaxPixelPadding[1] - off) -  len;
                 if ( t > 0) {
@@ -717,17 +711,13 @@ public abstract class LookupTable {
                 applyPixelPadding(array, padVal, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
             }
 
-            log.warn("inBits "+inBits+" signed "+signed+" off "+off+" bits "+bits);
             ShortLookupTable ret = new ShortLookupTable(inBits, signed, off,
                     bits, sdata, true);
             // Uncomment out the following to print out the resulting table.
-            log.warn("ret.andMake="+Integer.toHexString(ret.andmask)+" orMask "+Integer.toHexString(ret.ormask)
-            		+" signbit "+Integer.toHexString(ret.signbit)+" outbits "+ret.outBits);
-            log.warn("sdata length="+sdata.length);
-             for(int i=0; i<sdata.length; i += (1+sdata.length/15)) {
-             log.warn("Sdata[i] = "+sdata[i]
-             +" offset "+(i+off)+" lookup "+ret.lookup(i+off)+" sdata="+sdata[i]);
-             }
+//             for(int i=0; i<sdata.length; i += (1+sdata.length/15)) {
+//             log.warn("Sdata[i] = "+sdata[i]
+//             +" offset "+(i+off)+" lookup "+ret.lookup(i+off)+" sdata="+sdata[i]);
+//             }
             return ret;
         }
         throw new IllegalArgumentException("LUT Data length: " + data.length
