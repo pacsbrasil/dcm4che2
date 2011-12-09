@@ -203,7 +203,9 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
                                           : em.createQuery("SELECT DISTINCT sp.role FROM StudyPermission sp WHERE sp.role NOT IN(:dicomRoles)")
                                               .setParameter("dicomRoles", dicomRolenames)
                                               .getResultList();
-
+                                              
+        log.info("dicomRolenames:"+dicomRolenames);
+        log.info("newRoles:"+newRoles);
         List<Role> roles = new ArrayList<Role>();
         BufferedReader reader = null;
         try {
@@ -217,18 +219,22 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
                 }
                 roles.add(role);
             }
+            if (close(reader, "roles file reader"))
+                reader = null;
+            log.info("newRoles to add:"+newRoles);
             for (String rolename : newRoles) {
                 Role role = new Role(rolename);
                 role.setDicomRole(true);
                 roles.add(role);
             }
             Collections.sort(roles);
+            log.info("save Roles:"+roles);
             save(roles);
         } catch (Exception e) {
             log.error("Can't get roles from roles file!", e);
             return;
         } finally {
-            close(reader, "roles file reader");
+            close(reader, "roles file reader in finally");
         }
     }
 
@@ -274,6 +280,7 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
         BufferedWriter writer = null;
         try {
             File tmpFile = File.createTempFile(dicomRolesFile.getName(), null, dicomRolesFile.getParentFile());
+            log.info("tmpFile:"+tmpFile);
             writer = new BufferedWriter(new FileWriter(tmpFile, true));
             JSONObject jsonObject;
             for (int i=0,len=roles.size() ; i < len ; i++) {
@@ -285,6 +292,7 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
                 writer = null;
             dicomRolesFile.delete();
             tmpFile.renameTo(dicomRolesFile);
+            log.info("dicomRolesFile:"+dicomRolesFile);
         } catch (IOException e) {
             log.error("Can't save roles in roles file!", e);
         } finally {
