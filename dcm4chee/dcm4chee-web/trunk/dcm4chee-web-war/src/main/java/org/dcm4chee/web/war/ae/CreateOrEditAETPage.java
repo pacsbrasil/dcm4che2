@@ -97,7 +97,6 @@ public class CreateOrEditAETPage extends SecureWebPage {
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     
     private MessageWindow msgWin = new MessageWindow("msgWin");
-    private Model<String> resultMessage;
     
     public CreateOrEditAETPage(final ModalWindow window, final AE ae, final AEListPanel panel) {
         super();
@@ -294,6 +293,6 @@ public class CreateOrEditAETPage extends SecureWebPage {
                 mw.show(target, ae);
             }
         });
-        add(new Label("result-message", (resultMessage = new Model<String>(""))));
+        add(new Label("result-message", new Model<String>("")));
     }
  }

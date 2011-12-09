@@ -81,8 +81,6 @@ import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.audit.message.AuditEvent.ActionCode;
-import org.dcm4che2.audit.message.AuditMessage;
-import org.dcm4che2.audit.message.OrderRecordMessage;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DateRange;
 import org.dcm4che2.data.DicomElement;

@@ -88,7 +88,6 @@ public class ImageSelectionWindow extends ModalWindow {
     private Model<Integer> maxSeries = new Model<Integer>(5);
     private Model<Integer> maxInstances = new Model<Integer>(10);
     private int numCols = 5;
-    private int numRows;
     private Model<Integer> imgSizeModel = new Model<Integer>(128);
     private int selectionChanged = 0;
     
@@ -110,13 +109,6 @@ public class ImageSelectionWindow extends ModalWindow {
     
     public void initWadoBaseUrl() {
         WadoImage.setDefaultWadoBaseUrl(WADODelegate.getInstance().getWadoBaseUrl());
-    }
-    
-    private void calcNumRows() {
-        numRows = seriesList.size() / numCols;
-        if (seriesList.size() % numCols != 0) {
-            numRows++;
-        }
     }
     
     public void show(final AjaxRequestTarget target, StudyModel study) {
@@ -160,7 +152,6 @@ public class ImageSelectionWindow extends ModalWindow {
 
     @Override
     public void show(final AjaxRequestTarget target) {
-        this.calcNumRows();
         selectionChanged = 0;
         super.show(target);
     }

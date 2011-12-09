@@ -23,7 +23,7 @@
             <div wicket:id="confirmLink" >ConfirmLink</div>
 			<div wicket:id="confirmUnlink" >ConfirmUnlink</div>	
 			<div wicket:id="confirmEmulate" >ConfirmEmulate</div>
-			<table rules="groups" class="search-table" style="margin-top: 0px;">
+			<table rules="groups" class="search-table" style="margin-top: 20px;">
 				<thead>
 					<tr class="search-table">
 						<th class="lo search-table"></th>
@@ -59,9 +59,7 @@
 					<td></td>
 					<td colspan="3">
 						<div wicket:id="patientName" id="patientName" />
-						<input type="checkbox" id="fuzzyPN" wicket:id="fuzzyPN" />
-						<label for="fuzzyPN" wicket:id="fuzzyPN.label" style="padding-right: 5px;">Fuzzy</label>
-					</td>
+                    </td>
 					<td class="patid">
 		                <div wicket:id="patientID.label">ID</div>
 						<input wicket:id="patientID" id="patientID" type="text" title="ID" class="patid"/>
@@ -82,6 +80,14 @@
 						<input wicket:id="accessionNumber" id="accessionNumber" type="text" class="accnr" />
 					</td>
 					<td></td>
+				</tr>
+				<tr wicket:id="searchFuzzy" class="search-table">
+				    <td></td>
+                    <td style="text-align: left;" colspan="8">
+                        <input type="checkbox" id="fuzzyPN" wicket:id="fuzzyPN" />
+                        <label for="fuzzyPN" wicket:id="fuzzyPN.label" style="padding-right: 5px;">Fuzzy</label>
+                    </td>
+                    <td></td>
 				</tr>
 				<tr wicket:id="searchDropdowns" class="search-table">
 					<td></td>

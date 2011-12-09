@@ -387,8 +387,6 @@ public class StudyListPage extends Panel {
         
         form.addPatientNameField("patientName", new PropertyModel<String>(filter, "patientName"),
                     WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModelPat, false);
-        form.addComponent(new CheckBox("fuzzyPN").setVisible(filter.isFuzzyPNEnabled()));
-        form.addInternalLabel("fuzzyPN").setVisible(filter.isFuzzyPNEnabled());
         form.addTextField("patientID", enabledModelPat, true);
         form.addTextField("issuerOfPatientID", enabledModelPat, true);
        
@@ -399,6 +397,11 @@ public class StudyListPage extends Panel {
         
         form.addTextField("accessionNumber", enabledModel, false);
 
+        searchTableComponents.add(form.createAjaxParent("searchFuzzy"));
+        
+        form.addComponent(new CheckBox("fuzzyPN").setVisible(filter.isFuzzyPNEnabled()));
+        form.addInternalLabel("fuzzyPN").setVisible(filter.isFuzzyPNEnabled());
+        
         searchTableComponents.add(form.createAjaxParent("searchDropdowns"));
         
         form.addInternalLabel("modality");

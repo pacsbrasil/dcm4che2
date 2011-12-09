@@ -39,7 +39,6 @@
 package org.dcm4chee.web.war.folder;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashSet;
