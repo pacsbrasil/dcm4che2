@@ -38,11 +38,8 @@
 
 package org.dcm4chee.web.common.base;
 
-import org.apache.wicket.extensions.markup.html.tabs.TabbedPanel;
-import org.apache.wicket.markup.html.panel.EmptyPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.dcm4chee.web.common.secure.SecureAjaxTabbedPanel;
 
 /**
@@ -59,7 +56,6 @@ public class ExternalWebAppGroupPanel extends SecureAjaxTabbedPanel implements E
     public ExternalWebAppGroupPanel(String id, IModel<String> title) {
         super(id);
         this.title = title;
-        this.addModule(new EmptyPanel(TabbedPanel.TAB_PANEL_ID), new Model<String>(""));
     }
     
     public IModel<String> getTitle() {
