@@ -56,7 +56,7 @@ import org.dcm4chex.archive.ejb.jdbc.Match.Node;
  * @version $Revision$ $Date$
  * @since 26.08.2003
  */
-class SqlBuilder {
+public class SqlBuilder {
 
     public static final boolean TYPE1 = false;
     public static final boolean TYPE2 = true;

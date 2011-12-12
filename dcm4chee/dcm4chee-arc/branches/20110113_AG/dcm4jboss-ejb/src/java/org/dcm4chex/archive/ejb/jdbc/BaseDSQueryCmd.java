@@ -62,7 +62,7 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
     protected final HashMap<Integer,IntList> seqMatchingKeys =
             new HashMap<Integer,IntList>();
 
-    protected final SqlBuilder sqlBuilder = new SqlBuilder();
+    protected final SqlBuilder sqlBuilder = createSqlBuilder();
 
     protected final boolean filterResult;
 
@@ -87,6 +87,10 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
         return sqlBuilder.isMatchNotSupported();
     }
     
+	public SqlBuilder createSqlBuilder() {
+		return new SqlBuilder();
+	}
+	
     /**
      * Check if this QueryCmd use an unsupported matching key.
      * 
