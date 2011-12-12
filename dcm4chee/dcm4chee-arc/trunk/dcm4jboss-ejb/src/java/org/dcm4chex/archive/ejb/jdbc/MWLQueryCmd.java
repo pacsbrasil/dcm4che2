@@ -78,7 +78,7 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
 		Tags.SPSID,
 		Tags.SPSStartDate, Tags.SPSStartTime,
 		Tags.Modality,
-		Tags.PerformingPhysicianName,
+		Tags.ScheduledPerformingPhysicianName,
 		Tags.ScheduledStationAET,
 		Tags.ScheduledStationName,
 		};
@@ -133,11 +133,11 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
                                 "MWLItem.performingPhysicianFamilyNameSoundex",
                                 "MWLItem.performingPhysicianGivenNameSoundex" },
                             type2,
-                            keys.getString(Tags.PerformingPhysicianName));
+                            keys.getString(Tags.ScheduledPerformingPhysicianName));
                 } catch (IllegalArgumentException ex) {
                     throw new DcmServiceException(
                             Status.IdentifierDoesNotMatchSOPClass,
-                            ex.getMessage() + ": " + keys.get(Tags.PerformingPhysicianName));
+                            ex.getMessage() + ": " + keys.get(Tags.ScheduledPerformingPhysicianName));
                 }
             else
                 sqlBuilder.addPNMatch(
@@ -147,7 +147,7 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
                             "MWLItem.performingPhysicianPhoneticName"},
                         true, // TODO make ICASE configurable
                         type2,
-                        spsItem.getString(Tags.PerformingPhysicianName));
+                        spsItem.getString(Tags.ScheduledPerformingPhysicianName));
         }
         sqlBuilder.addWildCardMatch(null, "MWLItem.requestedProcedureId",
                 SqlBuilder.TYPE1,

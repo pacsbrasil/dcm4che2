@@ -305,7 +305,7 @@ public abstract class MWLItemBean implements EntityBean {
             spsItem.getDateTime(Tags.SPSStartDate, Tags.SPSStartTime));
         setScheduledStationAET(spsItem.getString(Tags.ScheduledStationAET));
         setScheduledStationName(spsItem.getString(Tags.ScheduledStationName));
-        PersonName pn = spsItem.getPersonName(Tags.PerformingPhysicianName);
+        PersonName pn = spsItem.getPersonName(Tags.ScheduledPerformingPhysicianName);
         if (pn != null) {
             setPerformingPhysicianName(toUpperCase(pn.toComponentGroupString(false)));
             PersonName ipn = pn.getIdeographic();
