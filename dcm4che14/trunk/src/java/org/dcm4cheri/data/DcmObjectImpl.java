@@ -2625,8 +2625,8 @@ abstract class DcmObjectImpl implements DcmObject {
             if (Tags.isPrivateCreatorDataElement(tag)) {
                 try {
                     // prevent duplicate and overwrite of existing private creator id
-                    if (contains(tag) || tagOfCreatorID(
-                            el.getString(srcCharSet), tag, false) != 0)
+                    if (contains(tag) || (!el.isEmpty() && tagOfCreatorID(
+                            el.getString(srcCharSet), tag, false) != 0))
                         continue;
                 } catch (DcmValueException e) {
                     // copy illegal Private Creator Data Element verbatim
