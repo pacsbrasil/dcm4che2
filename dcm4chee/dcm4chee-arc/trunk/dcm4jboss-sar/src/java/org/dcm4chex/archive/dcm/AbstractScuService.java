@@ -201,7 +201,7 @@ public abstract class AbstractScuService extends ServiceMBeanSupport {
             ExtNegotiation... extNegos) throws Exception {
         AEManager aeMgt = aeMgt();
         return openAssociation(aeMgt.findByAET(callingAET), 
-                aeMgt.findByAET(calledAET), asuids);
+                aeMgt.findByAET(calledAET), asuids, extNegos);
     }
 
     private ActiveAssociation openAssociation(AEDTO localAE, AEDTO remoteAE,
