@@ -5,6 +5,7 @@
     <xsl:template match="/hl7">
         <dataset>
             <attr tag="00080005" vr="CS">ISO_IR 100</attr>
+            <xsl:apply-templates select="MSH"/>
             <xsl:apply-templates select="PID"/>
         </dataset>
     </xsl:template>
