@@ -121,7 +121,6 @@
 						<br />
 						<input wicket:id="studyInstanceUID" id="studyInstanceUID" type="text" class="uid" />
 					</td>
-					
 					<td colspan="2">
 						<div wicket:id="seriesInstanceUID.label" class="search-header">Series Instance UID</div>
 						<br />
@@ -130,6 +129,7 @@
 						<label for="exactSeriesIuid" wicket:id="exactSeriesIuid.label">Exact series Iuid</label>
 					</td>
 					<td></td>
+                    <td></td>
 				</tr>
 			    <tr class="search-table-footer" wicket:id="searchFooter">
 					<td class="lu"></td>
@@ -145,10 +145,14 @@
 					<td colspan="2">
 					</td>
 	                <td colspan="2" class="queryType">
-	                    <label for="queryType" wicket:id="queryType.label">search for</label>
-	                    <select id="queryType" wicket:id="queryType" />
-	                    <label for="autoExpandLevel" wicket:id="autoExpandLevel.label">expand</label>
-	                    <select id="autoExpandLevel" wicket:id="autoExpandLevel" />
+                    <span style="white-space: nowrap;">
+                        <label for="queryType" wicket:id="queryType.label">search for</label>
+                        <select id="queryType" wicket:id="queryType" />
+	                </span>
+                    <span style="white-space: nowrap;">
+                        <label for="autoExpandLevel" wicket:id="autoExpandLevel.label">expand</label>
+                        <select id="autoExpandLevel" wicket:id="autoExpandLevel" />
+	                </span>
 	                </td>
 					<td style="text-align: right;">
 						<button wicket:id="resetBtn">
