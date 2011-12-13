@@ -406,10 +406,8 @@ public class StudyListPage extends Panel {
         
         form.addInternalLabel("modality");
         form.addInternalLabel("sourceAET");
-        
         form.addDropDownChoice("modality", null, new Model<ArrayList<String>>(new ArrayList(WebCfgDelegate.getInstance().getModalityList())), 
                 enabledModel, false).setModelObject("*");
-        form.addLabeledCheckBox("exactModalitiesInStudy", null);
         List<String> aetChoices = viewport.getAetChoices();
         if (aetChoices.size() > 0)
             form.addDropDownChoice("sourceAET", null, new Model<ArrayList<String>>(new ArrayList(aetChoices)), enabledModel, false)
@@ -417,6 +415,9 @@ public class StudyListPage extends Panel {
         else
             form.addDropDownChoice("sourceAET", null, new Model<ArrayList<String>>(new ArrayList(aetChoices)), new Model<Boolean>(false), false)
             .setNullValid(true);
+
+        searchTableComponents.add(form.createAjaxParent("exactModalities"));
+        form.addLabeledCheckBox("exactModalitiesInStudy", null);        
         
         final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
 

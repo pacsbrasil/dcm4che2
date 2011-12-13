@@ -94,17 +94,22 @@
 					<td class="modality">
 						<div wicket:id="modality.label" class="search-header">Modality</div>
 				      	<select wicket:id="modality" class="modality" />
-						<input type="checkbox" id="exactModalitiesInStudy" wicket:id="exactModalitiesInStudy" />
-						<label for="exactModalitiesInStudy" wicket:id="exactModalitiesInStudy.label" style="padding-right: 10px;">exact</label>
+                    </td>
+                    <td class="modality">
+                        <div wicket:id="sourceAET.label" class="search-header">Source AET</div>
+                        <select wicket:id="sourceAET" />
 					</td>
-					<td></td>
-					<td>
-						<div wicket:id="sourceAET.label" class="search-header">Source AET</div>
-						<select wicket:id="sourceAET" />
-					</td>
-					<td colspan="5"></td>
+					<td colspan="6"></td>
 					<td></td>
 				</tr>
+                <tr wicket:id="exactModalities" class="search-table">
+                    <td></td>
+                    <td style="text-align: left;" colspan="8">
+                        <input type="checkbox" id="exactModalitiesInStudy" wicket:id="exactModalitiesInStudy" />
+                        <label for="exactModalitiesInStudy" wicket:id="exactModalitiesInStudy.label" style="padding-right: 10px;">exact</label>
+                    </td>
+                    <td></td>
+                </tr>
 	             <tr wicket:id="extendedFilter" class="search-table-extended">
 		            <td></td>
 		            <td colspan="2">
