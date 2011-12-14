@@ -1243,22 +1243,29 @@ public class XDSIService extends ServiceMBeanSupport {
     }
 
     private void onIAN(Dataset mpps) {
-        log.debug("Received mpps");log.debug(mpps);
-        if (Arrays.asList(autoPublishAETs).indexOf(
-                mpps.getString(Tags.PerformedStationAET)) != -1) {
-            List iuids = getIUIDS(mpps);
-            log.debug("iuids:"+iuids);
-            Dataset manifest = getKeyObject(iuids, getAutoPublishRootInfo(mpps), null);
-            log.debug("Created manifest KOS:");
-            log.debug(manifest);
-            try {
-                sendSOAP(manifest, getAutoPublishMetadataProperties(mpps));
-            } catch (SQLException x) {
-                log.error("XDS-I Autopublish failed! Reason:",x );
+        try {
+            log.debug("Received mpps");
+            log.debug(mpps);
+
+            String aet = mpps.getString(Tags.PerformedStationAET);
+            List autoPublish = Arrays.asList(autoPublishAETs);
+            if (autoPublish.indexOf(aet) != -1) {
+                List iuids = getIUIDS(mpps);
+                log.debug("iuids:" + iuids);
+                Dataset manifest = getKeyObject(iuids, getAutoPublishRootInfo(mpps), null);
+                log.debug("Created manifest KOS:");
+                log.debug(manifest);
+                try {
+                    sendSOAP(manifest, getAutoPublishMetadataProperties(mpps));
+                } catch (SQLException x) {
+                    log.error("XDS-I Autopublish failed! Reason:", x);
+                }
+                return;
             }
-            return;
+        } catch (Exception e) {
+            log.error("Error in onIAN:" + e);
+            log.debug("Exception:", e);
         }
-        // TODO        
     }
 
     private List getIUIDS(Dataset mpps) {
@@ -1269,14 +1276,16 @@ public class XDSIService extends ServiceMBeanSupport {
             DcmElement refSopSQ;
             for ( int i = 0 ,len = refSerSQ.countItems() ; i < len ; i++){
                 refSopSQ = refSerSQ.getItem(i).get(Tags.RefImageSeq);
-                for ( int j = 0 ,len1 = refSerSQ.countItems() ; j < len1 ; j++){
+                for ( int j = 0 ,len1 = refSopSQ.countItems() ; j < len1 ; j++){
                     item = refSopSQ.getItem(j);
+                    log.debug("refSerItem:" + i + " refSopItem:" + j + " item:" + item);
                     l.add( item.getString(Tags.RefSOPInstanceUID));
                 }
             }
         }
         return l;
     }
+
     private Dataset getAutoPublishRootInfo(Dataset mpps) {
         Dataset rootInfo = DcmObjectFactory.getInstance().newDataset();
         DcmElement sq = rootInfo.putSQ(Tags.ConceptNameCodeSeq);
