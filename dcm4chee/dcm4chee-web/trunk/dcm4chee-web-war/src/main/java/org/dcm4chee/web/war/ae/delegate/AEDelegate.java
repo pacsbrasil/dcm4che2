@@ -38,20 +38,13 @@
 
 package org.dcm4chee.web.war.ae.delegate;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.management.Attribute;
 import javax.management.ObjectName;
-import javax.servlet.http.HttpServletRequest;
 
-import org.apache.wicket.RequestCycle;
-import org.apache.wicket.protocol.http.WebRequestCycle;
 import org.dcm4che2.audit.message.AuditEvent;
-import org.dcm4che2.audit.message.AuditMessage;
-import org.dcm4che2.audit.message.SecurityAlertMessage;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;

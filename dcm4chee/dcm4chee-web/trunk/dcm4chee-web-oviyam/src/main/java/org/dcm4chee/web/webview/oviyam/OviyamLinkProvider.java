@@ -57,9 +57,9 @@ public class OviyamLinkProvider extends WebviewerLinkProviderSPI {
     @Override
     public void setBaseURL(String baseUrl) {
         if ( baseUrl != null) {
-            this.baseUrl = baseUrl;
-            if (this.baseUrl.indexOf("?") == -1) {
-                this.baseUrl += "?";
+            OviyamLinkProvider.baseUrl = baseUrl;
+            if (OviyamLinkProvider.baseUrl.indexOf("?") == -1) {
+                OviyamLinkProvider.baseUrl += "?";
             }
         }
     }

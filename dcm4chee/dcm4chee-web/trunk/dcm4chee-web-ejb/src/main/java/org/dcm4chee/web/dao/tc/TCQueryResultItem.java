@@ -47,6 +47,9 @@ import org.dcm4chee.archive.entity.Instance;
  * @since May 04, 2011
  */
 public class TCQueryResultItem implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     private Instance instance;
 
     private String fileId;

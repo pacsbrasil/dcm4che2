@@ -58,9 +58,9 @@ public class WeasisLinkProvider extends WebviewerLinkProviderSPI {
     @Override
     public void setBaseURL(String baseUrl) {
         if (baseUrl != null) {
-            this.baseUrl = baseUrl;
-            if (this.baseUrl.indexOf("?") == -1) {
-                this.baseUrl += "?";
+            WeasisLinkProvider.baseUrl = baseUrl;
+            if (WeasisLinkProvider.baseUrl.indexOf("?") == -1) {
+                WeasisLinkProvider.baseUrl += "?";
             }
         }
     }

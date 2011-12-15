@@ -52,6 +52,9 @@ import org.dcm4chee.archive.entity.Code;
  * @since May 06, 2011
  */
 public abstract class TCQueryFilterValue<T> implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    
     private T value;
 
     public TCQueryFilterValue(T value) {
@@ -71,7 +74,11 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
             StringBuilder sb);
 
     public static TCQueryFilterValue<String> create(String value) {
+        
         return new TCQueryFilterValue<String>(value) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public QueryParam[] appendSQLWhereConstraint(TCQueryFilterKey key,
                     StringBuilder sb) {
@@ -128,7 +135,11 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
     }
 
     public static TCQueryFilterValue<Code> create(Code code) {
+        
         return new TCQueryFilterValue<Code>(code) {
+
+            private static final long serialVersionUID = 1L;
+
             @Override
             public QueryParam[] appendSQLWhereConstraint(TCQueryFilterKey key,
                     StringBuilder sb) {
@@ -189,7 +200,11 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
     }
 
     public static TCQueryFilterValue<DicomCodeEnum> create(DicomCodeEnum value) {
+        
         return new TCQueryFilterValue<DicomCodeEnum>(value) {
+            
+            private static final long serialVersionUID = 1L;
+
             @Override
             public QueryParam[] appendSQLWhereConstraint(TCQueryFilterKey key,
                     StringBuilder sb) {
@@ -229,7 +244,11 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
 
     public static TCQueryFilterValue<DicomStringEnum> create(
             DicomStringEnum value) {
+        
         return new TCQueryFilterValue<DicomStringEnum>(value) {
+            
+            private static final long serialVersionUID = 1L;
+
             @Override
             public QueryParam[] appendSQLWhereConstraint(TCQueryFilterKey key,
                     StringBuilder sb) {

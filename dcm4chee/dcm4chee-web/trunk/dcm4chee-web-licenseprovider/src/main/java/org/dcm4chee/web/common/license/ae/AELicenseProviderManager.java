@@ -89,8 +89,6 @@ public class AELicenseProviderManager implements Serializable {
     
     private class NOPLicenseProvider implements AELicenseProviderSPI {
 
-        private static final long serialVersionUID = 1L;
-        
         public String getName() {
             return "NOPLicenseProvider";
         }

@@ -49,8 +49,6 @@ import org.dcm4chee.web.common.license.ae.spi.AELicenseProviderSPI;
  */
 public class AELicenseProvider implements AELicenseProviderSPI {
 
-    private static final long serialVersionUID = 1L;
-
     public String getName() {
         return "AELicenseProvider";
     }
