@@ -95,12 +95,12 @@ public class DynamicLinkPanel extends Panel {
             }))
             .add(new Image("image")
             .add(new ImageSizeBehaviour())
-            .add(new AttributeModifier("src", true, new AbstractReadOnlyModel() {
+            .add(new AttributeModifier("src", true, new AbstractReadOnlyModel<CharSequence>() {
     
                 private static final long serialVersionUID = 1L;
     
                 @Override
-                public Object getObject() {
+                public CharSequence getObject() {
                     return (link instanceof org.dcm4chee.dashboard.ui.report.DynamicLinkPanel.CreateOrEditReportLink) ? 
                         (report == null || report.getGroupUuid() == null) ? 
                                 getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_REPORT_ADD) :
