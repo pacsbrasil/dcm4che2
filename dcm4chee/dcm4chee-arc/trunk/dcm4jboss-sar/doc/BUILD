@@ -18,12 +18,12 @@ application)
 
 dcm4chee-2.17.1 archive also relies on
 
-- dcm4che-1.4.30 : DICOM Library
+- dcm4che-1.4.31 : DICOM Library
 
 which binary and source distribution package is also available at
 http://sourceforge.net/projects/dcm4che. The binary package is sufficient to
 build dcm4chee archive. If you download the source package, you have to build
-all components of dcm4che-1.4.27 (ant release) before building dcm4chee-2.17.1.
+all components of dcm4che-1.4.31 (ant release) before building dcm4chee-2.17.1.
 
 dcm4chee-2.17.1 archive also make use of
 
@@ -75,10 +75,10 @@ Create an environment variable pointing to the Ant home directory (ANT_HOME)
 and add the $ANT_HOME/bin directory to your PATH.
 
 The build scripts (dcm4jboss-all/dcm4jboss-xxx/build.xml) assumes following
-locations of dcm4che-1.4.27, XDoclet, JBoss, Apache FOP, Jakarta Cactus and
+locations of dcm4che-1.4.31, XDoclet, JBoss, Apache FOP, Jakarta Cactus and
 your local Maven2 Repository:
 
-dcm4che14.home=${user.home}/dcm4che14/build/dcm4che-1.4.30
+dcm4che14.home=${user.home}/dcm4che14/build/dcm4che-1.4.31
 xdoclet.home=${user.home}/xdoclet-1.2.3
 jboss.home=${user.home}/jboss-4.2.3.GA
 fop.home=${user.home}/fop-0.95
