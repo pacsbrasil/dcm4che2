@@ -16,12 +16,12 @@ DB2 8.1+
 Firebird 2.1
 Hypersonic SQL (Embedded in JBoss AS) - not suitable for production use!
 
-For image compression/decompression, dcm4chee 2.17.0 utilize Sun's Java Advanced
+For image compression/decompression, dcm4chee 2.17.1 utilize Sun's Java Advanced
 Imaging Image I/O Tools 1.1. The binary distribution packages of dcm4chee
-2.17.0 already includes necessary JARs and native libraries for Windows and
+2.17.1 already includes necessary JARs and native libraries for Windows and
 Linux i586. For Linux-amd64 or Solaris, you have to download the SW package
 from Sun [https://jai-imageio.dev.java.net/binary-builds.html] yourself and
-replace the Linux version of libclib_jiio.so in dcm4chee-2.17.0-xxx/bin/native
+replace the Linux version of libclib_jiio.so in dcm4chee-2.17.1-xxx/bin/native
 from the JAI Image IO package for Linux-amd64 or Solaris.
 
 For MAC OS X there is no native Image I/O implementation available. There is an 
@@ -41,13 +41,13 @@ as installation directory.
 from http://labs.jboss.com/jbossas/downloads and extract it into a different
 directory.
 
-3. Move to the dcm4chee-2.17.0-xxx/bin directory and execute the
+3. Move to the dcm4chee-2.17.1-xxx/bin directory and execute the
 install_jboss.bat or install_jboss.sh script, as appropriate for your operating
 system, with the path of your JBoss AS installation directory as parameter.
 
 4. [4.-6. are not necessary with Hypersonic SQL] Install the Database SW - if
 not already done. You also have to copy an apropriate JDBC Driver for the
-Database to dcm4chee-2.17.0-xxx/server/default/lib/ - except for MySQL and
+Database to dcm4chee-2.17.1-xxx/server/default/lib/ - except for MySQL and
 PostgreSQL, which binary distribution packages of dcm4chee already contains a
 JDBC driver. Also ensure, that DB access via TCP/IP socket is enabled.
 E.g. PostgresSQL:
@@ -57,34 +57,34 @@ $PGDATA/pg_hba.conf:
 host    all         all         127.0.0.1/32          trust
 
 5. Initiate the archive database instance: pacsdb using create DDL script
-dcm4chee-2.17.0-xxx/sql/create.xxx.
+dcm4chee-2.17.1-xxx/sql/create.xxx.
 
 E.g.: PostgreSQL
 > export PGUSER=postgres
 > createdb pacsdb
-> psql pacsdb -f dcm4chee-2.17.0-psql/sql/create.psql
+> psql pacsdb -f dcm4chee-2.17.1-psql/sql/create.psql
 
 E.g.: MySQL
 > mysql -uroot
 mysql> create database pacsdb;
 mysql> grant all on pacsdb.* to 'pacs'@'localhost' identified by 'pacs';
 mysql> \q
-> mysql -upacs -ppacs pacsdb < dcm4chee-2.17.0-mysql/sql/create.mysql
+> mysql -upacs -ppacs pacsdb < dcm4chee-2.17.1-mysql/sql/create.mysql
 
 6. Adjust the Database connection configuration (host, port, DB name, user
 password) of the archive:
 
-dcm4chee-2.17.0-xxx/server/default/deploy/pacs-xxx-ds.xml
+dcm4chee-2.17.1-xxx/server/default/deploy/pacs-xxx-ds.xml
 
 according your Database configuration. 
 
 7. Set environment variable JAVA_HOME to JDK location.
 
 8. Adjust maximum allocation of heap memory: 
-[Windows]: dcm4chee-2.17.0-xxx/bin/run.bat:
+[Windows]: dcm4chee-2.17.1-xxx/bin/run.bat:
 rem Sun JVM memory allocation pool parameters. Modify as appropriate.
 set JAVA_OPTS=%JAVA_OPTS% -Xms128m -Xmx512m
-[Linux/Unix/MAC OS X]: dcm4chee-2.17.0-xxx/bin/run.conf
+[Linux/Unix/MAC OS X]: dcm4chee-2.17.1-xxx/bin/run.conf
 # Specify options to pass to the Java VM.
 if [ "x$JAVA_OPTS" = "x" ]; then
    JAVA_OPTS="-Xms128m -Xmx512m ..
@@ -119,7 +119,7 @@ and $DCM4CHEE_HOME/server/default/conf/xmdesc/dcm4chee-wado-xmbean.xml:
        </descriptors>
     </attribute>
 
-9. To test your installation, move to the dcm4chee-2.17.0-xxx/bin directory
+9. To test your installation, move to the dcm4chee-2.17.1-xxx/bin directory
 and execute the run.bat or run.sh script, as appropriate for your operating
 system. Your output should look like the following and contain no error or
 exception messages:
@@ -128,7 +128,7 @@ exception messages:
 
   JBoss Bootstrap Environment
 
-  JBOSS_HOME: /home/gunter/dcm4chee-2.17.0-psql
+  JBOSS_HOME: /home/gunter/dcm4chee-2.17.1-psql
 
   JAVA: /usr/lib/jvm/java-6-sun/bin/java
 
@@ -136,9 +136,9 @@ exception messages:
    -Dsun.rmi.dgc.client.gcInterval=3600000
    -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.awt.headless=true
    -Dapp.name=dcm4chee -Djava.net.preferIPv4Stack=true
-   -Djava.library.path=/home/gunter/dcm4chee-2.17.0-psql/bin/native
+   -Djava.library.path=/home/gunter/dcm4chee-2.17.1-psql/bin/native
 
-  CLASSPATH: /home/gunter/dcm4chee-2.17.0-psql/bin/run.jar:
+  CLASSPATH: /home/gunter/dcm4chee-2.17.1-psql/bin/run.jar:
    /usr/lib/jvm/java-6-sun/lib/tools.jar
 
 =========================================================================
@@ -150,9 +150,9 @@ exception messages:
 17:19:11,496 INFO  [Server] JBoss (MX MicroKernel) [4.2.3.GA
  (build: SVNTag=JBoss_4_2_3_GA date=200807181439)] Started in 21s:919ms
 
-10. Connect to the Web Interface at http://localhost:8080/dcm4chee-web/
+10. Connect to the Web Interface at http://localhost:8080/dcm4chee-web3/
 of the archive using any Web Browser (most tested are Mozilla-Firefox and
-Microsoft Internet Explorer v6.x). You should get the User Login Screen.
+Microsoft Internet Explorer v8.x). You should get the User Login Screen.
 Login in using default Administrator account 'admin', with password 'admin'.
 
 11. Connect to JBoss's JMX Console at http://localhost:8080/jmx-console/ and
@@ -167,7 +167,7 @@ the directory, where the Storage SCP Service shall store received
 objects/images.
 
 (If no Storage File System is configured, the archive will auto-configure
-dcm4chee-2.17.0-xxx/server/default/archive as Storage File System, when
+dcm4chee-2.17.1-xxx/server/default/archive as Storage File System, when
 receiving the first object/image)
 
 12. [Optional] Change the default AE Title
@@ -192,8 +192,8 @@ of archived images requested by Web Access to DICOM Persistent Objects (WADO)
 can be specified by attributes "CacheDataRootDirectory" and 
 "CacheJournalRootDirectory" in the configuration page for the WADO Service
 (service=WADOService).
-Defaults: dcm4chee-2.17.0-xxx/server/default/wadocachedata and 
-          dcm4chee-2.17.0-xxx/server/default/wadocachejournal.
+Defaults: dcm4chee-2.17.1-xxx/server/default/wadocachedata and 
+          dcm4chee-2.17.1-xxx/server/default/wadocachejournal.
 
 The directory used for caching generated PDF representations of archived
 Structured Report Documents requested by IHE Retrieve Information for Display
@@ -206,7 +206,7 @@ send utility of the dcm4che 2.0 core package available at Sourceforge
 
 > dcm4che-2.0.21/bin/dcmsnd DCM4CHEE@localhost:11112 ~/mesa/storage/modality/MR
 
-Refresh the Web Interface (http://localhost:8080/dcm4chee-web/), which shall 
+Refresh the Web Interface (http://localhost:8080/dcm4chee-web3/), which shall 
 now show the the list of received studies.
 
 Expand one study row to show contained series. Expand one of these series
@@ -248,20 +248,20 @@ For more information on launchd look at:
 http://developer.apple.com/macosx/launchd.html
 
 
-DEPLOY DCM4CHEE MEDIA CREATOR 2.17.0 with DCM4CHEE ARCHIVE:
+DEPLOY DCM4CHEE MEDIA CREATOR 2.17.1 with DCM4CHEE ARCHIVE:
 ==========================================================
 Starting with dcm4chee-2.13.0, Media Creator 2.x (dcm4chee-cdw-2.x) is
 no longer included in the binary distribution package of the archive
 application, but provided in a separate binary distribution package, also
 available at http://sourceforge.net/projects/dcm4che .
 
-You may deploy dcm4chee-cdw-2.17.0 in the same JBoss instance as dcm4che archive:
+You may deploy dcm4chee-cdw-2.17.1 in the same JBoss instance as dcm4che archive:
 
-1. Download and extract the binary distribution package of dcm4chee-cdw-2.17.0.
+1. Download and extract the binary distribution package of dcm4chee-cdw-2.17.1.
 
-2. Move to the dcm4chee-2.17.0-xxx/bin directory and execute the
+2. Move to the dcm4chee-2.17.1-xxx/bin directory and execute the
 install_cdw.bat or install_cdw.sh script, as appropriate for your operating
-system, with the path of the dcm4chee-cdw-2.17.0 installation directory as
+system, with the path of the dcm4chee-cdw-2.17.1 installation directory as
 parameter.
 
 
@@ -279,7 +279,7 @@ archive:
 jbossws-3.0.1-native-2.0.4.GA from http://www.jboss.org/jbossws/downloads
 and extract it into a different directory.
 
-3. Move to the dcm4chee-2.17.0-xxx/bin directory and execute the
+3. Move to the dcm4chee-2.17.1-xxx/bin directory and execute the
 install_xds.bat or install_xds.sh script, as appropriate for your operating
 system, with the path of the dcm4chee-xds-1.0.2 installation directory as
 parameter.
@@ -310,7 +310,7 @@ You may deploy dcm4chee-arr-3.0.11 in the same JBoss instance as dcm4che archive
 for the database of your choice for storage of audit records. - It may differ
 from the database used for dcm4chee archive.
 
-2. Move to the dcm4chee-2.17.0-xxx/bin directory and execute the
+2. Move to the dcm4chee-2.17.1-xxx/bin directory and execute the
 install_arr.bat or install_arr.sh script, as appropriate for your operating
 system, with the path of the dcm4chee-arr-3.0.11 installation directory as
 parameter.
