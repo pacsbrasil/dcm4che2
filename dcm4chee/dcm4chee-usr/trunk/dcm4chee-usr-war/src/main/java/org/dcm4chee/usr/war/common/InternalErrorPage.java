@@ -49,10 +49,9 @@ import org.dcm4chee.usr.war.pages.LoginPage;
  */
 public class InternalErrorPage extends WebPage {
     
-    @SuppressWarnings("unchecked")
-    public InternalErrorPage(){
+    public InternalErrorPage() {
 
-        Link backToLoginLink = new Link("back-to-login") {
+        Link<?> backToLoginLink = new Link<Object>("back-to-login") {
 
             private static final long serialVersionUID = 1L;
 

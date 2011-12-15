@@ -47,21 +47,20 @@ import org.dcm4chee.usr.war.pages.LoginPage;
  * @version $Revision$ $Date$
  * @since 28.09.2009
  */
-public class PageExpiredErrorPage extends WebPage
-{
-  @SuppressWarnings("unchecked")
-public PageExpiredErrorPage()
-  {
-      Link backToLoginLink = new Link("back-to-login") {
+public class PageExpiredErrorPage extends WebPage {
+    
+    public PageExpiredErrorPage() {
+        
+        Link<?> backToLoginLink = new Link<Object>("back-to-login") {
 
-          private static final long serialVersionUID = 1L;
+            private static final long serialVersionUID = 1L;
 
-          @Override
-          public void onClick() {
-              this.getSession().invalidateNow();
-              setResponsePage(LoginPage.class);
-          }
-      };
-      add(backToLoginLink);
-  }
+            @Override
+            public void onClick() {
+                this.getSession().invalidateNow();
+                setResponsePage(LoginPage.class);
+            }
+        };
+        add(backToLoginLink);
+    }
 }
