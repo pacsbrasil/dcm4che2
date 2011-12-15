@@ -9,7 +9,7 @@
    <property file="../build.properties" />
 
    <property name="name" value="dcm4che"/>
-   <property name="version" value="1.4.30"/>
+   <property name="version" value="1.4.31"/>
 
    <property name="javac.debug" value="on"/>
    <property name="javac.deprecation" value="off"/>
