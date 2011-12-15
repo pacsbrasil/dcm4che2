@@ -70,7 +70,6 @@ public final class AttributeFilter {
     private int[] tags = {};
     private int[] noCoercion = {};
     private int[] iCase = {};
-    private int[] vrs = {};
     private int[] fieldTags = {};
     private String[] fields = {};
     private final String tsuid;
