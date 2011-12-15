@@ -39,7 +39,6 @@
 package org.dcm4chee.web.common.model;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
