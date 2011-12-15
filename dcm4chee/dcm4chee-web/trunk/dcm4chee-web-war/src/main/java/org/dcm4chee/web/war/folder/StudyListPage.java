@@ -406,14 +406,14 @@ public class StudyListPage extends Panel {
         
         form.addInternalLabel("modality");
         form.addInternalLabel("sourceAET");
-        form.addDropDownChoice("modality", null, new Model<ArrayList<String>>(new ArrayList(WebCfgDelegate.getInstance().getModalityList())), 
+        form.addDropDownChoice("modality", null, new Model<ArrayList<String>>(new ArrayList<String>(WebCfgDelegate.getInstance().getModalityList())), 
                 enabledModel, false).setModelObject("*");
         List<String> aetChoices = viewport.getAetChoices();
         if (aetChoices.size() > 0)
-            form.addDropDownChoice("sourceAET", null, new Model<ArrayList<String>>(new ArrayList(aetChoices)), enabledModel, false)
+            form.addDropDownChoice("sourceAET", null, new Model<ArrayList<String>>(new ArrayList<String>(aetChoices)), enabledModel, false)
             .setModelObject(aetChoices.get(0));
         else
-            form.addDropDownChoice("sourceAET", null, new Model<ArrayList<String>>(new ArrayList(aetChoices)), new Model<Boolean>(false), false)
+            form.addDropDownChoice("sourceAET", null, new Model<ArrayList<String>>(new ArrayList<String>(aetChoices)), new Model<Boolean>(false), false)
             .setNullValid(true);
 
         searchTableComponents.add(form.createAjaxParent("exactModalities"));
@@ -591,14 +591,14 @@ public class StudyListPage extends Panel {
         });
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void addNavigation(final BaseForm form) {
 
         Button resetBtn = new AjaxButton("resetBtn") {
             
             private static final long serialVersionUID = 1L;
 
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings({ "unchecked", "rawtypes" })
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
 
@@ -995,15 +995,6 @@ public class StudyListPage extends Panel {
         confirmUnlinkMpps = new ConfirmationWindow<PPSModel>("confirmUnlink") {
  
             private static final long serialVersionUID = 1L;
-
-            private transient ContentEditDelegate delegate;
-                       
-            private ContentEditDelegate getDelegate() {
-                if (delegate == null) {
-                    delegate = ContentEditDelegate.getInstance();
-                }
-                return delegate;
-            }
 
             @Override
             public void onOk(AjaxRequestTarget target) {

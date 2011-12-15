@@ -58,7 +58,6 @@ import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
-import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
@@ -105,13 +104,13 @@ public class EditDicomObjectPanel extends Panel {
             add(CSSPackageResource.getHeaderContribution(EditDicomObjectPanel.BaseCSS));
         
         add(mw);
-        IModel<String> title = new ResourceModel("dicom.edit.title."+attrModelName).wrapOnAssignment(this);
+        
         try {
-            title.getObject();
+            add(new Label("title", new ResourceModel("dicom.edit.title."+attrModelName)));    
         } catch (Exception x) {
-            title = new Model<String>("DICOM Edit");
+            add(new Label("title", new Model<String>("DICOM Edit")));
         }
-        add(new Label("title", title));
+        
         add(new AjaxCheckBox("allowAll", new PropertyModel<Boolean>(editable, "allowAll")) {
             private static final long serialVersionUID = 1L;
 
