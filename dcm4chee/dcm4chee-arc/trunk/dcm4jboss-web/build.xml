@@ -28,7 +28,7 @@
 
     <!-- Override with your dcm4che-1.4.x source dist location -->
     <property name="dcm4che14.home"
-      value="${user.home}/dcm4che14/build/dcm4che-1.4.30"/>
+      value="${user.home}/dcm4che14/build/dcm4che-1.4.31"/>
     <property name="dcm4che.jar" value="${dcm4che14.home}/lib/dcm4che.jar"/>
 
 	<!-- Override with your dcm4chee-ejb working directory -->
