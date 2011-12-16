@@ -32,6 +32,7 @@
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-dashboard-sar-auditlog</artifactId>
+      <classifier>config-xmbean</classifier>
       <type>xml</type>
       <version>3.0.1</version>
     </dependency>
@@ -136,7 +137,7 @@
   	<profile>
       <id>src</id>
 	  <activation>
-		<activeByDefault>true</activeByDefault>
+		<activeByDefault>false</activeByDefault>
 	  </activation>
 	  <build>
 	    <finalName>dcm4chee-web-${version}-src</finalName>
