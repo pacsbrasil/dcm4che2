@@ -47,7 +47,7 @@
       <outputDirectory>server/default/conf/auditlog</outputDirectory>
       <outputFileNameMapping>web3-dashboard-xmbean.xml</outputFileNameMapping>
       <includes>
-        <include>dcm4che.dcm4chee:dcm4chee-dashboard-sar-auditlog:xml</include>
+        <include>dcm4che.dcm4chee:dcm4chee-dashboard-sar-auditlog:xml:config-xmbean</include>
       </includes>
     </dependencySet>
     <dependencySet>
