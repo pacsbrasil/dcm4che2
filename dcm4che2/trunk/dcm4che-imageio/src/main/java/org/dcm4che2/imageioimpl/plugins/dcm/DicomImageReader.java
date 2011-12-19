@@ -370,7 +370,7 @@ public class DicomImageReader extends ImageReader {
         reader.setInput(riis);
     }
 
-	protected int calculateFrameLength() {		
+	public int calculateFrameLength() {		
 		if (pmi.endsWith("422") || pmi.endsWith("420")){
 			int calcWidth = width;
 			int calcHeight = height;
