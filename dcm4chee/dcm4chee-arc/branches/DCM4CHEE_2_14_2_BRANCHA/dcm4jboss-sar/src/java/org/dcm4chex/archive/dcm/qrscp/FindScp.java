@@ -270,7 +270,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
         return Pattern.compile(sb.toString());
     }
 
-    private void setPID(Dataset rqData, String[] pid) {
+    protected void setPID(Dataset rqData, String[] pid) {
         rqData.putLO(Tags.PatientID, pid[PID]);
         rqData.putLO(Tags.IssuerOfPatientID, pid[ISSUER]);
     }
