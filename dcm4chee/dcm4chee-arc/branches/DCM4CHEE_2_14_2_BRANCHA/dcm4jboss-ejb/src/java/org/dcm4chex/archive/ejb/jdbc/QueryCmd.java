@@ -328,31 +328,39 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     private DcmElement getOtherPatientIdMatchSQ() {
         DcmElement otherPatIdSQ = keys.get(Tags.OtherPatientIDSeq);
-        if (otherPatIdSQ == null || !otherPatIdSQ.hasItems())
+        if (otherPatIdSQ == null || !otherPatIdSQ.hasItems()) {
             return null;
+        }
         StringBuffer sb = new StringBuffer();
         String patId = keys.getString(Tags.PatientID);
         if (checkMatchValue(patId, "Patient ID", sb)) {
             String issuer = keys.getString(Tags.IssuerOfPatientID);
             if (checkMatchValue(issuer, "Issuer of Patient ID", sb)) {
-                Dataset item;
-                for (int i = 0, len = otherPatIdSQ.countItems(); i < len; i++) {
-                    item = otherPatIdSQ.getItem(i);
-                    if (!checkMatchValue(item.getString(Tags.PatientID),
-                            "PatientID of item", sb)
-                            || !checkMatchValue(item
-                                    .getString(Tags.IssuerOfPatientID),
-                                    "Issuer of item", sb)) {
-                        break;
-                    }
+                DcmElement matchedOtherPatIdSQ = getMatchedOtherPatientIdSQ(otherPatIdSQ, sb);
+                if (matchedOtherPatIdSQ != null) {
+                    return matchedOtherPatIdSQ;
                 }
-                if (sb.length() == 0)
-                    return otherPatIdSQ;
             }
         }
         log.warn("Matching of items in OtherPatientIdSequence disabled! Reason: " + sb);
         otherPatientIDMatchNotSupported = true;
         return null;
+    }
+
+    protected DcmElement getMatchedOtherPatientIdSQ(DcmElement otherPatIdSQ, StringBuffer sb) {
+        Dataset item;
+        for (int i = 0, len = otherPatIdSQ.countItems(); i < len; i++) {
+            item = otherPatIdSQ.getItem(i);
+            if (!checkMatchValue(item.getString(Tags.PatientID),
+                    "PatientID of item", sb)
+                    || !checkMatchValue(item
+                                    .getString(Tags.IssuerOfPatientID),
+                                    "Issuer of item", sb)) {
+                return null;
+            }
+        }
+        
+        return otherPatIdSQ;
     }
 
     private void addListOfPatIdMatch(DcmElement otherPatIdSQ) {
@@ -376,7 +384,7 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         n.addMatch(n1);
     }
 
-    private boolean checkMatchValue(String value, String chkItem,
+    protected static boolean checkMatchValue(String value, String chkItem,
             StringBuffer sb) {
         if (value == null) {
             sb.append("Missing attribute ").append(chkItem);
