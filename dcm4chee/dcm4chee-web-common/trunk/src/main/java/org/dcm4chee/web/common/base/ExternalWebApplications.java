@@ -88,6 +88,8 @@ public class ExternalWebApplications implements Serializable {
                 HashMap<String, ExternalWebAppGroupPanel> grpPanels = new HashMap<String, ExternalWebAppGroupPanel>();
                 Model<String> titleModel;
                 while ((line = br.readLine()) != null) {
+                    if (line.length() == 0)
+                        continue;
                     if (line.charAt(0) != '#') {
                         pos1 = line.indexOf('=');
                         appTitle = line.substring(0, pos1++);
