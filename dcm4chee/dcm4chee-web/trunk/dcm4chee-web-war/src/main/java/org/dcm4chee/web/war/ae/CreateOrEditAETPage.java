@@ -109,7 +109,7 @@ public class CreateOrEditAETPage extends SecureWebPage {
         add(new WebMarkupContainer("edit-ae-title").setVisible(ae.getPk() != -1));
 
         setOutputMarkupId(true);
-        BaseForm form = new BaseForm("form");
+        final BaseForm form = new BaseForm("form");
         form.setResourceIdPrefix("ae.");
         add(form);
         CompoundPropertyModel<AE> model = new CompoundPropertyModel<AE>(ae);
@@ -134,6 +134,7 @@ public class CreateOrEditAETPage extends SecureWebPage {
 
             @Override
             protected void onValidate(IValidatable<String> validatable) {
+
                 String newType = validatable.getValue();
                 if ((ae.getPk() != -1) 
                         && (oldType == null ? newType == null : oldType.equals(newType)))
@@ -284,15 +285,47 @@ public class CreateOrEditAETPage extends SecureWebPage {
             private static final long serialVersionUID = 1L;
             
             @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {                
                 mw.show(target, ae);
             }
             
+            @SuppressWarnings("unchecked")
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-                mw.show(target, ae);
+
+                TextField<String> titleField = (TextField<String>) form.get("title");
+                TextField<String> hostNameField = (TextField<String>) form.get("hostName");
+                String title = titleField.getValue();
+                String hostName = hostNameField.getValue();
+
+                Integer ciphersuite1 = Integer.parseInt(((DropDownChoice<String>) form.get("ciphersuite1")).getValue());
+                Integer ciphersuite2 = Integer.parseInt(((DropDownChoice<String>) form.get("ciphersuite2")).getValue());
+                Integer ciphersuite3 = Integer.parseInt(((DropDownChoice<String>) form.get("ciphersuite3")).getValue());
+                
+                target.addComponent(titleField);
+                target.addComponent(hostNameField);
+                target.addComponent(form.get("ciphersuite1"));
+                target.addComponent(form.get("ciphersuite2"));
+                target.addComponent(form.get("ciphersuite3"));
+                
+                if ((title == null) || (hostName == null) 
+                        || (title.length() == 0) || (hostName.length() == 0)) 
+                    super.onError(target, form);
+                else {
+                    getSession().cleanupFeedbackMessages();
+                    ae.setTitle(title);
+                    ae.setHostName(hostName);
+
+                    List<String> suites = new ArrayList<String>();
+                    suites.add(CyphersuiteUtils.AVAILABLE_CIPHERSUITES.get(ciphersuite1));
+                    suites.add(CyphersuiteUtils.AVAILABLE_CIPHERSUITES.get(ciphersuite2));
+                    suites.add(CyphersuiteUtils.AVAILABLE_CIPHERSUITES.get(ciphersuite3));
+                    ae.setCipherSuites(suites);
+
+                    mw.show(target, ae);
+                }
             }
         });
         add(new Label("result-message", new Model<String>("")));
-    }
+    }    
  }

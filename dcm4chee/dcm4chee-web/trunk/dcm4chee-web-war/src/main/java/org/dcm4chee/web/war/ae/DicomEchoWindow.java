@@ -138,6 +138,8 @@ public class DicomEchoWindow extends ModalWindow {
     }
     
     private AE copyNetCfg(final AE aeSrc, final AE aeDest) {
+System.out.println("ECHO: aeSrc: " + aeSrc.getCipherSuites().size());
+System.out.println("ECHO: aeDest: " + aeDest.getCipherSuites().size());
         aeDest.setTitle(aeSrc.getTitle());
         aeDest.setHostName(aeSrc.getHostName());
         aeDest.setPort(aeSrc.getPort());
