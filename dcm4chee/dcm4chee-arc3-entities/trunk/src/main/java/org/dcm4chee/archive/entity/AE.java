@@ -155,17 +155,21 @@ public class AE extends BaseEntity implements Serializable {
     }
 
     public void setCipherSuites(List<String> suites) {
-        StringBuilder sb = new StringBuilder();
-        for (String s : suites) {
-            if (s != null) {
-                sb.append(s).append(',');
-            }
-        }
-        if (sb.length()>0) {
-            sb.setLength(sb.length()-1);
-            cipherSuites = sb.toString();
-        } else {
+        if (suites == null) 
             cipherSuites = null;
+        else {
+            StringBuilder sb = new StringBuilder();
+            for (String s : suites) {
+                if (s != null) {
+                    sb.append(s).append(',');
+                }
+            }
+            if (sb.length()>0) {
+                sb.setLength(sb.length()-1);
+                cipherSuites = sb.toString();
+            } else {
+                cipherSuites = null;
+            }
         }
     }
 
