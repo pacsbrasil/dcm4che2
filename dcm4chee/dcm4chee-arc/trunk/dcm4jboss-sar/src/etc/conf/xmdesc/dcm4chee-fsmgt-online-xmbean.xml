@@ -804,6 +804,14 @@
   </operation>
 
   <operation impact="ACTION">
+    <description><![CDATA[Switch to next Storage File System (mounted, available and sufficient disk space).<br />
+    		Return true if Storage File System has been changed.
+    	]]></description>
+    <name>switchFileSystem</name>
+    <return-type>boolean</return-type>
+  </operation>
+
+  <operation impact="ACTION">
     <description><![CDATA[Update value of attribute
       <i>ExpectedDataVolumePerDay</i>, if data volume received during last
       24 hours exceeds its current value.]]>

@@ -557,7 +557,6 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
             return null;
         }
         if (checkFreeDiskSpaceTime < System.currentTimeMillis()) {
-            noFreeDiskSpace = false;
             if (!(checkFreeDiskSpace(storageFileSystem)
                     || switchFileSystem(fsMgt, storageFileSystem))) {
                 log.error("High Water Mark reached on storage file system "
@@ -566,16 +565,27 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
                         + getFileSystemGroupID());
                 checkFreeDiskSpaceTime = System.currentTimeMillis()
                         + checkFreeDiskSpaceRetryInterval;
-                noFreeDiskSpace = true;
+                return null;
+            }
+        } else {
+            if (checkFS(storageFileSystem, " - check if storage FS is still available") == null && 
+                    !switchFileSystem(fsMgt, storageFileSystem)) {
+                log.error("Storage file system not available: " + storageFileSystem 
+                        + " - no alternative storage file found for file system group "
+                        + getFileSystemGroupID());
                 return null;
             }
         }
-        return noFreeDiskSpace ? null : storageFileSystem;
+        return storageFileSystem;
     }
 
     public File selectStorageDirectory() throws Exception {
         FileSystemDTO dto = selectStorageFileSystem();
         return dto != null ? FileUtils.toFile(dto.getDirectoryPath()) : null;
+    }
+    
+    public boolean switchFileSystem() throws Exception {
+        return switchFileSystem(fileSystemMgt(), storageFileSystem);
     }
 
     private synchronized boolean switchFileSystem(FileSystemMgt2 fsMgt,
