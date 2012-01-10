@@ -124,6 +124,7 @@ import org.apache.wicket.util.time.Duration;
 import org.dcm4che2.audit.message.AuditEvent;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.validator.AbstractValidator;
+import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4che2.data.DateRange;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.PersonName;
@@ -443,7 +444,9 @@ public class StudyListPage extends Panel {
             public boolean isEnabled() {
                 return !filter.isPatientQuery();
             }            
-        }.add(new UIDValidator(true)).add(new UIDFieldBehavior(form)));
+        }
+        .add(new PatternValidator("^[0-9]+(\\.[0-9]+)*$"))
+        .add(new UIDFieldBehavior(form)));
 
         extendedFilter.add( new Label("seriesInstanceUID.label", new ResourceModel("folder.extendedFilter.seriesInstanceUID.label")));
         extendedFilter.add( new TextField<String>("seriesInstanceUID") {
@@ -453,7 +456,10 @@ public class StudyListPage extends Panel {
             public boolean isEnabled() {
                 return !filter.isPatientQuery() && QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
             }
-        }.add(new UIDValidator(true)).add(new UIDFieldBehavior(form)));
+        }
+        .add(new PatternValidator("^[0-9]+(\\.[0-9]+)*$"))
+        .add(new UIDFieldBehavior(form)));
+        
         extendedFilter.add(new CheckBox("exactSeriesIuid"));
         extendedFilter.add(new Label("exactSeriesIuid.label", new ResourceModel("folder.extendedFilter.exactSeriesIuid.label")));
         form.add(extendedFilter);
