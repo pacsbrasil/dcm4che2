@@ -66,6 +66,7 @@ import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 import org.dcm4chee.dashboard.model.ReportModel;
+import org.dcm4chee.dashboard.model.MBeanValueModel;
 import org.dcm4chee.dashboard.model.SystemPropertyModel;
 import org.jboss.system.ServiceMBeanSupport;
 import org.slf4j.Logger;
@@ -88,6 +89,7 @@ public class DashboardService extends ServiceMBeanSupport {
     private String[] groupList = new String[0];
     private String[] otherList = new String[0];
     private String[] propertyList = new String[0];
+    private String[] mbeanValueList = new String[0];
 
     private String reportFilename = "";
     private String groupFilename = "";
@@ -136,6 +138,14 @@ public class DashboardService extends ServiceMBeanSupport {
         return arrayToString(this.propertyList);
     }
     
+    public void setMBeanValueList(String mbeanValueList) {
+        this.mbeanValueList = tokenize(mbeanValueList);
+    }
+
+    public String getMBeanValueList() {
+        return arrayToString(this.mbeanValueList);
+    }
+
     public void setReportFilename(String reportFilename) {
         this.reportFilename = reportFilename;
     }
@@ -230,6 +240,51 @@ public class DashboardService extends ServiceMBeanSupport {
             }
         }
         return propertyMap;
+    }
+
+    public List<MBeanValueModel> getMBeanValues() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
+
+        List<MBeanValueModel> mbeanValueList = new ArrayList<MBeanValueModel>();
+        for (String mbeanValue : this.mbeanValueList) {
+            try {
+                MBeanValueModel mbeanValueModel = 
+                        (MBeanValueModel) JSONObject.toBean(
+                                JSONObject.fromObject(mbeanValue), 
+                                MBeanValueModel.class);
+                try {
+                    Object value = null;
+                    if ("attribute".equals(mbeanValueModel.getType()))
+                        value = 
+                            this.server.getAttribute(
+                                    new ObjectName(mbeanValueModel.getDomain() + ":service=" + mbeanValueModel.getName()),
+                                    mbeanValueModel.getFunction());
+                    else if ("method".equals(mbeanValueModel.getType()))
+                        value = 
+                            this.server.invoke(
+                                    new ObjectName(mbeanValueModel.getDomain() + ":service=" + mbeanValueModel.getName()),
+                                    mbeanValueModel.getFunction(), 
+                                    null, null);
+                    mbeanValueModel.setResult(value);
+                } catch (Exception e) {
+                    log.error("Cant fetch value for " 
+                            + mbeanValueModel.getDomain() 
+                            + ":service=" 
+                            + mbeanValueModel.getName() 
+                            + " " + mbeanValueModel.getType() 
+                            + " " 
+                            + mbeanValueModel.getFunction(), e);
+                }
+                mbeanValueList.add(mbeanValueModel);
+            } catch (Exception e) {
+                log.error("Can't fetch mbean values: ", e);
+            }
+        }
+        Collections.sort(mbeanValueList);
+        return mbeanValueList;
+    }
+
+    public String[] listMBeanValues() throws MalformedObjectNameException, NullPointerException {
+        return this.mbeanValueList;
     }
 
     public ReportModel[] listAllReports(boolean groups) {

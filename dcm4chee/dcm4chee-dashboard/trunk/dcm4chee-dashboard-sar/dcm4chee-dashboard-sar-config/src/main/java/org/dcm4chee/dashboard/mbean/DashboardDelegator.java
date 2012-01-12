@@ -50,6 +50,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
+import org.dcm4chee.dashboard.model.MBeanValueModel;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.model.SystemPropertyModel;
 import org.jboss.mx.util.MBeanServerLocator;
@@ -133,6 +134,12 @@ public final class DashboardDelegator {
                         "getSystemProperties", null, null);
     }
     
+    public List<MBeanValueModel> getMBeanValues() throws InstanceNotFoundException, ReflectionException, MBeanException {
+        return (List<MBeanValueModel>) this.server.invoke(
+                        this.objectName, 
+                        "getMBeanValues", null, null);
+    }
+
     public ReportModel[] listAllReports(boolean groups) throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
         return (ReportModel[]) server.invoke(
                         this.objectName,

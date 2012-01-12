@@ -67,11 +67,15 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.markup.html.list.OddEvenListItem;
+import org.apache.wicket.markup.html.list.PropertyListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
+import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
+import org.dcm4chee.dashboard.model.MBeanValueModel;
 import org.dcm4chee.dashboard.model.SystemPropertyModel;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
@@ -99,6 +103,12 @@ public class SystemInfoPanel extends Panel {
         
         if (SystemInfoPanel.DashboardCSS != null)
             add(CSSPackageResource.getHeaderContribution(SystemInfoPanel.DashboardCSS));
+        
+        add(new Label("domainHdr.label", new ResourceModel("dashboard.systeminfo.domainHdr.label")));
+        add(new Label("nameHdr.label", new ResourceModel("dashboard.systeminfo.nameHdr.label")));
+        add(new Label("typeHdr.label", new ResourceModel("dashboard.systeminfo.typeHdr.label")));
+        add(new Label("functionHdr.label", new ResourceModel("dashboard.systeminfo.functionHdr.label")));
+        add(new Label("resultHdr.label", new ResourceModel("dashboard.systeminfo.resultHdr.label")));
     }
     
     @Override
@@ -194,6 +204,31 @@ public class SystemInfoPanel extends Panel {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             throw new WicketRuntimeException(e.getLocalizedMessage(), e);
+        }
+        
+        try {
+            List<MBeanValueModel> mbeanValueList = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).getMBeanValues();
+          
+            addOrReplace(new PropertyListView<MBeanValueModel>("mbean-value-rows", mbeanValueList) {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected ListItem<MBeanValueModel> newItem(final int index) {
+                    return new OddEvenListItem<MBeanValueModel>(index, getListItemModel(getModel(), index));
+                }
+
+                @Override
+                protected void populateItem(final ListItem<MBeanValueModel> item) {
+                    item.add(new Label("domain"));
+                    item.add(new Label("name"));
+                    item.add(new Label("type"));
+                    item.add(new Label("function"));
+                    item.add(new Label("result"));
+                }
+            });
+        } catch (Exception e) {
+            log.error("Can't create list for mbean values: ", e);
         }
     }
     

@@ -67,6 +67,25 @@ Operating system;Version;os.version
 Java;Version;java.version</value>
         </descriptors>
     </attribute>
+    <attribute access="read-write" getMethod="getMBeanValueList" setMethod="setMBeanValueList">
+        <description><![CDATA[
+            Represents mbean values to display, 
+            separated by newline, 
+            using json format, f.e.:
+            {
+                "domain":"dcm4chee.archive",
+                "name":"StudyMgtScu",
+                "type":"attribute",
+                "function":"MaxSize"
+            }<br />
+            domain is the MBean domain.<br />
+            name is the MBean name.<br />
+            type can be "attribute" or "method".<br />
+            function is the attribute or method name.]]>
+        </description>
+        <name>mbeanValueList</name>
+        <type>java.lang.String</type>
+    </attribute>
 	<attribute access="read-write" getMethod="getGroupFilename" setMethod="setGroupFilename">
         <description>
             Full path of file to contain the group declarations
@@ -162,6 +181,11 @@ Java;Version;java.version</value>
       <description>MBean Operation.</description>
       <name>getSystemProperties</name>
 	  <return-type>java.util.Map</return-type>
+   </operation>
+   <operation>
+      <description>MBean Operation.</description>
+      <name>getMBeanValues</name>
+      <return-type>java.util.List</return-type>
    </operation>
    <operation>
       <description>MBean Operation.</description>
