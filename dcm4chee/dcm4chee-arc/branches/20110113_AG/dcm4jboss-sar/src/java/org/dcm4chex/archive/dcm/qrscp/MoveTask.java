@@ -85,7 +85,7 @@ public class MoveTask implements Runnable {
 
     protected final Logger log;
 
-    private final String moveDest;
+    protected final String moveDest;
 
     private final AEDTO aeData;
 
@@ -183,7 +183,7 @@ public class MoveTask implements Runnable {
         this.sopClassUID = moveRqCmd.getAffectedSOPClassUID();
         this.total = fileInfo.length;
         this.remaining = total;
-        this.retrieveInfo = new RetrieveInfo(service, fileInfo);
+        this.retrieveInfo = createRetrieveInfo(fileInfo);
         this.remainingIUIDs = retrieveInfo.getAvailableIUIDs();
         this.failedIUIDs = retrieveInfo.getNotAvailableIUIDs();
         moveAssoc.addCancelListener(msgID, cancelListener);
@@ -191,6 +191,10 @@ public class MoveTask implements Runnable {
         if (service.getRetrieveRspStatusForNoMatchingInstanceToRetrieve() != Status.Success)
         	findInvalidUIDsInRequest(moveRqData, fileInfo);
     }
+    
+	protected RetrieveInfo createRetrieveInfo(FileInfo[][] fileInfo) {
+		return new RetrieveInfo(service, fileInfo);
+	}    
 
     protected ActiveAssociation openAssociation() throws Exception {
         AssociationFactory asf = AssociationFactory.getInstance();
@@ -338,7 +342,7 @@ public class MoveTask implements Runnable {
                         RetrieveCmd cmd = RetrieveCmd.create(moveRqData);
                         cmd.setFetchSize(service.getFetchSize());
                         FileInfo[][] fileInfo = cmd.getFileInfos();
-                        retrieveInfo = new RetrieveInfo(service, fileInfo);
+                        retrieveInfo = createRetrieveInfo(fileInfo);
                         localUIDs = retrieveInfo.removeLocalIUIDs();
                     }
                     if (!localUIDs.isEmpty()) {
