@@ -23,7 +23,7 @@
 	<!-- Override with your dcm4chee-sar dist location -->
 	<property name="dcm4chee-sar.home" value="../dcm4jboss-sar" />
 	<property name="dcm4chee.jar" value="${dcm4chee-sar.home}/target/lib/dcm4chee.jar" />
-	<property name="dcm4che-audit.jar" value="${dcm4chee-sar.home}/lib/dcm4che-audit-2.0.21.jar" />
+	<property name="dcm4che-audit.jar" value="${dcm4chee-sar.home}/lib/dcm4che-audit-2.0.25.jar" />
 	
 	<!-- Override with your JBoss/Web server bundle dist location -->
 	<property name="jboss.home" value="${user.home}/jboss-4.2.3.GA"/>
