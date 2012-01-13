@@ -204,7 +204,7 @@ file conf/dcm4chee-docstore/dcm4chee-docstore-cfg.xml (this file will not
 send utility of the dcm4che 2.0 core package available at Sourceforge
 (http://www.sourceforge.net/projects/dcm4che). E.g:
 
-> dcm4che-2.0.21/bin/dcmsnd DCM4CHEE@localhost:11112 ~/mesa/storage/modality/MR
+> dcm4che-2.0.25/bin/dcmsnd DCM4CHEE@localhost:11112 ~/mesa/storage/modality/MR
 
 Refresh the Web Interface (http://localhost:8080/dcm4chee-web/), which shall 
 now show the the list of received studies.
@@ -217,7 +217,7 @@ this image, which will be displayed in a separate browser window.
 16. To test object retrieval, you need an external Storage SCP acting as
 Move Destination, e.g. by using the receiver utility of the dcm4che 2.0 core:
 
-> dcm4che-2.0.21/bin/dcmrcv 11113
+> dcm4che-2.0.25/bin/dcmrcv 11113
 13:55:14,782 INFO   - Start listening on 0.0.0.0/0.0.0.0:11113
 Start Server listening on port 11113
 
