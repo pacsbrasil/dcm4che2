@@ -1246,6 +1246,12 @@ public interface DicomObject extends Serializable {
     void copyTo(DicomObject destination);
 
     /**
+     * @param destination
+	 * @param resolveDestinationPrivateTags
+     */
+    void copyTo(DicomObject destination, boolean resolveDestinationPrivateTags);
+
+    /**
      * @param keys
      * @param ignoreCaseOfPN
      * @return

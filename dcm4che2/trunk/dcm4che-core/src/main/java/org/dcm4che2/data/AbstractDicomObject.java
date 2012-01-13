@@ -59,16 +59,17 @@ abstract class AbstractDicomObject implements DicomObject {
         oos.writeObject(new ElementSerializer(this));
     }
 
-    public void copyTo(final DicomObject dest) {
+    public void copyTo(final DicomObject dest, final boolean resolveDestinationPrivateTags) {
         accept(new Visitor() {
             public boolean visit(DicomElement attr) {
                 int tag = attr.tag();
                 VR vr = attr.vr();
-                if (!TagUtils.isPrivateDataElement(tag))
+                if (!TagUtils.isPrivateDataElement(tag)  || (!resolveDestinationPrivateTags && TagUtils.isPrivateCreatorDataElement(tag)))
                     dest.add(attr);
                 else if (!TagUtils.isPrivateCreatorDataElement(tag)) {
-                    int destTag =
-                            dest.resolveTag(tag, getPrivateCreator(tag), true);
+                    int destTag = resolveDestinationPrivateTags 
+                                    ? dest.resolveTag(tag, getPrivateCreator(tag), true)
+                                    : tag;
                     if (attr.hasItems()) {
                         final int n = attr.countItems();
                         DicomElement t;
@@ -79,7 +80,7 @@ abstract class AbstractDicomObject implements DicomObject {
                                 BasicDicomObject item = new BasicDicomObject(
                                         srcItem.size());
                                 item.setParent(dest);
-                                srcItem.copyTo(item);
+                                srcItem.copyTo(item, resolveDestinationPrivateTags);
                                 t.addDicomObject(item);
                             }
                         } else {
@@ -94,6 +95,10 @@ abstract class AbstractDicomObject implements DicomObject {
                 return true;
             }
         });
+    }
+
+    public void copyTo(final DicomObject dest) {
+        copyTo(dest, true);
     }
 
     public boolean containsAll(final DicomObject keys) {

@@ -166,6 +166,10 @@ public class DicomObjects {
             dcmobj.copyTo(destination);
         }
 
+        public void copyTo(DicomObject destination, boolean resolveDestinationPrivateTags) {
+            dcmobj.copyTo(destination, resolveDestinationPrivateTags);
+        }
+
         public DicomObject dataset() {
             return new UnmodifiableDicomObject(dcmobj.dataset());
         }
