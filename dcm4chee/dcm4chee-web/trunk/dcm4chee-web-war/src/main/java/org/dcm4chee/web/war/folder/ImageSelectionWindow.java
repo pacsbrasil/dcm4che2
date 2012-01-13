@@ -44,6 +44,7 @@ import java.util.List;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.ajax.markup.html.navigation.paging.AjaxPagingNavigator;
 import org.apache.wicket.behavior.AbstractBehavior;
@@ -259,7 +260,18 @@ public class ImageSelectionWindow extends ModalWindow {
                 }
             }.setOutputMarkupId(true));
             datacontainer.setVersioned(false);
+
+            add(new AjaxFallbackLink<Object>("okBtn"){
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    close(target);
+                }
+            }.add(new Label("okBtn.label", new ResourceModel("folder.imageselect.okBtn.label"))));
         }
+        
         private final class InstanceListView extends PageableListView<InstanceModel> {
             private static final long serialVersionUID = 1L;
 

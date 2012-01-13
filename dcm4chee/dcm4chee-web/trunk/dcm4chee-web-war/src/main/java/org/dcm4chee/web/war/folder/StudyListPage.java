@@ -328,7 +328,6 @@ public class StudyListPage extends Panel {
             private static final long serialVersionUID = 1L;
 
             public void onClose(AjaxRequestTarget target) {
-                if (imageSelectionWindow.isSelectionChanged())
                     target.addComponent(form);
             }            
         });
