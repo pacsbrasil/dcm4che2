@@ -118,7 +118,6 @@
       <descriptors>
          <value value="
          	pat_upd=resource:xsl/pat_upd.xsl
-         	pat_mrg=resource:xsl/pat_mrg.xsl
          	mpps2orm=mpps2orm.xsl|14" />
       </descriptors>
    </attribute>
