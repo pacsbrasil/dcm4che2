@@ -328,8 +328,12 @@ public class StudyListPage extends Panel {
             private static final long serialVersionUID = 1L;
 
             public void onClose(AjaxRequestTarget target) {
-                    target.addComponent(form);
-            }            
+                if (!imageSelectionWindow.changeSelection()) 
+                    imageSelectionWindow.undoSelectionChanges();
+                else
+                    if (imageSelectionWindow.isSelectionChanged()) 
+                        target.addComponent(form);
+            }
         });
         imageSelectionWindow.add(new SecurityBehavior(getModuleName() + ":imageSelectionWindow"));
         add(wadoImageWindow);
@@ -596,14 +600,13 @@ public class StudyListPage extends Panel {
         });
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("unchecked")
     private void addNavigation(final BaseForm form) {
 
         Button resetBtn = new AjaxButton("resetBtn") {
             
             private static final long serialVersionUID = 1L;
 
-            @SuppressWarnings({ "unchecked", "rawtypes" })
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
 

@@ -90,13 +90,15 @@ public class ImageSelectionWindow extends ModalWindow {
     private Model<Integer> maxInstances = new Model<Integer>(10);
     private int numCols = 5;
     private Model<Integer> imgSizeModel = new Model<Integer>(128);
-    private int selectionChanged = 0;
+    private boolean changeSelection;
     
     private StudyModel study;
     private SeriesModel series;
     
     private static Logger log = LoggerFactory.getLogger(ImageSelectionWindow.class);
 
+    private List<InstanceModel> modifiedInstanceList;
+    
     public ImageSelectionWindow(String id, String titleResource) {
         this(id);
         setTitle(new ResourceModel(titleResource));
@@ -153,7 +155,8 @@ public class ImageSelectionWindow extends ModalWindow {
 
     @Override
     public void show(final AjaxRequestTarget target) {
-        selectionChanged = 0;
+        changeSelection = false;
+        modifiedInstanceList = new ArrayList<InstanceModel>();
         super.show(target);
     }
     
@@ -267,9 +270,20 @@ public class ImageSelectionWindow extends ModalWindow {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
+                    changeSelection = true;
                     close(target);
                 }
             }.add(new Label("okBtn.label", new ResourceModel("folder.imageselect.okBtn.label"))));
+            
+            add(new AjaxFallbackLink<Object>("cancelBtn"){
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    close(target);
+                }
+            }.add(new Label("cancelBtn.label", new ResourceModel("folder.imageselect.cancelBtn.label"))));
         }
         
         private final class InstanceListView extends PageableListView<InstanceModel> {
@@ -296,7 +310,7 @@ public class ImageSelectionWindow extends ModalWindow {
                     @Override
                     protected void onUpdate(AjaxRequestTarget target) {
                         log.info("selectionChanged!");
-                        selectionChanged += (getModelObject() ? 1 : -1);                        
+                        modifiedInstanceList.add(item.getModelObject());                       
                         target.addComponent(this);
                     }}.setOutputMarkupId(true));
                 item.add(new AbstractBehavior(){
@@ -332,12 +346,22 @@ public class ImageSelectionWindow extends ModalWindow {
     }
 
     public boolean isSelectionChanged() {
-        if (selectionChanged == 0) {
+        if (modifiedInstanceList.size() == 0) {
             if (study != null)
                 study.collapse();
             if (series != null)
                 series.collapse();
         }
-        return selectionChanged > 0;
+        return modifiedInstanceList.size() > 0;
+    }
+    
+    public boolean changeSelection() {
+        return changeSelection;    
+    }
+    
+    public void undoSelectionChanges() {
+        for (InstanceModel instanceModel : modifiedInstanceList) 
+            instanceModel.setSelected(!instanceModel.isSelected());
+        modifiedInstanceList.clear();
     }
 }
