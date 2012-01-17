@@ -207,7 +207,7 @@ public class DecompressCmd extends CodecCmd {
                 reader.setInput(patchJpegLS 
                         ? new PatchJpegLSImageInputStream(siis)
                         : (ImageInputStream) siis);
-                ImageReadParam param = reader.getDefaultReadParam();
+                ImageReadParam param = createImageReadParam(reader);
                 param.setDestination(bi);
                 bi = reader.read(0, param);
                 // workaround for Bug in J2KImageReader and
@@ -344,4 +344,8 @@ public class DecompressCmd extends CodecCmd {
     private int getNumberOfFrames() {
         return simpleFrameList != null ? simpleFrameList.length : frames;
     }
+    
+	protected ImageReadParam createImageReadParam(ImageReader imageReader) {
+		return imageReader.getDefaultReadParam();
+	}
 }

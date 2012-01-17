@@ -483,7 +483,7 @@ public class FileDataSource implements DataSource {
                 fiis.seek(parser.getStreamPosition());
                 parser = DcmParserFactory.getInstance().newDcmParser(fiis);
                 parser.setDcmHandler(ds.getDcmHandler());
-                DecompressCmd cmd = new DecompressCmd(ds, tsOrig, parser);
+                DecompressCmd cmd = createDecompressCmd(ds, tsOrig, parser);
                 cmd.setSimpleFrameList(simpleFrameList);
                 int newPixelDataLen = cmd.getPixelDataLength();
                 ds.writeHeader(out, enc, Tags.PixelData, VRs.OW,
@@ -677,4 +677,9 @@ public class FileDataSource implements DataSource {
             out.write(buffer, 0, len);
         }
     }
+
+	protected DecompressCmd createDecompressCmd(Dataset ds, String tsuid,
+			DcmParser parser) throws IOException {
+		return new DecompressCmd(ds, tsuid, parser);
+	}
 }

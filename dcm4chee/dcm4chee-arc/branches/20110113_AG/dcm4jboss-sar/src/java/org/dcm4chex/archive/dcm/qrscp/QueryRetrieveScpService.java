@@ -1422,7 +1422,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
             assoc.putProperty(SEND_BUFFER, buf);
         }
         File f = getFile(info);
-        FileDataSource ds = new FileDataSource(f, mergeAttrs, buf, datasetUpdater);
+        FileDataSource ds = createFileDataSource(mergeAttrs, buf, f, datasetUpdater);
         ds.setWithoutPixeldata(isWithoutPixelData(dest));
         ds.setPatchJpegLS(patchJpegLS);
         ds.setPatchJpegLSImplCUID(patchJpegLSImplCUID);
@@ -1711,4 +1711,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
     public void setCFindRspDebugLogDeferToDoBeforeRsp(boolean defer) {
         this.cFindRspDebugLogDeferToDoBeforeRsp = defer;
     }
+    
+	protected FileDataSource createFileDataSource(Dataset mergeAttrs,
+			byte[] buf, File f, DatasetUpdater datasetUpdater) {
+		return new FileDataSource(f, mergeAttrs, buf, datasetUpdater);
+	}
 }
