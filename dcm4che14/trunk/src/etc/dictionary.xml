@@ -345,7 +345,7 @@
   <element tag="(0012,0072)" name="Clinical Trial Series Description" vr="LO" vm="1" key="ClinicalTrialSeriesDescription" /> 
   <element tag="(0012,0081)" name="Clinical Trial Protocol Ethics Committee Name" vr="LO" vm="1" key="ClinicalTrialProtocolEthicsCommitteeName" /> 
   <element tag="(0012,0082)" name="Clinical Trial Protocol Ethics Committee Approval Number" vr="LO" vm="1" key="ClinicalTrialProtocolEthicsCommitteeApprovalNumber" /> 
-  <element tag="(0012,0083)" name="Consent for Clinical Trial Use Sequence" vr="SQ" vm="1" key="ConsentForClinicalTrialUseSequence" /> 
+  <element tag="(0012,0083)" name="Consent for Clinical Trial Use Sequence" vr="SQ" vm="1" key="ConsentForClinicalTrialUseSeq" /> 
   <element tag="(0012,0084)" name="Distribution Type" vr="CS" vm="1" key="DistributionType" /> 
   <element tag="(0012,0085)" name="Consent for Distribution Flag" vr="CS" vm="1" key="ConsentForDistributionFlag" />
   
@@ -1422,8 +1422,8 @@
   <element tag="(0040,072A)" name="X offset in Slide Coordinate System" vr="DS" vm="1" key="XOffsetInSlideCoordinateSystem" />
   <element tag="(0040,073A)" name="Y offset in Slide Coordinate System" vr="DS" vm="1" key="YOffsetInSlideCoordinateSystem" />
   <element tag="(0040,074A)" name="Z offset in Slide Coordinate System" vr="DS" vm="1" key="ZOffsetInSlideCoordinateSystem" />
-  <element tag="(0040,08D8)" name="Pixel Spacing Sequence" vr="SQ" vm="1" key="PixelSpacingSeq" />
-  <element tag="(0040,08DA)" name="Coordinate System Axis Code Sequence" vr="SQ" vm="1" key="CoordinateSystemAxisCodeSeq" />
+  <element tag="(0040,08D8)" name="Pixel Spacing Sequence" vr="SQ" vm="1" key="PixelSpacingSeq" retired="true" />
+  <element tag="(0040,08DA)" name="Coordinate System Axis Code Sequence" vr="SQ" vm="1" key="CoordinateSystemAxisCodeSeq" retired="true" />
   <element tag="(0040,08EA)" name="Measurement Units Code Sequence" vr="SQ" vm="1" key="MeasurementUnitsCodeSeq" />
   <element tag="(0040,1001)" name="Requested Procedure ID" vr="SH" vm="1" key="RequestedProcedureID" />
   <element tag="(0040,1002)" name="Reason for the Requested Procedure" vr="LO" vm="1" key="ReasonForTheRequestedProcedure" />
@@ -1561,6 +1561,38 @@
   <element tag="(0042,0012)" name="MIME Type of Encapsulated Document" vr="LO" vm="1" key="MIMETypeOfEncapsulatedDocument" />
   <element tag="(0042,0013)" name="Source Instance Sequence" vr="SQ" vm="1" key="SourceInstanceSeq" />
   <element tag="(0042,0014)" name="List of MIME Types" vr="LO" vm="1-n" key="ListOfMIMETypes" />
+  
+  <element tag="(0048,0001)" name="Imaged Volume Width" vr="FL" vm="1" key="ImagedVolumeWidth" />
+  <element tag="(0048,0002)" name="Imaged Volume Height" vr="FL" vm="1" key="ImagedVolumeHeight" />
+  <element tag="(0048,0003)" name="Imaged Volume Depth" vr="FL" vm="1" key="ImagedVolumeDepth" />
+  <element tag="(0048,0006)" name="Total Pixel Matrix Columns" vr="UL" vm="1" key="TotalPixelMatrixColumns" />
+  <element tag="(0048,0007)" name="Total Pixel Matrix Rows" vr="UL" vm="1" key="TotalPixelMatrixRows" />
+  <element tag="(0048,0008)" name="Total Pixel Matrix Origin Sequence" vr="SQ" vm="1" key="TotalPixelMatrixOriginSeq" />
+  <element tag="(0048,0010)" name="Specimen Label in Image" vr="CS" vm="1" key="SpecimenLabelInImage" />
+  <element tag="(0048,0011)" name="Focus Method" vr="CS" vm="1" key="FocusMethod" />
+  <element tag="(0048,0012)" name="Extended Depth of Field" vr="CS" vm="1" key="ExtendedDepthOfField" />
+  <element tag="(0048,0013)" name="Number of Focal Planes" vr="US" vm="1" key="NumberOfFocalPlanes" />
+  <element tag="(0048,0014)" name="Distance Between Focal Planes" vr="FL" vm="1" key="DistanceBetweenFocalPlanes" />
+  <element tag="(0048,0015)" name="Recommended Absent Pixel CIELab Value" vr="US" vm="3" key="RecommendedAbsentPixelCIELabValue" />
+  <element tag="(0048,0100)" name="Illuminator Type Code Sequence" vr="SQ" vm="1" key="IlluminatorTypeCodeSeq" />
+  <element tag="(0048,0102)" name="Image Orientation (Slide)" vr="DS" vm="6" key="ImageOrientationSlide" />
+  <element tag="(0048,0105)" name="Optical Path Sequence" vr="SQ" vm="1" key="OpticalPathSeq" />
+  <element tag="(0048,0106)" name="Optical Path Identifier" vr="SH" vm="1" key="OpticalPathIdentifier" />
+  <element tag="(0048,0107)" name="Optical Path Description" vr="ST" vm="1" key="OpticalPathDescription" />
+  <element tag="(0048,0108)" name="Illumination Color Code Sequence" vr="SQ" vm="1" key="IlluminationColorCodeSeq" />
+  <element tag="(0048,0110)" name="Specimen Reference Sequence" vr="SQ" vm="1" key="SpecimenReferenceSeq" />
+  <element tag="(0048,0111)" name="Condenser Lens Power" vr="DS" vm="1" key="CondenserLensPower" />
+  <element tag="(0048,0112)" name="Objective Lens Power" vr="DS" vm="1" key="ObjectiveLensPower" />
+  <element tag="(0048,0113)" name="Objective Lens Numerical Aperture" vr="DS" vm="1" key="ObjectiveLensNumericalAperture" />
+  <element tag="(0048,0120)" name="Palette Color Lookup Table Sequence" vr="SQ" vm="1" key="PaletteColorLookupTableSeq" />
+  <element tag="(0048,0200)" name="Referenced Image Navigation Sequence" vr="SQ" vm="1" key="ReferencedImageNavigationSeq" />
+  <element tag="(0048,0201)" name="Top Left Hand Corner of Localizer Area" vr="US" vm="2" key="TopLeftHandCornerOfLocalizerArea" />
+  <element tag="(0048,0202)" name="Bottom Right Hand Corner of Localizer Area" vr="US" vm="2" key="BottomRightHandCornerOfLocalizerArea" />
+  <element tag="(0048,0207)" name="Optical Path Identification Sequence" vr="SQ" vm="1" key="OpticalPathIdentificationSeq" />
+  <element tag="(0048,021A)" name="Plane Position (Slide) Sequence" vr="SQ" vm="1" key="PlanePositionSlideSeq" />
+  <element tag="(0048,021E)" name="Row Position In Total Image Pixel Matrix" vr="SL" vm="1" key="RowPositionInTotalImagePixelMatrix" />
+  <element tag="(0048,021F)" name="Column Position In Total Image Pixel Matrix" vr="SL" vm="1" key="ColumnPositionInTotalImagePixelMatrix" />
+  <element tag="(0048,0301)" name="Pixel Origin Interpretation" vr="CS" vm="1" key="PixelOriginInterpretation" />
   
   <element tag="(0050,0004)" name="Calibration Image" vr="CS" vm="1" key="CalibrationImage" />
   <element tag="(0050,0010)" name="Device Sequence" vr="SQ" vm="1" key="DeviceSeq" />
@@ -2804,6 +2836,7 @@
   <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.2" name="Ophthalmic Photography 16 Bit Image Storage" key="OphthalmicPhotography16BitImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.3" name="Stereometric Relationship Storage" key="StereometricRelationshipStorage" dirrecord="STEREOMETRIC" />
   <uid value="1.2.840.10008.5.1.4.1.1.77.1.5.4" name="Ophthalmic Tomography Image Storage" key="OphthalmicTomographyImageStorage" dirrecord="IMAGE" />
+  <uid value="1.2.840.10008.5.1.4.1.1.77.1.6" name="VL Whole Slide Microscopy Image Storage" key="VLWholeSlideMicroscopyImageStorage" dirrecord="IMAGE" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.1" name="Structured Report Text Storage (Retired)" key="StructuredReportTextStorageRetired" dirrecord="SR DOCUMENT" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.2" name="Structured Report Audio Storage (Retired)" key="StructuredReportAudioStorageRetired" />
   <uid value="1.2.840.10008.5.1.4.1.1.88.3" name="Structured Report Detail Storage (Retired)" key="StructuredReportDetailStorageRetired" dirrecord="SR DOCUMENT" />
