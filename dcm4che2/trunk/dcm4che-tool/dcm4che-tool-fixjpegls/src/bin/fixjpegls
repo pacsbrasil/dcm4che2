@@ -8,7 +8,7 @@
 ### $Id: fixjpegls 13029 2010-04-01 13:57:34Z gunterze $ ###
 
 MAIN_CLASS=org.dcm4che2.tool.fixjpegls.FixJpegLS
-MAIN_JAR=dcm4che-tool-fixjpegls-2.0.26-SNAPSHOT.jar
+MAIN_JAR=dcm4che-tool-fixjpegls-2.0.26.jar
 
 DIRNAME="`dirname "$0"`"
 
@@ -43,7 +43,7 @@ fi
 # Setup the classpath
 CP="$DCM4CHE_HOME/etc/"
 CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
-CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-2.0.26-SNAPSHOT.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-2.0.26.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-log4j12-1.6.1.jar"
 CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.6.1.jar"
 CP="$CP:$DCM4CHE_HOME/lib/log4j-1.2.16.jar"

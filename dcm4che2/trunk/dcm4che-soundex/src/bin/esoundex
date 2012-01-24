@@ -8,7 +8,7 @@
 ### $Id$ ###
 
 MAIN_CLASS=org.dcm4che2.soundex.ESoundex
-MAIN_JAR=dcm4che-soundex-2.0.26-SNAPSHOT.jar
+MAIN_JAR=dcm4che-soundex-2.0.26.jar
 
 DIRNAME="`dirname "$0"`"
 
