@@ -9,7 +9,7 @@ if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
 set MAIN_CLASS=org.dcm4che2.tool.dcmmover.DcmMoverCli
-set MAIN_JAR=dcm4che-tool-dcmmv-2.0.26.jar
+set MAIN_JAR=dcm4che-tool-dcmmv-2.0.27-SNAPSHOT.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
@@ -50,9 +50,9 @@ set JAVA=%JAVA_HOME%\bin\java
 
 set CP=%DCM4CHE_HOME%\etc\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-2.0.26.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-iod-2.0.26.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-2.0.26.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-2.0.27-SNAPSHOT.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-iod-2.0.27-SNAPSHOT.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-net-2.0.27-SNAPSHOT.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.6.1.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.6.1.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.16.jar
