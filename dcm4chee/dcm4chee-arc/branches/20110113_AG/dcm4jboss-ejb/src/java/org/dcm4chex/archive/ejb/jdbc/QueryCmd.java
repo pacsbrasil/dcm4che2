@@ -164,6 +164,10 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
 
     protected Subject subject;
 
+    public boolean getOtherPatientIDMatchNotSupported(){
+    	return otherPatientIDMatchNotSupported;
+    }
+    
     public void setCoercePatientIds( boolean coercePatientIds ) {
         this.coercePatientIds = coercePatientIds;
     }

@@ -78,6 +78,9 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
         this.type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
     }
 
+    public HashMap<Integer,IntList> getSeqMatchingKeys(){
+    	return seqMatchingKeys;
+    }
 
     public void execute() throws SQLException {
         execute(sqlBuilder.getSql());
@@ -180,7 +183,7 @@ public abstract class BaseDSQueryCmd extends BaseReadCmd {
         }
     }
     
-    static class IntList {
+    public static class IntList {
         int[] values = new int[40];
         int pos = 0;
         
