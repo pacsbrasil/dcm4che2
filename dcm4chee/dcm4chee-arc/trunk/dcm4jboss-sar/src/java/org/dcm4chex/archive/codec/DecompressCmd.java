@@ -179,8 +179,13 @@ public class DecompressCmd extends CodecCmd {
                 && bitsStored < 12
                 && UIDs.JPEGExtended.equals(tsuid);
         this.iis = parser.getImageInputStream();
-        this.itemParser = new ItemParser(parser, frames, tsuid);
+        this.itemParser = createItemParser(tsuid, parser);
     }
+
+	protected ItemParser createItemParser(String tsuid, DcmParser parser)
+			throws IOException {
+		return new ItemParser(parser, frames, tsuid);
+	}
 
     public static void adjustPhotometricInterpretation(Dataset ds, String tsOrig) {
         String pmi = ds.getString(Tags.PhotometricInterpretation, "MONOCHROME2");
