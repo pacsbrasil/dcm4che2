@@ -64,7 +64,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
+public abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
     
     protected final BaseDatasetImpl backend;
     
@@ -73,7 +73,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
         this.backend = (BaseDatasetImpl)backend;
     }
                     
-    protected abstract boolean filter(int tag, int vr);
+    public abstract boolean filter(int tag, int vr);
  
     public boolean contains(int tag) {
         return get(tag) != null;
@@ -232,7 +232,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             this.filter = filter;
         }
 
-        protected  boolean filter(int tag, int vr) {
+        public  boolean filter(int tag, int vr) {
             return filter == null || filter.contains(tag);
         }
 
@@ -267,7 +267,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             super(backend);
         }
 
-        protected  boolean filter(int tag, int vr) {
+        public boolean filter(int tag, int vr) {
             return !Tags.isPrivate(tag);
         }
 
@@ -307,7 +307,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             return count;
         }
 
-        protected boolean filter(int tag, int vr) {
+        public boolean filter(int tag, int vr) {
             long ltag = tag & 0xFFFFFFFFL;
             return ltag >= fromTag && ltag < toTag;
         }
@@ -330,7 +330,7 @@ abstract class FilterDataset extends BaseDatasetImpl implements Dataset {
             Arrays.sort(this.tags);
         }
         
-        protected boolean filter(int tag, int vr) {
+        public boolean filter(int tag, int vr) {
             return !(excludePrivate && Tags.isPrivate(tag))
             	&& (containsVR(vr) || (Arrays.binarySearch(tags, tag)) >= 0) ? 
                         !exclude : exclude;
