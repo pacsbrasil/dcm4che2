@@ -649,22 +649,29 @@ public class FileDataSource implements DataSource {
 
     private void write(Dataset ds, OutputStream out, DcmEncodeParam enc)
             throws IOException {
+    	Dataset dsOut = filterDataset(ds);
+    	
         if (writeFile) {
-            if (excludePrivate) {
-                Dataset dsOut = ds.excludePrivate();
-                dsOut.setFileMetaInfo(ds.getFileMetaInfo());
-                dsOut.writeFile(out, enc);
-            } else {
-                ds.writeFile(out, enc);
-            }
+			dsOut.writeFile(out, enc);
         } else {
-            if (excludePrivate)
-                ds.excludePrivate().writeDataset(out, enc);
-            else
-                ds.writeDataset(out, enc);
+            dsOut.writeDataset(out, enc);
         }
-        return;
-
+    }
+    
+    protected Dataset filterDataset(Dataset dataset) {
+    	Dataset filteredDataset;
+    	
+    	if (excludePrivate) {
+    		filteredDataset = dataset.excludePrivate();
+    		
+    		if (writeFile) {
+    			filteredDataset.setFileMetaInfo(dataset.getFileMetaInfo());
+    		}
+    	} else {
+    		filteredDataset = dataset;
+    	}
+    	
+    	return filteredDataset;
     }
 
     private void copyBytes(InputStream is, OutputStream out, int totLen,
