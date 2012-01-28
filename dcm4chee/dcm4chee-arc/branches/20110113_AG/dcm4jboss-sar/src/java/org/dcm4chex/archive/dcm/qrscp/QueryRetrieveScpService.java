@@ -1422,7 +1422,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
             assoc.putProperty(SEND_BUFFER, buf);
         }
         File f = getFile(info);
-        FileDataSource ds = createFileDataSource(mergeAttrs, buf, f, datasetUpdater);
+        FileDataSource ds = createFileDataSource(f, mergeAttrs, buf, datasetUpdater);
         ds.setWithoutPixeldata(isWithoutPixelData(dest));
         ds.setPatchJpegLS(patchJpegLS);
         ds.setPatchJpegLSImplCUID(patchJpegLSImplCUID);
@@ -1470,17 +1470,22 @@ public class QueryRetrieveScpService extends AbstractScpService {
         postCoercionProcessing(ds, Command.C_STORE_RQ,assoc);
     }
     
-    private PresContext selectAcceptedPresContext(Association a, FileInfo info) {
-        String[] tsuids = { UIDs.NoPixelDataDeflate, UIDs.NoPixelData,
-                info.tsUID, UIDs.ExplicitVRLittleEndian,
-                UIDs.ImplicitVRLittleEndian
-        };
+	protected PresContext selectAcceptedPresContext(Association a, FileInfo info) throws Exception {
+		return selectAcceptedPresContext(a, info, new String[] {UIDs.NoPixelDataDeflate,
+				UIDs.NoPixelData, info.tsUID, UIDs.ExplicitVRLittleEndian,
+				UIDs.ImplicitVRLittleEndian});
+	}    
+
+	protected PresContext selectAcceptedPresContext(Association a,
+			FileInfo info, String[] tsuids) {
         PresContext presCtx = null;
+        
         for (int i = 0; presCtx == null && i < tsuids.length; i++) {
             presCtx = a.getAcceptedPresContext(info.sopCUID, tsuids[i]);
         }
+        
         return presCtx;
-    }
+	}    
 
     protected File getFile(FileInfo info) throws Exception {
         return getFile(info.basedir, info.fileID, info.size);
@@ -1712,8 +1717,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.cFindRspDebugLogDeferToDoBeforeRsp = defer;
     }
     
-	protected FileDataSource createFileDataSource(Dataset mergeAttrs,
-			byte[] buf, File f, DatasetUpdater datasetUpdater) {
+	protected FileDataSource createFileDataSource(File f,
+			Dataset mergeAttrs, byte[] buf, DatasetUpdater datasetUpdater) {
 		return new FileDataSource(f, mergeAttrs, buf, datasetUpdater);
 	}
 }
