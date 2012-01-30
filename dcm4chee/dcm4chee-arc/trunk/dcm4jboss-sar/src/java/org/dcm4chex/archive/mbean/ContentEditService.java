@@ -41,6 +41,7 @@ package org.dcm4chex.archive.mbean;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -654,8 +655,9 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.debug("Move "+iuids != null ? iuids.length : null +" Instances to trash: " + iuids);
         Collection<Dataset> dss = (Collection<Dataset>)lookupPrivateManager().moveInstancesToTrash(iuids,
                 true);
-        if (dss.size() != 1)
-            throw new Exception("moveInstancesToTrash failed");
+        if (dss.size() < 1)
+            throw new Exception("moveInstancesToTrash failed! No Instance found to to delete! iuids:"
+                    +Arrays.toString(iuids));
         for ( Dataset ds : dss ) {
             if (createIANonMoveToTrash) {
                 sendJMXNotification(new StudyDeleted(ds));
