@@ -677,14 +677,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             checkPatientIdAndName(ds, callingAET);
             Storage store = getStorage(assoc);
             String seriuid = ds.getString(Tags.SeriesInstanceUID);
-            SeriesStored seriesStored = (SeriesStored) assoc.getProperty(SERIES_STORED);
-            if (seriesStored != null
-                    && !seriuid.equals(seriesStored.getSeriesInstanceUID())) {
-                service.logInstancesStoredAndUpdateDerivedFields(store,
-                        assoc.getSocket(), seriesStored);
-                doAfterSeriesIsStored(store, assoc, seriesStored);
-                seriesStored = null;
-            }
+
+            SeriesStored seriesStored = this.getSeriesStored(assoc, seriuid);
+            this.notifyOnSeriesStored(seriesStored, assoc, store, seriuid);
+
+
             boolean newSeries = seriesStored == null;
             boolean newStudy = false;
             if (newSeries) {
@@ -718,12 +715,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 coercedElements = updateDB(store, ds, fspk, filePath,
                         fileLength, md5sum, newSeries);
             }
-            if(newSeries) {
-               seriesStored = initSeriesStored(ds, callingAET, retrieveAET);
-               assoc.putProperty(SERIES_STORED, seriesStored);
-               if (newStudy) {
+			
+			seriesStored = setSeriesStored(ds, assoc, callingAET, fsDTO,
+					seriesStored, newSeries, seriuid);
+            if(newSeries && newStudy) {
                    service.sendNewStudyNotification(ds);
-               }
             }
             appendInstanceToSeriesStored(seriesStored, ds, retrieveAET, availability);
             coerced = merge(coerced, coercedElements);
@@ -823,7 +819,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return null;
     }
 
-    private SeriesStored initSeriesStored(Dataset ds, String callingAET,
+    protected SeriesStored initSeriesStored(Dataset ds, String callingAET,
             String retrieveAET) {
         Dataset patAttrs = AttributeFilter.getPatientAttributeFilter().filter(ds);
         Dataset studyAttrs = AttributeFilter.getStudyAttributeFilter().filter(ds);
@@ -864,7 +860,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         // only check on first instance of a series received in the same
         // association
         String seriuid = ds.getString(Tags.SeriesInstanceUID);
-        SeriesStored seriesStored = (SeriesStored) a.getProperty(SERIES_STORED);
+        SeriesStored seriesStored = getSeriesStored(a,seriuid);
         if (seriesStored != null
                 && seriuid.equals(seriesStored.getSeriesInstanceUID())) {
             return;
@@ -1088,7 +1084,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-    Storage getStorage(Association assoc) throws RemoteException,
+    protected Storage getStorage(Association assoc) throws RemoteException,
             CreateException, HomeFactoryException {
         Storage store = (Storage) assoc.getProperty(StorageHome.JNDI_NAME);
         if (store == null) {
@@ -1324,17 +1320,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         if (assoc.getAAssociateAC() != null)
             perfMon.assocRelStart(assoc, Command.C_STORE_RQ);
 
-        SeriesStored seriesStored = (SeriesStored) assoc.getProperty(SERIES_STORED);
-        if (seriesStored != null) {
-            try {
-            	Storage store = getStorage(assoc);
-                service.logInstancesStoredAndUpdateDerivedFields(
-                		store, assoc.getSocket(), seriesStored);
-                doAfterSeriesIsStored(store, assoc, seriesStored);
-             } catch (Exception e) {
-                log.error("Clean up on Association close failed:", e);
-            }
-        }
+		notifySeriesStoredOnClose(assoc);
+
     }
 
     public void closed(Association assoc) {
@@ -1346,4 +1333,50 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     protected void doAfterSeriesIsStored(Storage store, Association assoc, SeriesStored seriesStored) throws Exception {
     	return;
     }
+	
+	
+    /****** Refactored code for different Series Stored notification handling ******/
+    
+
+	protected SeriesStored setSeriesStored(Dataset ds, Association assoc,
+			String callingAET, FileSystemDTO fsDTO, SeriesStored seriesStored,
+			boolean newSeries, String seriesUid) {
+		if (newSeries) {
+			seriesStored = initSeriesStored(ds, callingAET, fsDTO.getRetrieveAET());
+		    assoc.putProperty(SERIES_STORED, seriesStored);
+		}
+		return seriesStored;
+	}
+
+	protected SeriesStored getSeriesStored(Association assoc, String seriuid) throws RemoteException, FinderException {
+		SeriesStored seriesStored = (SeriesStored) assoc.getProperty(SERIES_STORED);
+		return seriesStored;
+	}
+	
+	protected void notifyOnSeriesStored(SeriesStored seriesStored, Association assoc, Storage store,
+			String seriuid) throws Exception {
+		
+		if (seriesStored != null
+		        && !seriuid.equals(seriesStored.getSeriesInstanceUID())) {
+		    log.debug("Send SeriesStoredNotification - series changed");
+		    doAfterSeriesIsStored(store, assoc, seriesStored);
+		    seriesStored = null;
+		}
+	}
+    
+	protected void notifySeriesStoredOnClose(Association assoc) {
+        SeriesStored seriesStored = (SeriesStored) assoc.getProperty(SERIES_STORED);
+        if (seriesStored != null) {
+            try {
+            	Storage store = getStorage(assoc);
+                service.logInstancesStoredAndUpdateDerivedFields(
+                		store, assoc.getSocket(), seriesStored);
+                doAfterSeriesIsStored(store, assoc, seriesStored);
+             } catch (Exception e) {
+                log.error("Clean up on Association close failed:", e);
+            }
+        }
+	}
+
+	
 }
