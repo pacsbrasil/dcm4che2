@@ -1359,6 +1359,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 		if (seriesStored != null
 		        && !seriuid.equals(seriesStored.getSeriesInstanceUID())) {
 		    log.debug("Send SeriesStoredNotification - series changed");
+			service.logInstancesStoredAndUpdateDerivedFields(
+				store, assoc.getSocket(), seriesStored);
 		    doAfterSeriesIsStored(store, assoc, seriesStored);
 		    seriesStored = null;
 		}
