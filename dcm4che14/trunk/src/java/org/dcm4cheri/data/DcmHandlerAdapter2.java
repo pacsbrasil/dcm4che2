@@ -383,17 +383,16 @@ class DcmHandlerAdapter2 implements DcmHandler {
         case VRs.DT:
         case VRs.IS:
         case VRs.TM:
-            outText(data, start, length, null); break;
+        case VRs.UI:
+            outText(data, start, length, false, null); break;
         case VRs.LO:
-        case VRs.LT:
         case VRs.PN:
         case VRs.SH:
+            outText(data, start, length, false, cs); break;
+        case VRs.LT:
         case VRs.ST:
         case VRs.UT:
-            outText(data, start, length, cs); break;
-        case VRs.UI:
-            outText(data, start, data[length-1] == 0 ? length-1 : length, null);
-            break;
+            outText(data, start, length, true, cs); break;
         case VRs.AT:
             outAT(data, start, length);
             return;
@@ -427,9 +426,9 @@ class DcmHandlerAdapter2 implements DcmHandler {
     }
 
     private void outText(byte[] data, int start, int length,
-            SpecificCharacterSet cs) throws SAXException {
-        String s = cs == null ? new String(data, start, length)
-                              : cs.decode(data, start, length);
+            boolean preserveLeadingWhitespace, SpecificCharacterSet cs) throws SAXException {
+        String s = trim(cs == null ? new String(data, start, length)
+                              : cs.decode(data, start, length), preserveLeadingWhitespace);
         if (tag == Tags.SpecificCharacterSet) {
             this.cs = SpecificCharacterSet.valueOf(
                     StringUtils.split(s.trim(), '\\'));
@@ -440,6 +439,15 @@ class DcmHandlerAdapter2 implements DcmHandler {
             handler.characters(cbuf, 0, end - pos);
             pos = end;
         }
+    }
+
+    private String trim(String s, boolean preserveLeadingWhitespace) {
+        if (!preserveLeadingWhitespace)
+            return s.trim();
+        int len = s.length();
+        while ((len > 0) && (s.charAt(len - 1) <= ' '))
+            len--;
+        return s.substring(0, len);
     }
 
     private void outAT(byte[] data, int start, int length) throws SAXException {
