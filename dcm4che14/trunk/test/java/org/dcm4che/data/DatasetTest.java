@@ -602,6 +602,7 @@ public class DatasetTest extends TestCase {
     private static final String VALUE2 = "VALUE2";
     private static final int TAG_00090010 = 0x00090010;
     private static final int TAG_00090020 = 0x00090020;
+    private static final int TAG_00110010 = 0x00110010;
     private static final int TAG_00110020 = 0x00110020;
 
     public void testPutAllPrivateDiffCreatorDiffGroup() {
@@ -612,6 +613,28 @@ public class DatasetTest extends TestCase {
     public void testPutAllPrivateDiffCreatorEqualGroup() {
         testPutAllPrivate(CREATOR1, TAG_00090010, VALUE1,
                 CREATOR2, TAG_00090020, VALUE2);
+    }
+
+    public void testPutAllPrivateDiffCreatorDiffGroup2() {
+        Dataset ds2 = DcmObjectFactory.getInstance().newDataset();
+
+        ds2.setPrivateCreatorID(CREATOR1);
+        ds2.putSH(TAG_00090010, VALUE1);
+        ds2.putSH(TAG_00090020, VALUE2);
+
+        ds2.setPrivateCreatorID(CREATOR2);
+        ds2.putSH(TAG_00110010, VALUE2);
+        ds2.putSH(TAG_00110020, VALUE1);
+
+        ds.putAll(ds2);
+
+        assertEquals(CREATOR1, ds.getString(0x00090010));
+        assertEquals(VALUE1, ds.getString(0x00091010));
+        assertEquals(VALUE2, ds.getString(0x00091020));
+
+        assertEquals(CREATOR2, ds.getString(0x00110010));
+        assertEquals(VALUE2, ds.getString(0x00111010));
+        assertEquals(VALUE1, ds.getString(0x00111020));
     }
 
     public void testPutAllPrivateDiffCreatorEqualGroup2() {
@@ -627,13 +650,13 @@ public class DatasetTest extends TestCase {
 
         ds.putAll(ds2);
 
-        ds.setPrivateCreatorID(CREATOR1);
-        assertEquals(VALUE1, ds.getString(TAG_00090010));
-        assertEquals(VALUE2, ds.getString(TAG_00090020));
+        assertEquals(CREATOR1, ds.getString(0x00090010));
+        assertEquals(VALUE1, ds.getString(0x00091010));
+        assertEquals(VALUE2, ds.getString(0x00091020));
 
-        ds.setPrivateCreatorID(CREATOR2);
-        assertEquals(VALUE2, ds.getString(TAG_00090010));
-        assertEquals(VALUE1, ds.getString(TAG_00090020));
+        assertEquals(CREATOR2, ds.getString(0x00090011));
+        assertEquals(VALUE2, ds.getString(0x00091110));
+        assertEquals(VALUE1, ds.getString(0x00091120));
     }
 
     public void testPutAllPrivateEqualCreatorDiffGroup() {

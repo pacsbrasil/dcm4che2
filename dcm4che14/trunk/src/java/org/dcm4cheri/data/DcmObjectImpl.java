@@ -2631,6 +2631,7 @@ abstract class DcmObjectImpl implements DcmObject {
                 } catch (DcmValueException e) {
                     // copy illegal Private Creator Data Element verbatim
                 }
+                setPrivateCreatorID(null);
             } else if (Tags.isPrivate(tag)) {
                 int tagOfCreatorID2 = (tag & 0xffff0000) | ((tag & 0xff00) >> 8);
                 if (tagOfCreatorID != tagOfCreatorID2) {
