@@ -248,6 +248,26 @@ NotificationListener {
     }
     
     public void handleNotification(Notification notification, Object handback) {
+        synchronized(this) {
+            if (isRunning) {
+                log.info("FileCopyByQuery is already running!");
+                return;
+            }
+            isRunning = true;
+        }
+        new Thread(new Runnable(){
+            public void run() {
+                try {
+                    doNotification();
+                } catch (Exception e) {
+                    log.error("Check for Pending Series Stored failed:", e);
+                } finally {
+                    isRunning = false;
+                }
+            }}).start();
+    }
+    
+    private void doNotification() {
         if (lastCheckResult == null) {
             try {
                 checkSQL(sql);
@@ -278,6 +298,9 @@ NotificationListener {
             }
             isRunning = true;
         }
+        return doCheckForward();
+    }
+    public int doCheckForward() {
         int nrOfSeries = 0;
         try {
             long scheduledTime = 0L;
