@@ -225,6 +225,26 @@ public class FileCopyByQueryService extends ServiceMBeanSupport implements Notif
     }
     
     public void handleNotification(Notification notification, Object handback) {
+        synchronized(this) {
+            if (isRunning) {
+                log.info("FileCopyByQuery is already running!");
+                return;
+            }
+            isRunning = true;
+        }
+        new Thread(new Runnable(){
+            public void run() {
+                try {
+                    doNotification();
+                } catch (Exception e) {
+                    log.error("Check for Pending Series Stored failed:", e);
+                } finally {
+                    isRunning = false;
+                }
+            }}).start();
+    }
+    
+    private void doNotification() {
         if (lastCheckResult == null) {
             try {
                 checkSQL(sql);
@@ -237,7 +257,7 @@ public class FileCopyByQueryService extends ServiceMBeanSupport implements Notif
             }
         }
         if (sqlIsValid)
-            checkFilecopy();
+            doCheckFilecopy();
         else
             log.warn("SQL is not marked to be valid! checkFilecopy is disabled!");
     }
@@ -255,6 +275,9 @@ public class FileCopyByQueryService extends ServiceMBeanSupport implements Notif
             }
             isRunning = true;
         }
+        return doCheckFilecopy();
+    }
+    public int doCheckFilecopy() {
         int nrOfOrders = 0;
         int notScheduledOrders = 0;
         try {
