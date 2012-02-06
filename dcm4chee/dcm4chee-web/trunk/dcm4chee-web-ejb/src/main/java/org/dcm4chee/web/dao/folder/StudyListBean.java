@@ -116,15 +116,15 @@ public class StudyListBean implements StudyListLocal {
         QueryUtil.appendOrderBy(ql, new String[]{"p.patientName", studyDT});
         Query query = em.createQuery(ql.toString());
         setQueryParameters(query, filter, roles);
-        if (filter.isPatientQuery())
+        if (filter.isPatientQuery()) {
             return query.setMaxResults(max).setFirstResult(index).getResultList();
-        else {
+        } else {
             List<Object[]> result = query.setMaxResults(max).setFirstResult(index).getResultList();
             List<Patient> patientList = new ArrayList<Patient>();
             Patient patient = null;
             for (Object[] element: result) {
-                if (!patientList.contains((Patient) element[0])) {
-                    patient = (Patient) element[0];
+                patient = (Patient) element[0];
+                if (!patientList.contains(patient)) {
                     patient.setStudies(new LinkedHashSet<Study>());
                     patientList.add(patient);
                 }
