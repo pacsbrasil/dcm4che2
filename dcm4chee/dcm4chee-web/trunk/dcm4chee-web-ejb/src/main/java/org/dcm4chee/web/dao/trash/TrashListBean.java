@@ -123,8 +123,8 @@ public class TrashListBean implements TrashListLocal {
             List<PrivatePatient> patientList = new ArrayList<PrivatePatient>();
             PrivatePatient patient = null;
             for (Object[] element: result) {
-                if (!patientList.contains((PrivatePatient) element[0])) {
-                    patient = (PrivatePatient) element[0];
+                patient = (PrivatePatient) element[0];
+                if (!patientList.contains(patient)) {
                     patient.setStudies(new HashSet<PrivateStudy>());
                     patientList.add(patient);
                 }
