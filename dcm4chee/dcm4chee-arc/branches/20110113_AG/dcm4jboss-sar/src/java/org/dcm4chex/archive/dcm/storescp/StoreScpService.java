@@ -879,7 +879,7 @@ public class StoreScpService extends AbstractScpService {
         sendSeriesStoredNotification(store, seriesStored);
     }
 
-    void logInstancesStoredAndUpdateDerivedFields(Storage store,
+    public void logInstancesStoredAndUpdateDerivedFields(Storage store,
             Socket s, SeriesStored seriesStored)
             throws FinderException, RemoteException {
         logInstancesStored(s, seriesStored);
