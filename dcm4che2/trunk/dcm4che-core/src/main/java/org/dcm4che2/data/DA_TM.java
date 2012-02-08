@@ -46,7 +46,7 @@ import java.util.Arrays;
  * @since Jul 4, 2005
  *
  */
-class DA_TM {
+public class DA_TM {
 
 	private static final int[] DA_TAGS = {
 		0x00080012, // Instance Creation Date
