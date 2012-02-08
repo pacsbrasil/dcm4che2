@@ -47,6 +47,7 @@ import java.util.List;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.util.Convert;
@@ -65,59 +66,64 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
     private static final String[] SELECT_ATTRIBUTE = { 
-            "PrivatePatient.encodedAttributes",
-            "PrivateStudy.encodedAttributes",
-            "PrivatePatient.pk",
-            "PrivateStudy.pk"};
+        "PrivatePatient.encodedAttributes",
+        "PrivateStudy.encodedAttributes",
+        "PrivatePatient.pk",
+    "PrivateStudy.pk"};
 
     private static final String[] ENTITY = {"PrivatePatient"};
 
     private static final String[] LEFT_JOIN = { 
-            "PrivateStudy", null, "PrivatePatient.pk", "PrivateStudy.patient_fk",};
+        "PrivateStudy", null, "PrivatePatient.pk", "PrivateStudy.patient_fk",};
 
-	private boolean hideMissingStudies = false;
-    
+    private boolean hideMissingStudies = false;
+
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
     public QueryPrivateStudiesCmd(Dataset filter, int privateType, boolean hideMissingStudies)
-            throws SQLException {
+    throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel);
-    	this.hideMissingStudies = hideMissingStudies;
-    	sqlBuilder.setFrom(ENTITY);
-        sqlBuilder.setLeftJoin(LEFT_JOIN);
-        sqlBuilder.addIntValueMatch(null, "PrivatePatient.privateType",
-                SqlBuilder.TYPE1, privateType);
-        if ( filter != null ) {
-	        sqlBuilder.addWildCardMatch(null, "PrivatePatient.patientId",
-	                SqlBuilder.TYPE2,
-	                filter.getStrings(Tags.PatientID));
-	        sqlBuilder.addWildCardMatch(null, "PrivatePatient.patientName",
-	                SqlBuilder.TYPE2,
-	                toWildcardMatchString( filter.getString(Tags.PatientName)) );
-	        sqlBuilder.addWildCardMatch(null, "PrivateStudy.accessionNumber",
-	                SqlBuilder.TYPE2,
-	                filter.getStrings(Tags.AccessionNumber));
-	        sqlBuilder.addListOfStringMatch(null, "PrivateStudy.studyIuid",
-	                SqlBuilder.TYPE1, filter.getStrings( Tags.StudyInstanceUID));
-	        filter.setPrivateCreatorID(PrivateTags.CreatorID);
-	        sqlBuilder.addCallingAETsNestedMatch(true,
-	                filter.getStrings(PrivateTags.CallingAET));
-	        filter.setPrivateCreatorID(null);
+        try {
+            this.hideMissingStudies = hideMissingStudies;
+            sqlBuilder.setFrom(ENTITY);
+            sqlBuilder.setLeftJoin(LEFT_JOIN);
+            sqlBuilder.addIntValueMatch(null, "PrivatePatient.privateType",
+                    SqlBuilder.TYPE1, privateType);
+            if ( filter != null ) {
+                sqlBuilder.addWildCardMatch(null, "PrivatePatient.patientId",
+                        SqlBuilder.TYPE2,
+                        filter.getStrings(Tags.PatientID));
+                sqlBuilder.addWildCardMatch(null, "PrivatePatient.patientName",
+                        SqlBuilder.TYPE2,
+                        toWildcardMatchString( filter.getString(Tags.PatientName)) );
+                sqlBuilder.addWildCardMatch(null, "PrivateStudy.accessionNumber",
+                        SqlBuilder.TYPE2,
+                        filter.getStrings(Tags.AccessionNumber));
+                sqlBuilder.addListOfStringMatch(null, "PrivateStudy.studyIuid",
+                        SqlBuilder.TYPE1, filter.getStrings( Tags.StudyInstanceUID));
+                filter.setPrivateCreatorID(PrivateTags.CreatorID);
+                sqlBuilder.addCallingAETsNestedMatch(true,
+                        filter.getStrings(PrivateTags.CallingAET));
+                filter.setPrivateCreatorID(null);
+            }
+            if ( this.hideMissingStudies ) {
+                sqlBuilder.addNULLValueMatch(null,"PrivateStudy.encodedAttributes", true);
+            }
+        } catch (RuntimeException x) {
+            close();
+            throw x;
         }
-        if ( this.hideMissingStudies ) {
-        	sqlBuilder.addNULLValueMatch(null,"PrivateStudy.encodedAttributes", true);
-    	}
-        	
+
     }
 
     private static String toWildcardMatchString(String patientName) {
-    	if ( patientName != null ) {
-    		patientName = patientName.toUpperCase();
-    		if ( patientName.length() > 0 && 
-    				patientName.indexOf('*') == -1 &&
-					patientName.indexOf('?') == -1) patientName+="*";
-    	}
+        if ( patientName != null ) {
+            patientName = patientName.toUpperCase();
+            if ( patientName.length() > 0 && 
+                    patientName.indexOf('*') == -1 &&
+                    patientName.indexOf('?') == -1) patientName+="*";
+        }
         return patientName;
     }
 
@@ -132,7 +138,7 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
             rs.close();
             rs = null;
             sqlBuilder.setSelectCount(new String[]{"PrivatePatient.pk"}, true);
-        	sqlBuilder.addNULLValueMatch(null,"PrivateStudy.pk", false);
+            sqlBuilder.addNULLValueMatch(null,"PrivateStudy.pk", false);
             execute( sqlBuilder.getSql() );
             next();
             int emptyPatients = rs.getInt(1);
@@ -144,7 +150,7 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
         }
     }
 
-	
+
     public List list(int offset, int limit) throws SQLException {
         defineColumnTypes(new int[] {
                 blobAccessType,
@@ -159,7 +165,7 @@ public class QueryPrivateStudiesCmd extends BaseReadCmd {
             setFetchSize(limit);
             execute(sqlBuilder.getSql());
             ArrayList result = new ArrayList();
-            
+
             while (next()) {
                 final byte[] patAttrs = rs.getBytes(1);
                 final byte[] styAttrs = rs.getBytes(2);

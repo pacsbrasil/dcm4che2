@@ -83,112 +83,123 @@ public class GPWLQueryCmd extends BaseDSQueryCmd {
     public GPWLQueryCmd(Dataset keys, boolean fuzzyMatchingOfPN)
             throws SQLException, DcmServiceException {
         super(keys, true, false, transactionIsolationLevel);
-        AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
-        defineColumnTypes(new int[] { blobAccessType, blobAccessType });
-        String s;
-        // ensure keys contains (8,0005) for use as result filter
-        if (!keys.contains(Tags.SpecificCharacterSet)) {
-            keys.putCS(Tags.SpecificCharacterSet);
-        }
-        sqlBuilder.setSelect(SELECT);
-        sqlBuilder.setFrom(FROM);
-        sqlBuilder.setRelations(RELATIONS);
-        sqlBuilder.setLeftJoin(getLeftJoin());
-        sqlBuilder.addListOfUidMatch(null, "GPSPS.sopIuid",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.SOPInstanceUID));
-        if ((s = keys.getString(Tags.GPSPSStatus)) != null) {
-            sqlBuilder.addIntValueMatch(null, "GPSPS.gpspsStatusAsInt",
+        try {
+            AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
+            defineColumnTypes(new int[] { blobAccessType, blobAccessType });
+            String s;
+            // ensure keys contains (8,0005) for use as result filter
+            if (!keys.contains(Tags.SpecificCharacterSet)) {
+                keys.putCS(Tags.SpecificCharacterSet);
+            }
+            sqlBuilder.setSelect(SELECT);
+            sqlBuilder.setFrom(FROM);
+            sqlBuilder.setRelations(RELATIONS);
+            sqlBuilder.setLeftJoin(getLeftJoin());
+            sqlBuilder.addListOfUidMatch(null, "GPSPS.sopIuid",
                     SqlBuilder.TYPE1,
-                    GPSPSStatus.toInt(s));
-        }
-        if ((s = keys.getString(Tags.InputAvailabilityFlag)) != null) {
-            sqlBuilder.addIntValueMatch(null, "GPSPS.inputAvailabilityFlagAsInt",
+                    keys.getStrings(Tags.SOPInstanceUID));
+            if ((s = keys.getString(Tags.GPSPSStatus)) != null) {
+                sqlBuilder.addIntValueMatch(null, "GPSPS.gpspsStatusAsInt",
+                        SqlBuilder.TYPE1,
+                        GPSPSStatus.toInt(s));
+            }
+            if ((s = keys.getString(Tags.InputAvailabilityFlag)) != null) {
+                sqlBuilder.addIntValueMatch(null, "GPSPS.inputAvailabilityFlagAsInt",
+                        SqlBuilder.TYPE1,
+                        InputAvailabilityFlag.toInt(s));
+            }
+            s = keys.getString(Tags.GPSPSPriority);
+            if (s != null) {
+                sqlBuilder.addIntValueMatch(null, "GPSPS.gpspsPriorityAsInt",
+                        SqlBuilder.TYPE1,
+                        Priority.toInt(s));
+            }
+            sqlBuilder.addRangeMatch(null, "GPSPS.spsStartDateTime",
                     SqlBuilder.TYPE1,
-                    InputAvailabilityFlag.toInt(s));
-        }
-        s = keys.getString(Tags.GPSPSPriority);
-        if (s != null) {
-            sqlBuilder.addIntValueMatch(null, "GPSPS.gpspsPriorityAsInt",
+                    keys.getDateRange(Tags.SPSStartDateAndTime));
+            sqlBuilder.addRangeMatch(null, "GPSPS.expectedCompletionDateTime",
+                    SqlBuilder.TYPE2,
+                    keys.getDateRange(Tags.ExpectedCompletionDateAndTime));        
+            addCodeMatch(Tags.ScheduledWorkitemCodeSeq, ITEM_CODE);
+            addCodeMatch(Tags.ScheduledProcessingApplicationsCodeSeq, APP_CODE);
+            addCodeMatch(Tags.ScheduledStationNameCodeSeq, DEVNAME_CODE);
+            addCodeMatch(Tags.ScheduledStationClassCodeSeq, DEVCLASS_CODE);
+            addCodeMatch(Tags.ScheduledStationGeographicLocationCodeSeq, DEVLOC_CODE);
+            Dataset item = keys.getItem(Tags.ScheduledHumanPerformersSeq);
+            if (item != null) {
+                if (fuzzyMatchingOfPN)
+                    try {
+                        sqlBuilder.addPNFuzzyMatch(
+                                new String[] {
+                                    "GPSPSPerformer.humanPerformerFamilyNameSoundex",
+                                    "GPSPSPerformer.humanPerformerGivenNameSoundex" },
+                                SqlBuilder.TYPE2,
+                                keys.getString(Tags.HumanPerformerName));
+                    } catch (IllegalArgumentException ex) {
+                        throw new DcmServiceException(
+                                Status.IdentifierDoesNotMatchSOPClass,
+                                ex.getMessage() + ": " + keys.get(Tags.HumanPerformerName));
+                    }
+                else
+                    sqlBuilder.addPNMatch(
+                            new String[] {
+                                "GPSPSPerformer.humanPerformerName",
+                                "GPSPSPerformer.humanPerformerIdeographicName",
+                                "GPSPSPerformer.humanPerformerPhoneticName"},
+                            SqlBuilder.TYPE2,
+                            true, // TODO make ICASE configurable
+                            item.getString(Tags.HumanPerformerName));
+                addCodeMatch(item.getItem(Tags.HumanPerformerCodeSeq), PERF_CODE);
+            }
+            item = keys.getItem(Tags.RefRequestSeq);
+            if (item != null) {
+                sqlBuilder.addListOfStringMatch(null,
+                        "GPSPSRequest.requestedProcedureId",
+                        SqlBuilder.TYPE2,
+                        item.getStrings(Tags.RequestedProcedureID));
+                sqlBuilder.addListOfStringMatch(null,
+                        "GPSPSRequest.accessionNumber",
+                        SqlBuilder.TYPE2,
+                        item.getStrings(Tags.AccessionNumber));
+            }        
+            if (sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
                     SqlBuilder.TYPE1,
-                    Priority.toInt(s));
-        }
-        sqlBuilder.addRangeMatch(null, "GPSPS.spsStartDateTime",
-                SqlBuilder.TYPE1,
-                keys.getDateRange(Tags.SPSStartDateAndTime));
-        sqlBuilder.addRangeMatch(null, "GPSPS.expectedCompletionDateTime",
-                SqlBuilder.TYPE2,
-                keys.getDateRange(Tags.ExpectedCompletionDateAndTime));        
-        addCodeMatch(Tags.ScheduledWorkitemCodeSeq, ITEM_CODE);
-        addCodeMatch(Tags.ScheduledProcessingApplicationsCodeSeq, APP_CODE);
-        addCodeMatch(Tags.ScheduledStationNameCodeSeq, DEVNAME_CODE);
-        addCodeMatch(Tags.ScheduledStationClassCodeSeq, DEVCLASS_CODE);
-        addCodeMatch(Tags.ScheduledStationGeographicLocationCodeSeq, DEVLOC_CODE);
-        Dataset item = keys.getItem(Tags.ScheduledHumanPerformersSeq);
-        if (item != null) {
+                    patAttrFilter.getStrings(keys, Tags.PatientID)) != null)
+                sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
+                        SqlBuilder.TYPE2,
+                        patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
             if (fuzzyMatchingOfPN)
                 try {
                     sqlBuilder.addPNFuzzyMatch(
                             new String[] {
-                                "GPSPSPerformer.humanPerformerFamilyNameSoundex",
-                                "GPSPSPerformer.humanPerformerGivenNameSoundex" },
+                                    "Patient.patientFamilyNameSoundex",
+                                    "Patient.patientGivenNameSoundex" },
                             SqlBuilder.TYPE2,
-                            keys.getString(Tags.HumanPerformerName));
+                            keys.getString(Tags.PatientName));
                 } catch (IllegalArgumentException ex) {
                     throw new DcmServiceException(
                             Status.IdentifierDoesNotMatchSOPClass,
-                            ex.getMessage() + ": " + keys.get(Tags.HumanPerformerName));
+                            ex.getMessage() + ": " + keys.get(Tags.PatientName));
                 }
             else
                 sqlBuilder.addPNMatch(
                         new String[] {
-                            "GPSPSPerformer.humanPerformerName",
-                            "GPSPSPerformer.humanPerformerIdeographicName",
-                            "GPSPSPerformer.humanPerformerPhoneticName"},
+                            "Patient.patientName",
+                            "Patient.patientIdeographicName",
+                            "Patient.patientPhoneticName" },
                         SqlBuilder.TYPE2,
-                        true, // TODO make ICASE configurable
-                        item.getString(Tags.HumanPerformerName));
-            addCodeMatch(item.getItem(Tags.HumanPerformerCodeSeq), PERF_CODE);
-        }
-        item = keys.getItem(Tags.RefRequestSeq);
-        if (item != null) {
-            sqlBuilder.addListOfStringMatch(null,
-                    "GPSPSRequest.requestedProcedureId",
-                    SqlBuilder.TYPE2,
-                    item.getStrings(Tags.RequestedProcedureID));
-            sqlBuilder.addListOfStringMatch(null,
-                    "GPSPSRequest.accessionNumber",
-                    SqlBuilder.TYPE2,
-                    item.getStrings(Tags.AccessionNumber));
-        }        
-        if (sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
-                SqlBuilder.TYPE1,
-                patAttrFilter.getStrings(keys, Tags.PatientID)) != null)
-            sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
-                    SqlBuilder.TYPE2,
-                    patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
-        if (fuzzyMatchingOfPN)
-            try {
-                sqlBuilder.addPNFuzzyMatch(
-                        new String[] {
-                                "Patient.patientFamilyNameSoundex",
-                                "Patient.patientGivenNameSoundex" },
-                        SqlBuilder.TYPE2,
+                        patAttrFilter.isICase(Tags.PatientName),
                         keys.getString(Tags.PatientName));
-            } catch (IllegalArgumentException ex) {
-                throw new DcmServiceException(
-                        Status.IdentifierDoesNotMatchSOPClass,
-                        ex.getMessage() + ": " + keys.get(Tags.PatientName));
-            }
-        else
-            sqlBuilder.addPNMatch(
-                    new String[] {
-                        "Patient.patientName",
-                        "Patient.patientIdeographicName",
-                        "Patient.patientPhoneticName" },
-                    SqlBuilder.TYPE2,
-                    patAttrFilter.isICase(Tags.PatientName),
-                    keys.getString(Tags.PatientName));
+        } catch (SQLException x) {
+            close();
+            throw x;
+        } catch (DcmServiceException x) {
+            close();
+            throw x;
+        } catch (RuntimeException x) {
+            close();
+            throw x;
+        }
     }
 
     private void addCodeMatch(int tag, String alias) {

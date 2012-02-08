@@ -96,97 +96,107 @@ public class MWLQueryCmd extends BaseDSQueryCmd {
     public MWLQueryCmd(Dataset keys, boolean fuzzyMatchingOfPN,
             boolean noMatchForNoValue) throws SQLException, DcmServiceException {
         super(keys, true, noMatchForNoValue, transactionIsolationLevel);
-        AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
-        defineColumnTypes(new int[] { blobAccessType, blobAccessType });
-        // ensure keys contains (8,0005) for use as result filter
-        if (!keys.contains(Tags.SpecificCharacterSet)) {
-            keys.putCS(Tags.SpecificCharacterSet);
-        }
-        sqlBuilder.setSelect(SELECT);
-        sqlBuilder.setFrom(FROM);
-        sqlBuilder.setRelations(RELATIONS);
-        Dataset spsItem = keys.getItem(Tags.SPSSeq);
-        if (spsItem != null) {
-            sqlBuilder.addListOfIntMatch(null, "MWLItem.spsStatusAsInt",
-                        SqlBuilder.TYPE1, 
-                        SPSStatus.toInts(spsItem.getStrings(Tags.SPSStatus)));
-            sqlBuilder.addWildCardMatch(null, "MWLItem.spsId",
+        try {
+            AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
+            defineColumnTypes(new int[] { blobAccessType, blobAccessType });
+            // ensure keys contains (8,0005) for use as result filter
+            if (!keys.contains(Tags.SpecificCharacterSet)) {
+                keys.putCS(Tags.SpecificCharacterSet);
+            }
+            sqlBuilder.setSelect(SELECT);
+            sqlBuilder.setFrom(FROM);
+            sqlBuilder.setRelations(RELATIONS);
+            Dataset spsItem = keys.getItem(Tags.SPSSeq);
+            if (spsItem != null) {
+                sqlBuilder.addListOfIntMatch(null, "MWLItem.spsStatusAsInt",
+                            SqlBuilder.TYPE1, 
+                            SPSStatus.toInts(spsItem.getStrings(Tags.SPSStatus)));
+                sqlBuilder.addWildCardMatch(null, "MWLItem.spsId",
+                        SqlBuilder.TYPE1,
+                        spsItem.getStrings(Tags.SPSID));
+                sqlBuilder.addRangeMatch(null, "MWLItem.spsStartDateTime",
+                        SqlBuilder.TYPE1,
+                        spsItem.getDateTimeRange(Tags.SPSStartDate,
+                                Tags.SPSStartTime));
+                sqlBuilder.addWildCardMatch(null, "MWLItem.modality",
+                        SqlBuilder.TYPE1,
+                        spsItem.getStrings(Tags.Modality));
+                sqlBuilder.addWildCardMatch(null, "MWLItem.scheduledStationAET",
+                        SqlBuilder.TYPE1,
+                        spsItem.getStrings(Tags.ScheduledStationAET));
+                sqlBuilder.addWildCardMatch(null, "MWLItem.scheduledStationName",
+                        type2,
+                        spsItem.getStrings(Tags.ScheduledStationName));
+                if (fuzzyMatchingOfPN)
+                    try {
+                        sqlBuilder.addPNFuzzyMatch(
+                                new String[] {
+                                    "MWLItem.performingPhysicianFamilyNameSoundex",
+                                    "MWLItem.performingPhysicianGivenNameSoundex" },
+                                type2,
+                                keys.getString(Tags.ScheduledPerformingPhysicianName));
+                    } catch (IllegalArgumentException ex) {
+                        throw new DcmServiceException(
+                                Status.IdentifierDoesNotMatchSOPClass,
+                                ex.getMessage() + ": " + keys.get(Tags.ScheduledPerformingPhysicianName));
+                    }
+                else
+                    sqlBuilder.addPNMatch(
+                            new String[] {
+                                "MWLItem.performingPhysicianName",
+                                "MWLItem.performingPhysicianIdeographicName",
+                                "MWLItem.performingPhysicianPhoneticName"},
+                            true, // TODO make ICASE configurable
+                            type2,
+                            spsItem.getString(Tags.ScheduledPerformingPhysicianName));
+            }
+            sqlBuilder.addWildCardMatch(null, "MWLItem.requestedProcedureId",
                     SqlBuilder.TYPE1,
-                    spsItem.getStrings(Tags.SPSID));
-            sqlBuilder.addRangeMatch(null, "MWLItem.spsStartDateTime",
-                    SqlBuilder.TYPE1,
-                    spsItem.getDateTimeRange(Tags.SPSStartDate,
-                            Tags.SPSStartTime));
-            sqlBuilder.addWildCardMatch(null, "MWLItem.modality",
-                    SqlBuilder.TYPE1,
-                    spsItem.getStrings(Tags.Modality));
-            sqlBuilder.addWildCardMatch(null, "MWLItem.scheduledStationAET",
-                    SqlBuilder.TYPE1,
-                    spsItem.getStrings(Tags.ScheduledStationAET));
-            sqlBuilder.addWildCardMatch(null, "MWLItem.scheduledStationName",
+                    keys.getStrings(Tags.RequestedProcedureID));
+            sqlBuilder.addWildCardMatch(null, "MWLItem.accessionNumber",
                     type2,
-                    spsItem.getStrings(Tags.ScheduledStationName));
+                    keys.getStrings(Tags.AccessionNumber));
+            sqlBuilder.addListOfStringMatch(null, "MWLItem.studyIuid",
+                    SqlBuilder.TYPE1,
+                    keys.getStrings(Tags.StudyInstanceUID));
+            if (sqlBuilder.addWildCardMatch(null, "Patient.patientId",
+                    SqlBuilder.TYPE1,
+                    patAttrFilter.getStrings(keys, Tags.PatientID)) != null)
+                sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
+                        type2,
+                        patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
             if (fuzzyMatchingOfPN)
                 try {
                     sqlBuilder.addPNFuzzyMatch(
                             new String[] {
-                                "MWLItem.performingPhysicianFamilyNameSoundex",
-                                "MWLItem.performingPhysicianGivenNameSoundex" },
+                                "Patient.patientFamilyNameSoundex",
+                                "Patient.patientGivenNameSoundex" },
                             type2,
-                            keys.getString(Tags.ScheduledPerformingPhysicianName));
+                            keys.getString(Tags.PatientName));
                 } catch (IllegalArgumentException ex) {
                     throw new DcmServiceException(
                             Status.IdentifierDoesNotMatchSOPClass,
-                            ex.getMessage() + ": " + keys.get(Tags.ScheduledPerformingPhysicianName));
+                            ex.getMessage() + ": " + keys.get(Tags.PatientName));
                 }
             else
                 sqlBuilder.addPNMatch(
                         new String[] {
-                            "MWLItem.performingPhysicianName",
-                            "MWLItem.performingPhysicianIdeographicName",
-                            "MWLItem.performingPhysicianPhoneticName"},
-                        true, // TODO make ICASE configurable
+                            "Patient.patientName",
+                            "Patient.patientIdeographicName",
+                            "Patient.patientPhoneticName"},
                         type2,
-                        spsItem.getString(Tags.ScheduledPerformingPhysicianName));
-        }
-        sqlBuilder.addWildCardMatch(null, "MWLItem.requestedProcedureId",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.RequestedProcedureID));
-        sqlBuilder.addWildCardMatch(null, "MWLItem.accessionNumber",
-                type2,
-                keys.getStrings(Tags.AccessionNumber));
-        sqlBuilder.addListOfStringMatch(null, "MWLItem.studyIuid",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.StudyInstanceUID));
-        if (sqlBuilder.addWildCardMatch(null, "Patient.patientId",
-                SqlBuilder.TYPE1,
-                patAttrFilter.getStrings(keys, Tags.PatientID)) != null)
-            sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
-                    type2,
-                    patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
-        if (fuzzyMatchingOfPN)
-            try {
-                sqlBuilder.addPNFuzzyMatch(
-                        new String[] {
-                            "Patient.patientFamilyNameSoundex",
-                            "Patient.patientGivenNameSoundex" },
-                        type2,
+                        patAttrFilter.isICase(Tags.PatientName),
                         keys.getString(Tags.PatientName));
-            } catch (IllegalArgumentException ex) {
-                throw new DcmServiceException(
-                        Status.IdentifierDoesNotMatchSOPClass,
-                        ex.getMessage() + ": " + keys.get(Tags.PatientName));
-            }
-        else
-            sqlBuilder.addPNMatch(
-                    new String[] {
-                        "Patient.patientName",
-                        "Patient.patientIdeographicName",
-                        "Patient.patientPhoneticName"},
-                    type2,
-                    patAttrFilter.isICase(Tags.PatientName),
-                    keys.getString(Tags.PatientName));
-        
+        } catch (SQLException x) {
+            close();
+            throw x;
+        } catch (DcmServiceException x) {
+            close();
+            throw x;
+        } catch (RuntimeException x) {
+            close();
+            throw x;
+        }
     }
 
     public Dataset getDataset() throws SQLException {

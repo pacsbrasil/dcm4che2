@@ -42,6 +42,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import org.dcm4che.net.DcmServiceException;
+
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
@@ -55,16 +57,24 @@ class QuerySeriesAttrsForRetrieveCmd extends BaseReadCmd {
                 transactionIsolationLevel,
                 JdbcProperties.getInstance()
                         .getProperty("QuerySeriesAttrsForRetrieveCmd"));
-        this.seriesIUID = seriesIUID;
-        defineColumnTypes(new int[] {
-                blobAccessType, // patient.pat_attrs
-                blobAccessType, // study.study_attrs
-                blobAccessType, // series.series_attrs
-                Types.VARCHAR,  // patient.pat_id
-                Types.VARCHAR,  // patient.pat_name
-                Types.VARCHAR,  // study.study_iuid
-                });
-        ((PreparedStatement) stmt).setString(1, seriesIUID);
+        try {
+            this.seriesIUID = seriesIUID;
+            defineColumnTypes(new int[] {
+                    blobAccessType, // patient.pat_attrs
+                    blobAccessType, // study.study_attrs
+                    blobAccessType, // series.series_attrs
+                    Types.VARCHAR,  // patient.pat_id
+                    Types.VARCHAR,  // patient.pat_name
+                    Types.VARCHAR,  // study.study_iuid
+                    });
+            ((PreparedStatement) stmt).setString(1, seriesIUID);
+        } catch (SQLException x) {
+            close();
+            throw x;
+        } catch (RuntimeException x) {
+            close();
+            throw x;
+        }
     }
 
     public FileInfo getFileInfo() throws SQLException {

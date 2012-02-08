@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.HPLevel;
 
@@ -77,50 +78,58 @@ public class HPQueryCmd extends BaseDSQueryCmd {
 
     public HPQueryCmd(Dataset keys) throws SQLException {
         super(keys, true, false, transactionIsolationLevel);
-        defineColumnTypes(new int[] { blobAccessType });
-        String s;
-        int i;
-        // ensure keys contains (8,0005) for use as result filter
-        if (!keys.contains(Tags.SpecificCharacterSet)) {
-            keys.putCS(Tags.SpecificCharacterSet);
-        }
-        sqlBuilder.setSelect(SELECT);
-        sqlBuilder.setFrom(FROM);
-        sqlBuilder.setLeftJoin(getLeftJoin());
-        sqlBuilder.addListOfUidMatch(null, "HP.sopIuid", SqlBuilder.TYPE1, keys
-                .getStrings(Tags.SOPInstanceUID));
-        sqlBuilder.addListOfUidMatch(null, "HP.sopCuid", SqlBuilder.TYPE1, keys
-                .getStrings(Tags.SOPClassUID));
-        sqlBuilder.addWildCardMatch(null, "HP.hangingProtocolName",
-                SqlBuilder.TYPE2, keys.getStrings(Tags.HangingProtocolName));
-        if ((s = keys.getString(Tags.HangingProtocolLevel)) != null) {
-            sqlBuilder.addIntValueMatch(null, "HP.hangingProtocolLevelAsInt",
-                    SqlBuilder.TYPE1, HPLevel.toInt(s));
-        }
-        if ((i = keys.getInt(Tags.NumberOfPriorsReferenced, -1)) != -1) {
-            sqlBuilder.addIntValueMatch(null, "HP.numberOfPriorsReferenced",
-                    SqlBuilder.TYPE1, i);
-        }
-        if ((i = keys.getInt(Tags.NumberOfScreens, -1)) != -1) {
-            sqlBuilder.addIntValueMatch(null, "HP.numberOfScreens",
-                    SqlBuilder.TYPE2, i);
-        }
-        sqlBuilder.addWildCardMatch(null, "HP.hangingProtocolUserGroupName",
-                SqlBuilder.TYPE2, keys
-                        .getStrings(Tags.HangingProtocolUserGroupName));
-        addCodeMatch(keys
-                .getItem(Tags.HangingProtocolUserIdentificationCodeSeq),
-                USER_CODE);
-        Dataset item = keys.getItem(Tags.HangingProtocolDefinitionSeq);
-        if (item != null) {
-            sqlBuilder.addWildCardMatch(null, "HPDefinition.modality",
-                    SqlBuilder.TYPE2, item.getStrings(Tags.Modality));
-            sqlBuilder.addWildCardMatch(null, "HPDefinition.laterality",
-                    SqlBuilder.TYPE2, item.getStrings(Tags.Laterality));
-            addCodeMatch(item.getItem(Tags.AnatomicRegionSeq), REGION_CODE);
-            addCodeMatch(item.getItem(Tags.ProcedureCodeSeq), PROC_CODE);
-            addCodeMatch(item.getItem(Tags.ReasonforRequestedProcedureCodeSeq),
-                    REASON_CODE);
+        try {
+            defineColumnTypes(new int[] { blobAccessType });
+            String s;
+            int i;
+            // ensure keys contains (8,0005) for use as result filter
+            if (!keys.contains(Tags.SpecificCharacterSet)) {
+                keys.putCS(Tags.SpecificCharacterSet);
+            }
+            sqlBuilder.setSelect(SELECT);
+            sqlBuilder.setFrom(FROM);
+            sqlBuilder.setLeftJoin(getLeftJoin());
+            sqlBuilder.addListOfUidMatch(null, "HP.sopIuid", SqlBuilder.TYPE1, keys
+                    .getStrings(Tags.SOPInstanceUID));
+            sqlBuilder.addListOfUidMatch(null, "HP.sopCuid", SqlBuilder.TYPE1, keys
+                    .getStrings(Tags.SOPClassUID));
+            sqlBuilder.addWildCardMatch(null, "HP.hangingProtocolName",
+                    SqlBuilder.TYPE2, keys.getStrings(Tags.HangingProtocolName));
+            if ((s = keys.getString(Tags.HangingProtocolLevel)) != null) {
+                sqlBuilder.addIntValueMatch(null, "HP.hangingProtocolLevelAsInt",
+                        SqlBuilder.TYPE1, HPLevel.toInt(s));
+            }
+            if ((i = keys.getInt(Tags.NumberOfPriorsReferenced, -1)) != -1) {
+                sqlBuilder.addIntValueMatch(null, "HP.numberOfPriorsReferenced",
+                        SqlBuilder.TYPE1, i);
+            }
+            if ((i = keys.getInt(Tags.NumberOfScreens, -1)) != -1) {
+                sqlBuilder.addIntValueMatch(null, "HP.numberOfScreens",
+                        SqlBuilder.TYPE2, i);
+            }
+            sqlBuilder.addWildCardMatch(null, "HP.hangingProtocolUserGroupName",
+                    SqlBuilder.TYPE2, keys
+                            .getStrings(Tags.HangingProtocolUserGroupName));
+            addCodeMatch(keys
+                    .getItem(Tags.HangingProtocolUserIdentificationCodeSeq),
+                    USER_CODE);
+            Dataset item = keys.getItem(Tags.HangingProtocolDefinitionSeq);
+            if (item != null) {
+                sqlBuilder.addWildCardMatch(null, "HPDefinition.modality",
+                        SqlBuilder.TYPE2, item.getStrings(Tags.Modality));
+                sqlBuilder.addWildCardMatch(null, "HPDefinition.laterality",
+                        SqlBuilder.TYPE2, item.getStrings(Tags.Laterality));
+                addCodeMatch(item.getItem(Tags.AnatomicRegionSeq), REGION_CODE);
+                addCodeMatch(item.getItem(Tags.ProcedureCodeSeq), PROC_CODE);
+                addCodeMatch(item.getItem(Tags.ReasonforRequestedProcedureCodeSeq),
+                        REASON_CODE);
+            }
+        } catch (SQLException x) {
+            close();
+            throw x;
+        } catch (RuntimeException x) {
+            close();
+            throw x;
         }
     }
 

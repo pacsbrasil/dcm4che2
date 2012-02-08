@@ -46,6 +46,7 @@ import java.util.List;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.DatasetUtils;
 
 /**
@@ -65,26 +66,34 @@ public class HPRetrieveCmd extends BaseReadCmd {
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
     public HPRetrieveCmd(Dataset keys) throws SQLException {
-		super(JdbcProperties.getInstance().getDataSource(),
-		        transactionIsolationLevel);
-                defineColumnTypes(new int[] { blobAccessType });
-		sqlBuilder.setSelect(SELECT);
-		sqlBuilder.setFrom(FROM);
-		sqlBuilder.addListOfUidMatch(null, "HP.sopIuid", SqlBuilder.TYPE1,
-				keys.getStrings(Tags.SOPInstanceUID));
-	}
-	
-	public List getDatasets() throws SQLException {
-		ArrayList result = new ArrayList();
-		try {
-		    execute(sqlBuilder.getSql());
-		    while (next()) {
-			result.add(DatasetUtils.fromByteArray(rs.getBytes(1)));			
-		    }
-		} finally {
-			close();
-		}
-		return result;
+        super(JdbcProperties.getInstance().getDataSource(),
+                transactionIsolationLevel);
+        try {
+            defineColumnTypes(new int[] { blobAccessType });
+            sqlBuilder.setSelect(SELECT);
+            sqlBuilder.setFrom(FROM);
+            sqlBuilder.addListOfUidMatch(null, "HP.sopIuid", SqlBuilder.TYPE1,
+                    keys.getStrings(Tags.SOPInstanceUID));
+        } catch (SQLException x) {
+            close();
+            throw x;
+        } catch (RuntimeException x) {
+            close();
+            throw x;
+        }
     }
-	
+
+    public List getDatasets() throws SQLException {
+        ArrayList result = new ArrayList();
+        try {
+            execute(sqlBuilder.getSql());
+            while (next()) {
+                result.add(DatasetUtils.fromByteArray(rs.getBytes(1)));			
+            }
+        } finally {
+            close();
+        }
+        return result;
+    }
+
 }

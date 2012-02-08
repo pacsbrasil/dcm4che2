@@ -141,7 +141,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         final PatientQueryCmd cmd = new PatientQueryCmd(keys, pidWithIssuers,
                 filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
-        cmd.init();
+        try {
+            cmd.init();
+        } catch (Exception x) {
+            cmd.close();
+            throw new DcmServiceException(Status.ProcessingFailure, x);
+        }
         return cmd;
     }
 
@@ -153,7 +158,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         final StudyQueryCmd cmd = new StudyQueryCmd(keys, pidWithIssuers,
                 filterResult, fuzzyMatchingOfPN,noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
-        cmd.init();
+        try {
+            cmd.init();
+        } catch (Exception x) {
+            cmd.close();
+            throw new DcmServiceException(Status.ProcessingFailure, x);
+        }
         return cmd;
     }
 
@@ -165,7 +175,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         final SeriesQueryCmd cmd = new SeriesQueryCmd(keys, pidWithIssuers,
                 filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
-        cmd.init();
+        try {
+            cmd.init();
+        } catch (Exception x) {
+            cmd.close();
+            throw new DcmServiceException(Status.ProcessingFailure, x);
+        }
         return cmd;
     }
 
@@ -177,7 +192,12 @@ public abstract class QueryCmd extends BaseDSQueryCmd {
         final ImageQueryCmd cmd = new ImageQueryCmd(keys, pidWithIssuers,
                 filterResult, fuzzyMatchingOfPN, noMatchForNoValue,
                 noMatchWithoutIssuerOfPID, subject);
-        cmd.init();
+        try {
+            cmd.init();
+        } catch (Exception x) {
+            cmd.close();
+            throw new DcmServiceException(Status.ProcessingFailure, x);
+        }
         return cmd;
     }
 

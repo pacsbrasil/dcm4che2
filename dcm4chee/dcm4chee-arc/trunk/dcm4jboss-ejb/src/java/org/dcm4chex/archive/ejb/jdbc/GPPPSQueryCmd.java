@@ -45,6 +45,7 @@ import java.sql.Types;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 
@@ -72,31 +73,39 @@ public class GPPPSQueryCmd extends BaseDSQueryCmd {
      */
     public GPPPSQueryCmd(Dataset keys) throws SQLException {
         super(keys, false, true, transactionIsolationLevel);
-        AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
-        defineColumnTypes(new int[] { blobAccessType, blobAccessType });
-        // ensure keys contains (8,0005) for use as result filter
-        sqlBuilder.setSelect(SELECT);
-        sqlBuilder.setFrom(FROM);
-        sqlBuilder.setRelations(RELATIONS);
-        sqlBuilder.addListOfStringMatch(null, "GPPPS.sopIuid",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.SOPInstanceUID) );
-        sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
-                SqlBuilder.TYPE1,
-                patAttrFilter.getStrings(keys, Tags.PatientID) );
-        sqlBuilder.addPNMatch(new String[] {
-                "Patient.patientName",
-                "Patient.patientIdeographicName",
-                "Patient.patientPhoneticName"},
-                SqlBuilder.TYPE2,
-                patAttrFilter.isICase(Tags.PatientName),
-                keys.getString(Tags.PatientName));
-        sqlBuilder.addRangeMatch(null, "GPPPS.ppsStartDateTime",
-                SqlBuilder.TYPE1,
-                keys.getDateTimeRange(Tags.PPSStartDate,Tags.PPSStartTime));
-        sqlBuilder.addListOfStringMatch(null, "GPPPS.ppsStatusAsInt",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.PPSStatus));
+        try {
+            AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
+            defineColumnTypes(new int[] { blobAccessType, blobAccessType });
+            // ensure keys contains (8,0005) for use as result filter
+            sqlBuilder.setSelect(SELECT);
+            sqlBuilder.setFrom(FROM);
+            sqlBuilder.setRelations(RELATIONS);
+            sqlBuilder.addListOfStringMatch(null, "GPPPS.sopIuid",
+                    SqlBuilder.TYPE1,
+                    keys.getStrings(Tags.SOPInstanceUID) );
+            sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
+                    SqlBuilder.TYPE1,
+                    patAttrFilter.getStrings(keys, Tags.PatientID) );
+            sqlBuilder.addPNMatch(new String[] {
+                    "Patient.patientName",
+                    "Patient.patientIdeographicName",
+                    "Patient.patientPhoneticName"},
+                    SqlBuilder.TYPE2,
+                    patAttrFilter.isICase(Tags.PatientName),
+                    keys.getString(Tags.PatientName));
+            sqlBuilder.addRangeMatch(null, "GPPPS.ppsStartDateTime",
+                    SqlBuilder.TYPE1,
+                    keys.getDateTimeRange(Tags.PPSStartDate,Tags.PPSStartTime));
+            sqlBuilder.addListOfStringMatch(null, "GPPPS.ppsStatusAsInt",
+                    SqlBuilder.TYPE1,
+                    keys.getStrings(Tags.PPSStatus));
+        } catch (SQLException x) {
+            close();
+            throw x;
+        } catch (RuntimeException x) {
+            close();
+            throw x;
+        }
     }
 
     public Dataset getDataset() throws SQLException {

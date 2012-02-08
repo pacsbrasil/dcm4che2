@@ -45,6 +45,7 @@ import java.sql.Types;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.DatasetUtils;
 
@@ -61,7 +62,8 @@ class QuerySeriesAttrsForQueryCmd extends BaseReadCmd {
                 transactionIsolationLevel,
                 JdbcProperties.getInstance()
                         .getProperty("QuerySeriesAttrsForQueryCmd"));
-        defineColumnTypes(new int[] {
+        try {
+            defineColumnTypes(new int[] {
                 blobAccessType, // patient.pat_attrs
                 blobAccessType, // study.study_attrs
                 blobAccessType, // series.series_attrs
@@ -71,7 +73,14 @@ class QuerySeriesAttrsForQueryCmd extends BaseReadCmd {
                 Types.INTEGER,  // study.num_instances
                 Types.INTEGER,  // series.num_instances
                 });
-        ((PreparedStatement) stmt).setString(1, seriesIUID);
+            ((PreparedStatement) stmt).setString(1, seriesIUID);
+        } catch (SQLException x) {
+            close();
+            throw x;
+        } catch (RuntimeException x) {
+            close();
+            throw x;
+        }
     }
 
     public Dataset getDataset() throws SQLException {

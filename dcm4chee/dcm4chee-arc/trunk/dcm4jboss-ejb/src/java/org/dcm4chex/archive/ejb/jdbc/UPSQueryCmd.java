@@ -72,124 +72,135 @@ public class UPSQueryCmd extends BaseDSQueryCmd {
     public UPSQueryCmd(Dataset keys, boolean fuzzyMatchingOfPN,
             boolean noMatchForNoValue) throws SQLException, DcmServiceException {
         super(keys, true, noMatchForNoValue, transactionIsolationLevel);
-        AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
-        defineColumnTypes(new int[] { blobAccessType, blobAccessType });
-        String s;
-        // ensure keys contains (8,0005) for use as result filter
-        if (!keys.contains(Tags.SpecificCharacterSet)) {
-            keys.putCS(Tags.SpecificCharacterSet);
-        }
-        sqlBuilder.setSelect(SELECT);
-        sqlBuilder.setFrom(FROM);
-        sqlBuilder.setLeftJoin(getLeftJoin());
-        sqlBuilder.addListOfUidMatch(null, "UPS.sopInstanceUID",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.SOPInstanceUID));
-        if ((s = keys.getString(Tags.UPSState)) != null) {
-            sqlBuilder.addIntValueMatch(null, "UPS.stateAsInt",
-                    SqlBuilder.TYPE1,
-                    UPSState.toInt(s));
-        }
-        s = keys.getString(Tags.SPSPriority);
-        if (s != null) {
-            sqlBuilder.addIntValueMatch(null, "UPS.priorityAsInt",
-                    SqlBuilder.TYPE1,
-                    Priority.toInt(s));
-        }
-        sqlBuilder.addWildCardMatch(null, "UPS.procedureStepLabel",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.ProcedureStepLabel));
-        sqlBuilder.addWildCardMatch(null, "UPS.worklistLabel",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.WorklistLabel));
-        sqlBuilder.addRangeMatch(null, "UPS.scheduledStartDateTime",
-                SqlBuilder.TYPE1,
-                keys.getDateRange(Tags.SPSStartDateAndTime));
-        sqlBuilder.addRangeMatch(null, "UPS.expectedCompletionDateTime",
-                type2,
-                keys.getDateRange(Tags.ExpectedCompletionDateAndTime));
-        sqlBuilder.addCodeMatch(ITEM_CODE,
-                keys.getItem(Tags.ScheduledWorkitemCodeSeq));
-        addNestedCodeMatch(Tags.ScheduledProcessingApplicationsCodeSeq,
-                new String[]{ "UPS.pk", "rel_ups_appcode.ups_fk"},
-                new String[]{ "rel_ups_appcode", "Code" },
-                new String[]{ "rel_ups_appcode.appcode_fk", "Code.pk"});
-        addNestedCodeMatch(Tags.ScheduledStationNameCodeSeq,
-                new String[]{ "UPS.pk", "rel_ups_devname.ups_fk"},
-                new String[]{ "rel_ups_devname", "Code" },
-                new String[]{ "rel_ups_devname.devname_fk", "Code.pk"});
-        addNestedCodeMatch(Tags.ScheduledStationClassCodeSeq,
-                new String[]{ "UPS.pk", "rel_ups_devclass.ups_fk"},
-                new String[]{ "rel_ups_devclass", "Code" },
-                new String[]{ "rel_ups_devclass.devclass_fk", "Code.pk"});
-        addNestedCodeMatch(Tags.ScheduledStationGeographicLocationCodeSeq,
-                new String[]{ "UPS.pk", "rel_ups_devloc.ups_fk"},
-                new String[]{ "rel_ups_devloc", "Code" },
-                new String[]{ "rel_ups_devloc.devloc_fk", "Code.pk"});
-        addNestedCodeMatch(Tags.ScheduledHumanPerformersSeq,
-                Tags.HumanPerformerCodeSeq, 
-                new String[] { "UPS.pk", "rel_ups_performer.ups_fk" },
-                new String[] { "rel_ups_performer", "Code" },
-                new String[] { "rel_ups_performer.performer_fk", "Code.pk" });
-        addRefRequestMatch();
-        sqlBuilder.addRefSOPMatch(
-                new String[]{ "UPS.pk", "UPSRelatedPS.ups_fk"},
-                "UPSRelatedPS", "UPSRelatedPS.refSOPClassUID", 
-                "UPSRelatedPS.refSOPInstanceUID",
-                keys.getItem(Tags.RelatedProcedureStepSeq), type2);
-// TODO Tags.ReplacedProcedureStepSeq not yet defined
-//        sqlBuilder.addRefSOPMatch(
-//                new String[]{ "UPS.pk", "UPSReplacedPS.ups_fk"},
-//                "UPSReplacedPS", "UPSReplacedPS.refSOPClassUID", 
-//                "UPSReplacedPS.refSOPInstanceUID",
-//                keys.getItem(Tags.Tags.ReplacedProcedureStepSeq), type2);
-
-        sqlBuilder.addWildCardMatch(null, "UPS.admissionID",
-                type2,
-                keys.getStrings(Tags.AdmissionID));
-        Dataset issuer = keys.getItem(Tags.IssuerOfAdmissionIDSeq);
-        if (issuer != null) {
-            sqlBuilder.addSingleValueMatch(null,
-                    "UPS.issuerOfAdmissionIDLocalNamespaceEntityID",
-                    type2,
-                    issuer.getString(Tags.LocalNamespaceEntityID));
-            sqlBuilder.addSingleValueMatch(null,
-                    "UPS.issuerOfAdmissionIDUniversalEntityID",
-                    type2,
-                    issuer.getString(Tags.UniversalEntityID));
-        }
-        if (sqlBuilder.addWildCardMatch(null, "Patient.patientId",
-                type2,
-                patAttrFilter.getStrings(keys, Tags.PatientID)) != null)
-            sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
-                    type2,
-                    patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
-        if (fuzzyMatchingOfPN)
-            try {
-                sqlBuilder.addPNFuzzyMatch(
-                        new String[] {
-                            "Patient.patientFamilyNameSoundex",
-                            "Patient.patientGivenNameSoundex" },
-                        type2,
-                        keys.getString(Tags.PatientName));
-            } catch (IllegalArgumentException ex) {
-                throw new DcmServiceException(
-                        Status.IdentifierDoesNotMatchSOPClass,
-                        ex.getMessage() + ": " + keys.get(Tags.PatientName));
+        try {
+            AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
+            defineColumnTypes(new int[] { blobAccessType, blobAccessType });
+            String s;
+            // ensure keys contains (8,0005) for use as result filter
+            if (!keys.contains(Tags.SpecificCharacterSet)) {
+                keys.putCS(Tags.SpecificCharacterSet);
             }
-        else
-            sqlBuilder.addPNMatch(
-                    new String[] {
-                        "Patient.patientName",
-                        "Patient.patientIdeographicName",
-                        "Patient.patientPhoneticName"},
+            sqlBuilder.setSelect(SELECT);
+            sqlBuilder.setFrom(FROM);
+            sqlBuilder.setLeftJoin(getLeftJoin());
+            sqlBuilder.addListOfUidMatch(null, "UPS.sopInstanceUID",
+                    SqlBuilder.TYPE1,
+                    keys.getStrings(Tags.SOPInstanceUID));
+            if ((s = keys.getString(Tags.UPSState)) != null) {
+                sqlBuilder.addIntValueMatch(null, "UPS.stateAsInt",
+                        SqlBuilder.TYPE1,
+                        UPSState.toInt(s));
+            }
+            s = keys.getString(Tags.SPSPriority);
+            if (s != null) {
+                sqlBuilder.addIntValueMatch(null, "UPS.priorityAsInt",
+                        SqlBuilder.TYPE1,
+                        Priority.toInt(s));
+            }
+            sqlBuilder.addWildCardMatch(null, "UPS.procedureStepLabel",
+                    SqlBuilder.TYPE1,
+                    keys.getStrings(Tags.ProcedureStepLabel));
+            sqlBuilder.addWildCardMatch(null, "UPS.worklistLabel",
+                    SqlBuilder.TYPE1,
+                    keys.getStrings(Tags.WorklistLabel));
+            sqlBuilder.addRangeMatch(null, "UPS.scheduledStartDateTime",
+                    SqlBuilder.TYPE1,
+                    keys.getDateRange(Tags.SPSStartDateAndTime));
+            sqlBuilder.addRangeMatch(null, "UPS.expectedCompletionDateTime",
                     type2,
-                    patAttrFilter.isICase(Tags.PatientName),
-                    keys.getString(Tags.PatientName));
-        sqlBuilder.addRangeMatch(null, "Patient.patientBirthDate", type2,
-                keys.getString(Tags.PatientBirthDate));
-        sqlBuilder.addWildCardMatch(null, "Patient.patientSex", type2,
-                patAttrFilter.getStrings(keys, Tags.PatientSex));
+                    keys.getDateRange(Tags.ExpectedCompletionDateAndTime));
+            sqlBuilder.addCodeMatch(ITEM_CODE,
+                    keys.getItem(Tags.ScheduledWorkitemCodeSeq));
+            addNestedCodeMatch(Tags.ScheduledProcessingApplicationsCodeSeq,
+                    new String[]{ "UPS.pk", "rel_ups_appcode.ups_fk"},
+                    new String[]{ "rel_ups_appcode", "Code" },
+                    new String[]{ "rel_ups_appcode.appcode_fk", "Code.pk"});
+            addNestedCodeMatch(Tags.ScheduledStationNameCodeSeq,
+                    new String[]{ "UPS.pk", "rel_ups_devname.ups_fk"},
+                    new String[]{ "rel_ups_devname", "Code" },
+                    new String[]{ "rel_ups_devname.devname_fk", "Code.pk"});
+            addNestedCodeMatch(Tags.ScheduledStationClassCodeSeq,
+                    new String[]{ "UPS.pk", "rel_ups_devclass.ups_fk"},
+                    new String[]{ "rel_ups_devclass", "Code" },
+                    new String[]{ "rel_ups_devclass.devclass_fk", "Code.pk"});
+            addNestedCodeMatch(Tags.ScheduledStationGeographicLocationCodeSeq,
+                    new String[]{ "UPS.pk", "rel_ups_devloc.ups_fk"},
+                    new String[]{ "rel_ups_devloc", "Code" },
+                    new String[]{ "rel_ups_devloc.devloc_fk", "Code.pk"});
+            addNestedCodeMatch(Tags.ScheduledHumanPerformersSeq,
+                    Tags.HumanPerformerCodeSeq, 
+                    new String[] { "UPS.pk", "rel_ups_performer.ups_fk" },
+                    new String[] { "rel_ups_performer", "Code" },
+                    new String[] { "rel_ups_performer.performer_fk", "Code.pk" });
+            addRefRequestMatch();
+            sqlBuilder.addRefSOPMatch(
+                    new String[]{ "UPS.pk", "UPSRelatedPS.ups_fk"},
+                    "UPSRelatedPS", "UPSRelatedPS.refSOPClassUID", 
+                    "UPSRelatedPS.refSOPInstanceUID",
+                    keys.getItem(Tags.RelatedProcedureStepSeq), type2);
+    // TODO Tags.ReplacedProcedureStepSeq not yet defined
+    //        sqlBuilder.addRefSOPMatch(
+    //                new String[]{ "UPS.pk", "UPSReplacedPS.ups_fk"},
+    //                "UPSReplacedPS", "UPSReplacedPS.refSOPClassUID", 
+    //                "UPSReplacedPS.refSOPInstanceUID",
+    //                keys.getItem(Tags.Tags.ReplacedProcedureStepSeq), type2);
+    
+            sqlBuilder.addWildCardMatch(null, "UPS.admissionID",
+                    type2,
+                    keys.getStrings(Tags.AdmissionID));
+            Dataset issuer = keys.getItem(Tags.IssuerOfAdmissionIDSeq);
+            if (issuer != null) {
+                sqlBuilder.addSingleValueMatch(null,
+                        "UPS.issuerOfAdmissionIDLocalNamespaceEntityID",
+                        type2,
+                        issuer.getString(Tags.LocalNamespaceEntityID));
+                sqlBuilder.addSingleValueMatch(null,
+                        "UPS.issuerOfAdmissionIDUniversalEntityID",
+                        type2,
+                        issuer.getString(Tags.UniversalEntityID));
+            }
+            if (sqlBuilder.addWildCardMatch(null, "Patient.patientId",
+                    type2,
+                    patAttrFilter.getStrings(keys, Tags.PatientID)) != null)
+                sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId",
+                        type2,
+                        patAttrFilter.getString(keys, Tags.IssuerOfPatientID));
+            if (fuzzyMatchingOfPN)
+                try {
+                    sqlBuilder.addPNFuzzyMatch(
+                            new String[] {
+                                "Patient.patientFamilyNameSoundex",
+                                "Patient.patientGivenNameSoundex" },
+                            type2,
+                            keys.getString(Tags.PatientName));
+                } catch (IllegalArgumentException ex) {
+                    throw new DcmServiceException(
+                            Status.IdentifierDoesNotMatchSOPClass,
+                            ex.getMessage() + ": " + keys.get(Tags.PatientName));
+                }
+            else
+                sqlBuilder.addPNMatch(
+                        new String[] {
+                            "Patient.patientName",
+                            "Patient.patientIdeographicName",
+                            "Patient.patientPhoneticName"},
+                        type2,
+                        patAttrFilter.isICase(Tags.PatientName),
+                        keys.getString(Tags.PatientName));
+            sqlBuilder.addRangeMatch(null, "Patient.patientBirthDate", type2,
+                    keys.getString(Tags.PatientBirthDate));
+            sqlBuilder.addWildCardMatch(null, "Patient.patientSex", type2,
+                    patAttrFilter.getStrings(keys, Tags.PatientSex));
+        } catch (SQLException x) {
+            close();
+            throw x;
+        } catch (DcmServiceException x) {
+            close();
+            throw x;
+        } catch (RuntimeException x) {
+            close();
+            throw x;
+        }
     }
 
     private void addRefRequestMatch() {

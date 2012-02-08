@@ -47,6 +47,7 @@ import java.util.List;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 
@@ -63,15 +64,15 @@ public class MPPSQueryCmd extends BaseReadCmd {
     private static final String[] FROM = { "Patient", "MPPS"};
 
     private static final String[] SELECT = { "Patient.encodedAttributes",
-            "MPPS.encodedAttributes"};
+    "MPPS.encodedAttributes"};
 
     private static final String[] RELATIONS = { "Patient.pk",
-    		"MPPS.patient_fk"};
+    "MPPS.patient_fk"};
 
     private static final int[] PATIENT_ATTRS = { Tags.RefPatientSeq,
         Tags.PatientName, Tags.PatientID, Tags.IssuerOfPatientID,
         Tags.PatientBirthDate, Tags.PatientSex, };
-    
+
     private final SqlBuilder sqlBuilder = new SqlBuilder();
 
     /**
@@ -81,45 +82,53 @@ public class MPPSQueryCmd extends BaseReadCmd {
     public MPPSQueryCmd(Dataset keys, boolean emptyAccNo) throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel);
-        AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
-        defineColumnTypes(new int[] { blobAccessType, blobAccessType });
-        // ensure keys contains (8,0005) for use as result filter
-        sqlBuilder.setFrom(FROM);
-        sqlBuilder.setRelations(RELATIONS);
-        sqlBuilder.addListOfStringMatch(null, "MPPS.sopIuid",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.SOPInstanceUID) );
-        if ( emptyAccNo ) {
-        	sqlBuilder.addNULLValueMatch(null, "MPPS.accessionNumber", false );
-        } else {
-	        sqlBuilder.addListOfStringMatch(null, "MPPS.accessionNumber",
-	                SqlBuilder.TYPE2,
-	                keys.getStrings(Tags.AccessionNumber) );
+        try {
+            AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
+            defineColumnTypes(new int[] { blobAccessType, blobAccessType });
+            // ensure keys contains (8,0005) for use as result filter
+            sqlBuilder.setFrom(FROM);
+            sqlBuilder.setRelations(RELATIONS);
+            sqlBuilder.addListOfStringMatch(null, "MPPS.sopIuid",
+                    SqlBuilder.TYPE1,
+                    keys.getStrings(Tags.SOPInstanceUID) );
+            if ( emptyAccNo ) {
+                sqlBuilder.addNULLValueMatch(null, "MPPS.accessionNumber", false );
+            } else {
+                sqlBuilder.addListOfStringMatch(null, "MPPS.accessionNumber",
+                        SqlBuilder.TYPE2,
+                        keys.getStrings(Tags.AccessionNumber) );
+            }
+            sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
+                    SqlBuilder.TYPE1,
+                    keys.getStrings(Tags.PatientID) );
+            sqlBuilder.addPNMatch(new String[] {
+                    "Patient.patientName",
+                    "Patient.patientIdeographicName",
+            "Patient.patientPhoneticName"},
+            SqlBuilder.TYPE2,
+            patAttrFilter.isICase(Tags.PatientName),
+            keys.getString(Tags.PatientName));
+            sqlBuilder.addListOfStringMatch(null, "MPPS.modality",
+                    SqlBuilder.TYPE1,
+                    keys.getStrings(Tags.Modality));
+            sqlBuilder.addListOfStringMatch(null, "MPPS.performedStationAET",
+                    SqlBuilder.TYPE1,
+                    keys.getStrings(Tags.PerformedStationAET));
+            sqlBuilder.addRangeMatch(null, "MPPS.ppsStartDateTime",
+                    SqlBuilder.TYPE1,
+                    keys.getDateTimeRange(Tags.PPSStartDate,Tags.PPSStartTime));
+            sqlBuilder.addListOfStringMatch(null, "MPPS.ppsStatusAsInt",
+                    SqlBuilder.TYPE1,
+                    keys.getStrings(Tags.PPSStatus));
+        } catch (SQLException x) {
+            close();
+            throw x;
+        } catch (RuntimeException x) {
+            close();
+            throw x;
         }
-        sqlBuilder.addListOfStringMatch(null, "Patient.patientId",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.PatientID) );
-        sqlBuilder.addPNMatch(new String[] {
-                "Patient.patientName",
-                "Patient.patientIdeographicName",
-                "Patient.patientPhoneticName"},
-                SqlBuilder.TYPE2,
-                patAttrFilter.isICase(Tags.PatientName),
-                keys.getString(Tags.PatientName));
-        sqlBuilder.addListOfStringMatch(null, "MPPS.modality",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.Modality));
-        sqlBuilder.addListOfStringMatch(null, "MPPS.performedStationAET",
-                SqlBuilder.TYPE1,
-                keys.getStrings(Tags.PerformedStationAET));
-        sqlBuilder.addRangeMatch(null, "MPPS.ppsStartDateTime",
-                SqlBuilder.TYPE1,
-                keys.getDateTimeRange(Tags.PPSStartDate,Tags.PPSStartTime));
-        sqlBuilder.addListOfStringMatch(null, "MPPS.ppsStatusAsInt",
-                SqlBuilder.TYPE1,
-				keys.getStrings(Tags.PPSStatus));
     }
-    
+
     public int count() throws SQLException {
         try {
             sqlBuilder.setSelectCount(new String[]{"MPPS.pk"}, true);

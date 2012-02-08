@@ -49,6 +49,7 @@ import javax.security.auth.Subject;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.net.DcmServiceException;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
@@ -119,78 +120,83 @@ public class QueryStudiesCmd extends BaseReadCmd {
     throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel);
-        AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
-        AttributeFilter studyAttrFilter = AttributeFilter.getStudyAttributeFilter();
-        AttributeFilter seriesAttrFilter = AttributeFilter.getSeriesAttributeFilter();
-        checkPermissions = subject != null;
-        boolean type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
-        sqlBuilder.setFrom(getTables());
-        sqlBuilder.setLeftJoin( getLeftJoin(keys.containsValue(Tags.SeriesInstanceUID) || 
-                keys.containsValue(Tags.RequestAttributesSeq)));
-        sqlBuilder.setRelations(getRelations());
-        sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
-        sqlBuilder.addWildCardMatch(null, "Patient.patientId",
-                type2,
-                patAttrFilter.getStrings(keys, Tags.PatientID));
-        String issuer = patAttrFilter.getString(keys, Tags.IssuerOfPatientID);
-        if ( issuer != null ) {
-            sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId", type2, issuer);
-        } else if ( queryHasIssuerOfPID != null ) {
-            sqlBuilder.addNULLValueMatch(null,"Patient.issuerOfPatientId", queryHasIssuerOfPID.booleanValue() );
-        }
-        sqlBuilder.addPNMatch(new String[] {
-                "Patient.patientName",
-                "Patient.patientIdeographicName",
-                "Patient.patientPhoneticName"},
-                type2,
-                patAttrFilter.isICase(Tags.PatientName),
-                keys.getString(Tags.PatientName));
-        sqlBuilder.addRangeMatch(null, "Patient.patientBirthDate", type2,
-                keys.getString(Tags.PatientBirthDate));
-        
-        sqlBuilder.addWildCardMatch(null, "Study.studyId", type2,
-                studyAttrFilter.getStrings(keys, Tags.StudyID));
-        if (keys.containsValue(Tags.RequestAttributesSeq) && 
-                keys.getItem(Tags.RequestAttributesSeq).containsValue(Tags.StudyInstanceUID)) {
-            Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
-            node0.addMatch(new Match.ListOfString(null, "Study.studyIuid", SqlBuilder.TYPE1, keys.getStrings(Tags.StudyInstanceUID)));
-            Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
-    
-            SqlBuilder subQuery = new SqlBuilder();
-            subQuery.setSelect(new String[] { "SeriesRequest.pk" });
-            subQuery.setFrom(new String[] { "SeriesRequest" });
-            subQuery.addFieldValueMatch(null, "Series.pk", SqlBuilder.TYPE1, null,
-                    "SeriesRequest.series_fk");
-            subQuery.addListOfUidMatch(null, "SeriesRequest.studyIuid", type2,
-                    rqAttrs.getStrings(Tags.StudyInstanceUID));
-            node0.addMatch(new Match.Subquery(subQuery, null, null));
-        } else {
-            sqlBuilder.addListOfStringMatch(null, "Study.studyIuid",
-                    SqlBuilder.TYPE1, keys.getStrings( Tags.StudyInstanceUID));
-        }
-        
-        sqlBuilder.addListOfStringMatch(null, "Series.seriesIuid",
-                SqlBuilder.TYPE1, keys.getStrings( Tags.SeriesInstanceUID));
-        sqlBuilder.addRangeMatch(null, "Study.studyDateTime", type2,
-                keys.getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
-        sqlBuilder.addWildCardMatch(null, "Study.accessionNumber", type2,
-                studyAttrFilter.getStrings(keys, Tags.AccessionNumber));
-        sqlBuilder.addModalitiesInStudyNestedMatch(null,
-                seriesAttrFilter.getStrings(keys, Tags.ModalitiesInStudy, Tags.Modality));
-        keys.setPrivateCreatorID(PrivateTags.CreatorID);
-        sqlBuilder.addCallingAETsNestedMatch(false,
-                keys.getStrings(PrivateTags.CallingAET));
-        keys.setPrivateCreatorID(null);
-        this.hideMissingStudies = hideMissingStudies;	
-        if ( this.hideMissingStudies ) {
-            sqlBuilder.addNULLValueMatch(null,"Study.pk", true);
-        }
-        if ( checkPermissions ) {
-            String[] roles = SecurityUtils.rolesOf(subject);
-            if ( roles.length < 1 ) {
-                throw new IllegalArgumentException("User is not in a StudyPermission relevant role");
+        try {
+            AttributeFilter patAttrFilter = AttributeFilter.getPatientAttributeFilter();
+            AttributeFilter studyAttrFilter = AttributeFilter.getStudyAttributeFilter();
+            AttributeFilter seriesAttrFilter = AttributeFilter.getSeriesAttributeFilter();
+            checkPermissions = subject != null;
+            boolean type2 = noMatchForNoValue ? SqlBuilder.TYPE1 : SqlBuilder.TYPE2;
+            sqlBuilder.setFrom(getTables());
+            sqlBuilder.setLeftJoin( getLeftJoin(keys.containsValue(Tags.SeriesInstanceUID) || 
+                    keys.containsValue(Tags.RequestAttributesSeq)));
+            sqlBuilder.setRelations(getRelations());
+            sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
+            sqlBuilder.addWildCardMatch(null, "Patient.patientId",
+                    type2,
+                    patAttrFilter.getStrings(keys, Tags.PatientID));
+            String issuer = patAttrFilter.getString(keys, Tags.IssuerOfPatientID);
+            if ( issuer != null ) {
+                sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId", type2, issuer);
+            } else if ( queryHasIssuerOfPID != null ) {
+                sqlBuilder.addNULLValueMatch(null,"Patient.issuerOfPatientId", queryHasIssuerOfPID.booleanValue() );
             }
-            addStudyPermissionMatch(subject);
+            sqlBuilder.addPNMatch(new String[] {
+                    "Patient.patientName",
+                    "Patient.patientIdeographicName",
+                    "Patient.patientPhoneticName"},
+                    type2,
+                    patAttrFilter.isICase(Tags.PatientName),
+                    keys.getString(Tags.PatientName));
+            sqlBuilder.addRangeMatch(null, "Patient.patientBirthDate", type2,
+                    keys.getString(Tags.PatientBirthDate));
+            
+            sqlBuilder.addWildCardMatch(null, "Study.studyId", type2,
+                    studyAttrFilter.getStrings(keys, Tags.StudyID));
+            if (keys.containsValue(Tags.RequestAttributesSeq) && 
+                    keys.getItem(Tags.RequestAttributesSeq).containsValue(Tags.StudyInstanceUID)) {
+                Match.Node node0 = sqlBuilder.addNodeMatch("OR", false);
+                node0.addMatch(new Match.ListOfString(null, "Study.studyIuid", SqlBuilder.TYPE1, keys.getStrings(Tags.StudyInstanceUID)));
+                Dataset rqAttrs = keys.getItem(Tags.RequestAttributesSeq);
+        
+                SqlBuilder subQuery = new SqlBuilder();
+                subQuery.setSelect(new String[] { "SeriesRequest.pk" });
+                subQuery.setFrom(new String[] { "SeriesRequest" });
+                subQuery.addFieldValueMatch(null, "Series.pk", SqlBuilder.TYPE1, null,
+                        "SeriesRequest.series_fk");
+                subQuery.addListOfUidMatch(null, "SeriesRequest.studyIuid", type2,
+                        rqAttrs.getStrings(Tags.StudyInstanceUID));
+                node0.addMatch(new Match.Subquery(subQuery, null, null));
+            } else {
+                sqlBuilder.addListOfStringMatch(null, "Study.studyIuid",
+                        SqlBuilder.TYPE1, keys.getStrings( Tags.StudyInstanceUID));
+            }
+            
+            sqlBuilder.addListOfStringMatch(null, "Series.seriesIuid",
+                    SqlBuilder.TYPE1, keys.getStrings( Tags.SeriesInstanceUID));
+            sqlBuilder.addRangeMatch(null, "Study.studyDateTime", type2,
+                    keys.getDateTimeRange(Tags.StudyDate, Tags.StudyTime));
+            sqlBuilder.addWildCardMatch(null, "Study.accessionNumber", type2,
+                    studyAttrFilter.getStrings(keys, Tags.AccessionNumber));
+            sqlBuilder.addModalitiesInStudyNestedMatch(null,
+                    seriesAttrFilter.getStrings(keys, Tags.ModalitiesInStudy, Tags.Modality));
+            keys.setPrivateCreatorID(PrivateTags.CreatorID);
+            sqlBuilder.addCallingAETsNestedMatch(false,
+                    keys.getStrings(PrivateTags.CallingAET));
+            keys.setPrivateCreatorID(null);
+            this.hideMissingStudies = hideMissingStudies;	
+            if ( this.hideMissingStudies ) {
+                sqlBuilder.addNULLValueMatch(null,"Study.pk", true);
+            }
+            if ( checkPermissions ) {
+                String[] roles = SecurityUtils.rolesOf(subject);
+                if ( roles.length < 1 ) {
+                    throw new IllegalArgumentException("User is not in a StudyPermission relevant role");
+                }
+                addStudyPermissionMatch(subject);
+            }
+        } catch (RuntimeException x) {
+            close();
+            throw x;
         }
     }
     
