@@ -44,6 +44,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
 
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.DatasetUtils;
 
@@ -144,7 +145,10 @@ public abstract class PrivatePatientBean implements EntityBean {
     public void setAttributes(Dataset ds) {
         setPatientId(ds.getString(Tags.PatientID));
         setIssuerOfPatientId(ds.getString(Tags.IssuerOfPatientID));
-        setPatientName( toUpperCase(ds.getString(Tags.PatientName)) );
+        PersonName pn = ds.getPersonName(Tags.PatientName);
+        if (pn != null) {
+            setPatientName(toUpperCase(pn.toComponentGroupString(false)));
+        }
         Dataset tmp = ds.excludePrivate();
         setEncodedAttributes(DatasetUtils.toByteArray(tmp));
     }
