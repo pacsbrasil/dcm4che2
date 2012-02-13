@@ -302,10 +302,10 @@ public class DecompressCmd extends CodecCmd {
         DataBuffer buffer = raster.getDataBuffer();
         ComponentSampleModel sm = (ComponentSampleModel) raster.getSampleModel();
         checkSampleModel(sm);
-        final int stride = sm.getScanlineStride();
+        final int stride = getScanlineStride(sm);
         final int h = raster.getHeight();
         final int w = raster.getWidth();
-        final int numBands = sm.getNumBands();
+        final int numBands = getNumBands(sm);
         final int numBanks = buffer.getNumBanks();
         final int l = w * numBands  / numBanks;
         for (int b = 0; b < numBanks; b++) {
@@ -341,6 +341,14 @@ public class DecompressCmd extends CodecCmd {
             }
         }
     }
+
+	protected int getNumBands(ComponentSampleModel sm) {
+		return sm.getNumBands();
+	}
+
+	protected int getScanlineStride(ComponentSampleModel sm) {
+		return sm.getScanlineStride();
+	}
 
     private static int[] OFF_0 = { 0 };
     private static int[] OFF_0_0_0 = { 0, 0, 0 };
