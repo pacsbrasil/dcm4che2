@@ -492,8 +492,8 @@ public class WADOService extends AbstractCacheService {
         if (support.isAuditLogEnabled(reqVO)) {
             logExport(reqVO, resp);
         } else {
-            log.debug("Suppress audit log! Disabled for host:"
-                    + reqVO.getRemoteHost());
+            log.debug("Suppress audit log! Disabled for host ip:"
+                    + (support.isDisableDNS() ? reqVO.getRemoteAddr() : reqVO.getRemoteHost()));
         }
         long t2 = System.currentTimeMillis();
         log.debug("getWADOObject(): " + (t2 - t1) + "ms");

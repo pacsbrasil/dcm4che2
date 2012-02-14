@@ -348,9 +348,10 @@ date, 'HH' by the current hour and 'mm' by the current minute.<br/>
 
   <attribute access="read-write" getMethod="getDisabledAuditLogHosts"
     setMethod="setDisabledAuditLogHosts">
-    <description>List of Host where audit log is disabled. Use NONE
-      or ALL to enable/disable audit log for all WADO requests. 
-    </description>
+    <description><![CDATA[List of host names where audit log is disabled. Use NONE
+      or ALL to enable/disable audit log for all WADO requests.<br />
+      <b>Note:</b>Using host name(s) will force DNS lookup! 
+    ]]></description>
     <name>DisabledAuditLogHosts</name>
     <type>java.lang.String</type>
     <descriptors>

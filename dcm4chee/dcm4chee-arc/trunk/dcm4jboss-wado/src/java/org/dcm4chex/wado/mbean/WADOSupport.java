@@ -825,7 +825,6 @@ public class WADOSupport implements NotificationListener {
         file = cache.getImageFile(studyUID, seriesUID, instanceUID, rows,
                 columns, region, windowWidth, windowCenter, imageQuality,
                 suffix);
-
         if (file == null) {
             bi = getBufferedImage(studyUID, seriesUID, instanceUID, rows,
                     columns, frame, region, windowWidth, windowCenter);
@@ -1750,8 +1749,9 @@ public class WADOSupport implements NotificationListener {
      *         request.
      */
     public boolean isAuditLogEnabled(WADORequestObject req) {
-        return disabledAuditLogHosts == null ? false : !disabledAuditLogHosts
-                .contains(req.getRemoteHost());
+        return disabledAuditLogHosts == null ? false : 
+            disabledAuditLogHosts.isEmpty() ? true : 
+                !disabledAuditLogHosts.contains(req.getRemoteHost());
     }
 
     /**

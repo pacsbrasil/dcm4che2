@@ -40,8 +40,8 @@
 package org.dcm4chex.wado.web;
 
 import java.io.IOException;
-
 import java.io.OutputStream;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -59,8 +59,6 @@ import org.dcm4chex.wado.common.WADOResponseObject;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class WADOServlet extends HttpServlet {
-
-    private static final int BUF_LEN = 65536;
 
     /** holds the WADOServiceDelegate instance */
     private static WADOServiceDelegate delegate;
@@ -98,8 +96,7 @@ public class WADOServlet extends HttpServlet {
      */
     public void doGet( HttpServletRequest request, HttpServletResponse response ){
         long twrsp1 = System.currentTimeMillis();
-
-        log.info("WADO URL:"+request.getRequestURI()+"?"+request.getQueryString());
+        log.info(request.getRemoteAddr()+" - WADO URL:"+request.getRequestURI()+"?"+request.getQueryString());
         BasicRequestObject reqObject = RequestObjectFactory.getRequestObject( request );
         if ( reqObject == null || ! (reqObject instanceof WADORequestObject) ) {
             reqObject = RequestObjectFactory.getRequestObject( request );
@@ -129,8 +126,9 @@ public class WADOServlet extends HttpServlet {
             sendError( response, returnCode, respObject.getErrorMessage() );
         }
         long twrsp2 = System.currentTimeMillis();
-        log.debug("TimesToDeliverDICOMObject "+((WADORequestObject)reqObject).getObjectUID()+
-                ", with requesttype: "+respObject.getContentType()+" to "+((WADORequestObject)reqObject).getRemoteHost()+
+        if (log.isDebugEnabled()) 
+            log.debug("TimesToDeliverDICOMObject "+((WADORequestObject)reqObject).getObjectUID()+
+                ", with requesttype: "+respObject.getContentType()+" to "+((WADORequestObject)reqObject).getRemoteAddr()+
                 " took total [ms]: " +(twrsp2 -twrsp1)+", FetchObject took [ms]: "+(twget2 -twget1)+
                 ", Transmission took [ms]: "+((twrsp2 -twrsp1)-(twget2-twget1)));
     }
