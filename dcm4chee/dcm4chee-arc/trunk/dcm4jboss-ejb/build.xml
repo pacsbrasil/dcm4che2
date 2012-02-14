@@ -29,7 +29,7 @@
 	<property name="xdoclet.lib" value="${xdoclet.home}/lib"/>
 
     <!-- Override with your Cactus bundle dist location -->
-    <property name="cactus.home" value="${user.home}/-bin"/>
+    <property name="cactus.home" value="${user.home}/cactus-1.8.1-bin"/>
     <property name="cactus.lib" value="${cactus.home}/lib"/>
 
     <!-- Override with your dcm4chee installation -->
