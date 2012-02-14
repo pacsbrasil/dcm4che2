@@ -85,7 +85,7 @@ public class MD5CheckService extends ServiceMBeanSupport {
     private Integer listenerID;
 
     private String timerIDCheckMD5;
-    
+
     private final NotificationListener timerListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             Calendar cal = Calendar.getInstance();
@@ -115,7 +115,7 @@ public class MD5CheckService extends ServiceMBeanSupport {
     public void setSchedulerServiceName(ObjectName schedulerServiceName) {
         scheduler.setSchedulerServiceName(schedulerServiceName);
     }
-        
+
     public final int getBufferSize() {
         return bufferSize ;
     }
@@ -147,7 +147,7 @@ public class MD5CheckService extends ServiceMBeanSupport {
         if (getState() == STARTED && oldInterval != taskInterval) {
             scheduler.stopScheduler(timerIDCheckMD5, listenerID, timerListener);
             listenerID = scheduler.startScheduler(timerIDCheckMD5, taskInterval,
-            		timerListener);
+                    timerListener);
         }
     }
 
@@ -163,11 +163,11 @@ public class MD5CheckService extends ServiceMBeanSupport {
         this.limitNumberOfFilesPerTask = limit;
     }
 
-    
+
     /**
-	 * Getter for maxCheckedBefore. 
-	 * <p>
-	 * This value is used to limit check not recently checked files only.
+     * Getter for maxCheckedBefore. 
+     * <p>
+     * This value is used to limit check not recently checked files only.
      * 
      * @return ##w (in weeks), ##d (in days), ##h (in hours).
      */
@@ -175,16 +175,16 @@ public class MD5CheckService extends ServiceMBeanSupport {
         return RetryIntervalls.formatInterval(maxCheckedBefore);
     }
     /**
-	 * Setter for maxCheckedBefore. 
-	 * <p>
-	 * This value is used to check not recently checked files only.
+     * Setter for maxCheckedBefore. 
+     * <p>
+     * This value is used to check not recently checked files only.
      *  
      * @param maxCheckedBefore The maxCheckedBefore to set.
      */
     public void setMaxCheckedBefore(String maxCheckedBefore) {
         this.maxCheckedBefore = RetryIntervalls.parseInterval(maxCheckedBefore);
     }
-    
+
     public String check() throws Exception {
         synchronized(this) {
             if (isRunning) {
@@ -195,9 +195,9 @@ public class MD5CheckService extends ServiceMBeanSupport {
             isRunning = true;
         }
         try {
-        	if ( log.isDebugEnabled() ) log.debug("MD5 check started!");
-        	int corrupted = 0;
-        	int total = 0;
+            if ( log.isDebugEnabled() ) log.debug("MD5 check started!");
+            int corrupted = 0;
+            int total = 0;
             Timestamp before = new Timestamp( System.currentTimeMillis() - this.maxCheckedBefore );
             FileDTO[] files;
             int limit = limitNumberOfFilesPerTask;
@@ -206,56 +206,61 @@ public class MD5CheckService extends ServiceMBeanSupport {
             byte[] buffer = null;
             for (int j = 0; j < fsdirs.length; j++) {
                 files = fsMgt.findFilesForMD5Check(fsdirs[j].getDirectoryPath(), before, limit);
-            	if ( log.isDebugEnabled() ) log.debug("Check MD5 for " + files.length + " files on filesystem " + fsdirs[j]);
+                if ( log.isDebugEnabled() ) log.debug("Check MD5 for " + files.length + " files on filesystem " + fsdirs[j]);
                 if (files.length > 0) {
-                	if (buffer == null)
-                		buffer = new byte[bufferSize];
+                    if (buffer == null)
+                        buffer = new byte[bufferSize];
                     total += files.length;
                     for (int k = 0; k < files.length; k++) {
-    					if ( ! doCheck(fsMgt, files[k], buffer) ) 
-                        	corrupted++;
+                        if ( ! doCheck(fsMgt, files[k], buffer) ) 
+                            corrupted++;
                     }
                     limit -= files.length;
                 }
             }
             if ( corrupted > 0 ) 
-            	log.warn( corrupted + " files are corrupted!");
-        	return corrupted + " of "+ total + " files corrupted!";
+                log.warn( corrupted + " files are corrupted!");
+            return corrupted + " of "+ total + " files corrupted!";
         } finally {
             isRunning = false;
         }
     }
-    
+
     /**
-	 * @param fsMgt
-	 * @param fileDTO
+     * @param fsMgt
+     * @param fileDTO
      * @param buffer 
      * @throws IOException
      * @throws NoSuchAlgorithmException
      * @throws FinderException
-	 */
-	private boolean doCheck(FileSystemMgt2 fsMgt, FileDTO fileDTO, byte[] buffer)
-	throws IOException, NoSuchAlgorithmException, FinderException {
-		if ( log.isDebugEnabled() ) log.debug("check md5 for file "+fileDTO );
+     */
+    private boolean doCheck(FileSystemMgt2 fsMgt, FileDTO fileDTO, byte[] buffer)
+    throws IOException, NoSuchAlgorithmException, FinderException {
+        if ( log.isDebugEnabled() ) log.debug("check md5 for file "+fileDTO );
         char[] storedMD5 = MD5Utils.toHexChars(fileDTO.getFileMd5());
         final char[] fileMD5 = new char[32];
         File file = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO
                 .getFilePath());
-        
-        MessageDigest digest = MessageDigest.getInstance("MD5");
-		MD5Utils.md5sum(file, fileMD5, digest, buffer);
-        fsMgt.updateTimeOfLastMd5Check( fileDTO.getPk() );
-        if (!Arrays.equals(fileMD5, storedMD5 ) ) {
-        	fsMgt.setFileStatus( fileDTO.getPk(), FileStatus.MD5_CHECK_FAILED );
-        	log.warn("File (pk="+fileDTO.getPk()+") " + file 
-        			+ " corrupted! MD5 of file:"+ new String(fileMD5)
-        			+" should be "+ new String(storedMD5) );
+        if (file.isFile()) {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            MD5Utils.md5sum(file, fileMD5, digest, buffer);
+            fsMgt.updateTimeOfLastMd5Check( fileDTO.getPk() );
+            if (!Arrays.equals(fileMD5, storedMD5 ) ) {
+                fsMgt.setFileStatus( fileDTO.getPk(), FileStatus.MD5_CHECK_FAILED );
+                log.warn("File (pk="+fileDTO.getPk()+") " + file 
+                        + " corrupted! MD5 of file:"+ new String(fileMD5)
+                +" should be "+ new String(storedMD5) );
+                return false;
+            }
+        } else {
+            fsMgt.setFileStatus( fileDTO.getPk(), FileStatus.MD5_CHECK_FAILED );
+            log.warn("File (pk="+fileDTO.getPk()+") " + file + " not found! Set Filestatus to MD5_CHECK_FAILED!");
             return false;
         }
         return true;
-	}
+    }
 
-	private boolean isDisabled(int hour) {
+    private boolean isDisabled(int hour) {
         if (disabledEndHour == -1) return false;
         boolean sameday = disabledStartHour <= disabledEndHour;
         boolean inside = hour >= disabledStartHour && hour < disabledEndHour; 
@@ -276,12 +281,12 @@ public class MD5CheckService extends ServiceMBeanSupport {
                 FileSystemMgt2Home.class, FileSystemMgt2Home.JNDI_NAME)).create();
     }
 
-	public String getTimerIDCheckMD5() {
-		return timerIDCheckMD5;
-	}
+    public String getTimerIDCheckMD5() {
+        return timerIDCheckMD5;
+    }
 
-	public void setTimerIDCheckMD5(String timerIDCheckMD5) {
-		this.timerIDCheckMD5 = timerIDCheckMD5;
-	}
+    public void setTimerIDCheckMD5(String timerIDCheckMD5) {
+        this.timerIDCheckMD5 = timerIDCheckMD5;
+    }
 
 }
