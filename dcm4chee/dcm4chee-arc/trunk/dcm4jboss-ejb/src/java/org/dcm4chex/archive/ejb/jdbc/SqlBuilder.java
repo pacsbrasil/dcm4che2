@@ -449,21 +449,21 @@ class SqlBuilder {
             appendTo(sb, select);
             break;
         case JdbcProperties.DB2 :
-            sb.append("* FROM ( SELECT ");
+            sb.append(selectC1C2CN()).append(" FROM ( SELECT ");
             appendTo(sb, select);
             sb.append(", ROW_NUMBER() OVER (ORDER BY ");
             appendTo(sb, orderby.toArray(new String[orderby.size()]));
             sb.append(") AS rownum ");
             break;
         case JdbcProperties.ORACLE :
-            sb.append("* FROM ( SELECT ");
+            sb.append(selectC1C2CN()).append(" FROM ( SELECT ");
             appendTo(sb, selectC1C2CN());
             sb.append(", ROWNUM as r1 FROM ( SELECT ");
             appendTo(sb, selectAsC1C2CN());
             break;
         case JdbcProperties.MSSQL :
             if (!orderby.isEmpty()) {
-                sb.append("* FROM ( SELECT TOP ").append(limit).append(' ');
+                sb.append(selectC1C2CN()).append(" FROM ( SELECT TOP ").append(limit).append(' ');
                 appendTo(sb, selectC1C2CN());
                 sb.append(',');
                 appendTo(sb, selectSort());
