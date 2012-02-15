@@ -197,7 +197,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         long after = cal.getTimeInMillis();
         long sum = 0L;
         for (FileSystemDTO fs : fss) {
-            sum = fsMgt.sizeOfFilesCreatedAfter(fs.getPk(), after);
+            sum += fsMgt.sizeOfFilesCreatedAfter(fs.getPk(), after);
         }
         String size = FileUtils.formatSize(sum);
         if (sum > expectedDataVolumePerDay) {
