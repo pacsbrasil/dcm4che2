@@ -562,6 +562,15 @@ public class WeasisLauncher {
         return props;
     }
 
+    private static String getGeneralProperty(String key, String defaultValue, Properties bundleProp, Properties local,
+        boolean overrideBundleProp) {
+        String val = getGeneralProperty(key, key, defaultValue, bundleProp, local);
+        if (val != null) {
+            bundleProp.setProperty(key, val);
+        }
+        return val;
+    }
+
     private static String getGeneralProperty(String key, String defaultValue, Properties config, Properties local) {
         return getGeneralProperty(key, key, defaultValue, config, local);
     }
@@ -574,8 +583,10 @@ public class WeasisLauncher {
             if (value == null) {
                 value = config.getProperty(key, defaultValue);
             }
-            // When first launch, set property that can be written later
-            local.setProperty(localKey, value);
+            if (value != null) {
+                // When first launch, set property that can be written later
+                local.setProperty(localKey, value);
+            }
         }
         return value;
     }
@@ -673,6 +684,13 @@ public class WeasisLauncher {
         final String variant = getGeneralProperty("weasis.variant", "locale.variant", "", config, s_prop); //$NON-NLS-1$ //$NON-NLS-2$
 
         getGeneralProperty("weasis.confirm.closing", "true", config, s_prop); //$NON-NLS-1$ //$NON-NLS-2$
+
+        // Set value back to the bundle context properties, sling logger uses bundleContext.getProperty(prop)
+        getGeneralProperty("org.apache.sling.commons.log.level", "INFO", config, s_prop, true); //$NON-NLS-1$ //$NON-NLS-2$
+        // Empty string make the file log writer disable
+        getGeneralProperty("org.apache.sling.commons.log.file", "", config, s_prop, true); //$NON-NLS-1$ //$NON-NLS-2$
+        getGeneralProperty("org.apache.sling.commons.log.file.number", "5", config, s_prop, true); //$NON-NLS-1$ //$NON-NLS-2$
+        getGeneralProperty("org.apache.sling.commons.log.file.size", "10MB", config, s_prop, true); //$NON-NLS-1$ //$NON-NLS-2$
 
         URI translation_modules = null;
         if (portable != null) {
