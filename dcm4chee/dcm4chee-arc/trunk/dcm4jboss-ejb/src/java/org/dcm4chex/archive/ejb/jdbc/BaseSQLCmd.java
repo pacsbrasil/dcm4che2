@@ -41,6 +41,7 @@ package org.dcm4chex.archive.ejb.jdbc;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.StringTokenizer;
 
@@ -174,9 +175,10 @@ public class BaseSQLCmd extends BaseReadCmd {
                 log.debug("Set parameter 1 (pk > lastPk) to:"+lastPk);
                 ((PreparedStatement) stmt).setLong(paraIdx++, lastPk);
             }
+            Timestamp ts = new Timestamp(updatedBefore);
             if ( log.isDebugEnabled() ) 
-                log.debug("Set parameter (updatedBefore) to:"+updatedBefore+" Date:"+new Date(updatedBefore));
-            ((PreparedStatement) stmt).setDate(paraIdx, new java.sql.Date(updatedBefore));
+                log.debug("Set parameter (updatedBefore) to:"+updatedBefore+" Timestamp:"+ts);
+            ((PreparedStatement) stmt).setTimestamp(paraIdx, ts);
         } else {
             if (log.isDebugEnabled()) 
                 log.debug("Use of updatedBefore WHERE clause disabled! Dont set parameter of prepared statement");
