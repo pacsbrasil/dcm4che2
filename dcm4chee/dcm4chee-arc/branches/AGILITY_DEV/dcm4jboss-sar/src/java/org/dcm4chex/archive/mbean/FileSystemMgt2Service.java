@@ -177,7 +177,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         long after = cal.getTimeInMillis();
         long sum = 0L;
         for (FileSystemDTO fs : fss) {
-            sum = fsMgt.sizeOfFilesCreatedAfter(fs.getPk(), after);
+            sum += fsMgt.sizeOfFilesCreatedAfter(fs.getPk(), after);
         }
         String size = FileUtils.formatSize(sum);
         if (sum > expectedDataVolumePerDay) {
@@ -239,8 +239,19 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
     }
 
     @Override
-	protected void startService() throws Exception {
+    protected void startService() throws Exception {
         super.startService();
+
+        try {
+            final String localStorageAET = (String)server.getAttribute(new ObjectName("dcm4chee.archive:service=AE"), "LocalStorageAET");
+            log.debug("LocalStorageAETitle value: " + localStorageAET);
+
+            this.setDefRetrieveAET(localStorageAET);
+        } catch (Exception exception) {
+            log.error("Error retrieving local storage AET from QueryRetrieveSCP", exception);
+            throw new RuntimeException("Error retrieving local storage AET from QueryRetrieveSCP", exception);
+        }
+
         deleteOrphanedPrivateFilesListenerID = scheduler.startScheduler(
                 timerIDDeleteOrphanedPrivateFiles,
                 deleteOrphanedPrivateFilesInterval,
