@@ -39,6 +39,7 @@
 package org.dcm4chee.web.war.ae;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -123,7 +124,8 @@ public class DicomEchoWindow extends ModalWindow {
     }
 
     public void show(AjaxRequestTarget target, AE ae) {
-        setAE(ae);
+        aeOri = ae;
+        copyNetCfg(aeOri, aeEcho);
         echoPerformed = false;
         result = "";
         nrOfTests = 1;
@@ -132,14 +134,7 @@ public class DicomEchoWindow extends ModalWindow {
         target.focusComponent(this.get("content:form:cancel"));        
     }
     
-    public void setAE(final AE ae) {
-        aeOri = ae;
-        copyNetCfg(aeOri, aeEcho);
-    }
-    
     private AE copyNetCfg(final AE aeSrc, final AE aeDest) {
-System.out.println("ECHO: aeSrc: " + aeSrc.getCipherSuites().size());
-System.out.println("ECHO: aeDest: " + aeDest.getCipherSuites().size());
         aeDest.setTitle(aeSrc.getTitle());
         aeDest.setHostName(aeSrc.getHostName());
         aeDest.setPort(aeSrc.getPort());

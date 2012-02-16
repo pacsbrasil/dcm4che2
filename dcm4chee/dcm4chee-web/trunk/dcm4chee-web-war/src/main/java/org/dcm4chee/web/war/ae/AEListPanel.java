@@ -239,7 +239,18 @@ public class AEListPanel extends Panel {
                 item.add(new Label("port"));
                 item.add(new Label("description", new Model<String>(item.getModelObject().getDescription())));
                 CheckBox cipherSuites = new CheckBox("cipherSuites");
-                cipherSuites.setModel(new Model<Boolean>(item.getModelObject().getCipherSuites().size() > 0));
+                cipherSuites.setModel(new Model<Boolean>() {
+                        
+                    private static final long serialVersionUID = 1L;
+
+                        @Override
+                        public Boolean getObject() {
+                            for (String cipher: item.getModelObject().getCipherSuites())
+                                if (!cipher.equals("-"))
+                                    return true;
+                            return false;
+                        }
+                });
                 cipherSuites.setEnabled(false);
                 item.add(cipherSuites);
                 item.add(new CheckBox("emulated", new AbstractReadOnlyModel<Boolean>(){
@@ -253,9 +264,8 @@ public class AEListPanel extends Panel {
                 item.add(new Label("institution"));
                 item.add(new Label("department"));
 
-                ModalWindowLink editAET;
                 int[] winSize = WebCfgDelegate.getInstance().getWindowSize("aeEdit");
-                item.add((editAET = new ModalWindowLink("editAET", modalWindow, winSize[0], winSize[1]) {
+                item.add(new ModalWindowLink("editAET", modalWindow, winSize[0], winSize[1]) {
                     private static final long serialVersionUID = 1L;
     
                     @Override
@@ -272,7 +282,7 @@ public class AEListPanel extends Panel {
                         });
                         super.onClick(target);
                     }
-                })
+                }
                     .add(new Image("ae.editAET.image", ImageManager.IMAGE_AE_EDIT)
                     .add(new ImageSizeBehaviour("vertical-align: middle;")))
                     .add(new TooltipBehaviour("ae."))

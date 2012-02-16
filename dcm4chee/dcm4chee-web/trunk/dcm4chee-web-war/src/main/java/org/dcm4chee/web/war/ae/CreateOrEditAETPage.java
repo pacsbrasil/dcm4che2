@@ -149,11 +149,11 @@ public class CreateOrEditAETPage extends SecureWebPage {
         form.addLabeledTextField("hostName").setRequired(true); 
         form.addLabeledNumberTextField("port").add(new RangeValidator<Integer>(1,65535));
         form.add(new Label("ciphers1.label", new StringResourceModel("ae.ciphers", CreateOrEditAETPage.this, null, new Object[]{1} ) ) );
-        form.add(new DropDownChoice<String>("ciphersuite1", new CipherModel(ae, 0), CyphersuiteUtils.AVAILABLE_CIPHERSUITES));
+        form.add(new DropDownChoice<String>("ciphersuite1", new CipherModel(ae, 0), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
         form.add(new Label("ciphers2.label", new StringResourceModel("ae.ciphers", CreateOrEditAETPage.this, null, new Object[]{2} ) ) );
-        form.add(new DropDownChoice<String>("ciphersuite2", new CipherModel(ae, 1), CyphersuiteUtils.AVAILABLE_CIPHERSUITES));
+        form.add(new DropDownChoice<String>("ciphersuite2", new CipherModel(ae, 1), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
         form.add(new Label("ciphers3.label", new StringResourceModel("ae.ciphers", CreateOrEditAETPage.this, null, new Object[]{3} ) ) );
-        form.add(new DropDownChoice<String>("ciphersuite3", new CipherModel(ae, 2), CyphersuiteUtils.AVAILABLE_CIPHERSUITES));
+        form.add(new DropDownChoice<String>("ciphersuite3", new CipherModel(ae, 2), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
         form.addLabeledTextField("description"); 
         form.addLabeledTextField("issuerOfPatientID"); 
         form.addLabeledTextField("issuerOfAccessionNumber"); 
@@ -240,7 +240,7 @@ public class CreateOrEditAETPage extends SecureWebPage {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
-                    if ( ae.getPk() == -1) {
+                    if (ae.getPk() == -1) {
                         try {
                             ((AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME)).findByTitle(ae.getTitle());
                             msgWin.show(target, new ResourceModel("ae.error.duplicateAE").wrapOnAssignment(this));
@@ -248,7 +248,8 @@ public class CreateOrEditAETPage extends SecureWebPage {
                         } catch (Exception ignore) {}
                     }
                     AEDelegate.getInstance().updateOrCreate(ae);
-                    panel.updateAETList();
+                    panel.updateAETList();                   
+                    target.addComponent(form);
                     window.close(target);
                 } catch (Exception e) {
                     msgWin.show(target, new ResourceModel(ae.getPk() == -1 ? "ae.error.create.failed" : "ae.error.update.failed").wrapOnAssignment(this));
@@ -288,42 +289,11 @@ public class CreateOrEditAETPage extends SecureWebPage {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {                
                 mw.show(target, ae);
             }
-            
-            @SuppressWarnings("unchecked")
+
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-
-                TextField<String> titleField = (TextField<String>) form.get("title");
-                TextField<String> hostNameField = (TextField<String>) form.get("hostName");
-                String title = titleField.getValue();
-                String hostName = hostNameField.getValue();
-
-                Integer ciphersuite1 = Integer.parseInt(((DropDownChoice<String>) form.get("ciphersuite1")).getValue());
-                Integer ciphersuite2 = Integer.parseInt(((DropDownChoice<String>) form.get("ciphersuite2")).getValue());
-                Integer ciphersuite3 = Integer.parseInt(((DropDownChoice<String>) form.get("ciphersuite3")).getValue());
-                
-                target.addComponent(titleField);
-                target.addComponent(hostNameField);
-                target.addComponent(form.get("ciphersuite1"));
-                target.addComponent(form.get("ciphersuite2"));
-                target.addComponent(form.get("ciphersuite3"));
-                
-                if ((title == null) || (hostName == null) 
-                        || (title.length() == 0) || (hostName.length() == 0)) 
-                    super.onError(target, form);
-                else {
-                    getSession().cleanupFeedbackMessages();
-                    ae.setTitle(title);
-                    ae.setHostName(hostName);
-
-                    List<String> suites = new ArrayList<String>();
-                    suites.add(CyphersuiteUtils.AVAILABLE_CIPHERSUITES.get(ciphersuite1));
-                    suites.add(CyphersuiteUtils.AVAILABLE_CIPHERSUITES.get(ciphersuite2));
-                    suites.add(CyphersuiteUtils.AVAILABLE_CIPHERSUITES.get(ciphersuite3));
-                    ae.setCipherSuites(suites);
-
-                    mw.show(target, ae);
-                }
+                if (target != null)
+                    target.addComponent(form);
             }
         });
         add(new Label("result-message", new Model<String>("")));

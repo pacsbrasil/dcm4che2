@@ -54,7 +54,7 @@ public class CipherModel implements IModel<String> {
     
     private int idx;
     private AE ae;
-
+    
     public CipherModel(AE ae, int idx) {
         this.ae = ae;
         this.idx = idx;
@@ -65,16 +65,22 @@ public class CipherModel implements IModel<String> {
     }
 
     public void setObject(String s) {
-        List<String> ciphers = (List<String>) ae.getCipherSuites();
-        if ( idx < ciphers.size() ) {
-            ciphers.set(idx, "-".equals(s) ? null : s);
-        } else {
+      List<String> ciphers = getCipherList();
+        if ( idx < ciphers.size() ) 
+            ciphers.set(idx, s);
+        else 
             ciphers.add(s);
-        }
         ae.setCipherSuites(ciphers);
     }
     
     public void detach() {
+    }
+    
+    private List<String> getCipherList() {
+        List<String> cipherList = (List<String>) ae.getCipherSuites();
+        while (cipherList.size() < 3)
+            cipherList.add("-");
+        return cipherList;
     }
 }
 
