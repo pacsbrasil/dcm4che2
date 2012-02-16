@@ -235,7 +235,7 @@ public class FileCopyByQueryService extends ServiceMBeanSupport implements Notif
         new Thread(new Runnable(){
             public void run() {
                 try {
-                    doNotification();
+                    doCheckFilecopy();
                 } catch (Exception e) {
                     log.error("Check for Pending Series Stored failed:", e);
                 } finally {
@@ -244,7 +244,18 @@ public class FileCopyByQueryService extends ServiceMBeanSupport implements Notif
             }}).start();
     }
     
-    private void doNotification() {
+    public int checkFilecopy() {
+        synchronized(this) {
+            if (isRunning) {
+                log.info("FilecopyByQuery is already running!");
+                return -1;
+            }
+            isRunning = true;
+        }
+        return doCheckFilecopy();
+    }
+    
+    public int doCheckFilecopy() {
         if (lastCheckResult == null) {
             try {
                 checkSQL(sql);
@@ -256,28 +267,11 @@ public class FileCopyByQueryService extends ServiceMBeanSupport implements Notif
                 log.error("Check of SQL statement failed!",t);
             }
         }
-        if (sqlIsValid)
-            doCheckFilecopy();
-        else
+        if (!sqlIsValid) {
             log.warn("SQL is not marked to be valid! checkFilecopy is disabled!");
-    }
-
-
-    public int checkFilecopy() {
-        if ( sqlCmd == null ) {
-            log.warn("No Query defined!");
-            return 0;
+            isRunning = false;
+            return -1;
         }
-        synchronized(this) {
-            if (isRunning) {
-                log.info("FilecopyByQuery is already running!");
-                return -1;
-            }
-            isRunning = true;
-        }
-        return doCheckFilecopy();
-    }
-    public int doCheckFilecopy() {
         int nrOfOrders = 0;
         int notScheduledOrders = 0;
         try {
@@ -310,6 +304,17 @@ public class FileCopyByQueryService extends ServiceMBeanSupport implements Notif
     }
     
     public String showSQL() {
+        if (lastCheckResult == null) {
+            try {
+                checkSQL(sql);
+                if (sqlCmd != null) { 
+                    sqlCmd.close();
+                }
+                sqlCmd = QueryFilecopyCmd.getInstance(sql, limit, fetchSize);
+            } catch ( Throwable t) {
+                return "Check of SQL statement failed!";
+            }
+        }
         return sqlCmd == null ? "QueryFilecopyCmd not set!" : sqlCmd.formatSql();
     }
 

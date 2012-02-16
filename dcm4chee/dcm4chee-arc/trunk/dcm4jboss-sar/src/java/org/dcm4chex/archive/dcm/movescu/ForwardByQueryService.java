@@ -258,7 +258,7 @@ NotificationListener {
         new Thread(new Runnable(){
             public void run() {
                 try {
-                    doNotification();
+                    doCheckForward();
                 } catch (Exception e) {
                     log.error("Check for Pending Series Stored failed:", e);
                 } finally {
@@ -267,7 +267,18 @@ NotificationListener {
             }}).start();
     }
     
-    private void doNotification() {
+    public int checkForward() {
+        synchronized(this) {
+            if (isRunning) {
+                log.info("ForwardByQuery is already running!");
+                return -1;
+            }
+            isRunning = true;
+        }
+        return doCheckForward();
+    }
+    
+    public int doCheckForward() {
         if (lastCheckResult == null) {
             try {
                 checkSQL(sql);
@@ -279,28 +290,11 @@ NotificationListener {
                 log.error("Check of SQL statement failed!",t);
             }
         }
-        if (sqlIsValid)
-            checkForward();
-        else
+        if (!sqlIsValid) {
             log.warn("SQL is not marked to be valid! checkForward is disabled!");
-    }
-
-
-    public int checkForward() {
-        if ( sqlCmd == null ) {
-            log.warn("No Query defined!");
-            return 0;
+            isRunning = false;
+            return -1;
         }
-        synchronized(this) {
-            if (isRunning) {
-                log.info("ForwardByQuery is already running!");
-                return -1;
-            }
-            isRunning = true;
-        }
-        return doCheckForward();
-    }
-    public int doCheckForward() {
         int nrOfSeries = 0;
         try {
             long scheduledTime = 0L;
@@ -327,6 +321,17 @@ NotificationListener {
     }
     
     public String showSQL() {
+        if (lastCheckResult == null) {
+            try {
+                checkSQL(sql);
+                if (sqlCmd != null) { 
+                    sqlCmd.close();
+                }
+                sqlCmd = QueryForwardCmd.getInstance(sql, limit, fetchSize);
+            } catch ( Throwable t) {
+                return "Check of SQL statement failed!";
+            }
+        }
         return sqlCmd == null ? "QueryForwardCmd not set!" : sqlCmd.formatSql();
     }
 
