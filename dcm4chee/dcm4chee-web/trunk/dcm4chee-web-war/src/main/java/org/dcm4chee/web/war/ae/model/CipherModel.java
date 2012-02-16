@@ -38,49 +38,72 @@
 
 package org.dcm4chee.web.war.ae.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.apache.wicket.model.IModel;
 import org.dcm4chee.archive.entity.AE;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
  * @version $Revision$ $Date$
  * @since June 4, 2009
  */
-public class CipherModel implements IModel<String> {
+public class CipherModel implements Serializable {
     
     private static final long serialVersionUID = 1L;
     
-    private int idx;
     private AE ae;
+    int len;
+    List<String> ciphers;
     
-    public CipherModel(AE ae, int idx) {
-        this.ae = ae;
-        this.idx = idx;
-    }
- 
-    public String getObject() {
-        return idx < ae.getCipherSuites().size() ? ae.getCipherSuites().get(idx) : "-";
-    }
+    private static Logger log = LoggerFactory.getLogger(CipherModel.class);
 
-    public void setObject(String s) {
-      List<String> ciphers = getCipherList();
-        if ( idx < ciphers.size() ) 
-            ciphers.set(idx, s);
-        else 
-            ciphers.add(s);
-        ae.setCipherSuites(ciphers);
+    public CipherModel(AE ae, int len) {
+        this.ae = ae;
+        this.len = len;
+        update();
+        
     }
     
-    public void detach() {
+    public SingleCipherModel getSingleCipherModel(int idx) {
+        if (idx < ciphers.size()) {
+            return new SingleCipherModel(this, idx);
+        } else {
+            throw new IllegalArgumentException("Wrong idx, must be less than "+ciphers.size());
+        }
     }
     
-    private List<String> getCipherList() {
-        List<String> cipherList = (List<String>) ae.getCipherSuites();
-        while (cipherList.size() < 3)
-            cipherList.add("-");
-        return cipherList;
+    public void update() {
+        this.ciphers = ae.getCipherSuites();
+        if (ciphers.size() > len) {
+            log.warn("AE contains more ciphers than CipherModel will handle!");
+        }
+        while (ciphers.size() < len)
+            ciphers.add(null);
+    }
+    
+    public class SingleCipherModel implements IModel<String>{
+        CipherModel model;
+        int idx;
+        public SingleCipherModel(CipherModel m, int idx) {
+            model = m;
+            this.idx = idx;
+        }
+        public String getObject() {
+            String c = ciphers.get(idx);
+            return c == null ? "-" : c;
+        }
+
+        public void setObject(String s) {
+            model.ciphers.set(idx, "-".equals(s) ? null : s);
+            model.ae.setCipherSuites(ciphers);
+        }
+
+        public void detach() {
+        }
     }
 }
 

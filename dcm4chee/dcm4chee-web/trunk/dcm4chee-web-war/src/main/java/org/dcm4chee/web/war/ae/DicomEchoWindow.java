@@ -230,9 +230,10 @@ public class DicomEchoWindow extends ModalWindow {
             form.add(new TextField<String>("title").add(new AETitleValidator()).setRequired(true).setOutputMarkupId(true)); 
             form.add(new TextField<String>("hostName").add(StringValidator.minimumLength(1)).setRequired(true).setOutputMarkupId(true)); 
             form.add(new TextField<Integer>("port").add(new RangeValidator<Integer>(1,65535)).setOutputMarkupId(true));
-            form.add(new DropDownChoice<String>("ciphersuite1", new CipherModel(aeEcho, 0), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
-            form.add(new DropDownChoice<String>("ciphersuite2", new CipherModel(aeEcho, 1), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
-            form.add(new DropDownChoice<String>("ciphersuite3", new CipherModel(aeEcho, 2), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+            CipherModel cipherModel = new CipherModel(aeEcho, 3);
+            form.add(new DropDownChoice<String>("ciphersuite1", cipherModel.getSingleCipherModel(0), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+            form.add(new DropDownChoice<String>("ciphersuite2", cipherModel.getSingleCipherModel(1), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+            form.add(new DropDownChoice<String>("ciphersuite3", cipherModel.getSingleCipherModel(2), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
             form.add(new TextField<Integer>("nrOfTests", nrOfTestsModel, Integer.class).add(new RangeValidator<Integer>(1,2000)).setOutputMarkupId(true));
             resultLabel.setOutputMarkupId(true).setEnabled(false);
             form.add(resultLabel);

@@ -148,12 +148,13 @@ public class CreateOrEditAETPage extends SecureWebPage {
         }));
         form.addLabeledTextField("hostName").setRequired(true); 
         form.addLabeledNumberTextField("port").add(new RangeValidator<Integer>(1,65535));
+        final CipherModel cipherModel = new CipherModel(ae, 3);
         form.add(new Label("ciphers1.label", new StringResourceModel("ae.ciphers", CreateOrEditAETPage.this, null, new Object[]{1} ) ) );
-        form.add(new DropDownChoice<String>("ciphersuite1", new CipherModel(ae, 0), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+        form.add(new DropDownChoice<String>("ciphersuite1", cipherModel.getSingleCipherModel(0), CyphersuiteUtils.AVAILABLE_CIPHERSUITES));
         form.add(new Label("ciphers2.label", new StringResourceModel("ae.ciphers", CreateOrEditAETPage.this, null, new Object[]{2} ) ) );
-        form.add(new DropDownChoice<String>("ciphersuite2", new CipherModel(ae, 1), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+        form.add(new DropDownChoice<String>("ciphersuite2", cipherModel.getSingleCipherModel(1), CyphersuiteUtils.AVAILABLE_CIPHERSUITES));
         form.add(new Label("ciphers3.label", new StringResourceModel("ae.ciphers", CreateOrEditAETPage.this, null, new Object[]{3} ) ) );
-        form.add(new DropDownChoice<String>("ciphersuite3", new CipherModel(ae, 2), CyphersuiteUtils.AVAILABLE_CIPHERSUITES).setOutputMarkupId(true));
+        form.add(new DropDownChoice<String>("ciphersuite3", cipherModel.getSingleCipherModel(2), CyphersuiteUtils.AVAILABLE_CIPHERSUITES));
         form.addLabeledTextField("description"); 
         form.addLabeledTextField("issuerOfPatientID"); 
         form.addLabeledTextField("issuerOfAccessionNumber"); 
@@ -277,6 +278,7 @@ public class CreateOrEditAETPage extends SecureWebPage {
             private static final long serialVersionUID = 1L;
 
             public void onClose(AjaxRequestTarget target) {
+                cipherModel.update();
                 target.addComponent(CreateOrEditAETPage.this);
             }
         });
