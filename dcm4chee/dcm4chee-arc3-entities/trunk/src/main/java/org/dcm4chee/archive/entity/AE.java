@@ -44,6 +44,8 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.NamedQuery;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
 
@@ -71,7 +73,7 @@ public class AE extends BaseEntity implements Serializable {
     private String hostName;
 
     @Column(name = "port", nullable = false)
-    private int port = 11112;
+    private int port;
 
     @Column(name = "cipher_suites")
     private String cipherSuites;
@@ -112,6 +114,12 @@ public class AE extends BaseEntity implements Serializable {
     @Column(name = "ae_group")
     private String aeGroup;
     
+    @PrePersist
+    @PreUpdate
+    public void filterCiphers() {
+        this.cipherSuites = cipherSuites.replaceAll("-,", "").replaceAll(",-", "");
+    }
+   
     public String getTitle() {
         return title;
     }
@@ -160,7 +168,7 @@ public class AE extends BaseEntity implements Serializable {
         else {
             StringBuilder sb = new StringBuilder();
             for (String s : suites) {
-                if (s != null) {
+                if (s != null) 
                     sb.append(s).append(',');
                 }
             }
