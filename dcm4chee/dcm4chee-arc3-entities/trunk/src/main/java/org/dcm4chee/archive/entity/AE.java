@@ -117,7 +117,10 @@ public class AE extends BaseEntity implements Serializable {
     @PrePersist
     @PreUpdate
     public void filterCiphers() {
-        this.cipherSuites = cipherSuites.replaceAll("-,", "").replaceAll(",-", "");
+        if (this.cipherSuites == null) return;
+        this.cipherSuites = this.cipherSuites.replaceAll("-,", "").replaceAll(",-", "");
+        if (this.cipherSuites.length() == 1) 
+            this.cipherSuites = this.cipherSuites.replace("-", "");
     }
    
     public String getTitle() {
@@ -164,11 +167,11 @@ public class AE extends BaseEntity implements Serializable {
 
     public void setCipherSuites(List<String> suites) {
         if (suites == null) 
-            cipherSuites = null;
+            cipherSuites = "";
         else {
             StringBuilder sb = new StringBuilder();
             for (String s : suites) {
-                if (s != null) 
+                if (s != null) {
                     sb.append(s).append(',');
                 }
             }
