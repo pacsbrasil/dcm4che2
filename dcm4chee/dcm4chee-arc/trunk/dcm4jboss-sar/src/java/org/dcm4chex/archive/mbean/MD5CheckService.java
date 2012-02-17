@@ -241,10 +241,10 @@ public class MD5CheckService extends ServiceMBeanSupport {
         final char[] fileMD5 = new char[32];
         File file = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO
                 .getFilePath());
+        fsMgt.updateTimeOfLastMd5Check(fileDTO.getPk());
         if (file.isFile()) {
             MessageDigest digest = MessageDigest.getInstance("MD5");
             MD5Utils.md5sum(file, fileMD5, digest, buffer);
-            fsMgt.updateTimeOfLastMd5Check( fileDTO.getPk() );
             if (!Arrays.equals(fileMD5, storedMD5 ) ) {
                 fsMgt.setFileStatus( fileDTO.getPk(), FileStatus.MD5_CHECK_FAILED );
                 log.warn("File (pk="+fileDTO.getPk()+") " + file 
