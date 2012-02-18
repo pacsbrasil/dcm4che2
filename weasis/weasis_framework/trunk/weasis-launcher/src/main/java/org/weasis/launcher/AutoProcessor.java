@@ -13,13 +13,6 @@
 package org.weasis.launcher;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,12 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Pack200;
-import java.util.jar.Pack200.Unpacker;
-import java.util.zip.GZIPInputStream;
 
-import org.apache.felix.framework.util.Util;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -82,8 +70,6 @@ public class AutoProcessor {
      * The property name prefix for the launcher's auto-start property.
      **/
     public static final String AUTO_START_PROP = "felix.auto.start"; //$NON-NLS-1$
-
-    public static final String PACK200_COMPRESSION = ".pack.gz"; //$NON-NLS-1$
 
     /**
      * Used to instigate auto-deploy directory process and auto-install/auto-start configuration property processing
@@ -175,7 +161,7 @@ public class AutoProcessor {
                     // If the bundle is not already installed, then install it
                     // if the 'install' action is present.
                     if ((b == null) && actionList.contains(AUTO_DEPLOY_INSTALL_VALUE)) {
-                        b = installBundle(context, ((File) jarList.get(i)).toURI().toString());
+                        b = context.installBundle(((File) jarList.get(i)).toURI().toString());
                     }
                     // If the bundle is already installed, then update it
                     // if the 'update' action is present.
@@ -194,7 +180,7 @@ public class AutoProcessor {
                         }
                     }
 
-                } catch (Exception ex) {
+                } catch (BundleException ex) {
                     System.err.println("Auto-deploy install: " + ex //$NON-NLS-1$
                         + ((ex.getCause() != null) ? " - " + ex.getCause() : "")); //$NON-NLS-1$ //$NON-NLS-2$
                 }
@@ -210,7 +196,8 @@ public class AutoProcessor {
                         try {
                             b.uninstall();
                         } catch (BundleException ex) {
-                            printError(ex, "Auto-deploy uninstall: ");
+                            System.err.println("Auto-deploy uninstall: " + ex //$NON-NLS-1$
+                                + ((ex.getCause() != null) ? " - " + ex.getCause() : "")); //$NON-NLS-1$ //$NON-NLS-2$
                         }
                     }
                 }
@@ -224,7 +211,8 @@ public class AutoProcessor {
                         ((Bundle) startBundleList.get(i)).start();
 
                     } catch (BundleException ex) {
-                        printError(ex, "Auto-deploy start: ");
+                        System.err.println("Auto-deploy start: " + ex //$NON-NLS-1$
+                            + ((ex.getCause() != null) ? " - " + ex.getCause() : "")); //$NON-NLS-1$ //$NON-NLS-2$
                     }
                 }
             }
@@ -268,13 +256,6 @@ public class AutoProcessor {
         }
         webStartLoader.setMax(nbBundles);
 
-        final Map<String, Bundle> installedBundleMap = new HashMap<String, Bundle>();
-        Bundle[] bundles = context.getBundles();
-        for (int i = 0; i < bundles.length; i++) {
-            String bundleName = getBundleNameFromLocation(bundles[i].getLocation());
-            installedBundleMap.put(bundleName, bundles[i]);
-        }
-
         int bundleIter = 0;
         for (Iterator i = set.iterator(); i.hasNext();) {
             String key = ((String) i.next()).toLowerCase();
@@ -299,29 +280,50 @@ public class AutoProcessor {
             // Parse and install the bundles associated with the key.
             StringTokenizer st = new StringTokenizer((String) configMap.get(key), "\" ", true); //$NON-NLS-1$
             for (String location = nextLocation(st); location != null; location = nextLocation(st)) {
-                String bundleName = getBundleNameFromLocation(location);
+                String bundleName = location.substring(location.lastIndexOf("/") + 1, location.length()); //$NON-NLS-1$
                 try {
                     webStartLoader.writeLabel(WebStartLoader.LBL_DOWNLOADING + " " + bundleName); //$NON-NLS-1$
-                    // Handle same bundle version with different location
-                    Bundle b = installedBundleMap.get(bundleName);
-                    if (b == null) {
-                        b = installBundle(context, location);
-                    }
+                    Bundle b = context.installBundle(location, null);
+                    bundleIter++;
+                    webStartLoader.setValue(bundleIter);
                     sl.setBundleStartLevel(b, startLevel);
-                    loadTranslationBundle(context, b, installedBundleMap);
+
+                    if (WeasisLauncher.modulesi18n != null) {
+                        // Version v = b.getVersion();
+                        StringBuffer p = new StringBuffer(b.getSymbolicName());
+                        p.append("-i18n-"); //$NON-NLS-1$
+                        // From 1.1.0, i18n module can be plugged in any version. The SVN revision (the qualifier) will
+                        // update the version.
+                        p.append("1.1.0"); //$NON-NLS-1$
+                        // p.append(v.getMajor());
+                        // p.append("."); //$NON-NLS-1$
+                        // p.append(v.getMinor());
+                        // p.append("."); //$NON-NLS-1$
+                        // p.append(v.getMicro());
+                        p.append(".jar"); //$NON-NLS-1$
+                        String prop = p.toString();
+                        String value = WeasisLauncher.modulesi18n.getProperty(prop);
+                        if (value != null) {
+                            String translation_modules = System.getProperty("weasis.i18n", ""); //$NON-NLS-1$ //$NON-NLS-2$
+                            translation_modules += translation_modules.endsWith("/") ? prop : "/" + prop; //$NON-NLS-1$ //$NON-NLS-2$
+                            Bundle b2 = context.installBundle(translation_modules, null);
+                            sl.setBundleStartLevel(b2, startLevel);
+                            if (!value.equals(b2.getVersion().getQualifier())) {
+                                b2.update();
+                            }
+                        }
+                    }
                 } catch (Exception ex) {
                     String arch = System.getProperty("native.library.spec"); //$NON-NLS-1$
                     if (bundleName.contains(arch)) {
                         System.err.println("Cannot install native plug-in: " + bundleName); //$NON-NLS-1$
                     } else {
-                        printError(ex, "Auto-properties install: " + location);
+                        System.err.println("Auto-properties install: " + location + " (" + ex //$NON-NLS-1$ //$NON-NLS-2$
+                            + ((ex.getCause() != null) ? " - " + ex.getCause() : "") + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                         if (ex.getCause() != null) {
                             ex.printStackTrace();
                         }
                     }
-                } finally {
-                    bundleIter++;
-                    webStartLoader.setValue(bundleIter);
                 }
             }
         }
@@ -332,88 +334,19 @@ public class AutoProcessor {
             if (key.startsWith(AUTO_START_PROP)) {
                 StringTokenizer st = new StringTokenizer((String) configMap.get(key), "\" ", true); //$NON-NLS-1$
                 for (String location = nextLocation(st); location != null; location = nextLocation(st)) {
-                    String bundleName = getBundleNameFromLocation(location);
+                    // Installing twice just returns the same bundle.
                     try {
-                        // Handle same bundle version with different location
-                        Bundle b = installedBundleMap.get(bundleName);
-                        if (b == null) {
-                            // Should not reinstall
-                            b = installBundle(context, location);
-                        }
+                        Bundle b = context.installBundle(location, null);
                         if (b != null) {
                             b.start();
                         }
                     } catch (Exception ex) {
-                        printError(ex, "Auto-properties start: " + location);
+                        System.err.println("Auto-properties start: " + location + " (" + ex //$NON-NLS-1$ //$NON-NLS-2$
+                            + ((ex.getCause() != null) ? " - " + ex.getCause() : "") + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     }
                 }
             }
         }
-    }
-
-    private static String getBundleNameFromLocation(String location) {
-        if (location != null) {
-            int index = location.lastIndexOf("/");
-            String name = index >= 0 ? location.substring(index + 1) : location; //$NON-NLS-1$
-            index = name.lastIndexOf(".jar");
-            return index >= 0 ? name.substring(0, index) : name; //$NON-NLS-1$
-        }
-        return null;
-    }
-
-    private static void loadTranslationBundle(BundleContext context, Bundle b,
-        final Map<String, Bundle> installedBundleMap) {
-        if (WeasisLauncher.modulesi18n != null) {
-            // Version v = b.getVersion();
-            if (b != null) {
-                StringBuffer p = new StringBuffer(b.getSymbolicName());
-                p.append("-i18n-"); //$NON-NLS-1$
-                // From 1.1.0, i18n module can be plugged in any version. The SVN revision (the qualifier)
-                // will update the version.
-                p.append("1.1.0"); //$NON-NLS-1$
-                // p.append(v.getMajor());
-                // p.append("."); //$NON-NLS-1$
-                // p.append(v.getMinor());
-                // p.append("."); //$NON-NLS-1$
-                // p.append(v.getMicro());
-                p.append(".jar"); //$NON-NLS-1$
-                String filename = p.toString();
-                String value = WeasisLauncher.modulesi18n.getProperty(filename);
-                if (value != null) {
-                    String baseURL = System.getProperty("weasis.i18n"); //$NON-NLS-1$ //$NON-NLS-2$
-                    if (baseURL != null) {
-                        String translation_modules = baseURL + (baseURL.endsWith("/") ? filename : "/" + filename); //$NON-NLS-1$ //$NON-NLS-2$
-                        String bundleName = getBundleNameFromLocation(filename);
-                        try {
-                            Bundle b2 = installedBundleMap.get(bundleName);
-                            if (b2 == null) {
-                                b2 = context.installBundle(translation_modules, null);
-                            }
-                            if (b2 != null && !value.equals(b2.getVersion().getQualifier())) {
-                                if (b2.getLocation().startsWith(baseURL)) {
-                                    b2.update();
-                                } else {
-                                    // Handle same bundle version with different location
-                                    try {
-                                        b2.uninstall();
-                                        context.installBundle(translation_modules, null);
-                                    } catch (Exception exc) {
-                                        System.err.println("Cannot install translation pack: " + translation_modules); //$NON-NLS-1$
-                                    }
-                                }
-                            }
-                        } catch (Exception e) {
-                            System.err.println("Cannot install translation pack: " + translation_modules); //$NON-NLS-1$
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private static void printError(Exception ex, String prefix) {
-        System.err.println(prefix + " (" + ex //$NON-NLS-1$ 
-            + ((ex.getCause() != null) ? " - " + ex.getCause() : "") + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     private static String nextLocation(StringTokenizer st) {
@@ -461,61 +394,5 @@ public class AutoProcessor {
 
     private static boolean isFragment(Bundle bundle) {
         return bundle.getHeaders().get(Constants.FRAGMENT_HOST) != null;
-    }
-
-    private static Bundle installBundle(BundleContext context, String location) throws Exception {
-        boolean pack = location.endsWith(PACK200_COMPRESSION);
-        if (pack) {
-            // Remove the pack classifier from the location path
-            location = location.substring(0, location.length() - 8);
-            pack = context.getBundle(location) == null;
-        }
-
-        if (pack) {
-
-            final URL url = new URL((URL) null, location + PACK200_COMPRESSION, null);
-
-            // URLConnection conn = url.openConnection();
-            // InputStream is = conn.getInputStream();
-            // Unpacker unpacker = Pack200.newUnpacker();
-            // File tmpFile = File.createTempFile("tmpPack200", ".jar");
-            // JarOutputStream origJarStream = new JarOutputStream(new FileOutputStream(tmpFile));
-            // unpacker.unpack(new GZIPInputStream(is), origJarStream);
-            // origJarStream.close();
-
-            final PipedInputStream in = new PipedInputStream();
-            final PipedOutputStream out = new PipedOutputStream(in);
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    JarOutputStream jarStream = null;
-                    try {
-                        URLConnection conn = url.openConnection();
-                        // Support for http proxy authentication.
-                        String auth = System.getProperty("http.proxyAuth", null);
-                        if ((auth != null) && (auth.length() > 0)) {
-                            if ("http".equals(url.getProtocol()) || "https".equals(url.getProtocol())) {
-                                String base64 = Util.base64Encode(auth);
-                                conn.setRequestProperty("Proxy-Authorization", "Basic " + base64);
-                            }
-                        }
-                        InputStream is = conn.getInputStream();
-                        Unpacker unpacker = Pack200.newUnpacker();
-                        jarStream = new JarOutputStream(out);
-                        unpacker.unpack(new GZIPInputStream(is), jarStream);
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } finally {
-                        FileUtil.safeClose(jarStream);
-                    }
-                }
-            }).start();
-
-            return context.installBundle(location, in);
-
-        }
-        return context.installBundle(location, null);
     }
 }

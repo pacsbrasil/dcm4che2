@@ -47,14 +47,14 @@ public class Activator implements BundleActivator, ServiceListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(Activator.class);
 
     private static final String codecFilter = String.format("(%s=%s)", Constants.OBJECTCLASS, Codec.class.getName()); //$NON-NLS-1$
-    private static BundleContext bundleContext;
+    private BundleContext bundleContext;
 
     @Override
-    public void start(final BundleContext context) throws Exception {
-        Activator.bundleContext = context;
-        context.registerService(BackingStore.class.getName(), new DataFileBackingStoreImpl(context), null);
-        context.addServiceListener(this, codecFilter);
-        ServiceTracker m_tracker = new ServiceTracker(context, Codec.class.getName(), null);
+    public void start(final BundleContext bundleContext) throws Exception {
+        this.bundleContext = bundleContext;
+        bundleContext.registerService(BackingStore.class.getName(), new DataFileBackingStoreImpl(bundleContext), null);
+        bundleContext.addServiceListener(this, codecFilter);
+        ServiceTracker m_tracker = new ServiceTracker(bundleContext, Codec.class.getName(), null);
         // Do not close tracker. It will uregister services
         m_tracker.open();
         Object[] services = m_tracker.getServices();
@@ -95,7 +95,8 @@ public class Activator implements BundleActivator, ServiceListener {
 
     @Override
     public void stop(BundleContext bundleContext) throws Exception {
-        Activator.bundleContext = null;
+        this.bundleContext = null;
+        BundleTools.saveSystemPreferences();
     }
 
     public static JAI getJAI() {
@@ -143,10 +144,6 @@ public class Activator implements BundleActivator, ServiceListener {
                 bundleContext.ungetService(m_ref);
             }
         }
-    }
-
-    public static BundleContext getBundleContext() {
-        return bundleContext;
     }
 
 }

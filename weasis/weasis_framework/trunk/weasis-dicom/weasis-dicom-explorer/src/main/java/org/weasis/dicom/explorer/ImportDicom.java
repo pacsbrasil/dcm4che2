@@ -16,5 +16,4 @@ public interface ImportDicom {
 
     void importDICOM(DicomModel dicomModel, JProgressBar info);
 
-    // AbstractItemDialogPage createImportDicomPage(Hashtable<String, Object> properties);
 }

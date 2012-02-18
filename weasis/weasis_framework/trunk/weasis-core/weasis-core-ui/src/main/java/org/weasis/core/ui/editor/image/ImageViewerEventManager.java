@@ -547,11 +547,11 @@ public abstract class ImageViewerEventManager<E extends ImageElement> {
         return null;
     }
 
-    public ActionW getActionFromkeyEvent(int keyEvent, int modifier) {
+    public ActionW getActionFromkeyEvent(int keyEvent) {
         if (keyEvent != 0) {
             for (Iterator<ActionW> iterator = actions.keySet().iterator(); iterator.hasNext();) {
                 ActionW action = iterator.next();
-                if (action.getKeyCode() == keyEvent && action.getModifier() == modifier) {
+                if (action.getKeyCode() == keyEvent) {
                     return action;
                 }
             }

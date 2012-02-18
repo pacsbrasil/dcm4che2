@@ -106,7 +106,7 @@ public class View2dContainer extends ImageViewerPlugin<ImageElement> implements 
             tool.registerToolAsDockable();
             TOOLS.add(tool);
 
-            tool = new DisplayTool("Display");
+            tool = new DisplayTool("Display", null);
             tool.registerToolAsDockable();
             TOOLS.add(tool);
             eventManager.addSeriesViewerListener((SeriesViewerListener) tool);
@@ -379,11 +379,5 @@ public class View2dContainer extends ImageViewerPlugin<ImageElement> implements 
             }
         }
         return false;
-    }
-
-    @Override
-    public List<Action> getPrintActions() {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

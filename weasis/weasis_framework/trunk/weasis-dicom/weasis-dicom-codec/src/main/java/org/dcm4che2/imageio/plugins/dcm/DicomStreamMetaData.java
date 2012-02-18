@@ -52,7 +52,6 @@ import org.w3c.dom.Node;
 public class DicomStreamMetaData extends IIOMetadata {
 
     private DicomObject dicomObject;
-    boolean isFileMetaInfoIncluded = true;
 
     @Override
     public Node getAsTree(String formatName) {
@@ -82,10 +81,4 @@ public class DicomStreamMetaData extends IIOMetadata {
         this.dicomObject = dataset;
     }
 
-    public boolean isFileMetaInfoIncluded() {
-        return isFileMetaInfoIncluded;
-    }
-    public void setFileMetaInfoIncluded(boolean include) {
-        isFileMetaInfoIncluded = include;
-    }
 }

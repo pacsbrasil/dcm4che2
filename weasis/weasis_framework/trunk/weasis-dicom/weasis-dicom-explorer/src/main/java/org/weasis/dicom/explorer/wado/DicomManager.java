@@ -21,7 +21,6 @@ public class DicomManager {
 
     private static DicomManager instance;
     private TransferSyntax wadoTSUID;
-    private boolean portableDirCache;
 
     /**
      * Return the single instance of this class. This method guarantees the singleton property of this class.
@@ -34,7 +33,6 @@ public class DicomManager {
     }
 
     private DicomManager() {
-        portableDirCache = true;
         restoreDefaultValues();
         if ("superuser".equals(System.getProperty("weasis.user.prefs"))) { //$NON-NLS-1$ //$NON-NLS-2$
             Preferences pref = Activator.PREFERENCES.getDefaultPreferences();
@@ -46,14 +44,6 @@ public class DicomManager {
                 }
             }
         }
-    }
-
-    public boolean isPortableDirCache() {
-        return portableDirCache;
-    }
-
-    public void setPortableDirCache(boolean portableDirCache) {
-        this.portableDirCache = portableDirCache;
     }
 
     public TransferSyntax getWadoTSUID() {

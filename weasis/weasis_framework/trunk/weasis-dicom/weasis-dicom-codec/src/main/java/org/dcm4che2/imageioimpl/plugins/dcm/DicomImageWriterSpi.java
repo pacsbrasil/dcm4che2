@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4che2.imageioimpl.plugins.dcm;
 
+import java.io.IOException;
 import java.util.Locale;
 
 import javax.imageio.ImageTypeSpecifier;
@@ -76,7 +77,7 @@ public class DicomImageWriterSpi extends ImageWriterSpi {
 
     /** Create a dicom image writer */
     @Override
-    public ImageWriter createWriterInstance(Object extension) {
+    public ImageWriter createWriterInstance(Object extension) throws IOException {
         return new DicomImageWriter(this);
     }
 

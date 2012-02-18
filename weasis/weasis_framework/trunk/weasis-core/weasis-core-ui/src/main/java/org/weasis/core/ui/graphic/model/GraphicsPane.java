@@ -124,9 +124,8 @@ public class GraphicsPane extends JComponent {
     }
 
     public Object getActionValue(String action) {
-        if (action == null) {
+        if (action == null)
             return null;
-        }
         return actionsInView.get(action);
     }
 

@@ -60,7 +60,6 @@ import org.weasis.dicom.codec.SortSeriesStack;
 import org.weasis.dicom.codec.display.Modality;
 import org.weasis.dicom.explorer.wado.LoadRemoteDicomManifest;
 import org.weasis.dicom.explorer.wado.LoadRemoteDicomURL;
-import org.weasis.dicom.explorer.wado.LoadSeries;
 
 public class DicomModel implements TreeModel, DataExplorerModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(DicomModel.class);
@@ -97,8 +96,7 @@ public class DicomModel implements TreeModel, DataExplorerModel {
         splittingRules.put(Modality.Default, new TagW[] { TagW.ImageType, TagW.ContrastBolusAgent, TagW.SOPClassUID });
         splittingRules.put(Modality.CT, new TagW[] { TagW.ImageType, TagW.ContrastBolusAgent, TagW.SOPClassUID,
             TagW.ImageOrientationPlane, TagW.GantryDetectorTilt, TagW.ConvolutionKernel });
-        splittingRules.put(Modality.PT, new TagW[] { TagW.ImageType, TagW.ContrastBolusAgent, TagW.SOPClassUID,
-            TagW.GantryDetectorTilt, TagW.ConvolutionKernel });
+        splittingRules.put(Modality.PT, splittingRules.get(Modality.CT));
         splittingRules.put(Modality.MR, new TagW[] { TagW.ImageType, TagW.ContrastBolusAgent, TagW.SOPClassUID,
             TagW.ImageOrientationPlane, TagW.ScanningSequence, TagW.SequenceVariant, TagW.ScanOptions,
             TagW.RepetitionTime, TagW.EchoTime, TagW.InversionTime, TagW.FlipAngle });
@@ -458,12 +456,11 @@ public class DicomModel implements TreeModel, DataExplorerModel {
                     if (rules == null) {
                         rules = splittingRules.get(Modality.Default);
                     }
-                    // If similar add to the original series
+
                     if (isSimilar(rules, initialSeries, media)) {
                         initialSeries.addMedia(media);
                         return false;
                     }
-                    // else try to find a similar previous split series
                     MediaSeriesGroup study = getParent(initialSeries, DicomModel.study);
                     int k = 1;
                     while (true) {
@@ -479,7 +476,6 @@ public class DicomModel implements TreeModel, DataExplorerModel {
                         }
                         k++;
                     }
-                    // no matching series exists, so split series
                     splitSeries(dicomReader, initialSeries, media);
                     return true;
                 }
@@ -591,23 +587,12 @@ public class DicomModel implements TreeModel, DataExplorerModel {
                         for (int i = 0; i < files.length; i++) {
                             if (notCaseSensitive && last != null && dirs[i].equalsIgnoreCase(last)) {
                                 last = null;
+                            } else {
                                 last = dirs[i];
                                 files[i] = new File(baseDir, dirs[i]);
                             }
                         }
-
-                        ArrayList<LoadSeries> loadSeries = null;
-                        File dcmDirFile = new File(baseDir, "DICOMDIR");
-                        if (dcmDirFile.canRead()) {
-                            DicomDirLoader dirImport = new DicomDirLoader(dcmDirFile, DicomModel.this);
-                            loadSeries = dirImport.readDicomDir();
-                        }
-                        if (loadSeries != null && loadSeries.size() > 0) {
-                            loadingExecutor.execute(new LoadDicomDir(loadSeries, DicomModel.this));
-
-                        } else {
-                            loadingExecutor.execute(new LoadLocalDicom(files, true, DicomModel.this));
-                        }
+                        loadingExecutor.execute(new LoadLocalDicom(files, true, DicomModel.this));
                     }
                 }
             }

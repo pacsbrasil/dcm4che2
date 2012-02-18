@@ -15,6 +15,8 @@ import java.awt.Desktop;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -37,6 +39,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.plaf.basic.BasicColorChooserUI;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
@@ -45,7 +48,6 @@ import org.apache.felix.framework.util.FelixConstants;
 import org.apache.felix.framework.util.Util;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
-import org.osgi.framework.Version;
 import org.osgi.util.tracker.ServiceTracker;
 
 public class WeasisLauncher {
@@ -183,19 +185,6 @@ public class WeasisLauncher {
     public static void launch(String[] argv) throws Exception {
         // Set system property for dynamically loading only native libraries corresponding of the current platform
         setSystemSpecification();
-
-        // Getting VM arguments, workaround for having a fully trusted application with JWS,
-        // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6653241
-        for (int i = 0; i < argv.length; i++) {
-            if (argv[i].startsWith("-VMP") && argv[i].length() > 4) { //$NON-NLS-1$
-                String[] vmarg = argv[i].substring(4).split("=", 2);
-                if (vmarg.length == 2) {
-                    if (vmarg[1].startsWith("\"") && vmarg[1].endsWith("\"")) {
-                        vmarg[1] = vmarg[1].substring(1, vmarg[1].length() - 1);
-                    }
-                }
-            }
-        }
 
         final List<StringBuffer> commandList = splitCommand(argv);
         // Look for bundle directory and/or cache directory.
@@ -562,35 +551,6 @@ public class WeasisLauncher {
         return props;
     }
 
-    private static String getGeneralProperty(String key, String defaultValue, Properties bundleProp, Properties local,
-        boolean overrideBundleProp) {
-        String val = getGeneralProperty(key, key, defaultValue, bundleProp, local);
-        if (val != null) {
-            bundleProp.setProperty(key, val);
-        }
-        return val;
-    }
-
-    private static String getGeneralProperty(String key, String defaultValue, Properties config, Properties local) {
-        return getGeneralProperty(key, key, defaultValue, config, local);
-    }
-
-    private static String getGeneralProperty(String key, String localKey, String defaultValue, Properties config,
-        Properties local) {
-        String value = local.getProperty(localKey, null);
-        if (value == null) {
-            value = System.getProperty(key, null);
-            if (value == null) {
-                value = config.getProperty(key, defaultValue);
-            }
-            if (value != null) {
-                // When first launch, set property that can be written later
-                local.setProperty(localKey, value);
-            }
-        }
-        return value;
-    }
-
     public static void setSystemSpecification() {
         // Follows the OSGI specification to use Bundle-NativeCode in the bundle fragment :
         // http://www.osgi.org/Specifications/Reference
@@ -672,25 +632,13 @@ public class WeasisLauncher {
         }
         File common_file = new File(basdir, APP_PROPERTY_FILE);
         Properties s_prop = readProperties(common_file);
-        // General Preferences priority order:
-        // 1) Last value (does not exist for first launch of Weasis in an operating system session).
-        // 2) Java System property
-        // 3) Property defined in weasis/conf/config.properties or in weasis/conf/ext-config.properties (extension of
-        // config)
-        // 4) default value
 
-        final String lang = getGeneralProperty("weasis.language", "locale.language", "en", config, s_prop); //$NON-NLS-1$ //$NON-NLS-2$
-        final String country = getGeneralProperty("weasis.country", "locale.country", "US", config, s_prop); //$NON-NLS-1$ //$NON-NLS-2$
-        final String variant = getGeneralProperty("weasis.variant", "locale.variant", "", config, s_prop); //$NON-NLS-1$ //$NON-NLS-2$
-
-        getGeneralProperty("weasis.confirm.closing", "true", config, s_prop); //$NON-NLS-1$ //$NON-NLS-2$
-
-        // Set value back to the bundle context properties, sling logger uses bundleContext.getProperty(prop)
-        getGeneralProperty("org.apache.sling.commons.log.level", "INFO", config, s_prop, true); //$NON-NLS-1$ //$NON-NLS-2$
-        // Empty string make the file log writer disable
-        getGeneralProperty("org.apache.sling.commons.log.file", "", config, s_prop, true); //$NON-NLS-1$ //$NON-NLS-2$
-        getGeneralProperty("org.apache.sling.commons.log.file.number", "5", config, s_prop, true); //$NON-NLS-1$ //$NON-NLS-2$
-        getGeneralProperty("org.apache.sling.commons.log.file.size", "10MB", config, s_prop, true); //$NON-NLS-1$ //$NON-NLS-2$
+        // Get locale from system properties otherwise set en_US (only for the first launch of Weasis on a user session)
+        String lang = System.getProperty("weasis.language", "en"); //$NON-NLS-1$ //$NON-NLS-2$
+        String country = System.getProperty("weasis.country", "US"); //$NON-NLS-1$ //$NON-NLS-2$
+        String variant = System.getProperty("weasis.variant", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        // Set the locale of the previous launch if exists
+        lang = s_prop.getProperty("locale.language", lang); //$NON-NLS-1$
 
         URI translation_modules = null;
         if (portable != null) {
@@ -699,7 +647,7 @@ public class WeasisLauncher {
                 translation_modules = file.toURI();
                 String path = file.getParentFile().toURI().toString();
                 System.setProperty("weasis.i18n", path); //$NON-NLS-1$
-                System.out.println("i18n path: " + path); //$NON-NLS-1$
+                System.err.println("i18n path: " + path); //$NON-NLS-1$
             }
         } else {
             String path = System.getProperty("weasis.i18n", null); //$NON-NLS-1$
@@ -722,28 +670,40 @@ public class WeasisLauncher {
             // if English no need to load i18n bundle fragments
             modulesi18n = null;
         }
+        country = s_prop.getProperty("locale.country", country); //$NON-NLS-1$ 
+        variant = s_prop.getProperty("locale.variant", variant); //$NON-NLS-1$ 
         Locale.setDefault(new Locale(lang, country, variant));
 
-        look = s_prop.getProperty("weasis.look", null); //$NON-NLS-1$
+        boolean update = false;
+
+        look = System.getProperty("swing.defaultlaf", null); //$NON-NLS-1$
         if (look == null) {
-            String nativeLook = null;
+            look = s_prop.getProperty("weasis.look", null); //$NON-NLS-1$
+        }
+        if (look == null) {
             String sys_spec = System.getProperty("native.library.spec", "unknown"); //$NON-NLS-1$ //$NON-NLS-2$
             int index = sys_spec.indexOf("-"); //$NON-NLS-1$
             if (index > 0) {
-                nativeLook = "weasis.look." + sys_spec.substring(0, index); //$NON-NLS-1$
-                look = System.getProperty(nativeLook, null);
-                if (look == null) {
-                    look = config.getProperty(nativeLook, null);
-                }
-
-            }
-            if (look == null) {
-                look = System.getProperty("weasis.look", null);
-                if (look == null) {
-                    look = config.getProperty(nativeLook, null);
+                String sys = sys_spec.substring(0, index);
+                String weasisNativeLaf = config.getProperty("weasis.look." + sys, null); //$NON-NLS-1$
+                if (weasisNativeLaf != null) {
+                    look = weasisNativeLaf;
                 }
             }
         }
+
+        Properties common_prop;
+        if (basdir.getPath().equals(dir)) {
+            common_prop = s_prop;
+        } else {
+            common_file = new File(dir, APP_PROPERTY_FILE);
+            common_prop = readProperties(common_file);
+        }
+
+        String versionOld = common_prop.getProperty("weasis.version"); //$NON-NLS-1$
+        String versionNew = config.getProperty("weasis.version"); //$NON-NLS-1$
+
+        // changing Look and Feel when upgrade version
         if (LookAndFeels.installSubstanceLookAndFeels() && look == null) {
             if ("Mac OS X".equals(System.getProperty("os.name"))) { //$NON-NLS-1$ //$NON-NLS-2$
                 look = "com.apple.laf.AquaLookAndFeel"; //$NON-NLS-1$
@@ -751,6 +711,7 @@ public class WeasisLauncher {
                 look = "org.pushingpixels.substance.api.skin.SubstanceTwilightLookAndFeel"; //$NON-NLS-1$
             }
         }
+
         // Set look and feels
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -767,26 +728,12 @@ public class WeasisLauncher {
             System.err.println("WARNING : Unable to set the Look&Feel " + look); //$NON-NLS-1$
             e.printStackTrace();
         }
-        s_prop.put("weasis.look", look);
-
-        Properties common_prop;
-        if (basdir.getPath().equals(dir)) {
-            common_prop = s_prop;
-        } else {
-            FileUtil.storeProperties(common_file, s_prop, null);
-            common_file = new File(dir, APP_PROPERTY_FILE);
-            common_prop = readProperties(common_file);
-        }
-
-        String versionOld = common_prop.getProperty("weasis.version"); //$NON-NLS-1$
-        String versionNew = config.getProperty("weasis.version"); //$NON-NLS-1$
 
         // Splash screen that shows bundles loading
         final WebStartLoader loader = new WebStartLoader();
         // Display splash screen
         loader.open();
 
-        boolean update = false;
         if (versionNew != null) {
             // Add also to java properties for the about
             System.setProperty(P_WEASIS_VERSION, versionNew);
@@ -797,22 +744,25 @@ public class WeasisLauncher {
         }
         if (update) {
             common_prop.put("weasis.look", look); //$NON-NLS-1$
-            FileUtil.storeProperties(common_file, common_prop, null);
+            FileOutputStream fout = null;
+            try {
+                fout = new FileOutputStream(common_file);
+                common_prop.store(fout, null);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                FileUtil.safeClose(fout);
+            }
         }
 
         boolean cleanCache = Boolean.parseBoolean(config.getProperty("weasis.clean.previous.version")); //$NON-NLS-1$
         // Save if not exist or could not be read
         if (cleanCache && versionNew != null) {
-            try {
-                Version vOld = new Version(versionOld.replaceFirst("-", "."));
-                Version vNew = new Version(versionNew.replaceFirst("-", "."));
-                if (vNew.getMinor() != vOld.getMinor() || vNew.getMajor() != vOld.getMajor()) {
-                    System.out.printf("Clean previous Weasis version: %s \n", versionOld); //$NON-NLS-1$
-                    config
-                        .setProperty(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
-                }
-            } catch (Exception e) {
-                System.err.println("Cannot read Weasis version!"); //$NON-NLS-1$
+            if (!versionNew.equals(versionOld)) {
+                System.out.printf("Clean previous Weasis version: %s \n", versionOld); //$NON-NLS-1$
+                config.setProperty(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
             }
         }
         final File file = common_file;
@@ -863,7 +813,6 @@ public class WeasisLauncher {
                                         String cmd = String.format("xdg-open %s", e.getURL()); //$NON-NLS-1$
                                         Runtime.getRuntime().exec(cmd);
                                     } catch (IOException e1) {
-                                        System.err.println("Unable to launch the WEB browser"); //$NON-NLS-1$
                                         e1.printStackTrace();
                                     }
                                 } else if (Desktop.isDesktopSupported()) {
@@ -872,8 +821,10 @@ public class WeasisLauncher {
                                         try {
                                             desktop.browse(e.getURL().toURI());
 
-                                        } catch (Exception ex) {
-                                            System.err.println("Unable to launch the WEB browser"); //$NON-NLS-1$
+                                        } catch (IOException ex) {
+                                            ex.printStackTrace();
+                                        } catch (URISyntaxException ex2) {
+                                            ex2.printStackTrace();
                                         }
                                     }
                                 }
@@ -927,6 +878,8 @@ public class WeasisLauncher {
      */
 
     public static String setLookAndFeel(String look) {
+        // Workaround in substance 6.3 to work with JAVA 7
+        UIManager.put("ColorChooserUI", BasicColorChooserUI.class.getName()); //$NON-NLS-1$
         // Do not display metal LAF in bold, it is ugly
         UIManager.put("swing.boldMetal", Boolean.FALSE); //$NON-NLS-1$
         // Display slider value is set to false (already in all LAF by the panel title), used by GTK LAF
@@ -966,6 +919,7 @@ public class WeasisLauncher {
 
             } catch (Exception e) {
                 System.err.println("WARNING : Unable to set the Look&Feel"); //$NON-NLS-1$
+                e.printStackTrace();
             }
         }
         return look;

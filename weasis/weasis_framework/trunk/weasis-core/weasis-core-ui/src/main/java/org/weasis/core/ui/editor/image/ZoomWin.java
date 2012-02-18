@@ -46,7 +46,6 @@ import org.weasis.core.api.image.RotationOperation;
 import org.weasis.core.api.image.ZoomOperation;
 import org.weasis.core.api.image.util.ImageLayer;
 import org.weasis.core.api.media.data.ImageElement;
-import org.weasis.core.ui.editor.image.dockable.MeasureTool;
 import org.weasis.core.ui.graphic.ImageLayerChangeListener;
 import org.weasis.core.ui.graphic.RenderedImageLayer;
 import org.weasis.core.ui.graphic.model.GraphicsPane;
@@ -186,7 +185,7 @@ public class ZoomWin<E extends ImageElement> extends GraphicsPane implements Ima
         // Paint the visible area
         g2d.translate(-offsetX, -offsetY);
         // Set font size according to the view size
-        g2d.setFont(MeasureTool.viewSetting.getFont());
+        g2d.setFont(getFont());
 
         imageLayer.drawImage(g2d);
         drawLayers(g2d, affineTransform, inverseTransform);

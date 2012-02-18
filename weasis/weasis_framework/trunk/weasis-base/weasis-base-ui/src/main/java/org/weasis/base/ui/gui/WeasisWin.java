@@ -45,9 +45,14 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.TransferHandler;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 import org.noos.xing.mydoggy.Content;
 import org.noos.xing.mydoggy.ContentManager;
@@ -72,7 +77,6 @@ import org.weasis.core.api.explorer.model.DataExplorerModel;
 import org.weasis.core.api.explorer.model.TreeModel;
 import org.weasis.core.api.explorer.model.TreeModelNode;
 import org.weasis.core.api.gui.util.AbstractProperties;
-import org.weasis.core.api.gui.util.DynamicMenu;
 import org.weasis.core.api.gui.util.GhostGlassPane;
 import org.weasis.core.api.gui.util.GuiExecutor;
 import org.weasis.core.api.gui.util.JMVUtils;
@@ -663,28 +667,14 @@ public class WeasisWin extends JFrame implements PropertyChangeListener {
         }
     }
 
-    private static void buildPrintSubMenu(final JMenu printMenu) {
-        if (selectedPlugin != null) {
-            List<Action> actions = selectedPlugin.getPrintActions();
-            if (actions != null) {
-                for (Action action : actions) {
-                    JMenuItem item = new JMenuItem(action);
-                    printMenu.add(item);
-                }
-            }
-        }
-    }
-
     private static void buildImportSubMenu(final JMenu importMenu) {
         synchronized (UIManager.EXPLORER_PLUGINS) {
             List<DataExplorerView> explorers = UIManager.EXPLORER_PLUGINS;
             for (final DataExplorerView dataExplorerView : explorers) {
-                List<Action> actions = dataExplorerView.getOpenImportDialogAction();
-                if (actions != null) {
-                    for (Action action : actions) {
-                        JMenuItem item = new JMenuItem(action);
-                        importMenu.add(item);
-                    }
+                Action action = dataExplorerView.getOpenImportDialogAction();
+                if (action != null) {
+                    JMenuItem item = new JMenuItem(action);
+                    importMenu.add(item);
                 }
             }
         }
@@ -721,12 +711,10 @@ public class WeasisWin extends JFrame implements PropertyChangeListener {
 
             List<DataExplorerView> explorers = UIManager.EXPLORER_PLUGINS;
             for (final DataExplorerView dataExplorerView : explorers) {
-                List<Action> actions = dataExplorerView.getOpenExportDialogAction();
-                if (actions != null) {
-                    for (Action action : actions) {
-                        JMenuItem item = new JMenuItem(action);
-                        exportMenu.add(item);
-                    }
+                Action action = dataExplorerView.getOpenExportDialogAction();
+                if (action != null) {
+                    JMenuItem item = new JMenuItem(action);
+                    exportMenu.add(item);
                 }
             }
         }
@@ -734,16 +722,38 @@ public class WeasisWin extends JFrame implements PropertyChangeListener {
 
     private void buildMenuDisplay() {
         menuDisplay.removeAll();
-
-        DynamicMenu toolBarMenu = new DynamicMenu(Messages.getString("WeasisWin.toolbar")) {//$NON-NLS-1$
+        final JMenu toolBarMenu = new JMenu(Messages.getString("WeasisWin.toolbar")); //$NON-NLS-1$
+        JPopupMenu menuImport = toolBarMenu.getPopupMenu();
+        // #WEA-6 - workaround, PopupMenuListener doesn't work on Mac in the top bar with native look and feel
+        if (AbstractProperties.isMacNativeLookAndFeel()) {
+            toolBarMenu.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    if (toolBarMenu.isSelected()) {
+                        buildToolBarSubMenu(toolBarMenu);
+                    } else {
+                        toolBarMenu.removeAll();
+                    }
+                }
+            });
+        } else {
+            menuImport.addPopupMenuListener(new PopupMenuListener() {
 
                 @Override
-                public void popupMenuWillBecomeVisible() {
-                    buildToolBarSubMenu(this);
-
+                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                    buildToolBarSubMenu(toolBarMenu);
                 }
-            };
-        toolBarMenu.addPopupMenuListener();
+
+                @Override
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                    toolBarMenu.removeAll();
+                }
+
+                @Override
+                public void popupMenuCanceled(PopupMenuEvent e) {
+                }
+            });
+        }
         menuDisplay.add(toolBarMenu);
 
         final JMenu toolMenu = new JMenu("Tools");
@@ -783,40 +793,73 @@ public class WeasisWin extends JFrame implements PropertyChangeListener {
 
     private static void buildMenuFile() {
         menuFile.removeAll();
-
-        DynamicMenu importMenu = new DynamicMenu(Messages.getString("WeasisWin.import")) {//$NON-NLS-1$
+        final JMenu importMenu = new JMenu(Messages.getString("WeasisWin.import")); //$NON-NLS-1$
+        JPopupMenu menuImport = importMenu.getPopupMenu();
+        // #WEA-6 - workaround, PopupMenuListener doesn't work on Mac in the top bar with native look and feel
+        if (AbstractProperties.isMacNativeLookAndFeel()) {
+            importMenu.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    if (importMenu.isSelected()) {
+                        buildImportSubMenu(importMenu);
+                    } else {
+                        importMenu.removeAll();
+                    }
+                }
+            });
+        } else {
+            menuImport.addPopupMenuListener(new PopupMenuListener() {
 
                 @Override
-                public void popupMenuWillBecomeVisible() {
-                    buildImportSubMenu(this);
-
+                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                    buildImportSubMenu(importMenu);
                 }
-            };
-        importMenu.addPopupMenuListener();
+
+                @Override
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                    importMenu.removeAll();
+                }
+
+                @Override
+                public void popupMenuCanceled(PopupMenuEvent e) {
+                }
+            });
+        }
         menuFile.add(importMenu);
 
-        DynamicMenu exportMenu = new DynamicMenu(Messages.getString("WeasisWin.export")) {//$NON-NLS-1$
+        final JMenu exportMenu = new JMenu(Messages.getString("WeasisWin.export")); //$NON-NLS-1$
+        JPopupMenu menuExport = exportMenu.getPopupMenu();
+        // #WEA-6 - workaround, PopupMenuListener doesn't work on Mac in the top bar with native look and feel
+        if (AbstractProperties.isMacNativeLookAndFeel()) {
+            exportMenu.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    if (exportMenu.isSelected()) {
+                        buildExportSubMenu(exportMenu);
+                    } else {
+                        exportMenu.removeAll();
+                    }
+                }
+            });
+        } else {
+            menuExport.addPopupMenuListener(new PopupMenuListener() {
 
                 @Override
-                public void popupMenuWillBecomeVisible() {
-                    buildExportSubMenu(this);
-
+                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                    buildExportSubMenu(exportMenu);
                 }
-            };
-        exportMenu.addPopupMenuListener();
 
+                @Override
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                    exportMenu.removeAll();
+                }
+
+                @Override
+                public void popupMenuCanceled(PopupMenuEvent e) {
+                }
+            });
+        }
         menuFile.add(exportMenu);
-        menuFile.add(new JSeparator());
-        DynamicMenu printMenu = new DynamicMenu("Print") {//$NON-NLS-1$
-
-                @Override
-                public void popupMenuWillBecomeVisible() {
-                    buildPrintSubMenu(this);
-
-                }
-            };
-        printMenu.addPopupMenuListener();
-        menuFile.add(printMenu);
         menuFile.add(new JSeparator());
         menuFile.add(new JMenuItem(OpenPreferencesAction.getInstance()));
         menuFile.add(new JSeparator());

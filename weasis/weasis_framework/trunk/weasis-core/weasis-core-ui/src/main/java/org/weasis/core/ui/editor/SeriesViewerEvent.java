@@ -16,7 +16,7 @@ import org.weasis.core.api.media.data.Series;
 public class SeriesViewerEvent {
 
     public enum EVENT {
-        SELECT, ADD, LAYOUT, SELECT_VIEW, ANONYM
+        SELECT, ADD, LAYOUT
     };
 
     private final SeriesViewer seriesViewer;

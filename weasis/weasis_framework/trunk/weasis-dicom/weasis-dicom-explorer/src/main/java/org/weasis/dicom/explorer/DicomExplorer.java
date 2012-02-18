@@ -31,7 +31,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.beans.PropertyChangeEvent;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,7 +58,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -87,7 +85,6 @@ import org.weasis.core.api.explorer.model.DataExplorerModel;
 import org.weasis.core.api.gui.task.CircularProgressBar;
 import org.weasis.core.api.gui.util.GuiExecutor;
 import org.weasis.core.api.gui.util.JMVUtils;
-import org.weasis.core.api.gui.util.WinUtil;
 import org.weasis.core.api.media.data.ImageElement;
 import org.weasis.core.api.media.data.MediaSeries;
 import org.weasis.core.api.media.data.MediaSeries.MEDIA_POSITION;
@@ -271,7 +268,15 @@ public class DicomExplorer extends PluginTool implements DataExplorerView {
     private final JPanel panel_3 = new JPanel();
     private final JButton btnExport = new JButton(Messages.getString("DicomExplorer.export")); //$NON-NLS-1$
     private final JButton btnImport = new JButton(Messages.getString("DicomExplorer.import")); //$NON-NLS-1$
+    private final AbstractAction importAction = new AbstractAction(
+        Messages.getString("DicomExplorer.to") + DicomExplorer.NAME) { //$NON-NLS-1$
 
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                DicomImport dialog = new DicomImport(model);
+                JMVUtils.showCenterScreen(dialog);
+            }
+        };
     private final AbstractAction exportAction = new AbstractAction(
         Messages.getString("DicomExplorer.from") + DicomExplorer.NAME) { //$NON-NLS-1$
 
@@ -1439,8 +1444,9 @@ public class DicomExplorer extends PluginTool implements DataExplorerView {
                 }
             } else if (evt.getSource() instanceof SeriesViewer) {
                 if (ObservableEvent.BasicAction.Select.equals(action)) {
-                    if (newVal instanceof MediaSeriesGroup) {
-                        MediaSeriesGroup patient = (MediaSeriesGroup) newVal;
+                    if (newVal instanceof Series) {
+                        Series dcm = (Series) newVal;
+                        MediaSeriesGroup patient = model.getParent(dcm, DicomModel.patient);
                         if (!isSelectedPatient(patient)) {
                             modelPatient.setSelectedItem(patient);
                             // focus get back to viewer
@@ -1960,50 +1966,14 @@ public class DicomExplorer extends PluginTool implements DataExplorerView {
     }
 
     @Override
-    public List<Action> getOpenExportDialogAction() {
+    public Action getOpenExportDialogAction() {
         // TODO preference to allow dicom export
         // return exportAction;
         return null;
     }
 
     @Override
-    public List<Action> getOpenImportDialogAction() {
-        ArrayList<Action> actions = new ArrayList<Action>(1);
-        AbstractAction importAction = new AbstractAction(Messages.getString("DicomExplorer.to") + DicomExplorer.NAME) { //$NON-NLS-1$
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    DicomImport dialog = new DicomImport(model);
-                    JMVUtils.showCenterScreen(dialog);
-                }
-            };
-        actions.add(importAction);
-        AbstractAction importCDAction =
-            new AbstractAction("DICOM CD", new ImageIcon(DicomExplorer.class.getResource("/icon/16x16/cd.png"))) { //$NON-NLS-1$
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    File file = DicomDirImport.getDcmDirFromMedia();
-                    if (file == null) {
-                        int response =
-                            JOptionPane
-                                .showConfirmDialog(
-                                    WinUtil.getParentWindow(DicomExplorer.this),
-                                    "Cannot find DICOMDIR on media device, do you want to import manually?", (String) this.getValue(AbstractAction.NAME),//$NON-NLS-1$ 
-                                    JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-
-                        if (response == 0) {
-                            DicomImport dialog = new DicomImport(model);
-                            JMVUtils.showCenterScreen(dialog);
-                            // TODO select DICOMDIR
-                        }
-                    } else {
-                        DicomDirImport.loadDicomDir(file, model);
-                    }
-
-                }
-            };
-        actions.add(importCDAction);
-        return actions;
+    public Action getOpenImportDialogAction() {
+        return importAction;
     }
 }

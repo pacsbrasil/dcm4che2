@@ -79,7 +79,7 @@ public class ViewTransferHandler extends TransferHandler implements Transferable
         return flavor.equals(DataFlavor.imageFlavor);
     }
 
-    public static PlanarImage createComponentImage(DefaultView2d<? extends ImageElement> canvas) {
+    public static PlanarImage createComponentImage(DefaultView2d<ImageElement> canvas) {
         TiledImage image = ImageFiler.getEmptyTiledImage(Color.BLACK, canvas.getWidth(), canvas.getHeight());
         Graphics2D g = image.createGraphics();
         if (g != null) {
@@ -97,5 +97,4 @@ public class ViewTransferHandler extends TransferHandler implements Transferable
         }
         return image;
     }
-
 }

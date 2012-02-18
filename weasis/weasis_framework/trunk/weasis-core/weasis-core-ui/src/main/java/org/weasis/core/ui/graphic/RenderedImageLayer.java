@@ -67,14 +67,6 @@ public class RenderedImageLayer<E extends ImageElement> implements Layer, ImageL
         }
     }
 
-    public boolean isBuildIterator() {
-        return buildIterator;
-    }
-
-    public void setBuildIterator(boolean buildIterator) {
-        this.buildIterator = buildIterator;
-    }
-
     @Override
     public RandomIter getReadIterator() {
         return readIterator;
@@ -236,16 +228,7 @@ public class RenderedImageLayer<E extends ImageElement> implements Layer, ImageL
             g2d.setClip(rect);
         }
 
-        try {
-            g2d.drawRenderedImage(displayImage, AffineTransform.getTranslateInstance(0, 0));
-        } catch (OutOfMemoryError e1) {
-            System.gc();
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException et) {
-            }
-        }
-
+        g2d.drawRenderedImage(displayImage, AffineTransform.getTranslateInstance(0, 0));
         g2d.setClip(clip);
 
     }

@@ -6,21 +6,19 @@
 	<artifactId>weasis-distributions</artifactId>
 	<packaging>pom</packaging>
 	<name>Weasis Distributions (WEB, portable, standalone)</name>
-	<version>1.1.2-SNAPSHOT</version>
+	<version>1.1.1</version>
 	<properties>
-		<!-- dollar property to avoid replacing some variables when filtering resources files (ex. ${user.home} 
-			in config.properties) -->
+		<!-- dollar property to avoid replacing some variables when filtering resources 
+			files (ex. ${user.home} in config.properties) -->
 		<dollar>$</dollar>
 		<tmp.dir>${project.build.directory}/tmp</tmp.dir>
 
 		<tmp.bundle.dir>${project.build.directory}/tmp/bundle</tmp.bundle.dir>
 
-		<pack200.ext></pack200.ext>
-
-		<felix.framework.version>4.0.2</felix.framework.version>
+		<felix.framework.version>4.0.1</felix.framework.version>
 		<felix.gogo.version>0.10.0</felix.gogo.version>
 		<felix.gogo.command.version>0.12.0</felix.gogo.command.version>
-
+		
 		<felix.servlet.version>1.0.0</felix.servlet.version>
 		<felix.bundlerepository.version>1.6.6</felix.bundlerepository.version>
 		<felix.configadmin.version>1.2.8</felix.configadmin.version>
@@ -28,18 +26,18 @@
 		<felix.scr.version>1.6.0</felix.scr.version>
 		<sling.commons.log.version>2.1.2</sling.commons.log.version>
 
-		<weasis.launcher.version>0.5.9-SNAPSHOT</weasis.launcher.version>
-		<weasis.core.version>0.5.9-SNAPSHOT</weasis.core.version>
-		<weasis.imageio.version>0.7.7-SNAPSHOT</weasis.imageio.version>
-		<weasis.jmc.version>0.5.9-SNAPSHOT</weasis.jmc.version>
-		<weasis.base.version>0.5.9-SNAPSHOT</weasis.base.version>
-		<weasis.dicom.version>0.5.9-SNAPSHOT</weasis.dicom.version>
+		<weasis.launcher.version>0.5.8</weasis.launcher.version>
+		<weasis.core.version>0.5.8</weasis.core.version>
+		<weasis.imageio.version>0.7.6</weasis.imageio.version>
+		<weasis.jmc.version>0.5.8</weasis.jmc.version>
+		<weasis.base.version>0.5.8</weasis.base.version>
+		<weasis.dicom.version>0.5.8</weasis.dicom.version>
 
 		<mydoggy.version>1.5.0-b05</mydoggy.version>
-		<substance.version>7.0.0</substance.version>
+		<substance.version>6.3.1</substance.version>
 		<jai.version>1.1.4-b03</jai.version>
 		<weasis.imageio.native.version>1.2-b04</weasis.imageio.native.version>
-		<!-- <weasis.imageioext.kakadu.native.version>6.4.0</weasis.imageioext.kakadu.native.version> -->
+<!-- 		<weasis.imageioext.kakadu.native.version>6.4.0</weasis.imageioext.kakadu.native.version> -->
 		<com.sun.media.j3d.version>1.5.2</com.sun.media.j3d.version>
 		<tilecachetool.version>1.0.2</tilecachetool.version>
 	</properties>
@@ -270,7 +268,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -283,16 +280,17 @@
 							<goal>run</goal>
 						</goals>
 						<configuration>
-							<target>
+							<tasks>
 								<!-- Bindex Task helps to generate the repository.xml -->
-								<taskdef name="bindex" classname="org.osgi.impl.bundle.bindex.ant.BindexTask"
+								<taskdef name="bindex"
+									classname="org.osgi.impl.bundle.bindex.ant.BindexTask"
 									classpath="${basedir}/lib/bindex.jar" />
-								<bindex repositoryfile="${tmp.bundle.dir}/repository.xml" description="Weasis Bundle Repository"
-									licenseurl="http://www.eclipse.org/legal/epl-v10.html" quiet="true" root="${tmp.bundle.dir}"
-									name="Weasis Bundle Repository">
+								<bindex repositoryfile="${tmp.bundle.dir}/repository.xml"
+									description="Weasis Bundle Repository" licenseurl="http://www.eclipse.org/legal/epl-v10.html"
+									quiet="true" root="${tmp.bundle.dir}" name="Weasis Bundle Repository">
 									<fileset dir="${tmp.bundle.dir}" includes="*.jar" />
 								</bindex>
-							</target>
+							</tasks>
 						</configuration>
 					</execution>
 				</executions>
@@ -324,71 +322,11 @@
 	</build>
 	<profiles>
 		<profile>
-			<id>pack200</id>
-			<properties>
-				<pack200.ext>.pack.gz</pack200.ext>
-			</properties>
-			<build>
-				<plugins>
-					<plugin>
-						<!-- normalize jar before signing -->
-						<groupId>org.openxdata.plugins</groupId>
-						<artifactId>maven-pack200-plugin</artifactId>
-						<version>1.0.1</version>
-						<executions>
-							<execution>
-								<id>sign</id>
-								<phase>process-resources</phase>
-								<goals>
-									<goal>packFiles</goal>
-								</goals>
-								<configuration>
-									<!-- packing requires removing all the old signatures, so if jarsigner.alias is not null jars 
-										are normalized -->
-									<signed>jarsigner.alias</signed>
-									<normalizeOnly>true</normalizeOnly>
-									<archiveDirectory>${tmp.dir}</archiveDirectory>
-									<includes>
-										<include>**/*.jar</include>
-									</includes>
-									<excludes>
-										<exclude>**/*-windows-*.jar</exclude>
-										<exclude>**/*-linux-*.jar</exclude>
-										<exclude>**/*-macosx-*.jar</exclude>
-										<exclude>**/*-solaris-*.jar</exclude>
-									</excludes>
-								</configuration>
-							</execution>
-							<execution>
-								<id>pack</id>
-								<phase>compile</phase>
-								<goals>
-									<goal>packFiles</goal>
-								</goals>
-								<configuration>
-									<archiveDirectory>${tmp.dir}</archiveDirectory>
-									<includes>
-										<include>**/*.jar</include>
-									</includes>
-									<excludes>
-										<exclude>**/*.original.jar</exclude>
-										<exclude>**/*-windows-*.jar</exclude>
-										<exclude>**/*-linux-*.jar</exclude>
-										<exclude>**/*-macosx-*.jar</exclude>
-										<exclude>**/*-solaris-*.jar</exclude>
-									</excludes>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
 			<id>jar.signer</id>
 			<activation>
-				<!-- Use your own certificate either: mvn package -Djarsigner.alias="alias" -Djarsigner.storepass="storepass" 
-					-Djarsigner.keystore="/etc/cert_keystore" or : add properties in setting.xml (<jarsigner.alias>alias</jarsigner.alias>) -->
+				<!-- Use your own certificate either: mvn package -Djarsigner.alias="alias" 
+					-Djarsigner.storepass="storepass" -Djarsigner.keystore="/etc/cert_keystore" 
+					or : add properties in setting.xml (<jarsigner.alias>alias</jarsigner.alias>) -->
 				<property>
 					<name>jarsigner.alias</name>
 				</property>
@@ -408,7 +346,6 @@
 									<goal>sign</goal>
 								</goals>
 								<configuration>
-									<removeExistingSignatures>true</removeExistingSignatures>
 									<archiveDirectory>${tmp.dir}</archiveDirectory>
 									<includes>
 										<include>**/*.jar</include>
@@ -449,7 +386,8 @@
 									<jar>weasis/weasis-launcher.jar</jar>
 									<errTitle>weasis</errTitle>
 									<icon>etc/weasis.ico</icon>
-									<!-- Setting it to . will change the current dir to the same directory as the executable -->
+									<!-- Setting it to . will change the current dir to the same directory 
+										as the executable -->
 									<cmdLine>$dicom:get --portable</cmdLine>
 									<chdir>.</chdir>
 									<classPath>
