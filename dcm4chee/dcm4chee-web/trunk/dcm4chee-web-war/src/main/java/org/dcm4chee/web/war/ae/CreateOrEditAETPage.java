@@ -164,7 +164,7 @@ public class CreateOrEditAETPage extends SecureWebPage {
         form.addLabeledTextField("wadoURL").add(new UrlValidator1()); //Wicket UrlValidator doesn't accept http://hostname:8080/web!
         form.addLabeledTextField("userID"); 
         form.add(new Label("password.label", new ResourceModel("ae.password") ) );
-        form.add(new PasswordTextField("password").setRequired(false)); 
+        form.add(new PasswordTextField("password").setResetPassword(false).setRequired(false)); 
         form.addLabeledTextField("stationName"); 
         form.addLabeledTextField("institution"); 
         form.addLabeledTextField("department"); 
