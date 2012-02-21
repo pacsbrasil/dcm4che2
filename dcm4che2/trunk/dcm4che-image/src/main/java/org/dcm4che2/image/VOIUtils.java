@@ -338,6 +338,12 @@ public class VOIUtils {
         int paddingMax = Integer.MIN_VALUE;
         
         if (pixelPaddingValue != null){
+            if( (pixelPaddingValue & signbit) != 0 ) {
+                pixelPaddingValue |= ~mask;
+            }
+            if( pixelPaddingRangeLimit != null && (pixelPaddingRangeLimit & signbit) != 0) {
+                pixelPaddingRangeLimit |= ~mask;
+            }
             Integer[] pixelPaddingMinMax = LookupTable.getMinMaxPixelPadding(pixelPaddingValue, pixelPaddingRangeLimit);    
             paddingMin = pixelPaddingMinMax[0];
             paddingMax = pixelPaddingMinMax[1];
