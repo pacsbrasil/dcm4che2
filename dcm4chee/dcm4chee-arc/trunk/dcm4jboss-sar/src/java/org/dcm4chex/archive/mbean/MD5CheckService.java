@@ -217,6 +217,8 @@ public class MD5CheckService extends ServiceMBeanSupport {
                     }
                     limit -= files.length;
                 }
+                if (limit < 1)
+                    break;
             }
             if ( corrupted > 0 ) 
                 log.warn( corrupted + " files are corrupted!");
