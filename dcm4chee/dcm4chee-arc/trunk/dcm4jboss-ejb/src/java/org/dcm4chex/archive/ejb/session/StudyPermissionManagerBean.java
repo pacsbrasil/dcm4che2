@@ -67,6 +67,9 @@ import org.dcm4chex.archive.ejb.interfaces.StudyPermissionLocalHome;
  * @ejb.bean name="StudyPermissionManager" type="Stateless" view-type="remote"
  *           jndi-name="ejb/StudyPermissionManager"
  * 
+ * @ejb.transaction-type type="Container"
+ * @ejb.transaction type="Required"
+ * 
  * @ejb.ejb-ref ejb-name="StudyPermission" view-type="local"
  *              ref-name="ejb/StudyPermission"
  */
