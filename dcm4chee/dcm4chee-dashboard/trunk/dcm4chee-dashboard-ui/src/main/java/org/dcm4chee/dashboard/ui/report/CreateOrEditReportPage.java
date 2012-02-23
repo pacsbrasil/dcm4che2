@@ -189,14 +189,17 @@ public class CreateOrEditReportPage extends SecureWebPage {
                             message = new ResourceModel("dashboard.report.createoredit.form.statement-test-submit.no-datasource-message").wrapOnAssignment(this.getParent()).getObject();
                             return;
                         }
-
+                        InitialContext ctx = new InitialContext();
+                        log.info("############ getNameInNamespace():"+ctx.getNameInNamespace());
+                        
                         (jdbcConnection = ((DataSource) (new InitialContext())
-                                .lookup(dataSourceName.toString()))
+                                .lookup(dataSourceName.toString().trim()))
                                 .getConnection())
                         .createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY)
                         .executeQuery(thisReport.getStatement())
                         .close();
                     } catch (Exception e) {
+                        log.error("Error in test statement:", e);
                         message = e.getLocalizedMessage();
                     } finally {
                         try {

@@ -86,7 +86,7 @@ public class DatabaseUtils {
         try {
             jndiContext = new InitialContext();
             return ((DataSource) 
-                    (jndiContext).lookup(dataSourceName))
+                    (jndiContext).lookup(dataSourceName.trim()))
                     .getConnection();
         } catch (Exception e) {
         } finally {
