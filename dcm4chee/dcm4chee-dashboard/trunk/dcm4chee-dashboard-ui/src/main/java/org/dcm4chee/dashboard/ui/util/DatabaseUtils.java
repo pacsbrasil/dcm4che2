@@ -57,6 +57,9 @@ import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
 import org.apache.wicket.RequestCycle;
+import org.dcm4chee.dashboard.ui.report.CreateOrEditReportPage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -64,6 +67,8 @@ import org.apache.wicket.RequestCycle;
  * @since 11.03.2010
  */
 public class DatabaseUtils {
+
+    private static Logger log = LoggerFactory.getLogger(CreateOrEditReportPage.class);
 
     public static ResultSet getResultSet(Connection jdbcConnection, String statement, Map<String, String> parameters) throws SQLException, Exception {
 
@@ -89,6 +94,7 @@ public class DatabaseUtils {
                     (jndiContext).lookup(dataSourceName.trim()))
                     .getConnection();
         } catch (Exception e) {
+            log.error("Failed to get database connection:", e);
         } finally {
             try {
                 jndiContext.close();

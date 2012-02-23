@@ -189,9 +189,6 @@ public class CreateOrEditReportPage extends SecureWebPage {
                             message = new ResourceModel("dashboard.report.createoredit.form.statement-test-submit.no-datasource-message").wrapOnAssignment(this.getParent()).getObject();
                             return;
                         }
-                        InitialContext ctx = new InitialContext();
-                        log.info("############ getNameInNamespace():"+ctx.getNameInNamespace());
-                        
                         (jdbcConnection = ((DataSource) (new InitialContext())
                                 .lookup(dataSourceName.toString().trim()))
                                 .getConnection())
@@ -199,7 +196,7 @@ public class CreateOrEditReportPage extends SecureWebPage {
                         .executeQuery(thisReport.getStatement())
                         .close();
                     } catch (Exception e) {
-                        log.error("Error in test statement:", e);
+                        log.error("Failed to test SQL statement:", e);
                         message = e.getLocalizedMessage();
                     } finally {
                         try {
