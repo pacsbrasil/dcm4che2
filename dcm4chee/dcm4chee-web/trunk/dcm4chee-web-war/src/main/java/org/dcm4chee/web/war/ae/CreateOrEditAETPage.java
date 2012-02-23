@@ -101,6 +101,7 @@ public class CreateOrEditAETPage extends SecureWebPage {
     public CreateOrEditAETPage(final ModalWindow window, final AE ae, final AEListPanel panel) {
         super();
         final String oldType = ae.getAeGroup();
+        final String oldTitle = ae.getPk() == -1 ? null : ae.getTitle();
         if (CreateOrEditAETPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(CreateOrEditAETPage.BaseCSS));
         msgWin.setTitle("");
@@ -249,6 +250,8 @@ public class CreateOrEditAETPage extends SecureWebPage {
                         } catch (Exception ignore) {}
                     }
                     AEDelegate.getInstance().updateOrCreate(ae);
+                    AEDelegate.getInstance().notifyAEChange(oldTitle, ae.getTitle());
+
                     panel.updateAETList();                   
                     target.addComponent(form);
                     window.close(target);

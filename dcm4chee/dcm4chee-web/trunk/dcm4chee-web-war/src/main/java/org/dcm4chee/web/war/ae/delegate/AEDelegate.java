@@ -89,6 +89,7 @@ public class AEDelegate extends BaseMBeanDelegate {
         ((AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME)).removeAET(ae.getPk());
         Auditlog.logSecurityAlert(AuditEvent.TypeCode.NETWORK_CONFIGURATION, true, "Delete AE:" + ae);
         clearCache();
+        notifyAEChange(ae.getTitle(), null);
     }
 
     public void updateOrCreate(AE ae) {
@@ -96,9 +97,20 @@ public class AEDelegate extends BaseMBeanDelegate {
             clearCache();
         }
         String updOrCreate = ae.getPk() == -1 ? "Create new AE:" : "Update AE:";
-        ((AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME)).updateOrCreateAET(ae);
+        AE oldAE = ((AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME)).updateOrCreateAET(ae);
         updateSchedule(ae.getTitle());
         Auditlog.logSecurityAlert(AuditEvent.TypeCode.NETWORK_CONFIGURATION, true, updOrCreate + ae);
+    }
+
+    public void notifyAEChange(String oldAET, String aet) {
+        log.debug("Notify AE title change!");
+        try {
+            server.invoke(serviceObjectName, "notifyAETchange", 
+                new Object[]{oldAET, aet, "WEB3 AE change"}, 
+                new String[]{String.class.getName(), String.class.getName(), String.class.getName()});
+        } catch (Exception x) {
+            log.error("Notify AE title change failed!", x);
+        }
     }
     
     public void clearCache() {
