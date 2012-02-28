@@ -713,9 +713,9 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
 //        rLen = sqLen; // restore rLen value
         if (handler != null && unBuf == null)
             handler.endSequence(sqLen);
-        if (fixInvalidExposureDoseSeq != null && tag == Tags.ExposureDoseSeq) {
+        if (fixInvalidExposureDoseSeq != null && tag == Tags.CTDIPhantomTypeCodeSeq) {
             if (log.isDebugEnabled())
-                log.debug("Switch Transfer Syntax back to EVR_LE");
+                log.debug("Switch Transfer Syntax back to " + fixInvalidExposureDoseSeq);
             setDcmDecodeParam(fixInvalidExposureDoseSeq);
             fixInvalidExposureDoseSeq = null;
         }
