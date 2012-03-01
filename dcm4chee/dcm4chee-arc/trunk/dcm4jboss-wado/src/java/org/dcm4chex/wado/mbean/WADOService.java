@@ -562,6 +562,11 @@ public class WADOService extends AbstractCacheService {
     }
     
     protected void startService() throws InstanceNotFoundException, ListenerNotFoundException {
+        try {
+            super.startService();
+        } catch (Exception e) {
+            log.warn("Failed to start freeDiskSpace timer!", e);
+        }
         updateEnableClearCacheForReceivedSeries();
     }
 }
