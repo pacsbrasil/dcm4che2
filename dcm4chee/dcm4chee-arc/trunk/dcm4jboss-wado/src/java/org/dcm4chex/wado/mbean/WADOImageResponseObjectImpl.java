@@ -46,6 +46,7 @@ import java.io.OutputStream;
 import javax.xml.transform.TransformerConfigurationException;
 
 import org.dcm4chex.wado.common.WADOResponseObject;
+import org.dcm4chex.wado.mbean.cache.WADOCache;
 import org.xml.sax.SAXException;
 
 import com.sun.image.codec.jpeg.JPEGCodec;
@@ -61,29 +62,22 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
 public class WADOImageResponseObjectImpl extends BasicWADOResponseObject {
 
 	private BufferedImage bi;
-	private JPEGEncodeParam jpgParam;
+	private WADOCache cache;
+	private String imageQuality;
 
-	public WADOImageResponseObjectImpl( BufferedImage bi, String contentType, int retCode, String errMsg ) {
-		super(contentType,retCode,errMsg);
-		this.bi = bi;
-	}
-	public WADOImageResponseObjectImpl( BufferedImage bi, JPEGEncodeParam jpgParam, String contentType, int retCode, String errMsg ) {
-		this( bi, contentType, retCode, errMsg);
-		this.jpgParam = jpgParam;
-	}
+        public WADOImageResponseObjectImpl( BufferedImage bi, WADOCache cache, String imageQuality, String contentType, int retCode, String errMsg ) {
+            super(contentType,retCode,errMsg);
+            this.bi = bi;
+            this.cache = cache;
+            this.imageQuality = imageQuality;
+        }
 	
 	/* (non-Javadoc)
 	 * @see org.dcm4chex.wado.common.WADOResponseObject#getFile()
 	 */
 	public void execute( OutputStream out ) throws TransformerConfigurationException, SAXException, IOException {
 		try {
-			JPEGImageEncoder enc;
-			if ( jpgParam == null ) {
-				enc = JPEGCodec.createJPEGEncoder(out);
-			} else {
-				enc = JPEGCodec.createJPEGEncoder(out,jpgParam);
-			}
-			enc.encode(bi);
+		    cache.writeJPEG(bi, out, Float.parseFloat(imageQuality) / 100);
 		} finally {
 			out.close();
 		}

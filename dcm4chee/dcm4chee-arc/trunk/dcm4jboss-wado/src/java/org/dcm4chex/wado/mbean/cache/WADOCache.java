@@ -43,6 +43,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * @author franz.willer
@@ -171,6 +172,8 @@ public interface WADOCache {
             String region, String windowWidth, String windowCenter,
             String imageQuality, String suffix) throws IOException;
 
+    void writeJPEG(BufferedImage bi, OutputStream out, float quality) throws IOException;
+    
     /**
      * Clears this cache.
      * <p>

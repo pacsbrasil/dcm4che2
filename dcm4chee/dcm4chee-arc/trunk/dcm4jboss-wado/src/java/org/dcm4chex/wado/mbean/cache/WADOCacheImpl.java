@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.StringTokenizer;
@@ -661,8 +662,16 @@ public class WADOCacheImpl implements WADOCache {
 
     protected void createJPEG(BufferedImage bi, File file, float quality)
             throws IOException {
+        writeJPEGwithIIO(bi, file, quality);
+    }
+    
+    public void writeJPEG(BufferedImage bi, OutputStream out, float quality) throws IOException {
+        writeJPEGwithIIO(bi,out, quality);
+    }
+    
+    protected void writeJPEGwithIIO(BufferedImage bi, Object fileOrStream, float quality) throws IOException {
+        ImageOutputStream out = ImageIO.createImageOutputStream(fileOrStream);
         ImageWriter writer = getImageWriterWriter(imageWriterClass);
-        ImageOutputStream out = ImageIO.createImageOutputStream(file);
         try {
             writer.setOutput(out);
             ImageWriteParam iwparam = writer.getDefaultWriteParam();

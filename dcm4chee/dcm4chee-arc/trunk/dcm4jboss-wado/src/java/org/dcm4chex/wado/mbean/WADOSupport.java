@@ -746,10 +746,9 @@ public class WADOSupport implements NotificationListener {
             if (disableCache) {
                 BufferedImage bi = getBufferedImage(studyUID, seriesUID, instanceUID, rows,
                         columns, frame, region, windowWidth, windowCenter);
-                
-                return new WADOImageResponseObjectImpl(bi,
-                        CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK,
-                "Info: Caching disabled!");
+                return new WADOImageResponseObjectImpl(bi, WADOCacheImpl.getWADOCache(), 
+                        imageQuality != null ? imageQuality : WADOCacheImpl.getWADOCache().getImageQuality(),
+                        CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, "Info: Caching disabled!");
             } else {
                 File file = getJpg(studyUID, seriesUID, instanceUID, rows, columns,
                         frame, region, windowWidth, windowCenter,
@@ -773,9 +772,9 @@ public class WADOSupport implements NotificationListener {
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
             "Cant get jpeg from requested object");
         } catch (ImageCachingException x1) {
-            return new WADOImageResponseObjectImpl(x1.getImage(),
-                    CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK,
-            "Warning: Caching failed!");
+            return new WADOImageResponseObjectImpl(x1.getImage(), WADOCacheImpl.getWADOCache(), 
+                    imageQuality != null ? imageQuality : WADOCacheImpl.getWADOCache().getImageQuality(),
+                    CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, "Warning: Caching failed!");
         } catch (Exception x) {
             log.error("Exception in handleJpg: " + x.getMessage(), x);
             return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_JPEG,
