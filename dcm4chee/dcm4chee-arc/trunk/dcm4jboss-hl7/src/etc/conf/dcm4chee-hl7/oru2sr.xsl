@@ -400,9 +400,26 @@
     <xsl:value-of select='.'/>
   </xsl:template>
   <xsl:template match="escape" mode="txt">
-    <xsl:if test="text()='.br'">
-      <xsl:text>&#13;&#10;</xsl:text>
-    </xsl:if>
+    <xsl:choose>
+	    <xsl:when test="text()='.br'">
+	      <xsl:text>&#13;&#10;</xsl:text>
+	    </xsl:when>
+	    <xsl:when test="text()='F'">
+	      <xsl:text>|</xsl:text>
+	    </xsl:when>
+	    <xsl:when test="text()='S'">
+	      <xsl:text>^</xsl:text>
+	    </xsl:when>
+	    <xsl:when test="text()='T'">
+	      <xsl:text>&amp;</xsl:text>
+	    </xsl:when>
+	    <xsl:when test="text()='R'">
+	      <xsl:text>~</xsl:text>
+	    </xsl:when>
+	    <xsl:when test="text()='E'">
+	      <xsl:text>\\</xsl:text>
+	    </xsl:when>
+	</xsl:choose>
   </xsl:template>
   <xsl:template name="text">
     <xsl:param name="hcode">121070</xsl:param>
