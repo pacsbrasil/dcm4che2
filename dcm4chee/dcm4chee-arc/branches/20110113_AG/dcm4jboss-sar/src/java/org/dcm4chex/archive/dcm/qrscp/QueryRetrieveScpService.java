@@ -1036,7 +1036,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 		return dicomFindScp.getPerfMonServiceName();
 	}
 
-	public final void setPerfMonServiceName(ObjectName perfMonServiceName) {
+	public void setPerfMonServiceName(ObjectName perfMonServiceName) {
 		dicomFindScp.setPerfMonServiceName(perfMonServiceName);
 		moveScp.setPerfMonServiceName(perfMonServiceName);
 	}
