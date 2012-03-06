@@ -38,9 +38,11 @@
 * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
+import in.raster.mayam.delegate.WindowingPanelLoader;
 import javax.swing.JLabel;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 
@@ -65,10 +67,12 @@ public class Thumbnail extends JLabel{
 
     public Thumbnail(BufferedImage image) {
         this.image = image;
-        if(image!=null){
-        imageWidth=image.getWidth();
-        imageHeight=image.getHeight();
-        calculateAspectRatioBasedSize();
+        if (image != null) {
+            imageWidth = image.getWidth();
+            imageHeight = image.getHeight();
+            calculateAspectRatioBasedSize();
+            //System.out.println(thumbHeight +" , "+thumbWidth);
+            //this.image=GenericImageSinglePassIterator.createScaledImage(image, new Dimension(thumbWidth, thumbHeight));
         }
         initComponents();
         
@@ -86,7 +90,7 @@ public class Thumbnail extends JLabel{
         y=(maxHeight-thumbHeight)/2;
         
     }
-
+    
     /**
      * This override routine used to paint the image box
      * @param gs
@@ -95,11 +99,15 @@ public class Thumbnail extends JLabel{
     public void paintComponent(Graphics gs) {
         Graphics2D g = (Graphics2D) gs;
         g.setRenderingHint( RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
         if (image != null) {
             //calculateAspectRatioBasedSize();
-            g.drawImage(image, x,y, thumbWidth,thumbHeight, null);
+            //System.out.println(image.getHeight() +" , "+image.getWidth());
+            Image scaledPicture = WindowingPanelLoader.getFasterScaledInstance(image, thumbWidth, thumbHeight, 
+                    RenderingHints.VALUE_INTERPOLATION_BICUBIC, true);
+            g.drawImage(scaledPicture, x, y, null);
+//            g.drawImage(image, x,y, thumbWidth,thumbHeight, null);
         }
     }
     /** This method is called from within the constructor to

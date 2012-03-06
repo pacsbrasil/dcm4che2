@@ -46,6 +46,7 @@ import in.raster.mayam.delegate.ImageOrientation;
 import in.raster.mayam.delegate.LocalizerDelegate;
 import in.raster.mayam.delegate.SeriesChooserDelegate;
 import in.raster.mayam.delegate.SynchronizationDelegate;
+import in.raster.mayam.delegate.WindowingPanelLoader;
 import in.raster.mayam.model.Instance;
 import in.raster.mayam.model.PresetModel;
 import in.raster.mayam.model.ScoutLineInfoModel;
@@ -70,12 +71,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.Transparency;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -96,7 +94,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuElement;
-import javax.swing.SwingUtilities;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4che2.data.Tag;
@@ -286,7 +283,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         retrieveScoutParam();
         setTotalInstacne();
         retriveTextOverlayParam();
-
+        
     }
 
     /**
@@ -518,16 +515,18 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                     this.totalInstance = nFrames;
                 }
                 if (reader.getNumImages(true) > 0) {
-                    imageIcon = new ImageIcon();
-                    imageIcon.setImage(currentbufferedimage);
-                    loadedImage = imageIcon.getImage();
-                    GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-                    BufferedImage temp = gc.createCompatibleImage(loadedImage.getWidth(null), loadedImage.getHeight(null),Transparency.OPAQUE);
-                    Graphics2D g2 = temp.createGraphics();
-                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                    g2.drawImage(loadedImage, 0, 0, null);
-                    g2.dispose();
-                    image=temp;
+                    image=currentbufferedimage;
+//                    imageIcon = new ImageIcon();
+//                    imageIcon.setImage(currentbufferedimage);
+//                    loadedImage = imageIcon.getImage();
+//                    GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+//                    BufferedImage temp = gc.createCompatibleImage(loadedImage.getWidth(null), loadedImage.getHeight(null),Transparency.OPAQUE);
+//                    Graphics2D g2 = temp.createGraphics();
+//                    if (!in.raster.mayam.facade.Platform.getCurrentPlatform().equals(in.raster.mayam.facade.Platform.MAC))
+//                        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+//                    g2.drawImage(loadedImage, 0, 0, null);
+//                    g2.dispose();
+//                    image=temp;
                     //image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
                     //Graphics2D g2 = image.createGraphics();
                     //g2.drawImage(loadedImage, 0, 0, null);
@@ -535,6 +534,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 if (dataset.getString(Tags.SOPClassUID)!=null&&dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
                     readDicom(selFile);
                 }
+                System.gc();
                 repaint();
             } catch (RuntimeException e) {
                 e.printStackTrace();
@@ -553,6 +553,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             ByteBuffer byteBuffer = ByteBuffer.wrap(buf);
             openPDFByteBuffer(byteBuffer, null, null);
             isEncapsulatedDocument = true;
+            System.gc();
         } catch (IOException ex) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
         }
@@ -598,6 +599,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         Graphics2D g2 = currentbufferedimage.createGraphics();
         g2.drawImage(loadedImage, 0, 0, null);
         image = null;
+        System.gc();
     }
     public ArrayList createPDFArray() {
         ArrayList<BufferedImage> temp = new ArrayList<BufferedImage>();
@@ -1086,7 +1088,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     public void setScaleFlag(boolean scaleFlag) {
         this.scaleFlag = scaleFlag;
     }
-
+    
     /**
      * This override routine used to paint the image box
      * @param gs
@@ -1095,7 +1097,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     public void paintComponent(Graphics gs) {
         Graphics2D g = (Graphics2D) gs;
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        //if (!in.raster.mayam.facade.Platform.getCurrentPlatform().equals(in.raster.mayam.facade.Platform.MAC))
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         if (isRotate) {
             if (rotateRightAngle == 90) {
                 g.rotate(Math.PI / 2, this.getSize().width / 2, this.getSize().height / 2);
@@ -1131,9 +1134,11 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 op.filter(image, filteredImage);
                 image = filteredImage;
             }
-            //if(!sizeSeted)
+            //if(!tool.equalsIgnoreCase("windowing") || !sizeSeted)
                 calculateNewHeightAndWidthBasedonAspectRatio();
-            g.drawImage(image, startX, startY, thumbWidth, thumbHeight, null);
+            //g.drawImage(image, startX, startY, thumbWidth, thumbHeight, null);
+                g.drawImage(WindowingPanelLoader.getFasterScaledInstance(image, thumbWidth, thumbHeight, 
+                    RenderingHints.VALUE_INTERPOLATION_BICUBIC, false), startX, startY, null);
             if (displayScout) {
                 g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g.setColor(Color.YELLOW);
@@ -1343,17 +1348,19 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     }
 
     public void convertToRGBImage() {
-        imageIcon = new ImageIcon();
+        //imageIcon = new ImageIcon();
         if (currentbufferedimage != null) {
-            imageIcon.setImage(currentbufferedimage);
-            loadedImage = imageIcon.getImage();
-            GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-            BufferedImage temp = gc.createCompatibleImage(loadedImage.getWidth(null), loadedImage.getHeight(null),Transparency.OPAQUE);
-            Graphics2D g2 = temp.createGraphics();
-            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g2.drawImage(loadedImage, 0, 0, temp.getWidth(), temp.getHeight(), null);
-            g2.dispose();
-            image = temp;
+            //imageIcon.setImage(currentbufferedimage);
+            //loadedImage = imageIcon.getImage();
+            image=currentbufferedimage;
+//            GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+//            BufferedImage temp = gc.createCompatibleImage(loadedImage.getWidth(null), loadedImage.getHeight(null),Transparency.OPAQUE);
+//            Graphics2D g2 = temp.createGraphics();
+//            //if (!in.raster.mayam.facade.Platform.getCurrentPlatform().equals(in.raster.mayam.facade.Platform.MAC))
+//                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+//            g2.drawImage(loadedImage, 0, 0, temp.getWidth(), temp.getHeight(), null);
+//            g2.dispose();
+//            image = temp;
             //image = new BufferedImage(loadedImage.getWidth(null), loadedImage.getHeight(null), BufferedImage.TYPE_INT_RGB);
             //Graphics2D g2 = image.createGraphics();
             //g2.drawImage(loadedImage, 0, 0, null);

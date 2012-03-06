@@ -197,7 +197,7 @@ public class ThumbnailImage extends javax.swing.JPanel implements MouseListener,
             }
         }
     }  
-
+    
     public void openSingleImage(String filePath) {      
          if(!ApplicationContext.imageViewExist())
         {

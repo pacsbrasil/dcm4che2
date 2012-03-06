@@ -88,6 +88,8 @@ public class ApplicationFacade {
 //            System.setProperty("apple.awt.graphics.EnableQ2DX", "true");
 //            System.setProperty("apple.awt.graphics.UseQuartz", "true");
         }
+        if(Platform.getCurrentPlatform().equals(Platform.LINUX) || Platform.getCurrentPlatform().equals(Platform.SOLARIS))
+            System.setProperty("sun.java2d.pmoffscreen", "false");
     }    
 
     public static void exitApp(String exitString) {
