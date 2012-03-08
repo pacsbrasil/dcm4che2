@@ -186,6 +186,10 @@
          dcm4chee.archive:service=UPSScp#CalledAETitles
          dcm4chee.archive:service=UPSScp#CallingAETitles
          dcm4chee.archive:service=XDS-I#DocRepositoryAET
+         dcm4chee.web:service=MoveScu#CallingAETitle
+         dcm4chee.web:service=MoveScu#CalledAETitle
+         dcm4chee.web:service=EchoService#CallingAETitle
+         dcm4chee.web:service=Web3MwlSCU#CallingAETitle
          " />
       </descriptors>
    </attribute>
