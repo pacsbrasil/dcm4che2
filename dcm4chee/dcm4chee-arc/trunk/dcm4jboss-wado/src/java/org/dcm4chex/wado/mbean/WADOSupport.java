@@ -243,7 +243,8 @@ public class WADOSupport implements NotificationListener {
     private String destAET;
     private boolean useSeriesLevelFetch;
     
-    private boolean forceRGB;
+    private boolean jpgWriterSupportsByteColormap;
+    private boolean jpgWriterSupportsShortColormap;
 
     public boolean isRenderOverlays() {
         return renderOverlays;
@@ -253,14 +254,22 @@ public class WADOSupport implements NotificationListener {
         this.renderOverlays = renderOverlays;
     }
 
-    public boolean isForceRGB() {
-        return forceRGB;
+    public boolean isJpgWriterSupportsByteColormap() {
+        return jpgWriterSupportsByteColormap;
     }
 
-    public void setForceRGB(boolean forceRGB) {
-        this.forceRGB = forceRGB;
+    public void setJpgWriterSupportsByteColormap(boolean b) {
+        this.jpgWriterSupportsByteColormap = b;
     }
 
+    public boolean isJpgWriterSupportsShortColormap() {
+        return jpgWriterSupportsShortColormap;
+    }
+
+    public void setJpgWriterSupportsShortColormap(boolean b) {
+        this.jpgWriterSupportsShortColormap = b;
+    }
+    
     public WADOSupport(MBeanServer mbServer) {
         if (server != null) {
             server = mbServer;
@@ -1416,8 +1425,9 @@ public class WADOSupport implements NotificationListener {
         } else {
             w = (int) (h * aspectRatio + .5f);
         }
-        boolean needRGB = bi.getColorModel().getColorSpace() instanceof SimpleYBRColorSpace ||
-                            forceRGB && bi.getColorModel().getPixelSize() > 8;
+        boolean needRGB = !jpgWriterSupportsByteColormap ||
+                    !jpgWriterSupportsShortColormap && bi.getColorModel().getPixelSize() > 8 ||
+                    bi.getColorModel().getColorSpace() instanceof SimpleYBRColorSpace;
         boolean rescale = w != bi.getWidth() || h != bi.getHeight();
         if (!needRGB && !rescale)
             return bi;
