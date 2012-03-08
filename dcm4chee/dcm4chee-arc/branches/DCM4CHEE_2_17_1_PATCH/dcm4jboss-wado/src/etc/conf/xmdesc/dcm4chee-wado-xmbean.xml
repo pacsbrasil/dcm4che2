@@ -185,11 +185,25 @@ date, 'HH' by the current hour and 'mm' by the current minute.<br/>
     </descriptors>
   </attribute>
   
-  <attribute access="read-write" getMethod="isForceRGB"
-    setMethod="setForceRGB">
-    <description>Force 8-bit RGB conversion for > 8bit/pixel images to avoid problems with ImageWriter 
-    that have no support for 12 bit images with indexed colors.</description>
-    <name>ForceRGB</name>
+  <attribute access="read-write" getMethod="isJpgWriterSupportsByteColormap"
+    setMethod="setJpgWriterSupportsByteColormap">
+    <description><![CDATA[JPEG Writer supports 8 bit images with indexed colors.<br />
+    	If <code>false</code>: Force 8-bit RGB conversion to handle windowing, 
+    	PALETTE COLOR images,.. directly in WADO Service.]]>
+    </description>
+    <name>JpgWriterSupportsByteColormap</name>
+    <type>boolean</type>
+    <descriptors>
+      <value value="true" />
+    </descriptors>
+  </attribute>
+  <attribute access="read-write" getMethod="isJpgWriterSupportsShortColormap"
+    setMethod="setJpgWriterSupportsShortColormap">
+    <description><![CDATA[JPEG Writer supports >8 bit images with indexed colors.<br />
+    	If <code>false</code>: Force 8-bit RGB conversion for > 8bit/pixel images to handle windowing, 
+    	PALETTE COLOR images,.. directly in WADO Service.]]>
+    </description>
+    <name>JpgWriterSupportsShortColormap</name>
     <type>boolean</type>
     <descriptors>
       <value value="false" />

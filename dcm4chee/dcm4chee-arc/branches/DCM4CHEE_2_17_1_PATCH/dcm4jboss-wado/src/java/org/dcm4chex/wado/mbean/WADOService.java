@@ -140,13 +140,22 @@ public class WADOService extends AbstractCacheService {
         cache.setImageWriterClass(imageWriterClass);
     }
 
-    public boolean isForceRGB() {
-        return support.isForceRGB();
+    public boolean isJpgWriterSupportsByteColormap() {
+        return support.isJpgWriterSupportsByteColormap();
     }
 
-    public void setForceRGB(boolean forceRGB) {
-        support.setForceRGB(forceRGB);
+    public void setJpgWriterSupportsByteColormap(boolean b) {
+        support.setJpgWriterSupportsByteColormap(b);
     }
+
+    public boolean isJpgWriterSupportsShortColormap() {
+        return support.isJpgWriterSupportsShortColormap();
+    }
+
+    public void setJpgWriterSupportsShortColormap(boolean b) {
+        support.setJpgWriterSupportsShortColormap(b);
+    }
+    
     
     /**
      * @return Returns the useTransferSyntaxOfFileAsDefault.
