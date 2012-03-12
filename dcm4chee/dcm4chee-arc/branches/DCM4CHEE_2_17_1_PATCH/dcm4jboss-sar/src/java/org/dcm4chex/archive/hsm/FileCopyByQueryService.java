@@ -315,7 +315,7 @@ public class FileCopyByQueryService extends ServiceMBeanSupport implements Notif
                 return "Check of SQL statement failed!";
             }
         }
-        return sqlCmd == null ? "QueryFilecopyCmd not set!" : sqlCmd.formatSql();
+        return !sqlIsValid ? "SQL is not marked to be valid!" : sqlCmd.formatSql();
     }
 
     protected boolean scheduleFilecopyOrder(Dataset ian) {
