@@ -259,6 +259,8 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:dashboard.report:DisplayDiagramLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:dashboard.report:DisplayTableLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:dashboard.report:DisplayDiagramAndTableLink", "render, enable";
+//
+    permission ${ComponentPermission} "org.dcm4chee.dashboard.ui.report.display.DynamicDisplayPage", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "ReportWrite"
@@ -277,6 +279,9 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "R
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:dashboard.report:newGroupLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:dashboard.report:CreateOrEditReportLink", "render, enable";
 	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:dashboard.report:RemoveLink", "render, enable";
+//
+    permission ${ComponentPermission} "org.dcm4chee.dashboard.ui.report.display.DynamicDisplayPage", "render, enable";
+	permission ${ComponentPermission} "org.dcm4chee.dashboard.ui.report.display.DynamicDisplayPage:dashboard.report:showStatementLabel", "render, enable";
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "SystemInfo"
