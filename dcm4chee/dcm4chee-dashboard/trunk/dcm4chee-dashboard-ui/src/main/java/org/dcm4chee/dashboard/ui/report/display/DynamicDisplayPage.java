@@ -48,17 +48,20 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
+import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.secure.SecurityBehavior;
+import org.dcm4chee.web.common.secure.SecureWicketPage;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since 28.01.2010
  */
-public class DynamicDisplayPage extends WebPage {
+public class DynamicDisplayPage extends SecureWicketPage {
 
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference DashboardCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
@@ -77,7 +80,12 @@ public class DynamicDisplayPage extends WebPage {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(report.getCreated());
         add(new Label("date", new SimpleDateFormat("dd.MM.yyyy hh:mm").format(calendar.getTime())));
-        add(new Label("statement", DatabaseUtils.createSQLStatement(report.getStatement())));
+        
+        add(new Label("statement-header", new ResourceModel("dashboard.report.display.header.statement"))
+        .add(new SecurityBehavior(getModuleName() + ":showStatementLabel")));
+        add(new Label("statement", DatabaseUtils.createSQLStatement(report.getStatement()))
+        .add(new SecurityBehavior(getModuleName() + ":showStatementLabel")));
+        
         add(displayDiagram ? new DisplayReportDiagramPanel("diagramPanel", report, parameters) : new Label("diagramPanel", "").setVisible(false));
         add(displayTable ? new DisplayReportTablePanel("tablePanel", report, parameters) : new Label("tablePanel", "").setVisible(false));
     }
@@ -94,5 +102,9 @@ public class DynamicDisplayPage extends WebPage {
         
         @Override
         public void onClick() {}
+    }
+    
+    public static String getModuleName() {
+        return "dashboard.report";
     }
 }
