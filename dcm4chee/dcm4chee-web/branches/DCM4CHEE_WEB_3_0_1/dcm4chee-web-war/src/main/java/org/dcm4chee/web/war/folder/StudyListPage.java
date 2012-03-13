@@ -1423,7 +1423,8 @@ public class StudyListPage extends Panel {
             row.add(new Label("id").add(tooltip));            
             row.add(new Label("accessionNumber").add(tooltip));
             row.add(new Label("modalities").add(tooltip));
-            row.add(new Label("description").add(tooltip));
+            row.add(new Label("description")
+            	.add(new AttributeModifier("title", true, new Model<String>(studyModel.getDescription()))));
             row.add(new Label("numberOfSeries").add(tooltip));
             row.add(new Label("numberOfInstances").add(tooltip));
             row.add(new Label("availability").add(tooltip));
@@ -1559,7 +1560,8 @@ public class StudyListPage extends Panel {
             row.add(new Label("id").add(tooltip));
             row.add(new Label("spsid").add(tooltip));
             row.add(new Label("modality").add(tooltip));
-            row.add(new Label("description").add(tooltip));
+            row.add(new Label("description")
+        		.add(new AttributeModifier("title", true, new Model<String>(ppsModel.getDescription()))));
             row.add(new Label("numberOfSeries").add(tooltip));
             row.add(new Label("numberOfInstances").add(tooltip));
             row.add(new Label("status").add(tooltip));
@@ -1758,7 +1760,8 @@ public class StudyListPage extends Panel {
             row.add(new Label("seriesNumber").add(tooltip));
             row.add(new Label("sourceAET").add(tooltip));
             row.add(new Label("modality").add(tooltip));
-            row.add(new Label("description").add(tooltip));
+            row.add(new Label("description")
+        		.add(new AttributeModifier("title", true, new Model<String>(seriesModel.getDescription()))));
             row.add(new Label("numberOfInstances").add(tooltip));
             row.add(new Label("availability").add(tooltip));
             row.add(new AjaxFallbackLink<Object>("toggledetails") {
@@ -1872,7 +1875,8 @@ public class StudyListPage extends Panel {
             row.add(new DateTimeLabel("datetime").add(tooltip));
             row.add(new Label("instanceNumber").add(tooltip));
             row.add(new Label("sopClassUID").add(tooltip));
-            row.add(new Label("description").add(tooltip));
+            row.add(new Label("description")
+        		.add(new AttributeModifier("title", true, new Model<String>(instModel.getDescription()))));
             row.add(new Label("availability").add(tooltip));
             row.add(new AjaxFallbackLink<Object>("toggledetails") {
 
