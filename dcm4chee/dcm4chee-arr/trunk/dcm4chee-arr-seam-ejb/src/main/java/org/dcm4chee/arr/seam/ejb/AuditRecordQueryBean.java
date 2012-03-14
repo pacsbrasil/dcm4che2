@@ -148,14 +148,14 @@ public class AuditRecordQueryBean implements AuditRecordQueryLocal {
             Conjunction criterion = Expression.conjunction();
 
             if (userID != null)
-                criterion.add(Expression.like("ap1.userID", userID));
+                criterion.add(Expression.like("ap1.userID", userID.toUpperCase()));
 
             if (altUserID != null)
                 criterion.add(Expression.like("ap1.alternativeUserID",
-                        altUserID));
+                        altUserID.toUpperCase()));
 
             if (userName != null)
-                criterion.add(Expression.ilike("ap1.userName", userName));
+                criterion.add(Expression.like("ap1.userName", userName.toUpperCase()));
 
             if (userIsRequestor != null)
                 criterion.add(Expression.eq("ap1.userIsRequestor",
@@ -168,7 +168,7 @@ public class AuditRecordQueryBean implements AuditRecordQueryLocal {
 
             if (napID != null)
                 criterion.add(Expression.like("ap1.networkAccessPointID",
-                        napID));
+                        napID.toUpperCase()));
 
             if (napTypes != null)
                 criterion.add(Expression.in("ap1.networkAccessPointType",
@@ -182,11 +182,11 @@ public class AuditRecordQueryBean implements AuditRecordQueryLocal {
             HttpServletRequest rq) {
         String sourceID = rq.getParameter("auditSourceID");
         if (sourceID != null)
-            criteria.add(Expression.like("sourceID", sourceID));
+            criteria.add(Expression.like("sourceID", sourceID.toUpperCase()));
         
         String siteID = rq.getParameter("auditEnterpriseSiteID");
         if (siteID != null)
-            criteria.add(Expression.like("enterpriseSiteID", siteID));
+            criteria.add(Expression.like("enterpriseSiteID", siteID.toUpperCase()));
 
         Integer[] sourceTypes = getIntegers(rq, "auditSourceTypeCode");
         if (sourceTypes != null)
@@ -208,7 +208,7 @@ public class AuditRecordQueryBean implements AuditRecordQueryLocal {
                 || objectRoles != null || lifeCycles != null) {
             criteria.createAlias("participantObjects", "po");
             if (objectID != null)
-                criteria.add(Expression.like("po.objectID", objectID));
+                criteria.add(Expression.like("po.objectID", objectID.toUpperCase()));
 
              if (objectIDTypes != null) {
                 // Split the IDTypes into two sets, one for code, which is String;
@@ -247,7 +247,7 @@ public class AuditRecordQueryBean implements AuditRecordQueryLocal {
             }
 
             if (objectName != null)
-                criteria.add(Expression.ilike("po.objectName", objectName));
+                criteria.add(Expression.like("po.objectName", objectName.toUpperCase()));
 
             if (objectTypes != null)
                 criteria.add(Expression.in("po.objectType", objectTypes));
