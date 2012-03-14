@@ -569,13 +569,13 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
     private Criteria addCriteriaForAuditSource(Criteria criteria) {
         // Site ID
         if (hasCriteria(siteID))
-            criteria.add(Expression.ilike("enterpriseSiteID", siteID,
+            criteria.add(Expression.like("enterpriseSiteID", siteID.toUpperCase(),
                     MatchMode.START));
 
         // Source ID
         if (hasCriteria(sourceID))
             criteria.add(Expression
-                    .ilike("sourceID", sourceID, MatchMode.START));
+                    .like("sourceID", sourceID.toUpperCase(), MatchMode.START));
 
         // Source Type
         if (hasCriteria(sourceTypes))
@@ -591,17 +591,17 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
 
         // User ID
         if (hasCriteria(userID1))
-            criterion.add(Expression.ilike("ap1.userID", userID1,
+            criterion.add(Expression.like("ap1.userID", userID1.toUpperCase(),
                     MatchMode.START));
 
         // Alt User ID
         if (hasCriteria(altUserID1))
-            criterion.add(Expression.ilike("ap1.alternativeUserID", altUserID1,
+            criterion.add(Expression.like("ap1.alternativeUserID", altUserID1.toUpperCase(),
                     MatchMode.START));
 
         // User Name
         if (hasCriteria(userName1))
-            criterion.add(Expression.ilike("ap1.userName", userName1,
+            criterion.add(Expression.like("ap1.userName", userName1.toUpperCase(),
                     MatchMode.START));
 
         // Is Requestor
@@ -622,7 +622,7 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
 
         // NAP ID
         if (hasCriteria(napID1))
-            criterion.add(Expression.ilike("ap1.networkAccessPointID", napID1,
+            criterion.add(Expression.like("ap1.networkAccessPointID", napID1.toUpperCase(),
                     MatchMode.START));
 
         return criterion;
@@ -634,17 +634,17 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
 
         // User ID
         if (hasCriteria(userID2))
-            criterion.add(Expression.ilike("ap2.userID", userID2,
+            criterion.add(Expression.like("ap2.userID", userID2.toUpperCase(),
                     MatchMode.START));
 
         // Alt User ID
         if (hasCriteria(altUserID2))
-            criterion.add(Expression.ilike("ap2.alternativeUserID", altUserID2,
+            criterion.add(Expression.like("ap2.alternativeUserID", altUserID2.toUpperCase(),
                     MatchMode.START));
 
         // User Name
         if (hasCriteria(userName2))
-            criterion.add(Expression.ilike("ap2.userName", userName2,
+            criterion.add(Expression.like("ap2.userName", userName2.toUpperCase(),
                     MatchMode.START));
 
         // Is Requestor
@@ -665,7 +665,7 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
 
         // NAP ID
         if (hasCriteria(napID2))
-            criterion.add(Expression.ilike("ap2.networkAccessPointID", napID2
+            criterion.add(Expression.like("ap2.networkAccessPointID", napID2.toUpperCase()
                     + "%"));
 
         return criterion;
@@ -726,12 +726,12 @@ public class AuditRecordListAction implements Serializable, AuditRecordList {
 
         // Object ID
         if (hasCriteria(objectID))
-            criteria.add(Expression.ilike("po.objectID", objectID,
+            criteria.add(Expression.like("po.objectID", objectID.toUpperCase(),
                     MatchMode.START));
 
         // Object Name
         if (hasCriteria(objectName))
-            criteria.add(Expression.ilike("po.objectName", objectName,
+            criteria.add(Expression.like("po.objectName", objectName.toUpperCase(),
                     MatchMode.START));
 
         return criteria;
