@@ -256,19 +256,19 @@ public class DashboardService extends ServiceMBeanSupport {
                     if ("attribute".equals(mbeanValueModel.getType()))
                         value = 
                             this.server.getAttribute(
-                                    new ObjectName(mbeanValueModel.getDomain() + ":service=" + mbeanValueModel.getName()),
+                                    new ObjectName(mbeanValueModel.getDomain() + ":" + mbeanValueModel.getName()),
                                     mbeanValueModel.getFunction());
                     else if ("method".equals(mbeanValueModel.getType()))
                         value = 
                             this.server.invoke(
-                                    new ObjectName(mbeanValueModel.getDomain() + ":service=" + mbeanValueModel.getName()),
+                                    new ObjectName(mbeanValueModel.getDomain() + ":" + mbeanValueModel.getName()),
                                     mbeanValueModel.getFunction(), 
                                     null, null);
                     mbeanValueModel.setResult(value);
                 } catch (Exception e) {
                     log.error("Cant fetch value for " 
                             + mbeanValueModel.getDomain() 
-                            + ":service=" 
+                            + ":" 
                             + mbeanValueModel.getName() 
                             + " " + mbeanValueModel.getType() 
                             + " " 
