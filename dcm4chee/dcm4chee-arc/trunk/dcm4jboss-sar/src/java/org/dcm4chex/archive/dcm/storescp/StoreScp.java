@@ -809,7 +809,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     .isEnableDNSLookups());
             PatientRecordMessage msg = new PatientRecordMessage(
                     PatientRecordMessage.UPDATE);
-            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo
+            msg.addUserPerson("CStoreCoercion", null, null, userInfo
                     .getHostName(), true);
             PersonName pn = ds.getPersonName(Tags.PatientName);
             String pname = pn != null ? pn.format() : null;
