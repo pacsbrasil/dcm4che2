@@ -264,7 +264,7 @@ public class DashboardService extends ServiceMBeanSupport {
                                     new ObjectName(mbeanValueModel.getDomain() + ":" + mbeanValueModel.getName()),
                                     mbeanValueModel.getFunction(), 
                                     null, null);
-                    mbeanValueModel.setResult(value);
+                    mbeanValueModel.setValue(value);
                 } catch (Exception e) {
                     log.error("Cant fetch value for " 
                             + mbeanValueModel.getDomain() 

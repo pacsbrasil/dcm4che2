@@ -45,14 +45,14 @@ import java.io.Serializable;
  * @version $Revision$ $Date$
  * @since 25.11.2009
  */
-public class SystemPropertyModel implements Serializable {
+public class SystemPropertyModel implements Serializable, Comparable<SystemPropertyModel> {
 
     private static final long serialVersionUID = 1L;
     
-    private String group;
-    private String label;
-    private String name;
-    private String value;
+    String group;
+    String label;
+    String name;
+    String value;
     
     public SystemPropertyModel() {
     }
@@ -94,5 +94,13 @@ public class SystemPropertyModel implements Serializable {
 
     public String getValue() {
         return value;
+    }
+    
+    public int compareTo(SystemPropertyModel o) {
+    	if (this.label == null) 
+    		return o.getLabel() == null ? 0 : -1; 
+    	else 
+    		return o.getLabel() == null ? 1 : 
+    			this.label.toUpperCase().compareTo(o.getLabel().toUpperCase());
     }
 }
