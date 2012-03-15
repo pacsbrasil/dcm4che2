@@ -42,6 +42,8 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -103,12 +105,6 @@ public class SystemInfoPanel extends Panel {
         
         if (SystemInfoPanel.DashboardCSS != null)
             add(CSSPackageResource.getHeaderContribution(SystemInfoPanel.DashboardCSS));
-        
-        add(new Label("domainHdr.label", new ResourceModel("dashboard.systeminfo.domainHdr.label")));
-        add(new Label("nameHdr.label", new ResourceModel("dashboard.systeminfo.nameHdr.label")));
-        add(new Label("typeHdr.label", new ResourceModel("dashboard.systeminfo.typeHdr.label")));
-        add(new Label("functionHdr.label", new ResourceModel("dashboard.systeminfo.functionHdr.label")));
-        add(new Label("resultHdr.label", new ResourceModel("dashboard.systeminfo.resultHdr.label")));
     }
     
     @Override
@@ -164,16 +160,35 @@ public class SystemInfoPanel extends Panel {
             });
             
             DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new SystemPropertyModel());
+            Map<String, List<SystemPropertyModel>> propertyMap = null; 
+            		
+            try {
+            	propertyMap = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).getSystemProperties();
+            } catch (Exception e) {
+                log.error("Can't create list for system properties: ", e);
+            }
 
-            Map<String, List<SystemPropertyModel>> propertyMap = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).getSystemProperties();
+            try {
+            	if (propertyMap == null)
+            		propertyMap = new HashMap<String, List<SystemPropertyModel>>();
+                for (MBeanValueModel model : DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).getMBeanValues()) {
+                    if (!propertyMap.containsKey(model.getGroup()))
+                        propertyMap.put(model.getGroup(), new ArrayList<SystemPropertyModel>());
+                    propertyMap.get(model.getGroup()).add((SystemPropertyModel) model);
+                }
+            } catch (Exception e) {
+                log.error("Can't create list for mbean values: ", e);
+            }
+            
             for (String key : propertyMap.keySet()) {
-                
                 SystemPropertyModel group = new SystemPropertyModel();
                 group.setLabel(key);
                 DefaultMutableTreeNode groupNode;
                 rootNode.add(groupNode = new DefaultMutableTreeNode(group));
 
-                for (SystemPropertyModel propertyModel : propertyMap.get(key)) {
+                List<SystemPropertyModel> propertyModelList = propertyMap.get(key);
+                Collections.sort(propertyModelList);
+                for (SystemPropertyModel propertyModel : propertyModelList) {
                     groupNode.add(new DefaultMutableTreeNode(propertyModel));
                 }
             }
@@ -204,32 +219,7 @@ public class SystemInfoPanel extends Panel {
             log.error(this.getClass().toString() + ": " + "onBeforeRender: " + e.getMessage());
             log.debug("Exception: ", e);
             throw new WicketRuntimeException(e.getLocalizedMessage(), e);
-        }
-        
-        try {
-            List<MBeanValueModel> mbeanValueList = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).getMBeanValues();
-          
-            addOrReplace(new PropertyListView<MBeanValueModel>("mbean-value-rows", mbeanValueList) {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected ListItem<MBeanValueModel> newItem(final int index) {
-                    return new OddEvenListItem<MBeanValueModel>(index, getListItemModel(getModel(), index));
-                }
-
-                @Override
-                protected void populateItem(final ListItem<MBeanValueModel> item) {
-                    item.add(new Label("domain"));
-                    item.add(new Label("name"));
-                    item.add(new Label("type"));
-                    item.add(new Label("function"));
-                    item.add(new Label("result"));
-                }
-            });
-        } catch (Exception e) {
-            log.error("Can't create list for mbean values: ", e);
-        }
+        }        
     }
     
     private class SystemPropertyTreeTable extends DashboardTreeTable {

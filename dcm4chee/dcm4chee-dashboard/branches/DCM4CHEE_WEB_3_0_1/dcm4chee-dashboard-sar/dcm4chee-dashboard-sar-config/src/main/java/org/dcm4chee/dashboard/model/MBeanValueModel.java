@@ -46,20 +46,20 @@ import java.util.List;
  * @version $Revision$ $Date$
  * @since 14.09.2011
  */
-public class MBeanValueModel implements Serializable, Comparable<MBeanValueModel> {
+public class MBeanValueModel extends SystemPropertyModel {
 
     private static final long serialVersionUID = 1L;
     
-    private String domain;
-    private String name;
-    private String type;
-    private String function;
-    private Object result;
+    String domain;
+	String type;
+    String function;
     
     public MBeanValueModel() {
     }
 
-    public MBeanValueModel(String domain, String name, String type, String function) {
+    public MBeanValueModel(String group, String domain, String name, String type, String function) {
+    	this.group = group;
+    	this.label = function;
         this.domain = domain;
         this.name = name;
         this.type = type;
@@ -74,14 +74,6 @@ public class MBeanValueModel implements Serializable, Comparable<MBeanValueModel
         this.domain = domain;
     }
     
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getType() {
         return type;
     }
@@ -95,17 +87,13 @@ public class MBeanValueModel implements Serializable, Comparable<MBeanValueModel
     }
 
     public void setFunction(String function) {
-        this.function = function;
-    }
-
-    public Object getResult() {
-        return result;
-    }
-
-    public void setResult(Object result) {
-        this.result = result;
+        this.function = this.label = function;
     }
     
+    public void setValue(Object value) {
+        this.value = value != null ? value.toString() : null;
+    }
+
     public int compareTo(MBeanValueModel o) {
         int d = this.domain.compareTo(o.getDomain());
         if (d == 0) {
