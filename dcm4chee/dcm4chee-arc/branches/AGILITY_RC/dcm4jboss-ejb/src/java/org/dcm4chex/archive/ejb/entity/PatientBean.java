@@ -618,6 +618,10 @@ public abstract class PatientBean implements EntityBean {
             if (c.isEmpty()) {
                 throw new ObjectNotFoundException();
             }
+			
+            //This temporary fix will be removed once artf88851 get fixed. 
+            if(issuer == null || issuer.isEmpty()) issuer="SYSTEM";			
+			
             if (issuer != null) {
                 int countWithIssuer = matchIssuer(
                         matching.isUnknownIssuerAlwaysMatch(), issuer, c);
