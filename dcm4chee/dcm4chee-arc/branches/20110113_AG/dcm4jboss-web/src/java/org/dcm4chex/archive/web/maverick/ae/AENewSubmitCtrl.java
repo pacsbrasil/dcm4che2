@@ -61,12 +61,13 @@ public class AENewSubmitCtrl extends AEFormCtrl
         {
             try
             {
-
                 lookupAEDelegate().updateAE( ae, model.isCheckHost() );
                 return SUCCESS;
             } catch (Throwable e)
             {
-                model.setPopupMsg("ae.err_create", new String[]{ae.toString(),e.getMessage()});
+                Throwable t = e.getCause();
+                if ( t == null ) t = e;
+                model.setPopupMsg("ae.err_create", new String[]{ae.toString(),t.getMessage()});
                 return FAILED;				
             }
         }
