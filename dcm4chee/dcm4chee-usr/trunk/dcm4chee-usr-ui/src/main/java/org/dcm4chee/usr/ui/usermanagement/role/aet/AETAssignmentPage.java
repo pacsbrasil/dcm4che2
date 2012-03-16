@@ -56,12 +56,12 @@ import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.AETGroup;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.util.Auditlog;
 /**
@@ -69,7 +69,7 @@ import org.dcm4chee.web.common.util.Auditlog;
  * @version $Revision$ $Date$
  * @since Jan. 10, 2011
  */
-public class AETAssignmentPage extends SecureWebPage {
+public class AETAssignmentPage extends SecureSessionCheckPage {
 
     private static final long serialVersionUID = 1L;
     

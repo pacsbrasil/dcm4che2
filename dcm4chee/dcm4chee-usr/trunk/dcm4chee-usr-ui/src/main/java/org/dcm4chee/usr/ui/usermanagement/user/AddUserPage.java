@@ -53,7 +53,6 @@ import org.apache.wicket.markup.html.form.validation.EqualPasswordInputValidator
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
-import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
@@ -61,6 +60,7 @@ import org.dcm4chee.usr.ui.validator.UserValidator;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.dcm4chee.web.common.util.Auditlog;
 import org.dcm4chee.web.common.util.SecurityUtils;
 import org.slf4j.Logger;
@@ -71,7 +71,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since 28.09.2009
  */
-public class AddUserPage extends SecureWebPage {
+public class AddUserPage extends SecureSessionCheckPage {
     
     private static final long serialVersionUID = 1L;
 
