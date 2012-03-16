@@ -73,7 +73,6 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
-import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
@@ -83,6 +82,7 @@ import org.dcm4chee.dashboard.ui.validator.SQLSelectStatementValidator;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,7 +91,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since 28.09.2009
  */
-public class CreateOrEditReportPage extends SecureWebPage {
+public class CreateOrEditReportPage extends SecureSessionCheckPage {
     
     private static final long serialVersionUID = 1L;
     

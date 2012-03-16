@@ -47,13 +47,13 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.security.components.SecureWebPage;
 import org.apache.wicket.validation.validator.PatternValidator;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since 28.09.2009
  */
-public class CreateGroupPage extends SecureWebPage {
+public class CreateGroupPage extends SecureSessionCheckPage {
     
     private static final long serialVersionUID = 1L;
 
