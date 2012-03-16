@@ -254,7 +254,8 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
                     return !hasStatus;
                 }
 
-            }).setOutputMarkupId(true));
+            }).setOutputMarkupId(true)
+            .setEscapeModelStrings(false));
 
             confirmBtn = new IndicatingAjaxFallbackLink<Object>("confirm") {
 
