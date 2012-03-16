@@ -54,6 +54,9 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import javax.ejb.EJBException;
+import javax.management.MBeanServerConnection;
+import javax.management.MBeanServerFactory;
+import javax.management.ObjectName;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 import javax.servlet.http.HttpServletRequest;
@@ -167,6 +170,7 @@ import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.StudyPermissionHelper.StudyPermissionRight;
 import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.war.common.EditDicomObjectPanel;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
@@ -900,6 +904,13 @@ public class StudyListPage extends Panel {
                 if (selected.hasPPS()) {
                     confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.message.confirmPpsDelete",this, null,new Object[]{selected}), selected);
                 } else if (selected.hasDicomSelection()) {
+	                if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
+	                	confirmDelete
+	                		.setRemark(new StringResourceModel("folder.message.warnDelete",this, null));
+	                	confirmDelete
+	    					.setInitialWidth(500)
+	    					.setInitialHeight(200);
+	                }
                     confirmDelete.confirm(target, new StringResourceModel("folder.message.confirmDelete",this, null,new Object[]{selected}), selected);
                 } else { 
                     if (hasIgnored) {
