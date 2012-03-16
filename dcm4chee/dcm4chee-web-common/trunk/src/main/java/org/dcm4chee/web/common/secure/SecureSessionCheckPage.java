@@ -38,68 +38,29 @@
 
 package org.dcm4chee.web.common.secure;
 
-import org.apache.wicket.Application;
 import org.apache.wicket.IPageMap;
-import org.apache.wicket.ResourceReference;
-import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.resources.CompressedResourceReference;
-import org.apache.wicket.model.AbstractReadOnlyModel;
-import org.apache.wicket.resource.loader.ClassStringResourceLoader;
-import org.apache.wicket.resource.loader.PackageStringResourceLoader;
+import org.apache.wicket.markup.html.JavascriptPackageResource;
+import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.web.common.base.BaseWicketPage;
-import org.dcm4chee.web.common.base.ModuleSelectorPanel;
 
 /**
  * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since 01.09.2010
  */
-public class SecureWicketPage extends SecureSessionCheckPage {
+public class SecureSessionCheckPage extends SecureWebPage {
 
-    private static final ResourceReference CSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
-    private ModuleSelectorPanel selectorPanel;
-    
-    public SecureWicketPage() {
+    public SecureSessionCheckPage() {
         super();
-        initLayout();
+        init();
     }
 
-    public SecureWicketPage(IPageMap pageMap) {
+    public SecureSessionCheckPage(IPageMap pageMap) {
         super(pageMap);
-        initLayout();
+        init();
     }
     
-    private void initLayout() {
-
-        if ( SecureWicketPage.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(SecureWicketPage.CSS));
-
-        add( new Label("app_browser_title", new AbstractReadOnlyModel<Object>() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public Object getObject() {
-                return getBrowserTitle();
-            }
-        } ));
-
-        add(selectorPanel = new ModuleSelectorPanel("modules"));
-    }
-
-    public ModuleSelectorPanel getModuleSelectorPanel() {
-        return selectorPanel;
-    }
-
-    protected String getBrowserTitle() {
-        Class<?> clazz = Application.get().getHomePage();
-        String s = new ClassStringResourceLoader(clazz).loadStringResource(null, "application.browser_title");
-        if (s==null) {
-            s = new PackageStringResourceLoader().loadStringResource(clazz, "application.browser_title", 
-                    getSession().getLocale(), null);
-        }
-        return s == null ? "DCM4CHEE" : s;
+    private void init() {
+        add(JavascriptPackageResource.getHeaderContribution(BaseWicketPage.class, "web3-utils.js"));
     }
 }
