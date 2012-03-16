@@ -39,7 +39,7 @@ function hideMask() {
 }
 
 function reloadPage() {
-  window.location.reload(true);
+  parent.location.reload();
 }
 
 /**
