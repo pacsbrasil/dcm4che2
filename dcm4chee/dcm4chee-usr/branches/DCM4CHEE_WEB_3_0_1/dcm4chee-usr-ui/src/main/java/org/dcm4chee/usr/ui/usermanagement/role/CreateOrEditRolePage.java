@@ -58,7 +58,6 @@ import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
-import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.Group;
 import org.dcm4chee.usr.model.Role;
@@ -67,6 +66,7 @@ import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.util.Auditlog;
 import org.slf4j.Logger;
@@ -77,7 +77,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Jul. 21, 2010
  */
-public class CreateOrEditRolePage extends SecureWebPage {
+public class CreateOrEditRolePage extends SecureSessionCheckPage {
     
     private static final long serialVersionUID = 1L;
 
