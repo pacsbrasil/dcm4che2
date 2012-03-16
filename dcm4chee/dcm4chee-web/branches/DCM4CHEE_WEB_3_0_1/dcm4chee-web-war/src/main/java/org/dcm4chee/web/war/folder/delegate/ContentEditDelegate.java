@@ -44,6 +44,7 @@ import java.util.List;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
+import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
 import org.dcm4che2.data.BasicDicomObject;
@@ -55,6 +56,7 @@ import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
 import org.dcm4chee.web.common.exceptions.SelectionException;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
@@ -88,6 +90,20 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         super();
     }
 
+    public boolean sendsRejectionNotes() {
+    	try {
+    		String callingAETitle = (String) server
+    				.getAttribute(((ObjectName)
+                			server.getAttribute(BaseCfgDelegate.getInstance()
+                					.getObjectName(getServiceNameCfgAttribute(), null)
+                					, "RejectionNoteServiceName")), "CallingAETitle");
+    		return (callingAETitle == null || callingAETitle.length() > 0) ? true : false;
+        } catch (Throwable t) {
+            log.error("Fetching CallingAETitle for RejectionNoteService failed: ", t);
+            return true;
+        }
+    }
+    
     public boolean moveToTrash(SelectedEntities selected) {
         try {
             if ( selected.hasPatients()) {
