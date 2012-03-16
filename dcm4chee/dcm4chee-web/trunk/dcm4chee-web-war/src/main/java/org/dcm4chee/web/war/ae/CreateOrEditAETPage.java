@@ -50,6 +50,7 @@ import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -63,7 +64,6 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
-import org.apache.wicket.security.components.SecureWebPage;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.validator.AbstractValidator;
 import org.apache.wicket.validation.validator.RangeValidator;
@@ -76,6 +76,7 @@ import org.dcm4chee.web.common.license.ae.AELicenseProviderManager;
 import org.dcm4chee.web.common.license.ae.spi.AELicenseProviderSPI;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.dcm4chee.web.common.validators.UrlValidator1;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.fs.FileSystemHomeLocal;
@@ -90,7 +91,7 @@ import org.dcm4chee.web.war.util.CyphersuiteUtils;
  * @since June 4, 2009
  */
 
-public class CreateOrEditAETPage extends SecureWebPage {
+public class CreateOrEditAETPage extends SecureSessionCheckPage {
     
     private static final long serialVersionUID = 1L;
 
@@ -100,6 +101,7 @@ public class CreateOrEditAETPage extends SecureWebPage {
     
     public CreateOrEditAETPage(final ModalWindow window, final AE ae, final AEListPanel panel) {
         super();
+        add(JavascriptPackageResource.getHeaderContribution(BaseWicketPage.class, "web3-utils.js"));
         final String oldType = ae.getAeGroup();
         final String oldTitle = ae.getPk() == -1 ? null : ae.getTitle();
         if (CreateOrEditAETPage.BaseCSS != null)

@@ -78,7 +78,6 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.protocol.http.WebResponse;
-import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -102,6 +101,7 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.model.ProgressProvider;
 import org.dcm4chee.web.common.secure.SecureSession;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.dcm4chee.web.common.util.Auditlog;
 import org.dcm4chee.web.common.util.CloseRequestSupport;
 import org.dcm4chee.web.common.util.FileUtils;
@@ -124,7 +124,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Jan 11, 2010
  */
-public class ExportPage extends SecureWebPage implements CloseRequestSupport {
+public class ExportPage extends SecureSessionCheckPage implements CloseRequestSupport {
     
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(ExportPage.class, "export-style.css");

@@ -63,13 +63,13 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
-import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.delegate.RIDDelegate;
 import org.dcm4chee.web.war.folder.delegate.WADODelegate;
@@ -85,7 +85,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since 08.08.2010
  */
-public class InstanceViewPage extends SecureWebPage {
+public class InstanceViewPage extends SecureSessionCheckPage {
     
     private static final long serialVersionUID = 1L;
 
