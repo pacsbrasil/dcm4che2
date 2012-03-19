@@ -58,12 +58,12 @@ public class CacheJournal {
 
     private static final String DEFAULT_FILE_PATH_PATTERN = "yyyy/MM/dd/HH";
     private static final Logger log = 
-            LoggerFactory.getLogger(CacheJournal.class);
+        LoggerFactory.getLogger(CacheJournal.class);
 
     private File journalRootDir;
     private File dataRootDir;
     private SimpleDateFormat journalFilePathFormat =
-            new SimpleDateFormat(DEFAULT_FILE_PATH_PATTERN);
+        new SimpleDateFormat(DEFAULT_FILE_PATH_PATTERN);
     private boolean freeIsRunning = false;
 
     public File getJournalRootDir() {
@@ -105,9 +105,9 @@ public class CacheJournal {
     }
 
     public synchronized void record(File f, boolean update)
-            throws IOException {
+    throws IOException {
         String path = f.getPath().substring(
-                    dataRootDir.getPath().length() + 1);
+                dataRootDir.getPath().length() + 1);
         long time = System.currentTimeMillis();
         File journalFile = getJournalFile(time);
         if (journalFile.exists()) {
@@ -210,7 +210,7 @@ public class CacheJournal {
                         log.debug("{} was accessed after record in {}", f, dir);
                         continue;
                     }
-                    long flen = f.length();
+                    long flen = sizeOfFileOrDirectory(f);
                     if (deleteFileAndParents(f, dataRootDir)) {
                         free += flen;
                     }
@@ -223,6 +223,18 @@ public class CacheJournal {
         return free;
     }
 
+    public static long sizeOfFileOrDirectory(File f) {
+        if (f.isFile()) {
+            return f.length();
+        }
+        long size = 0;
+        File[] files = f.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            size += sizeOfFileOrDirectory(files[i]);
+        }
+        return size;
+    }
+
     public static boolean deleteFileAndParents(File f, File baseDir) {
         if (!deleteFileOrDirectory(f)) {
             return false;
@@ -230,7 +242,7 @@ public class CacheJournal {
         File dir = f.getParentFile();
         while (!dir.equals(baseDir)) {
             if (!dir.delete()) {
-               break;
+                break;
             }
             log.info("M-DELETE {}", dir);
             dir = dir.getParentFile();
