@@ -1058,7 +1058,11 @@ public class TrashListPage extends Panel {
             row.add(new Label("id").add(tooltip));
             row.add(new Label("accessionNumber").add(tooltip));
             row.add(new Label("modalities").add(tooltip));
-            row.add(new Label("description")
+            row.add(new Label("description", 
+            		new Model<String>(studyModel.getDescription() != null &&
+            				studyModel.getDescription().length() > 30 ? 
+            						studyModel.getDescription().substring(0,30) : 
+            							studyModel.getDescription()))
         		.add(new AttributeModifier("title", true, new Model<String>(studyModel.getDescription()))));
             row.add(new Label("numberOfSeries").add(tooltip));
             row.add(new Label("numberOfInstances").add(tooltip));
@@ -1147,7 +1151,11 @@ public class TrashListPage extends Panel {
             row.add(new Label("seriesNumber").add(tooltip));
             row.add(new Label("sourceAET").add(tooltip));
             row.add(new Label("modality").add(tooltip));
-            row.add(new Label("description")
+            row.add(new Label("description", 
+            		new Model<String>(seriesModel.getDescription() != null &&
+            				seriesModel.getDescription().length() > 30 ? 
+            						seriesModel.getDescription().substring(0,30) : 
+            							seriesModel.getDescription()))
         		.add(new AttributeModifier("title", true, new Model<String>(seriesModel.getDescription()))));
             row.add(new Label("numberOfInstances").add(tooltip));
             row.add(new Label("availability").add(tooltip));
@@ -1222,7 +1230,11 @@ public class TrashListPage extends Panel {
             row.add(new DateTimeLabel("datetime").add(tooltip));
             row.add(new Label("instanceNumber").add(tooltip));
             row.add(new Label("sopClassUID").add(tooltip));
-            row.add(new Label("description")
+            row.add(new Label("description", 
+            		new Model<String>(instModel.getDescription() != null &&
+            				instModel.getDescription().length() > 30 ? 
+            						instModel.getDescription().substring(0,30) : 
+            							instModel.getDescription()))
         		.add(new AttributeModifier("title", true, new Model<String>(instModel.getDescription()))));
             row.add(new Label("availability").add(tooltip));
             row.add(new AjaxFallbackLink<Object>("toggledetails") {
