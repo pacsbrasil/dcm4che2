@@ -196,15 +196,9 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
     // TODO: change this to generic version using JPA 2.0 implementation
     @SuppressWarnings("unchecked")
     public void updateDicomRoles() {
-        List<String> dicomRolenames = getAllDicomRolenames();
         List<String> newRoles = 
-            (dicomRolenames.size() == 0 ) ? em.createQuery("SELECT DISTINCT sp.role FROM StudyPermission sp")
-                                              .getResultList()
-                                          : em.createQuery("SELECT DISTINCT sp.role FROM StudyPermission sp WHERE sp.role NOT IN(:dicomRoles)")
-                                              .setParameter("dicomRoles", dicomRolenames)
-                                              .getResultList();
-                                              
-        log.info("dicomRolenames:"+dicomRolenames);
+        		em.createQuery("SELECT DISTINCT sp.role FROM StudyPermission sp")
+        		.getResultList();
         log.info("newRoles:"+newRoles);
         List<Role> roles = new ArrayList<Role>();
         BufferedReader reader = null;
@@ -213,6 +207,7 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
             reader = new BufferedReader(new FileReader(dicomRolesFile));
             while ((line = reader.readLine()) != null) {
                 Role role = (Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class);
+            	log.error("checking:"+role.getRolename());
                 if (newRoles.contains(role.getRolename())) {
                     role.setDicomRole(true);
                     newRoles.remove(role.getRolename());
