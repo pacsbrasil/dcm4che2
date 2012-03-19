@@ -207,7 +207,6 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
             reader = new BufferedReader(new FileReader(dicomRolesFile));
             while ((line = reader.readLine()) != null) {
                 Role role = (Role) JSONObject.toBean(JSONObject.fromObject(line), Role.class);
-            	log.error("checking:"+role.getRolename());
                 if (newRoles.contains(role.getRolename())) {
                     role.setDicomRole(true);
                     newRoles.remove(role.getRolename());
