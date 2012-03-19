@@ -906,7 +906,7 @@ public class StudyListPage extends Panel {
                 } else if (selected.hasDicomSelection()) {
 	                if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
 	                	confirmDelete
-	                		.setRemark(new StringResourceModel("folder.message.warnDelete",this, null));
+	                		.addRemark(new StringResourceModel("folder.message.warnDelete",this, null));
 	                	confirmDelete
 	    					.setInitialWidth(500)
 	    					.setInitialHeight(200);
