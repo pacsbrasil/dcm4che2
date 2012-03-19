@@ -92,16 +92,37 @@ public class ExternalWebApplications implements Serializable {
                         continue;
                     if (line.charAt(0) != '#') {
                         pos1 = line.indexOf('=');
+                        if (pos1 == -1) {
+                            log.warn(CFG_FILE_NAME+": Wrong formatted line ignored! Reason: '=' missing! line:"+line);
+                            continue;
+                        }
                         appTitle = line.substring(0, pos1++);
                         pos2 = line.indexOf('|', pos1);
+                        if (pos2 == -1) {
+                            log.warn(CFG_FILE_NAME+": Wrong formatted line ignored! Reason: '|' missing! line:"+line);
+                            continue;
+                        }
                         grpTitle = line.substring(pos1,pos2++);
                         pos1 = pos2;
                         pos2 = line.indexOf('|', pos1);
+                        if (pos2 == -1) {
+                            log.warn(CFG_FILE_NAME+": Wrong formatted line ignored! Reason: second '|' missing! line:"+line);
+                            continue;
+                        }
                         if (!hasRole(line.substring(pos1, pos2++)))
                                 continue;
                         pos1 = pos2;
                         pos2 = line.indexOf('|', pos1);
-                        height = Integer.parseInt(line.substring(pos1, pos2++));
+                        if (pos2 == -1) {
+                            log.warn(CFG_FILE_NAME+": Wrong formatted line ignored! Reason: third '|' missing! line:"+line);
+                            continue;
+                        }
+                        try {
+                            height = Integer.parseInt(line.substring(pos1, pos2++));
+                        } catch (Exception x) {
+                            log.warn(CFG_FILE_NAME+": Wrong formatted line ignored! Reason: height not an integer! line:"+line);
+                            continue;
+                        }
                         url = line.substring(pos2);
                         titleModel = new Model<String>(appTitle);
                         if (grpTitle.length() < 1) {
