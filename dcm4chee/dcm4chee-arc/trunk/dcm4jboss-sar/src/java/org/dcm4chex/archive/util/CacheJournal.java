@@ -210,7 +210,7 @@ public class CacheJournal {
                         log.debug("{} was accessed after record in {}", f, dir);
                         continue;
                     }
-                    long flen = f.length();
+                    long flen = sizeOfFileOrDirectory(f);
                     if (deleteFileAndParents(f, dataRootDir)) {
                         free += flen;
                     }
@@ -221,6 +221,18 @@ public class CacheJournal {
             deleteFileAndParents(dir, journalRootDir);
         }
         return free;
+    }
+
+    public static long sizeOfFileOrDirectory(File f) {
+        if (f.isFile()) {
+            return f.length();
+        }
+        long size = 0;
+        File[] files = f.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            size += sizeOfFileOrDirectory(files[i]);
+        }
+        return size;
     }
 
     public static boolean deleteFileAndParents(File f, File baseDir) {
