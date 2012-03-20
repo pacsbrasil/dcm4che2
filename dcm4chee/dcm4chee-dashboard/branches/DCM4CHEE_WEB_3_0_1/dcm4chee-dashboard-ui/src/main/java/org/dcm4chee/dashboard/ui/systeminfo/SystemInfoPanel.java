@@ -196,17 +196,12 @@ public class SystemInfoPanel extends Panel {
             SystemPropertyTreeTable systemPropertyTreeTable = new SystemPropertyTreeTable("systemproperty-tree-table", 
                     new DefaultTreeModel(rootNode), new IColumn[] {
                 new PropertyTreeColumn(new ColumnLocation(
-                        Alignment.LEFT, 39, Unit.PERCENT), 
+                        Alignment.LEFT, 50, Unit.PERCENT), 
                         new ResourceModel(
                                 "dashboard.systemproperty.table.column.label").wrapOnAssignment(this).getObject(), 
                                 "userObject.label"),
                 new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 30, Unit.PERCENT), 
-                        new ResourceModel(
-                                "dashboard.systemproperty.table.column.name").wrapOnAssignment(this).getObject(),
-                                "userObject.name"), 
-                new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 30, Unit.PERCENT), 
+                        Alignment.RIGHT, 50, Unit.PERCENT), 
                         new ResourceModel(
                                 "dashboard.systemproperty.table.column.value").wrapOnAssignment(this).getObject(),
                                 "userObject.value")
@@ -247,6 +242,7 @@ public class SystemInfoPanel extends Panel {
                         : getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_PROPERTY)) 
                         +"')"
                     );
+                    tag.put("title", ((SystemPropertyModel) ((DefaultMutableTreeNode) node).getUserObject()).getDescription());
                 }
             };
         }        

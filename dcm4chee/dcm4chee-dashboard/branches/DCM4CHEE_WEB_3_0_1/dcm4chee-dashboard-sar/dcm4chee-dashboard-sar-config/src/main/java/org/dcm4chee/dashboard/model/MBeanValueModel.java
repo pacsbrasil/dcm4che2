@@ -57,13 +57,14 @@ public class MBeanValueModel extends SystemPropertyModel {
     public MBeanValueModel() {
     }
 
-    public MBeanValueModel(String group, String domain, String name, String type, String function) {
+    public MBeanValueModel(String group, String label, String domain, String name, String type, String function, String value) {
     	this.group = group;
-    	this.label = function;
+    	this.label = label;
         this.domain = domain;
         this.name = name;
         this.type = type;
         this.function = function;
+        this.value = value;
     }
 
     public String getDomain() {
@@ -87,13 +88,18 @@ public class MBeanValueModel extends SystemPropertyModel {
     }
 
     public void setFunction(String function) {
-        this.function = this.label = function;
+        this.function = function;
     }
     
     public void setValue(Object value) {
         this.value = value != null ? value.toString() : null;
     }
 
+    @Override
+    public String getDescription() {
+    	return domain + ":" + name + "," + function;
+    }
+    
     public int compareTo(MBeanValueModel o) {
         int d = this.domain.compareTo(o.getDomain());
         if (d == 0) {

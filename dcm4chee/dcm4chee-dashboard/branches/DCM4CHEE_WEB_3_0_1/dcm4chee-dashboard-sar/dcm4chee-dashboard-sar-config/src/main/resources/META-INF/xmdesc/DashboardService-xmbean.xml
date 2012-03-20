@@ -73,11 +73,15 @@ Java;Version;java.version</value>
             separated by newline, 
             using json format, f.e.:
             {
+            	"group":"DICOM",
+            	"label":"Study Management",
                 "domain":"dcm4chee.archive",
                 "name":"StudyMgtScu",
                 "type":"attribute",
                 "function":"MaxSize"
             }<br />
+            group is the name of the table group for display.<br />
+            label is the display name of the table row.<br />
             domain is the MBean domain.<br />
             name is the MBean name.<br />
             type can be "attribute" or "method".<br />
