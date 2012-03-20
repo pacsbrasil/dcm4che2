@@ -136,11 +136,6 @@
             </snapshots>
         </repository>
         <repository>
-            <id>wicketstuff</id>
-            <name>wicketstuff</name>
-            <url>http://wicketstuff.org/maven/repository</url>
-        </repository>
-        <repository>
             <id>dcm4che</id>
             <name>dcm4che Repository</name>
             <url>http://www.dcm4che.org/maven2</url>
