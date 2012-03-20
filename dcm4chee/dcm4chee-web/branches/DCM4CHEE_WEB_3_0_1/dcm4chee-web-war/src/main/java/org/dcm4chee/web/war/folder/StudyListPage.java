@@ -874,16 +874,33 @@ public class StudyListPage extends Panel {
         	private static final long serialVersionUID = 1L;
             
         	private void checkWarnings(SelectedEntities selected) {
+                if (selected.hasPatients()) {
+                	int studiesCount = 0;
+                	String patientListing = "";
+                	Iterator<PatientModel> i = selected.getPatients().iterator();
+                	while (i.hasNext()) {
+                		PatientModel patientModel = i.next();
+                		studiesCount += patientModel.getStudies().size();
+                		patientListing += (
+                				patientModel.getId() + 
+                				" + " + 
+                				patientModel.getIssuer() + 
+                				" + " + 
+                				patientModel.getName());
+                		if (i.hasNext())
+                			patientListing += ", <br /> ";
+                	}               	
+                	confirmDelete
+                		.addRemark(new StringResourceModel("folder.message.warnPatientDelete", 
+                				this, null, new Object[] {studiesCount, patientListing}));
+                	confirmDelete
+    					.setInitialWidth(500)
+    					.setInitialHeight(250);
+                }                
                 if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
                 	confirmDelete
                 		.addRemark(new StringResourceModel("folder.message.warnDelete",this, null));
-                	confirmDelete
-    					.setInitialWidth(500)
-    					.setInitialHeight(200);
                 }
-                if (selected.hasPatients()) 
-                	confirmDelete
-                		.addRemark(new StringResourceModel("folder.message.warnPatientDelete",this, null));
         	}
         	
             @Override
@@ -899,16 +916,6 @@ public class StudyListPage extends Panel {
                         && selected.hasTooOld()) {
                     if (StudyPermissionHelper.get().ignoreEditTimeLimit()) {
                     	checkWarnings(selected);
-//    	                if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
-//    	                	confirmDelete
-//    	                		.addRemark(new StringResourceModel("folder.message.warnDelete",this, null));
-//    	                	confirmDelete
-//    	    					.setInitialWidth(500)
-//    	    					.setInitialHeight(200);
-//    	                }
-//    	                if (selected.hasPatients()) 
-//    	                	confirmDelete
-//    	                		.addRemark(new StringResourceModel("folder.message.warnPatientDelete",this, null));    	                
                         if (selected.hasPPS()) {
                             confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.message.tooOld.confirmPpsDelete",this, null,new Object[]{selected}), selected);
                         } else if (selected.hasDicomSelection()) {
@@ -931,16 +938,6 @@ public class StudyListPage extends Panel {
                     confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.message.confirmPpsDelete",this, null,new Object[]{selected}), selected);
                 } else if (selected.hasDicomSelection()) {
                 	checkWarnings(selected);
-//	                if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
-//	                	confirmDelete
-//	                		.addRemark(new StringResourceModel("folder.message.warnDelete",this, null));
-//	                	confirmDelete
-//	    					.setInitialWidth(500)
-//	    					.setInitialHeight(200);
-//	                }
-//	                if (selected.hasPatients()) 
-//	                	confirmDelete
-//	                		.addRemark(new StringResourceModel("folder.message.warnPatientDelete",this, null));
                     confirmDelete.confirm(target, new StringResourceModel("folder.message.confirmDelete",this, null,new Object[]{selected}), selected);
                 } else { 
                     if (hasIgnored) {
