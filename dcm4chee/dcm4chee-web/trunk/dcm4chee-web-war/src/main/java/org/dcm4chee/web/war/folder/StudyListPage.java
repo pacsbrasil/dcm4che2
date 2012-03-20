@@ -870,12 +870,44 @@ public class StudyListPage extends Panel {
         form.add(confirmDelete);
 
         AjaxButton deleteBtn = new AjaxButton("deleteBtn") {
-                    
-            private static final long serialVersionUID = 1L;
+
+        	private static final long serialVersionUID = 1L;
             
+        	private void checkWarnings(SelectedEntities selected) {
+                if (selected.hasPatients()) {
+                	int studiesCount = 0;
+                	String patientListing = "";
+                	Iterator<PatientModel> i = selected.getPatients().iterator();
+                	while (i.hasNext()) {
+                		PatientModel patientModel = i.next();
+                		studiesCount += patientModel.getStudies().size();
+                		patientListing += (
+                				patientModel.getId() + 
+                				" + " + 
+                				patientModel.getIssuer() + 
+                				" + " + 
+                				patientModel.getName());
+                		if (i.hasNext())
+                			patientListing += ", <br /> ";
+                	}               	
+                	confirmDelete
+                		.addRemark(new StringResourceModel("folder.message.warnPatientDelete", 
+                				this, null, new Object[] {studiesCount, patientListing}));
+                	confirmDelete
+    					.setInitialWidth(500)
+    					.setInitialHeight(250);
+                }                
+                if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
+                	confirmDelete
+                		.addRemark(new StringResourceModel("folder.message.warnDelete",this, null));
+                }
+        	}
+        	
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
 
+            	confirmDelete.setRemark(null);
+            	
                 boolean hasIgnored = selected.update(studyPermissionHelper.isUseStudyPermissions(), 
                         viewport.getPatients(), StudyPermission.DELETE_ACTION);               
                 selected.deselectChildsOfSelectedEntities();
@@ -883,6 +915,7 @@ public class StudyListPage extends Panel {
                 if ((hasIgnored ||selected.hasDicomSelection() || selected.hasPPS()) 
                         && selected.hasTooOld()) {
                     if (StudyPermissionHelper.get().ignoreEditTimeLimit()) {
+                    	checkWarnings(selected);
                         if (selected.hasPPS()) {
                             confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.message.tooOld.confirmPpsDelete",this, null,new Object[]{selected}), selected);
                         } else if (selected.hasDicomSelection()) {
@@ -904,13 +937,7 @@ public class StudyListPage extends Panel {
                 if (selected.hasPPS()) {
                     confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.message.confirmPpsDelete",this, null,new Object[]{selected}), selected);
                 } else if (selected.hasDicomSelection()) {
-	                if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
-	                	confirmDelete
-	                		.addRemark(new StringResourceModel("folder.message.warnDelete",this, null));
-	                	confirmDelete
-	    					.setInitialWidth(500)
-	    					.setInitialHeight(200);
-	                }
+                	checkWarnings(selected);
                     confirmDelete.confirm(target, new StringResourceModel("folder.message.confirmDelete",this, null,new Object[]{selected}), selected);
                 } else { 
                     if (hasIgnored) {
