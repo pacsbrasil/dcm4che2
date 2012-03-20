@@ -96,6 +96,10 @@ public class SystemPropertyModel implements Serializable, Comparable<SystemPrope
         return value;
     }
     
+    public String getDescription() {
+    	return name;
+    }
+
     public int compareTo(SystemPropertyModel o) {
     	if (this.label == null) 
     		return o.getLabel() == null ? 0 : -1; 
