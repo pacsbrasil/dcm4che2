@@ -92,14 +92,16 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
 
     public boolean sendsRejectionNotes() {
     	try {
-    		String callingAETitle = (String) server
+    		String calledAETitles = (String) server
     				.getAttribute(((ObjectName)
                 			server.getAttribute(BaseCfgDelegate.getInstance()
                 					.getObjectName(getServiceNameCfgAttribute(), null)
-                					, "RejectionNoteServiceName")), "CallingAETitle");
-    		return (callingAETitle == null || callingAETitle.length() > 0) ? true : false;
+                					, "RejectionNoteServiceName")), "CalledAETitles");
+    		return (calledAETitles == null || calledAETitles.length() == 0 ||
+    				(calledAETitles != null && calledAETitles.equals("NONE"))) ? 
+    						false : true;
         } catch (Throwable t) {
-            log.error("Fetching CallingAETitle for RejectionNoteService failed: ", t);
+            log.error("Fetching CalledAETitles for RejectionNoteService failed: ", t);
             return true;
         }
     }
