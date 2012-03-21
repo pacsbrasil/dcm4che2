@@ -882,11 +882,11 @@ public class StudyListPage extends Panel {
                 		PatientModel patientModel = i.next();
                 		studiesCount += patientModel.getStudies().size();
                 		patientListing += (
-                				patientModel.getId() + 
-                				" + " + 
-                				patientModel.getIssuer() + 
-                				" + " + 
-                				patientModel.getName());
+                				(patientModel.getId() != null ? patientModel.getId() : " ") + 
+                				" / " + 
+                				(patientModel.getIssuer() != null ? patientModel.getIssuer() : " ") + 
+                				" / " + 
+                				(patientModel.getName() != null ? patientModel.getName() : " "));
                 		if (i.hasNext())
                 			patientListing += ", <br /> ";
                 	}               	
