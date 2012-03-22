@@ -338,7 +338,18 @@
       <return-type>[Lorg.dcm4che2.data.DicomObject;</return-type>
    </operation>
    <operation impact="ACTION">
-      <description><![CDATA[ Deletes the Patient with given StudyInstanceUID.
+      <description><![CDATA[ Delete study with given primary key.
+      		]]> </description>
+      <name>moveStudyToTrash</name>
+      <parameter>
+        <description>Study pk</description>
+        <name>pk</name>
+        <type>long</type>
+      </parameter>
+      <return-type>[Lorg.dcm4che2.data.DicomObject;</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Deletes the Patient with given Patient Id and Issuer.
       		]]> </description>
       <name>movePatientToTrash</name>
       <parameter>
@@ -351,7 +362,7 @@
         <name>issuer</name>
         <type>java.lang.String</type>
       </parameter>
-      <return-type>org.dcm4che2.data.DicomObject</return-type>
+      <return-type>[Lorg.dcm4che2.data.DicomObject;</return-type>
    </operation>
    <operation impact="ACTION">
       <description><![CDATA[ Delete patients with given list of primary keys.
@@ -361,6 +372,17 @@
         <description>Array of pk's</description>
         <name>pks</name>
         <type>[J</type>
+      </parameter>
+      <return-type>[Lorg.dcm4che2.data.DicomObject;</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Delete patient with given primary key.
+      		]]> </description>
+      <name>movePatientToTrash</name>
+      <parameter>
+        <description>Patient pk</description>
+        <name>pk</name>
+        <type>long</type>
       </parameter>
       <return-type>[Lorg.dcm4che2.data.DicomObject;</return-type>
    </operation>

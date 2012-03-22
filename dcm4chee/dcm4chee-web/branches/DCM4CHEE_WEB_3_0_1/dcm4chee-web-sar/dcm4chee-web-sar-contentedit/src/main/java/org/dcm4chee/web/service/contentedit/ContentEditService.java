@@ -341,12 +341,18 @@ public class ContentEditService extends ServiceMBeanSupport {
     public DicomObject[] moveStudiesToTrash(long[] pks) throws InstanceNotFoundException, MBeanException, ReflectionException {
         return processStudyDeleted(lookupDicomEditLocal().moveStudiesToTrash(pks));
     }
+    public DicomObject[] moveStudyToTrash(long pk) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        return processStudyDeleted(lookupDicomEditLocal().moveStudiesToTrash(new long[]{pk}));
+    }
 
     public DicomObject[] movePatientToTrash(String pid, String issuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
         EntityTree entityTree = lookupDicomEditLocal().movePatientToTrash(pid, issuer);
         DicomObject[] rejNotes = processStudyDeleted(entityTree);
         logPatientDeleted(entityTree);
         return rejNotes;
+    }
+    public DicomObject[] movePatientToTrash(long pk) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        return movePatientsToTrash(new long[]{pk});
     }
     public DicomObject[] movePatientsToTrash(long[] pks) throws InstanceNotFoundException, MBeanException, ReflectionException {
         EntityTree entityTree = lookupDicomEditLocal().movePatientsToTrash(pks);
