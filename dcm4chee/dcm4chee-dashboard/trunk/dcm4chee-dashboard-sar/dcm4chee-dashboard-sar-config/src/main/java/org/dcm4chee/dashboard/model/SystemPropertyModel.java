@@ -93,7 +93,7 @@ public class SystemPropertyModel implements Serializable, Comparable<SystemPrope
     }
 
     public String getValue() {
-        return value;
+    	return value;
     }
     
     public String getDescription() {

@@ -193,18 +193,21 @@ public class SystemInfoPanel extends Panel {
                 }
             }
 
+            PropertyRenderableColumn valueColumn = 
+            new PropertyRenderableColumn(new ColumnLocation(
+                    Alignment.RIGHT, 70, Unit.PERCENT), 
+                    new ResourceModel(
+                            "dashboard.systemproperty.table.column.value").wrapOnAssignment(this).getObject(),
+                            "userObject.value");
+            valueColumn.setContentAsTooltip(true);
             SystemPropertyTreeTable systemPropertyTreeTable = new SystemPropertyTreeTable("systemproperty-tree-table", 
                     new DefaultTreeModel(rootNode), new IColumn[] {
                 new PropertyTreeColumn(new ColumnLocation(
-                        Alignment.LEFT, 50, Unit.PERCENT), 
+                        Alignment.LEFT, 30, Unit.PERCENT), 
                         new ResourceModel(
                                 "dashboard.systemproperty.table.column.label").wrapOnAssignment(this).getObject(), 
-                                "userObject.label"),
-                new PropertyRenderableColumn(new ColumnLocation(
-                        Alignment.RIGHT, 50, Unit.PERCENT), 
-                        new ResourceModel(
-                                "dashboard.systemproperty.table.column.value").wrapOnAssignment(this).getObject(),
-                                "userObject.value")
+                                "userObject.label"), 
+                valueColumn
             });
             systemPropertyTreeTable.getTreeState().setAllowSelectMultiple(true);
             systemPropertyTreeTable.getTreeState().expandAll();
