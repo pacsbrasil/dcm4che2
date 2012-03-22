@@ -74,7 +74,7 @@ public class TCDetailsDiagnosisTab extends Panel {
             public String getObject() {
                 YesNo yesno = null;
 
-                TCDetails tc = getTCObject();
+                TCObject tc = getTCObject();
                 if (tc != null) {
                     yesno = tc.getDiagnosisConfirmed();
                 }
@@ -91,7 +91,7 @@ public class TCDetailsDiagnosisTab extends Panel {
         }));
     }
 
-    public static boolean hasDataToShow(TCDetails tc) {
+    public static boolean hasDataToShow(TCObject tc) {
         if (tc != null) {
             return tc.getDiagnosis() != null
                     || tc.getDiagnosisConfirmed() != null;
@@ -100,14 +100,14 @@ public class TCDetailsDiagnosisTab extends Panel {
         return false;
     }
 
-    private TCDetails getTCObject() {
-        return (TCDetails) getDefaultModelObject();
+    private TCObject getTCObject() {
+        return (TCObject) getDefaultModelObject();
     }
 
     private String getStringValue(TCQueryFilterKey key) {
-        TCDetails tc = getTCObject();
+        TCObject tc = getTCObject();
 
-        String s = tc != null ? tc.getStringValue(key, null) : null;
+        String s = tc != null ? tc.getStringValue(key) : null;
 
         return s != null ? s : "-";
     }

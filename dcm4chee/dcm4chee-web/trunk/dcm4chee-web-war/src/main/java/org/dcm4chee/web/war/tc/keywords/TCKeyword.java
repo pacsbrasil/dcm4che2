@@ -39,7 +39,7 @@ package org.dcm4chee.web.war.tc.keywords;
 
 import java.io.Serializable;
 
-import org.dcm4chee.web.war.tc.TCDetails.DicomCode;
+import org.dcm4chee.web.war.tc.TCObject.DicomCode;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -103,6 +103,17 @@ public class TCKeyword implements Serializable {
                 .toString();
     }
 
+    @Override
+    public boolean equals(Object o)
+    {
+        if (o instanceof TCKeyword)
+        {
+            return equals((TCKeyword)o);
+        }
+        
+        return super.equals(o);
+    }
+    
     public boolean equals(TCKeyword keyword) {
         if (code == null) {
             return keyword.code == null && name.equals(keyword.getName());

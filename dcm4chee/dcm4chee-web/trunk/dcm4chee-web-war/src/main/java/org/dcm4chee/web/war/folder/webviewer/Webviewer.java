@@ -61,7 +61,6 @@ import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
-import org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,7 +107,7 @@ public class Webviewer  {
             }
         }
         Image image = new Image("webviewImg",ImageManager.IMAGE_FOLDER_VIEWER);
-        image.add(new ImageSizeBehaviour());
+        image.add(new ImageSizeBehaviour("vertical-align: middle;"));
         if (tooltip != null) image.add(tooltip);
         link.add(image);
         return link;

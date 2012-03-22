@@ -185,4 +185,14 @@ public class ImageManager {
     
     public static final ResourceReference IMAGE_TC_IMAGE_PLACEHOLDER =
         new ResourceReference(ImageManager.class, "tc/empty-image.png");
+    public static final ResourceReference IMAGE_TC_PRINT =
+        new ResourceReference(ImageManager.class, "tc/print.png");
+    public static final ResourceReference IMAGE_TC_ACKNOWLEDGE =
+        new ResourceReference(ImageManager.class, "tc/acknowledge.png");
+    public static final ResourceReference IMAGE_TC_CANCEL =
+        new ResourceReference(ImageManager.class, "tc/cancel.png");
+    public static final ResourceReference IMAGE_TC_CANCEL_MONO =
+        new ResourceReference(ImageManager.class, "tc/cancel-mono.png");
+    public static final ResourceReference IMAGE_TC_ARROW_DOWN =
+        new ResourceReference(ImageManager.class, "tc/arrow-down.png");
 }

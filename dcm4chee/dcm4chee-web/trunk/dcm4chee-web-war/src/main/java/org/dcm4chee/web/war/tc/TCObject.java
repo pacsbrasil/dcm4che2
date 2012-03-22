@@ -3,6 +3,7 @@ package org.dcm4chee.web.war.tc;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -22,78 +23,91 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Level;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSex;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
 import org.dcm4chee.web.war.folder.delegate.TarRetrieveDelegate;
-import org.dcm4chee.web.war.folder.delegate.WADODelegate;
+import org.dcm4chee.web.war.tc.keywords.TCKeyword;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TCDetails implements Serializable {
+/**
+ * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
+ * @version $Revision$ $Date$
+ * @since May 04, 2011
+ */
+public class TCObject implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final static Logger log = LoggerFactory.getLogger(TCDetails.class);
+    private final static Logger log = LoggerFactory.getLogger(TCObject.class);
+    
+    private String iuid;
 
-    private String abstr;
+    protected String abstr;
 
-    private List<AcquisitionModality> acquisitionModalities;
+    protected List<AcquisitionModality> acquisitionModalities;
 
-    private String anatomy;
+    protected String anatomy;
 
-    private String authorAffiliation;
+    protected String authorAffiliation;
 
-    private String authorContact;
+    protected String authorContact;
 
-    private String authorName;
+    protected String authorName;
 
-    private Category category;
+    protected Category category;
 
-    private String diagnosis;
+    protected String diagnosis;
 
-    private YesNo diagnosisConfirmed;
+    protected YesNo diagnosisConfirmed;
 
-    private String diffDiagnosis;
+    protected String diffDiagnosis;
 
-    private String discussion;
+    protected String discussion;
 
-    private String finding;
+    protected String finding;
 
-    private String history;
+    protected String history;
 
-    private List<String> keywords;
+    protected List<String> keywords;
 
-    private Level level;
+    protected Level level;
 
-    private String organSystem;
+    protected String organSystem;
 
-    private String pathology;
+    protected String pathology;
+    
+    protected Integer patientAge;
 
-    private PatientSex patientSex;
+    protected PatientSex patientSex;
 
-    private String patientSpecies;
+    protected String patientSpecies;
 
-    private List<String> bibliographicReferences;
+    protected List<String> bibliographicReferences;
 
-    private String title;
+    protected String title;
 
-    private DicomCode anatomyCode;
+    protected DicomCode anatomyCode;
 
-    private DicomCode diagnosisCode;
+    protected DicomCode diagnosisCode;
 
-    private DicomCode diffDiagnosisCode;
+    protected DicomCode diffDiagnosisCode;
 
-    private DicomCode findingCode;
+    protected DicomCode findingCode;
 
-    private DicomCode keywordCode;
+    protected DicomCode keywordCode;
 
-    private DicomCode pathologyCode;
+    protected DicomCode pathologyCode;
 
-    private List<InstanceRef> instanceRefs;
-
-    private TCDetails(DicomObject object) {
+    private List<TCReferencedStudy> studyRefs;
+    
+    private List<TCReferencedInstance> instanceRefs;
+    
+    private List<TCReferencedInstance> imageRefs;
+    
+    protected TCObject(DicomObject object) {
         parse(object);
     }
 
-    public static TCDetails create(TCModel model) throws IOException {
+    public static TCObject create(TCModel model) throws IOException {
         String fsID = model.getFileSystemId();
         String fileID = model.getFileId();
 
@@ -105,14 +119,19 @@ public class TCDetails implements Serializable {
                             .retrieveFileFromTar(fsID, fileID)
                             : new java.io.File(fsID, fileID));
 
-            return new TCDetails(dis.readDicomObject());
+            return new TCObject(dis.readDicomObject());
         } finally {
             if (dis != null) {
                 dis.close();
             }
         }
     }
-
+    
+    public String getUID()
+    {
+        return iuid;
+    }
+    
     public String getAbstr() {
         return abstr;
     }
@@ -180,6 +199,10 @@ public class TCDetails implements Serializable {
     public String getPathology() {
         return pathology;
     }
+    
+    public Integer getPatientAge() {
+        return patientAge;
+    }
 
     public PatientSex getPatientSex() {
         return patientSex;
@@ -225,34 +248,170 @@ public class TCDetails implements Serializable {
         return pathologyCode;
     }
 
-    public List<InstanceRef> getReferencedInstances() {
-        if (instanceRefs != null) {
-            return Collections.unmodifiableList(instanceRefs);
+    public List<TCReferencedStudy> getReferencedStudies() {
+        if (studyRefs != null) {
+            return Collections.unmodifiableList(studyRefs);
         }
 
         return Collections.emptyList();
     }
-
-    @SuppressWarnings({ "unchecked" })
-    public List<InstanceRef> getReferencedImages() {
-        List<InstanceRef> refs = instanceRefs != null ? new ArrayList<InstanceRef>(
-                instanceRefs) : (List) Collections.emptyList();
-
-        for (Iterator<InstanceRef> it = refs.iterator(); it.hasNext();) {
-            if (!it.next().isImage()) {
-                it.remove();
+    
+    public List<TCReferencedInstance> getReferencedInstances()
+    {
+        if (instanceRefs==null)
+        {
+            instanceRefs = new ArrayList<TCReferencedInstance>();
+            
+            List<TCReferencedStudy> studies = getReferencedStudies();
+            for (TCReferencedStudy study : studies)
+            {
+                for (TCReferencedSeries series : study.getSeries())
+                {
+                    for (TCReferencedInstance instance : series.getInstances())
+                    {
+                        if (!instanceRefs.contains(instance))
+                        {
+                            instanceRefs.add(instance);
+                        }
+                    }
+                }
             }
         }
-
-        return refs;
+        
+        return instanceRefs;
     }
+    
+    public List<TCReferencedInstance> getReferencedImages()
+    {
+        if (imageRefs==null)
+        {
+            imageRefs = new ArrayList<TCReferencedInstance>();
+            
+            List<TCReferencedStudy> studies = getReferencedStudies();
+
+            for (TCReferencedStudy study : studies)
+            {
+                for (TCReferencedSeries series : study.getSeries())
+                {
+                    for (TCReferencedInstance image : series.getImages())
+                    {
+                        if (!imageRefs.contains(image))
+                        {
+                            imageRefs.add(image);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return imageRefs;
+    }
+    
+    public Object getValue(TCQueryFilterKey key) {
+        Object value = null;
+        
+        TCKeywordCatalogueProvider catProv = TCKeywordCatalogueProvider.getInstance();
+        
+        if (TCQueryFilterKey.Abstract.equals(key)) {
+            value = getAbstr();
+        } else if (TCQueryFilterKey.AcquisitionModality.equals(key)) {
+            value = concatStrings(getAcquisitionModalities());
+        } else if (TCQueryFilterKey.Anatomy.equals(key)) {
+            if (catProv == null || !catProv.hasCatalogue(key)) {
+                if (getAnatomy() != null) {
+                    value = getAnatomy();
+                }
+            }
+
+            if (value == null) {
+                value = getAnatomyCode();
+            }
+        } else if (TCQueryFilterKey.AuthorAffiliation.equals(key)) {
+            value = getAuthorAffiliation();
+        } else if (TCQueryFilterKey.AuthorContact.equals(key)) {
+            value = getAuthorContact();
+        } else if (TCQueryFilterKey.AuthorName.equals(key)) {
+            value = getAuthorName();
+        } else if (TCQueryFilterKey.BibliographicReference.equals(key)) {
+            value = getBibliographicReferences();
+        } else if (TCQueryFilterKey.Category.equals(key)) {
+            value = getCategory() != null ? getCategory() : null;
+        } else if (TCQueryFilterKey.DiagnosisConfirmed.equals(key)) {
+            value = getDiagnosisConfirmed() != null ? getDiagnosisConfirmed() : null;
+        } else if (TCQueryFilterKey.Diagnosis.equals(key)) {
+            if (catProv == null || !catProv.hasCatalogue(key)) {
+                if (getDiagnosis() != null) {
+                    value = getDiagnosis();
+                }
+            }
+
+            if (value == null) {
+                value = getDiagnosisCode();
+            }
+        } else if (TCQueryFilterKey.DifferentialDiagnosis.equals(key)) {
+            if (catProv == null || !catProv.hasCatalogue(key)) {
+                if (getDiffDiagnosis() != null) {
+                    value = getDiffDiagnosis();
+                }
+            }
+
+            if (value == null) {
+                value = getDiffDiagnosisCode();
+            }
+        } else if (TCQueryFilterKey.Discussion.equals(key)) {
+            value = getDiscussion();
+        } else if (TCQueryFilterKey.Finding.equals(key)) {
+            if (catProv == null || !catProv.hasCatalogue(key)) {
+                if (getFinding() != null) {
+                    value = getFinding();
+                }
+            }
+
+            if (value == null) {
+                value = getFindingCode();
+            }
+        } else if (TCQueryFilterKey.History.equals(key)) {
+            value = getHistory();
+        } else if (TCQueryFilterKey.Keyword.equals(key)) {
+            if (catProv == null || !catProv.hasCatalogue(key)) {
+                if (getKeywords() != null) {
+                    value = concatStrings(getKeywords());
+                }
+            }
+
+            if (value == null) {
+                value = getKeywordCode();
+            }
+        } else if (TCQueryFilterKey.Level.equals(key)) {
+            value = getLevel() != null ? getLevel() : null;
+        } else if (TCQueryFilterKey.OrganSystem.equals(key)) {
+            value = getOrganSystem();
+
+        } else if (TCQueryFilterKey.Pathology.equals(key)) {
+            if (catProv == null || !catProv.hasCatalogue(key)) {
+                if (getPathology() != null) {
+                    value = getPathology();
+                }
+            }
+
+            if (value == null) {
+                value = getPathologyCode();
+            }
+        } else if (TCQueryFilterKey.PatientAge.equals(key)) {
+            value = getPatientAge() != null ? getPatientAge() : null;
+        } else if (TCQueryFilterKey.PatientSex.equals(key)) {
+            value = getPatientSex() != null ? getPatientSex() : null;
+        } else if (TCQueryFilterKey.PatientSpecies.equals(key)) {
+            value = getPatientSpecies();
+        } else if (TCQueryFilterKey.Title.equals(key)) {
+            value = getTitle();
+        }
+
+        return value;
+    }
+
 
     public String getLocalizedStringValue(TCQueryFilterKey key, Component c) {
-        return this.getLocalizedStringValue(key, c, null);
-    }
-
-    public String getLocalizedStringValue(TCQueryFilterKey key, Component c,
-            TCKeywordCatalogueProvider catProv) {
         if (TCQueryFilterKey.Category.equals(key)) {
             return getCategory() != null ? c.getString("tc.category."
                     + getCategory().name().toLowerCase()) : null;
@@ -266,18 +425,15 @@ public class TCDetails implements Serializable {
             return getPatientSex() != null ? c.getString("tc.patientsex."
                     + getPatientSex().name().toLowerCase()) : null;
         } else {
-            return getStringValue(key, catProv);
+            return getStringValue(key);
         }
     }
 
     public String getStringValue(TCQueryFilterKey key) {
-        return getStringValue(key);
-    }
-
-    public String getStringValue(TCQueryFilterKey key,
-            TCKeywordCatalogueProvider catProv) {
         String s = null;
-
+        
+        TCKeywordCatalogueProvider catProv = TCKeywordCatalogueProvider.getInstance();
+        
         if (TCQueryFilterKey.Abstract.equals(key)) {
             s = getAbstr();
         } else if (TCQueryFilterKey.AcquisitionModality.equals(key)) {
@@ -364,6 +520,8 @@ public class TCDetails implements Serializable {
             if (s == null) {
                 s = getCodeAsString(getPathologyCode());
             }
+        } else if (TCQueryFilterKey.PatientAge.equals(key)) {
+            s = getPatientAge() != null ? getPatientAge().toString() : null;
         } else if (TCQueryFilterKey.PatientSex.equals(key)) {
             s = getPatientSex() != null ? getPatientSex().toString() : null;
         } else if (TCQueryFilterKey.PatientSpecies.equals(key)) {
@@ -375,6 +533,8 @@ public class TCDetails implements Serializable {
         return s;
     }
 
+
+    
     private String getCodeAsString(DicomCode code) {
         return code != null ? code.toString() : null;
     }
@@ -396,6 +556,8 @@ public class TCDetails implements Serializable {
     }
 
     private void parse(DicomObject o) {
+        iuid = o.getString(Tag.SOPInstanceUID);
+        
         DicomElement content = o != null ? o.get(Tag.ContentSequence) : null;
         DicomElement ref = o != null ? o
                 .get(Tag.CurrentRequestedProcedureEvidenceSequence) : null;
@@ -408,11 +570,14 @@ public class TCDetails implements Serializable {
                         .getString(Tag.StudyInstanceUID) : null;
 
                 if (stuid != null) {
+                    TCReferencedStudy study = new TCReferencedStudy(stuid);
+                    
                     DicomElement seriesSeq = studyRef
                             .get(Tag.ReferencedSeriesSequence);
                     int seriesCount = seriesSeq != null ? seriesSeq
                             .countItems() : -1;
-
+                    int instanceCount = 0;
+                    
                     if (seriesCount > 0) {
                         for (int j = 0; j < seriesCount; j++) {
                             DicomObject seriesRef = seriesSeq.getDicomObject(j);
@@ -420,12 +585,16 @@ public class TCDetails implements Serializable {
                                     .getString(Tag.SeriesInstanceUID) : null;
 
                             if (suid != null) {
+                                TCReferencedSeries series = new TCReferencedSeries(suid, study);
+                                
                                 DicomElement instanceSeq = seriesRef
                                         .get(Tag.ReferencedSOPSequence);
-                                int instanceCount = instanceSeq != null ? instanceSeq
+                                instanceCount = instanceSeq != null ? instanceSeq
                                         .countItems() : -1;
 
                                 if (instanceCount > 0) {
+                                    study.addSeries(series);
+                                    
                                     for (int k = 0; k < instanceCount; k++) {
                                         DicomObject instanceRef = instanceSeq
                                                 .getDicomObject(k);
@@ -434,18 +603,21 @@ public class TCDetails implements Serializable {
                                         String cuid = instanceRef
                                                 .getString(Tag.ReferencedSOPClassUID);
 
-                                        InstanceRef iref = new InstanceRef(
-                                                stuid, suid, iuid, cuid);
-
-                                        if (instanceRefs == null) {
-                                            instanceRefs = new ArrayList<InstanceRef>();
-                                        }
-
-                                        instanceRefs.add(iref);
+                                        series.addInstance(
+                                                new TCReferencedInstance(series, iuid, cuid));
                                     }
                                 }
                             }
                         }
+                    }
+                    
+                    if (instanceCount>0)
+                    {
+                        if (studyRefs==null)
+                        {
+                            studyRefs = new ArrayList<TCReferencedStudy>();
+                        }
+                        studyRefs.add(study);
                     }
                 }
             }
@@ -532,6 +704,17 @@ public class TCDetails implements Serializable {
                                             .getCode())) {
                                 pathology = getTextValue(item);
                             } else if (conceptName
+                                    .equals(TCQueryFilterKey.PatientAge
+                                            .getCode())) {
+                                try
+                                {
+                                    patientAge = Integer.valueOf(getTextValue(item));
+                                }
+                                catch (Exception e)
+                                {
+                                    log.warn("Parsing patient age failed! Skipped..");
+                                }
+                            } else if (conceptName
                                     .equals(TCQueryFilterKey.PatientSex
                                             .getCode())) {
                                 patientSex = PatientSex.get(getTextValue(item));
@@ -610,48 +793,94 @@ public class TCDetails implements Serializable {
         return object != null ? new DicomCode(
                 object.getNestedDicomObject(Tag.ConceptCodeSequence)) : null;
     }
-
-    public static class InstanceRef implements Serializable {
-
-        private static final long serialVersionUID = 1L;
-
-        private String stuid;
-
-        private String suid;
-
-        private String iuid;
-
-        private String cuid;
-
-        public InstanceRef(String stuid, String suid, String iuid, String cuid) {
-            this.stuid = stuid;
-            this.suid = suid;
-            this.iuid = iuid;
-            this.cuid = cuid;
+        
+    @SuppressWarnings("unchecked")
+    protected static <T extends Object> T convertValue(Object v, Class<T> valueClass) throws IllegalArgumentException
+    {
+        if (v==null)
+        {
+            return null;
         }
-
-        public String getStudyUID() {
-            return stuid;
+        else if (String.class.isAssignableFrom(valueClass))
+        {
+            if (DicomCode.class.isAssignableFrom(v.getClass()))
+            {
+                return (T) ((DicomCode)v).getMeaning();
+            }
+            else
+            {
+                return (T) v.toString();
+            }
         }
-
-        public String getSeriesUID() {
-            return suid;
+        else if (DicomCode.class.isAssignableFrom(valueClass))
+        {
+            if (DicomCode.class.isAssignableFrom(v.getClass()))
+            {
+                return (T) v;
+            }
+            else if (TCKeyword.class.isAssignableFrom(v.getClass()))
+            {
+                return (T) ((TCKeyword)v).getCode();
+            }
         }
+        else if (Enum.class.isAssignableFrom(valueClass))
+        {
+            if (valueClass.isAssignableFrom(v.getClass()))
+            {
+                return (T) v;
+            }
+            else
+            {
+                for (Object o : valueClass.getEnumConstants())
+                {
+                    if (((Enum<?>)o).name().equals(v.toString().trim()))
+                    {
+                        return (T) o;
+                    }
+                }
+            }
 
-        public String getInstanceUID() {
-            return iuid;
+            throw new IllegalArgumentException("Unable to convert enum (" + valueClass + "): No enum constant found for name '" + v.toString() + "'!"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
-
-        public String getClassUID() {
-            return cuid;
-        }
-
-        public boolean isImage() {
-            return WADODelegate.IMAGE == WADODelegate.getInstance()
-                    .getRenderType(cuid);
-        }
+        
+        throw new IllegalArgumentException("Unable to convert from class " + v.getClass() + " to class " + valueClass); //$NON-NLS-1$ //$NON-NLS-2$
     }
-
+    
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    protected <T extends Object> List<T> convertValues(Object v, Class<T> valueClass) throws IllegalArgumentException
+    {
+        if (v==null)
+        {
+            return null;
+        }
+        else
+        {
+            Object[] values = null;
+            
+            if (v instanceof List)
+            {
+                values = new Object[((List<?>)v).size()];
+                for (int i=0; i<values.length; i++)
+                {
+                    values[i] = convertValue(((List<?>)v).get(i), valueClass);
+                }
+            }
+            else if (v.getClass().isAssignableFrom(valueClass))
+            {
+                values = new Object[] {convertValue(v, valueClass)};
+            }
+            
+            if (values!=null)
+            {
+                return (List) Arrays.asList(values);
+            }
+        }
+        
+        throw new IllegalArgumentException("Unable to convert from class " + v.getClass() + " to list of class " + valueClass); //$NON-NLS-1$ //$NON-NLS-2$
+    }
+    
+    
     public static class DicomCode implements Serializable {
 
         private static final long serialVersionUID = 1L;

@@ -72,19 +72,19 @@ public class TCDetailsPanel extends Panel {
     private WebMarkupContainer detailsContainer;
 
     public TCDetailsPanel(final String id) {
-        super(id, new Model<TCDetails>());
+        super(id, new Model<TCObject>());
 
         setOutputMarkupId(true);
 
         TCKeywordCatalogueProvider catProv = TCKeywordCatalogueProvider
                 .getInstance();
-        final Model<TCDetails> tabModel = new Model<TCDetails>() {
+        final Model<TCObject> tabModel = new Model<TCObject>() {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public TCDetails getObject() {
-                return (TCDetails) TCDetailsPanel.this.getDefaultModelObject();
+            public TCObject getObject() {
+                return (TCObject) TCDetailsPanel.this.getDefaultModelObject();
             }
         };
 
@@ -122,7 +122,7 @@ public class TCDetailsPanel extends Panel {
 
                 @Override
                 public boolean isDataAvailable() {
-                    TCDetails tc = getTCObject();
+                    TCObject tc = getTCObject();
 
                     if (tc != null) {
                         return tc.getDiagnosis() != null
@@ -157,7 +157,7 @@ public class TCDetailsPanel extends Panel {
 
                 @Override
                 public boolean isDataAvailable() {
-                    TCDetails tc = getTCObject();
+                    TCObject tc = getTCObject();
 
                     return tc != null && tc.getDiffDiagnosis() != null;
                 }
@@ -187,7 +187,7 @@ public class TCDetailsPanel extends Panel {
 
                 @Override
                 public boolean isDataAvailable() {
-                    TCDetails tc = getTCObject();
+                    TCObject tc = getTCObject();
 
                     return tc != null && tc.getFinding() != null;
                 }
@@ -216,7 +216,7 @@ public class TCDetailsPanel extends Panel {
 
             @Override
             public boolean isDataAvailable() {
-                TCDetails tc = getTCObject();
+                TCObject tc = getTCObject();
 
                 return tc != null && tc.getHistory() != null;
             }
@@ -244,7 +244,7 @@ public class TCDetailsPanel extends Panel {
 
             @Override
             public boolean isDataAvailable() {
-                TCDetails tc = getTCObject();
+                TCObject tc = getTCObject();
 
                 return tc != null && tc.getDiscussion() != null;
             }
@@ -272,7 +272,7 @@ public class TCDetailsPanel extends Panel {
 
             @Override
             public boolean isDataAvailable() {
-                TCDetails tc = getTCObject();
+                TCObject tc = getTCObject();
 
                 return tc != null && tc.getOrganSystem() != null;
             }
@@ -292,7 +292,7 @@ public class TCDetailsPanel extends Panel {
 
             @Override
             public boolean isDataAvailable() {
-                TCDetails tc = getTCObject();
+                TCObject tc = getTCObject();
 
                 if (tc != null) {
                     return tc.getAuthorName() != null
@@ -307,15 +307,15 @@ public class TCDetailsPanel extends Panel {
         tabs.add(new AbstractDetailsTab(new Model<String>() {
 
             private static final long serialVersionUID = 1L;
-
+            
             String title = new PackageStringResourceLoader()
                     .loadStringResource(TCDetailsPanel.class,
                             "tc.details.tab.images.title.text", null, null);
 
             @Override
             public String getObject() {
-                TCDetails tc = getTCObject();
-                int nImages = tc != null ? tc.getReferencedInstances().size()
+                TCObject tc = getTCObject();
+                int nImages = tc != null ? tc.getReferencedImages().size()
                         : 0;
                 StringBuffer sbuf = new StringBuffer(title);
                 sbuf.append(" (");
@@ -336,7 +336,7 @@ public class TCDetailsPanel extends Panel {
 
             @Override
             public boolean isDataAvailable() {
-                TCDetails tc = getTCObject();
+                TCObject tc = getTCObject();
 
                 return tc != null && tc.getReferencedImages() != null
                         && !tc.getReferencedImages().isEmpty();
@@ -357,7 +357,7 @@ public class TCDetailsPanel extends Panel {
 
             @Override
             public boolean isDataAvailable() {
-                TCDetails tc = getTCObject();
+                TCObject tc = getTCObject();
 
                 return tc != null && tc.getBibliographicReferences() != null
                         && !tc.getBibliographicReferences().isEmpty();
@@ -383,17 +383,17 @@ public class TCDetailsPanel extends Panel {
         add(detailsContainer);
     }
 
-    public void setTCObject(TCDetails tc) {
+    public void setTCObject(TCObject tc) {
         nodetailsContainer.setVisible(tc == null);
         errordetailsContainer.setVisible(false);
         detailsContainer.setVisible(tc != null);
         ((DetailsTabbedPanel) detailsContainer.get(0)).setSelectedTab(0);
 
-        setDefaultModel(new Model<TCDetails>(tc));
+        setDefaultModel(new Model<TCObject>(tc));
     }
 
-    public TCDetails getTCObject() {
-        return (TCDetails) getDefaultModelObject();
+    public TCObject getTCObject() {
+        return (TCObject) getDefaultModelObject();
     }
 
     public void clearTCObject(boolean error) {

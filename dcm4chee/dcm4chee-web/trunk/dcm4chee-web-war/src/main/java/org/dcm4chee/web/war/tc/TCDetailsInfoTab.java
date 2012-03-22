@@ -352,14 +352,14 @@ public class TCDetailsInfoTab extends Panel {
         add(patientSpeciesWmc);
     }
 
-    private TCDetails getTCObject() {
-        return (TCDetails) getDefaultModelObject();
+    private TCObject getTCObject() {
+        return (TCObject) getDefaultModelObject();
     }
 
     private String getStringValue(TCQueryFilterKey key) {
-        TCDetails tc = getTCObject();
+        TCObject tc = getTCObject();
 
-        String s = tc != null ? tc.getLocalizedStringValue(key, this, catProv)
+        String s = tc != null ? tc.getLocalizedStringValue(key, this)
                 : null;
 
         return s != null ? s : "-";

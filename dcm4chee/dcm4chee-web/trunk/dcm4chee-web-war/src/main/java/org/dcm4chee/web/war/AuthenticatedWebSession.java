@@ -39,6 +39,7 @@
 package org.dcm4chee.web.war;
 
 import org.apache.wicket.Request;
+import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ public class AuthenticatedWebSession extends SecureSession {
     private org.dcm4chee.web.war.worklist.modality.ViewPort mwViewport = new org.dcm4chee.web.war.worklist.modality.ViewPort();
     private StudyPermissionHelper studyPermissionHelper;
     
-    public AuthenticatedWebSession(WicketApplication wicketApplication, Request request) {
+    public AuthenticatedWebSession(BaseWicketApplication wicketApplication, Request request) {
         super(wicketApplication, request);
     }
 

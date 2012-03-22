@@ -52,7 +52,7 @@ import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate.KeywordCatalogue;
-import org.dcm4chee.web.war.tc.TCDetails.DicomCode;
+import org.dcm4chee.web.war.tc.TCObject.DicomCode;
 import org.dcm4chee.web.war.tc.TCPanel;
 import org.dcm4chee.web.war.tc.keywords.acr.ACRCatalogue;
 import org.slf4j.Logger;
@@ -552,14 +552,18 @@ public class TCKeywordCatalogueProvider {
 
         private TCKeyword findKeyword(String value, TCKeywordNode node) {
             if (value != null && node != null) {
-                DicomCode code = node.getKeyword().getCode();
-                if (value.equals(code.getValue())) {
-                    return node.getKeyword();
+                TCKeyword keyword = node.getKeyword();
+                if (keyword!=null)
+                {
+                    DicomCode code = keyword.getCode();
+                    if (code!=null && value.equals(code.getValue())) {
+                        return node.getKeyword();
+                    }
                 }
-
+                
                 if (node.getChildCount() > 0) {
                     for (TCKeywordNode child : node.getChildren()) {
-                        TCKeyword keyword = findKeyword(value, child);
+                        keyword = findKeyword(value, child);
                         if (keyword != null) {
                             return keyword;
                         }

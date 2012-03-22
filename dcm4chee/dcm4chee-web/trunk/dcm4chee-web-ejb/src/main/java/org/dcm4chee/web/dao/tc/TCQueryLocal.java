@@ -42,6 +42,8 @@ import java.util.List;
 import javax.ejb.Local;
 
 import org.dcm4chee.archive.entity.Instance;
+import org.dcm4chee.archive.entity.Series;
+import org.dcm4chee.archive.entity.Study;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -50,6 +52,7 @@ import org.dcm4chee.archive.entity.Instance;
  */
 @Local
 public interface TCQueryLocal {
+    
     String JNDI_NAME = "dcm4chee-web-ear/TCListBean/local";
 
     int countMatchingInstances(TCQueryFilter filter, List<String> roles,
@@ -57,5 +60,12 @@ public interface TCQueryLocal {
 
     List<Instance> findMatchingInstances(TCQueryFilter filter,
             List<String> roles, List<String> restrictedSourceAETs);
+    
+    
+    Study findStudyByUID(String stuid);
+    
+    Series findSeriesByUID(String suid);
+    
+    Instance findInstanceByUID(String uid);
 
 }

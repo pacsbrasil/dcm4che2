@@ -127,6 +127,8 @@ public class WebCfgService extends ServiceMBeanSupport implements
     private ObjectName echoServiceName;
 
     private ObjectName moveScuServiceName;
+    
+    private ObjectName tcStoreScuServiceName;
 
     private ObjectName contentEditServiceName;
 
@@ -154,11 +156,15 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     private Map<String, List<String>> ridMimeTypes = new LinkedHashMap<String, List<String>>();
 
+    private String tcSeriesDisplayFormat;
+    
     private String tcKeywordCataloguesPath;
 
     private Map<String, String> tcKeywordCatalogues = new LinkedHashMap<String, String>();
 
     private List<String> tcRestrictedSrcAETs = new ArrayList<String>();
+    
+    private boolean tcEditOnDoubleClick;
 
     private List<String> modalities = new ArrayList<String>();
 
@@ -379,6 +385,24 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     public void setTCRestrictedSourceAETs(String s) {
         updateList(tcRestrictedSrcAETs, s, "|");
+    }
+    
+    public boolean isTCEditOnDoubleClick() {
+        return tcEditOnDoubleClick;
+    }
+
+    public void setTCEditOnDoubleClick(boolean b) {
+        tcEditOnDoubleClick = b;
+    }
+    
+    public String getTCSeriesDisplayFormat()
+    {
+        return tcSeriesDisplayFormat;
+    }
+    
+    public void setTCSeriesDisplayFormat(String s)
+    {
+        tcSeriesDisplayFormat = s;
     }
 
     public String getRIDMimeTypes() {
@@ -746,6 +770,14 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     public void setMoveScuServiceName(ObjectName moveScuServiceName) {
         this.moveScuServiceName = moveScuServiceName;
+    }
+    
+    public ObjectName getTCStoreScuServiceName() {
+        return tcStoreScuServiceName;
+    }
+
+    public void setTCStoreScuServiceName(ObjectName tcStoreScuServiceName) {
+        this.tcStoreScuServiceName = tcStoreScuServiceName;
     }
 
     public ObjectName getContentEditServiceName() {

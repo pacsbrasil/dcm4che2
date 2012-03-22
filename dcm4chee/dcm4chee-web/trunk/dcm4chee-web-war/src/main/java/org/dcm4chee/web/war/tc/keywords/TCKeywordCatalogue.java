@@ -37,9 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc.keywords;
 
-import java.io.Serializable;
 
-import org.apache.wicket.Component;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -94,13 +92,5 @@ public abstract class TCKeywordCatalogue {
             TCKeyword selectedKeyword);
 
     public abstract TCKeyword findKeyword(String value);
-
-    public interface TCKeywordInput extends Serializable {
-        public Component getComponent();
-
-        public TCKeyword getSelectedKeyword();
-
-        public void resetSelectedKeyword();
-    }
 
 }

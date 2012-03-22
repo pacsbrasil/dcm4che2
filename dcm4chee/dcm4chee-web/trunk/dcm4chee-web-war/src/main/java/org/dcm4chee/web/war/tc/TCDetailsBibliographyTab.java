@@ -65,7 +65,7 @@ public class TCDetailsBibliographyTab extends Panel {
 
                     @Override
                     public ArrayList<String> getObject() {
-                        TCDetails o = getTCObject();
+                        TCObject o = getTCObject();
                         ArrayList<String> biblio = o != null ? new ArrayList<String>(
                                 o.getBibliographicReferences()) : null;
 
@@ -98,7 +98,7 @@ public class TCDetailsBibliographyTab extends Panel {
         add(list);
     }
 
-    private TCDetails getTCObject() {
-        return (TCDetails) getDefaultModelObject();
+    private TCObject getTCObject() {
+        return (TCObject) getDefaultModelObject();
     }
 }

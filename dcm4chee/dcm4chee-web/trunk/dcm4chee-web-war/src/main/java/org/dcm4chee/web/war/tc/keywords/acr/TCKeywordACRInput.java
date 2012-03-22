@@ -49,26 +49,25 @@ import javax.swing.tree.TreeNode;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
-import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxButton;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.extensions.markup.html.tree.DefaultAbstractTree.LinkType;
 import org.apache.wicket.extensions.markup.html.tree.Tree;
-import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Fragment;
-import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.convert.IConverter;
-import org.dcm4chee.web.war.tc.TCPanel;
-import org.dcm4chee.web.war.tc.TCPanel.PopupCloseables;
-import org.dcm4chee.web.war.tc.TCPanel.PopupCloseables.IPopupCloseable;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.web.war.tc.TCPopupManager.AbstractTCPopup;
+import org.dcm4chee.web.war.tc.TCPopupManager.TCPopupPosition;
+import org.dcm4chee.web.war.tc.TCPopupManager.TCPopupPosition.PopupAlign;
+import org.dcm4chee.web.war.tc.TCUtilities;
+import org.dcm4chee.web.war.tc.keywords.AbstractTCKeywordInput;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
-import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue.TCKeywordInput;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordNode;
 
 /**
@@ -76,7 +75,7 @@ import org.dcm4chee.web.war.tc.keywords.TCKeywordNode;
  * @version $Revision$ $Date$
  * @since June 20, 2011
  */
-public class TCKeywordACRInput extends Panel implements TCKeywordInput {
+public class TCKeywordACRInput extends AbstractTCKeywordInput {
 
     private static final long serialVersionUID = 1L;
 
@@ -87,8 +86,22 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
     }
 
     public TCKeywordACRInput(final String id, TCKeyword selectedKeyword) {
-        super(id, selectedKeyword != null ? new Model<TCKeyword>(
-                selectedKeyword) : new Model<TCKeyword>());
+        super(id);
+
+        setDefaultModel(new Model<TCKeyword>() {
+            @Override
+            public void setObject(TCKeyword keyword)
+            {
+                if (!TCUtilities.equals(getObject(),keyword))
+                {
+                    super.setObject(keyword);
+                    
+                    fireValueChanged();
+                }
+            }
+        });
+        
+        final ACRChooser chooser = new ACRChooser("keyword-acr");
 
         text = new TextField<TCKeyword>("text",
                 selectedKeyword != null ? new Model<TCKeyword>(selectedKeyword)
@@ -133,66 +146,42 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
             }
         };
         text.setOutputMarkupId(true);
-
-        final ACRChooser chooser = new ACRChooser("keyword-acr");
-        final ACRPopupCloseable popup = new ACRPopupCloseable(chooser, text);
-
-        popup.add(new AjaxFallbackLink<String>("popup-close-button") {
+        text.add(new AjaxFormComponentUpdatingBehavior("onchange") {
             @Override
-            public void onClick(AjaxRequestTarget target) {
-                popup.close(target);
+            public void onUpdate(AjaxRequestTarget target)
+            {
+                text.updateModel();
             }
         });
+        
+        Button chooserBtn = new Button("chooser-button", new Model<String>("..."));
+        chooserBtn.add(new Image("chooser-button-img", ImageManager.IMAGE_TC_ARROW_DOWN)
+            .setOutputMarkupId(true));
 
-        PopupCloseables.getInstance().addCloseable(popup);
-
+        ACRPopup popup = new ACRPopup(chooser, text);
+        popup.installPopupTrigger(chooserBtn, new TCPopupPosition(
+                chooserBtn.getMarkupId(),
+                popup.getMarkupId(), 
+                PopupAlign.BottomLeft, PopupAlign.TopLeft));
+        
         add(text);
-        add(new AjaxButton("chooser-button", new Model<String>("...")) {
-            @Override
-            public void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                TCKeyword keyword = TCKeywordACRInput.this.getSelectedKeyword();
-
-                Component[] updateComponents = chooser.setKeyword(keyword);
-
-                PopupCloseables.getInstance().closeAll(target);
-                // PopupCloseables.getInstance().setIgnoreNextClose(popup,
-                // true);
-
-                popup.setVisible(true);
-                target.addComponent(popup);
-                target.addComponent(chooser);
-
-                if (updateComponents != null) {
-                    for (Component c : updateComponents) {
-                        if (c != null) {
-                            target.addComponent(c);
-                        }
-                    }
-                }
-
-                target.appendJavascript("setPositionRelativeToParent('"
-                        + getMarkupId() + "','" + popup.getMarkupId() + "')");
-            }
-        });
-
-        popup.add(chooser);
-
+        add(chooserBtn);
         add(popup);
     }
 
     @Override
-    public TCKeyword getSelectedKeyword() {
+    public TCKeyword getKeyword() {
         return getModel().getObject();
     }
 
     @Override
-    public void resetSelectedKeyword() {
+    public void resetKeyword() {
         getModel().setObject(null);
         text.getModel().setObject(null);
     }
 
     @Override
-    public Component getComponent() {
+    public Component getInputComponent() {
         return this;
     }
 
@@ -319,7 +308,8 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
                             Tree pathologyTree = pathologyTrees
                                     .get(pathologyRoot);
                             Tree curPathologyTree = getCurrentPathologyTree();
-                            if (pathologyTree != curPathologyTree) {
+                            if (pathologyTree!=null && 
+                                    pathologyTree != curPathologyTree) {
                                 setPathologyTreeVisible(pathologyTree);
                                 setNodeSelected(pathologyTree, null);
 
@@ -444,30 +434,31 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
         }
     }
 
-    private class ACRPopupCloseable extends WebMarkupContainer implements
-            IPopupCloseable {
+    private class ACRPopup extends AbstractTCPopup
+    {
         private ACRChooser chooser;
-
         private TextField<TCKeyword> text;
 
-        public ACRPopupCloseable(ACRChooser chooser, TextField<TCKeyword> text) {
-            super("popup-keyword-acr");
+        public ACRPopup(ACRChooser chooser, TextField<TCKeyword> text) {
+            super("acr-keyword-popup", true, false, true, true);
 
             this.chooser = chooser;
             this.text = text;
-
-            setOutputMarkupId(true);
-            setOutputMarkupPlaceholderTag(true);
-            setVisible(false);
+            
+            add(chooser);
+        }
+        
+        @Override
+        public void afterShowing(AjaxRequestTarget target)
+        {
+            chooser.setKeyword(
+                    TCKeywordACRInput.this.getModel().getObject());
+            
+            target.addComponent(chooser);
         }
 
         @Override
-        public boolean isClosed() {
-            return !isVisible();
-        }
-
-        @Override
-        public void close(AjaxRequestTarget target) {
+        public void beforeHiding(AjaxRequestTarget target) {
             // apply keyword(s)
             TCKeyword keyword = chooser.getKeyword();
             if (keyword != null && keyword.isAllKeywordsPlaceholder()) {
@@ -476,17 +467,8 @@ public class TCKeywordACRInput extends Panel implements TCKeywordInput {
 
             TCKeywordACRInput.this.getModel().setObject(keyword);
             text.setModelObject(keyword);
-
-            // close popup
-            MarkupContainer parent = TCKeywordACRInput.this.getParent();
-
-            setVisible(false);
-            target.addComponent(this);
-            if (parent != null) {
-                target.addComponent(parent);
-            } else {
-                target.addComponent(text);
-            }
+            
+            target.addComponent(text);
         }
     }
 

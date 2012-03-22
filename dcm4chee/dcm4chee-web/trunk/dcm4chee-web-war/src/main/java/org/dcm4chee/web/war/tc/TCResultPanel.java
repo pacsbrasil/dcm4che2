@@ -39,6 +39,7 @@ package org.dcm4chee.web.war.tc;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -50,15 +51,15 @@ import java.util.Map;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
-import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByBorder;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortParam;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortableDataProvider;
-import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.Item;
@@ -68,10 +69,13 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.security.components.SecureComponentHelper;
 import org.apache.wicket.util.convert.IConverter;
 import org.apache.wicket.util.convert.converters.DateConverter;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
@@ -102,17 +106,18 @@ public class TCResultPanel extends Panel {
 
     private TCModel selected;
 
-    public TCResultPanel(final String id, TCListModel model) {
+    public TCResultPanel(final String id, final TCListModel model) {
         super(id, model != null ? model : new TCListModel());
 
         setOutputMarkupId(true);
 
         stPermHelper = StudyPermissionHelper.get();
-
+        
         initWebviewerLinkProvider();
+        
         final ModalWindow modalWindow = new ModalWindow("modal-window");
         add(modalWindow);
-        
+          
         final SortableTCListProvider tclistProvider = new SortableTCListProvider(
                 (TCListModel) getDefaultModel());
 
@@ -120,7 +125,7 @@ public class TCResultPanel extends Panel {
                 tclistProvider) {
 
             private static final long serialVersionUID = 1L;
-
+            
             private final StudyListLocal dao = (StudyListLocal) JNDIUtils
                     .lookup(StudyListLocal.JNDI_NAME);
 
@@ -165,37 +170,40 @@ public class TCResultPanel extends Panel {
                             dao.findStudyPermissionActions(stuid,
                                     stPermHelper.getDicomRoles()));
                 }
-
+                
                 item.add(Webviewer.getLink(tc, webviewerLinkProviders,
                         stPermHelper,
                         new TooltipBehaviour("tc.result.table.", "webviewer"), modalWindow)
                         .add(new SecurityBehavior(TCPanel.getModuleName()
                                 + ":webviewerInstanceLink")));
 
-                item.add(new AbstractDefaultAjaxBehavior() {
-
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    protected void respond(AjaxRequestTarget target) {
-                        target.addComponent(item);
-                    }
-
-                    @Override
-                    protected void onComponentTag(ComponentTag tag) {
-                        super.onComponentTag(tag);
-
-                        if (selected != null && selected.equals(tc)) {
-                            tag.put("class", "mouse-out-selected");
-                        } else {
-                            tag.put("class",
-                                    item.getIndex() % 2 == 1 ? "even-mouse-out"
-                                            : "odd-mouse-out");
+                item.add(new AjaxLink<String>("tc-view") {
+                        private static final long serialVersionUID = 1L;
+                        @Override
+                        public void onClick(AjaxRequestTarget target) {
+                            openTC(tc, false, target);
                         }
                     }
-                });
+                   .add(new Image("tcViewImg", ImageManager.IMAGE_COMMON_DICOM_DETAILS)
+                   .add(new ImageSizeBehaviour("vertical-align: middle;")))
+                   .add(new TooltipBehaviour("tc.result.table.","view"))
+                );
+                
+                final Component editLink = new AjaxLink<String>("tc-edit") {
+                    private static final long serialVersionUID = 1L;
+                    @Override
+                    public void onClick(AjaxRequestTarget target) {
+                        openTC(tc, true, target);
+                    }
+                }
+               .add(new Image("tcEditImg", ImageManager.IMAGE_COMMON_DICOM_EDIT)
+               .add(new ImageSizeBehaviour("vertical-align: middle;")))
+               .add(new TooltipBehaviour("tc.result.table.","edit"))
+               .add(new SecurityBehavior(TCPanel.getModuleName() + ":editTC"));
+               
+                item.add(editLink);
 
-                item.add(new AttributeModifier("onmouseover", true,
+                item.add(new AttributeModifier("class", true,
                         new AbstractReadOnlyModel<String>() {
 
                             private static final long serialVersionUID = 1L;
@@ -203,11 +211,33 @@ public class TCResultPanel extends Panel {
                             @Override
                             public String getObject() {
                                 if (selected != null && selected.equals(tc)) {
-                                    return "this.className='mouse-over-selected'";
+                                    return "mouse-out-selected";
                                 } else {
-                                    return (item.getIndex() % 2 == 1) ? "this.className='even-mouse-over'"
-                                            : "this.className='odd-mouse-over'";
+                                    return item.getIndex() % 2 == 1 ? 
+                                            "even-mouse-out" : "odd-mouse-out";
                                 }
+                            }
+                        }));
+                
+                if (selected!=null && selected.equals(tc))
+                {
+                    item.add(new AttributeModifier("selected", true, new Model<String>("selected")));
+                }
+                
+                item.add(new AttributeModifier("onmouseover", true,
+                        new AbstractReadOnlyModel<String>() {
+
+                            private static final long serialVersionUID = 1L;
+
+                            @Override
+                            public String getObject() {
+                                StringBuffer sbuf = new StringBuffer();
+                                sbuf.append("if ($(this).attr('selected')==null) {");
+                                sbuf.append("   $(this).removeClass();");
+                                sbuf.append("   if (").append(item.getIndex()).append("%2==1) $(this).addClass('even-mouse-over');");
+                                sbuf.append("   else $(this).addClass('odd-mouse-over');");
+                                sbuf.append("}");
+                                return sbuf.toString();
                             }
                         }));
 
@@ -218,30 +248,46 @@ public class TCResultPanel extends Panel {
 
                             @Override
                             public String getObject() {
-                                if (selected != null && selected.equals(tc)) {
-                                    return "this.className='mouse-out-selected'";
-                                } else {
-                                    return (item.getIndex() % 2 == 1) ? "this.className='even-mouse-out'"
-                                            : "this.className='odd-mouse-out'";
-                                }
+                                StringBuffer sbuf = new StringBuffer();
+                                sbuf.append("if ($(this).attr('selected')==null) {");
+                                sbuf.append("   $(this).removeClass();");
+                                sbuf.append("   if (").append(item.getIndex()).append("%2==1) $(this).addClass('even-mouse-out');");
+                                sbuf.append("   else $(this).addClass('odd-mouse-out');");
+                                sbuf.append("}");
+                                return sbuf.toString();
                             }
                         }));
-
+                
                 item.add(new AjaxEventBehavior("onclick") {
-
-                    private static final long serialVersionUID = 1L;
-
                     @Override
-                    public void onEvent(AjaxRequestTarget target) {
-                        selected = tc;
-
-                        Component toUpdate = selectionChanged(tc);
-
-                        if (toUpdate != null && target != null) {
-                            target.addComponent(toUpdate);
+                    protected void onEvent(AjaxRequestTarget target)
+                    {
+                        Component[] toUpdate = selectTC(tc);
+                        
+                        if (toUpdate!=null && toUpdate.length>0)
+                        {
+                            for (Component c : toUpdate)
+                            {
+                                target.addComponent(c);
+                            }
                         }
-
-                        target.addComponent(TCResultPanel.this);
+                        
+                        target.appendJavascript("selectTC('"+item.getMarkupId()+
+                                "','mouse-out-selected','even-mouse-out','odd-mouse-out')");
+                    }
+                });
+                
+                item.add(new AjaxEventBehavior("ondblclick") {
+                    @Override
+                    protected void onEvent(AjaxRequestTarget target)
+                    {
+                        boolean edit = WebCfgDelegate.getInstance().getTCEditOnDoubleClick();
+                        if (edit)
+                        {
+                            edit = SecureComponentHelper.isAuthenticated(editLink);
+                        }
+                        
+                        openTC(selected, edit, target);
                     }
                 });
             }
@@ -349,14 +395,33 @@ public class TCResultPanel extends Panel {
 
         add(new PagingNavigator("navigator", dataView));
     }
-
-    protected Component selectionChanged(TCModel tc) {
-        /* do nothing by default */
-        return null;
-    }
-
+    
     public void clearSelected() {
         selected = null;
+    }
+    
+    
+    protected Component[] selectionChanged(TCModel tc)
+    {
+        return null;
+    }
+    
+    protected Component[] selectTC(TCModel tc)
+    {
+        if (selected==null || 
+            !selected.getSOPInstanceUID().equals(tc.getSOPInstanceUID()))
+        {
+            selected = tc;
+            
+            return selectionChanged(tc);
+        }
+        
+        return null;
+    }
+    
+    protected void openTC(TCModel tc, boolean edit, AjaxRequestTarget target)
+    {
+        /* do nothing by default */
     }
 
     private void initWebviewerLinkProvider() {
@@ -380,6 +445,7 @@ public class TCResultPanel extends Panel {
             }
         }
     }
+    
 
     public static class TCListModel extends Model<ArrayList<TCModel>> {
 
@@ -406,8 +472,14 @@ public class TCResultPanel extends Panel {
             if (instances != null && !instances.isEmpty()) {
                 ArrayList<TCModel> models = new ArrayList<TCModel>(
                         instances.size());
+                List<String> iuids = new ArrayList<String>(instances.size());
                 for (Instance instance : instances) {
-                    models.add(new TCModel(instance));
+                    iuids.add(instance.getSOPInstanceUID());
+                    if (!GlobalTCFilter.getInstance().isFiltered(instance))
+                    {
+                        TCModel model = new TCModel(instance);
+                        models.add(model);
+                    }
                 }
                 return models;
             } else {
@@ -421,6 +493,34 @@ public class TCResultPanel extends Panel {
 
                 setObject(load());
             }
+        }
+        
+        public void addToFilter(TCModel tc)
+        {
+            GlobalTCFilter.getInstance().addByUID(
+                    tc.getSOPInstanceUID(), true);
+        }
+        
+        public void removeFromFilter(TCModel tc)
+        {
+            GlobalTCFilter.getInstance().removeByUID(
+                    tc.getSOPInstanceUID());
+        }
+        
+        public TCModel findByIUID(String iuid)
+        {
+            List<TCModel> list = getObject();
+            if (list!=null)
+            {
+                for (TCModel tc : list)
+                {
+                    if (iuid.equals(tc.getSOPInstanceUID()))
+                    {
+                        return tc;
+                    }
+                }
+            }
+            return null;
         }
 
         private List<Instance> doSearch(TCQueryFilter filter) {
@@ -441,6 +541,7 @@ public class TCResultPanel extends Panel {
         }
     }
 
+    
     public class SortableTCListProvider extends SortableDataProvider<TCModel> {
 
         private static final long serialVersionUID = 1L;
@@ -516,6 +617,139 @@ public class TCResultPanel extends Panel {
             }
 
             return null;
+        }
+    }
+    
+    private static class GlobalTCFilter
+    {
+        private static GlobalTCFilter instance;
+        
+        //after a period of 5min. expired instances are no longer filtered out
+        //and are going to be autom. removed from the map
+        private static final long IUID_EXPIRE_PERIOD = 300000;
+        
+        private Map<String, Long> iuidsExpire;
+        private List<String> iuids;
+        
+        private GlobalTCFilter()
+        {
+            iuids = new ArrayList<String>();
+            iuidsExpire = new HashMap<String, Long>(10);
+         }
+        
+        public static synchronized GlobalTCFilter getInstance()
+        {
+            if (instance==null)
+            {
+                instance = new GlobalTCFilter();
+            }
+            return instance;
+        }
+        
+        public Collection<String> getFilteredOutUIDs()
+        {
+            List<String> list = new ArrayList<String>();
+            if (iuids!=null)
+            {
+                list.addAll(iuids);
+            }
+            if (iuidsExpire!=null)
+            {
+                list.addAll(iuidsExpire.keySet());
+            }
+            return list;
+        }
+        
+        public synchronized boolean isFiltered(Instance instance)
+        {
+            //check by instance uid
+            String iuid = instance.getSOPInstanceUID();
+            if (iuidsExpire!=null && iuidsExpire.containsKey(iuid))
+            {
+                Long timestamp = iuidsExpire.get(iuid);
+                if (timestamp+IUID_EXPIRE_PERIOD>System.currentTimeMillis())
+                {
+                    return true;
+                }
+                else
+                {
+                    iuidsExpire.remove(iuid);
+                    if (iuidsExpire.isEmpty())
+                    {
+                        iuidsExpire=null;
+                    }
+                }
+            }
+            if (iuids!=null && iuids.contains(iuid))
+            {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        public synchronized void addByUID(String iuid, boolean expire)
+        {
+            if (expire)
+            {
+                if (iuidsExpire==null)
+                {
+                    iuidsExpire = new HashMap<String, Long>();
+                }
+                
+                iuidsExpire.put(iuid, System.currentTimeMillis());   
+                
+                if (iuids!=null)
+                {
+                    iuids.remove(iuid);
+                    
+                    if (iuids.isEmpty())
+                    {
+                        iuids = null;
+                    }
+                }
+            }
+            else
+            {
+                if (iuids==null)
+                {
+                    iuids = new ArrayList<String>(10);
+                }
+                if (!iuids.contains(iuid))
+                {
+                    iuids.add(iuid);
+                    
+                    if (iuidsExpire!=null)
+                    {
+                        iuidsExpire.remove(iuid);
+                        
+                        if (iuidsExpire.isEmpty())
+                        {
+                            iuidsExpire=null;
+                        }
+                    }
+                }
+            }
+        }
+        
+        public synchronized void removeByUID(String iuid)
+        {
+            if (iuidsExpire!=null)
+            {
+                iuidsExpire.remove(iuid);
+                if (iuidsExpire.isEmpty())
+                {
+                    iuidsExpire = null;
+                }
+            }
+            if (iuids!=null)
+            {
+                iuids.remove(iuid);
+                if (iuids.isEmpty())
+                {
+                    iuids = null;
+                }
+            }
         }
     }
 }

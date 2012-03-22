@@ -5,15 +5,17 @@
 </head>
 <body>
     <wicket:panel>
-		<input wicket:id="text" type="text" maxlength="255" class="keyword-input-text"/>
-        <button wicket:id="chooser-button" type="button" class="keyword-chooser-btn">...</button>
-        <div wicket:id="popup-keyword-list" class="popup-keyword-list">
-            <div style="width:100%">
-                <button wicket:id="popup-close-button" type="button" class="popup-close-button">
-                </button>
-			</div>
-			<div class="popup-keyword-list-content" style="clear:both">
-			     <select wicket:id="keyword-list" style="width: 100%; height: 100%" />
+        <div class="tc-keyword-input-container">
+			<input wicket:id="text" type="text" maxlength="255" class="tc-keyword-input-text"/>
+	        <div>
+		        <button wicket:id="chooser-button" type="button" class="tc-keyword-chooser-btn">
+		            <img wicket:id="chooser-button-img"/>
+		        </button>
+	        </div>
+        </div>
+        <div wicket:id="list-keyword-popup" class="tc-popup tc-keyword-popup list-keyword-popup">
+			<div class="tc-popup-content">
+			     <select wicket:id="keyword-list"/>
 		    </div>
 		</div>
     </wicket:panel>

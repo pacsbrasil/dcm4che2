@@ -62,7 +62,8 @@ public enum TCQueryFilterKey {
             "DCM", "121060", "History"), Keyword("IHERADTF", "TCE105",
             "Keywords", true), Level("IHERADTF", "TCE110", "Level"), OrganSystem(
             "IHERADTF", "TCE108", "Organ system"), Pathology("DCM", "111042",
-            "Pathology", true), PatientSex("AGFAIMPAXEE", "TF102",
+            "Pathology", true), PatientAge("AGFAIMPAXEE", "TF101",
+            "Patient Age"), PatientSex("AGFAIMPAXEE", "TF102",
             "Patient Sex"), PatientSpecies("AGFAIMPAXEE", "TF103",
             "Patient Species"), BibliographicReference("AGFAIMPAXEE", "TF005",
             "Bibliographic Reference"), Title("AGFAIMPAXEE", "TF001", "Title");

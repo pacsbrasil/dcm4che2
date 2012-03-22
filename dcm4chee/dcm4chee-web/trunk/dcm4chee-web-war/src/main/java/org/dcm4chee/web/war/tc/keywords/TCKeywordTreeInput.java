@@ -48,33 +48,31 @@ import javax.swing.tree.TreeNode;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
-import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxButton;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteSettings;
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteTextField;
 import org.apache.wicket.extensions.markup.html.tree.DefaultAbstractTree.LinkType;
 import org.apache.wicket.extensions.markup.html.tree.Tree;
-import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.TextField;
-import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.convert.IConverter;
-import org.dcm4chee.web.war.tc.TCPanel;
-import org.dcm4chee.web.war.tc.TCPanel.PopupCloseables;
-import org.dcm4chee.web.war.tc.TCPanel.PopupCloseables.IPopupCloseable;
-import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue.TCKeywordInput;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.web.war.tc.TCPopupManager.AbstractTCPopup;
+import org.dcm4chee.web.war.tc.TCPopupManager.TCPopupPosition;
+import org.dcm4chee.web.war.tc.TCPopupManager.TCPopupPosition.PopupAlign;
+import org.dcm4chee.web.war.tc.TCUtilities;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
  * @version $Revision$ $Date$
  * @since June 20, 2011
  */
-public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
+public class TCKeywordTreeInput extends AbstractTCKeywordInput {
 
     private static final long serialVersionUID = 1L;
 
@@ -84,9 +82,21 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
 
     public TCKeywordTreeInput(final String id, TCKeyword selectedKeyword,
             final TCKeywordNode root) {
-        super(id, selectedKeyword != null ? new Model<TCKeyword>(
-                selectedKeyword) : new Model<TCKeyword>());
+        super(id);
 
+        setDefaultModel(new Model<TCKeyword>(selectedKeyword) {
+            @Override
+            public void setObject(TCKeyword keyword)
+            {
+                if (!TCUtilities.equals(getObject(),keyword))
+                {
+                    super.setObject(keyword);
+                    
+                    fireValueChanged();
+                }
+            }
+        });
+        
         final AutoCompleteTextField<TCKeyword> text = new AutoCompleteTextField<TCKeyword>(
                 "text", getModel(), TCKeyword.class, new AutoCompleteSettings()) {
 
@@ -130,8 +140,18 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
             }
         };
         text.setOutputMarkupId(true);
-
-        final TreePopupCloseable popup = new TreePopupCloseable(text);
+        text.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+            @Override
+            public void onUpdate(AjaxRequestTarget target)
+            {
+                text.updateModel();
+            }
+        });
+        
+        final KeywordTreePopup popup = new KeywordTreePopup(text);
+        final Button chooserBtn = new Button("chooser-button", new Model<String>("..."));
+        chooserBtn.add(new Image("chooser-button-img", ImageManager.IMAGE_TC_ARROW_DOWN)
+        .setOutputMarkupId(true));
 
         final Tree tree = new Tree("keyword-tree", new DefaultTreeModel(root)) {
 
@@ -152,7 +172,8 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
             @Override
             public void onNodeLinkClicked(AjaxRequestTarget target,
                     TreeNode node) {
-                popup.close(target, node, true);
+                popup.setSelectedNode((TCKeywordNode)node);
+                popup.hide(target);
             }
         };
 
@@ -161,73 +182,30 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
         tree.setLinkType(LinkType.AJAX);
         tree.getTreeState().setAllowSelectMultiple(false);
 
-        PopupCloseables.getInstance().addCloseable(popup);
-
-        popup.add(new AjaxFallbackLink<String>("popup-close-button") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                popup.close(target, null, false);
-            }
-        });
-
-        popup.setTree(tree);
+        popup.setTree(root, tree);
         popup.add(tree);
-
+        popup.installPopupTrigger(chooserBtn, new TCPopupPosition(
+                chooserBtn.getMarkupId(),
+                popup.getMarkupId(), 
+                PopupAlign.BottomLeft, PopupAlign.TopLeft));
+        
         add(text);
-        add(new AjaxButton("chooser-button", new Model<String>("...")) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                TCKeyword keyword = TCKeywordTreeInput.this
-                        .getSelectedKeyword();
-                TCKeywordNode toSelect = findNode(root, keyword);
-
-                if (toSelect != null) {
-                    tree.getTreeState().selectNode(toSelect, true);
-
-                    ensurePathExpanded(tree, toSelect);
-                } else {
-                    Collection<Object> selectedNodes = tree.getTreeState()
-                            .getSelectedNodes();
-                    if (selectedNodes != null && !selectedNodes.isEmpty()) {
-                        for (Object node : selectedNodes) {
-                            tree.getTreeState().selectNode(node, false);
-                        }
-                    }
-                }
-
-                PopupCloseables.getInstance().closeAll(target);
-                // PopupCloseables.getInstance().setIgnoreNextClose(popup,
-                // true);
-
-                popup.setVisible(true);
-                target.addComponent(popup);
-                target.addComponent(tree);
-
-                target.appendJavascript("setPositionRelativeToParent('"
-                        + getMarkupId() + "','" + popup.getMarkupId() + "')");
-            }
-        });
+        add(chooserBtn);
         add(popup);
     }
 
     @Override
-    public TCKeyword getSelectedKeyword() {
+    public TCKeyword getKeyword() {
         return getModel().getObject();
     }
 
     @Override
-    public void resetSelectedKeyword() {
+    public void resetKeyword() {
         getModel().setObject(null);
     }
 
     @Override
-    public Component getComponent() {
+    public Component getInputComponent() {
         return this;
     }
 
@@ -309,63 +287,70 @@ public class TCKeywordTreeInput extends Panel implements TCKeywordInput {
         return null;
     }
 
-    private class TreePopupCloseable extends WebMarkupContainer implements
-            IPopupCloseable {
+    private class KeywordTreePopup extends AbstractTCPopup 
+    {
+        private TCKeywordNode root;
+        private TCKeywordNode lastSelectedNode;
         private Tree tree;
-
         private TextField<TCKeyword> text;
 
-        public TreePopupCloseable(TextField<TCKeyword> text) {
-            super("popup-keyword-tree");
-
+        public KeywordTreePopup(TextField<TCKeyword> text) 
+        {
+            super("tree-keyword-popup", true, true, true, true);
             this.text = text;
-
-            setOutputMarkupId(true);
-            setOutputMarkupPlaceholderTag(true);
-            setVisible(false);
         }
 
-        public void setTree(Tree tree) {
+        public void setTree(TCKeywordNode root, Tree tree) {
+            this.root = root;
             this.tree = tree;
         }
-
-        @Override
-        public boolean isClosed() {
-            return !isVisible();
+        
+        public void setSelectedNode(TCKeywordNode node)
+        {
+            this.lastSelectedNode = node;
         }
-
+        
         @Override
-        public void close(AjaxRequestTarget target) {
-            Collection<Object> selNodes = tree != null ? tree.getTreeState()
-                    .getSelectedNodes() : null;
-            close(target, selNodes != null && !selNodes.isEmpty() ? selNodes
-                    .iterator().next() : null, true);
-        }
+        public void afterShowing(AjaxRequestTarget target)
+        {
+            TCKeyword keyword = TCKeywordTreeInput.this.getKeyword();
+            TCKeywordNode toSelect = findNode(root, keyword);
 
-        public void close(AjaxRequestTarget target, Object node,
-                boolean updateSelection) {
-            if (updateSelection) {
-                TCKeywordNode n = node instanceof TCKeywordNode ? (TCKeywordNode) node
-                        : null;
-                TCKeyword keyword = n != null ? n.getKeyword() : null;
-
-                if (keyword != null && keyword.isAllKeywordsPlaceholder()) {
-                    keyword = null;
+            if (toSelect != null) 
+            {
+                lastSelectedNode = toSelect;
+                tree.getTreeState().selectNode(toSelect, true);
+                ensurePathExpanded(tree, toSelect);
+            } 
+            else 
+            {
+                Collection<Object> selectedNodes = tree.getTreeState().getSelectedNodes();
+                if (selectedNodes != null && !selectedNodes.isEmpty()) 
+                {
+                    for (Object node : selectedNodes) 
+                    {
+                        tree.getTreeState().selectNode(node, false);
+                        lastSelectedNode = (TCKeywordNode) node;
+                    }
                 }
-
-                TCKeywordTreeInput.this.getModel().setObject(keyword);
             }
 
-            MarkupContainer parent = TCKeywordTreeInput.this.getParent();
+            target.addComponent(tree);
+        }
 
-            setVisible(false);
-            target.addComponent(this);
+        @Override
+        public void beforeHiding(AjaxRequestTarget target) 
+        {
+            TCKeyword keyword = lastSelectedNode != null ? 
+                    lastSelectedNode.getKeyword() : null;
 
-            if (parent != null) {
-                target.addComponent(parent);
-            } else {
-                target.addComponent(text);
+            if (keyword != null && keyword.isAllKeywordsPlaceholder()) {
+                keyword = null;
             }
+
+            TCKeywordTreeInput.this.getModel().setObject(keyword);
+
+            target.addComponent(text);
         }
     }
 }

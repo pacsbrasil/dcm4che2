@@ -50,6 +50,8 @@ import javax.persistence.Query;
 
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
+import org.dcm4chee.archive.entity.Series;
+import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.QueryParam;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.jboss.annotation.ejb.LocalBinding;
@@ -263,4 +265,22 @@ public class TCQueryBean implements TCQueryLocal {
         return instances;
     }
 
+    public Study findStudyByUID(String stuid) {
+        Query q = em.createQuery("SELECT DISTINCT study FROM Study AS study LEFT JOIN FETCH study.series s LEFT JOIN FETCH s.instances WHERE study.studyInstanceUID = :stuid");
+        q.setParameter("stuid", stuid);
+        return (Study) q.getSingleResult();
+    }
+    
+    public Series findSeriesByUID(String suid) {
+        Query q = em.createQuery("SELECT DISTINCT s FROM Series s LEFT JOIN FETCH s.study LEFT JOIN FETCH s.instances WHERE s.seriesInstanceUID = :suid");
+        q.setParameter("suid", suid);
+        return (Series) q.getSingleResult();
+    }
+    
+    public Instance findInstanceByUID(String iuid) {
+        
+        Query q = em.createQuery("FROM Instance i LEFT JOIN FETCH i.series s LEFT JOIN FETCH s.study WHERE i.sopInstanceUID = :iuid");
+        q.setParameter("iuid", iuid);
+        return (Instance) q.getSingleResult();
+    }
 }

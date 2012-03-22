@@ -2,6 +2,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "L
 {
 // KEY: swarm.principal.LoginAllowed
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.tc.imageview.TCImageViewPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.ChangePasswordPanel", "render, enable";
 };
 
@@ -122,6 +123,14 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "T
 {
 // KEY: swarm.principal.TCRead
     permission ${ComponentPermission} "org.dcm4chee.web.war.tc.TCPanel", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:tc:webviewerInstanceLink", "render, enable";
+};
+
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "TCEdit"
+{
+// KEY: swarm.principal.TCEdit
+    permission ${ComponentPermission} "org.dcm4chee.web.war.tc.TCPanel", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:tc:editTC", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:tc:webviewerInstanceLink", "render, enable";
 };
 

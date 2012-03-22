@@ -37,9 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc;
 
-import java.io.Serializable;
 import java.util.Arrays;
-import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
@@ -53,16 +51,13 @@ import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
-import org.apache.wicket.markup.html.form.EnumChoiceRenderer;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.Radio;
 import org.apache.wicket.markup.html.form.RadioGroup;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
-import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
-import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.archive.entity.Code;
@@ -72,12 +67,9 @@ import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.dao.tc.TCQueryFilter;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue;
-import org.dcm4chee.web.war.tc.TCDetails.DicomCode;
-import org.dcm4chee.web.war.tc.TCPanel.PopupCloseables;
+import org.dcm4chee.web.war.tc.TCObject.DicomCode;
+import org.dcm4chee.web.war.tc.TCUtilities.NullDropDownItem;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
-import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue;
-import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue.TCKeywordInput;
-import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,43 +98,43 @@ public abstract class TCSearchPanel extends Panel {
 
         setOutputMarkupId(true);
 
-        final IKeywordAwareInput keywordInput = createKeywordInput(
-                "keywordInput", TCQueryFilterKey.Keyword);
-        final IKeywordAwareInput anatomyInput = createKeywordInput(
-                "anatomyInput", TCQueryFilterKey.Anatomy);
-        final IKeywordAwareInput pathologyInput = createKeywordInput(
-                "pathologyInput", TCQueryFilterKey.Pathology);
-        final IKeywordAwareInput findingInput = createKeywordInput(
-                "findingInput", TCQueryFilterKey.Finding);
-        final IKeywordAwareInput diagnosisInput = createKeywordInput(
-                "diagnosisInput", TCQueryFilterKey.Diagnosis);
-        final IKeywordAwareInput diffDiagnosisInput = createKeywordInput(
-                "diffDiagnosisInput", TCQueryFilterKey.DifferentialDiagnosis);
+        final TCInput keywordInput = TCUtilities.createInput(
+                "keywordInput", TCQueryFilterKey.Keyword, getFilterValue(TCQueryFilterKey.Keyword));
+        final TCInput anatomyInput = TCUtilities.createInput(
+                "anatomyInput", TCQueryFilterKey.Anatomy, getFilterValue(TCQueryFilterKey.Anatomy));
+        final TCInput pathologyInput = TCUtilities.createInput(
+                "pathologyInput", TCQueryFilterKey.Pathology, getFilterValue(TCQueryFilterKey.Pathology));
+        final TCInput findingInput = TCUtilities.createInput(
+                "findingInput", TCQueryFilterKey.Finding, getFilterValue(TCQueryFilterKey.Finding));
+        final TCInput diagnosisInput = TCUtilities.createInput(
+                "diagnosisInput", TCQueryFilterKey.Diagnosis, getFilterValue(TCQueryFilterKey.Diagnosis));
+        final TCInput diffDiagnosisInput = TCUtilities.createInput(
+                "diffDiagnosisInput", TCQueryFilterKey.DifferentialDiagnosis, getFilterValue(TCQueryFilterKey.DifferentialDiagnosis));
         final TextField<String> textText = new TextField<String>("textText",
                 new Model<String>(""));
 
-        final DropDownChoice<TCQueryFilterValue.AcquisitionModality> modalityChoice = createEnumDropDownChoice(
+        final DropDownChoice<TCQueryFilterValue.AcquisitionModality> modalityChoice = TCUtilities.createEnumDropDownChoice(
                 "modalityChoice",
                 new Model<TCQueryFilterValue.AcquisitionModality>(),
                 Arrays.asList(TCQueryFilterValue.AcquisitionModality.values()),
-                false, null);
-        final DropDownChoice<TCQueryFilterValue.PatientSex> patientSexChoice = createEnumDropDownChoice(
+                false, null, NullDropDownItem.All);
+        final DropDownChoice<TCQueryFilterValue.PatientSex> patientSexChoice = TCUtilities.createEnumDropDownChoice(
                 "patientSexChoice", new Model<TCQueryFilterValue.PatientSex>(),
                 Arrays.asList(TCQueryFilterValue.PatientSex.values()), true,
-                "tc.patientsex");
-        final DropDownChoice<TCQueryFilterValue.Category> categoryChoice = createEnumDropDownChoice(
+                "tc.patientsex", NullDropDownItem.All);
+        final DropDownChoice<TCQueryFilterValue.Category> categoryChoice = TCUtilities.createEnumDropDownChoice(
                 "categoryChoice", new Model<TCQueryFilterValue.Category>(),
                 Arrays.asList(TCQueryFilterValue.Category.values()), true,
-                "tc.category");
-        final DropDownChoice<TCQueryFilterValue.Level> levelChoice = createEnumDropDownChoice(
+                "tc.category", NullDropDownItem.All);
+        final DropDownChoice<TCQueryFilterValue.Level> levelChoice = TCUtilities.createEnumDropDownChoice(
                 "levelChoice", new Model<TCQueryFilterValue.Level>(),
                 Arrays.asList(TCQueryFilterValue.Level.values()), true,
-                "tc.level");
-        final DropDownChoice<TCQueryFilterValue.YesNo> diagnosisConfirmedChoice = createEnumDropDownChoice(
+                "tc.level", NullDropDownItem.All);
+        final DropDownChoice<TCQueryFilterValue.YesNo> diagnosisConfirmedChoice = TCUtilities.createEnumDropDownChoice(
                 "diagnosisConfirmedChoice",
                 new Model<TCQueryFilterValue.YesNo>(),
                 Arrays.asList(TCQueryFilterValue.YesNo.values()), true,
-                "tc.yesno");
+                "tc.yesno", NullDropDownItem.All);
 
         final RadioGroup<Option> optionGroup = new RadioGroup<Option>(
                 "optionGroup", new Model<Option>());
@@ -170,15 +162,13 @@ public abstract class TCSearchPanel extends Panel {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                // close popups
-                PopupCloseables.getInstance().closeAll(target);
-
                 try {
                     TCQueryFilter filter = (TCQueryFilter) TCSearchPanel.this
                             .getDefaultModelObject();
                     filter.clear();
 
-                    Object keywordInputValue = keywordInput.getSearchObject();
+                    Object keywordInputValue = getConvertedKeywordInputValue(
+                            keywordInput.getInputValue());
                     if (keywordInputValue != null) {
                         if (Code.class.equals(keywordInputValue.getClass())) {
                             filter.setKeywordCode((Code) keywordInputValue);
@@ -188,7 +178,8 @@ public abstract class TCSearchPanel extends Panel {
                         }
                     }
 
-                    Object anatomyInputValue = anatomyInput.getSearchObject();
+                    Object anatomyInputValue = getConvertedKeywordInputValue(
+                            anatomyInput.getInputValue());
                     if (anatomyInputValue != null) {
                         if (Code.class.equals(anatomyInputValue.getClass())) {
                             filter.setAnatomyCode((Code) anatomyInputValue);
@@ -198,8 +189,8 @@ public abstract class TCSearchPanel extends Panel {
                         }
                     }
 
-                    Object pathologyInputValue = pathologyInput
-                            .getSearchObject();
+                    Object pathologyInputValue = getConvertedKeywordInputValue(
+                            pathologyInput.getInputValue());
                     if (pathologyInputValue != null) {
                         if (Code.class.equals(pathologyInputValue.getClass())) {
                             filter.setPathologyCode((Code) pathologyInputValue);
@@ -209,7 +200,8 @@ public abstract class TCSearchPanel extends Panel {
                         }
                     }
 
-                    Object findingInputValue = findingInput.getSearchObject();
+                    Object findingInputValue = getConvertedKeywordInputValue(
+                            findingInput.getInputValue());
                     if (findingInputValue != null) {
                         if (Code.class.equals(findingInputValue.getClass())) {
                             filter.setFindingCode((Code) findingInputValue);
@@ -219,8 +211,8 @@ public abstract class TCSearchPanel extends Panel {
                         }
                     }
 
-                    Object diagnosisInputValue = diagnosisInput
-                            .getSearchObject();
+                    Object diagnosisInputValue = getConvertedKeywordInputValue(
+                            diagnosisInput.getInputValue());
                     if (diagnosisInputValue != null) {
                         if (Code.class.equals(diagnosisInputValue.getClass())) {
                             filter.setDiagnosisCode((Code) diagnosisInputValue);
@@ -230,8 +222,8 @@ public abstract class TCSearchPanel extends Panel {
                         }
                     }
 
-                    Object diffDiagnosisInputValue = diffDiagnosisInput
-                            .getSearchObject();
+                    Object diffDiagnosisInputValue = getConvertedKeywordInputValue(
+                            diffDiagnosisInput.getInputValue());
                     if (diffDiagnosisInputValue != null) {
                         if (Code.class.equals(diffDiagnosisInputValue
                                 .getClass())) {
@@ -287,6 +279,8 @@ public abstract class TCSearchPanel extends Panel {
                             target.addComponent(c);
                         }
                     }
+                    
+                    target.appendJavascript("updateKeywordChooserButtons();");
                 } catch (Throwable t) {
                     log.error("Searching for teaching-files failed!", t);
                 }
@@ -327,18 +321,16 @@ public abstract class TCSearchPanel extends Panel {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                PopupCloseables.getInstance().closeAll(target);
-
                 TCQueryFilter filter = (TCQueryFilter) TCSearchPanel.this
                         .getDefaultModelObject();
                 filter.clear();
 
-                keywordInput.resetSearchObject();
-                anatomyInput.resetSearchObject();
-                pathologyInput.resetSearchObject();
-                findingInput.resetSearchObject();
-                diagnosisInput.resetSearchObject();
-                diffDiagnosisInput.resetSearchObject();
+                keywordInput.resetInputValue();
+                anatomyInput.resetInputValue();
+                pathologyInput.resetInputValue();
+                findingInput.resetInputValue();
+                diagnosisInput.resetInputValue();
+                diffDiagnosisInput.resetInputValue();
                 modalityChoice.setModelObject(null);
                 levelChoice.setModelObject(null);
                 patientSexChoice.setModelObject(null);
@@ -348,6 +340,7 @@ public abstract class TCSearchPanel extends Panel {
                 optionGroup.setModelObject(null);
 
                 target.addComponent(form);
+                target.appendJavascript("updateKeywordChooserButtons();");
             }
 
             @Override
@@ -392,6 +385,11 @@ public abstract class TCSearchPanel extends Panel {
 
                 target.addComponent(wmc);
                 target.addComponent(this);
+                
+                if (showAdvancedOptions)
+                {
+                    target.appendJavascript("updateKeywordChooserButtons();");
+                }
             }
         }.add(new Label("advancedOptionsToggleText",
                 new AbstractReadOnlyModel<String>() {
@@ -446,119 +444,48 @@ public abstract class TCSearchPanel extends Panel {
                     }
                 })).add(new ImageSizeBehaviour())));
     }
+    
+    public void redoSearch(AjaxRequestTarget target)
+    {
+        redoSearch(target, null);
+    }
+    
+    public void redoSearch(AjaxRequestTarget target, String iuid)
+    {
+        Component[] toUpdate = doSearch((TCQueryFilter)getDefaultModel().getObject());
+
+        if (toUpdate != null && target != null) {
+            for (Component c : toUpdate) {
+                target.addComponent(c);
+            }
+        }
+    }
 
     protected abstract Component[] doSearch(TCQueryFilter filter);
 
-    private static <T extends Enum<T>> DropDownChoice<T> createEnumDropDownChoice(
-            final String id, IModel<T> model, List<T> options,
-            boolean localizeValues, final String localizePrefix) {
-        DropDownChoice<T> choice = new DropDownChoice<T>(id, model, options) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected String getNullValidKey() {
-                return TCPanel.ModuleName + ".search.null.text";
+    private Object getFilterValue(TCQueryFilterKey key)
+    {
+        TCQueryFilter filter = (TCQueryFilter) getDefaultModelObject();
+        return filter != null ? filter.getValue(key) : null;
+    }
+    
+    private Object getConvertedKeywordInputValue(Object value)
+    {
+        if (value instanceof TCKeyword)
+        {
+            TCKeyword kw = (TCKeyword) value;
+            
+            if (kw != null) {
+                DicomCode code = kw.getCode();
+                if (kw.isValid() && code != null) {
+                    return code.toCode();
+                } else {
+                    String s = kw.getName();
+                    return s != null && s.length() > 0 ? s : null;
+                }
             }
-        };
-
-        choice.setNullValid(true);
-
-        if (localizeValues) {
-            choice.setChoiceRenderer(new EnumChoiceRenderer<T>(choice) {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected String resourceKey(T object) {
-                    String key = localizePrefix != null ? localizePrefix + "."
-                            + object.name() : object.name();
-
-                    return key.toLowerCase();
-                }
-            });
         }
 
-        return choice;
-    }
-
-    private IKeywordAwareInput createKeywordInput(final String componentId,
-            TCQueryFilterKey key) {
-        TCKeywordCatalogueProvider p = TCKeywordCatalogueProvider.getInstance();
-
-        if (p.hasCatalogue(key)) {
-            TCKeywordCatalogue cat = p.getCatalogue(key);
-            TCQueryFilter filter = (TCQueryFilter) getDefaultModelObject();
-            Object value = filter != null ? filter.getValue(key) : null;
-            TCKeyword keyword = value instanceof Code ? cat
-                    .findKeyword(((Code) value).getCodeValue()) : null;
-
-            final TCKeywordInput input = cat.createInput(componentId, keyword);
-
-            return new IKeywordAwareInput() {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public Object getSearchObject() {
-                    TCKeyword kw = input.getSelectedKeyword();
-                    if (kw != null) {
-                        DicomCode code = kw.getCode();
-                        if (kw.isValid() && code != null) {
-                            return code.toCode();
-                        } else {
-                            String s = kw.getName();
-                            return s != null && s.length() > 0 ? s : null;
-                        }
-                    }
-
-                    return null;
-                }
-
-                @Override
-                public void resetSearchObject() {
-                    input.resetSelectedKeyword();
-                }
-
-                @Override
-                public Component getInputComponent() {
-                    return input.getComponent();
-                }
-            };
-        } else {
-            final TextField<String> tf = new TextField<String>("text",
-                    new Model<String>(""));
-            final Fragment fragment = new Fragment(componentId, "text-input",
-                    TCSearchPanel.this);
-            fragment.add(tf);
-
-            return new IKeywordAwareInput() {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public Object getSearchObject() {
-                    return tf.getDefaultModelObjectAsString();
-                }
-
-                @Override
-                public void resetSearchObject() {
-                    tf.setDefaultModelObject(null);
-                }
-
-                @Override
-                public Component getInputComponent() {
-                    return fragment;
-                }
-            };
-        }
-    }
-
-    private interface IKeywordAwareInput extends Serializable {
-        public Object getSearchObject();
-
-        public void resetSearchObject();
-
-        public Component getInputComponent();
+        return value;
     }
 }

@@ -137,7 +137,7 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
     @Test
     public void testDocRoles() {
         checkRoles( "doc", new String[]{"FolderActions","Dashboard","MWLRead","FolderRead","MWLWrite","FolderWrite",
-                "LoginAllowed","StudyPermissionsWrite","TrashActions","TrashRead","TCRead"});
+                "LoginAllowed","StudyPermissionsWrite","TrashActions","TrashRead","TCRead","TCEdit"});
     }
     @Test
     public void testGuestRoles() {

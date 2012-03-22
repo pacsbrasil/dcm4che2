@@ -53,7 +53,6 @@ import org.apache.wicket.model.Model;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.web.war.common.WadoImage;
 import org.dcm4chee.web.war.folder.delegate.WADODelegate;
-import org.dcm4chee.web.war.tc.TCDetails.InstanceRef;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -76,14 +75,15 @@ public class TCDetailsImagesTab extends Panel {
         final int cols = 5;
         final int rows = 5;
 
-        GridView<InstanceRef> view = new GridView<InstanceRef>(
-                "details-image-row", new ReferencedImageProvider()) {
+        final ReferencedImageProvider imageProvider = new ReferencedImageProvider();
+        GridView<TCReferencedInstance> view = new GridView<TCReferencedInstance>(
+                "details-image-row", imageProvider) {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            protected void populateItem(final Item<InstanceRef> item) {
-                InstanceRef ref = item.getModelObject();
+            protected void populateItem(final Item<TCReferencedInstance> item) {
+                TCReferencedInstance ref = item.getModelObject();
 
                 if (WADODelegate.getInstance().getRenderType(ref.getClassUID()) == WADODelegate.IMAGE) {
                     item.add(
@@ -98,7 +98,7 @@ public class TCDetailsImagesTab extends Panel {
             }
 
             @Override
-            protected void populateEmptyItem(final Item<InstanceRef> item) {
+            protected void populateEmptyItem(final Item<TCReferencedInstance> item) {
                 item.add(new Image("image",
                         ImageManager.IMAGE_TC_IMAGE_PLACEHOLDER)
                         .setOutputMarkupId(true));
@@ -114,9 +114,7 @@ public class TCDetailsImagesTab extends Panel {
 
             @Override
             public boolean isVisible() {
-                TCDetails o = getTCObject();
-                int nImages = o != null ? o.getReferencedImages().size() : 0;
-
+                int nImages = imageProvider.size();
                 return nImages > cols * rows;
             }
         };
@@ -128,23 +126,20 @@ public class TCDetailsImagesTab extends Panel {
         add(view);
     }
 
-    private TCDetails getTCObject() {
-        return (TCDetails) getDefaultModelObject();
+    private TCObject getTCObject() {
+        return (TCObject) getDefaultModelObject();
     }
 
-    public class ReferencedImageProvider implements IDataProvider<InstanceRef> {
+    public class ReferencedImageProvider implements IDataProvider<TCReferencedInstance> {
 
         private static final long serialVersionUID = 1L;
 
         @SuppressWarnings({ "unchecked" })
         @Override
-        public Iterator<InstanceRef> iterator(int first, int count) {
-            TCDetails o = getTCObject();
-
-            List<InstanceRef> refs = o != null ? o.getReferencedImages() : null;
-
-            if (refs != null) {
-                return refs.subList(first, first + count).iterator();
+        public Iterator<TCReferencedInstance> iterator(int first, int count) {
+            List<TCReferencedInstance> images = getTCObject().getReferencedImages();
+            if (images != null) {
+                return images.subList(first, first + count).iterator();
             } else {
                 return (Iterator) Collections.emptyList().iterator();
             }
@@ -152,16 +147,13 @@ public class TCDetailsImagesTab extends Panel {
 
         @Override
         public int size() {
-            TCDetails o = getTCObject();
-
-            List<InstanceRef> refs = o != null ? o.getReferencedImages() : null;
-
-            return refs != null ? refs.size() : 0;
+            List<TCReferencedInstance> images = getTCObject().getReferencedImages();
+            return images != null ? images.size() : 0;
         }
 
         @Override
-        public IModel<InstanceRef> model(InstanceRef object) {
-            return new Model<InstanceRef>(object);
+        public IModel<TCReferencedInstance> model(TCReferencedInstance object) {
+            return new Model<TCReferencedInstance>(object);
         }
 
         @Override

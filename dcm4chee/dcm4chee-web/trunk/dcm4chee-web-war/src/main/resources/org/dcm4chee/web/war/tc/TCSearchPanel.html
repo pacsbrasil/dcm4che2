@@ -5,7 +5,7 @@
 </head>
 <body>
     <wicket:panel>
-        <div class="search-header-area">
+        <div class="search-header-area ui-state-active">
             <wicket:message key="tc.search.header.text"/>
             <span class="search-toggle-area">
 	            <a wicket:id="searchToggle" class="search-toggle">
@@ -16,10 +16,10 @@
         <form wicket:id="searchForm" class="search-form">
 			<div class="keyword-area">
 				<wicket:message key="tc.keyword.text" />
-				<div wicket:id="keywordInput" style="display:inline"/>
+				<div wicket:id="keywordInput" style="display: inline-block" />
 				<button wicket:id="doSearchBtn" type="submit">
-					<img wicket:id="doSearchImg" alt="Search" /> 
-					   <span wicket:id="doSearchText" />
+					<img wicket:id="doSearchImg" alt="Search" /> <span
+						wicket:id="doSearchText" />
 				</button>
 			</div>
 			<div class="advanced-options-toggle-area">
@@ -185,10 +185,6 @@
                 </tr></table>
 			</div>
 		</form>
-		
-		<wicket:fragment wicket:id="text-input">
-		  <input wicket:id="text" type="text" maxlength="255" class="keyword-input-freetext"/>
-		</wicket:fragment>
 	</wicket:panel> 
 </body>
 </html>

@@ -37,16 +37,20 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.lang.reflect.Field;
 import java.util.List;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
 import org.dcm4chee.web.dao.tc.TCQueryFilter;
 import org.dcm4chee.web.war.tc.TCResultPanel.TCListModel;
@@ -64,24 +68,99 @@ public class TCPanel extends Panel {
 
     private static final Logger log = LoggerFactory.getLogger(TCPanel.class);
 
-    private static final ResourceReference CSS = new CompressedResourceReference(
-            TCPanel.class, "tc-style.css");
-
+    private static final ResourceReference LAYOUT_CSS = new CompressedResourceReference(
+            TCPanel.class, "css/tc-layout.css");
+    
+    private static final ResourceReference BASE_CSS = new CompressedResourceReference(
+            TCPanel.class, "css/tc-style.css");
+    
+    private static final ResourceReference THEME_CSS = new CompressedResourceReference(
+            TCPanel.class, "css/theme/theme.css");
+    
     public static final String ModuleName = "tc";
 
     private static final MaskingAjaxCallBehavior macb = new MaskingAjaxCallBehavior();
 
+    private TCPopupManager popupManager;
+    
+    private TCSearchPanel searchPanel;
+    
     public TCPanel(final String id) {
         super(id);
 
-        PopupCloseables.getInstance().clear();
-
-        if (TCPanel.CSS != null) {
-            add(CSSPackageResource.getHeaderContribution(TCPanel.CSS));
+        if (TCPanel.LAYOUT_CSS != null) {
+            add(CSSPackageResource.getHeaderContribution(TCPanel.LAYOUT_CSS));
+        }
+        
+        if (TCPanel.BASE_CSS != null) {
+            add(CSSPackageResource.getHeaderContribution(TCPanel.BASE_CSS));
+        }
+        
+        if (TCPanel.THEME_CSS != null) {
+            add(CSSPackageResource.getHeaderContribution(TCPanel.THEME_CSS));
         }
 
-        final TCDetailsPanel detailsPanel = new TCDetailsPanel("details-panel");
+        final ModalWindow viewDialog = new ModalWindow("tc-view-dialog") {
+            @Override
+            public void show(AjaxRequestTarget target)
+            {
+                if (isShown()==false)
+                {
+                    Component content = getContent();
+                    
+                    content.setVisible(true);
+                    target.addComponent(this);
+                    target.appendJavascript(getWindowOpenJavascript().replace(
+                            "Wicket.Window.create", "createTCViewDialog"));
+                    target.appendJavascript("updateTCViewDialog();");
+                    
+                    if (content instanceof TCViewPanel)
+                    {
+                        //disable tabs
+                        TCViewPanel viewPanel = (TCViewPanel) content;
+                        if (!viewPanel.isEditable())
+                        {
+                            List<Integer> disabledIndices = viewPanel.getDisabledTabIndices();
+                            if (disabledIndices!=null && !disabledIndices.isEmpty())
+                            {
+                                StringBuffer sbuf = new StringBuffer();
+                                sbuf.append("[").append(disabledIndices.get(0));
+                                for (int i=1; i<disabledIndices.size(); i++)
+                                {
+                                    sbuf.append(",").append(disabledIndices.get(i));
+                                }
+                                sbuf.append("]");
 
+                                target.appendJavascript("disableTCViewTabs(" + sbuf.toString() + ");");
+                            }
+                        }
+                        
+                        //hide tabs
+                        List<Integer> hiddenIndices = viewPanel.getHiddenTabIndices();
+                        if (hiddenIndices!=null)
+                        {
+                            for (Integer index : hiddenIndices)
+                            {
+                                target.appendJavascript("hideTCViewTab(" + index + ");");
+                            }
+                        }
+                    }
+                    
+                    try
+                    {
+                        Field shown = ModalWindow.class.getDeclaredField("shown");
+                        shown.setAccessible(true);
+                        shown.set(this, true);
+                    }
+                    catch (Exception e)
+                    {
+                        log.warn(null, e);
+                    }
+                }
+            }
+        };
+
+        final TCDetailsPanel detailsPanel = new TCDetailsPanel("details-panel");
         final TCListModel listModel = new TCListModel();
         final TCResultPanel listPanel = new TCResultPanel("result-panel",
                 listModel) {
@@ -89,25 +168,74 @@ public class TCPanel extends Panel {
             private static final long serialVersionUID = 1L;
 
             @Override
-            public Component selectionChanged(TCModel tc) {
+            protected Component[] selectionChanged(TCModel tc) {
                 try {
                     if (tc == null) {
                         detailsPanel.clearTCObject(false);
                     } else {
-                        detailsPanel.setTCObject(TCDetails.create(tc));
+                        detailsPanel.setTCObject(TCObject.create(tc));
                     }
                 } catch (Exception e) {
                     log.error("Parsing TC object failed!", e);
-
                     detailsPanel.clearTCObject(true);
                 }
 
-                return detailsPanel;
+                return new Component[] {detailsPanel};
+            }
+            
+            @Override
+            protected void openTC(final TCModel tc, boolean edit, AjaxRequestTarget target)
+            {
+                try
+                {
+                    final IModel<TCEditableObject> model = new Model<TCEditableObject>(TCEditableObject.create(tc));
+                    final TCViewPanel viewPanel = !edit ?
+                            new TCViewPanel(viewDialog.getContentId(), model, tc) :
+                            new TCViewEditablePanel(viewDialog.getContentId(), model, tc) {
+                                @Override
+                                protected void onClose(AjaxRequestTarget target, boolean save)
+                                {
+                                    viewDialog.close(target);
+                                    
+                                    if (save)
+                                    {
+                                        try
+                                        {
+                                            TCStoreDelegate storeDelegate = TCStoreDelegate.getInstance();
+                                            
+                                            //store new SR
+                                            DicomObject dataset = model.getObject().toDataset();
+                                            if (storeDelegate.storeImmediately(dataset))
+                                            {
+                                                //delete old SR
+                                                storeDelegate.store(model.getObject().toRejectionNoteDataset());
+                                            
+                                                //trigger new search and select new SR
+                                                listModel.addToFilter(tc);
+                                                searchPanel.redoSearch(target, dataset.getString(Tag.SOPInstanceUID));
+                                            }
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            log.error("Saving teaching-file failed!", e);
+                                        }
+                                    }
+                                }
+                            };
+
+                    viewDialog.setContent(viewPanel);
+                    
+                    openTCDialog(viewDialog, null, target);
+                }
+                catch (Exception e)
+                {
+                    log.error("Showing teaching-file dialog failed!", e);
+                }
             }
         };
 
         add(macb);
-        add(new TCSearchPanel("search-panel") {
+        add((searchPanel=new TCSearchPanel("search-panel") {
 
             private static final long serialVersionUID = 1L;
 
@@ -119,12 +247,53 @@ public class TCPanel extends Panel {
 
                 return new Component[] { detailsPanel, listPanel };
             }
-        });
+            
+            @Override
+            public void redoSearch(AjaxRequestTarget target, String iuid)
+            {
+                Component[] toUpdate = doSearch((TCQueryFilter)getDefaultModel().getObject());
+
+                TCModel tc = iuid!=null ? listModel.findByIUID(iuid):null;
+                if (tc!=null)
+                {
+                    listPanel.selectTC(tc);
+                }
+                
+                if (toUpdate != null && target != null) {
+                    for (Component c : toUpdate) {
+                        target.addComponent(c);
+                    }
+                }
+            }
+        }));
 
         add(listPanel);
         add(detailsPanel);
-
-        // add(new PopupCloseBehavior());
+        add(viewDialog);
+        
+        add((popupManager=new TCPopupManager()).getGlobalHideOnOutsideClickHandler());
+    }
+    
+    public void openTCDialog(ModalWindow dlg, String title, AjaxRequestTarget target)
+    {
+        if (target==null)
+        {
+            target = AjaxRequestTarget.get();
+        }
+        
+        if (target!=null)
+        {
+            dlg.setTitle(title==null?"":title);
+            dlg.setInitialWidth(900);
+            dlg.setInitialHeight(780);
+            dlg.setResizable(true);
+            dlg.show(target);
+        }
+    }
+    
+    public TCPopupManager getPopupManager()
+    {
+        return popupManager;
     }
 
     public static String getModuleName() {
@@ -134,150 +303,4 @@ public class TCPanel extends Panel {
     public static MaskingAjaxCallBehavior getMaskingBehaviour() {
         return macb;
     }
-
-    public static class PopupCloseables {
-        private static PopupCloseables instance;
-
-        private List<IPopupCloseable> closeables;
-
-        private List<IPopupCloseable> ignoreOnNextClick;
-
-        public static synchronized PopupCloseables getInstance() {
-            if (instance == null) {
-                instance = new PopupCloseables();
-            }
-            return instance;
-        }
-
-        public void clear() {
-            if (closeables != null) {
-                closeables.clear();
-            }
-        }
-
-        public List<IPopupCloseable> getCloseables() {
-            if (closeables != null) {
-                return Collections.unmodifiableList(closeables);
-            }
-
-            return Collections.emptyList();
-        }
-
-        public void addCloseable(IPopupCloseable closeable) {
-            if (closeables == null) {
-                closeables = new ArrayList<IPopupCloseable>();
-            }
-
-            if (closeable != null && !closeables.contains(closeable)) {
-                closeables.add(closeable);
-            }
-        }
-
-        public void removeCloseable(IPopupCloseable closeable) {
-            if (closeables != null) {
-                if (closeables.remove(closeable)) {
-                    if (closeables.isEmpty()) {
-                        closeables = null;
-                    }
-                }
-            }
-        }
-
-        public boolean shouldIgnoreNextClose(IPopupCloseable closeable) {
-            return ignoreOnNextClick != null
-                    && ignoreOnNextClick.contains(closeable);
-        }
-
-        public void setIgnoreNextClose(IPopupCloseable closeable, boolean ignore) {
-            if (closeable != null) {
-                if (ignore) {
-                    if (ignoreOnNextClick == null) {
-                        ignoreOnNextClick = new ArrayList<IPopupCloseable>();
-                    }
-
-                    if (!ignoreOnNextClick.contains(closeable)) {
-                        ignoreOnNextClick.add(closeable);
-                    }
-                } else {
-                    if (ignoreOnNextClick != null
-                            && ignoreOnNextClick.remove(closeable)) {
-                        if (ignoreOnNextClick.isEmpty()) {
-                            ignoreOnNextClick = null;
-                        }
-                    }
-                }
-            }
-        }
-
-        public void closeAll(AjaxRequestTarget target) {
-            List<IPopupCloseable> popups = PopupCloseables.getInstance()
-                    .getCloseables();
-            if (popups != null) {
-                for (IPopupCloseable popup : popups) {
-                    if (!popup.isClosed()) {
-                        popup.close(target);
-                    }
-                }
-            }
-        }
-
-        public static interface IPopupCloseable {
-            String getMarkupId();
-
-            boolean isClosed();
-
-            void close(AjaxRequestTarget target);
-        }
-    }
-
-    /*
-     * private class PopupCloseBehavior extends AbstractDefaultAjaxBehavior {
-     * 
-     * @Override public void renderHead(IHeaderResponse response) {
-     * super.renderHead(response);
-     * 
-     * response.renderJavascriptReference(new ResourceReference(TCPanel.class,
-     * "tc-utils.js")); }
-     * 
-     * @Override protected void onComponentTag(ComponentTag tag) {
-     * super.onComponentTag(tag);
-     * 
-     * tag.put("onclick", createOnClickJavascript()); }
-     * 
-     * @Override protected void respond(AjaxRequestTarget target) {
-     * List<IPopupCloseable> closeables =
-     * PopupCloseables.getInstance().getCloseables();
-     * 
-     * for (IPopupCloseable closeable: closeables) { if (!closeable.isClosed()
-     * && !PopupCloseables.getInstance().shouldIgnoreNextClose(closeable)) {
-     * Boolean clickedInParent =
-     * Boolean.parseBoolean(RequestCycle.get().getRequest
-     * ().getParameter(closeable.getMarkupId())); if (!clickedInParent) {
-     * closeable.close(target); } }
-     * 
-     * PopupCloseables.getInstance().setIgnoreNextClose(closeable, false); } }
-     * 
-     * private String createOnClickJavascript() { StringBuilder sb = new
-     * StringBuilder();
-     * 
-     * sb.append("{"); sb.append("wicketAjaxGet('");
-     * sb.append(getCallbackUrl());
-     * 
-     * List<IPopupCloseable> closeables =
-     * PopupCloseables.getInstance().getCloseables();
-     * 
-     * if (closeables!=null && !closeables.isEmpty()) { int i=0; for
-     * (IPopupCloseable closeable : closeables) { if (i>0) { sb.append("+'"); }
-     * 
-     * sb.append("&"); sb.append(closeables.get(i).getMarkupId());
-     * sb.append("='+");
-     * sb.append("checkLastOnClickInParent(event || window.event,'");
-     * sb.append(closeables.get(i).getMarkupId()); sb.append("')");
-     * 
-     * i++; } } else { sb.append("'"); }
-     * 
-     * sb.append(");"); sb.append("return false;"); sb.append("}");
-     * 
-     * return sb.toString(); } }
-     */
 }

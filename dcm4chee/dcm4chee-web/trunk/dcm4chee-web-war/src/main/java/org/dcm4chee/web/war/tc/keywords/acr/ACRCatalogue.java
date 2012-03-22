@@ -37,7 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc.keywords.acr;
 
-import org.dcm4chee.web.war.tc.TCDetails.DicomCode;
+import org.dcm4chee.web.war.tc.TCInput.ValueChangeListener;
+import org.dcm4chee.web.war.tc.TCObject.DicomCode;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue;
 

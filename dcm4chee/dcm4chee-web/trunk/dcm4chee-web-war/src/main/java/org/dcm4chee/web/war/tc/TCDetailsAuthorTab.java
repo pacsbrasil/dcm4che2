@@ -106,14 +106,14 @@ public class TCDetailsAuthorTab extends Panel {
         }));
     }
 
-    private TCDetails getTCObject() {
-        return (TCDetails) getDefaultModelObject();
+    private TCObject getTCObject() {
+        return (TCObject) getDefaultModelObject();
     }
 
     private String getStringValue(TCQueryFilterKey key) {
-        TCDetails tc = getTCObject();
+        TCObject tc = getTCObject();
 
-        String s = tc != null ? tc.getStringValue(key, null) : null;
+        String s = tc != null ? tc.getStringValue(key) : null;
 
         return s != null ? s : "-";
     }

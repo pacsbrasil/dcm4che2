@@ -264,6 +264,16 @@ public class WebCfgDelegate extends BaseCfgDelegate {
     public boolean isMpps2mwlAutoQuery() {
         return getBoolean("Mpps2mwlAutoQuery", true);
     }
+    
+    public String getTCSeriesDisplayFormat()
+    {
+        return getString("TCSeriesDisplayFormat");
+    }
+    
+    public boolean getTCEditOnDoubleClick()
+    {
+        return getBoolean("TCEditOnDoubleClick", false);
+    }
 
     public String getTCKeywordCataloguesPath() {
         return getString("TCKeywordCataloguesPath");

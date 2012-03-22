@@ -592,6 +592,26 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTCSeriesDisplayFormat"
+      setMethod="setTCSeriesDisplayFormat">
+      <description><![CDATA[
+        Conversion format that is going to be used to textually display series in the image viewer.
+        The format may contain any dicom qualifiers which are going to be converted into the value
+        of the corresponding dicom tag. A qualifier needs to follow the syntax $(tagname), where tagname
+        is the name of a dicom tag on series or study level, e.g.<br/><br/>
+        $(StudyDescription)|$(SeriesDescription)<br/><br/>
+        Special tagnames are:<br/>
+        ImageCount (i.e number of all images of the series)<br/>
+        NumberOfSeries (i.e the consecutive number of the series within the study)<br/>
+        NumberOfStudy (i.e the consecutive number of the study within the list of displayed studies)<br/>
+      ]]></description>
+      <name>TCSeriesDisplayFormat</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="$(StudyDescription) | $(SeriesDescription) ($(ImageCount))"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getTCRestrictedSourceAETs"
       setMethod="setTCRestrictedSourceAETs">
       <description><![CDATA[List of source AETs for matching teaching-files.<br/>
@@ -655,6 +675,21 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isTCEditOnDoubleClick"
+      setMethod="setTCEditOnDoubleClick">
+      <description><![CDATA[
+      Specifies, which action should be taken when the user double-clicks on a teaching-file.</br>
+      If false, the teaching-file is just opened for viewing (i.e not editable).</br>
+      If true, the teaching-file is opened for editing, assuming the user has the
+      privilege to edit teaching-files. If not, the teaching-file is just opened for viewing.
+      ]]></description>
+      <name>TCEditOnDoubleClick</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getMoveScuServiceName"
       setMethod="setMoveScuServiceName">
       <description>Used internally. Do NOT modify.
@@ -663,6 +698,17 @@
       <type>javax.management.ObjectName</type>
       <descriptors>
          <value value="dcm4chee.web:service=MoveScu"/>
+      </descriptors>
+   </attribute>
+      <attribute access="read-write"
+      getMethod="getTCStoreScuServiceName"
+      setMethod="setTCStoreScuServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>tcStoreScuServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.web:service=TCStoreScu"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
