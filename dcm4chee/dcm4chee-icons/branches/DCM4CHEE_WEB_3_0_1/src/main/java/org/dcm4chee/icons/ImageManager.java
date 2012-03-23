@@ -185,4 +185,6 @@ public class ImageManager {
     
     public static final ResourceReference IMAGE_TC_IMAGE_PLACEHOLDER =
         new ResourceReference(ImageManager.class, "tc/empty-image.png");
+    public static final ResourceReference IMAGE_TC_ARROW_DOWN =
+        new ResourceReference(ImageManager.class, "tc/arrow-down.png");
 }
