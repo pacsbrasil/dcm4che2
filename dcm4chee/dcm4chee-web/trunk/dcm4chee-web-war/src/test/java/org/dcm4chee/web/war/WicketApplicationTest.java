@@ -125,7 +125,7 @@ public class WicketApplicationTest extends BaseSessionBeanFixture<StudyListBean>
          checkRoles(ADMIN, new String[]{"FolderActions","Dashboard","FileSystem","AEWrite","MWLRead","UserRead",
                  "SystemInfo","UserManagement","FolderRead","MWLWrite","FolderWrite","RoleWrite","AERead",
                  "RoleRead","StudyPermissionsWrite","LoginAllowed","ReportWrite","Queue","ReportRead",
-                 "UserWrite","TrashActions","TrashRead","TCRead"});
+                 "UserWrite","TrashActions","TrashRead","TCRead","TCEdit"});
     }
     @Test
     public void testUserRoles() {
