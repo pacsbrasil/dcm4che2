@@ -157,6 +157,7 @@ import org.dcm4chee.web.common.markup.SimpleDateTimeField;
 import org.dcm4chee.web.common.markup.ModalWindowLink.DisableDefaultConfirmBehavior;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
+import org.dcm4chee.web.common.model.MultiResourceModel;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.util.Auditlog;
@@ -873,40 +874,37 @@ public class StudyListPage extends Panel {
 
         	private static final long serialVersionUID = 1L;
             
-        	private void checkWarnings(SelectedEntities selected) {
-                if (selected.hasPatients()) {
-                	int studiesCount = 0;
-                	String patientListing = "";
-                	Iterator<PatientModel> i = selected.getPatients().iterator();
-                	while (i.hasNext()) {
-                		PatientModel patientModel = i.next();
-                		studiesCount += patientModel.getStudies().size();
-                		patientListing += (
-                				(patientModel.getId() != null ? patientModel.getId() : " ") + 
-                				" / " + 
-                				(patientModel.getIssuer() != null ? patientModel.getIssuer() : " ") + 
-                				" / " + 
-                				(patientModel.getName() != null ? patientModel.getName() : " "));
-                		if (i.hasNext())
-                			patientListing += ", <br /> ";
-                	}               	
-                	confirmDelete
-                		.addRemark(new StringResourceModel("folder.message.warnPatientDelete", 
-                				this, null, new Object[] {studiesCount, patientListing}));
-                	confirmDelete
-    					.setInitialWidth(500)
-    					.setInitialHeight(250);
-                }                
-                if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
-                	confirmDelete
-                		.addRemark(new StringResourceModel("folder.message.warnDelete",this, null));
-                }
+        	private void checkWarnings(SelectedEntities selected, MultiResourceModel remarkModel) {
+                    if (selected.hasPatients()) {
+                    	int studiesCount = 0;
+                    	String patientListing = "";
+                    	Iterator<PatientModel> i = selected.getPatients().iterator();
+                    	while (i.hasNext()) {
+                    		PatientModel patientModel = i.next();
+                    		studiesCount += patientModel.getStudies().size();
+                    		patientListing += (
+                    				(patientModel.getId() != null ? patientModel.getId() : " ") + 
+                    				" / " + 
+                    				(patientModel.getIssuer() != null ? patientModel.getIssuer() : " ") + 
+                    				" / " + 
+                    				(patientModel.getName() != null ? patientModel.getName() : " "));
+                    		if (i.hasNext())
+                    			patientListing += ", <br /> ";
+                    	}               	
+                    	remarkModel.addModel(new StringResourceModel("folder.message.warnPatientDelete", 
+                    				this, null, new Object[] {studiesCount, patientListing}));
+                    	confirmDelete.setInitialWidth(500).setInitialHeight(250);
+                    }                
+                    if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
+                        remarkModel.addModel(new StringResourceModel("folder.message.warnDelete",this, null));
+                    }
         	}
         	
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
 
-            	confirmDelete.setRemark(null);
+                MultiResourceModel remarkModel = new MultiResourceModel();
+            	confirmDelete.setRemark(remarkModel);
             	
                 boolean hasIgnored = selected.update(studyPermissionHelper.isUseStudyPermissions(), 
                         viewport.getPatients(), StudyPermission.DELETE_ACTION);               
@@ -915,7 +913,10 @@ public class StudyListPage extends Panel {
                 if ((hasIgnored ||selected.hasDicomSelection() || selected.hasPPS()) 
                         && selected.hasTooOld()) {
                     if (StudyPermissionHelper.get().ignoreEditTimeLimit()) {
-                    	checkWarnings(selected);
+                    	checkWarnings(selected, remarkModel);
+                        if (hasIgnored) {
+                            remarkModel.addModel(new StringResourceModel("folder.message.deleteNotAllowed",this, null));
+                        }
                         if (selected.hasPPS()) {
                             confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.message.tooOld.confirmPpsDelete",this, null,new Object[]{selected}), selected);
                         } else if (selected.hasDicomSelection()) {
@@ -933,11 +934,12 @@ public class StudyListPage extends Panel {
                     return;
                 }
                 
-                confirmDelete.setRemark(hasIgnored ? new StringResourceModel("folder.message.deleteNotAllowed",this, null) : null);
+                if (hasIgnored)
+                    remarkModel.addModel(new StringResourceModel("folder.message.deleteNotAllowed",this, null));
                 if (selected.hasPPS()) {
                     confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.message.confirmPpsDelete",this, null,new Object[]{selected}), selected);
                 } else if (selected.hasDicomSelection()) {
-                	checkWarnings(selected);
+                    checkWarnings(selected, remarkModel);
                     confirmDelete.confirm(target, new StringResourceModel("folder.message.confirmDelete",this, null,new Object[]{selected}), selected);
                 } else { 
                     if (hasIgnored) {
