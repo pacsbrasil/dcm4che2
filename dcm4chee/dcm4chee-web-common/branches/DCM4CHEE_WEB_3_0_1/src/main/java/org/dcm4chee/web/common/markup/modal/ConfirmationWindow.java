@@ -190,19 +190,6 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         this.remark = remark;
     }
     
-    public void addRemark(IModel<?> remark) {
-    	if (remark == null)
-    		return;
-    	else {
-    		if (this.remark == null)
-    			setRemark(remark);
-    		else {
-    			String bothRemarks = this.remark.getObject().toString() + remark.getObject().toString();
-    			this.remark = new Model(bothRemarks);
-    		}
-    	}
-    }
-
     public T getUserObject() {
         return userObject;
     }    
