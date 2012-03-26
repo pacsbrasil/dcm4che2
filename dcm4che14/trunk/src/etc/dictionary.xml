@@ -287,8 +287,8 @@
   <element tag="(0010,0032)" name="Patient's Birth Time" vr="TM" vm="1" key="PatientBirthTime" />
   <element tag="(0010,0040)" name="Patient's Sex" vr="CS" vm="1" key="PatientSex" />
   <element tag="(0010,0050)" name="Patient's Insurance Plan Code Sequence" vr="SQ" vm="1" key="PatientInsurancePlanCodeSeq" />
-  <element tag="(0010,0101)" name="Patient’s Primary Language Code Sequence" vr="SQ" vm="1" key="PatientPrimaryLanguageCodeSeq" />
-  <element tag="(0010,0102)" name="Patient’s Primary Language Code Modifier Sequence" vr="SQ" vm="1" key="PatientPrimaryLanguageModifierCodeSeq" />
+  <element tag="(0010,0101)" name="Patient's Primary Language Code Sequence" vr="SQ" vm="1" key="PatientPrimaryLanguageCodeSeq" />
+  <element tag="(0010,0102)" name="Patient's Primary Language Code Modifier Sequence" vr="SQ" vm="1" key="PatientPrimaryLanguageModifierCodeSeq" />
   <element tag="(0010,1000)" name="Other Patient IDs" vr="LO" vm="1-n" key="OtherPatientIDs" />    
   <element tag="(0010,1001)" name="Other Patient Names" vr="PN" vm="1-n" key="OtherPatientNames" />
   <element tag="(0010,1002)" name="Other Patient ID Sequence" vr="SQ" vm="1" key="OtherPatientIDSeq" />
@@ -1872,7 +1872,7 @@
   <element tag="(0072,007C)" name="Selector SL Value" vr="SL" vm="1-n" key="SelectorSLValue" />
   <element tag="(0072,007E)" name="Selector SS Value" vr="SS" vm="1-n" key="SelectorSSValue" />
   <element tag="(0072,0080)" name="Selector Code Sequence Value" vr="SQ" vm="1" key="SelectorCodeSequenceValue" />
-  <element tag="(0070,0086)" name="Content Creator’s Identification Sequence" vr="SQ" vm="1" key="ContentCreatorIdentificationSeq" />
+  <element tag="(0070,0086)" name="Content Creator's Identification Sequence" vr="SQ" vm="1" key="ContentCreatorIdentificationSeq" />
   <element tag="(0072,0100)" name="Number of Screens" vr="US" vm="1" key="NumberOfScreens" />
   <element tag="(0072,0102)" name="Nominal Screen Definition Sequence" vr="SQ" vm="1" key="NominalScreenDefinitionSeq" />
   <element tag="(0072,0104)" name="Number of Vertical Pixels" vr="US" vm="1" key="NumberOfVerticalPixels" />
