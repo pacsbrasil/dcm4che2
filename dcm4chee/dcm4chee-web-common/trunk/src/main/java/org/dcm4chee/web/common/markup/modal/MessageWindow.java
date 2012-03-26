@@ -205,7 +205,7 @@ public class MessageWindow extends AutoOpenModalWindow {
                 public String getObject() {
                     return msgModel == null ? null : msgModel.getObject();
                 }
-            })
+            }).setEscapeModelStrings(false)
             .add(new AttributeModifier("style", true, colorModel)));
 
             add(new AjaxFallbackLink<Object>("close"){
