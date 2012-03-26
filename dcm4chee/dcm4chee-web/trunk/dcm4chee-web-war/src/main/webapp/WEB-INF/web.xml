@@ -60,65 +60,9 @@
           <param-value>StudyPermissionsPropagation</param-value>
         </init-param>
     </filter>
-    <filter>
-        <filter-name>wicket.dcm4chee-web.imageview</filter-name>
-        <filter-class>org.apache.wicket.protocol.http.WicketFilter</filter-class>
-        <init-param>
-            <param-name>applicationClassName</param-name>
-            <param-value>org.dcm4chee.web.war.tc.imageview.TCImageViewApplication</param-value>
-        </init-param>
-        <init-param>
-            <param-name>configuration</param-name>
-            <param-value>deployment</param-value>
-        </init-param>
-        <init-param>
-          <param-name>WebCfgServiceName</param-name>
-          <param-value>dcm4chee.web:service=WebConfig</param-value>
-        </init-param>
-        <init-param>
-          <param-name>UserAccessServiceName</param-name>
-          <param-value>dcm4chee.usr:service=UserAccessService</param-value>
-        </init-param>
-        <init-param>
-            <param-name>DicomSecurityService</param-name>
-            <param-value>dcm4chee.archive:service=DicomSecurity</param-value>
-        </init-param>
-        <init-param>
-          <param-name>internalErrorPageClass</param-name>
-          <param-value>org.dcm4chee.web.common.base.InternalErrorPage</param-value>
-        </init-param> 
-        <init-param>
-          <param-name>pageExpiredPageClass</param-name>
-          <param-value>org.dcm4chee.web.war.tc.imageview.TCImageViewPage</param-value>
-        </init-param>
-        <init-param>
-          <param-name>PagemapTimeout</param-name>
-          <param-value>5</param-value>
-        </init-param>
-        <init-param>
-          <param-name>LoginAllowedRolename</param-name>
-          <param-value>LoginAllowed</param-value>
-        </init-param>
-        <init-param>
-          <param-name>StudyPermissionsAllRolename</param-name>
-          <param-value>StudyPermissionsAll</param-value>
-        </init-param>
-        <init-param>
-          <param-name>StudyPermissionsOwnRolename</param-name>
-          <param-value>StudyPermissionsOwn</param-value>
-        </init-param>
-        <init-param>
-          <param-name>StudyPermissionsPropagationRolename</param-name>
-          <param-value>StudyPermissionsPropagation</param-value>
-        </init-param>
-    </filter>
     <filter-mapping>
         <filter-name>wicket.dcm4chee-web</filter-name>
         <url-pattern>/*</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>wicket.dcm4chee-web.imageview</filter-name>
-        <url-pattern>/imageview/*</url-pattern>
     </filter-mapping>
 	<context-param>
         <param-name>configuration</param-name>

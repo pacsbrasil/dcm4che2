@@ -48,6 +48,7 @@ import org.apache.wicket.util.time.Duration;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.login.LoginContextSecurityHelper;
 import org.dcm4chee.web.common.login.SSOLoginContext;
+import org.dcm4chee.web.war.tc.imageview.TCImageViewPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,5 +83,12 @@ public class WicketApplication extends BaseWicketApplication {
         if (timeout != null)
             getRequestCycleSettings().setTimeout(Duration.minutes(Long.valueOf(timeout)));         
         return session;
+    }
+    
+    @Override
+    public void init() 
+    {
+        super.init();
+        mountBookmarkablePage("/imageview", TCImageViewPage.class);
     }
 }
