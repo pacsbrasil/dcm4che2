@@ -130,13 +130,12 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         this.confirm = confirm;
         this.decline = decline;
         this.cancel = cancel;
-        initContent();
+        initContent(400, 300);
     }
 
-    protected void initContent() {
-        setInitialWidth(400);
-        setInitialHeight(300);
-        
+    public void initContent(int width, int height) {
+    	initSize(width, height);
+
         messageWindowPanel = new MessageWindowPanel("panel");
         
         setPageCreator(new ModalWindow.PageCreator() {
@@ -148,6 +147,11 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
             }
         });
         add(new DisableDefaultConfirmBehavior());
+    }
+
+    private void initSize(int width, int height) {
+        setInitialWidth(width);
+        setInitialHeight(height);
     }
 
     public abstract void onConfirmation(AjaxRequestTarget target, T userObject);
