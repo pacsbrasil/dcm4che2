@@ -79,10 +79,12 @@ import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
+import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.util.Auditlog;
 import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.common.DicomEditLocal;
 import org.dcm4chee.web.dao.folder.MppsToMwlLinkLocal;
+import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.dao.util.CoercionUtil;
 import org.dcm4chee.web.dao.vo.EntityTree;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
@@ -359,6 +361,10 @@ public class ContentEditService extends ServiceMBeanSupport {
         DicomObject[] rejNotes = processStudyDeleted(entityTree);
         logPatientDeleted(entityTree);
         return rejNotes;
+    }
+    public void emptyTrash() throws Exception {
+        TrashListLocal dao = (TrashListLocal) JNDIUtils.lookup(TrashListLocal.JNDI_NAME);
+        dao.removeTrashAll();
     }
 
     public int moveInstancesToSeries(long[] instPks, long seriesPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
