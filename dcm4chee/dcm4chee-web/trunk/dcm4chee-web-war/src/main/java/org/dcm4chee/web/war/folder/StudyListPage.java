@@ -867,7 +867,6 @@ public class StudyListPage extends Panel {
                 }
             }
         };
-        confirmDelete.setInitialHeight(200);
         form.add(confirmDelete);
 
         AjaxButton deleteBtn = new AjaxButton("deleteBtn") {
@@ -893,7 +892,9 @@ public class StudyListPage extends Panel {
                     	}               	
                     	remarkModel.addModel(new StringResourceModel("folder.message.warnPatientDelete", 
                     				this, null, new Object[] {studiesCount, patientListing}));
-                    	confirmDelete.setInitialWidth(500).setInitialHeight(250);
+                    	confirmDelete
+                    		.setInitialWidth(500)
+                    		.setInitialHeight(250 + (20 * selected.getPatients().size()));
                     }                
                     if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
                         remarkModel.addModel(new StringResourceModel("folder.message.warnDelete",this, null));
@@ -903,6 +904,8 @@ public class StudyListPage extends Panel {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
 
+            	confirmDelete.initContent(500, 250);
+            	
                 MultiResourceModel remarkModel = new MultiResourceModel();
             	confirmDelete.setRemark(remarkModel);
             	
@@ -915,12 +918,14 @@ public class StudyListPage extends Panel {
                     if (StudyPermissionHelper.get().ignoreEditTimeLimit()) {
                     	checkWarnings(selected, remarkModel);
                         if (hasIgnored) {
+	                    confirmDelete.initContent(confirmDelete.getInitialWidth(), confirmDelete.getInitialHeight() + 50);
                             remarkModel.addModel(new StringResourceModel("folder.message.deleteNotAllowed",this, null));
                         }
                         if (selected.hasPPS()) {
                             confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.message.tooOld.confirmPpsDelete",this, null,new Object[]{selected}), selected);
                         } else if (selected.hasDicomSelection()) {
-                            confirmDelete.confirm(target, new StringResourceModel("folder.message.tooOld.delete", this, null, new Object[]{selected}), selected);
+                        	confirmDelete.initContent(confirmDelete.getInitialWidth(), confirmDelete.getInitialHeight() + 50);
+                        	confirmDelete.confirm(target, new StringResourceModel("folder.message.tooOld.delete", this, null, new Object[]{selected}), selected);
                         } else {
                             msgWin.setInfoMessage(getString("folder.message.deleteNotAllowed"));
                             msgWin.setColor("#FF0000");
