@@ -457,7 +457,7 @@ public class FileDataSource implements DataSource {
                     };
                     ds.writeHeader(out, enc, Tags.SeqDelimitationItem,
                             VRs.NONE, 0);
-                    dis.skipBytes(itemlen);
+                    dis.skipBytes(parser.getReadLength());
                 } else {
                     // WARN frames spanning multiple data fragments not supported
                     // assume one item per frame
