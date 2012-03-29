@@ -227,6 +227,18 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>dcm4che.dcm4chee</groupId>
+            <artifactId>dcm4chee-web-sar-storescu</artifactId>
+            <type>sar</type>
+            <version>3.0.1</version>
+            <exclusions>
+                    <exclusion>
+                            <groupId>dcm4che</groupId>
+                            <artifactId>dcm4che-core</artifactId>
+                    </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>net.sf.json-lib</groupId>
             <artifactId>json-lib</artifactId>
             <version>2.3</version>
