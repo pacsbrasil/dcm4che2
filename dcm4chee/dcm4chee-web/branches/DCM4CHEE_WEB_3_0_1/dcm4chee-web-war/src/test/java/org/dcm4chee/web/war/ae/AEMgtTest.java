@@ -100,9 +100,9 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
         formTester.setValue("hostName", "");
         formTester.setValue("port", "0");
         formTester.submit();
-        String[] expectedErrors = new String[]{"Field 'title' is required.",
-                "Field 'hostName' is required.",
-                "0 is not between 1 and 65535."};
+        String[] expectedErrors = new String[]{"Please provide a title",
+                "Please provide a hostname",
+                "Please provide a port between 1 and 65535"};
         wicketTester.assertErrorMessages(expectedErrors);
     }
 
@@ -121,8 +121,8 @@ public class AEMgtTest extends BaseSessionBeanFixture<AEHomeBean>
         formTester.setValue("wadoURL", "http://127.0.0.1.1/wado");
         formTester.submit();
         String[] expectedErrors = new String[]{"'AE_TEST_TO_LONGLONG' is not between 1 and 16 characters long.",
-              "Field 'hostName' is required.",
-              "100000000 is not between 1 and 65535.",
+              "Please provide a hostname",
+              "Please provide a port between 1 and 65535",
               "'http://127.0.0.1.1/wado' is not a valid URL."};
         wicketTester.assertErrorMessages(expectedErrors);
     }
