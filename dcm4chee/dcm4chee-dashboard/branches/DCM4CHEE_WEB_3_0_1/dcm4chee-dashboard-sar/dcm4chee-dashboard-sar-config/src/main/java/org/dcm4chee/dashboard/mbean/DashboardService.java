@@ -298,7 +298,7 @@ public class DashboardService extends ServiceMBeanSupport {
             }
             return reportList.toArray(new ReportModel[reportList.size()]);
         } catch (Exception e) {
-            log.debug("Exception: ", e);
+            log.error("Exception: ", e);
             return null;
         }
     }
@@ -319,7 +319,7 @@ public class DashboardService extends ServiceMBeanSupport {
             sort(this.groupFilename);
             sort(this.reportFilename);
         } catch (IOException e) {
-            log.debug("Exception: ", e);
+            log.error("Exception: ", e);
         }        
     }
     
@@ -361,7 +361,7 @@ public class DashboardService extends ServiceMBeanSupport {
             sort(this.groupFilename);
             sort(this.reportFilename);
         } catch (IOException e) {
-            log.debug("Exception: ", e);
+            log.error("Exception: ", e);
         }
     }
 
@@ -376,10 +376,9 @@ public class DashboardService extends ServiceMBeanSupport {
             
             // store here
             List<ReportModel> reports = new ArrayList<ReportModel>();
-            while ((line = reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null) 
                 reports.add((ReportModel) JSONObject.toBean(JSONObject.fromObject(line), ReportModel.class));
-                
-            }
+
             Collections.sort(reports, new Comparator<ReportModel>() {
            
                 @Override
@@ -399,7 +398,7 @@ public class DashboardService extends ServiceMBeanSupport {
             reportFile.delete();
             new File(tempFilename).renameTo(reportFile);
         } catch (IOException e) {
-            log.debug("Exception: ", e);
+            log.error("Exception: ", e);
         }       
     }
     
@@ -436,14 +435,11 @@ public class DashboardService extends ServiceMBeanSupport {
 
     private String[] tokenize(String sourceString) {
         StringTokenizer st = new StringTokenizer(sourceString, newline);
-        List<String> tokens = new ArrayList<String>();        
+        List<String> tokens = new ArrayList<String>();
         while (st.hasMoreTokens()) {
-            String token =  st.nextToken();
-            if (token.endsWith("\t") || 
-                token.endsWith("\r") ||
-                token.endsWith("\n"))
-                    token = token.substring(0, token.length() - 1);
-            if (token.length() > 0) tokens.add(token);
+            String token =  st.nextToken().trim();
+            if (token.length() > 0) 
+            	tokens.add(token);
         }
         return tokens.toArray(new String[tokens.size()]);
     }
