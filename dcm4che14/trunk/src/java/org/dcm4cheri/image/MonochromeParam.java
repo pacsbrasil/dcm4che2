@@ -65,8 +65,15 @@ final class MonochromeParam extends BasicColorModelParam  {
    private final int pvBits;
    
    private final static float[] EMPTY = {};
-   private final static float[] nullToEmpty(float[] a) {
-      return a == null ? EMPTY : a;
+   private final static float[] toFloats(String[] a) {
+      if (a == null) {
+          return EMPTY;
+      } else {
+          float[] f = new float[a.length];
+          for (int i = 0 ; i < f.length ; i++)
+              f[i] = Float.parseFloat(a[i]);
+          return f;
+      }
    }
    private final float correctSlope(float f) {
       return f == 0.f || Math.abs(f) > max ? 1.f : f;
@@ -92,10 +99,10 @@ final class MonochromeParam extends BasicColorModelParam  {
    public MonochromeParam(Dataset ds, boolean inverse1, byte[] pv2dll) {
       super(ds);
       this.inverse = inverse1 ? -1 : 0;
-      this.slope = correctSlope(ds.getFloat(Tags.RescaleSlope, 1.f));
-      this.intercept = ds.getFloat(Tags.RescaleIntercept, 0.f);
-      this.center = nullToEmpty(ds.getFloats(Tags.WindowCenter));
-      this.width = nullToEmpty(ds.getFloats(Tags.WindowWidth));
+      this.slope = correctSlope(Float.parseFloat(ds.getString(Tags.RescaleSlope, "1.0")));
+      this.intercept = Float.parseFloat(ds.getString(Tags.RescaleIntercept, "0.0"));
+      this.center = toFloats(ds.getStrings(Tags.WindowCenter));
+      this.width = toFloats(ds.getStrings(Tags.WindowWidth));
       for (int i = 0; i < width.length; ++i) {
          if (width[i] <= 0.f) {
             width[i] = (max - min) / slope;
