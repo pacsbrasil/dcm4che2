@@ -894,7 +894,7 @@ public class StudyListPage extends Panel {
                     				this, null, new Object[] {studiesCount, patientListing}));
                     	confirmDelete
                     		.setInitialWidth(500)
-                    		.setInitialHeight(250 + (20 * selected.getPatients().size()));
+                    		.setInitialHeight(280 + (20 * selected.getPatients().size()));
                     }                
                     if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
                         remarkModel.addModel(new StringResourceModel("folder.message.warnDelete",this, null));
@@ -904,7 +904,7 @@ public class StudyListPage extends Panel {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
 
-            	confirmDelete.initContent(500, 250);
+            	confirmDelete.initContent(500, 280);
             	
                 MultiResourceModel remarkModel = new MultiResourceModel();
             	confirmDelete.setRemark(remarkModel);
@@ -938,13 +938,15 @@ public class StudyListPage extends Panel {
                     }
                     return;
                 }
-                
-                if (hasIgnored)
+
+                checkWarnings(selected, remarkModel);
+                if (hasIgnored) {
+                	confirmDelete.initContent(confirmDelete.getInitialWidth(), confirmDelete.getInitialHeight() + 50);
                     remarkModel.addModel(new StringResourceModel("folder.message.deleteNotAllowed",this, null));
+                }
                 if (selected.hasPPS()) {
                     confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.message.confirmPpsDelete",this, null,new Object[]{selected}), selected);
                 } else if (selected.hasDicomSelection()) {
-                    checkWarnings(selected, remarkModel);
                     confirmDelete.confirm(target, new StringResourceModel("folder.message.confirmDelete",this, null,new Object[]{selected}), selected);
                 } else { 
                     if (hasIgnored) {
