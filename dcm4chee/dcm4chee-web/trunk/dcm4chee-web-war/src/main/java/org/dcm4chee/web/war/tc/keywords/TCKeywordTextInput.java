@@ -61,9 +61,9 @@ public class TCKeywordTextInput extends AbstractTCInput {
     public TCKeywordTextInput(final String id, String value) {
         super(id);
 
-        setDefaultModel(new Model<TCKeyword>() {
+        setDefaultModel(new Model<String>() {
             @Override
-            public void setObject(TCKeyword keyword)
+            public void setObject(String keyword)
             {
                 if (!TCUtilities.equals(getObject(),keyword))
                 {
