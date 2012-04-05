@@ -57,6 +57,7 @@ public class SQLSelectStatementValidator extends AbstractValidator<String> {
         || (!statement.contains("FROM"))
         || statement.contains("UPDATE")
         || statement.contains("DELETE")
+        || statement.contains("DROP")
         || (statement.indexOf(";") != -1 && statement.indexOf(";") != (statement.length() - 1))) 
             error(validatable);
     }

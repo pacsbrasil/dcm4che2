@@ -288,27 +288,35 @@ public class DashboardService extends ServiceMBeanSupport {
     }
 
     public ReportModel[] listAllReports(boolean groups) {
+    	BufferedReader reader = null;
         try {
             List<ReportModel> reportList = new ArrayList<ReportModel>();
             if (new File(groups ? this.groupFilename : this.reportFilename).exists()) {
                 String line;
-                BufferedReader reader = new BufferedReader(new FileReader(groups ? this.groupFilename : this.reportFilename));
+                reader = new BufferedReader(new FileReader(groups ? this.groupFilename : this.reportFilename));
                 while ((line = reader.readLine()) != null)
                     reportList.add((ReportModel) JSONObject.toBean(JSONObject.fromObject(line), ReportModel.class));
+                reader.close();
             }
             return reportList.toArray(new ReportModel[reportList.size()]);
         } catch (Exception e) {
             log.error("Exception: ", e);
             return null;
-        }
+	    } finally {
+	        try {
+	            reader.close();
+	        } catch (Exception ignore) {
+	        }
+	    }
     }
     
     public void createReport(ReportModel report, boolean isGroup) {
+    	BufferedWriter writer = null;
         try {
             if (report.getUuid() == null)
                 report.setUuid(UUID.randomUUID().toString());
 
-            BufferedWriter writer = new BufferedWriter(new FileWriter(isGroup ? this.groupFilename : this.reportFilename, true));
+            writer = new BufferedWriter(new FileWriter(isGroup ? this.groupFilename : this.reportFilename, true));
             JSONObject jsonObject = JSONObject.fromObject(report);
             if (isGroup) jsonObject.put("groupUuid", JSONNull.getInstance());
             if (report.getDiagram() == null) jsonObject.put("diagram", JSONNull.getInstance());
@@ -320,7 +328,12 @@ public class DashboardService extends ServiceMBeanSupport {
             sort(this.reportFilename);
         } catch (IOException e) {
             log.error("Exception: ", e);
-        }        
+	    } finally {
+	        try {
+	            writer.close();
+	        } catch (Exception ignore) {
+	        }
+	    }        
     }
     
     public void updateReport(ReportModel report) {
@@ -332,17 +345,20 @@ public class DashboardService extends ServiceMBeanSupport {
     }
 
     private void modifyReport(ReportModel report, boolean delete, boolean isGroup) {
+    	BufferedReader reader = null;
+    	BufferedWriter writer = null;
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(isGroup ? this.groupFilename : this.reportFilename));
-            File reportFile = new File(isGroup ? this.groupFilename : this.reportFilename);            
+            reader = new BufferedReader(new FileReader(isGroup ? this.groupFilename : this.reportFilename));
+            File reportFile = new File(isGroup ? this.groupFilename : this.reportFilename);
             String tempFilename = reportFile.getAbsolutePath().substring(0, reportFile.getAbsolutePath().length() - reportFile.getName().length()) 
                                 + UUID.randomUUID().toString();
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFilename, true));
+
+            writer = new BufferedWriter(new FileWriter(tempFilename, true));
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!((ReportModel) JSONObject.toBean(JSONObject.fromObject(line), ReportModel.class)).getUuid().equals(report.getUuid())) {
-                  writer.write(line);
-                  writer.newLine();
+                	writer.write(line);
+                	writer.newLine();
                 } else {
                     if (!delete) {
                         JSONObject jsonObject = JSONObject.fromObject(report);
@@ -355,23 +371,39 @@ public class DashboardService extends ServiceMBeanSupport {
             }
             reader.close();
             writer.close();
-            reportFile.delete();
-            new File(tempFilename).renameTo(reportFile);
-            
-            sort(this.groupFilename);
-            sort(this.reportFilename);
+
+            if (!reportFile.delete())
+            	throw new IOException("Deleting of original report file failed, changes can be found in temporary file " + tempFilename);
+            if (!new File(tempFilename).renameTo(reportFile))
+            	throw new IOException("Renaming of temporary file to original report file failed, changes can be found in temporary file " + tempFilename);
+        	
+            if (isGroup)
+            	sort(this.groupFilename);
+            else
+            	sort(this.reportFilename);
         } catch (IOException e) {
             log.error("Exception: ", e);
-        }
+	    } finally {
+	        try {
+	            reader.close();
+	        } catch (Exception ignore) {
+	        }
+	        try {
+	            writer.close();
+	        } catch (Exception ignore) {
+	        }
+	    }
     }
 
     private void sort(String filename) {
+    	BufferedReader reader = null;
+    	BufferedWriter writer = null;
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(filename));
+            reader = new BufferedReader(new FileReader(filename));
             File reportFile = new File(filename);            
             String tempFilename = reportFile.getAbsolutePath().substring(0, reportFile.getAbsolutePath().length() - reportFile.getName().length()) 
                                 + UUID.randomUUID().toString();
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFilename, true));
+            writer = new BufferedWriter(new FileWriter(tempFilename, true));
             String line;
             
             // store here
@@ -399,7 +431,16 @@ public class DashboardService extends ServiceMBeanSupport {
             new File(tempFilename).renameTo(reportFile);
         } catch (IOException e) {
             log.error("Exception: ", e);
-        }       
+	    } finally {
+	        try {
+	            reader.close();
+	        } catch (Exception ignore) {
+	        }
+	        try {
+	            writer.close();
+	        } catch (Exception ignore) {
+	        }
+	    }
     }
     
     public String[][] listQueueNames() throws MalformedObjectNameException, NullPointerException {
