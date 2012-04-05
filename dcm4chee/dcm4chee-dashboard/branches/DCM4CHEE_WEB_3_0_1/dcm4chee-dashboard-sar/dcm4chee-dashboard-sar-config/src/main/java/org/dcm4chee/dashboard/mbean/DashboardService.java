@@ -427,8 +427,11 @@ public class DashboardService extends ServiceMBeanSupport {
             }
             reader.close();
             writer.close();
-            reportFile.delete();
-            new File(tempFilename).renameTo(reportFile);
+            
+            if (!reportFile.delete())
+            	throw new IOException("Deleting of original report file failed, changes can be found in temporary file " + tempFilename);
+            if (!new File(tempFilename).renameTo(reportFile))
+            	throw new IOException("Renaming of temporary file to original report file failed, changes can be found in temporary file " + tempFilename);
         } catch (IOException e) {
             log.error("Exception: ", e);
 	    } finally {
