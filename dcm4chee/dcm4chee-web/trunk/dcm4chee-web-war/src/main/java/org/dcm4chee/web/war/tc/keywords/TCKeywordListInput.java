@@ -56,6 +56,7 @@ import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.util.convert.IConverter;
 import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCPopupManager.AbstractTCPopup;
 import org.dcm4chee.web.war.tc.TCPopupManager.TCPopupPosition;
 import org.dcm4chee.web.war.tc.TCPopupManager.TCPopupPosition.PopupAlign;
@@ -146,6 +147,7 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
             }
         };
         text.setOutputMarkupId(true);
+        text.add(new AutoSelectInputTextBehaviour());
         text.add(new AjaxFormComponentUpdatingBehavior("onchange") {
             @Override
             public void onUpdate(AjaxRequestTarget target)

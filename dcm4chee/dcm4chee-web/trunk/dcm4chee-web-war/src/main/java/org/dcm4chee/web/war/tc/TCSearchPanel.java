@@ -67,6 +67,7 @@ import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.dao.tc.TCQueryFilter;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue;
+import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCObject.DicomCode;
 import org.dcm4chee.web.war.tc.TCUtilities.NullDropDownItem;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
@@ -112,7 +113,8 @@ public abstract class TCSearchPanel extends Panel {
                 "diffDiagnosisInput", TCQueryFilterKey.DifferentialDiagnosis, getFilterValue(TCQueryFilterKey.DifferentialDiagnosis));
         final TextField<String> textText = new TextField<String>("textText",
                 new Model<String>(""));
-
+        textText.add(new AutoSelectInputTextBehaviour());
+        
         final DropDownChoice<TCQueryFilterValue.AcquisitionModality> modalityChoice = TCUtilities.createEnumDropDownChoice(
                 "modalityChoice",
                 new Model<TCQueryFilterValue.AcquisitionModality>(),

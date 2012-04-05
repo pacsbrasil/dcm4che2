@@ -39,6 +39,7 @@ package org.dcm4chee.web.war.tc.keywords;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.model.Model;
+import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCUtilities;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextField;
 
@@ -80,7 +81,8 @@ public class TCKeywordTextInput extends AbstractTCInput {
                 TCKeywordTextInput.this.setDefaultModelObject(text);
             }
         };
-
+        textField.add(new AutoSelectInputTextBehaviour());
+        
         add(textField);
     }
 
