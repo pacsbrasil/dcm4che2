@@ -605,26 +605,48 @@ public class Association implements Runnable {
     public void nset(String cuid, String iuid, DicomObject attrs, String tsuid,
             DimseRSPHandler rspHandler) throws IOException,
             InterruptedException {
-        nset(cuid, cuid, iuid, attrs, tsuid, rspHandler);
+        nset(cuid, cuid, iuid, new DataWriterAdapter(attrs), tsuid, rspHandler);
     }
 
     public void nset(String asuid, String cuid, String iuid, DicomObject attrs,
             String tsuid, DimseRSPHandler rspHandler) throws IOException,
             InterruptedException {
-        PresentationContext pc = pcFor(asuid, tsuid);
-        DicomObject nsetrq = CommandUtils.mkNSetRQ(ae.nextMessageID(), cuid,
-                iuid);
-        invoke(pc.getPCID(), nsetrq, new DataWriterAdapter(attrs), rspHandler,
-                ae.getDimseRspTimeout());
+        nset(asuid, cuid, iuid, new DataWriterAdapter(attrs), tsuid, rspHandler);
     }
 
     public DimseRSP nset(String cuid, String iuid, DicomObject attrs,
             String tsuid) throws IOException, InterruptedException {
-        return nset(cuid, cuid, iuid, attrs, tsuid);
+        return nset(cuid, cuid, iuid, new DataWriterAdapter(attrs), tsuid);
     }
 
     public DimseRSP nset(String asuid, String cuid, String iuid,
             DicomObject attrs, String tsuid) throws IOException,
+            InterruptedException {
+        return nset(asuid, cuid, iuid, new DataWriterAdapter(attrs), tsuid);
+    }
+
+    public void nset(String cuid, String iuid, DataWriter data, String tsuid,
+            DimseRSPHandler rspHandler) throws IOException,
+            InterruptedException {
+        nset(cuid, cuid, iuid, data, tsuid, rspHandler);
+    }
+
+    public void nset(String asuid, String cuid, String iuid, DataWriter data,
+            String tsuid, DimseRSPHandler rspHandler) throws IOException,
+            InterruptedException {
+        PresentationContext pc = pcFor(asuid, tsuid);
+        DicomObject nsetrq = CommandUtils.mkNSetRQ(ae.nextMessageID(), cuid,
+                iuid);
+        invoke(pc.getPCID(), nsetrq, data, rspHandler, ae.getDimseRspTimeout());
+    }
+
+    public DimseRSP nset(String cuid, String iuid, DataWriter data,
+            String tsuid) throws IOException, InterruptedException {
+        return nset(cuid, cuid, iuid, data, tsuid);
+    }
+
+    public DimseRSP nset(String asuid, String cuid, String iuid,
+            DataWriter attrs, String tsuid) throws IOException,
             InterruptedException {
         FutureDimseRSP rsp = new FutureDimseRSP();
         nset(asuid, cuid, iuid, attrs, tsuid, rsp);
