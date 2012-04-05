@@ -324,8 +324,10 @@ public class DashboardService extends ServiceMBeanSupport {
             writer.newLine();
             writer.close();
             
-            sort(this.groupFilename);
-            sort(this.reportFilename);
+            if (isGroup)
+            	sort(this.groupFilename);
+            else
+            	sort(this.reportFilename);
         } catch (IOException e) {
             log.error("Exception: ", e);
 	    } finally {
