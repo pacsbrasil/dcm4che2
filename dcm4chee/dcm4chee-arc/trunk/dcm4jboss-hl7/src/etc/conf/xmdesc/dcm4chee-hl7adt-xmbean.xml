@@ -181,11 +181,11 @@ Surrounding <i>demograhic-match</i> by brackets('[]') defines, that
 demographic fields shall *not* be considered for the selection of an existing
 Patient record, if the Patient ID is qualified by an Issuer/Authority in the
 HL7 ADT message *and* in the matching Patient Record.
-<p><b>Attention:</b>
-<br/>Configuration of considertion of demographic fields for the selection of
+<p><b>Warning:</b>Improper configuration may cause update/deletion of wrong patient or creation of doublets.<br/>
+Furthermore, the consideration of demographic fields for the selection of
 existing Patient records disables the update of such Patient Demographics
-attributes by HL7 ADT messages! => Only change the default value of
-<code>pid,issuer?</code>, if you know, what you are doing!
+attributes by HL7 ADT messages!
+<p>Default: <code>pid,issuer?</code>
 ]]>
       </description>
       <name>PatientMatching</name>

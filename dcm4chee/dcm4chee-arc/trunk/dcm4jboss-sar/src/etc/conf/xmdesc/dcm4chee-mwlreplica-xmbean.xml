@@ -156,10 +156,8 @@ HL7 ORM message *and* in the matching Patient Record.
 existing Patient records disables the update of such Patient Demographics
 attributes by HL7 ORM messages! => Only change the default value of
 <code>pid,issuer?</code>, if you know, what you are doing!
-<p><b>Attention:</b>
-<br/>Only change the default value of
-<code>pid,issuer?[familyname,givenname,middlename?,birthdate]</code>
-if you know, what you are doing!
+<p><b>Warning:</b>Improper configuration may cause MWL assignments to wrong patient.<br/>
+<p>Default: <code>pid,issuer?</code>
 ]]>
       </description>
       <name>PatientMatching</name>
