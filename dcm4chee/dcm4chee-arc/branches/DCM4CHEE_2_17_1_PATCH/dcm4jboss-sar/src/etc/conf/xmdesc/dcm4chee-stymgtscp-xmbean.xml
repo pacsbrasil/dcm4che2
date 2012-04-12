@@ -93,10 +93,8 @@ Surrounding <i>demograhic-match</i> by brackets('[]') defines, that
 demographic fields shall *not* be considered for the selection of an existing
 Patient record, if the Patient ID is qualified by an Issuer/Authority in the
 received N-CREATE request *and* in the matching Patient Record.
-<p><b>Attention:</b>
-<br/>Only change the default value of
-<code>pid,issuer?[familyname,givenname,middlename?,birthdate]</code>
-if you know, what you are doing!
+<p><b>Warning:</b>Improper configuration may cause study assignments to wrong patient.<br/>
+<p>Default: <code>pid,issuer?</code>
 ]]>
       </description>
       <name>PatientMatching</name>

@@ -346,10 +346,8 @@ If <b>StoreOriginalPatientIDInOtherPatientIDsSequence</b> = <code>true</code>,
 the original <i>Patient ID</i> and <i>Issuer of Patient ID</i> in the received
 DICOM Composite Object will be stored in an item of the <i>Other Patient IDs
 Sequence</i>.
-<p><b>Attention:</b>
-<br/>Only change the default value of
-<code>pid,issuer?[familyname,givenname,middlename?,birthdate]</code>
-if you know, what you are doing!
+<p><b>Warning:</b>Improper configuration may cause study assignments to wrong patient.<br/>
+<p>Default: <code>pid,issuer?[familyname,givenname,middlename?,birthdate]</code>
 ]]>
       </description>
       <name>PatientMatching</name>
