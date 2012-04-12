@@ -896,9 +896,8 @@ public class StudyListPage extends Panel {
                     		.setInitialWidth(500)
                     		.setInitialHeight(280 + (20 * selected.getPatients().size()));
                     }                
-                    if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
+                    if (ContentEditDelegate.getInstance().sendsRejectionNotes()) 
                         remarkModel.addModel(new StringResourceModel("folder.message.warnDelete",this, null));
-                    }
         	}
         	
             @Override
