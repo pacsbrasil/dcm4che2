@@ -111,7 +111,9 @@
       	Format: &lt;msgTypeID&gt;:&lt;XSL URL/Name&gt;[|14] <br/>
       	The optional postfix '|14' can be used to support stylesheets written for dcm4che14 xml format. <br/>
       	XSL names that do not start with 'resource:' or 'file:' must be located in ConfigDirectory/[Receiver/] <br />
-      	In this case the stylesheet used will be choosen according the configured receiver. (see Template service:getTemplatesForAET)]]>
+      	In this case the stylesheet used will be choosen according the configured receiver. (see Template service:getTemplatesForAET)<br />
+      	<b>Warning:</b> Improper configuration may cause wrong results or prohibit associated actions.
+      	]]>
       </description>
       <name>XslFilenames</name>
       <type>java.lang.String</type>
