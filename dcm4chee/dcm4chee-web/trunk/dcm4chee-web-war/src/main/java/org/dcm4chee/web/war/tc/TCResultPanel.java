@@ -38,6 +38,7 @@
 package org.dcm4chee.web.war.tc;
 
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,6 +52,7 @@ import java.util.Map;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -84,6 +86,8 @@ import org.dcm4chee.web.dao.tc.TCQueryFilter;
 import org.dcm4chee.web.dao.tc.TCQueryLocal;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
+import org.dcm4chee.web.war.folder.StudyListPage;
+import org.dcm4chee.web.war.folder.ViewPort;
 import org.dcm4chee.web.war.folder.webviewer.Webviewer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,6 +121,11 @@ public class TCResultPanel extends Panel {
         
         final ModalWindow modalWindow = new ModalWindow("modal-window");
         add(modalWindow);
+
+        final ModalWindow studyWindow = new ModalWindow("study-window");
+        final TCStudyListPanel studyPanel = new TCStudyListPanel(studyWindow.getContentId());
+        studyWindow.setContent(studyPanel);
+        add(studyWindow);
           
         final SortableTCListProvider tclistProvider = new SortableTCListProvider(
                 (TCListModel) getDefaultModel());
@@ -201,8 +210,52 @@ public class TCResultPanel extends Panel {
                .add(new TooltipBehaviour("tc.result.table.","edit"))
                .add(new SecurityBehavior(TCPanel.getModuleName() + ":editTC"));
                
+               final Component studyLink = new AjaxLink<String>("tc-study") {
+                   private static final long serialVersionUID = 1L;
+                   @Override
+                   public void onClick(AjaxRequestTarget target) { 
+                       try
+                       {
+                           TCObject tcObject = TCObject.create(tc);
+                           List<TCReferencedStudy> refStudies = tcObject.getReferencedStudies();
+                           if (refStudies!=null && !refStudies.isEmpty())
+                           {
+                               if (refStudies.size()==1)
+                               {
+                                   studyPanel.setStudyInstanceUID(refStudies.get(0).getStudyUID());
+                               }
+                               else
+                               {
+                                   studyPanel.setPatientIdAndIssuer(tc.getPatientId(), 
+                                           tc.getIssuerOfPatientId());
+                               }
+                               studyPanel.getViewPort().clear();
+                               studyWindow.setTitle(MessageFormat.format(getString("tc.result.studywindow.title"),tc.getTitle()));
+                               studyWindow.setInitialWidth(1200);
+                               studyWindow.setInitialHeight(600);
+                               studyWindow.setMinimalWidth(800);
+                               studyWindow.setMinimalHeight(400);
+                               studyWindow.show(target);
+                           }
+                           else
+                           {
+                               log.warn("Showing TC referenced studies discarded: No referened study found!");
+                           }
+                       }
+                       catch (Exception e)
+                       {
+                           log.error("Unable to show TC referenced studies!", e);
+                       }
+                   }
+               }
+              .add(new Image("tcStudyImg", ImageManager.IMAGE_COMMON_SEARCH)
+              .add(new ImageSizeBehaviour("vertical-align: middle;")))
+              .add(new TooltipBehaviour("tc.result.table.","showStudy"))
+              .add(new SecurityBehavior(TCPanel.getModuleName() + ":showTCStudy"));
+               
                 item.add(editLink);
-
+                item.add(studyLink);
+                
                 item.add(new AttributeModifier("class", true,
                         new AbstractReadOnlyModel<String>() {
 
@@ -443,6 +496,87 @@ public class TCResultPanel extends Panel {
                 webviewerLinkProviders[i]
                         .setBaseUrl(baseUrls.get(names.get(i)));
             }
+        }
+    }
+    
+    
+    private static class TCStudyListPanel extends StudyListPage
+    {
+        private String stuid;
+        private String patid;
+        private String issuerOfPatId;
+        private ViewPort viewPort;
+        
+        public TCStudyListPanel(final String id)
+        {
+            super(id);
+        }
+        
+        public String getStudyInstanceUID()
+        {
+            return stuid;
+        }
+        
+        public String getPatientId()
+        {
+            return patid;
+        }
+        
+        public String getIssuerOfPatientId()
+        {
+            return issuerOfPatId;
+        }
+        
+        public void setStudyInstanceUID(String stuid)
+        {
+            this.stuid = stuid;
+            this.patid=null;
+            this.issuerOfPatId=null;
+        }
+        
+        public void setPatientIdAndIssuer(String patId, String issuerOfPatId)
+        {
+            this.stuid=null;
+            this.patid=patId;
+            this.issuerOfPatId=issuerOfPatId;
+        }
+        
+        @Override
+        protected ViewPort getViewPort()
+        {
+            if (viewPort==null)
+            {
+                viewPort = new ViewPort();
+            }
+            return viewPort;
+        }
+        
+        @Override
+        protected PageParameters getPageParameters()
+        {
+            PageParameters params = null;
+            
+            if (stuid!=null)
+            {
+                params = new PageParameters();
+                params.put("studyIUID",stuid);
+                params.put("showSearch","false");
+                params.put("query","true");
+            }
+            else if (patid!=null)
+            {
+                params = new PageParameters();
+                params.put("patID",patid);
+                if (issuerOfPatId!=null)
+                {
+                    params.put("issuer",issuerOfPatId);
+                }
+                params.put("latestStudiesFirst","true");
+                params.put("showSearch","false");
+                params.put("query","true");
+            }
+            
+            return params;
         }
     }
     

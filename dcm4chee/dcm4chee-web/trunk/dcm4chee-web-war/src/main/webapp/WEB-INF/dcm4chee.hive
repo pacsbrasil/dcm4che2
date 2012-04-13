@@ -134,6 +134,14 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "T
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:tc:webviewerInstanceLink", "render, enable";
 };
 
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "TCShowStudy"
+{
+    permission ${ComponentPermission} "org.dcm4chee.web.war.tc.TCPanel", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:tc:showTCStudy", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:exportButton", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.folder.ExportPage", "render, enable";
+};
+
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "AERead"
 {
 // KEY: swarm.principal.AERead

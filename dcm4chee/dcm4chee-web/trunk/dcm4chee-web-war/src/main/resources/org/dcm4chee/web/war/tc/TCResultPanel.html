@@ -6,6 +6,7 @@
 <body>
     <wicket:panel>
     	<div wicket:id="modal-window" />
+    	<div wicket:id="study-window" />
         <div>
 	        <table class="content-table-header tc-content-table-header">
 	            <tr>
@@ -32,6 +33,7 @@
 					<th id="loadColumn"/>
 					<th id="viewColumn"/>
 					<th id="editColumn"/>
+					<th id="showStudyColumn"/>
 				</tr>
 				<tr wicket:id="row" class="hover-out">
 					<td wicket:id="title">[title]</td>
@@ -51,6 +53,11 @@
                     <td>                   
                        <a wicket:id="tc-edit" href="#">
                            <img wicket:id="tcEditImg"/>
+                       </a>
+                    </td>
+                    <td>                   
+                       <a wicket:id="tc-study" href="#">
+                           <img wicket:id="tcStudyImg"/>
                        </a>
                     </td>
 				</tr>

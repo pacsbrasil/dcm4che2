@@ -225,7 +225,7 @@ public class StudyListPage extends Panel {
         "Requested editing of an object that should not be edited anymore because of editing time limit. " +
         "The restriction was overriden because the user has assigned the web right 'swarm.principal.IgnoreEditTimeLimit'.";
 
-    private ViewPort viewport = ((AuthenticatedWebSession) AuthenticatedWebSession.get()).getFolderViewPort();
+    private ViewPort viewport;
     private StudyListHeader header;
     private SelectedEntities selected = new SelectedEntities();
 
@@ -264,6 +264,8 @@ public class StudyListPage extends Panel {
         if (StudyListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
 
+        viewport = getViewPort();
+        
         studyPermissionHelper = StudyPermissionHelper.get();
 
         add(macb);
@@ -2295,12 +2297,21 @@ public class StudyListPage extends Panel {
     
     @Override
     protected void onBeforeRender() {
-        applyPageParameters();
+        applyPageParameters(getPageParameters());
         super.onBeforeRender();
     }
+    
+    protected PageParameters getPageParameters()
+    {
+        return getRequestCycle().getPageParameters();
+    }
+    
+    protected ViewPort getViewPort()
+    {
+        return ((AuthenticatedWebSession) AuthenticatedWebSession.get()).getFolderViewPort();
+    }
 
-    private void applyPageParameters() {
-        PageParameters paras = getRequestCycle().getPageParameters();
+    private void applyPageParameters(PageParameters paras) {
         if (paras != null && !paras.isEmpty()) {
             log.info("applyPageParameters:"+paras);
             StudyListFilter filter = viewport.getFilter();
@@ -2328,6 +2339,11 @@ public class StudyListPage extends Panel {
             filter.setWithoutPps(Boolean.valueOf(paras.getString("withoutPps")));
             filter.setExactModalitiesInStudy(Boolean.valueOf(paras.getString("exactModalitiesInStudy")));
             filter.setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
+            if (paras.containsKey("showSearch")){
+                showSearch = Boolean.valueOf(paras.getString("showSearch"));
+                for (WebMarkupContainer wmc : searchTableComponents)
+                    wmc.setVisible(showSearch); 
+            }
             if (Boolean.valueOf(paras.getString("query"))) {
                 queryStudies(null);
             }

@@ -111,6 +111,14 @@ public class TCModel extends InstanceModel {
     public String getSeriesInstanceUID() {
         return dataset.getString(Tag.SeriesInstanceUID);
     }
+    
+    public String getPatientId() {
+        return dataset.getString(Tag.PatientID);
+    }
+    
+    public String getIssuerOfPatientId() {
+        return dataset.getString(Tag.IssuerOfPatientID);
+    }
 
     public String getFileSystemId() {
         return fsId;
