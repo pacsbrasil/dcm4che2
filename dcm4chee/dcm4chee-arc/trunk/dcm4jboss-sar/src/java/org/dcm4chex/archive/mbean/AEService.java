@@ -267,10 +267,15 @@ public class AEService extends ServiceMBeanSupport {
         ae.setTitle(newAET);
         aeManager.updateAE(ae);
         
-        fileSystemMgt().updateFileSystemRetrieveAET(prevAET, newAET,
-        		updateStudiesBatchSize);
+        updateFileSystemRetrieveAET(prevAET, newAET);
+        updateOtherServicesForAETChange(prevAET, newAET);
+        
+        log.info("AE title changed from " + prevAET + " to " + newAET);
+        notifyAETchange(prevAET, newAET, "");
+    }
 
-        for (int i = 0; i < otherServiceNames.length; i++) {
+	protected void updateOtherServicesForAETChange(String prevAET, String newAET) throws Exception {
+		for (int i = 0; i < otherServiceNames.length; i++) {
             if (server.isRegistered(otherServiceNames[i])) {
                 updateAETitle(otherServiceNames[i], otherServiceAETAttrs[i],
                         prevAET, newAET);
@@ -282,10 +287,12 @@ public class AEService extends ServiceMBeanSupport {
                 }
             }
         }
-        log.info("AE title changed from " + prevAET + " to " + newAET);
-        notifyAETchange(prevAET, newAET, "");
+	}
+    
+    protected void updateFileSystemRetrieveAET(String prevAET, String newAET) throws Exception {
+    	fileSystemMgt().updateFileSystemRetrieveAET(prevAET, newAET, updateStudiesBatchSize);
     }
-
+    
     private boolean updateAETitle(ObjectName name, String attr,
             String prevAET, String newAET) throws Exception {
         try {
