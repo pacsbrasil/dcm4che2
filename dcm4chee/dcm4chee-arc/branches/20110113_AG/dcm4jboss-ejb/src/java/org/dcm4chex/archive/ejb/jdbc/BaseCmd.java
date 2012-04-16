@@ -108,7 +108,7 @@ public abstract class BaseCmd {
 	        log.debug("SQL: " + sql);
 
  	   	 try {
-	         Context jndiCtx = new InitialContext();
+	         Context jndiCtx = createInitialContext();
 	         try {
 	             ds = (DataSource) jndiCtx.lookup(dsJndiName);
 	         } finally {
@@ -124,6 +124,10 @@ public abstract class BaseCmd {
 
         open();
     }
+
+	public InitialContext createInitialContext() throws NamingException {
+		return new InitialContext();
+	}
 
     public static String transactionIsolationLevelAsString(int level) {
         switch (level) {
