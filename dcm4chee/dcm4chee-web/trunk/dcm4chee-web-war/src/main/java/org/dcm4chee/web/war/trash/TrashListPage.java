@@ -97,6 +97,7 @@ import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
+import org.dcm4chee.web.common.model.MultiResourceModel;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
@@ -108,6 +109,7 @@ import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.folder.delegate.ContentEditDelegate;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
 import org.dcm4chee.web.war.trash.delegate.StoreBridgeDelegate;
@@ -749,7 +751,13 @@ public class TrashListPage extends Panel {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                confirmDelete.confirm(target, new StringResourceModel(
+                if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
+                    MultiResourceModel remarkModel = new MultiResourceModel();
+                	remarkModel.addModel(new StringResourceModel("trash.message.warnDelete",this, null));
+                	confirmDelete.setRemark(remarkModel);
+                	confirmDelete.setInitialWidth(500).setInitialHeight(280);
+                }
+            	confirmDelete.confirm(target, new StringResourceModel(
                         "trash.message.confirmDeleteAll", this, null), null);
             }
         };
@@ -773,6 +781,12 @@ public class TrashListPage extends Panel {
                 selected.deselectChildsOfSelectedEntities();
                 log.info("Selected Entities: :" + selected);
                 if (selected.hasDicomSelection()) {
+                    if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
+                        MultiResourceModel remarkModel = new MultiResourceModel();
+                    	remarkModel.addModel(new StringResourceModel("trash.message.warnDelete",this, null));
+                    	confirmDelete.setRemark(remarkModel);
+                    	confirmDelete.setInitialWidth(500).setInitialHeight(280);
+                    }
                     confirmDelete.confirm(target, new StringResourceModel(
                             "trash.message.confirmDelete", this, null,
                             new Object[] { selected }), selected);
