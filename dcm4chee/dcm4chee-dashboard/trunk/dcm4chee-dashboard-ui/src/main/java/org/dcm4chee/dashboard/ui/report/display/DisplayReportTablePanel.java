@@ -45,6 +45,8 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -291,7 +293,7 @@ public class DisplayReportTablePanel extends Panel {
             }
         }
     }
-    
+
     private void refreshView() {
         int start = offset + 1;
         int end = Math.min((offset + pagesize), total);
@@ -313,7 +315,8 @@ public class DisplayReportTablePanel extends Panel {
                         RepeatingView columnValues = new RepeatingView("column-values");
                         parent.add(columnValues);
                         for (int i = 1; i <= headers.size(); i++) 
-                            columnValues.add(new WebMarkupContainer(columnValues.newChildId()).add(new Label("column-value", resultSet.getString(i))));
+                            columnValues.add(new WebMarkupContainer(columnValues.newChildId())
+                            	.add(new Label("column-value", isLob(resultSet, i) ? "" : resultSet.getString(i))));
                     }
                     resultSet.next();
                 }
@@ -327,7 +330,14 @@ public class DisplayReportTablePanel extends Panel {
             }
         }
     }
-    
+
+    private boolean isLob(ResultSet resultSet, int i) throws SQLException {
+    	int type = resultSet.getMetaData().getColumnType(i);
+    	return (type == Types.	BLOB
+    			|| type == Types.CLOB
+    			|| type == Types.NCLOB) ? true : false;
+    }
+
     private Panel getPanel() {
         return this;
     }
