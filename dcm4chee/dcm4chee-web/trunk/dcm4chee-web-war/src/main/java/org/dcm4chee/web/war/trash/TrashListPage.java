@@ -751,12 +751,6 @@ public class TrashListPage extends Panel {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
-                    MultiResourceModel remarkModel = new MultiResourceModel();
-                	remarkModel.addModel(new StringResourceModel("trash.message.warnDelete",this, null));
-                	confirmDelete.setRemark(remarkModel);
-                	confirmDelete.setInitialWidth(500).setInitialHeight(280);
-                }
             	confirmDelete.confirm(target, new StringResourceModel(
                         "trash.message.confirmDeleteAll", this, null), null);
             }
@@ -781,12 +775,6 @@ public class TrashListPage extends Panel {
                 selected.deselectChildsOfSelectedEntities();
                 log.info("Selected Entities: :" + selected);
                 if (selected.hasDicomSelection()) {
-                    if (ContentEditDelegate.getInstance().sendsRejectionNotes()) {
-                        MultiResourceModel remarkModel = new MultiResourceModel();
-                    	remarkModel.addModel(new StringResourceModel("trash.message.warnDelete",this, null));
-                    	confirmDelete.setRemark(remarkModel);
-                    	confirmDelete.setInitialWidth(500).setInitialHeight(280);
-                    }
                     confirmDelete.confirm(target, new StringResourceModel(
                             "trash.message.confirmDelete", this, null,
                             new Object[] { selected }), selected);
