@@ -777,14 +777,26 @@ public abstract class LookupTable {
         }
         
         LookupTable vlut = createLut(inBits, signed, voiLut, pixelPaddingValue, pixelPaddingRange, inverse);
-        vlut.off -= intercept;
-        float in1 = vlut.off / slope;
+        // Gets the values of the min/max range of the voi lut pre rescale slope
+        float in1 = (vlut.off-intercept) / slope;
         float in2 = in1 + vlut.length() / slope;
         int off = (int) Math.floor(Math.min(in1, in2));
         int len = ((int) Math.ceil(Math.max(in1, in2))) - off;
         short[] data = new short[len];
+        int nth = data.length/10;
+        log.debug("slope={} off={}", slope,off);
+        // Input value would normally add vlut.off so just set it to zero 
+        // and don't do the add in lookupRawShort.
+        vlut.off=0;
+        // Absolute slope as in1 was computed as the smallest value, so we 
+        // always need to be increasing - this is equivalent to starting at in2
+        // and using the existing slope when slope<0
+        slope = Math.abs(slope);
         for (int i = 0; i < data.length; i++) {
-            data[i] = vlut.lookupRawShort(Math.round(i * slope +off));
+            data[i] = vlut.lookupRawShort(Math.round(i * slope));
+            if( (i % nth)==0 ) {
+                log.debug("lookupRawShort {}={}", data[i], i);
+            }
         }
         
         GenericNumericArray dataArray = GenericNumericArray.create(data);
