@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+
 import javax.ejb.FinderException;
 import javax.management.InstanceNotFoundException;
 import javax.management.JMException;
@@ -292,6 +293,10 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return new FindScp(this, true);
     }
 
+    public final TLSConfigDelegate getTLSConfig() {
+    	return tlsConfig;
+    }
+    
     public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
     }
@@ -991,7 +996,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 		return moveScp;
 	}
 
-    	protected void bindDcmServices(DcmServiceRegistry services) {
+		protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelFIND,
                 dicomFindScp);
         services.bind(UIDs.StudyRootQueryRetrieveInformationModelFIND,
@@ -1023,7 +1028,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         dcmHandler.addAssociationListener(moveScp);
     }
 
-    	protected void unbindDcmServices(DcmServiceRegistry services) {
+		protected void unbindDcmServices(DcmServiceRegistry services) {
         services.unbind(UIDs.PatientRootQueryRetrieveInformationModelFIND);
         services.unbind(UIDs.StudyRootQueryRetrieveInformationModelFIND);
         services.unbind(UIDs.PatientStudyOnlyQueryRetrieveInformationModelFIND);
@@ -1053,7 +1058,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     private static final ExtNegotiator extNegotiator = new ExtNegotiator() {
-        public byte[] negotiate(byte[] offered) {
+		public byte[] negotiate(byte[] offered) {
             if (offered.length > FUZZY_MATCHING)
                 offered[FUZZY_MATCHING] &=
                     AttributeFilter.isSoundexEnabled() ? 1 : 0;
@@ -1061,14 +1066,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     };
 
-    protected void enablePresContexts(AcceptorPolicy policy) {
+	protected void enablePresContexts(AcceptorPolicy policy) {
         putPresContexts(policy, valuesToStringArray(privateCuidMap),
                 valuesToStringArray(privateTSuidMap));
         putPresContexts(policy, valuesToStringArray(standardCuidMap),
                 valuesToStringArray(tsuidMap));
     }
 
-    protected void disablePresContexts(AcceptorPolicy policy) {
+	protected void disablePresContexts(AcceptorPolicy policy) {
         putPresContexts(policy, valuesToStringArray(privateCuidMap), null);
         putPresContexts(policy, valuesToStringArray(standardCuidMap), null);
     }
