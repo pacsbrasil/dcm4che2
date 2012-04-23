@@ -294,6 +294,10 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return new FindScp(this, true);
     }
 
+    public final TLSConfigDelegate getTLSConfig() {
+    	return tlsConfig;
+    }
+    
     public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
     }
