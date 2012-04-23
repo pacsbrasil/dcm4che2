@@ -644,6 +644,9 @@ public class TrashListPage extends Panel {
                                             .append(", ");
                                 }
                                 suids.setLength(suids.length() - 2);
+                            	confirmRestore
+                        			.setInitialWidth(500)
+                        			.setInitialHeight(280);
                                 confirmRestore
                                         .confirm(
                                                 target,
