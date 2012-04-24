@@ -121,7 +121,9 @@ public class IANScuService extends AbstractScheduledScuService implements Messag
         if (tc == null) {
             tc = assoc.getTransferCapabilityAsSCU(UID.BasicStudyContentNotificationSOPClassRetired);
             if (tc == null) {
-                throw new NoPresentationContextException(UIDDictionary.getDictionary().prompt(UID.KeyObjectSelectionDocumentStorage));
+                throw new NoPresentationContextException(UIDDictionary.getDictionary().prompt(
+                        isOfferStudyContentNotification() ? UID.BasicStudyContentNotificationSOPClassRetired : 
+                            UID.InstanceAvailabilityNotificationSOPClass));
             }
             String tsuid = tc.getTransferSyntax()[0];
             DicomObject scn = toSCN(ian);
@@ -152,7 +154,7 @@ public class IANScuService extends AbstractScheduledScuService implements Messag
         scn.putString(Tag.StudyInstanceUID, VR.UI, ian.getString(Tag.StudyInstanceUID));
         DicomElement ianSeriesSeq = ian.get(Tag.ReferencedSeriesSequence);
         DicomElement scnSeriesSeq = scn.putSequence(Tag.ReferencedSeriesSequence);
-        DicomObject ianSeriesItem, scnSeriesItem;
+        DicomObject ianSeriesItem, scnSeriesItem, scnSOPItem;
         DicomElement ianSOPSeq, scnSOPSeq;
         for (int i = 0, n = ianSeriesSeq.countItems(); i < n; ++i) {
             ianSeriesItem = ianSeriesSeq.getDicomObject(i);
@@ -163,7 +165,9 @@ public class IANScuService extends AbstractScheduledScuService implements Messag
             ianSOPSeq = ianSeriesItem.get(Tag.ReferencedSOPSequence);
             scnSOPSeq = scnSeriesItem.putSequence(Tag.ReferencedImageSequence);
             for (int j = 0, m = ianSOPSeq.countItems(); j < m; ++j) {
-                scnSOPSeq.addDicomObject(ianSOPSeq.getDicomObject(j).exclude(INSTANCE_AVAILABILITY));
+                scnSOPItem = new BasicDicomObject();
+                ianSOPSeq.getDicomObject(j).exclude(INSTANCE_AVAILABILITY).copyTo(scnSOPItem);
+                scnSOPSeq.addDicomObject(scnSOPItem);
             }
         }
         return scn;
