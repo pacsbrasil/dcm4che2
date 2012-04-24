@@ -57,7 +57,7 @@ public class DcmDecodeParam {
     }
     
     public final static DcmEncodeParam IVR_LE = new DcmEncodeParam(
-            ByteOrder.LITTLE_ENDIAN, false, false, false, false, false, false);
+            ByteOrder.LITTLE_ENDIAN, false, false, false, true, true, true);
 
     public final static DcmEncodeParam IVR_BE = new DcmEncodeParam(
             ByteOrder.BIG_ENDIAN, false, false, false, true, true, true);
