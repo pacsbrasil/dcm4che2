@@ -41,6 +41,7 @@ package org.dcm4chee.web.service.contentedit;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -128,6 +129,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     private ObjectName attrModScuServiceName;
 
     private boolean processIAN;
+    private boolean sendIANonMppsLinked;
     private boolean processRejNote;
     private boolean dcm14Stylesheet;
     
@@ -189,6 +191,14 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     public void setForwardModifiedToAETs(String aets) {
         this.forwardModifiedToAETs = NONE.equals(aets) ? null : StringUtils.split(aets, '\\');
+    }
+
+    public boolean isSendIANonMppsLinked() {
+        return sendIANonMppsLinked;
+    }
+
+    public void setSendIANonMppsLinked(boolean sendIANonMppsLinked) {
+        this.sendIANonMppsLinked = sendIANonMppsLinked;
     }
 
     public boolean isForceNewRejNoteStudyIUID() {
@@ -567,6 +577,14 @@ public class ContentEditService extends ServiceMBeanSupport {
                 this.scheduleForward(it.next());
             }
         }
+        if (sendIANonMppsLinked) {
+            log.info("Send IAN after linking MPPS to MWL! IANs:"+fwdIANs.size());
+            try {
+                this.sendIANs(fwdIANs.values());
+            } catch (Exception x) {
+                log.warn("Send IAN after linking MPPS to MWL failed!", x);
+            }
+        }
     }
     
     private void addMwlAttrs2Mpps(MppsToMwlLinkResult result) {
@@ -905,13 +923,17 @@ public class ContentEditService extends ServiceMBeanSupport {
     private ArrayList<DicomObject> processIANs(EntityTree entityTree, Availability availability) throws InstanceNotFoundException, MBeanException, ReflectionException {
         if (processIAN) {
             ArrayList<DicomObject> ians = getIANs(entityTree, availability);
-            for (DicomObject ian : ians) {
-                server.invoke(ianScuServiceName, "scheduleIAN", 
-                        new Object[]{ian}, new String[]{DicomObject.class.getName()});
-            }
+            sendIANs(ians);
             return ians;
         }
         return new ArrayList<DicomObject>();
+    }
+
+    private void sendIANs(Collection<DicomObject> ians) throws InstanceNotFoundException, MBeanException, ReflectionException{
+        for (DicomObject ian : ians) {
+            server.invoke(ianScuServiceName, "scheduleIAN", 
+                    new Object[]{ian}, new String[]{DicomObject.class.getName()});
+        }
     }
 
     public void sendJMXNotification(Object o) {
