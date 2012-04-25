@@ -76,6 +76,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isSendIANonMppsLinked"
+      setMethod="setSendIANonMppsLinked">
+      <description>Enable/Disable sending Instance Availability Notification after linking MPPS with MWL.
+      </description>
+      <name>sendIANonMppsLinked</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getForwardModifiedToAETs"
       setMethod="setForwardModifiedToAETs">
       <description>List of AETs to forward modified objects to system that doesn't support Attribute Modification Notification.
