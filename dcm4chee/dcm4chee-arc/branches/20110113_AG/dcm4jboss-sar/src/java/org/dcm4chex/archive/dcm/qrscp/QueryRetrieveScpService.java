@@ -1387,6 +1387,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
         Association assoc = activeAssoc.getAssociation();
         String dest = assoc.isRequestor() ? assoc.getCalledAET() 
                 : assoc.getCallingAET();
+        
+        File f = getFile(info);
         PresContext presCtx = selectAcceptedPresContext(assoc, info);
         if (presCtx == null)
             throw new NoPresContextException(
@@ -1421,7 +1423,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
             buf = new byte[bufferSize];
             assoc.putProperty(SEND_BUFFER, buf);
         }
-        File f = getFile(info);
+        
         FileDataSource ds = createFileDataSource(f, mergeAttrs, buf, datasetUpdater);
         ds.setWithoutPixeldata(isWithoutPixelData(dest));
         ds.setPatchJpegLS(patchJpegLS);
