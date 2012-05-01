@@ -64,7 +64,7 @@ import org.dcm4chex.archive.ejb.jdbc.FileInfo;
  * @since 23.03.2005
  */
 
-final class RetrieveInfo {
+public class RetrieveInfo {
 
     private static final String[] IVR_LE_TS = { UIDs.ImplicitVRLittleEndian };
 
@@ -80,13 +80,13 @@ final class RetrieveInfo {
             || UIDs.ImplicitVRLittleEndian.equals(uid);
     }
 
-    private static class IuidsAndTsuids {
+    protected static class IuidsAndTsuids {
         final Set<String> iuids = new HashSet<String>();
         final Set<String> tsuids = new HashSet<String>();
     }
     
     private final int size;
-    private final Map<String, IuidsAndTsuids> iuidsAndTsuidsByCuid =
+    protected final Map<String, IuidsAndTsuids> iuidsAndTsuidsByCuid =
             new HashMap<String, IuidsAndTsuids>();
     private final Map<String, List<FileInfo>> localFilesByIuid =
             new LinkedHashMap<String, List<FileInfo>>();
@@ -102,7 +102,7 @@ final class RetrieveInfo {
 
     private boolean externalRetrieveAET;
     
-    RetrieveInfo(QueryRetrieveScpService service, FileInfo[][] instInfos) {
+    public RetrieveInfo(QueryRetrieveScpService service, FileInfo[][] instInfos) {
         FileInfo[] fileInfos;
         FileInfo fileInfo;
         String iuid;
