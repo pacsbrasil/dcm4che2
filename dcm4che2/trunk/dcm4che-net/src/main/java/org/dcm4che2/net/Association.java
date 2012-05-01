@@ -1106,7 +1106,7 @@ public class Association implements Runnable {
                         AAssociateRJ.REASON_CALLED_AET_NOT_RECOGNIZED);
             if (!connector.checkConnectionCountWithinLimit())
                 throw new AAssociateRJ(AAssociateRJ.RESULT_REJECTED_TRANSIENT,
-                        AAssociateRJ.SOURCE_SERVICE_PROVIDER_ACSE,
+                        AAssociateRJ.SOURCE_SERVICE_PROVIDER_PRES,
                         AAssociateRJ.REASON_TEMPORARY_CONGESTION);
             setApplicationEntity(ae);
             associateAC = ae.negotiate(this, rq);
