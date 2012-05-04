@@ -38,13 +38,12 @@
 
 package org.dcm4cheri.util;
 
-import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.VRs;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+
+import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.VRs;
 
 /**
  *
@@ -495,12 +494,15 @@ public class StringUtils {
     {
        char[] a = s.toCharArray();
        if (a.length == 0 || a.length > 16)
-          throw new IllegalArgumentException(s);
+          throw new IllegalArgumentException("AE title does not conform to DICOM standard, it is not " +
+          		"allowed to contain more than 16 characters (or 0) and " + s + 
+          		" contains " + s.length() + " characters.");
 
        for (int i = 0; i < a.length; ++i)
        {
           if (a[i] < '\u0020' || a[i] >= '\u007f')
-             throw new IllegalArgumentException(s);
+             throw new IllegalArgumentException("AE title does not conform to DICOM standard, " + s
+            		 + " contains unsupported characters.");
        }
        return s;
     }
