@@ -258,10 +258,11 @@ public class AEService extends ServiceMBeanSupport {
 
     public void updateAETitle(String prevAET, String newAET) throws Exception {
     	prevAET = prevAET.trim();
-    	newAET = newAET.trim();
+    	newAET = newAET.trim();    	
         if (prevAET.equals(newAET)) {
             return;
         }
+        checkAETitle(newAET);
         
         AEManager aeManager = aeMgr();
         AEDTO ae = aeManager.findByAET(prevAET);
@@ -293,9 +294,14 @@ public class AEService extends ServiceMBeanSupport {
     protected void updateFileSystemRetrieveAET(String prevAET, String newAET) throws Exception {
     	fileSystemMgt().updateFileSystemRetrieveAET(prevAET, newAET, updateStudiesBatchSize);
     }
+    
+	protected void checkAETitle(String aeTitle){
+		StringUtils.checkAET(aeTitle);
+	}
 
     private boolean updateAETitle(ObjectName name, String attr,
             String prevAET, String newAET) throws Exception {
+    	checkAETitle(newAET);
         try {
             String val = (String) server.getAttribute(name, attr);
             String[] aets = StringUtils.split(val, '\\');
@@ -404,6 +410,7 @@ public class AEService extends ServiceMBeanSupport {
                         + " cant be resolved! Disable hostname check to add new AE anyway!");
             }
         }
+        checkAETitle(title);
 
         AEDTO newAE = new AEDTO();
         newAE.setPk(pk);
