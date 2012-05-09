@@ -5,18 +5,18 @@
     <parent>
         <groupId>dcm4che.dcm4chee</groupId>
         <artifactId>dcm4chee-usr</artifactId>
-        <version>3.0.1</version>
+        <version>3.0.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-usr-dao</artifactId>
-    <version>3.0.1</version>
+    <version>3.0.2</version>
     <name>Ejb 3.0 components for dcm4chee</name>
     <dependencies>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-usr-entity</artifactId>
-            <version>3.0.1</version>
+            <version>3.0.2</version>
             <classifier>${db}</classifier>
             <scope>provided</scope>
         </dependency>

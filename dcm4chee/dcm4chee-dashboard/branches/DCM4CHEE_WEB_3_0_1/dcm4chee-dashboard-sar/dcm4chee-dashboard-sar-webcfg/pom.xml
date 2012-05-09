@@ -5,12 +5,12 @@
     <parent>
         <artifactId>dcm4chee-dashboard-sar</artifactId>
         <groupId>dcm4che.dcm4chee</groupId>
-        <version>3.0.1</version>
+        <version>3.0.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-dashboard-sar-webcfg</artifactId>
-    <version>3.0.1</version>
+    <version>3.0.2</version>
     <packaging>jboss-sar</packaging>
     <name>WEB3 Configuration Service</name>
     <dependencies>

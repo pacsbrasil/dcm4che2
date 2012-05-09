@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>dcm4che.dcm4chee</groupId>
 		<artifactId>dcm4chee-dashboard</artifactId>
-		<version>3.0.1</version>
+		<version>3.0.2</version>
 	</parent>
 	<name>Web Application for DASHBOARD</name>
 	<groupId>dcm4che.dcm4chee</groupId>
 	<artifactId>dcm4chee-dashboard-ui</artifactId>
-	<version>3.0.1</version>
+	<version>3.0.2</version>
 	<packaging>jar</packaging>
 	<properties>
 		<ear>dcm4chee-dashboard-${version}</ear>
@@ -19,19 +19,19 @@
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-icons</artifactId>
-            <version>3.0.1</version>
+            <version>3.0.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-common</artifactId>
-            <version>3.0.1</version>
+            <version>3.0.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-dashboard-sar-config</artifactId>
-            <version>3.0.1</version>
+            <version>3.0.2</version>
             <type>jboss-sar</type>
             <scope>provided</scope>
         </dependency>
