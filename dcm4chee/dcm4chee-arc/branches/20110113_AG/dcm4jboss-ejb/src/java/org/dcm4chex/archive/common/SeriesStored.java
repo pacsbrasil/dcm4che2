@@ -61,7 +61,7 @@ public class SeriesStored implements Serializable {
         private static final long serialVersionUID = 7625954422409724162L;
 
         public boolean isNotificationEnabled(Notification notif) {
-            return SeriesStored.class.getName().equals(notif.getType());
+            return SeriesStored.class.getName().equals(notif.getType()) || notif.getType().equals("com.agfa.pacs.archive.dcm.storescp.AgfaSeriesStored");
         }
     };
     
