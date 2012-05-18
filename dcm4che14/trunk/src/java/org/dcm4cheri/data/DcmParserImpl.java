@@ -104,7 +104,7 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
     
     private ByteArrayOutputStream unBuf = null;
 
-    private DcmDecodeParam fixInvalidExposureDoseSeq;
+    private DcmDecodeParam fixInvalidSequenceEncoding;
     
     public DcmParserImpl(InputStream in) {
         this.in = in instanceof DataInput ? (DataInput)in
@@ -409,10 +409,11 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                         if (rVR == VRs.OB)
                             switch (rTag) {
                             case Tags.CTDIPhantomTypeCodeSeq:
+                            case Tags.OtherPatientIDSeq:                            	
                                 if (log.isDebugEnabled())
                                     log.debug("Detect invalid VR 'OB' of " + Tags.toString(rTag)
                                             + " - switch Transfer Syntax to IVR_LE");
-                                fixInvalidExposureDoseSeq = decodeParam;
+                                fixInvalidSequenceEncoding = decodeParam;
                                 setDcmDecodeParam(DcmDecodeParam.IVR_LE);
                             case Tags.AcquisitionType:
                             case Tags.XRayTubeCurrentInuA:
@@ -713,11 +714,12 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
 //        rLen = sqLen; // restore rLen value
         if (handler != null && unBuf == null)
             handler.endSequence(sqLen);
-        if (fixInvalidExposureDoseSeq != null && tag == Tags.CTDIPhantomTypeCodeSeq) {
+		if (fixInvalidSequenceEncoding != null
+				&& (tag == Tags.CTDIPhantomTypeCodeSeq || tag == Tags.OtherPatientIDSeq)) {
             if (log.isDebugEnabled())
-                log.debug("Switch Transfer Syntax back to " + fixInvalidExposureDoseSeq);
-            setDcmDecodeParam(fixInvalidExposureDoseSeq);
-            fixInvalidExposureDoseSeq = null;
+                log.debug("Switch Transfer Syntax back to " + fixInvalidSequenceEncoding);
+            setDcmDecodeParam(fixInvalidSequenceEncoding);
+            fixInvalidSequenceEncoding = null;
         }
         return lread;
     }
