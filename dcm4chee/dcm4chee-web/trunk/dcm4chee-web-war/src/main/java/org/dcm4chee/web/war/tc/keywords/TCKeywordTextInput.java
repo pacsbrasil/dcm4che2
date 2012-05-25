@@ -37,9 +37,10 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc.keywords;
 
-import org.apache.wicket.Component;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
+import org.dcm4chee.web.war.tc.TCObject.ITextOrCode;
+import org.dcm4chee.web.war.tc.TCObject.TextOrCode;
 import org.dcm4chee.web.war.tc.TCUtilities;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextField;
 
@@ -87,18 +88,13 @@ public class TCKeywordTextInput extends AbstractTCInput {
     }
 
     @Override
-    public Object getInputValue() {
-        return textField.getText();
+    public ITextOrCode getValue() {
+        return TextOrCode.text(textField.getText());
     }
 
     @Override
-    public void resetInputValue() {
+    public void resetValue() {
         textField.setText(null);
-    }
-
-    @Override
-    public Component getInputComponent() {
-        return this;
     }
 
 }

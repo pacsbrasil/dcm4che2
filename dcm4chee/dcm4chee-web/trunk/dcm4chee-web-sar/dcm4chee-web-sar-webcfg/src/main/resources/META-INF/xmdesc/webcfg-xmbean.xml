@@ -645,12 +645,14 @@
         <br/>
         Each listed teaching-file attribute uses it's own associated keyword catalogue
         in order to provide smart lookup for a specific keyword value when searching for
-        teaching-files. Note: The only keyword catalogue that currently comes out-of-the-box 
-        with web3 is ACR! <br/>
+        teaching-files. Further, you may wish to configure exclusive/non-exclusive usage
+        of a keyword-catalogue (exclusive=no free-text input is possible; non-exclusive=
+        additional free-text input is possible). Note: The only keyword catalogue that 
+        currently comes out-of-the-box with web3 is ACR! <br/>
         <br/>
         Each entry needs to conform to the following syntax (catalogueVersion is optional):<br/>
         <br/>
-        Attribute ':' catalogueDesignatorId ',' catalogueId ',' catalogueVersion<br/>
+        Attribute ':' catalogueDesignatorId ',' catalogueId ',' catalogueVersion ',' exlusive?(true|false) <br/>
         <br/>
         Supported attributes are:<br/>
         <ul>
@@ -663,7 +665,7 @@
         </ul>
             <br/>
             <br/>
-        For example: "Keyword:ACR,ACR"
+        For example: "Keyword:ACR,ACR,true"
         ]]>
       </description>
       <name>TCKeywordCatalogues</name>
@@ -990,6 +992,16 @@
    <operation impact="ACTION">
       <description>Get a map of teaching-file field id's to keyword catalogue id's</description>
       <name>getTCKeywordCataloguesMap</name>
+      <return-type>java.util.Map</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Get a map of teaching-file field id's to exclusive keyword catalogue id's</description>
+      <name>getTCKeywordCataloguesMapExclusive</name>
+      <return-type>java.util.Map</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Get a map of teaching-file field id's to non-exclusive keyword catalogue id's</description>
+      <name>getTCKeywordCataloguesMapNonExclusive</name>
       <return-type>java.util.Map</return-type>
    </operation>
    <operation impact="ACTION">

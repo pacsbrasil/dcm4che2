@@ -181,10 +181,17 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
         getModel().setObject(null);
         text.getModel().setObject(null);
     }
-
+    
     @Override
-    public Component getInputComponent() {
-        return this;
+    public boolean isExclusive()
+    {
+        return text.isEnabled();
+    }
+    
+    @Override
+    public void setExclusive(boolean exclusive)
+    {
+        text.setEnabled(!exclusive);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

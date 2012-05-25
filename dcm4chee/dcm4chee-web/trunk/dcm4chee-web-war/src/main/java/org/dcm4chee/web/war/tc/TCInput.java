@@ -3,13 +3,15 @@ package org.dcm4chee.web.war.tc;
 import java.io.Serializable;
 
 import org.apache.wicket.Component;
+import org.dcm4chee.web.war.tc.TCObject.ITextOrCode;
 
 public interface TCInput extends Serializable {
-    public Object getInputValue();
+    
+    public ITextOrCode getValue();
 
-    public void resetInputValue();
+    public void resetValue();
 
-    public Component getInputComponent();
+    public Component getComponent();
 
     public void addChangeListener(ValueChangeListener l);
     
@@ -17,6 +19,6 @@ public interface TCInput extends Serializable {
     
     public static interface ValueChangeListener extends Serializable
     {
-        public void valueChanged(Object value);
+        public void valueChanged(ITextOrCode value);
     }
 }

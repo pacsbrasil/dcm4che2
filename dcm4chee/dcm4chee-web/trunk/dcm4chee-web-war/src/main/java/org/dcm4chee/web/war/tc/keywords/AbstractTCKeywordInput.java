@@ -1,6 +1,5 @@
 package org.dcm4chee.web.war.tc.keywords;
 
-
 public abstract class AbstractTCKeywordInput extends AbstractTCInput implements TCKeywordInput 
 {
     public AbstractTCKeywordInput(final String id)
@@ -9,13 +8,13 @@ public abstract class AbstractTCKeywordInput extends AbstractTCInput implements 
     }
     
     @Override
-    public Object getInputValue()
+    public TCKeyword getValue()
     {
         return getKeyword();
     }
     
     @Override
-    public void resetInputValue()
+    public void resetValue()
     {
         resetKeyword();
     }

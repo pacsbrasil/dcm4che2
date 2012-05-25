@@ -107,7 +107,7 @@ public class TCDetailsDiagnosisTab extends Panel {
     private String getStringValue(TCQueryFilterKey key) {
         TCObject tc = getTCObject();
 
-        String s = tc != null ? tc.getStringValue(key) : null;
+        String s = tc != null ? tc.getValueAsString(key) : null;
 
         return s != null ? s : "-";
     }

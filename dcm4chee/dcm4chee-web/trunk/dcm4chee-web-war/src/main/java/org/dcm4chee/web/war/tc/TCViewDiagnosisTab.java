@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.tc;
 import org.apache.wicket.model.IModel;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
+import org.dcm4chee.web.war.tc.TCObject.TextOrCode;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingCheckBox;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextArea;
 import org.dcm4chee.web.war.tc.TCViewPanel.AbstractEditableTCViewTab;
@@ -79,7 +80,7 @@ public class TCViewDiagnosisTab extends AbstractEditableTCViewTab
             {
                 if (isEditing())
                 {
-                    getTC().setDiagnosis(text);
+                    getTC().setDiagnosis(TextOrCode.text(text));
                 }
             }
         };
@@ -110,6 +111,6 @@ public class TCViewDiagnosisTab extends AbstractEditableTCViewTab
     protected void saveImpl()
     {
         getTC().setDiagnosisConfirmed(chkBox.getModelObject()?YesNo.Yes:YesNo.No);
-        getTC().setDiagnosis(area.getModel().getObject());
+        getTC().setDiagnosis(TextOrCode.text(area.getModel().getObject()));
     }
 }

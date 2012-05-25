@@ -6,11 +6,13 @@
 <body>
     <wicket:panel>
         <div class="tc-keyword-input-container">
-			<input wicket:id="text" type="text" maxlength="255" class="tc-keyword-input-text"/>
-	        <div>
-		        <button wicket:id="chooser-button" type="button" class="tc-keyword-chooser-btn">
-		            <img wicket:id="chooser-button-img"/>
-		        </button>
+            <div class="tc-keyword-input-btn-container">
+                <button wicket:id="chooser-button" type="button" class="tc-keyword-chooser-btn">
+                    <img wicket:id="chooser-button-img"/>
+                </button>
+            </div>
+			<div class="tc-keyword-input-text-container">
+			     <input wicket:id="text" type="text" class="tc-keyword-input-text"/>
 	        </div>
         </div>
         <div wicket:id="list-keyword-popup" class="tc-popup tc-keyword-popup list-keyword-popup">

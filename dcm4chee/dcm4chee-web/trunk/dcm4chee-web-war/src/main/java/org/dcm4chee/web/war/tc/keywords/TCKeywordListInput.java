@@ -71,6 +71,8 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
 
     private static final long serialVersionUID = 1L;
 
+    private AutoCompleteTextField<TCKeyword> text;
+    
     public TCKeywordListInput(final String id, List<TCKeyword> keywords) {
         this(id, null, keywords);
     }
@@ -91,7 +93,7 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
             }
         });
 
-        final AutoCompleteTextField<TCKeyword> text = new AutoCompleteTextField<TCKeyword>(
+        text = new AutoCompleteTextField<TCKeyword>(
                 "text", getModel(), TCKeyword.class, new AutoCompleteSettings()) {
 
             private static final long serialVersionUID = 1L;
@@ -146,6 +148,7 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
                 return match.iterator();
             }
         };
+        
         text.setOutputMarkupId(true);
         text.add(new AutoSelectInputTextBehaviour());
         text.add(new AjaxFormComponentUpdatingBehavior("onchange") {
@@ -212,6 +215,18 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
     @Override
     public void resetKeyword() {
         getModel().setObject(null);
+    }
+    
+    @Override
+    public boolean isExclusive()
+    {
+        return text.isEnabled();
+    }
+    
+    @Override
+    public void setExclusive(boolean exclusive)
+    {
+        text.setEnabled(!exclusive);
     }
 
     @SuppressWarnings({ "unchecked" })

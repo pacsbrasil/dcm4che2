@@ -3,7 +3,6 @@ package org.dcm4chee.web.war.tc.keywords;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.wicket.Component;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.dcm4chee.web.war.tc.TCInput;
 
@@ -18,7 +17,7 @@ public abstract class AbstractTCInput extends Panel implements TCInput
     }
     
     @Override
-    public Component getInputComponent() 
+    public Panel getComponent() 
     {
         return this;
     }
@@ -29,7 +28,7 @@ public abstract class AbstractTCInput extends Panel implements TCInput
         {
             for (ValueChangeListener l : changeListener)
             {
-                l.valueChanged(getInputValue());
+                l.valueChanged(getValue());
             }
         }
     }

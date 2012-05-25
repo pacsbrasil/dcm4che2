@@ -359,7 +359,7 @@ public class TCDetailsInfoTab extends Panel {
     private String getStringValue(TCQueryFilterKey key) {
         TCObject tc = getTCObject();
 
-        String s = tc != null ? tc.getLocalizedStringValue(key, this)
+        String s = tc != null ? tc.getValueAsLocalizedString(key, this)
                 : null;
 
         return s != null ? s : "-";

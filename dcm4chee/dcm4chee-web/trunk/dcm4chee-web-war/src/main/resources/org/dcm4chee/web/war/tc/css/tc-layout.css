@@ -267,15 +267,32 @@ div.advanced-options-area div.text-table-area div.free-text-area input.free-text
 
 div.tc-keyword-input-container
 {
-	display: inline-block;
-	border: 0.09em solid gray;
+	border: 1px solid gray;
 	background: none repeat scroll 0 0 white;
+	height: 19px;
 }
 
-div.tc-keyword-input-container>div
+div.tc-keyword-input-btn-container
 {
-	float: right;
-	margin-left: 0.5em;
+	float:right;
+	width: 20px;
+}
+
+div.tc-keyword-input-btn-container:after 
+{
+    clear: right;
+    content: "clear";
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+}
+
+div.tc-keyword-input-text-container 
+{
+    position: relative;
+    min-width: 20em;
+    margin-right: 22px;
 }
 
 input.tc-keyword-input-freetext
@@ -286,7 +303,8 @@ input.tc-keyword-input-freetext
 input.tc-keyword-input-text
 {
 	border: medium none;
-	width: 15.8em;
+	width: 100%;
+	height: 17px;
 }
 
 
@@ -786,8 +804,12 @@ div.tc-view-bibliography-options
 {
 	height: 100%;
 	width: 48%;
-	max-width: 48%;
 	overflow: auto;
+}
+
+.tc-view-overview-keyword-input-btn
+{
+    float: right;
 }
 
 .tc-view-overview-row

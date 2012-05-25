@@ -106,6 +106,11 @@ public class TCKeywordCatalogueProvider {
         
         return keysToCatalogues.containsKey(key);
     }
+    
+    public boolean isCatalogueExclusive(TCQueryFilterKey key) {
+        return hasCatalogue(key) &&
+            configDelegate.isTCKeywordCatalogueExclusive(key.name());
+    }
 
     public TCKeywordCatalogue getCatalogue(TCQueryFilterKey key) {
         checkAndInitCatalogues();

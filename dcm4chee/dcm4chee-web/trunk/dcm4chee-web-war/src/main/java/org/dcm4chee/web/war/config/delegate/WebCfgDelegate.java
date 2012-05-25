@@ -301,6 +301,12 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         }
         return parsedMap;
     }
+    
+    public boolean isTCKeywordCatalogueExclusive(String key)
+    {
+        Map<String, String> nonExclusive = getStringMap("getTCKeywordCataloguesMapNonExclusive");
+        return nonExclusive==null || !nonExclusive.containsKey(key);
+    }
 
     public int checkCUID(String cuid) {
         if (server == null)

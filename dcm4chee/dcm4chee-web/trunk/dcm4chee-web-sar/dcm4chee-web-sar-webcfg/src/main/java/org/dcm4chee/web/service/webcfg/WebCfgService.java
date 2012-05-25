@@ -162,6 +162,8 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     private Map<String, String> tcKeywordCatalogues = new LinkedHashMap<String, String>();
 
+    private Map<String, String> tcKeywordCataloguesExclusive = new LinkedHashMap<String, String>();
+    
     private List<String> tcRestrictedSrcAETs = new ArrayList<String>();
     
     private boolean tcEditOnDoubleClick;
@@ -364,15 +366,41 @@ public class WebCfgService extends ServiceMBeanSupport implements
     }
 
     public Map<String, String> getTCKeywordCataloguesMap() {
-        return Collections.unmodifiableMap(tcKeywordCatalogues);
+        Map<String, String> map = new LinkedHashMap<String, String>();
+        if (tcKeywordCatalogues!=null) {
+            map.putAll(tcKeywordCatalogues);
+        }
+        if (tcKeywordCataloguesExclusive!=null) {
+            map.putAll(tcKeywordCataloguesExclusive);
+        }
+        return Collections.unmodifiableMap(map);
+    }
+    
+    public Map<String, String> getTCKeywordCataloguesMapExclusive() {
+        if (tcKeywordCataloguesExclusive!=null) {
+            return Collections.unmodifiableMap(tcKeywordCataloguesExclusive);
+        }
+        else {
+            return Collections.emptyMap();
+        }
+    }
+    
+    public Map<String, String> getTCKeywordCataloguesMapNonExclusive() {
+        if (tcKeywordCatalogues!=null) {
+            return Collections.unmodifiableMap(tcKeywordCatalogues);
+        }
+        else {
+            return Collections.emptyMap();
+        }
     }
 
     public String getTCKeywordCatalogues() {
-        return keywordCataloguesToString(tcKeywordCatalogues);
+        return keywordCataloguesToString(tcKeywordCatalogues, tcKeywordCataloguesExclusive);
     }
 
     public void setTCKeywordCatalogues(String s) {
-        this.tcKeywordCatalogues = parseKeywordCatalogues(s);
+        this.tcKeywordCatalogues = parseKeywordCatalogues(s, false);
+        this.tcKeywordCataloguesExclusive = parseKeywordCatalogues(s, true);
     }
 
     public String getTCRestrictedSourceAETs() {
@@ -642,8 +670,10 @@ public class WebCfgService extends ServiceMBeanSupport implements
         if (list.isEmpty())
             return NONE;
         StringBuilder sb = new StringBuilder();
-        for (String m : list) {
-            sb.append(m == null ? EMPTY : m).append(sep);
+        sb.append(list.get(0)==null ? EMPTY : list.get(0));
+        for (int i=1; i<list.size(); i++) {
+            String s = list.get(i);
+            sb.append(sep).append(s==null?EMPTY:s);
         }
         return sb.toString();
     }
@@ -879,20 +909,33 @@ public class WebCfgService extends ServiceMBeanSupport implements
         return map;
     }
 
-    private String keywordCataloguesToString(Map<String, String> map) {
-        if (map == null || map.isEmpty()) {
+    private String keywordCataloguesToString(Map<String, String> nonExclusiveCatalogues, Map<String, String> exclusiveCatalogues) {
+        if ((nonExclusiveCatalogues == null || nonExclusiveCatalogues.isEmpty()) &&
+            (exclusiveCatalogues==null || exclusiveCatalogues.isEmpty())) 
+        {
             return NONE;
         } else {
             StringBuilder sbuilder = new StringBuilder();
-            for (Map.Entry<String, String> me : map.entrySet()) {
-                sbuilder.append(me.getKey()).append(":").append(me.getValue())
-                        .append(NEWLINE);
+            if (nonExclusiveCatalogues!=null)
+            {
+                for (Map.Entry<String, String> me : nonExclusiveCatalogues.entrySet()) {
+                    sbuilder.append(me.getKey()).append(":").append(me.getValue())
+                            .append(",false").append(NEWLINE);
+                }
             }
+            if (exclusiveCatalogues!=null)
+            {
+                for (Map.Entry<String, String> me : exclusiveCatalogues.entrySet()) {
+                    sbuilder.append(me.getKey()).append(":").append(me.getValue())
+                            .append(",true").append(NEWLINE);
+                }
+            }
+            
             return sbuilder.toString();
         }
     }
 
-    private LinkedHashMap<String, String> parseKeywordCatalogues(String s) {
+    private LinkedHashMap<String, String> parseKeywordCatalogues(String s, boolean exclusive) {
         StringTokenizer st = new StringTokenizer(s, "\t\r\n;");
 
         LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
@@ -900,7 +943,19 @@ public class WebCfgService extends ServiceMBeanSupport implements
         while (st.hasMoreTokens()) {
             String entry = st.nextToken().trim();
             String[] parts = entry.split(":");
-            map.put(parts[0], parts[1]);
+            String[] catparts = parts[1].split(",");
+            String cat = parts[1];
+            boolean excl = true;
+            
+            if (catparts.length>=3) {
+                excl = Boolean.valueOf(catparts[2]);
+                cat = catparts[0].trim()+","+catparts[1].trim();
+            }
+                    
+            if (excl==exclusive)
+            {
+                map.put(parts[0], cat);
+            }
         }
 
         return map;

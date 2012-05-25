@@ -37,8 +37,10 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc;
 
+import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextArea;
 import org.dcm4chee.web.war.tc.TCViewPanel.AbstractEditableTCViewTab;
@@ -78,7 +80,11 @@ public abstract class TCViewGenericTextTab extends AbstractEditableTCViewTab
         };
         
         this.area.add(super.createTextInputCssClassModifier());
-
+        
+        if (!isEditing()) {
+            this.area.add(new AttributeAppender("readonly",true,new Model<String>("readonly"), " "));
+        }
+        
         add(this.area);
     }
     

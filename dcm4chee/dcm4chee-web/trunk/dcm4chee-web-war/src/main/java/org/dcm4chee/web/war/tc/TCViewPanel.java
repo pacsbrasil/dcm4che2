@@ -369,7 +369,7 @@ public class TCViewPanel extends Panel
         protected String getStringValue(TCQueryFilterKey key) {
             TCObject tc = getTC();
 
-            String s = tc != null ? tc.getStringValue(key) : null;
+            String s = tc != null ? tc.getValueAsString(key) : null;
 
             return s != null ? s : "";
         }

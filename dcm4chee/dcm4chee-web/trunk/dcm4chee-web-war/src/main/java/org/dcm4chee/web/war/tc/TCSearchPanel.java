@@ -170,7 +170,7 @@ public abstract class TCSearchPanel extends Panel {
                     filter.clear();
 
                     Object keywordInputValue = getConvertedKeywordInputValue(
-                            keywordInput.getInputValue());
+                            keywordInput.getValue());
                     if (keywordInputValue != null) {
                         if (Code.class.equals(keywordInputValue.getClass())) {
                             filter.setKeywordCode((Code) keywordInputValue);
@@ -181,7 +181,7 @@ public abstract class TCSearchPanel extends Panel {
                     }
 
                     Object anatomyInputValue = getConvertedKeywordInputValue(
-                            anatomyInput.getInputValue());
+                            anatomyInput.getValue());
                     if (anatomyInputValue != null) {
                         if (Code.class.equals(anatomyInputValue.getClass())) {
                             filter.setAnatomyCode((Code) anatomyInputValue);
@@ -192,7 +192,7 @@ public abstract class TCSearchPanel extends Panel {
                     }
 
                     Object pathologyInputValue = getConvertedKeywordInputValue(
-                            pathologyInput.getInputValue());
+                            pathologyInput.getValue());
                     if (pathologyInputValue != null) {
                         if (Code.class.equals(pathologyInputValue.getClass())) {
                             filter.setPathologyCode((Code) pathologyInputValue);
@@ -203,7 +203,7 @@ public abstract class TCSearchPanel extends Panel {
                     }
 
                     Object findingInputValue = getConvertedKeywordInputValue(
-                            findingInput.getInputValue());
+                            findingInput.getValue());
                     if (findingInputValue != null) {
                         if (Code.class.equals(findingInputValue.getClass())) {
                             filter.setFindingCode((Code) findingInputValue);
@@ -214,7 +214,7 @@ public abstract class TCSearchPanel extends Panel {
                     }
 
                     Object diagnosisInputValue = getConvertedKeywordInputValue(
-                            diagnosisInput.getInputValue());
+                            diagnosisInput.getValue());
                     if (diagnosisInputValue != null) {
                         if (Code.class.equals(diagnosisInputValue.getClass())) {
                             filter.setDiagnosisCode((Code) diagnosisInputValue);
@@ -225,7 +225,7 @@ public abstract class TCSearchPanel extends Panel {
                     }
 
                     Object diffDiagnosisInputValue = getConvertedKeywordInputValue(
-                            diffDiagnosisInput.getInputValue());
+                            diffDiagnosisInput.getValue());
                     if (diffDiagnosisInputValue != null) {
                         if (Code.class.equals(diffDiagnosisInputValue
                                 .getClass())) {
@@ -327,12 +327,12 @@ public abstract class TCSearchPanel extends Panel {
                         .getDefaultModelObject();
                 filter.clear();
 
-                keywordInput.resetInputValue();
-                anatomyInput.resetInputValue();
-                pathologyInput.resetInputValue();
-                findingInput.resetInputValue();
-                diagnosisInput.resetInputValue();
-                diffDiagnosisInput.resetInputValue();
+                keywordInput.resetValue();
+                anatomyInput.resetValue();
+                pathologyInput.resetValue();
+                findingInput.resetValue();
+                diagnosisInput.resetValue();
+                diffDiagnosisInput.resetValue();
                 modalityChoice.setModelObject(null);
                 levelChoice.setModelObject(null);
                 patientSexChoice.setModelObject(null);
@@ -361,11 +361,11 @@ public abstract class TCSearchPanel extends Panel {
         wmc.setOutputMarkupPlaceholderTag(true);
         wmc.setVisible(false);
 
-        wmc.add(anatomyInput.getInputComponent());
-        wmc.add(pathologyInput.getInputComponent());
-        wmc.add(findingInput.getInputComponent());
-        wmc.add(diagnosisInput.getInputComponent());
-        wmc.add(diffDiagnosisInput.getInputComponent());
+        wmc.add(anatomyInput.getComponent());
+        wmc.add(pathologyInput.getComponent());
+        wmc.add(findingInput.getComponent());
+        wmc.add(diagnosisInput.getComponent());
+        wmc.add(diffDiagnosisInput.getComponent());
         wmc.add(modalityChoice);
         wmc.add(patientSexChoice);
         wmc.add(categoryChoice);
@@ -414,7 +414,7 @@ public abstract class TCSearchPanel extends Panel {
         advancedOptionsToggleLink.setOutputMarkupId(true);
 
         final Form<?> form = new Form<Object>("searchForm");
-        form.add(keywordInput.getInputComponent());
+        form.add(keywordInput.getComponent());
         form.add(wmc);
         form.add(searchBtn);
         form.setDefaultButton(searchBtn);

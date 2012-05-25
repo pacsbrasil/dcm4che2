@@ -2,7 +2,6 @@ package org.dcm4chee.web.war.tc;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -81,7 +80,7 @@ public class TCEditableObject extends TCObject
         }
     }
 
-    public void setAnatomy(String anatomy) {
+    public void setAnatomy(ITextOrCode anatomy) {
         if (!TCUtilities.equals(this.anatomy, anatomy))
         {
             this.anatomy = anatomy;
@@ -121,7 +120,7 @@ public class TCEditableObject extends TCObject
         }
     }
 
-    public void setDiagnosis(String diagnosis) {
+    public void setDiagnosis(ITextOrCode diagnosis) {
         if (!TCUtilities.equals(this.diagnosis, diagnosis))
         {
             this.diagnosis = diagnosis;
@@ -137,7 +136,7 @@ public class TCEditableObject extends TCObject
         }
     }
 
-    public void setDiffDiagnosis(String diffDiagnosis) {
+    public void setDiffDiagnosis(ITextOrCode diffDiagnosis) {
         if (!TCUtilities.equals(this.diffDiagnosis, diffDiagnosis))
         {
             this.diffDiagnosis = diffDiagnosis;
@@ -153,28 +152,46 @@ public class TCEditableObject extends TCObject
         }
     }
 
-    public void setFinding(String finding) {
-        if (!TCUtilities.equals(this.finding, finding))
-        {
+    public void setFinding(ITextOrCode finding) {
+        if (!TCUtilities.equals(this.finding, finding)) {
             this.finding = finding;
             this.modified = true;
         }
     }
 
     public void setHistory(String history) {
-        if (!TCUtilities.equals(this.history, history))
-        {
+        if (!TCUtilities.equals(this.history, history)) {
             this.history = history;
             this.modified = true;
         }
     }
-
-    public void setKeywords(List<String> keywords) {
-        if (!TCUtilities.equals(this.keywords, keywords))
-        {
-            this.keywords = keywords;
+    
+    public void setKeywords(List<ITextOrCode> keywords) {
+        if (!TCUtilities.equals(this.keywords, keywords)) {
+            this.keywords.clear();
+            this.keywords.addAll(keywords);
             this.modified = true;
         }
+    }
+    
+    public void setKeywordAt(int index, ITextOrCode keyword) {
+        if (keywords!=null) {
+            ITextOrCode old = this.keywords.get(index);
+            if (old!=null) {
+                if (!TCUtilities.equals(old, keyword)) {
+                    this.keywords.set(index, keyword);
+                    this.modified = true;
+                }
+            }
+        }
+    }
+    
+    public void addKeyword(ITextOrCode keyword) {
+        addKeywordImpl(keyword);
+    }
+
+    public void removeKeyword(ITextOrCode keyword) {
+        removeKeywordImpl(keyword);
     }
 
     public void setLevel(Level level) {
@@ -193,7 +210,7 @@ public class TCEditableObject extends TCObject
         }
     }
 
-    public void setPathology(String pathology) {
+    public void setPathology(ITextOrCode pathology) {
         if (!TCUtilities.equals(this.pathology, pathology))
         {
             this.pathology = pathology;
@@ -267,72 +284,17 @@ public class TCEditableObject extends TCObject
             this.modified = true;
         }
     }
-
-    public void setAnatomyCode(DicomCode anatomyCode) {
-        if (!TCUtilities.equals(this.anatomyCode, anatomyCode))
-        {
-            this.anatomyCode = anatomyCode;
-            this.modified = true;
-        }
-    }
-
-    public void setDiagnosisCode(DicomCode diagnosisCode) {
-        if (!TCUtilities.equals(this.diagnosisCode, diagnosisCode))
-        {
-            this.diagnosisCode = diagnosisCode;
-            this.modified = true;
-        }
-    }
-
-    public void setDiffDiagnosisCode(DicomCode diffDiagnosisCode) {
-        if (!TCUtilities.equals(this.diffDiagnosisCode, diffDiagnosisCode))
-        {
-            this.diffDiagnosisCode = diffDiagnosisCode;
-            this.modified = true;
-        }
-    }
-
-    public void setFindingCode(DicomCode findingCode) {
-        if (!TCUtilities.equals(this.findingCode, findingCode))
-        {
-            this.findingCode = findingCode;
-            this.modified = true;
-        }
-    }
-
-    public void setKeywordCode(DicomCode keywordCode) {
-        if (!TCUtilities.equals(this.keywordCode, keywordCode))
-        {
-            this.keywordCode = keywordCode;
-            this.modified = true;
-        }
-    }
-
-    public void setPathologyCode(DicomCode pathologyCode) {
-        if (!TCUtilities.equals(this.pathologyCode, pathologyCode))
-        {
-            this.pathologyCode = pathologyCode;
-            this.modified = true;
-        }
-    }
     
     public void setValue(TCQueryFilterKey key, Object value)
     {
         try
         {
-            TCKeywordCatalogueProvider catProv = TCKeywordCatalogueProvider.getInstance();
-            
             if (TCQueryFilterKey.Abstract.equals(key)) {
                 setAbstract(convertValue(value, String.class));
             } else if (TCQueryFilterKey.AcquisitionModality.equals(key)) {
                 setAcquisitionModalities(convertValues(value, AcquisitionModality.class));
             } else if (TCQueryFilterKey.Anatomy.equals(key)) {
-                if (catProv == null || !catProv.hasCatalogue(key)) {
-                    setAnatomy(convertValue(value, String.class));
-                }
-                else {
-                    setAnatomyCode(convertValue(value, DicomCode.class));
-                }
+                setAnatomy(convertValue(value, ITextOrCode.class));
             } else if (TCQueryFilterKey.AuthorAffiliation.equals(key)) {
                 setAuthorAffiliation(convertValue(value, String.class));
             } else if (TCQueryFilterKey.AuthorContact.equals(key)) {
@@ -346,49 +308,23 @@ public class TCEditableObject extends TCObject
             } else if (TCQueryFilterKey.DiagnosisConfirmed.equals(key)) {
                 setDiagnosisConfirmed(convertValue(value, YesNo.class));
             } else if (TCQueryFilterKey.Diagnosis.equals(key)) {
-                if (catProv == null || !catProv.hasCatalogue(key)) {
-                    setDiagnosis(convertValue(value, String.class));
-                }
-                else {
-                    setDiagnosisCode(convertValue(value, DicomCode.class));
-                }
+                setDiagnosis(convertValue(value, ITextOrCode.class));
             } else if (TCQueryFilterKey.DifferentialDiagnosis.equals(key)) {
-                if (catProv == null || !catProv.hasCatalogue(key)) {
-                    setDiffDiagnosis(convertValue(value, String.class));
-                }
-                else {
-                    setDiffDiagnosisCode(convertValue(value, DicomCode.class));
-                }
+                setDiffDiagnosis(convertValue(value, ITextOrCode.class));
             } else if (TCQueryFilterKey.Discussion.equals(key)) {
                 setDiscussion(convertValue(value, String.class));
             } else if (TCQueryFilterKey.Finding.equals(key)) {
-                if (catProv == null || !catProv.hasCatalogue(key)) {
-                    setFinding(convertValue(value, String.class));
-                }
-                else {
-                    setFindingCode(convertValue(value, DicomCode.class));
-                }
+                setFinding(convertValue(value, ITextOrCode.class));
             } else if (TCQueryFilterKey.History.equals(key)) {
                 setHistory(convertValue(value, String.class));
             } else if (TCQueryFilterKey.Keyword.equals(key)) {
-                if (catProv == null || !catProv.hasCatalogue(key)) {
-                    setKeywords(Collections.singletonList(
-                            convertValue(value, String.class)));
-                }
-                else {
-                    setKeywordCode(convertValue(value, DicomCode.class));
-                }
+                setKeywords(convertValues(value, ITextOrCode.class));
             } else if (TCQueryFilterKey.Level.equals(key)) {
                 setLevel(convertValue(value, Level.class));
             } else if (TCQueryFilterKey.OrganSystem.equals(key)) {
                 setOrganSystem(convertValue(value, String.class));
             } else if (TCQueryFilterKey.Pathology.equals(key)) {
-                if (catProv == null || !catProv.hasCatalogue(key)) {
-                    setPathology(convertValue(value, String.class));
-                }
-                else {
-                    setPathologyCode(convertValue(value, DicomCode.class));
-                }
+                setPathology(convertValue(value, ITextOrCode.class));
             } else if (TCQueryFilterKey.PatientSex.equals(key)) {
                 setPatientSex(convertValue(value, PatientSex.class));
             } else if (TCQueryFilterKey.PatientSpecies.equals(key)) {
@@ -473,58 +409,37 @@ public class TCEditableObject extends TCObject
                     createTextContent(TCQueryFilterKey.Abstract, abstr));
         }
                 
-        //anatomy text
-        String anatomy = getAnatomy();
-        if (anatomy!=null && anatomy.length()>0)
+        //anatomy
+        ITextOrCode anatomy = getAnatomy();
+        if (anatomy!=null)
         {
-            content.addDicomObject(
-                    createTextContent(TCQueryFilterKey.Anatomy, anatomy));
-        }
-        
-        //anatomy code
-        DicomCode anatomyCode = getAnatomyCode();
-        if (anatomyCode!=null)
-        {
-            content.addDicomObject(
-                    createCodeContent(TCQueryFilterKey.Anatomy, anatomyCode));
-        }
-        
-        //pathology text
-        String pathology = getPathology();
-        if (pathology!=null && !pathology.isEmpty())
-        {
-            content.addDicomObject(
-                    createTextContent(TCQueryFilterKey.Pathology, pathology));
-        }
-        
-        //pathology code
-        DicomCode pathologyCode = getPathologyCode();
-        if (pathologyCode!=null)
-        {
-            content.addDicomObject(
-                    createCodeContent(TCQueryFilterKey.Pathology, pathologyCode));
-        }
-        
-        //keyword text
-        List<String> keywords = getKeywords();
-        if (keywords!=null && !keywords.isEmpty())
-        {
-            for (String keyword : keywords)
-            {
-                if (keyword!=null && !keyword.isEmpty())
-                {
-                    content.addDicomObject(
-                        createTextContent(TCQueryFilterKey.Keyword, keyword));
-                }
+            DicomObject o = createTextOrCodeContent(TCQueryFilterKey.Anatomy, anatomy);
+            if (o!=null) {
+                content.addDicomObject(o);
             }
         }
         
-        //keyword code
-        DicomCode keywordCode = getKeywordCode();
-        if (keywordCode!=null)
+        //pathology
+        ITextOrCode pathology = getPathology();
+        if (pathology!=null)
         {
-            content.addDicomObject(
-                    createCodeContent(TCQueryFilterKey.Keyword, keywordCode));
+            DicomObject o = createTextOrCodeContent(TCQueryFilterKey.Pathology, pathology);
+            if (o!=null) {
+                content.addDicomObject(o);
+            }
+        }
+        
+        //keywords
+        List<ITextOrCode> keywords = getKeywords();
+        if (keywords!=null)
+        {
+            for (ITextOrCode keyword : keywords)
+            {
+                DicomObject o = createTextOrCodeContent(TCQueryFilterKey.Keyword, keyword);
+                if (o!=null) {
+                    content.addDicomObject(o);
+                }
+            }
         }
         
         //history
@@ -535,20 +450,14 @@ public class TCEditableObject extends TCObject
                     createTextContent(TCQueryFilterKey.History, history));
         }
         
-        //finding text
-        String finding = getFinding();
-        if (finding!=null && !finding.isEmpty())
+        //finding
+        ITextOrCode finding = getFinding();
+        if (finding!=null)
         {
-            content.addDicomObject(
-                    createTextContent(TCQueryFilterKey.Finding, finding));
-        }
-        
-        //finding code
-        DicomCode findingCode = getFindingCode();
-        if (findingCode!=null)
-        {
-            content.addDicomObject(
-                    createCodeContent(TCQueryFilterKey.Finding, findingCode));
+            DicomObject o = createTextOrCodeContent(TCQueryFilterKey.Finding, finding);
+            if (o!=null) {
+                content.addDicomObject(o);
+            }
         }
         
         //discussion
@@ -559,37 +468,25 @@ public class TCEditableObject extends TCObject
                     createTextContent(TCQueryFilterKey.Discussion, discussion));
         }
         
-        //diff. diagnosis code
-        DicomCode diffDiagCode = getDiffDiagnosisCode();
-        if (diffDiagCode!=null)
+        //diff.-diagnosis
+        ITextOrCode diffDiagnosis = getDiffDiagnosis();
+        if (diffDiagnosis!=null)
         {
-            content.addDicomObject(
-                    createCodeContent(TCQueryFilterKey.DifferentialDiagnosis, diffDiagCode));
+            DicomObject o = createTextOrCodeContent(TCQueryFilterKey.DifferentialDiagnosis, diffDiagnosis);
+            if (o!=null) {
+                content.addDicomObject(o);
+            }
         }
         
-        //diff.-diagnosis text
-        String diffDiagText = getDiffDiagnosis();
-        if (diffDiagText!=null && !diffDiagText.isEmpty())
+        //diagnosis
+        ITextOrCode diagnosis = getDiagnosis();
+        if (diagnosis!=null)
         {
-            content.addDicomObject(
-                    createTextContent(TCQueryFilterKey.DifferentialDiagnosis, diffDiagText));
+            DicomObject o = createTextOrCodeContent(TCQueryFilterKey.Diagnosis, diagnosis);
+            if (o!=null) {
+                content.addDicomObject(o);
+            }
         }
-        
-        //diagnosis code
-        DicomCode diagCode = getDiagnosisCode();
-        if (diagCode!=null)
-        {
-            content.addDicomObject(
-                    createCodeContent(TCQueryFilterKey.Diagnosis, diagCode));
-        }
-        
-        //diagnosis text
-        String diagText = getDiagnosis();
-        if (diagText!=null && !diagText.isEmpty())
-        {
-            content.addDicomObject(
-                    createTextContent(TCQueryFilterKey.Diagnosis, diagText));
-        }   
         
         //diagnosis confirmed
         YesNo diagConfirmed = getDiagnosisConfirmed();
@@ -752,5 +649,27 @@ public class TCEditableObject extends TCObject
         ds.putNestedDicomObject(Tag.ConceptNameCodeSequence, key.getCode().toCodeItem());
         ds.putNestedDicomObject(Tag.ConceptCodeSequence, code.toCodeItem());
         return ds;
+    }
+    
+    private DicomObject createTextOrCodeContent(TCQueryFilterKey key, ITextOrCode value) {
+        if (value!=null) {
+            String text = value.getText();
+            DicomCode code = value.getCode();
+            
+            if (code!=null) {
+                TCKeywordCatalogueProvider prov = TCKeywordCatalogueProvider.getInstance();   
+                if (prov!=null && prov.hasCatalogue(key) && 
+                        prov.isCatalogueExclusive(key)) {
+                    return createCodeContent(key, code);
+                }
+                else {
+                    return createTextContent(key, code.toString());
+                }
+            }
+            else if (text!=null && !text.trim().isEmpty()) {
+                return createTextContent(key, text.trim());
+            }
+        }
+        return null;
     }
 }

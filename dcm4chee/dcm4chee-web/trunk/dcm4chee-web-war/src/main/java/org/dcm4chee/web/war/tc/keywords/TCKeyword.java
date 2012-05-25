@@ -37,16 +37,15 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc.keywords;
 
-import java.io.Serializable;
-
 import org.dcm4chee.web.war.tc.TCObject.DicomCode;
+import org.dcm4chee.web.war.tc.TCObject.ITextOrCode;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
  * @version $Revision$ $Date$
  * @since May 30, 2011
  */
-public class TCKeyword implements Serializable {
+public class TCKeyword implements ITextOrCode {
 
     private static final long serialVersionUID = 1L;
 
@@ -84,7 +83,13 @@ public class TCKeyword implements Serializable {
     public String getName() {
         return name;
     }
+    
+    @Override
+    public String getText() {
+        return name;
+    }
 
+    @Override
     public DicomCode getCode() {
         return code;
     }

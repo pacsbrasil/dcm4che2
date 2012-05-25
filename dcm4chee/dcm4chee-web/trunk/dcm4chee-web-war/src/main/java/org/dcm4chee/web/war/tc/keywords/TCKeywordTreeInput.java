@@ -47,7 +47,6 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteSettings;
@@ -77,6 +76,8 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
 
     private static final long serialVersionUID = 1L;
 
+    private AutoCompleteTextField<TCKeyword> text;
+    
     public TCKeywordTreeInput(final String id, final TCKeywordNode root) {
         this(id, null, root);
     }
@@ -98,7 +99,7 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
             }
         });
         
-        final AutoCompleteTextField<TCKeyword> text = new AutoCompleteTextField<TCKeyword>(
+        text = new AutoCompleteTextField<TCKeyword>(
                 "text", getModel(), TCKeyword.class, new AutoCompleteSettings()) {
 
             private static final long serialVersionUID = 1L;
@@ -205,10 +206,17 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
     public void resetKeyword() {
         getModel().setObject(null);
     }
-
+    
     @Override
-    public Component getInputComponent() {
-        return this;
+    public boolean isExclusive()
+    {
+        return text.isEnabled();
+    }
+    
+    @Override
+    public void setExclusive(boolean exclusive)
+    {
+        text.setEnabled(!exclusive);
     }
 
     @SuppressWarnings({ "unchecked" })

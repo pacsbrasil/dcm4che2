@@ -23,9 +23,11 @@ import org.apache.wicket.model.PropertyModel;
 import org.dcm4chee.archive.entity.Code;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.tc.TCObject.DicomCode;
+import org.dcm4chee.web.war.tc.TCObject.ITextOrCode;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
+import org.dcm4chee.web.war.tc.keywords.TCKeywordInput;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordTextInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,23 +116,53 @@ public class TCUtilities
     
     public static TCInput createInput(final String componentId,
             TCQueryFilterKey key, Object value) {
+        return createInput(componentId, key, value, false);
+    }
+    
+    public static TCInput createInput(final String componentId,
+            TCQueryFilterKey key, Object value, boolean checkExclusive) {
         TCKeywordCatalogueProvider p = TCKeywordCatalogueProvider.getInstance();
 
         if (p.hasCatalogue(key)) 
         {
             TCKeywordCatalogue cat = p.getCatalogue(key);
             TCKeyword keyword = null;
-
+            String svalue = null;
             if (value instanceof Code)
             {
-                keyword = cat.findKeyword(((Code) value).getCodeValue());
+                svalue = ((Code) value).getCodeValue();
             }
             else if (value instanceof DicomCode)
             {
-                keyword = cat.findKeyword(((DicomCode)value).getValue());
+                svalue = ((DicomCode)value).getValue();
             }
-
-            return cat.createInput(componentId, keyword);
+            else if (value instanceof ITextOrCode) {
+                DicomCode code = ((ITextOrCode)value).getCode();
+                if (code!=null) {
+                    svalue = code.getValue();
+                }
+                else {
+                    svalue = ((ITextOrCode)value).getText();
+                }
+            }
+            
+            if (svalue!=null && !svalue.trim().isEmpty()) {
+                keyword = cat.findKeyword(svalue);
+            }
+            
+            if (keyword==null && svalue!=null) {
+                keyword = new TCKeyword(svalue, null, false);
+            }
+            
+            TCKeywordInput input = cat.createInput(componentId, keyword);
+            
+            if (checkExclusive)
+            {
+                input.setExclusive(TCKeywordCatalogueProvider.getInstance().
+                        isCatalogueExclusive(key));
+            }
+            
+            return input;
         } 
         else 
         {

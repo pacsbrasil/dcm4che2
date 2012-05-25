@@ -45,8 +45,19 @@
             <div class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-keyword-label" class="tc-view-overview-row-key"/>
                 <div class="tc-view-overview-row-value">
-                    <div wicket:id="tc-view-overview-keyword-value-label" style="width:100%"/>
-                    <div wicket:id="tc-view-overview-keyword-input" style="width:100%"/>
+                    <textarea wicket:id="tc-view-overview-keyword-area" style="width:100%">
+                    </textarea>
+                    <div wicket:id="tc-view-overview-keyword-input-container">
+                        <div wicket:id="tc-view-overview-keyword-input-view">
+                            <a wicket:id="tc-view-overview-keyword-input-add" class="tc-view-overview-keyword-input-btn">
+                                <img wicket:id="tc-view-overview-keyword-input-add-img"/>
+                            </a>
+                            <a wicket:id="tc-view-overview-keyword-input-remove" class="tc-view-overview-keyword-input-btn">
+                                <img wicket:id="tc-view-overview-keyword-input-remove-img"/>
+                            </a>
+                            <div wicket:id="tc-view-overview-keyword-input" style="margin-right:24px"/>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="tc-view-overview-row">

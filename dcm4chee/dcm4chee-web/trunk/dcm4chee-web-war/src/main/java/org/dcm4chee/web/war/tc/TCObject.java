@@ -24,7 +24,7 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSex;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
 import org.dcm4chee.web.war.folder.delegate.TarRetrieveDelegate;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
-import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
+import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ public class TCObject implements Serializable {
 
     protected List<AcquisitionModality> acquisitionModalities;
 
-    protected String anatomy;
+    protected ITextOrCode anatomy;
 
     protected String authorAffiliation;
 
@@ -55,25 +55,25 @@ public class TCObject implements Serializable {
 
     protected Category category;
 
-    protected String diagnosis;
+    protected ITextOrCode diagnosis;
 
     protected YesNo diagnosisConfirmed;
 
-    protected String diffDiagnosis;
+    protected ITextOrCode diffDiagnosis;
 
     protected String discussion;
 
-    protected String finding;
+    protected ITextOrCode finding;
 
     protected String history;
 
-    protected List<String> keywords;
+    protected List<ITextOrCode> keywords;
 
     protected Level level;
 
     protected String organSystem;
 
-    protected String pathology;
+    protected ITextOrCode pathology;
     
     protected Integer patientAge;
 
@@ -84,18 +84,6 @@ public class TCObject implements Serializable {
     protected List<String> bibliographicReferences;
 
     protected String title;
-
-    protected DicomCode anatomyCode;
-
-    protected DicomCode diagnosisCode;
-
-    protected DicomCode diffDiagnosisCode;
-
-    protected DicomCode findingCode;
-
-    protected DicomCode keywordCode;
-
-    protected DicomCode pathologyCode;
 
     private List<TCReferencedStudy> studyRefs;
     
@@ -140,7 +128,7 @@ public class TCObject implements Serializable {
         return acquisitionModalities;
     }
 
-    public String getAnatomy() {
+    public ITextOrCode getAnatomy() {
         return anatomy;
     }
 
@@ -160,7 +148,7 @@ public class TCObject implements Serializable {
         return category;
     }
 
-    public String getDiagnosis() {
+    public ITextOrCode getDiagnosis() {
         return diagnosis;
     }
 
@@ -168,7 +156,7 @@ public class TCObject implements Serializable {
         return diagnosisConfirmed;
     }
 
-    public String getDiffDiagnosis() {
+    public ITextOrCode getDiffDiagnosis() {
         return diffDiagnosis;
     }
 
@@ -176,15 +164,19 @@ public class TCObject implements Serializable {
         return discussion;
     }
 
-    public String getFinding() {
+    public ITextOrCode getFinding() {
         return finding;
     }
 
     public String getHistory() {
         return history;
     }
-
-    public List<String> getKeywords() {
+    
+    public int getKeywordCount() {
+        return keywords!=null ? keywords.size() : 0;
+    }
+ 
+    public List<ITextOrCode> getKeywords() {
         return keywords;
     }
 
@@ -196,7 +188,7 @@ public class TCObject implements Serializable {
         return organSystem;
     }
 
-    public String getPathology() {
+    public ITextOrCode getPathology() {
         return pathology;
     }
     
@@ -222,30 +214,6 @@ public class TCObject implements Serializable {
 
     public String getTitle() {
         return title;
-    }
-
-    public DicomCode getAnatomyCode() {
-        return anatomyCode;
-    }
-
-    public DicomCode getDiagnosisCode() {
-        return diagnosisCode;
-    }
-
-    public DicomCode getDiffDiagnosisCode() {
-        return diffDiagnosisCode;
-    }
-
-    public DicomCode getFindingCode() {
-        return findingCode;
-    }
-
-    public DicomCode getKeywordCode() {
-        return keywordCode;
-    }
-
-    public DicomCode getPathologyCode() {
-        return pathologyCode;
     }
 
     public List<TCReferencedStudy> getReferencedStudies() {
@@ -309,23 +277,13 @@ public class TCObject implements Serializable {
     
     public Object getValue(TCQueryFilterKey key) {
         Object value = null;
-        
-        TCKeywordCatalogueProvider catProv = TCKeywordCatalogueProvider.getInstance();
-        
+
         if (TCQueryFilterKey.Abstract.equals(key)) {
             value = getAbstr();
         } else if (TCQueryFilterKey.AcquisitionModality.equals(key)) {
-            value = concatStrings(getAcquisitionModalities());
+            value = concatStringValues(getAcquisitionModalities());
         } else if (TCQueryFilterKey.Anatomy.equals(key)) {
-            if (catProv == null || !catProv.hasCatalogue(key)) {
-                if (getAnatomy() != null) {
-                    value = getAnatomy();
-                }
-            }
-
-            if (value == null) {
-                value = getAnatomyCode();
-            }
+            value = getAnatomy();
         } else if (TCQueryFilterKey.AuthorAffiliation.equals(key)) {
             value = getAuthorAffiliation();
         } else if (TCQueryFilterKey.AuthorContact.equals(key)) {
@@ -339,64 +297,23 @@ public class TCObject implements Serializable {
         } else if (TCQueryFilterKey.DiagnosisConfirmed.equals(key)) {
             value = getDiagnosisConfirmed() != null ? getDiagnosisConfirmed() : null;
         } else if (TCQueryFilterKey.Diagnosis.equals(key)) {
-            if (catProv == null || !catProv.hasCatalogue(key)) {
-                if (getDiagnosis() != null) {
-                    value = getDiagnosis();
-                }
-            }
-
-            if (value == null) {
-                value = getDiagnosisCode();
-            }
+            value = getDiagnosis();
         } else if (TCQueryFilterKey.DifferentialDiagnosis.equals(key)) {
-            if (catProv == null || !catProv.hasCatalogue(key)) {
-                if (getDiffDiagnosis() != null) {
-                    value = getDiffDiagnosis();
-                }
-            }
-
-            if (value == null) {
-                value = getDiffDiagnosisCode();
-            }
+            value = getDiffDiagnosis();
         } else if (TCQueryFilterKey.Discussion.equals(key)) {
             value = getDiscussion();
         } else if (TCQueryFilterKey.Finding.equals(key)) {
-            if (catProv == null || !catProv.hasCatalogue(key)) {
-                if (getFinding() != null) {
-                    value = getFinding();
-                }
-            }
-
-            if (value == null) {
-                value = getFindingCode();
-            }
+            value = getFinding();
         } else if (TCQueryFilterKey.History.equals(key)) {
             value = getHistory();
         } else if (TCQueryFilterKey.Keyword.equals(key)) {
-            if (catProv == null || !catProv.hasCatalogue(key)) {
-                if (getKeywords() != null) {
-                    value = concatStrings(getKeywords());
-                }
-            }
-
-            if (value == null) {
-                value = getKeywordCode();
-            }
+            value = getKeywords();
         } else if (TCQueryFilterKey.Level.equals(key)) {
             value = getLevel() != null ? getLevel() : null;
         } else if (TCQueryFilterKey.OrganSystem.equals(key)) {
             value = getOrganSystem();
-
         } else if (TCQueryFilterKey.Pathology.equals(key)) {
-            if (catProv == null || !catProv.hasCatalogue(key)) {
-                if (getPathology() != null) {
-                    value = getPathology();
-                }
-            }
-
-            if (value == null) {
-                value = getPathologyCode();
-            }
+            value = getPathology();
         } else if (TCQueryFilterKey.PatientAge.equals(key)) {
             value = getPatientAge() != null ? getPatientAge() : null;
         } else if (TCQueryFilterKey.PatientSex.equals(key)) {
@@ -411,7 +328,7 @@ public class TCObject implements Serializable {
     }
 
 
-    public String getLocalizedStringValue(TCQueryFilterKey key, Component c) {
+    public String getValueAsLocalizedString(TCQueryFilterKey key, Component c) {
         if (TCQueryFilterKey.Category.equals(key)) {
             return getCategory() != null ? c.getString("tc.category."
                     + getCategory().name().toLowerCase()) : null;
@@ -425,129 +342,23 @@ public class TCObject implements Serializable {
             return getPatientSex() != null ? c.getString("tc.patientsex."
                     + getPatientSex().name().toLowerCase()) : null;
         } else {
-            return getStringValue(key);
+            return getValueAsString(key);
         }
     }
 
-    public String getStringValue(TCQueryFilterKey key) {
-        String s = null;
-        
-        TCKeywordCatalogueProvider catProv = TCKeywordCatalogueProvider.getInstance();
-        
-        if (TCQueryFilterKey.Abstract.equals(key)) {
-            s = getAbstr();
-        } else if (TCQueryFilterKey.AcquisitionModality.equals(key)) {
-            s = concatStrings(getAcquisitionModalities());
-        } else if (TCQueryFilterKey.Anatomy.equals(key)) {
-            if (catProv == null || !catProv.hasCatalogue(key)) {
-                if (getAnatomy() != null) {
-                    s = getAnatomy();
-                }
-            }
-
-            if (s == null) {
-                s = getCodeAsString(getAnatomyCode());
-            }
-        } else if (TCQueryFilterKey.AuthorAffiliation.equals(key)) {
-            s = getAuthorAffiliation();
-        } else if (TCQueryFilterKey.AuthorContact.equals(key)) {
-            s = getAuthorContact();
-        } else if (TCQueryFilterKey.AuthorName.equals(key)) {
-            s = getAuthorName();
-        } else if (TCQueryFilterKey.BibliographicReference.equals(key)) {
-            s = concatStrings(this.getBibliographicReferences());
-        } else if (TCQueryFilterKey.Category.equals(key)) {
-            s = getCategory() != null ? getCategory().toString() : null;
-        } else if (TCQueryFilterKey.DiagnosisConfirmed.equals(key)) {
-            s = getDiagnosisConfirmed() != null ? getDiagnosisConfirmed()
-                    .toString() : null;
-        } else if (TCQueryFilterKey.Diagnosis.equals(key)) {
-            if (catProv == null || !catProv.hasCatalogue(key)) {
-                if (getDiagnosis() != null) {
-                    s = getDiagnosis();
-                }
-            }
-
-            if (s == null) {
-                s = getCodeAsString(getDiagnosisCode());
-            }
-        } else if (TCQueryFilterKey.DifferentialDiagnosis.equals(key)) {
-            if (catProv == null || !catProv.hasCatalogue(key)) {
-                if (getDiffDiagnosis() != null) {
-                    s = getDiffDiagnosis();
-                }
-            }
-
-            if (s == null) {
-                s = getCodeAsString(getDiffDiagnosisCode());
-            }
-        } else if (TCQueryFilterKey.Discussion.equals(key)) {
-            s = getDiscussion();
-        } else if (TCQueryFilterKey.Finding.equals(key)) {
-            if (catProv == null || !catProv.hasCatalogue(key)) {
-                if (getFinding() != null) {
-                    s = getFinding();
-                }
-            }
-
-            if (s == null) {
-                s = getCodeAsString(getFindingCode());
-            }
-        } else if (TCQueryFilterKey.History.equals(key)) {
-            s = getHistory();
-        } else if (TCQueryFilterKey.Keyword.equals(key)) {
-            if (catProv == null || !catProv.hasCatalogue(key)) {
-                if (getKeywords() != null) {
-                    s = concatStrings(getKeywords());
-                }
-            }
-
-            if (s == null) {
-                s = getCodeAsString(getKeywordCode());
-            }
-        } else if (TCQueryFilterKey.Level.equals(key)) {
-            s = getLevel() != null ? getLevel().toString() : null;
-        } else if (TCQueryFilterKey.OrganSystem.equals(key)) {
-            s = getOrganSystem();
-
-        } else if (TCQueryFilterKey.Pathology.equals(key)) {
-            if (catProv == null || !catProv.hasCatalogue(key)) {
-                if (getPathology() != null) {
-                    s = getPathology();
-                }
-            }
-
-            if (s == null) {
-                s = getCodeAsString(getPathologyCode());
-            }
-        } else if (TCQueryFilterKey.PatientAge.equals(key)) {
-            s = getPatientAge() != null ? getPatientAge().toString() : null;
-        } else if (TCQueryFilterKey.PatientSex.equals(key)) {
-            s = getPatientSex() != null ? getPatientSex().toString() : null;
-        } else if (TCQueryFilterKey.PatientSpecies.equals(key)) {
-            s = getPatientSpecies();
-        } else if (TCQueryFilterKey.Title.equals(key)) {
-            s = getTitle();
-        }
-
-        return s;
+    public String getValueAsString(TCQueryFilterKey key) {
+        return toStringValue(getValue(key));
     }
 
-
-    
-    private String getCodeAsString(DicomCode code) {
-        return code != null ? code.toString() : null;
-    }
-
-    private String concatStrings(List<?> list) {
+    private String concatStringValues(List<?> list) {
         if (list != null) {
             Iterator<?> it = list.iterator();
             StringBuilder sbuilder = new StringBuilder();
             if (it.hasNext())
-                sbuilder.append(it.next());
+                sbuilder.append(toStringValue(it.next()));
             while (it.hasNext()) {
-                sbuilder.append(", ");
-                sbuilder.append(it.next().toString());
+                sbuilder.append("; ");
+                sbuilder.append(toStringValue(it.next()));
             }
             return sbuilder.toString();
         }
@@ -640,7 +451,7 @@ public class TCObject implements Serializable {
                                 abstr = getTextValue(item);
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.Anatomy.getCode())) {
-                                anatomy = getTextValue(item);
+                                anatomy = TextOrCode.text(getTextValue(item));
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.AuthorName
                                             .getCode())) {
@@ -667,34 +478,24 @@ public class TCObject implements Serializable {
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.Diagnosis
                                             .getCode())) {
-                                diagnosis = getTextValue(item);
+                                diagnosis = TextOrCode.text(getTextValue(item));
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.DifferentialDiagnosis
                                             .getCode())) {
-                                diffDiagnosis = getTextValue(item);
+                                diffDiagnosis = TextOrCode.text(getTextValue(item));
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.Discussion
                                             .getCode())) {
                                 discussion = getTextValue(item);
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.Finding.getCode())) {
-                                finding = getTextValue(item);
+                                finding = TextOrCode.text(getTextValue(item));
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.History.getCode())) {
                                 history = getTextValue(item);
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.Keyword.getCode())) {
-                                String keyword = getTextValue(item);
-
-                                if (keyword != null) {
-                                    if (keywords == null) {
-                                        keywords = new ArrayList<String>();
-                                    }
-
-                                    if (!keywords.contains(keyword)) {
-                                        keywords.add(keyword);
-                                    }
-                                }
+                                addKeywordImpl(TextOrCode.text(getTextValue(item)));
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.OrganSystem
                                             .getCode())) {
@@ -702,7 +503,7 @@ public class TCObject implements Serializable {
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.Pathology
                                             .getCode())) {
-                                pathology = getTextValue(item);
+                                pathology = TextOrCode.text(getTextValue(item));
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.PatientAge
                                             .getCode())) {
@@ -756,25 +557,25 @@ public class TCObject implements Serializable {
                                 level = Level.get(getCodeValue(item).toCode());
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.Anatomy.getCode())) {
-                                anatomyCode = getCodeValue(item);
+                                anatomy = TextOrCode.code(getCodeValue(item));
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.Diagnosis
                                             .getCode())) {
-                                diagnosisCode = getCodeValue(item);
+                                diagnosis = TextOrCode.code(getCodeValue(item));
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.DifferentialDiagnosis
                                             .getCode())) {
-                                diffDiagnosisCode = getCodeValue(item);
+                                diffDiagnosis = TextOrCode.code(getCodeValue(item));
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.Finding.getCode())) {
-                                findingCode = getCodeValue(item);
+                                finding = TextOrCode.code(getCodeValue(item));
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.Keyword.getCode())) {
-                                keywordCode = getCodeValue(item);
+                                addKeywordImpl(TextOrCode.code(getCodeValue(item)));
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.Pathology
                                             .getCode())) {
-                                pathologyCode = getCodeValue(item);
+                                pathology = TextOrCode.code(getCodeValue(item));
                             }
                         }
                     }
@@ -793,9 +594,41 @@ public class TCObject implements Serializable {
         return object != null ? new DicomCode(
                 object.getNestedDicomObject(Tag.ConceptCodeSequence)) : null;
     }
+    
+    private String toStringValue(Object value) {
+        if (value instanceof List) {
+            return concatStringValues((List<?>)value);
+        }
+        else if (value!=null) {
+            return value.toString();
+        }
+        else {
+            return null;
+        }
+    }
+    
+    protected void addKeywordImpl(ITextOrCode keyword) {
+        if (keywords==null) {
+            keywords = new ArrayList<ITextOrCode>(2);
+        }
+        if (!keywords.contains(keyword)) {
+            keywords.add(keyword);
+        }
+    }
+    
+    protected void removeKeywordImpl(ITextOrCode keyword) {
+        if (keywords!=null) {
+            keywords.remove(keyword);
+        }
+    }
+    
+    protected static <T extends Object> T convertValue(Object v, Class<T> valueClass) throws IllegalArgumentException
+    {
+        return convertValue(v, valueClass, null);
+    }
         
     @SuppressWarnings("unchecked")
-    protected static <T extends Object> T convertValue(Object v, Class<T> valueClass) throws IllegalArgumentException
+    protected static <T extends Object> T convertValue(Object v, Class<T> valueClass, TCKeywordCatalogue cat) throws IllegalArgumentException
     {
         if (v==null)
         {
@@ -805,7 +638,10 @@ public class TCObject implements Serializable {
         {
             if (DicomCode.class.isAssignableFrom(v.getClass()))
             {
-                return (T) ((DicomCode)v).getMeaning();
+                return (T) ((DicomCode)v).toString();
+            }
+            else if (ITextOrCode.class.isAssignableFrom(v.getClass())) {
+                return (T) ((ITextOrCode)v).getText();
             }
             else
             {
@@ -821,6 +657,31 @@ public class TCObject implements Serializable {
             else if (TCKeyword.class.isAssignableFrom(v.getClass()))
             {
                 return (T) ((TCKeyword)v).getCode();
+            }
+            else if (ITextOrCode.class.isAssignableFrom(v.getClass())) {
+                return (T) ((ITextOrCode)v).getCode();
+            }
+            else if (String.class.isAssignableFrom(v.getClass()) && cat!=null)
+            {
+                TCKeyword keyword = cat.findKeyword((String)v);
+                
+                DicomCode code = keyword!=null?keyword.getCode():null;
+                
+                if (code!=null)
+                {
+                    return (T) code;
+                }
+            }
+        }
+        else if (ITextOrCode.class.isAssignableFrom(valueClass)) {
+            if (ITextOrCode.class.isAssignableFrom(v.getClass())) {
+                return (T) v;
+            }
+            else if (DicomCode.class.isAssignableFrom(v.getClass())) {
+                return (T) TextOrCode.code((DicomCode)v);
+            }
+            else if (String.class.isAssignableFrom(v.getClass())) {
+                return (T) TextOrCode.text((String)v);
             }
         }
         else if (Enum.class.isAssignableFrom(valueClass))
@@ -845,10 +706,14 @@ public class TCObject implements Serializable {
         
         throw new IllegalArgumentException("Unable to convert from class " + v.getClass() + " to class " + valueClass); //$NON-NLS-1$ //$NON-NLS-2$
     }
-    
+
+    protected <T extends Object> List<T> convertValues(Object v, Class<T> valueClass) throws IllegalArgumentException
+    {
+        return convertValues(v, valueClass, null);
+    }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected <T extends Object> List<T> convertValues(Object v, Class<T> valueClass) throws IllegalArgumentException
+    protected <T extends Object> List<T> convertValues(Object v, Class<T> valueClass, TCKeywordCatalogue cat) throws IllegalArgumentException
     {
         if (v==null)
         {
@@ -863,21 +728,16 @@ public class TCObject implements Serializable {
                 values = new Object[((List<?>)v).size()];
                 for (int i=0; i<values.length; i++)
                 {
-                    values[i] = convertValue(((List<?>)v).get(i), valueClass);
+                    values[i] = convertValue(((List<?>)v).get(i), valueClass, cat);
                 }
             }
-            else if (v.getClass().isAssignableFrom(valueClass))
+            else
             {
-                values = new Object[] {convertValue(v, valueClass)};
+                values = new Object[] {convertValue(v, valueClass, cat)};
             }
             
-            if (values!=null)
-            {
-                return (List) Arrays.asList(values);
-            }
+            return (List) Arrays.asList(values);
         }
-        
-        throw new IllegalArgumentException("Unable to convert from class " + v.getClass() + " to list of class " + valueClass); //$NON-NLS-1$ //$NON-NLS-2$
     }
     
     
@@ -984,6 +844,50 @@ public class TCObject implements Serializable {
             }
 
             return false;
+        }
+    }
+    
+    public interface ITextOrCode extends Serializable {
+        public String getText();
+        public DicomCode getCode();
+    }
+    
+    public static class TextOrCode implements ITextOrCode
+    {
+        private static final long serialVersionUID = 1L;
+        
+        private String text;
+        private DicomCode code;
+        
+        private TextOrCode(String text) {
+            this.text = text;
+        }
+        private TextOrCode(DicomCode code) {
+            this.code = code;
+        }
+        public static TextOrCode text(String text) {
+            return new TextOrCode(text);
+        }
+        public static TextOrCode code(DicomCode code) {
+            return new TextOrCode(code);
+        }
+        @Override
+        public String getText() {
+            return text;
+        }
+        @Override
+        public DicomCode getCode() {
+            return code;
+        }
+        @Override
+        public String toString() {
+            if (code!=null) {
+                return code.toString();
+            }
+            else if (text!=null) {
+                return text;
+            }
+            return "";
         }
     }
 }
