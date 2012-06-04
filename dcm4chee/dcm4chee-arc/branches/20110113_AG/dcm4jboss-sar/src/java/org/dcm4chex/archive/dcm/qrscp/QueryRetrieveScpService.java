@@ -272,8 +272,6 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private boolean cFindRspDebugLogDeferToDoBeforeRsp = false;
     
-    protected DatasetUpdater datasetUpdater = null;
-    
     public QueryRetrieveScpService() {
     	moveScp = createMoveScp();
         getScp = createGetScp();
@@ -1424,6 +1422,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
             assoc.putProperty(SEND_BUFFER, buf);
         }
         
+        DatasetUpdater datasetUpdater = createDatasetUpdater(assoc);
         FileDataSource ds = createFileDataSource(f, mergeAttrs, buf, datasetUpdater);
         ds.setWithoutPixeldata(isWithoutPixelData(dest));
         ds.setPatchJpegLS(patchJpegLS);
@@ -1436,6 +1435,11 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
         return rq;
     }
+    
+    protected DatasetUpdater createDatasetUpdater(Association assoc) {
+    	return null;
+    }
+    
     /**
      * Stub for manipulation of the dataset prior to issuing C-STORE rq
      * 
