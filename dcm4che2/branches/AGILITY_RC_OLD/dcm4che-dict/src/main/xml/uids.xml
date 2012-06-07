@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE uids [
-<!ENTITY p06 SYSTEM "../../../target/xml/p6_uid.xml">
-<!ENTITY private SYSTEM "private-uids.xml">
-]>
-<uids>&p06;&private;</uids>
