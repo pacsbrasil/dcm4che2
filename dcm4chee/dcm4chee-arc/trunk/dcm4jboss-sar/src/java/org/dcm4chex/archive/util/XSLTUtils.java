@@ -98,14 +98,16 @@ public class XSLTUtils {
     }
     
     public static void setDateParameters(TransformerHandler th) {
-        Date now = new Date();
+        setDateParameters(th, new Date());
+    }
+    
+    public static void setDateParameters(TransformerHandler th, Date date) {
         Transformer t = th.getTransformer();
-        t.setParameter("date", new DAFormat().format(now ));
-        t.setParameter("time", new TMFormat().format(now));
+        t.setParameter("date", new DAFormat().format(date));
+        t.setParameter("time", new TMFormat().format(date));
     }
 
     public static void setAETParameters(TransformerHandler th, Association a) {
-        Date now = new Date();
         Transformer t = th.getTransformer();
         t.setParameter("calling", a.getCallingAET());
         t.setParameter("called", a.getCalledAET());
