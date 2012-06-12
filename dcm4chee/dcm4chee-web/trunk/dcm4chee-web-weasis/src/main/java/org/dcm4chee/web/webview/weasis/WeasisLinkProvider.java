@@ -102,22 +102,38 @@ public class WeasisLinkProvider extends WebviewerLinkProviderSPI {
 
     @Override
     public String getUrlForPatient(String patientId, String issuer) {
-        return baseUrl + "patientID=" + patientId;
+        StringBuilder buffer = new StringBuilder(baseUrl);
+        buffer.append("patientID=");
+        buffer.append(patientId);
+        if (issuer != null) {
+            buffer.append("%5E%5E%5E");
+            buffer.append(issuer);
+        }
+        return buffer.toString();
     }
 
     @Override
     public String getUrlForStudy(String studyIuid) {
-        return baseUrl + "studyUID=" + studyIuid;
+        StringBuilder buffer = new StringBuilder(baseUrl);
+        buffer.append("studyUID=");
+        buffer.append(studyIuid);
+        return buffer.toString();
     }
 
     @Override
     public String getUrlForSeries(String seriesIuid) {
-        return baseUrl + "seriesUID=" + seriesIuid;
+        StringBuilder buffer = new StringBuilder(baseUrl);
+        buffer.append("seriesUID=");
+        buffer.append(seriesIuid);
+        return buffer.toString();
     }
 
     @Override
     public String getUrlForInstance(String sopIuid) {
-        return baseUrl + "objectUID=" + sopIuid;
+        StringBuilder buffer = new StringBuilder(baseUrl);
+        buffer.append("objectUID=");
+        buffer.append(sopIuid);
+        return buffer.toString();
     }
 
     @Override
