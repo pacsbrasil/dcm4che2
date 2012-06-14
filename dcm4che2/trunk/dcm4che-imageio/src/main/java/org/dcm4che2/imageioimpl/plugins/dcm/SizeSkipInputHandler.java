@@ -20,7 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- * Gunter Zeilinger <gunterze@gmail.com>
+ * Bill Wallace <bill.wallace@agfa.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -46,7 +46,7 @@ import org.dcm4che2.util.TagUtils;
 
 /**
  * This class causes private and/or public input tags to be skipped if they exceed a certain size.
- * Defaults to skipping private tags >= 2m and not skipping any public tags.
+ * Defaults to skipping private tags >= 1m and not skipping any public tags.
  * 
  * @author Bill Wallace
  * @since Jan 26, 2012
