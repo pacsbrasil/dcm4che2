@@ -83,6 +83,7 @@ import org.dcm4che2.imageio.ImageReaderFactory;
 import org.dcm4che2.imageio.ItemParser;
 import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che2.imageio.plugins.dcm.DicomStreamMetaData;
+import org.dcm4che2.io.DicomInputHandler;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.StopTagInputHandler;
 import org.dcm4che2.util.ByteUtils;
@@ -160,6 +161,9 @@ public class DicomImageReader extends ImageReader {
     
     private Float autoWindowCenter;
     private Float autoWindowWidth;
+    
+    /** Used to indicate whether or not to skip large private dicom elements.  */
+    private boolean skipLargePrivate = false;
 
     /**
      * Store the transfer syntax locally in case it gets modified to re-write
@@ -280,7 +284,11 @@ public class DicomImageReader extends ImageReader {
             return;
         }
         dis = new DicomInputStream(iis);
-        dis.setHandler(new StopTagInputHandler(Tag.PixelData));
+        DicomInputHandler ih = new StopTagInputHandler(Tag.PixelData);
+        if( isSkipLargePrivate() ) {
+        	ih = new SizeSkipInputHandler(ih);
+        }
+        dis.setHandler(ih);
         ds = dis.readDicomObject();
         streamMetaData = new DicomStreamMetaData();
         streamMetaData.setDicomObject(ds);
@@ -813,4 +821,12 @@ public class DicomImageReader extends ImageReader {
         return LookupTable.createLutForImageWithPR(ds, pr, frame, c, w,
                 vlutFct, 8, pval2gray);
     }
+
+	public boolean isSkipLargePrivate() {
+		return skipLargePrivate;
+	}
+
+	public void setSkipLargePrivate(boolean skipLargePrivate) {
+		this.skipLargePrivate = skipLargePrivate;
+	}
 }
