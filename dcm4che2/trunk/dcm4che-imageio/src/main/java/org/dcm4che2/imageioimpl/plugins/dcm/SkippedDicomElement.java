@@ -1,7 +1,12 @@
 package org.dcm4che2.imageioimpl.plugins.dcm;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.regex.Pattern;
+import java.util.List;
 
 import org.dcm4che2.data.DateRange;
 import org.dcm4che2.data.DicomElement;
@@ -22,21 +27,25 @@ public class SkippedDicomElement implements DicomElement {
 	
 	protected static final int TO_STRING_MAX_VAL_LEN = 64;
     protected transient int tag;    
-    protected transient VR vr;    
-    protected long realLength, streamPosn;
+    protected transient VR vr;
+    protected int realLength;
+    protected long streamPosn;
     protected transient boolean bigEndian;
+    protected volatile byte[] data = new byte[0];
 
-    public SkippedDicomElement(int tag, VR vr, boolean bigEndian, long realLength, long streamPosn) {
+    public SkippedDicomElement(int tag, VR vr, boolean bigEndian, int realLength, long streamPosn) {
         this.tag = tag;
         this.vr = vr;
         this.bigEndian = bigEndian;
+        this.realLength = realLength;
+        this.streamPosn = streamPosn;
     }
 
     public int hashCode() {
         return tag;
     }
 
-    public long getRealLength() {
+    public int getRealLength() {
     	return realLength;    	
     }
     
@@ -55,7 +64,53 @@ public class SkippedDicomElement implements DicomElement {
     public final VR vr() {
         return vr;
     }
-
+    
+    /** Checks to see if the given DICOM object has any skipped elementss
+     * and combined them into a list.  
+     * @param ds
+     * @param ret is null initially and a list is created as required
+     * @return
+     */
+    public static List<SkippedDicomElement> checkHasSkippedElement(DicomObject ds, List<SkippedDicomElement> ret) {
+    	Iterator<DicomElement> it = ds.iterator();
+    	while(it.hasNext()) {
+    		DicomElement de = it.next();
+    		if( de instanceof SkippedDicomElement ) {
+    			if( ret==null ) ret = new ArrayList<SkippedDicomElement>();
+    			ret.add((SkippedDicomElement) de);
+    		} else if( de.hasDicomObjects()) {
+    			int n = de.countItems();
+    			for(int i=0; i<n; i++) {
+    				ret = checkHasSkippedElement(de.getDicomObject(i),ret);
+    			}
+    		}
+    	}
+    	return ret;
+    }
+    
+    /** Reads the original data - returns the new position in the stream
+     * so that subsequent items maybe read.
+     */
+    public long readOriginalData(InputStream is, long position) throws IOException {
+    	byte[] origData = new byte[getRealLength()];
+    	long skip = getStreamPosition()-position;
+    	if( skip<0 ) {
+    		throw new IOException("Already past position "+getStreamPosition());
+    	}
+    	long actualSkip = is.skip(skip);
+    	if( actualSkip!=skip ) {
+    		throw new IOException("Unable to skip "+skip+" bytes, actual "+actualSkip);
+    	}
+    	int n=0;
+    	while( n<getRealLength() ) {
+    		int cnt = is.read(origData,n,getRealLength()-n);
+    		if( cnt==-1 ) break;
+    		n+=cnt;
+    	}
+   		this.data = origData;
+    	return position+skip+n;
+    }
+    
     @Override
     public String toString() {
         return toStringBuffer(null, TO_STRING_MAX_VAL_LEN).toString();
@@ -106,7 +161,7 @@ public class SkippedDicomElement implements DicomElement {
 	}
 
 	public byte[] getBytes() {
-		return new byte[0];
+		return data;
 	}
 
 	public Date getDate(boolean cache) {
@@ -195,7 +250,7 @@ public class SkippedDicomElement implements DicomElement {
 	}
 
 	public int length() {
-		return 0;
+		return data.length;
 	}
 
 	public DicomObject removeDicomObject(int index) {
@@ -227,7 +282,7 @@ public class SkippedDicomElement implements DicomElement {
 	}
 
 	public int vm(SpecificCharacterSet cs) {
-		return 0;
+		return data.length>0 ? 1 : 0;
 	}
 
 }
