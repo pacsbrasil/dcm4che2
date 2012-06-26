@@ -40,7 +40,6 @@
 package org.dcm4chex.archive.hsm.module;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
@@ -56,6 +55,8 @@ import javax.management.ObjectName;
 public class MappedHSMModule extends AbstractHSMModule {
 
     public static final String NEW_LINE = System.getProperty("line.separator", "\n");
+    private static final String STRING = String.class.getName();
+    private static final String FILE = File.class.getName();
 
     HashMap<String, ObjectName> mapping = new HashMap<String, ObjectName>();
         
@@ -89,45 +90,41 @@ public class MappedHSMModule extends AbstractHSMModule {
     
     @Override
     public File prepareHSMFile(String fsID, String filePath) throws HSMException {
-        return (File) invoke(fsID, "prepareHSMFile", new Object[]{fsID, filePath});
+        return (File) invoke(fsID, "prepareHSMFile", new Object[]{fsID, filePath}, new String[]{STRING, STRING});
     }
 
     @Override
     public String storeHSMFile(File file, String fsID, String filePath) throws HSMException {
-        return (String)invoke(fsID, "storeHSMFile", new Object[]{file, fsID, filePath});
+        return (String)invoke(fsID, "storeHSMFile", new Object[]{file, fsID, filePath}, new String[]{FILE, STRING, STRING});
     }
     
     @Override
     public void failedHSMFile(File file, String fsID, String filePath) throws HSMException {
-        invoke(fsID, "failedHSMFile", new Object[]{file, fsID, filePath});
+        invoke(fsID, "failedHSMFile", new Object[]{file, fsID, filePath}, new String[]{FILE, STRING, STRING});
     }
 
     @Override
     public File fetchHSMFile(String fsID, String filePath) throws HSMException {
-        return (File)invoke(fsID, "fetchHSMFile", new Object[]{fsID, filePath});
+        return (File)invoke(fsID, "fetchHSMFile", new Object[]{fsID, filePath}, new String[]{STRING, STRING});
     }
 
     @Override
     public void fetchHSMFileFinished(String fsID, String filePath, File file) throws HSMException {
-        invoke(fsID, "fetchHSMFileFinished", new Object[]{fsID, filePath, file});
+        invoke(fsID, "fetchHSMFileFinished", new Object[]{fsID, filePath, file}, new String[]{STRING, STRING, FILE});
     }
     
     @Override
     public Integer queryStatus(String fsID, String filePath, String userInfo) throws HSMException {
-        return (Integer)invoke(fsID, "queryStatus", new Object[]{fsID, filePath, userInfo});
+        return (Integer)invoke(fsID, "queryStatus", new Object[]{fsID, filePath, userInfo}, new String[]{STRING, STRING, STRING});
     }
     
-    private Object invoke(String fsID, String cmd, Object[] params) throws HSMException {
+    private Object invoke(String fsID, String cmd, Object[] params, String[] paramTypes) throws HSMException {
         ObjectName hsmModuleServicename = mapping.get(fsID);
         if (hsmModuleServicename == null) {
             throw new HSMException("Invoke command '"+cmd+"' on mapped HSMModule failed! No mapping for fsID:"+fsID);
         }
         log.debug("Invoke "+cmd+" on MappedHSMModule! module:"+hsmModuleServicename);
         try {
-            String[] paramTypes = new String[params.length];
-            for (int i = 0 ; i < params.length ; i++) {
-                paramTypes[i] = params[i].getClass().getName();
-            }
             return server.invoke(hsmModuleServicename, cmd, params, paramTypes);
         } catch (Exception x) {
             throw new HSMException("Invoke command '"+cmd+"' on mapped HSMModule failed! HSMModule:"+

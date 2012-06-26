@@ -39,8 +39,13 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
+
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
+import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
@@ -119,6 +124,17 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  * @ejb.finder signature="java.util.Collection findFilesOfTarFile(java.lang.String fsId, java.lang.String tarFilename)"
  *             query="SELECT OBJECT(f) FROM File AS f WHERE f.fileSystem.directoryPath = ?1 AND f.filePath LIKE ?2" 
  *             transaction-type="Supports"
+ *
+ * @jboss.query 
+ *      signature="java.util.Collection ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"
+ *  dynamic="true"
+ *  strategy="on-load"
+ *  page-size="20"
+ *  eager-load-group="*"
+ *
+ * @jboss.query 
+ *      signature="java.sql.Timestamp ejbSelectGenericTime(java.lang.String jbossQl, java.lang.Object[] args)"
+ *  dynamic="true"
  *
  */
 public abstract class FileBean implements EntityBean {
@@ -339,4 +355,59 @@ public abstract class FileBean implements EntityBean {
     public void ejbRemove() throws RemoveException {
         log.info("Deleting " + prompt());
     }
+    
+    /**
+     * @ejb.select query=""
+     *  transaction-type="Supports"
+     */ 
+    public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args)
+                throws FinderException;
+
+    /**
+     * @ejb.select query=""
+     *  transaction-type="Supports"
+     */ 
+    public abstract Timestamp ejbSelectGenericTime(String jbossQl, Object[] args)
+                throws FinderException;
+    
+    /**    
+     * @ejb.home-method
+     */
+    public Collection ejbHomeSelectByStatusAndFileSystem(List dirPath, int status, 
+            Timestamp notBefore, Timestamp before, int limit) throws FinderException {
+        StringBuilder jbossQl = new StringBuilder()
+        .append("SELECT OBJECT(f) FROM File AS f WHERE f.fileStatus = ?1")
+        .append(" AND f.createdTime >= ?2 AND f.createdTime < ?3 AND f.fileSystem.directoryPath IN (");
+        Object[] args = new Object[dirPath.size()+4];
+        args[0] = status; args[1] = notBefore; args[2] = before;
+        int idx = 3;
+        for (int i = 1, len = dirPath.size(); i < len; i++) {
+            args[idx++] =dirPath.get(i);
+            jbossQl.append("?").append(idx).append(", ");
+        }
+        args[idx++] = dirPath.get(0);
+        jbossQl.append("?").append(idx).append(")");
+        args[idx++] = limit;
+        jbossQl.append(" LIMIT ?").append(idx);
+        return ejbSelectGeneric(jbossQl.toString(), args);
+    }
+    /**    
+     * @ejb.home-method
+     */
+    public Timestamp ejbHomeMinCreatedTimeOnFsWithFileStatus(List dirPath, int status) throws FinderException {
+        Object[] args = new Object[dirPath.size()+1];
+        StringBuilder jbossQl = new StringBuilder()
+        .append("SELECT MIN(f.createdTime) FROM File f WHERE f.fileSystem.directoryPath IN (?1");
+        args[0] = dirPath.get(0);
+        int i = 1;
+        for (int len = dirPath.size() ; i < len ; ) {
+            args[i] = dirPath.get(i);
+            jbossQl.append(",?").append(++i);
+        }
+        args[i] = status;
+        jbossQl.append(") AND f.fileStatus = ?").append(++i);
+        return ejbSelectGenericTime(jbossQl.toString(), args);
+    }
+
+
 }

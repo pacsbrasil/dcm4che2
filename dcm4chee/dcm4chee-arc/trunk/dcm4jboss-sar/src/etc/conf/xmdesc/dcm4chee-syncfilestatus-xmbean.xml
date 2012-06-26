@@ -4,8 +4,12 @@
    "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 
 <mbean>
-   <description>Check File Status Service.</description>
-
+   <description><![CDATA[Check File Status Service.<br />
+   		Check one or more file systems for files with given file status <b>CheckFileStatus</b> and query file stati via
+   		configured HSM Module for update.<br />
+   		By configuring <b>HSMModulServicename</b> to Mapped HSMModule (<i>service=FileCopyHSMModule,type=Mapped</i>) 
+   		the monitored file systems can be of different types (FileBased, Command,..)
+   ]]></description>
    <descriptors>
       <persistence persistPolicy="OnUpdate"/>
       <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
@@ -22,8 +26,8 @@
    <attribute access="read-write"
       getMethod="getFileSystem"
       setMethod="setFileSystem">
-      <description>Directory/Mount Point of the monitored File System. 
-        NONE = disabled this service.
+      <description><![CDATA[Directory/Mount Points of the monitored File Systems. <br />
+        NONE = disabled this service.]]>
       </description>
       <name>MonitoredFileSystem</name>
       <type>java.lang.String</type>

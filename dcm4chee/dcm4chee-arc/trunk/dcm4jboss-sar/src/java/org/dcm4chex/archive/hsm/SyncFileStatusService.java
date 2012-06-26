@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -70,7 +71,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
 
     private int checkFileStatus;
 
-    private String fileSystem = null;
+    private ArrayList<String> fileSystem = new ArrayList<String>();
 
     private Integer listenerID;
 
@@ -130,12 +131,22 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     }
 
     public final String getFileSystem() {
-        return fileSystem == null ? NONE : fileSystem;
+        if (fileSystem.isEmpty())
+            return NONE;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0, len = fileSystem.size() ; i < len ; i++ ) {
+            sb.append(fileSystem.get(i)).append(NEWLINE);
+        }
+        return sb.toString();
     }
 
-    public final void setFileSystem(String fileSystem) {
-        this.fileSystem = (NONE.equalsIgnoreCase(fileSystem)) ? null
-                : fileSystem;
+    public final void setFileSystem(String s) {
+        fileSystem.clear();
+        if (!NONE.equalsIgnoreCase(s)) {
+            for (StringTokenizer st = new StringTokenizer(s, "\n\t\r,;") ; st.hasMoreElements() ; ) {
+                fileSystem.add(st.nextToken());
+            }
+        }
     }
 
     public final String getCheckFileStatus() {
