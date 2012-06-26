@@ -264,4 +264,22 @@ public class CombineDicomObject extends AbstractDicomObject {
 		ds1.initFileMetaInformation(cuid,iuid,tsuid);
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof DicomObject)) {
+			return false;
+		}
+		DicomObject other = (DicomObject) o;
+		Iterator<DicomElement> it = iterator();
+		Iterator<DicomElement> otherIt = other.iterator();
+		while (it.hasNext() && otherIt.hasNext()) {
+			if (!it.next().equals(otherIt.next()))
+				return false;
+		}
+		return !it.hasNext() && !otherIt.hasNext();
+	}
+
 }
