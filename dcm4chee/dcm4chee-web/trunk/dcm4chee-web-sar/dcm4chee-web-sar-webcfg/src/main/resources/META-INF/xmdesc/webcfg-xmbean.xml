@@ -123,19 +123,19 @@
            DigitalXRayImageStorageForProcessing
            DigitalMammographyXRayImageStorageForPresentation
            DigitalMammographyXRayImageStorageForProcessing
-           DigitalIntraoralXRayImageStorageForPresentation
-           DigitalIntraoralXRayImageStorageForProcessing
+           DigitalIntraOralXRayImageStorageForPresentation
+           DigitalIntraOralXRayImageStorageForProcessing
            CTImageStorage
            EnhancedCTImageStorage
-           UltrasoundMultiframeImageStorage
+           UltrasoundMultiFrameImageStorage
            MRImageStorage
            EnhancedMRImageStorage
            UltrasoundImageStorage
            SecondaryCaptureImageStorage
-           MultiframeSingleBitSecondaryCaptureImageStorage
-           MultiframeGrayscaleByteSecondaryCaptureImageStorage
-           MultiframeGrayscaleWordSecondaryCaptureImageStorage
-           MultiframeTrueColorSecondaryCaptureImageStorage
+           MultiFrameSingleBitSecondaryCaptureImageStorage
+           MultiFrameGrayscaleByteSecondaryCaptureImageStorage
+           MultiFrameGrayscaleWordSecondaryCaptureImageStorage
+           MultiFrameTrueColorSecondaryCaptureImageStorage
            XRayAngiographicImageStorage
            EnhancedXAImageStorage
            XRayRadiofluoroscopicImageStorage
@@ -152,12 +152,11 @@
            HardcopyGrayscaleImageStorageSOPClassRetired
            HardcopyColorImageStorageSOPClassRetired
            NuclearMedicineImageStorageRetired
-           UltrasoundMultiframeImageStorageRetired
-           UltrasoundMultiframeImageStorageRetired
+           UltrasoundMultiFrameImageStorageRetired
            UltrasoundImageStorageRetired
            XRayAngiographicBiPlaneImageStorageRetired
            VLImageStorageTrialRetired
-           VLMultiframeImageStorageTrialRetired
+           VLMultiFrameImageStorageTrialRetired
            "/>
       </descriptors>
    </attribute>
@@ -192,7 +191,7 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="
-           _12leadECGWaveformStorage
+           TwelveLeadECGWaveformStorage
            GeneralECGWaveformStorage
            AmbulatoryECGWaveformStorage
            HemodynamicWaveformStorage
