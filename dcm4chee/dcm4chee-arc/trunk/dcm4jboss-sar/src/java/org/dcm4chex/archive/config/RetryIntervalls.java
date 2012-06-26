@@ -59,6 +59,8 @@ public final class RetryIntervalls {
 
     private static final long MS_PER_WEEK = 7 * MS_PER_DAY;
     
+    private static final String NEWLINE = System.getProperty("line.separator", "\n");
+    
     private final int[] counts;
 
     private final long[] intervalls;
@@ -190,9 +192,9 @@ public final class RetryIntervalls {
             int size = keys.size();
             for (int i = 0; i < size; i++)
                 sb.append('[').append(keys.get(i)).append(']')
-                        .append(values.get(i)).append('\n');
+                        .append(values.get(i)).append(NEWLINE);
             if (defval != null)
-                sb.append(defval).append('\n');
+                sb.append(defval).append(NEWLINE);
             return sb.toString();
         }
 
