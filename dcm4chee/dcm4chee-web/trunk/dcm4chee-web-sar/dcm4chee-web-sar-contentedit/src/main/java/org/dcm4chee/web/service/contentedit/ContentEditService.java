@@ -412,7 +412,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         EntityTree entityTree = lookupDicomEditLocal().moveStudiesToPatient(studyPks, patPk);
         if (!entityTree.isEmpty()) {
             DicomObject kos = getRejectionNotes(entityTree)[0];
-            Auditlog.logInstancesAccessed(AuditEvent.ActionCode.UPDATE, true, kos, true, "Studies moved to patient:");
+            Auditlog.logInstancesAccessed(AuditEvent.ActionCode.UPDATE, true, kos, true, "Study moved to patient. Series of Study:");
             scheduleMoveStudyToPatient(entityTree);
         }
         return entityTree.getAllInstances().size();
