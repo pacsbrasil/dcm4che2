@@ -549,8 +549,14 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
      * @ejb.interface-method
      */
     public boolean removeStudyOnFSRecord(DeleteStudyOrder order)
-            throws RemoveException, FinderException {
-        StudyOnFileSystemLocal sof = sofHome.findByPrimaryKey(order.getSoFsPk());
+            throws RemoveException {
+        StudyOnFileSystemLocal sof;
+        try {
+            sof = sofHome.findByPrimaryKey(order.getSoFsPk());
+        } catch (FinderException x) {
+            log.debug("StudyOnFSRecord already removed! pk:"+order.getSoFsPk());
+            return false;
+        }
         if (!sof.getMarkedForDeletion()) {
             logOrderInfoMsg(order, "is not marked for deletion -> do not remove StudyOnFSRecord!");
             return false;
