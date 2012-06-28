@@ -321,7 +321,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     }
 
     public int check() throws Exception  {
-        if (fileSystem == null) {
+        if (fileSystem.isEmpty()) {
             return 0;
         }
         if (hsmModuleServicename == null) {
