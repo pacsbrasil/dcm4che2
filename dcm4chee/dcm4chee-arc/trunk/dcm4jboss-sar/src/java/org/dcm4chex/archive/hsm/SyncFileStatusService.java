@@ -89,7 +89,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     
     private final NotificationListener timerListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
-            if (fileSystem == null) {
+            if (fileSystem.isEmpty()) {
                 log.debug("SyncFileStatus disabled (fileSystem=NONE)!");
             }
             Calendar cal = Calendar.getInstance();
